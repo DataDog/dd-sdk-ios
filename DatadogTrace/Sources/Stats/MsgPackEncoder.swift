@@ -30,19 +30,20 @@ internal final class MsgPackEncoder {
         buffer.append(value ? Format.true : Format.false)
     }
 
-    /// Writes a UTF-8 string. A `nil` value is encoded as MsgPack nil.
+    /// Writes a UTF-8 string.
+    func writeString(_ string: String) {
+        let bytes = Data(string.utf8)
+        writeStringHeader(length: bytes.count)
+        buffer.append(bytes)
+    }
+
+    /// Writes a UTF-8 string, or MsgPack `null` when `string` is `nil`.
     func writeString(_ string: String?) {
         guard let string = string else {
             writeNull()
             return
         }
-        writeRawString(Data(string.utf8))
-    }
-
-    /// Writes the raw bytes of a UTF-8 string. The caller is responsible for ensuring `utf8Bytes` is valid UTF-8.
-    func writeRawString(_ utf8Bytes: Data) {
-        writeStringHeader(length: utf8Bytes.count)
-        buffer.append(utf8Bytes)
+        writeString(string)
     }
 
     /// Appends already-encoded MessagePack bytes verbatim. Used to splice in pre-encoded sub-payloads.
