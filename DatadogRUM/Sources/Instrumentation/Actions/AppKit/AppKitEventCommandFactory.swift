@@ -105,7 +105,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil
         }
 
-        // TODO: How to check this?
+        // TODO: RUM-16659 How to check this?
 //        guard menuItem.isSafeForPrivacy else {
 //            return nil // no valid view
 //        }
