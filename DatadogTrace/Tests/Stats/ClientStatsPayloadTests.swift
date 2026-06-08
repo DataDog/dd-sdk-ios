@@ -8,17 +8,17 @@ import XCTest
 @testable import DatadogTrace
 
 class ClientStatsPayloadTests: XCTestCase {
+    private let encoder = MsgPackEncoder()
+
     // MARK: - ClientStatsPayload (outer per-tracer payload)
 
     func testClientStatsPayloadEncodesAsFixMapWithNineFields() throws {
-        let payload = makePayload()
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makePayload()))
         XCTAssertEqual(try decoder.readMap().count, 9)
     }
 
     func testClientStatsPayloadFieldsAppearInExpectedOrder() throws {
-        let payload = makePayload()
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makePayload()))
         XCTAssertEqual(
             try decoder.readMap().map { $0.key },
             ["Hostname", "Env", "Version", "Stats", "Lang", "TracerVersion", "RuntimeID", "Sequence", "Service"]
@@ -36,7 +36,7 @@ class ClientStatsPayloadTests: XCTestCase {
             sequenceNumber: 42,
             stats: []
         )
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(payload))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
 
         XCTAssertEqual(fields["Hostname"] as? String, "host-01")
@@ -49,8 +49,7 @@ class ClientStatsPayloadTests: XCTestCase {
     }
 
     func testClientStatsPayloadLangIsIos() throws {
-        let payload = makePayload()
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makePayload()))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
         XCTAssertEqual(fields["Lang"] as? String, "ios")
     }
@@ -68,7 +67,7 @@ class ClientStatsPayloadTests: XCTestCase {
             stats: [bucket, bucket]
         )
 
-        var decoder = MsgPackTestDecoder(data: payload.toMsgPackPayload())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(payload))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
         let buckets = try XCTUnwrap(fields["Stats"] as? [Any?])
         XCTAssertEqual(buckets.count, 2)
@@ -78,28 +77,19 @@ class ClientStatsPayloadTests: XCTestCase {
 
     func testClientStatsBucketEncodesAsFixMapWithThreeFields() throws {
         let bucket = ClientStatsBucket(start: 100, duration: 60, stats: [])
-        let encoder = MsgPackEncoder()
-        bucket.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(bucket))
         XCTAssertEqual(try decoder.readMap().count, 3)
     }
 
     func testClientStatsBucketFieldOrder() throws {
         let bucket = ClientStatsBucket(start: 100, duration: 60, stats: [])
-        let encoder = MsgPackEncoder()
-        bucket.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(bucket))
         XCTAssertEqual(try decoder.readMap().map { $0.key }, ["Start", "Duration", "Stats"])
     }
 
     func testClientStatsBucketEncodesScalars() throws {
         let bucket = ClientStatsBucket(start: 100, duration: 60, stats: [])
-        let encoder = MsgPackEncoder()
-        bucket.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(bucket))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
         XCTAssertEqual(fields["Start"] as? Int64, 100)
         XCTAssertEqual(fields["Duration"] as? Int64, 60)
@@ -108,20 +98,12 @@ class ClientStatsPayloadTests: XCTestCase {
     // MARK: - ClientGroupedStats
 
     func testClientGroupedStatsEncodesAsFixMapWith17Fields() throws {
-        let grouped = makeGroupedStats()
-        let encoder = MsgPackEncoder()
-        grouped.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makeGroupedStats()))
         XCTAssertEqual(try decoder.readMap().count, 17)
     }
 
     func testClientGroupedStatsFieldOrder() throws {
-        let grouped = makeGroupedStats()
-        let encoder = MsgPackEncoder()
-        grouped.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makeGroupedStats()))
         XCTAssertEqual(
             try decoder.readMap().map { $0.key },
             [
@@ -151,10 +133,7 @@ class ClientStatsPayloadTests: XCTestCase {
             peerTags: ["k:v"],
             serviceSource: "mobile"
         )
-        let encoder = MsgPackEncoder()
-        grouped.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(grouped))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
 
         XCTAssertEqual(fields["Service"] as? String, "svc")
@@ -179,21 +158,13 @@ class ClientStatsPayloadTests: XCTestCase {
     }
 
     func testClientGroupedStatsSyntheticsIsAlwaysFalse() throws {
-        let grouped = makeGroupedStats()
-        let encoder = MsgPackEncoder()
-        grouped.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makeGroupedStats()))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
         XCTAssertEqual(fields["Synthetics"] as? Bool, false)
     }
 
     func testClientGroupedStatsGRPCStatusCodeIsAlwaysEmpty() throws {
-        let grouped = makeGroupedStats()
-        let encoder = MsgPackEncoder()
-        grouped.encode(into: encoder)
-
-        var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+        var decoder = MsgPackTestDecoder(data: try encoder.encode(makeGroupedStats()))
         let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
         XCTAssertEqual(fields["GRPCStatusCode"] as? String, "")
     }
@@ -219,10 +190,7 @@ class ClientStatsPayloadTests: XCTestCase {
                 peerTags: [],
                 serviceSource: ""
             )
-            let encoder = MsgPackEncoder()
-            grouped.encode(into: encoder)
-
-            var decoder = MsgPackTestDecoder(data: encoder.getBytes())
+            var decoder = MsgPackTestDecoder(data: try encoder.encode(grouped))
             let fields = Dictionary(uniqueKeysWithValues: try decoder.readMap())
             XCTAssertEqual(fields["IsTraceRoot"] as? Int64, Int64(expected))
         }
