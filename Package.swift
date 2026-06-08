@@ -9,7 +9,7 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v12),
+        .iOS(.v15),
         .tvOS(.v12),
         .macOS("12.6"),
         .watchOS(.v7),
