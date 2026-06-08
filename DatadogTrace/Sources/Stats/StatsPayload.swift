@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Outer envelope for one or more pre-encoded `ClientStatsPayload` byte sequences.
+/// Outer envelope wrapping one or more `ClientStatsPayload`s (typically one per tracer).
 ///
 /// See https://github.com/DataDog/datadog-agent/blob/main/pkg/proto/datadog/trace/stats.proto
 ///
@@ -14,46 +14,26 @@ import Foundation
 /// `stats_gen.go`. `agentHostname`, `agentEnv`, and `agentVersion` are intentionally empty
 /// on mobile because no agent is in the upload path (the SDK uploads directly to the intake).
 /// `clientComputed` is always `true`.
-internal struct StatsPayload {
-    /// Pre-encoded MsgPack bytes for each `ClientStatsPayload` (typically one per tracer).
-    let clientStats: [Data]
+internal struct StatsPayload: Encodable {
+    let clientStats: [ClientStatsPayload]
     let splitPayload: Bool
 
-    func toMsgPackPayload() -> Data {
-        let encoder = MsgPackEncoder()
-        encoder.startMap(elementCount: Field.statsFieldCount)
-
-        encoder.writeString(Field.agentHostname)
-        encoder.writeString("")
-
-        encoder.writeString(Field.agentEnv)
-        encoder.writeString("")
-
-        encoder.writeString(Field.stats)
-        encoder.startArray(elementCount: clientStats.count)
-        for bytes in clientStats {
-            encoder.appendRawBytes(bytes)
-        }
-
-        encoder.writeString(Field.agentVersion)
-        encoder.writeString("")
-
-        encoder.writeString(Field.clientComputed)
-        encoder.writeBoolean(true)
-
-        encoder.writeString(Field.splitPayload)
-        encoder.writeBoolean(splitPayload)
-
-        return encoder.getBytes()
+    private enum CodingKeys: String, CodingKey {
+        case agentHostname = "AgentHostname"
+        case agentEnv = "AgentEnv"
+        case stats = "Stats"
+        case agentVersion = "AgentVersion"
+        case clientComputed = "ClientComputed"
+        case splitPayload = "SplitPayload"
     }
 
-    private enum Field {
-        static let statsFieldCount = 6
-        static let agentHostname = "AgentHostname"
-        static let agentEnv = "AgentEnv"
-        static let agentVersion = "AgentVersion"
-        static let stats = "Stats"
-        static let clientComputed = "ClientComputed"
-        static let splitPayload = "SplitPayload"
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode("", forKey: .agentHostname)
+        try container.encode("", forKey: .agentEnv)
+        try container.encode(clientStats, forKey: .stats)
+        try container.encode("", forKey: .agentVersion)
+        try container.encode(true, forKey: .clientComputed)
+        try container.encode(splitPayload, forKey: .splitPayload)
     }
 }
