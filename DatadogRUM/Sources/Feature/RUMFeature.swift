@@ -105,6 +105,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 return (FirstPartyHosts(hosts), sampleRate)
             case let .traceWithHeaders(hostsWithHeaders, sampleRate, _):
                 return (FirstPartyHosts(hostsWithHeaders), sampleRate)
+            case let .traceWithPatterns(patterns, sampleRate, _):
+                return (FirstPartyHosts(hostPatterns: patterns), sampleRate)
             case .none:
                 return nil
             }
@@ -411,6 +413,7 @@ private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
         switch self {
         case .trace(_, let sampleRate, _): return sampleRate
         case .traceWithHeaders(_, let sampleRate, _): return sampleRate
+        case .traceWithPatterns(_, let sampleRate, _): return sampleRate
         }
     }
 }

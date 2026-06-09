@@ -66,6 +66,14 @@ extension InternalExtension where ExtendedType == RUM {
                 spanIDGenerator: rumConfiguration.spanIDGenerator,
                 traceContextInjection: traceContextInjection
             )
+        case let .traceWithPatterns(patterns, sampleRate, traceContextInjection):
+            distributedTracing = DistributedTracing(
+                samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate,
+                firstPartyHosts: FirstPartyHosts(hostPatterns: patterns),
+                traceIDGenerator: rumConfiguration.traceIDGenerator,
+                spanIDGenerator: rumConfiguration.spanIDGenerator,
+                traceContextInjection: traceContextInjection
+            )
         case .none:
             distributedTracing = nil
         }

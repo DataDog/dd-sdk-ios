@@ -133,5 +133,12 @@ extension URLSessionInstrumentation {
         ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>])
+
+        /// Trace hosts matching the given wildcard patterns using Datadog and W3C `tracecontext` tracing headers.
+        ///
+        /// - Parameters:
+        ///   - hostPatterns: Wildcard patterns for hosts to trace. Use `*` as a wildcard (e.g. `"*.example.com"`).
+        ///     Patterns must not include the "http(s)://" prefix.
+        case traceWithPatterns(hostPatterns: [String])
     }
 }

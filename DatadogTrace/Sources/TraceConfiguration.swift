@@ -118,6 +118,18 @@ extension Trace {
                     sampleRate: Float = .maxSampleRate,
                     traceControlInjection: TraceContextInjection = .sampled
                 )
+
+                /// Trace hosts matching the given wildcard patterns using Datadog and W3C `tracecontext` tracing headers.
+                ///
+                /// - `hostPatterns` - Wildcard patterns for hosts to trace. Use `*` as a wildcard (e.g. `"*.example.com"`).
+                ///   Patterns must not include the "http(s)://" prefix.
+                /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `100`.
+                /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.sampled`.
+                case traceWithPatterns(
+                    hostPatterns: [String],
+                    sampleRate: Float = .maxSampleRate,
+                    traceControlInjection: TraceContextInjection = .sampled
+                )
             }
 
             /// The default set of HTTP status codes whose `resource.name` span tag is redacted.

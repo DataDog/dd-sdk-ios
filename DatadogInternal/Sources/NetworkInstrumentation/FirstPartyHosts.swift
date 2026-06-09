@@ -9,6 +9,7 @@ import Foundation
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
     internal var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
+    internal var hostPatternsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]
 
     public var hosts: Set<String> {
         return Set(hostsWithTracingHeaderTypes.keys)
@@ -43,9 +44,28 @@ public struct FirstPartyHosts: Equatable {
             self.init(hosts)
         case .traceWithHeaders(let hostsWithHeaders):
             self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
+        case .traceWithPatterns(let patterns):
+            self.init(hostPatterns: patterns)
         default:
             return nil
         }
+    }
+
+    public init(hostPatterns: [String]) {
+        self.hostsWithTracingHeaderTypes = [:]
+        let dict = hostPatterns.reduce(into: [String: Set<TracingHeaderType>]()) { $0[$1] = [.datadog, .tracecontext] }
+        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
+            dict,
+            warningMessage: "The first party host pattern configured for Datadog SDK is not valid"
+        )
+    }
+
+    internal init(hostPatterns: [String: Set<TracingHeaderType>]) {
+        self.hostsWithTracingHeaderTypes = [:]
+        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
+            hostPatterns,
+            warningMessage: "The first party host pattern configured for Datadog SDK is not valid"
+        )
     }
 
     internal init(
@@ -61,16 +81,35 @@ public struct FirstPartyHosts: Equatable {
     /// The function takes a `URL` and returns a `Set<TracingHeaderType>` of matching values.
     /// If one than more match is found it will return union of matching values.
     public func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        return hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
+        let plainMatches = hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
             let regex = "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: item.key))$"
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
                 return item.value
             }
             return nil
         }
-        .reduce(into: Set(), { partialResult, value in
+
+        let patternMatches = hostPatternsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
+            if let host = url?.host, matchesWildcardPattern(host: host, pattern: item.key) {
+                return item.value
+            }
+            return nil
+        }
+
+        return (plainMatches + patternMatches).reduce(into: Set(), { partialResult, value in
             partialResult.formUnion(value)
         })
+    }
+
+    private func matchesWildcardPattern(host: String, pattern: String) -> Bool {
+        guard pattern.contains("*") else {
+            return host == pattern || host.hasSuffix(".\(pattern)")
+        }
+        let parts = pattern.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+        guard parts.count == 2 else {
+            return false
+        }
+        return host.hasPrefix(parts[0]) && host.hasSuffix(parts[1]) && host.count > parts[0].count + parts[1].count
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
@@ -89,11 +128,15 @@ public struct FirstPartyHosts: Equatable {
 }
 
 public func += (left: inout FirstPartyHosts?, right: FirstPartyHosts) {
-    left = FirstPartyHosts(
-        left?.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
-            left.union(right)
+    var result = FirstPartyHosts(
+        left?.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { l, r in
+            l.union(r)
         }) ?? right.hostsWithTracingHeaderTypes
     )
+    result.hostPatternsWithTracingHeaderTypes = (left?.hostPatternsWithTracingHeaderTypes ?? [:]).merging(
+        right.hostPatternsWithTracingHeaderTypes, uniquingKeysWith: { l, r in l.union(r) }
+    )
+    left = result
 }
 
 public func + (left: FirstPartyHosts, right: FirstPartyHosts?) -> FirstPartyHosts {
@@ -101,9 +144,13 @@ public func + (left: FirstPartyHosts, right: FirstPartyHosts?) -> FirstPartyHost
         return left
     }
 
-    return FirstPartyHosts(
-        left.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
-            left.union(right)
+    var result = FirstPartyHosts(
+        left.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { l, r in
+            l.union(r)
         })
     )
+    result.hostPatternsWithTracingHeaderTypes = left.hostPatternsWithTracingHeaderTypes.merging(
+        right.hostPatternsWithTracingHeaderTypes, uniquingKeysWith: { l, r in l.union(r) }
+    )
+    return result
 }

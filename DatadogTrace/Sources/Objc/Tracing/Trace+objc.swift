@@ -78,6 +78,14 @@ public final class objc_TraceFirstPartyHostsTracing: NSObject {
     public init(hosts: Set<String>, sampleRate: Float) {
         swiftType = .trace(hosts: hosts, sampleRate: sampleRate)
     }
+
+    public init(hostPatterns: [String]) {
+        swiftType = .traceWithPatterns(hostPatterns: hostPatterns)
+    }
+
+    public init(hostPatterns: [String], sampleRate: Float) {
+        swiftType = .traceWithPatterns(hostPatterns: hostPatterns, sampleRate: sampleRate)
+    }
 }
 
 @objc(DDTraceURLSessionTracking)

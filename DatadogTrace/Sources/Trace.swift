@@ -59,6 +59,10 @@ public enum Trace {
                 tracingSampleRate = sampleRate
                 firstPartyHosts = FirstPartyHosts(hostsWithHeaders)
                 traceContextInjection = injection
+            case let .traceWithPatterns(patterns, sampleRate, injection):
+                tracingSampleRate = sampleRate
+                firstPartyHosts = FirstPartyHosts(hostPatterns: patterns)
+                traceContextInjection = injection
             }
 
             let urlSessionHandler = TracingURLSessionHandler(
