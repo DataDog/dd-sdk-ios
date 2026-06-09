@@ -108,14 +108,14 @@ extension CALayerSnapshot {
 
         let privacy = privacy.applying(layer.privacyOverrides)
         let observation = privacy.isPrivate
-            ? SemanticObservation(semantics: .layer, ignoreSubtree: true)
+            ? SemanticObservation(semantics: .layer, ignoreSublayers: true)
             : SemanticObservation(layer: layer, context: context)
 
         let childVisibleBounds = layer.masksToBounds
             ? absoluteFrame.intersection(visibleBounds)
             : visibleBounds
 
-        let sublayers = observation.ignoreSubtree || childVisibleBounds.isEmpty
+        let sublayers = observation.ignoreSublayers || childVisibleBounds.isEmpty
             ? []
             : layer.sublayers?.compactMap {
                 CALayerSnapshot(

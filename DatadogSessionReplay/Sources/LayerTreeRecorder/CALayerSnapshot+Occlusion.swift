@@ -12,7 +12,7 @@ import QuartzCore
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        observation.ignoreSubtree
+        observation.ignoreSublayers
             || layerClass != CALayer.self
             || contentsClass != nil
             || hasBackgroundColor
