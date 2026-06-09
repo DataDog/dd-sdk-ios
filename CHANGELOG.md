@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+
 # 3.12.0 / 04-06-2026
 
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
@@ -1170,6 +1172,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
+[#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
