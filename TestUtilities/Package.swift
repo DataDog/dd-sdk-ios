@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "TestUtilities",
     platforms: [
-        .iOS(.v12),
+        .iOS(.v15),
         .tvOS(.v12),
         .macOS(.v12),
         .watchOS(.v7),

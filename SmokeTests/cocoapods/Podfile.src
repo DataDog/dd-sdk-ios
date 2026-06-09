@@ -12,7 +12,7 @@ abstract_target 'Common' do
   pod 'DatadogProfiling', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
 
   target 'App Dynamic iOS' do
-    platform :ios, '13.0'
+    platform :ios, '15.0'
     use_frameworks!
     pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
 
@@ -22,7 +22,7 @@ abstract_target 'Common' do
   end
 
   target 'App Static iOS' do
-    platform :ios, '13.0'
+    platform :ios, '15.0'
     pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :GIT_REFERENCE
 
     target 'App Static iOS Tests' do
