@@ -5,14 +5,19 @@
  */
 
 #if os(iOS)
-import CoreGraphics
 import Foundation
+import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        observation.ignoreSubtree || contentsClass != nil || hasBackgroundColor || hasBorder || hasVisibleShadow
+        observation.ignoreSubtree
+            || layerClass != CALayer.self
+            || contentsClass != nil
+            || hasBackgroundColor
+            || hasBorder
+            || hasVisibleShadow
     }
 
     /// A Boolean value indicating whether the layer paints its frame as an opaque rectangle.
