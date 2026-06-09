@@ -462,6 +462,7 @@ extension DatadogCore {
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             isRunFromExtension: isRunFromExtension,
+            remoteConfigurationProvider: configuration.remoteConfigurationProvider,
             remoteConfiguration: configuration.remoteConfigurationID.map { ($0, configuration.site) }
         )
 

@@ -22,6 +22,10 @@ private struct FeatureMock: DatadogRemoteFeature {
     var performanceOverride: PerformancePresetOverride? = nil
 }
 
+private struct RemoteConfigurationProviderMock: RemoteConfigurationProvider {
+    let remoteConfiguration: RemoteConfiguration?
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -31,6 +35,61 @@ class DatadogCoreTests: XCTestCase {
     override func tearDown() {
         temporaryCoreDirectory.delete()
         super.tearDown()
+    }
+
+    func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsProviderValue() throws {
+        // Given
+        let remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: "provider-application-id")
+        )
+        try Data(#"{"rum":{"applicationId":"cache-application-id"}}"#.utf8).write(
+            to: temporaryCoreDirectory.coreDirectory.url.appendingPathComponent("test-id.json"),
+            options: .atomic
+        )
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            remoteConfigurationProvider: RemoteConfigurationProviderMock(remoteConfiguration: remoteConfiguration),
+            remoteConfiguration: (id: "test-id", site: .us1)
+        )
+
+        // Then
+        XCTAssertEqual(core.remoteConfiguration?.rum?.applicationId, "provider-application-id")
+    }
+
+    func testGivenNoRemoteConfigurationProviderValue_whenReadingRemoteConfiguration_itReturnsSynchronizerCache() throws {
+        // Given
+        try Data(#"{"rum":{"applicationId":"cache-application-id"}}"#.utf8).write(
+            to: temporaryCoreDirectory.coreDirectory.url.appendingPathComponent("test-id.json"),
+            options: .atomic
+        )
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny(),
+            remoteConfigurationProvider: RemoteConfigurationProviderMock(remoteConfiguration: nil),
+            remoteConfiguration: (id: "test-id", site: .us1)
+        )
+
+        // Then
+        XCTAssertEqual(core.remoteConfiguration?.rum?.applicationId, "cache-application-id")
     }
 
     func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() throws {

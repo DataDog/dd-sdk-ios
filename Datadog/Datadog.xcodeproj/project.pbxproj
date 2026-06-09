@@ -19,6 +19,7 @@
 		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
 		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
 		1019DFD92FB1BB2E006599B4 /* DatadogSiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */; };
+		10C736962FD2E43F00FCD545 /* RemoteConfigurationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10C736952FD2E43800FCD545 /* RemoteConfigurationProvider.swift */; };
 		10E9062A2FBDB81A002D5F45 /* RemoteConfigurationSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */; };
 		10E9062C2FBDBA4B002D5F45 /* RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
@@ -1775,6 +1776,7 @@
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		0D2A20EFB1D82D0B8AC781F9 /* HeatmapMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapMocks.swift; sourceTree = "<group>"; };
 		1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSiteTests.swift; sourceTree = "<group>"; };
+		10C736952FD2E43800FCD545 /* RemoteConfigurationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationProvider.swift; sourceTree = "<group>"; };
 		10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationSynchronizer.swift; sourceTree = "<group>"; };
 		10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationTests.swift; sourceTree = "<group>"; };
 		11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationMocks.swift; sourceTree = "<group>"; };
@@ -6063,6 +6065,7 @@
 		D23039B2298D5235001A1FA3 /* Context */ = {
 			isa = PBXGroup;
 			children = (
+				10C736952FD2E43800FCD545 /* RemoteConfigurationProvider.swift */,
 				2671348F2D688D230048CB54 /* AccountInfo.swift */,
 				E2AA55E62C32C6D9002FEF28 /* ApplicationNotifications.swift */,
 				D23039B3298D5235001A1FA3 /* AppState.swift */,
@@ -8533,6 +8536,7 @@
 				D2D3199A29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				6128F56A2BA2237300D35B08 /* DataStore.swift in Sources */,
 				3C3EF2B02C1AEBAB009E9E57 /* LaunchReport.swift in Sources */,
+				10C736962FD2E43F00FCD545 /* RemoteConfigurationProvider.swift in Sources */,
 				6167E7002B81EF7500C3CA2D /* BacktraceReportingFeature.swift in Sources */,
 				D2EBEE2729BA160F00B15732 /* B3HTTPHeadersWriter.swift in Sources */,
 				D2D9A9DD2DBFD507005DB31D /* RUMPayloadMessages.swift in Sources */,

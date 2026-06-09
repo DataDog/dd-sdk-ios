@@ -55,9 +55,23 @@ internal final class DatadogCore {
     /// The message-bus instance.
     let bus = MessageBus()
 
+    /// The remote configuration provider.
+    let remoteConfigurationProvider: RemoteConfigurationProvider
+
     /// Owns the remote configuration cache and fetch lifecycle.
     /// `nil` when `remoteConfiguration` was not set at init.
     internal let synchronizer: RemoteConfigurationSynchronizer?
+
+    /// The last successfully fetched remote configuration, if any.
+    var remoteConfiguration: RemoteConfiguration? {
+        if let remoteConfiguration = remoteConfigurationProvider.remoteConfiguration {
+            return remoteConfiguration
+        }
+        guard let data = try? synchronizer?.cache.get() else {
+            return nil
+        }
+        return try? JSONDecoder().decode(RemoteConfiguration.self, from: data)
+    }
 
     /// Registry for Features.
     @ReadWriteLock
@@ -79,10 +93,6 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
-    /// The last successfully fetched and cached remote configuration, if any.
-    @ReadWriteLock
-    var remoteConfiguration: RemoteConfiguration? = nil
-
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -94,6 +104,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
+    ///   - remoteConfigurationProvider: The remote configuration provider.
     ///   - remoteConfiguration: The remote configuration ID and site; `nil` when not configured.
     init(
         directory: CoreDirectory,
@@ -107,10 +118,12 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
+        remoteConfigurationProvider: RemoteConfigurationProvider = DefaultRemoteConfigurationProvider(),
         remoteConfiguration: (id: String, site: DatadogSite)? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
+        self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption

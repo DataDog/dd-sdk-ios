@@ -41,6 +41,22 @@ private func mockSession() -> URLSession {
     return URLSession(configuration: config)
 }
 
+private final class FetchHTTPClientMock: HTTPClient {
+    let result: Result<(HTTPURLResponse, Data), Error>
+
+    init(result: Result<(HTTPURLResponse, Data), Error>) {
+        self.result = result
+    }
+
+    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+        completion(.failure(URLSessionTransportInconsistencyException()))
+    }
+
+    func fetch(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data), Error>) -> Void) {
+        completion(result)
+    }
+}
+
 // MARK: - Tests
 
 class RemoteConfigurationTests: XCTestCase {
@@ -164,14 +180,20 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testSyncNetworkErrorReturnsFailureAndLeavesCache() {
-        MockURLProtocol.requestHandler = { _ in throw URLError(.networkConnectionLost) }
-        let rc = makeSynchronizer()
+        let error = URLError(.networkConnectionLost)
+        let rc = RemoteConfigurationSynchronizer(
+            id: "test-id",
+            site: .us1,
+            directory: coreDir.coreDirectory,
+            httpClient: FetchHTTPClientMock(result: .failure(error))
+        )
         let expectation = expectation(description: "sync completes")
 
         rc.sync { result in
-            guard case .failure = result else {
+            guard case .failure(.networkError(let receivedError as URLError)) = result else {
                 return XCTFail("Expected failure on network error")
             }
+            XCTAssertEqual(receivedError.code, error.code)
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 2)
@@ -238,6 +260,9 @@ class RemoteConfigurationTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 2)
+
+        XCTAssertEqual(try? rc.cache.get(), nonJSON)
+        XCTAssertEqual(try? Data(contentsOf: coreDir.coreDirectory.url.appendingPathComponent("test-id.json")), nonJSON)
     }
 
     func testSyncDiskWriteFailureReturnsFailure() {

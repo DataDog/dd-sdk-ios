@@ -24,7 +24,7 @@ internal final class RemoteConfigurationSynchronizer {
     /// `.success(data)` — data is available.
     /// `.failure` — no cache yet, or a read/write error.
     @ReadWriteLock
-    private(set) var cache: Result<Data, Error>
+    private(set) var cache: Result<Data, RemoteConfigurationError>
 
     init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
         self.id = id
@@ -39,11 +39,11 @@ internal final class RemoteConfigurationSynchronizer {
 
     // MARK: - Private
 
-    private static func readCache(id: String, from directory: Directory) -> Result<Data, Error> {
+    private static func readCache(id: String, from directory: Directory) -> Result<Data, RemoteConfigurationError> {
         do {
             return .success(try directory.file(named: "\(id).json").read())
         } catch {
-            return .failure(error)
+            return .failure(.diskError)
         }
     }
 
@@ -52,7 +52,7 @@ internal final class RemoteConfigurationSynchronizer {
     /// Fires an async CDN fetch and updates the cache on success.
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
-    func sync(_ completionHandler: @escaping (Result<Data, Error>) -> Void) {
+    func sync(_ completionHandler: @escaping (Result<Data, RemoteConfigurationError>) -> Void) {
         // Build request with conditional ETag header if a previous ETag is stored.
         // Only send If-None-Match when the cache is usable — if cache is .failure,
         // a 304 response would leave us with no data to serve.
@@ -70,7 +70,7 @@ internal final class RemoteConfigurationSynchronizer {
         httpClient.fetch(request: request) { result in
             switch result {
             case .failure(let error):
-                completionHandler(.failure(error))
+                completionHandler(.failure(.networkError(error)))
 
             case .success(let (http, data)):
                 // 1. Not Modified — existing cache is still valid
@@ -81,21 +81,21 @@ internal final class RemoteConfigurationSynchronizer {
 
                 // 2. Non-2xx HTTP status
                 guard (200..<300).contains(http.statusCode) else {
-                    completionHandler(.failure(RemoteConfigurationError.httpError(http.statusCode)))
+                    let error = RemoteConfigurationError.httpError(http.statusCode)
+                    completionHandler(.failure(error))
                     return
                 }
 
                 // 3. Empty body
                 guard !data.isEmpty else {
-                    completionHandler(.failure(RemoteConfigurationError.emptyBody))
+                    completionHandler(.failure(.emptyBody))
                     return
                 }
-
-                // TODO RUM-16387: Validate the schema before saving
 
                 // All checks passed — persist to disk and update in-memory cache.
                 // File.write uses .atomic (write to temp, then rename), so the update is
                 // all-or-nothing: the existing file is never left in a truncated state.
+                // Note: schema validation before write is deferred to RUM-16387.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
                     self.cache = .success(data)
@@ -116,21 +116,25 @@ internal final class RemoteConfigurationSynchronizer {
 
                     completionHandler(.success(data))
                 } catch {
-                    completionHandler(.failure(error))
+                    completionHandler(.failure(.diskError))
                 }
             }
         }
     }
 }
 
-private enum RemoteConfigurationError: Error, LocalizedError {
+internal enum RemoteConfigurationError: Error, LocalizedError {
+    case networkError(Error)
     case httpError(Int)
     case emptyBody
+    case diskError
 
     var errorDescription: String? {
         switch self {
+        case .networkError(let error): return "Network error: \(error.localizedDescription)"
         case .httpError(let code): return "Non-2xx response: HTTP \(code)"
         case .emptyBody: return "Empty response body"
+        case .diskError: return "Remote configuration disk read/write failed"
         }
     }
 }
