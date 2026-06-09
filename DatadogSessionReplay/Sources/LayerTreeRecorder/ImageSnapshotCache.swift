@@ -91,7 +91,7 @@ internal final class ImageSnapshotCache {
         imageSnapshots.removeObject(forKey: replayID as NSNumber)
     }
 
-    func removeSnapshotData(forReplayIDs replayIDs: Set<Int64>) {
+    func removeSnapshotData<ReplayIDs: Sequence>(forReplayIDs replayIDs: ReplayIDs) where ReplayIDs.Element == Int64 {
         for replayID in replayIDs {
             removeSnapshotData(forReplayID: replayID)
         }
@@ -103,7 +103,7 @@ internal final class ImageSnapshotCache {
         }
         .prefix(policy.maximumRemovals)
 
-        removeSnapshotData(forReplayIDs: Set(expiredReplayIDs))
+        removeSnapshotData(forReplayIDs: expiredReplayIDs)
     }
 }
 #endif

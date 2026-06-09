@@ -14,7 +14,10 @@ import UIKit
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageSnapshot: Sendable {
     let image: UIImage
+
+    /// The image frame in the root layer coordinate space.
     let frame: CGRect
+
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
 
@@ -35,7 +38,11 @@ internal final class ImageSnapshot: Sendable {
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct ImageSnapshotData: Sendable {
     let snapshot: ImageSnapshot
+
+    /// The rendered rect in the source layer coordinate space.
     let localRect: CGRect
+
+    /// The source layer bounds captured when the image was rendered.
     let bounds: CGRect
 }
 

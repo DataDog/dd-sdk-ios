@@ -179,7 +179,7 @@ extension ImageSnapshotCache {
         let contentChangeReplayIDs = changeset.contentChanges.compactMap {
             $0.layer.resolve()?.replayID
         }
-        removeSnapshotData(forReplayIDs: Set(contentChangeReplayIDs))
+        removeSnapshotData(forReplayIDs: contentChangeReplayIDs)
     }
 }
 #endif
