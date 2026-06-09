@@ -252,3 +252,138 @@ public func DDAssertEqual(_ date1: Date?, _ date2: Date, accuracy: TimeInterval,
         XCTAssertEqual(date1.timeIntervalSince1970, date2.timeIntervalSince1970, accuracy: accuracy, message(), file: file, line: line)
     }
 }
+
+public struct JSONDiff {
+    /// Key paths where the values differ between the two objects.
+    public let differentKeyPaths: [String]
+    /// Key paths present in `expression1` but missing in `expression2`.
+    public let removedKeyPaths: [String]
+    /// Key paths present in `expression2` but missing in `expression1`.
+    public let addedKeyPaths: [String]
+
+    fileprivate static func flatten(_ value: Any, prefix: String) -> [String: NSObject] {
+        if let dict = value as? [String: Any] {
+            if dict.isEmpty {
+                guard !prefix.isEmpty else {
+                    return [:]
+                }
+                return [prefix: NSDictionary()]
+            }
+            var result: [String: NSObject] = [:]
+            for (key, child) in dict {
+                // Escape special path chars so keys are unambiguous: `\` is the escape char, `.` separates dict levels,
+                // `[` and `]` delimit array indices. Order matters: backslashes first, then the rest.
+                let escapedKey = key
+                    .replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: ".", with: "\\.")
+                    .replacingOccurrences(of: "[", with: "\\[")
+                    .replacingOccurrences(of: "]", with: "\\]")
+                let newPrefix = prefix.isEmpty ? escapedKey : "\(prefix).\(escapedKey)"
+                for (childKey, childValue) in flatten(child, prefix: newPrefix) {
+                    result[childKey] = childValue
+                }
+            }
+            return result
+        }
+
+        if let array = value as? [Any] {
+            if array.isEmpty {
+                guard !prefix.isEmpty else {
+                    return [:]
+                }
+                return [prefix: NSArray()]
+            }
+            var result: [String: NSObject] = [:]
+            for (index, child) in array.enumerated() {
+                // Use bracket notation so array index `0` is unambiguous vs dict key `"0"`
+                let newPrefix = "\(prefix)[\(index)]"
+                for (childKey, childValue) in flatten(child, prefix: newPrefix) {
+                    result[childKey] = childValue
+                }
+            }
+            return result
+        }
+
+        return [prefix: (value as? NSObject) ?? NSNull()]
+    }
+
+    fileprivate static func leafEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
+        // NSNumber.isEqual is value-based — NSNumber(true).isEqual(NSNumber(1)) returns true.
+        // Distinguish booleans from numbers via CFBooleanGetTypeID to preserve JSON-level type fidelity.
+        let lhsIsBool = CFGetTypeID(lhs) == CFBooleanGetTypeID()
+        let rhsIsBool = CFGetTypeID(rhs) == CFBooleanGetTypeID()
+        if lhsIsBool != rhsIsBool {
+            return false
+        }
+        return lhs.isEqual(rhs)
+    }
+}
+
+private func _DDAssertJSONDiff<T: Encodable>(
+    _ expression1: @autoclosure () throws -> T,
+    _ expression2: @autoclosure () throws -> T
+) throws -> JSONDiff {
+    let value1 = try expression1()
+    let value2 = try expression2()
+
+    let data1 = try JSONEncoder().encode(value1)
+    let data2 = try JSONEncoder().encode(value2)
+
+    guard let dict1 = try JSONSerialization.jsonObject(with: data1) as? [String: Any],
+          let dict2 = try JSONSerialization.jsonObject(with: data2) as? [String: Any] else {
+        throw DDAssertError.expectedFailure("Value does not encode to a JSON object")
+    }
+
+    let flat1 = JSONDiff.flatten(dict1, prefix: "")
+    let flat2 = JSONDiff.flatten(dict2, prefix: "")
+
+    let keys1 = Set(flat1.keys)
+    let keys2 = Set(flat2.keys)
+
+    let commonKeys = keys1.intersection(keys2)
+    let equalKeys = commonKeys.filter { key in
+        guard let lhs = flat1[key], let rhs = flat2[key] else {
+            return false
+        }
+        return JSONDiff.leafEqual(lhs, rhs)
+    }
+    let differentKeys = commonKeys.subtracting(equalKeys)
+    let removedKeys = keys1.subtracting(keys2)
+    let addedKeys = keys2.subtracting(keys1)
+
+    return JSONDiff(
+        differentKeyPaths: differentKeys.sorted(),
+        removedKeyPaths: removedKeys.sorted(),
+        addedKeyPaths: addedKeys.sorted()
+    )
+}
+
+public func DDAssertJSONDiff<T: Encodable>(
+    _ expression1: @autoclosure () throws -> T,
+    _ expression2: @autoclosure () throws -> T,
+    _ message: @autoclosure () -> String = "",
+    file: StaticString = #fileID,
+    line: UInt = #line,
+    _ verify: (JSONDiff) -> Void
+) {
+    _DDEvaluateAssertion(message: message(), file: file, line: line) {
+        let result = try _DDAssertJSONDiff(expression1(), expression2())
+        verify(result)
+    }
+}
+
+public extension JSONDiff {
+    /// Asserts the diff contains exactly these key paths in each category.
+    /// Pass empty arrays (or omit) for categories you expect to be empty.
+    func assertExact(
+        different: [String] = [],
+        added: [String] = [],
+        removed: [String] = [],
+        file: StaticString = #fileID,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(differentKeyPaths, different.sorted(), file: file, line: line)
+        XCTAssertEqual(addedKeyPaths, added.sorted(), file: file, line: line)
+        XCTAssertEqual(removedKeyPaths, removed.sorted(), file: file, line: line)
+    }
+}
