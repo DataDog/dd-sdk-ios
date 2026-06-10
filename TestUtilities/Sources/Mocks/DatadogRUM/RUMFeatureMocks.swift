@@ -1345,7 +1345,9 @@ extension RUMViewScope_ {
         name: String = .mockAny(),
         customTimings: [String: Int64] = [:],
         startTime: Date = .mockAny(),
-        serverTimeOffset: TimeInterval = .zero
+        serverTimeOffset: TimeInterval = .zero,
+        interactionToNextViewMetric: INVMetricTracking? = nil,
+        viewIndexInSession: Int = 0
     ) -> RUMViewScope_ {
         return RUMViewScope_(
             isInitialView: isInitialView,
@@ -1356,7 +1358,9 @@ extension RUMViewScope_ {
             name: name,
             customTimings: customTimings,
             startTime: startTime,
-            serverTimeOffset: serverTimeOffset
+            serverTimeOffset: serverTimeOffset,
+            interactionToNextViewMetric: interactionToNextViewMetric,
+            viewIndexInSession: viewIndexInSession
         )
     }
 }
