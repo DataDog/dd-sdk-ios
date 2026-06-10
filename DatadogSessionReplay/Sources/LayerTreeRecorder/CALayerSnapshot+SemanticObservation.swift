@@ -227,7 +227,8 @@ extension CALayerSnapshot.SemanticObservation {
                     placeholder: textField.placeholder,
                     isSensitiveText: textField.dd.isSensitiveText
                 )
-            )
+            ),
+            ignoreSublayers: true
         )
     }
 }
