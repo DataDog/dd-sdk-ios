@@ -228,9 +228,15 @@ private extension RUMViewUpdateEvent.Session {
 private extension RUMViewUpdateEvent.Stream {
     init(_ s: RUMViewEvent.Stream) {
         self.init(
-            bitrate: s.bitrate, completionPercent: s.completionPercent, duration: s.duration,
-            format: s.format, fps: s.fps, id: s.id, resolution: s.resolution,
-            timestamp: s.timestamp, watchTime: s.watchTime
+            bitrate: s.bitrate,
+            completionPercent: s.completionPercent,
+            duration: s.duration,
+            format: s.format,
+            fps: s.fps,
+            id: s.id,
+            resolution: s.resolution,
+            timestamp: s.timestamp,
+            watchTime: s.watchTime
         )
     }
 }
@@ -383,9 +389,12 @@ private extension RUMViewUpdateEvent.View.LongTask {
 private extension RUMViewUpdateEvent.View.Performance {
     init(_ s: RUMViewEvent.View.Performance) {
         self.init(
-            cls: s.cls.map { .init($0) }, fbc: s.fbc.map { .init($0) },
-            fcp: s.fcp.map { .init($0) }, fid: s.fid.map { .init($0) },
-            inp: s.inp.map { .init($0) }, lcp: s.lcp.map { .init($0) }
+            cls: s.cls.map { .init($0) },
+            fbc: s.fbc.map { .init($0) },
+            fcp: s.fcp.map { .init($0) },
+            fid: s.fid.map { .init($0) },
+            inp: s.inp.map { .init($0) },
+            lcp: s.lcp.map { .init($0) }
         )
     }
 }
@@ -395,7 +404,9 @@ private extension RUMViewUpdateEvent.View.Performance.CLS {
         self.init(
             currentRect: s.currentRect.map { .init($0) },
             previousRect: s.previousRect.map { .init($0) },
-            score: s.score, targetSelector: s.targetSelector, timestamp: s.timestamp
+            score: s.score,
+            targetSelector: s.targetSelector,
+            timestamp: s.timestamp
         )
     }
 }
@@ -428,8 +439,12 @@ private extension RUMViewUpdateEvent.View.Performance.FID {
 
 private extension RUMViewUpdateEvent.View.Performance.INP {
     init(_ s: RUMViewEvent.View.Performance.INP) {
-        self.init(duration: s.duration, subParts: s.subParts.map { .init($0) },
-                  targetSelector: s.targetSelector, timestamp: s.timestamp)
+        self.init(
+            duration: s.duration,
+            subParts: s.subParts.map { .init($0) },
+            targetSelector: s.targetSelector,
+            timestamp: s.timestamp
+        )
     }
 }
 
@@ -441,8 +456,12 @@ private extension RUMViewUpdateEvent.View.Performance.INP.SubParts {
 
 private extension RUMViewUpdateEvent.View.Performance.LCP {
     init(_ s: RUMViewEvent.View.Performance.LCP) {
-        self.init(resourceUrl: s.resourceUrl, subParts: s.subParts.map { .init($0) },
-                  targetSelector: s.targetSelector, timestamp: s.timestamp)
+        self.init(
+            resourceUrl: s.resourceUrl,
+            subParts: s.subParts.map { .init($0) },
+            targetSelector: s.targetSelector,
+            timestamp: s.timestamp
+        )
     }
 }
 
