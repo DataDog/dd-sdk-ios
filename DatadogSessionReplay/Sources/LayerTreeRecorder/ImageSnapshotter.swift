@@ -54,10 +54,10 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         changeset: CALayerChangeset,
         timeout: TimeInterval
     ) async -> [Int64: ImageSnapshotResult] {
-        // Invalidate content changes before request extraction. Occlusion pruning can
+        // Invalidate changed layers before request extraction. Occlusion pruning can
         // remove changed layers from the snapshot tree, but their cached images must not
         // be reused if they become visible again later.
-        cache.removeSnapshotDataForContentChanges(in: changeset)
+        cache.removeSnapshotDataForChanges(in: changeset)
 
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
         cache.updateFrameNumber(for: requests.map(\.replayID))
@@ -93,7 +93,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
         if firstUnprocessedIndex < requests.endIndex {
             for request in requests[firstUnprocessedIndex...] {
-                if request.hasContentChanges {
+                if request.hasChanges {
                     cache.removeSnapshotData(forReplayID: request.replayID)
                 }
                 results[request.replayID] = .failure(.timedOut)
@@ -137,7 +137,8 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                     localRect: resolvedRequest.localRect,
                     bounds: request.bounds
                 ),
-                forReplayID: request.replayID
+                forReplayID: request.replayID,
+                dependencies: request.dependencies
             )
             return .success(snapshot)
         } catch ImageSnapshotRequestResolutionError.missingLayer {
@@ -169,17 +170,6 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 }
             }
         }
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotCache {
-    @MainActor
-    fileprivate func removeSnapshotDataForContentChanges(in changeset: CALayerChangeset) {
-        let contentChangeReplayIDs = changeset.contentChanges.compactMap {
-            $0.layer.resolve()?.replayID
-        }
-        removeSnapshotData(forReplayIDs: contentChangeReplayIDs)
     }
 }
 #endif

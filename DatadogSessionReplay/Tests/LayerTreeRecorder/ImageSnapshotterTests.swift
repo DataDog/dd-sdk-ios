@@ -244,6 +244,63 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Invalidates cached image when occluded ignored sublayer changes")
+    func invalidatesCachedImageWhenOccludedIgnoredSublayerChanges() async throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let textView = UITextView(frame: CGRect(x: 10, y: 10, width: 100, height: 40))
+        textView.text = "Hello"
+        textView.layer.contentsScale = 1
+        rootLayer.addSublayer(textView.layer)
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        ignoredSublayer.backgroundColor = UIColor.red.cgColor
+        textView.layer.addSublayer(ignoredSublayer)
+
+        let snapshotter = ImageSnapshotter()
+        let firstRoot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults[textView.layer.replayID])
+        let firstImageSnapshot = try firstResult.get()
+
+        ignoredSublayer.backgroundColor = UIColor.blue.cgColor
+
+        let occluder = CALayer()
+        occluder.frame = rootLayer.bounds
+        occluder.backgroundColor = UIColor.white.cgColor
+        occluder.zPosition = 1
+        rootLayer.addSublayer(occluder)
+
+        let occludedRootSnapshot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let occludedRoot = try #require(occludedRootSnapshot.removingOccluded())
+        let changeset = CALayerChangeset.mockChange(for: ignoredSublayer, aspects: .display)
+
+        // When
+        let occludedResults = await snapshotter.takeImageSnapshots(for: occludedRoot, changeset: changeset, timeout: 1)
+
+        // Then
+        #expect(!occludedRoot.sublayers.contains { $0.layer.matches(textView.layer) })
+        #expect(occludedResults[textView.layer.replayID] == nil)
+
+        occluder.removeFromSuperlayer()
+
+        let revealedRoot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
+        let revealedResult = try #require(revealedResults[textView.layer.replayID])
+        let revealedImageSnapshot = try revealedResult.get()
+        #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders full layer image when clipped by ancestor")
     func rendersFullLayerImageWhenClippedByAncestor() async throws {
         // Given
