@@ -14,39 +14,68 @@ internal final class ExposureTracker {
         let variationKey: String
     }
 
-    private class ExposureBox: NSObject {
-        let value: Exposure
+    private struct ExposureKey: Hashable {
+        let targetingKey: String
+        let flagKey: String
 
-        init(_ value: Exposure) {
-            self.value = value
-        }
-
-        override var hash: Int {
-            value.hashValue
-        }
-
-        override func isEqual(_ object: Any?) -> Bool {
-            guard let other = object as? ExposureBox else {
-                return false
-            }
-            return value == other.value
+        init(_ exposure: Exposure) {
+            self.targetingKey = exposure.targetingKey
+            self.flagKey = exposure.flagKey
         }
     }
 
-    static let defaultCountLimit: Int = 1_000
+    private struct Assignment: Equatable {
+        let allocationKey: String
+        let variationKey: String
 
-    private let cache = NSCache<ExposureBox, NSNumber>()
-    private let sentinel = NSNumber(value: true)
-
-    init(countLimit: Int = defaultCountLimit) {
-        self.cache.countLimit = countLimit
+        init(_ exposure: Exposure) {
+            self.allocationKey = exposure.allocationKey
+            self.variationKey = exposure.variationKey
+        }
     }
 
-    func contains(_ exposure: Exposure) -> Bool {
-        cache.object(forKey: .init(exposure)) != nil
+    // Keep enough latest assignments for the expected mobile case of 2 subjects x 2,500 flags.
+    // A count-based LRU keeps this bounded without reintroducing NSCache's non-deterministic eviction.
+    static let defaultCountLimit: Int = 5_000
+
+    private var assignmentsByExposureKey: [ExposureKey: Assignment] = [:]
+    private var exposureKeysByRecency: [ExposureKey] = []
+    private let countLimit: Int
+    private let lock: NSLocking
+
+    init(
+        countLimit: Int = defaultCountLimit,
+        lock: NSLocking = NSLock()
+    ) {
+        self.countLimit = countLimit
+        self.lock = lock
     }
 
-    func insert(_ exposure: Exposure) {
-        cache.setObject(sentinel, forKey: .init(exposure))
+    func track(_ exposure: Exposure) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let key = ExposureKey(exposure)
+        let assignment = Assignment(exposure)
+        guard assignmentsByExposureKey[key] != assignment else {
+            markRecentlyUsed(key)
+            return false
+        }
+
+        assignmentsByExposureKey[key] = assignment
+        markRecentlyUsed(key)
+        evictLeastRecentlyUsedEntriesIfNeeded()
+        return true
+    }
+
+    private func markRecentlyUsed(_ key: ExposureKey) {
+        exposureKeysByRecency.removeAll { $0 == key }
+        exposureKeysByRecency.append(key)
+    }
+
+    private func evictLeastRecentlyUsedEntriesIfNeeded() {
+        while assignmentsByExposureKey.count > countLimit, !exposureKeysByRecency.isEmpty {
+            assignmentsByExposureKey.removeValue(forKey: exposureKeysByRecency.removeFirst())
+        }
     }
 }
