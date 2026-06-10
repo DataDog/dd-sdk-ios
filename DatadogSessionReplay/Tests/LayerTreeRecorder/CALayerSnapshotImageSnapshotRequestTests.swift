@@ -316,6 +316,46 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic text layer when ignored sublayer is replaced")
+    func createsRequestForSemanticTextLayerWhenIgnoredSublayerIsReplaced() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+
+        let previousIgnoredSublayer = CALayer()
+        previousIgnoredSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        textView.layer.addSublayer(previousIgnoredSublayer)
+        let previousSnapshot = try #require(
+            CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+
+        previousIgnoredSublayer.removeFromSuperlayer()
+        let currentIgnoredSublayer = CALayer()
+        currentIgnoredSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        textView.layer.addSublayer(currentIgnoredSublayer)
+
+        let snapshot = try #require(
+            CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(
+            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot(), dependencies: previousSnapshot.dependencies),
+            forReplayID: snapshot.replayID
+        )
+        let changeset = CALayerChangeset.mockChange(for: textView.layer, aspects: .layout)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(textView.layer))
+        #expect(request.dependencies.contains { $0.matches(currentIgnoredSublayer) })
+        #expect(request.hasChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not mark semantic text layer changed when owner only lays out")
     func doesNotMarkSemanticTextLayerChangedWhenOwnerOnlyLaysOut() throws {
         // Given
@@ -328,7 +368,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         )
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(
-            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot()),
+            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot(), dependencies: snapshot.dependencies),
             forReplayID: snapshot.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: textView.layer, aspects: .layout)
@@ -545,9 +585,10 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     private static func mockSnapshotData(
         snapshot: ImageSnapshot,
         localRect: CGRect = .zero,
-        bounds: CGRect = .zero
+        bounds: CGRect = .zero,
+        dependencies: [CALayerReference] = []
     ) -> ImageSnapshotData {
-        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds)
+        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
     }
 
     private final class BundledImageMock: UIImage, @unchecked Sendable {

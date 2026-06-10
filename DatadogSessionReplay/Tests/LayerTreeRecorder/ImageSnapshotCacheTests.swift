@@ -33,6 +33,7 @@ struct ImageSnapshotCacheTests {
         #expect(cachedSnapshotData.snapshot === snapshot)
         #expect(cachedSnapshotData.localRect == snapshotData.localRect)
         #expect(cachedSnapshotData.bounds == snapshotData.bounds)
+        #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -88,9 +89,8 @@ struct ImageSnapshotCacheTests {
         let dependency = CALayer()
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(
-            .mockAny(),
-            forReplayID: owner.replayID,
-            dependencies: [.init(dependency)]
+            .mockAny(dependencies: [.init(dependency)]),
+            forReplayID: owner.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: dependency, aspects: .layout)
 
@@ -109,9 +109,8 @@ struct ImageSnapshotCacheTests {
         let dependency = CALayer()
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(
-            .mockAny(),
-            forReplayID: owner.replayID,
-            dependencies: [.init(dependency)]
+            .mockAny(dependencies: [.init(dependency)]),
+            forReplayID: owner.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: owner, aspects: .layout)
 
@@ -168,9 +167,10 @@ extension ImageSnapshotData {
     fileprivate static func mockAny(
         snapshot: ImageSnapshot = .mockAny(),
         localRect: CGRect = .zero,
-        bounds: CGRect = .zero
+        bounds: CGRect = .zero,
+        dependencies: [CALayerReference] = []
     ) -> ImageSnapshotData {
-        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds)
+        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
     }
 }
 #endif
