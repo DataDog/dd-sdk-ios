@@ -34,7 +34,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layer == snapshot.layer)
         #expect(request.visibleFrame == snapshot.absoluteFrame)
-        #expect(request.hasContentChanges == false)
+        #expect(request.hasChanges == false)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -54,7 +54,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.count == 1)
         let request = try #require(requests.first)
         #expect(request.layer == snapshot.layer)
-        #expect(request.hasContentChanges)
+        #expect(request.hasChanges)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -246,7 +246,9 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         textView.text = "Hello"
         textView.layer.contents = NSObject()
 
-        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)))
+        let snapshot = try #require(
+            CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
         let cache = ImageSnapshotCache()
 
         // When
@@ -256,6 +258,89 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.count == 1)
         let request = try #require(requests.first)
         #expect(request.layer.matches(textView.layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic text layer when ignored sublayer changes")
+    func createsRequestForSemanticTextLayerWhenIgnoredSublayerChanges() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        textView.layer.addSublayer(ignoredSublayer)
+
+        let snapshot = try #require(
+            CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let changeset = CALayerChangeset.mockChange(for: ignoredSublayer, aspects: .display)
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(snapshot.sublayers.isEmpty)
+        #expect(snapshot.dependencies.contains { $0.matches(ignoredSublayer) })
+        #expect(request.layer.matches(textView.layer))
+        #expect(request.dependencies.contains { $0.matches(ignoredSublayer) })
+        #expect(request.hasChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic text layer when ignored sublayer lays out")
+    func createsRequestForSemanticTextLayerWhenIgnoredSublayerLaysOut() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        textView.layer.addSublayer(ignoredSublayer)
+
+        let snapshot = try #require(CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)))
+        let changeset = CALayerChangeset.mockChange(for: ignoredSublayer, aspects: .layout)
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(textView.layer))
+        #expect(request.hasChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Does not mark semantic text layer changed when owner only lays out")
+    func doesNotMarkSemanticTextLayerChangedWhenOwnerOnlyLaysOut() throws {
+        // Given
+        let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        textView.text = "Hello"
+        textView.layer.contents = NSObject()
+
+        let snapshot = try #require(
+            CALayerSnapshot(from: textView.layer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+        )
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(
+            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot()),
+            forReplayID: snapshot.replayID
+        )
+        let changeset = CALayerChangeset.mockChange(for: textView.layer, aspects: .layout)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(textView.layer))
+        #expect(!request.hasChanges)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

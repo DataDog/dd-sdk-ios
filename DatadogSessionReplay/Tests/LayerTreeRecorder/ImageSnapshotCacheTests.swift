@@ -11,6 +11,7 @@ import UIKit
 
 @testable import DatadogSessionReplay
 
+@MainActor
 struct ImageSnapshotCacheTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns stored snapshot data")
@@ -61,6 +62,64 @@ struct ImageSnapshotCacheTests {
 
         // Then
         #expect(cache.snapshotData(forReplayID: 1) == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes stored snapshot data for direct content changes")
+    func removesStoredSnapshotDataForDirectContentChanges() {
+        // Given
+        let layer = CALayer()
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(.mockAny(), forReplayID: layer.replayID)
+        let changeset = CALayerChangeset.mockChange(for: layer, aspects: .display)
+
+        // When
+        cache.removeSnapshotDataForChanges(in: changeset)
+
+        // Then
+        #expect(cache.snapshotData(forReplayID: layer.replayID) == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes stored snapshot data when dependency changes")
+    func removesStoredSnapshotDataWhenDependencyChanges() {
+        // Given
+        let owner = CALayer()
+        let dependency = CALayer()
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(
+            .mockAny(),
+            forReplayID: owner.replayID,
+            dependencies: [.init(dependency)]
+        )
+        let changeset = CALayerChangeset.mockChange(for: dependency, aspects: .layout)
+
+        // When
+        cache.removeSnapshotDataForChanges(in: changeset)
+
+        // Then
+        #expect(cache.snapshotData(forReplayID: owner.replayID) == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps stored snapshot data when owner only lays out")
+    func keepsStoredSnapshotDataWhenOwnerOnlyLaysOut() {
+        // Given
+        let owner = CALayer()
+        let dependency = CALayer()
+        let cache = ImageSnapshotCache()
+        cache.setSnapshotData(
+            .mockAny(),
+            forReplayID: owner.replayID,
+            dependencies: [.init(dependency)]
+        )
+        let changeset = CALayerChangeset.mockChange(for: owner, aspects: .layout)
+
+        // When
+        cache.removeSnapshotDataForChanges(in: changeset)
+
+        // Then
+        #expect(cache.snapshotData(forReplayID: owner.replayID) != nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
