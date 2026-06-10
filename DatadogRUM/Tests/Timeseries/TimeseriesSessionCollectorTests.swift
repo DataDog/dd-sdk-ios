@@ -475,8 +475,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
     }
 
-    func testWhenDeltaCompressionSampledWithSingleSample_itFallsBackToObjectEvent() {
-        // Given — delta sampled but only 1 sample: DeltaEncoder returns nil, falls back to object
+    func testWhenDeltaCompressionSampledWithSingleSample_itDropsTheEvent() {
+        // Given — delta sampled but only 1 sample: DeltaEncoder returns nil, event is dropped
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
@@ -489,7 +489,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         let expectation = self.expectation(description: "one sample collected")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { expectation.fulfill() }
-        collector.start(sessionID: "session-fallback", applicationID: "app-fallback", sessionType: .user)
+        collector.start(sessionID: "session-drop", applicationID: "app-drop", sessionType: .user)
         waitForExpectations(timeout: 2)
 
         let stopExpectation = self.expectation(description: "stop completed")
@@ -497,8 +497,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
-        // Then — falls back to object event, no AnyEncodable
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+        // Then — event is dropped entirely, nothing written
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
         XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
     }
 
