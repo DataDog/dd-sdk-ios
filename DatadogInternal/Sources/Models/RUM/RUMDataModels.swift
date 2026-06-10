@@ -11,7 +11,7 @@
 public protocol RUMDataModel: Codable {}
 
 /// Device properties
-public struct Device: Codable {
+public struct Device: Codable, Equatable {
     /// The CPU architecture of the device that is reporting the error
     public let architecture: String?
 
@@ -133,7 +133,7 @@ public struct Device: Codable {
 }
 
 /// Operating system properties
-public struct OperatingSystem: Codable {
+public struct OperatingSystem: Codable, Equatable {
     /// Operating system build number, e.g. 15D21
     public let build: String?
 
@@ -174,7 +174,7 @@ public struct OperatingSystem: Codable {
 }
 
 /// Account properties
-public struct RUMAccount: Codable {
+public struct RUMAccount: Codable, Equatable {
     /// Identifier of the account
     public let id: String
 
@@ -234,10 +234,16 @@ extension RUMAccount {
             self.accountInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMAccount, rhs: RUMAccount) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.accountInfo.dd == rhs.accountInfo.dd
+    }
 }
 
 /// Schema of all properties of an Action event
-public struct RUMActionEvent: RUMDataModel {
+public struct RUMActionEvent: RUMDataModel, Equatable {
     /// Internal properties
     public var dd: DD
 
@@ -421,7 +427,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Action properties
         public var action: Action?
 
@@ -472,7 +478,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Action properties
-        public struct Action: Codable {
+        public struct Action: Codable, Equatable {
             /// The strategy of how the auto click action name is computed
             public var nameSource: NameSource?
 
@@ -515,7 +521,7 @@ public struct RUMActionEvent: RUMDataModel {
             }
 
             /// Action position properties
-            public struct Position: Codable {
+            public struct Position: Codable, Equatable {
                 /// X coordinate relative to the target element of the action (in pixels)
                 public let x: Int64
 
@@ -542,14 +548,14 @@ public struct RUMActionEvent: RUMDataModel {
             }
 
             /// Target properties
-            public struct Target: Codable {
+            public struct Target: Codable, Equatable {
                 /// Selector data based on the click event composed path
                 public let composedPathSelector: String?
 
                 /// Height of the target element (in pixels)
                 public let height: Int64?
 
-                /// Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
+                /// Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate actions with mobile session replay wireframes.
                 public let permanentId: String?
 
                 /// CSS selector path of the target element
@@ -571,7 +577,7 @@ public struct RUMActionEvent: RUMDataModel {
                 /// - Parameters:
                 ///   - composedPathSelector: Selector data based on the click event composed path
                 ///   - height: Height of the target element (in pixels)
-                ///   - permanentId: Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate actions with mobile session replay wireframes.
+                ///   - permanentId: Mobile-only: a globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate actions with mobile session replay wireframes.
                 ///   - selector: CSS selector path of the target element
                 ///   - width: Width of the target element (in pixels)
                 public init(
@@ -591,7 +597,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -632,7 +638,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -666,7 +672,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// Properties of the crashes of the action
         public let crash: Crash?
 
@@ -741,7 +747,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the crashes of the action
-        public struct Crash: Codable {
+        public struct Crash: Codable, Equatable {
             /// Number of crashes that occurred on the action
             public let count: Int64
 
@@ -761,7 +767,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the errors of the action
-        public struct Error: Codable {
+        public struct Error: Codable, Equatable {
             /// Number of errors that occurred on the action
             public let count: Int64
 
@@ -781,7 +787,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Action frustration properties
-        public struct Frustration: Codable {
+        public struct Frustration: Codable, Equatable {
             /// Action frustration types
             public let type: [FrustrationType]
 
@@ -809,7 +815,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the long tasks of the action
-        public struct LongTask: Codable {
+        public struct LongTask: Codable, Equatable {
             /// Number of long tasks that occurred on the action
             public let count: Int64
 
@@ -829,7 +835,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Properties of the resources of the action
-        public struct Resource: Codable {
+        public struct Resource: Codable, Equatable {
             /// Number of resources that occurred on the action
             public let count: Int64
 
@@ -849,7 +855,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Action target properties
-        public struct Target: Codable {
+        public struct Target: Codable, Equatable {
             /// Target name
             public var name: String
 
@@ -881,7 +887,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -908,7 +914,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -949,7 +955,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -970,7 +976,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -989,7 +995,7 @@ public struct RUMActionEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -1017,7 +1023,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -1066,7 +1072,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -1086,7 +1092,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -1106,7 +1112,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -1155,7 +1161,7 @@ public struct RUMActionEvent: RUMDataModel {
 }
 
 /// UUID of the action
-public enum RUMActionID: Codable {
+public enum RUMActionID: Codable, Equatable {
     case string(value: String)
     case stringsArray(value: [String])
 
@@ -1197,7 +1203,7 @@ public enum RUMActionID: Codable {
 }
 
 /// CI Visibility properties
-public struct RUMCITest: Codable {
+public struct RUMCITest: Codable, Equatable {
     /// The identifier of the current CI Visibility test execution
     public let testExecutionId: String
 
@@ -1217,7 +1223,7 @@ public struct RUMCITest: Codable {
 }
 
 /// Device connectivity properties
-public struct RUMConnectivity: Codable {
+public struct RUMConnectivity: Codable, Equatable {
     /// Cellular connectivity properties
     public let cellular: Cellular?
 
@@ -1257,7 +1263,7 @@ public struct RUMConnectivity: Codable {
     }
 
     /// Cellular connectivity properties
-    public struct Cellular: Codable {
+    public struct Cellular: Codable, Equatable {
         /// The name of the SIM carrier
         public let carrierName: String?
 
@@ -1312,7 +1318,7 @@ public struct RUMConnectivity: Codable {
 }
 
 /// Schema of all properties of an Error event
-public struct RUMErrorEvent: RUMDataModel {
+public struct RUMErrorEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -1517,7 +1523,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -1596,7 +1602,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -1637,7 +1643,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -1719,7 +1725,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -1753,7 +1759,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
         public let id: RUMActionID
 
@@ -1773,7 +1779,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -1800,7 +1806,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -1841,7 +1847,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -1862,7 +1868,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -1881,7 +1887,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -1909,7 +1915,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Error properties
-    public struct Error: Codable {
+    public struct Error: Codable, Equatable {
         /// Description of each binary image (native libraries; for Android: .so files) loaded or referenced by the process/application.
         public let binaryImages: [BinaryImages]?
 
@@ -2054,7 +2060,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Description of the binary image (native library; for Android: .so file) loaded or referenced by the process/application.
-        public struct BinaryImages: Codable {
+        public struct BinaryImages: Codable, Equatable {
             /// CPU architecture from the library.
             public let arch: String?
 
@@ -2119,7 +2125,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Properties for one of the error causes
-        public struct Causes: Codable {
+        public struct Causes: Codable, Equatable {
             /// Error message
             public var message: String
 
@@ -2172,7 +2178,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Content Security Violation properties
-        public struct CSP: Codable {
+        public struct CSP: Codable, Equatable {
             /// In the context of CSP errors, indicates how the violated policy is configured to be treated by the user agent.
             public let disposition: Disposition?
 
@@ -2204,7 +2210,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Platform-specific metadata of the error event.
-        public struct Meta: Codable {
+        public struct Meta: Codable, Equatable {
             /// The CPU architecture of the process that crashed.
             public let codeType: String?
 
@@ -2266,7 +2272,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Resource properties of the error
-        public struct Resource: Codable {
+        public struct Resource: Codable, Equatable {
             /// GraphQL request parameters
             public var graphql: RUMGraphql?
 
@@ -2313,7 +2319,7 @@ public struct RUMErrorEvent: RUMDataModel {
             }
 
             /// The provider for this resource
-            public struct Provider: Codable {
+            public struct Provider: Codable, Equatable {
                 /// The domain name of the provider
                 public let domain: String?
 
@@ -2395,7 +2401,7 @@ public struct RUMErrorEvent: RUMDataModel {
         }
 
         /// Description of the thread in the process when error happened.
-        public struct Threads: Codable {
+        public struct Threads: Codable, Equatable {
             /// Tells if the thread crashed.
             public let crashed: Bool
 
@@ -2437,7 +2443,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Feature flags properties
-    public struct FeatureFlags: Codable {
+    public struct FeatureFlags: Codable, Equatable {
         public var featureFlagsInfo: [String: Encodable]
 
         /// Feature flags properties
@@ -2452,7 +2458,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Properties of App Hang and ANR errors
-    public struct Freeze: Codable {
+    public struct Freeze: Codable, Equatable {
         /// Duration of the main thread freeze (in ns)
         public let duration: Int64
 
@@ -2472,7 +2478,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -2521,7 +2527,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -2541,7 +2547,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -2561,7 +2567,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -2627,10 +2633,14 @@ extension RUMErrorEvent.FeatureFlags {
             self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMErrorEvent.FeatureFlags, rhs: RUMErrorEvent.FeatureFlags) -> Bool {
+        lhs.featureFlagsInfo.dd == rhs.featureFlagsInfo.dd
+    }
 }
 
 /// User provided context
-public struct RUMEventAttributes: Codable {
+public struct RUMEventAttributes: Codable, Equatable {
     public var contextInfo: [String: Encodable]
 
     /// User provided context
@@ -2662,10 +2672,14 @@ extension RUMEventAttributes {
             self.contextInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMEventAttributes, rhs: RUMEventAttributes) -> Bool {
+        lhs.contextInfo.dd == rhs.contextInfo.dd
+    }
 }
 
 /// GraphQL request parameters
-public struct RUMGraphql: Codable {
+public struct RUMGraphql: Codable, Equatable {
     /// Number of GraphQL errors in the response
     public let errorCount: Int64?
 
@@ -2719,7 +2733,7 @@ public struct RUMGraphql: Codable {
     }
 
     /// GraphQL error details
-    public struct Errors: Codable {
+    public struct Errors: Codable, Equatable {
         /// Error code (used by some providers)
         public let code: String?
 
@@ -2759,7 +2773,7 @@ public struct RUMGraphql: Codable {
         }
 
         /// Error location
-        public struct Locations: Codable {
+        public struct Locations: Codable, Equatable {
             /// Column number where the error occurred
             public let column: Int64
 
@@ -2785,7 +2799,7 @@ public struct RUMGraphql: Codable {
             }
         }
 
-        public enum Path: Codable {
+        public enum Path: Codable, Equatable {
             case string(value: String)
             case integer(value: Int64)
 
@@ -2836,7 +2850,7 @@ public struct RUMGraphql: Codable {
 }
 
 /// Schema of all properties of a Long Task event
-public struct RUMLongTaskEvent: RUMDataModel {
+public struct RUMLongTaskEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -3027,7 +3041,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -3085,7 +3099,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -3126,7 +3140,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -3208,7 +3222,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -3242,7 +3256,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
         public let id: RUMActionID
 
@@ -3262,7 +3276,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -3289,7 +3303,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -3330,7 +3344,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -3351,7 +3365,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -3370,7 +3384,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -3398,7 +3412,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Long Task properties
-    public struct LongTask: Codable {
+    public struct LongTask: Codable, Equatable {
         /// Duration in ns for which the animation frame was being blocked
         public let blockingDuration: Int64?
 
@@ -3485,7 +3499,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case longAnimationFrame = "long-animation-frame"
         }
 
-        public struct Scripts: Codable {
+        public struct Scripts: Codable, Equatable {
             /// Duration in ns between startTime and when the subsequent microtask queue has finished processing
             public let duration: Int64?
 
@@ -3585,7 +3599,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -3634,7 +3648,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -3654,7 +3668,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -3674,7 +3688,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -3729,7 +3743,7 @@ public enum RUMMethod: String, Codable {
 }
 
 /// Schema of all properties of a Resource event
-public struct RUMResourceEvent: RUMDataModel {
+public struct RUMResourceEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -3920,7 +3934,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -3999,7 +4013,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -4040,7 +4054,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -4074,7 +4088,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
         public let id: RUMActionID
 
@@ -4094,7 +4108,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -4121,7 +4135,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -4162,7 +4176,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -4183,7 +4197,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -4202,7 +4216,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -4230,7 +4244,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Resource properties
-    public struct Resource: Codable {
+    public struct Resource: Codable, Equatable {
         /// Connect phase properties
         public let connect: Connect?
 
@@ -4410,7 +4424,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Connect phase properties
-        public struct Connect: Codable {
+        public struct Connect: Codable, Equatable {
             /// Duration in ns of the resource connect phase
             public let duration: Int64
 
@@ -4444,7 +4458,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// DNS phase properties
-        public struct DNS: Codable {
+        public struct DNS: Codable, Equatable {
             /// Duration in ns of the resource dns phase
             public let duration: Int64
 
@@ -4471,7 +4485,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Download phase properties
-        public struct Download: Codable {
+        public struct Download: Codable, Equatable {
             /// Duration in ns of the resource download phase
             public let duration: Int64
 
@@ -4498,7 +4512,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// First Byte phase properties
-        public struct FirstByte: Codable {
+        public struct FirstByte: Codable, Equatable {
             /// Duration in ns of the resource first byte phase
             public let duration: Int64
 
@@ -4525,7 +4539,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// The provider for this resource
-        public struct Provider: Codable {
+        public struct Provider: Codable, Equatable {
             /// The domain name of the provider
             public let domain: String?
 
@@ -4577,7 +4591,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Redirect phase properties
-        public struct Redirect: Codable {
+        public struct Redirect: Codable, Equatable {
             /// Duration in ns of the resource redirect phase
             public let duration: Int64
 
@@ -4610,7 +4624,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Request properties
-        public struct Request: Codable {
+        public struct Request: Codable, Equatable {
             /// Size in octet of the request body before any encoding
             public let decodedBodySize: Int64?
 
@@ -4643,7 +4657,7 @@ public struct RUMResourceEvent: RUMDataModel {
             }
 
             /// HTTP headers of the resource request
-            public struct Headers: Codable {
+            public struct Headers: Codable, Equatable {
                 public var headersInfo: [String: String]
 
                 /// HTTP headers of the resource request
@@ -4659,7 +4673,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Response properties
-        public struct Response: Codable {
+        public struct Response: Codable, Equatable {
             /// HTTP headers of the resource response
             public var headers: Headers?
 
@@ -4678,7 +4692,7 @@ public struct RUMResourceEvent: RUMDataModel {
             }
 
             /// HTTP headers of the resource response
-            public struct Headers: Codable {
+            public struct Headers: Codable, Equatable {
                 public var headersInfo: [String: String]
 
                 /// HTTP headers of the resource response
@@ -4694,7 +4708,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// SSL phase properties
-        public struct SSL: Codable {
+        public struct SSL: Codable, Equatable {
             /// Duration in ns of the resource ssl phase
             public let duration: Int64
 
@@ -4736,7 +4750,7 @@ public struct RUMResourceEvent: RUMDataModel {
         }
 
         /// Worker phase properties
-        public struct Worker: Codable {
+        public struct Worker: Codable, Equatable {
             /// Duration in nanoseconds of the resource worker phase
             public let duration: Int64
 
@@ -4764,7 +4778,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -4813,7 +4827,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -4833,7 +4847,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -4853,7 +4867,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -4912,6 +4926,10 @@ extension RUMResourceEvent.Resource.Request.Headers {
             self.headersInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMResourceEvent.Resource.Request.Headers, rhs: RUMResourceEvent.Resource.Request.Headers) -> Bool {
+        lhs.headersInfo == rhs.headersInfo
+    }
 }
 
 extension RUMResourceEvent.Resource.Response.Headers {
@@ -4931,6 +4949,10 @@ extension RUMResourceEvent.Resource.Response.Headers {
         try dynamicContainer.allKeys.forEach {
             self.headersInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
         }
+    }
+
+    public static func == (lhs: RUMResourceEvent.Resource.Response.Headers, rhs: RUMResourceEvent.Resource.Response.Headers) -> Bool {
+        lhs.headersInfo == rhs.headersInfo
     }
 }
 
@@ -4953,7 +4975,7 @@ public enum RUMSessionType: String, Codable {
 }
 
 /// Synthetics properties
-public struct RUMSyntheticsTest: Codable {
+public struct RUMSyntheticsTest: Codable, Equatable {
     /// Whether the event comes from a SDK instance injected by Synthetics
     public let injected: Bool?
 
@@ -5022,10 +5044,17 @@ extension RUMSyntheticsTest {
             self.syntheticsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMSyntheticsTest, rhs: RUMSyntheticsTest) -> Bool {
+        lhs.injected == rhs.injected &&
+        lhs.resultId == rhs.resultId &&
+        lhs.testId == rhs.testId &&
+        lhs.syntheticsInfo.dd == rhs.syntheticsInfo.dd
+    }
 }
 
 /// Device properties
-public struct RUMTelemetryDevice: Codable {
+public struct RUMTelemetryDevice: Codable, Equatable {
     /// Architecture of the device
     public let architecture: String?
 
@@ -5080,7 +5109,7 @@ public struct RUMTelemetryDevice: Codable {
 }
 
 /// OS properties
-public struct RUMTelemetryOperatingSystem: Codable {
+public struct RUMTelemetryOperatingSystem: Codable, Equatable {
     /// Build of the OS
     public let build: String?
 
@@ -5114,7 +5143,7 @@ public struct RUMTelemetryOperatingSystem: Codable {
 }
 
 /// User properties
-public struct RUMUser: Codable {
+public struct RUMUser: Codable, Equatable {
     /// Identifier of the user across sessions
     public let anonymousId: String?
 
@@ -5192,10 +5221,18 @@ extension RUMUser {
             self.usrInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMUser, rhs: RUMUser) -> Bool {
+        lhs.anonymousId == rhs.anonymousId &&
+        lhs.email == rhs.email &&
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.usrInfo.dd == rhs.usrInfo.dd
+    }
 }
 
 /// Schema of all properties of a View event
-public struct RUMViewEvent: RUMDataModel {
+public struct RUMViewEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -5386,7 +5423,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -5465,7 +5502,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Additional information of the reported Cumulative Layout Shift
-        public struct CLS: Codable {
+        public struct CLS: Codable, Equatable {
             /// Pixel ratio of the device where the layout shift was reported
             public let devicePixelRatio: Double?
 
@@ -5485,7 +5522,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -5533,7 +5570,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the page state
-        public struct PageStates: Codable {
+        public struct PageStates: Codable, Equatable {
             /// Duration in ns between start of the view and start of the page state
             public let start: Int64
 
@@ -5569,7 +5606,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -5651,7 +5688,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Debug metadata for Replay Sessions
-        public struct ReplayStats: Codable {
+        public struct ReplayStats: Codable, Equatable {
             /// The number of records produced during this view lifetime
             public let recordsCount: Int64?
 
@@ -5685,7 +5722,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -5719,7 +5756,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -5746,7 +5783,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -5787,7 +5824,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -5808,7 +5845,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// Scroll properties
         public let scroll: Scroll?
 
@@ -5834,7 +5871,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Scroll properties
-        public struct Scroll: Codable {
+        public struct Scroll: Codable, Equatable {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
@@ -5875,7 +5912,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -5903,7 +5940,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Feature flags properties
-    public struct FeatureFlags: Codable {
+    public struct FeatureFlags: Codable, Equatable {
         public var featureFlagsInfo: [String: Encodable]
 
         /// Feature flags properties
@@ -5918,7 +5955,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Privacy properties
-    public struct Privacy: Codable {
+    public struct Privacy: Codable, Equatable {
         /// The replay privacy level
         public let replayLevel: ReplayLevel
 
@@ -5945,7 +5982,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -6008,7 +6045,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// current bitrate at the time of collection
         public let bitrate: Double?
 
@@ -6084,7 +6121,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -6104,7 +6141,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// Accessibility properties of the view
         public let accessibility: Accessibility?
 
@@ -6473,7 +6510,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Accessibility properties of the view
-        public struct Accessibility: Codable {
+        public struct Accessibility: Codable, Equatable {
             /// Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
             public let assistiveSwitchEnabled: Bool?
 
@@ -6640,7 +6677,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the actions of the view
-        public struct Action: Codable {
+        public struct Action: Codable, Equatable {
             /// Number of actions that occurred on the view
             public let count: Int64
 
@@ -6660,7 +6697,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the crashes of the view
-        public struct Crash: Codable {
+        public struct Crash: Codable, Equatable {
             /// Number of crashes that occurred on the view
             public let count: Int64
 
@@ -6680,7 +6717,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
-        public struct CustomTimings: Codable {
+        public struct CustomTimings: Codable, Equatable {
             public var customTimingsInfo: [String: Int64]
 
             /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
@@ -6695,7 +6732,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the errors of the view
-        public struct Error: Codable {
+        public struct Error: Codable, Equatable {
             /// Number of errors that occurred on the view
             public let count: Int64
 
@@ -6715,7 +6752,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Time taken for Flutter 'build' methods.
-        public struct FlutterBuildTime: Codable {
+        public struct FlutterBuildTime: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -6756,7 +6793,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Time taken for Flutter to rasterize the view.
-        public struct FlutterRasterTime: Codable {
+        public struct FlutterRasterTime: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -6797,7 +6834,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the frozen frames of the view
-        public struct FrozenFrame: Codable {
+        public struct FrozenFrame: Codable, Equatable {
             /// Number of frozen frames that occurred on the view
             public let count: Int64
 
@@ -6817,7 +6854,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the frustrations of the view
-        public struct Frustration: Codable {
+        public struct Frustration: Codable, Equatable {
             /// Number of frustrations that occurred on the view
             public let count: Int64
 
@@ -6837,7 +6874,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the foreground period of the view
-        public struct InForegroundPeriods: Codable {
+        public struct InForegroundPeriods: Codable, Equatable {
             /// Duration in ns of the view foreground period
             public let duration: Int64
 
@@ -6864,7 +6901,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// The JavaScript refresh rate for React Native
-        public struct JsRefreshRate: Codable {
+        public struct JsRefreshRate: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -6919,7 +6956,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the long tasks of the view
-        public struct LongTask: Codable {
+        public struct LongTask: Codable, Equatable {
             /// Number of long tasks that occurred on the view
             public let count: Int64
 
@@ -6939,7 +6976,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Performance data. (Web Vitals, etc.)
-        public struct Performance: Codable {
+        public struct Performance: Codable, Equatable {
             /// Cumulative Layout Shift
             public let cls: CLS?
 
@@ -6993,7 +7030,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// Cumulative Layout Shift
-            public struct CLS: Codable {
+            public struct CLS: Codable, Equatable {
                 /// Bounding client rect of the element after the layout shift
                 public let currentRect: CurrentRect?
 
@@ -7040,7 +7077,7 @@ public struct RUMViewEvent: RUMDataModel {
                 }
 
                 /// Bounding client rect of the element after the layout shift
-                public struct CurrentRect: Codable {
+                public struct CurrentRect: Codable, Equatable {
                     /// The element's height
                     public let height: Double
 
@@ -7081,7 +7118,7 @@ public struct RUMViewEvent: RUMDataModel {
                 }
 
                 /// Bounding client rect of the element before the layout shift
-                public struct PreviousRect: Codable {
+                public struct PreviousRect: Codable, Equatable {
                     /// The element's height
                     public let height: Double
 
@@ -7123,7 +7160,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// First Build Complete (Flutter)
-            public struct FBC: Codable {
+            public struct FBC: Codable, Equatable {
                 /// Time of all completed `build` methods after a route change, in ns since view start.
                 public let timestamp: Int64
 
@@ -7143,7 +7180,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// First Contentful Paint
-            public struct FCP: Codable {
+            public struct FCP: Codable, Equatable {
                 /// The time of the first rendering, in ns since view start.
                 public let timestamp: Int64
 
@@ -7163,7 +7200,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// First Input Delay
-            public struct FID: Codable {
+            public struct FID: Codable, Equatable {
                 /// Duration in ns of the first input event delay
                 public let duration: Int64
 
@@ -7197,7 +7234,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// Interaction to Next Paint
-            public struct INP: Codable {
+            public struct INP: Codable, Equatable {
                 /// Longest duration in ns between an interaction and the next paint
                 public let duration: Int64
 
@@ -7237,7 +7274,7 @@ public struct RUMViewEvent: RUMDataModel {
                 }
 
                 /// Sub-parts of the INP
-                public struct SubParts: Codable {
+                public struct SubParts: Codable, Equatable {
                     /// Time from the start of the input event to the start of the processing of the event
                     public let inputDelay: Int64
 
@@ -7272,7 +7309,7 @@ public struct RUMViewEvent: RUMDataModel {
             }
 
             /// Largest Contentful Paint
-            public struct LCP: Codable {
+            public struct LCP: Codable, Equatable {
                 /// URL of the largest contentful paint element
                 public var resourceUrl: String?
 
@@ -7312,7 +7349,7 @@ public struct RUMViewEvent: RUMDataModel {
                 }
 
                 /// Sub-parts of the LCP
-                public struct SubParts: Codable {
+                public struct SubParts: Codable, Equatable {
                     /// Time between first_byte and the loading start of the resource associated with the LCP
                     public let loadDelay: Int64
 
@@ -7348,7 +7385,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the resources of the view
-        public struct Resource: Codable {
+        public struct Resource: Codable, Equatable {
             /// Number of resources that occurred on the view
             public let count: Int64
 
@@ -7368,7 +7405,7 @@ public struct RUMViewEvent: RUMDataModel {
         }
 
         /// Properties of the slow frames
-        public struct SlowFrames: Codable {
+        public struct SlowFrames: Codable, Equatable {
             /// Duration in ns of the slow frame
             public let duration: Int64
 
@@ -7414,6 +7451,10 @@ extension RUMViewEvent.FeatureFlags {
             self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMViewEvent.FeatureFlags, rhs: RUMViewEvent.FeatureFlags) -> Bool {
+        lhs.featureFlagsInfo.dd == rhs.featureFlagsInfo.dd
+    }
 }
 
 extension RUMViewEvent.View.CustomTimings {
@@ -7434,10 +7475,14 @@ extension RUMViewEvent.View.CustomTimings {
             self.customTimingsInfo[$0.stringValue] = try dynamicContainer.decode(Int64.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMViewEvent.View.CustomTimings, rhs: RUMViewEvent.View.CustomTimings) -> Bool {
+        lhs.customTimingsInfo == rhs.customTimingsInfo
+    }
 }
 
 /// Schema of all properties of a View Update event
-public struct RUMViewUpdateEvent: RUMDataModel {
+public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -7628,7 +7673,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -7679,7 +7724,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -7720,7 +7765,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -7754,7 +7799,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -7781,7 +7826,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -7822,7 +7867,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -7843,7 +7888,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// Scroll properties
         public let scroll: Scroll?
 
@@ -7869,7 +7914,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Scroll properties
-        public struct Scroll: Codable {
+        public struct Scroll: Codable, Equatable {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
@@ -7910,7 +7955,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -7938,7 +7983,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Feature flags properties
-    public struct FeatureFlags: Codable {
+    public struct FeatureFlags: Codable, Equatable {
         public var featureFlagsInfo: [String: Encodable]
 
         /// Feature flags properties
@@ -7953,7 +7998,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Privacy properties
-    public struct Privacy: Codable {
+    public struct Privacy: Codable, Equatable {
         /// The replay privacy level
         public let replayLevel: ReplayLevel
 
@@ -7980,7 +8025,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -8043,7 +8088,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// current bitrate at the time of collection
         public let bitrate: Double?
 
@@ -8119,7 +8164,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -8139,7 +8184,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// Accessibility properties of the view
         public let accessibility: Accessibility?
 
@@ -8508,7 +8553,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Accessibility properties of the view
-        public struct Accessibility: Codable {
+        public struct Accessibility: Codable, Equatable {
             /// Indicates whether an alternative input method like Switch Control or Switch Access is currently enabled.
             public let assistiveSwitchEnabled: Bool?
 
@@ -8675,7 +8720,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the actions of the view
-        public struct Action: Codable {
+        public struct Action: Codable, Equatable {
             /// Number of actions that occurred on the view
             public let count: Int64
 
@@ -8695,7 +8740,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the crashes of the view
-        public struct Crash: Codable {
+        public struct Crash: Codable, Equatable {
             /// Number of crashes that occurred on the view
             public let count: Int64
 
@@ -8715,7 +8760,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
-        public struct CustomTimings: Codable {
+        public struct CustomTimings: Codable, Equatable {
             public var customTimingsInfo: [String: Int64]
 
             /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
@@ -8730,7 +8775,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the errors of the view
-        public struct Error: Codable {
+        public struct Error: Codable, Equatable {
             /// Number of errors that occurred on the view
             public let count: Int64
 
@@ -8750,7 +8795,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Time taken for Flutter 'build' methods.
-        public struct FlutterBuildTime: Codable {
+        public struct FlutterBuildTime: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -8791,7 +8836,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Time taken for Flutter to rasterize the view.
-        public struct FlutterRasterTime: Codable {
+        public struct FlutterRasterTime: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -8832,7 +8877,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the frozen frames of the view
-        public struct FrozenFrame: Codable {
+        public struct FrozenFrame: Codable, Equatable {
             /// Number of frozen frames that occurred on the view
             public let count: Int64
 
@@ -8852,7 +8897,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the frustrations of the view
-        public struct Frustration: Codable {
+        public struct Frustration: Codable, Equatable {
             /// Number of frustrations that occurred on the view
             public let count: Int64
 
@@ -8872,7 +8917,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the foreground period of the view
-        public struct InForegroundPeriods: Codable {
+        public struct InForegroundPeriods: Codable, Equatable {
             /// Duration in ns of the view foreground period
             public let duration: Int64
 
@@ -8899,7 +8944,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// The JavaScript refresh rate for React Native
-        public struct JsRefreshRate: Codable {
+        public struct JsRefreshRate: Codable, Equatable {
             /// The average value for this metric during the view's lifetime.
             public let average: Double
 
@@ -8954,7 +8999,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the long tasks of the view
-        public struct LongTask: Codable {
+        public struct LongTask: Codable, Equatable {
             /// Number of long tasks that occurred on the view
             public let count: Int64
 
@@ -8974,7 +9019,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Performance data. (Web Vitals, etc.)
-        public struct Performance: Codable {
+        public struct Performance: Codable, Equatable {
             /// Cumulative Layout Shift
             public let cls: CLS?
 
@@ -9028,7 +9073,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// Cumulative Layout Shift
-            public struct CLS: Codable {
+            public struct CLS: Codable, Equatable {
                 /// Bounding client rect of the element after the layout shift
                 public let currentRect: CurrentRect?
 
@@ -9075,7 +9120,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
                 }
 
                 /// Bounding client rect of the element after the layout shift
-                public struct CurrentRect: Codable {
+                public struct CurrentRect: Codable, Equatable {
                     /// The element's height
                     public let height: Double
 
@@ -9116,7 +9161,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
                 }
 
                 /// Bounding client rect of the element before the layout shift
-                public struct PreviousRect: Codable {
+                public struct PreviousRect: Codable, Equatable {
                     /// The element's height
                     public let height: Double
 
@@ -9158,7 +9203,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// First Build Complete (Flutter)
-            public struct FBC: Codable {
+            public struct FBC: Codable, Equatable {
                 /// Time of all completed `build` methods after a route change, in ns since view start.
                 public let timestamp: Int64
 
@@ -9178,7 +9223,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// First Contentful Paint
-            public struct FCP: Codable {
+            public struct FCP: Codable, Equatable {
                 /// The time of the first rendering, in ns since view start.
                 public let timestamp: Int64
 
@@ -9198,7 +9243,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// First Input Delay
-            public struct FID: Codable {
+            public struct FID: Codable, Equatable {
                 /// Duration in ns of the first input event delay
                 public let duration: Int64
 
@@ -9232,7 +9277,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// Interaction to Next Paint
-            public struct INP: Codable {
+            public struct INP: Codable, Equatable {
                 /// Longest duration in ns between an interaction and the next paint
                 public let duration: Int64
 
@@ -9272,7 +9317,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
                 }
 
                 /// Sub-parts of the INP
-                public struct SubParts: Codable {
+                public struct SubParts: Codable, Equatable {
                     /// Time from the start of the input event to the start of the processing of the event
                     public let inputDelay: Int64
 
@@ -9307,7 +9352,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             }
 
             /// Largest Contentful Paint
-            public struct LCP: Codable {
+            public struct LCP: Codable, Equatable {
                 /// URL of the largest contentful paint element
                 public var resourceUrl: String?
 
@@ -9347,7 +9392,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
                 }
 
                 /// Sub-parts of the LCP
-                public struct SubParts: Codable {
+                public struct SubParts: Codable, Equatable {
                     /// Time between first_byte and the loading start of the resource associated with the LCP
                     public let loadDelay: Int64
 
@@ -9383,7 +9428,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the resources of the view
-        public struct Resource: Codable {
+        public struct Resource: Codable, Equatable {
             /// Number of resources that occurred on the view
             public let count: Int64
 
@@ -9403,7 +9448,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         }
 
         /// Properties of the slow frames
-        public struct SlowFrames: Codable {
+        public struct SlowFrames: Codable, Equatable {
             /// Duration in ns of the slow frame
             public let duration: Int64
 
@@ -9449,6 +9494,10 @@ extension RUMViewUpdateEvent.FeatureFlags {
             self.featureFlagsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMViewUpdateEvent.FeatureFlags, rhs: RUMViewUpdateEvent.FeatureFlags) -> Bool {
+        lhs.featureFlagsInfo.dd == rhs.featureFlagsInfo.dd
+    }
 }
 
 extension RUMViewUpdateEvent.View.CustomTimings {
@@ -9469,10 +9518,14 @@ extension RUMViewUpdateEvent.View.CustomTimings {
             self.customTimingsInfo[$0.stringValue] = try dynamicContainer.decode(Int64.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: RUMViewUpdateEvent.View.CustomTimings, rhs: RUMViewUpdateEvent.View.CustomTimings) -> Bool {
+        lhs.customTimingsInfo == rhs.customTimingsInfo
+    }
 }
 
 /// Schema for app launch metrics.
-public struct RUMVitalAppLaunchEvent: RUMDataModel {
+public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -9656,7 +9709,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -9707,7 +9760,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -9748,7 +9801,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -9830,7 +9883,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -9864,7 +9917,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -9891,7 +9944,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -9932,7 +9985,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -9953,7 +10006,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -9972,7 +10025,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -10000,7 +10053,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -10049,7 +10102,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -10069,7 +10122,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -10089,7 +10142,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -10130,7 +10183,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
     }
 
     /// Vital properties
-    public struct Vital: Codable {
+    public struct Vital: Codable, Equatable {
         /// The metric of the app launch.
         public let appLaunchMetric: AppLaunchMetric
 
@@ -10216,7 +10269,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
 }
 
 /// Schema for a duration vital event.
-public struct RUMVitalDurationEvent: RUMDataModel {
+public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -10400,7 +10453,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -10451,7 +10504,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -10492,7 +10545,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -10574,7 +10627,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -10608,7 +10661,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -10635,7 +10688,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -10676,7 +10729,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -10697,7 +10750,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -10716,7 +10769,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -10744,7 +10797,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -10793,7 +10846,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -10813,7 +10866,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -10833,7 +10886,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -10874,7 +10927,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
     }
 
     /// Vital properties
-    public struct Vital: Codable {
+    public struct Vital: Codable, Equatable {
         /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         public let vitalDescription: String?
 
@@ -10920,7 +10973,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
 }
 
 /// Schema for a vital operation step event.
-public struct RUMVitalOperationStepEvent: RUMDataModel {
+public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -11104,7 +11157,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
@@ -11155,7 +11208,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// Subset of the SDK configuration options in use during its execution
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
@@ -11196,7 +11249,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// Profiling context
-        public struct Profiling: Codable {
+        public struct Profiling: Codable, Equatable {
             /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
             ///
             /// Possible values:
@@ -11278,7 +11331,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// Session-related internal properties
-        public struct Session: Codable {
+        public struct Session: Codable, Equatable {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
@@ -11312,7 +11365,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         public let currentLocale: String?
 
@@ -11339,7 +11392,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// View Container properties (view wrapping the current view)
-    public struct Container: Codable {
+    public struct Container: Codable, Equatable {
         /// Source of the parent view
         public let source: Source
 
@@ -11380,7 +11433,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// Attributes of the view's container
-        public struct View: Codable {
+        public struct View: Codable, Equatable {
             /// ID of the parent view
             public let id: String
 
@@ -11401,7 +11454,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct Display: Codable {
+    public struct Display: Codable, Equatable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -11420,7 +11473,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         }
 
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-        public struct Viewport: Codable {
+        public struct Viewport: Codable, Equatable {
             /// Height of the viewport (in pixels)
             public let height: Double
 
@@ -11448,7 +11501,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// Whether this session has a replay
         public let hasReplay: Bool?
 
@@ -11497,7 +11550,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Stream properties
-    public struct Stream: Codable {
+    public struct Stream: Codable, Equatable {
         /// UUID of the stream
         public let id: String
 
@@ -11517,7 +11570,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Tab properties
-    public struct TAB: Codable {
+    public struct TAB: Codable, Equatable {
         /// UUID of the browser tab
         public let id: String
 
@@ -11537,7 +11590,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -11578,7 +11631,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
     }
 
     /// Vital properties
-    public struct Vital: Codable {
+    public struct Vital: Codable, Equatable {
         /// Description of the vital. It can be used as a secondary identifier (URL, React component name...)
         public let vitalDescription: String?
 
@@ -11653,7 +11706,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
 }
 
 /// Schema of all properties of a telemetry configuration event
-public struct TelemetryConfigurationEvent: RUMDataModel {
+public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -11753,7 +11806,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -11766,9 +11819,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -11779,14 +11832,14 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         /// - Parameters:
         ///   - id: UUID of the action
         public init(
-            id: String
+            id: RUMActionID
         ) {
             self.id = id
         }
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// UUID of the application
         public let id: String
 
@@ -11806,7 +11859,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// UUID of the session
         public let id: String
 
@@ -11840,7 +11893,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     }
 
     /// The telemetry configuration information
-    public struct Telemetry: Codable {
+    public struct Telemetry: Codable, Equatable {
         /// Configuration properties
         public var configuration: Configuration
 
@@ -11882,7 +11935,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         }
 
         /// Configuration properties
-        public struct Configuration: Codable {
+        public struct Configuration: Codable, Equatable {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
@@ -12566,7 +12619,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             }
 
             /// The console.* tracked
-            public enum ForwardConsoleLogs: Codable {
+            public enum ForwardConsoleLogs: Codable, Equatable {
                 case stringsArray(value: [String])
                 case string(value: String)
 
@@ -12608,7 +12661,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             }
 
             /// The reports from the Reporting API tracked
-            public enum ForwardReports: Codable {
+            public enum ForwardReports: Codable, Equatable {
                 case stringsArray(value: [String])
                 case string(value: String)
 
@@ -12649,7 +12702,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 }
             }
 
-            public struct Plugins: Codable {
+            public struct Plugins: Codable, Equatable {
                 /// The name of the plugin
                 public let name: String
 
@@ -12723,7 +12776,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -12775,6 +12828,14 @@ extension TelemetryConfigurationEvent.Telemetry {
             self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: TelemetryConfigurationEvent.Telemetry, rhs: TelemetryConfigurationEvent.Telemetry) -> Bool {
+        lhs.configuration == rhs.configuration &&
+        lhs.device == rhs.device &&
+        lhs.os == rhs.os &&
+        lhs.type == rhs.type &&
+        lhs.telemetryInfo.dd == rhs.telemetryInfo.dd
+    }
 }
 
 extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
@@ -12804,10 +12865,15 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
             self.pluginsInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins, rhs: TelemetryConfigurationEvent.Telemetry.Configuration.Plugins) -> Bool {
+        lhs.name == rhs.name &&
+        lhs.pluginsInfo.dd == rhs.pluginsInfo.dd
+    }
 }
 
 /// Schema of all properties of a telemetry debug event
-public struct TelemetryDebugEvent: RUMDataModel {
+public struct TelemetryDebugEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -12907,7 +12973,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -12920,9 +12986,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -12933,14 +12999,14 @@ public struct TelemetryDebugEvent: RUMDataModel {
         /// - Parameters:
         ///   - id: UUID of the action
         public init(
-            id: String
+            id: RUMActionID
         ) {
             self.id = id
         }
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// UUID of the application
         public let id: String
 
@@ -12960,7 +13026,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// UUID of the session
         public let id: String
 
@@ -12994,7 +13060,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     }
 
     /// The telemetry log information
-    public struct Telemetry: Codable {
+    public struct Telemetry: Codable, Equatable {
         /// Device properties
         public let device: RUMTelemetryDevice?
 
@@ -13041,7 +13107,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -13094,10 +13160,19 @@ extension TelemetryDebugEvent.Telemetry {
             self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: TelemetryDebugEvent.Telemetry, rhs: TelemetryDebugEvent.Telemetry) -> Bool {
+        lhs.device == rhs.device &&
+        lhs.message == rhs.message &&
+        lhs.os == rhs.os &&
+        lhs.status == rhs.status &&
+        lhs.type == rhs.type &&
+        lhs.telemetryInfo.dd == rhs.telemetryInfo.dd
+    }
 }
 
 /// Schema of all properties of a telemetry error event
-public struct TelemetryErrorEvent: RUMDataModel {
+public struct TelemetryErrorEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -13197,7 +13272,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -13210,9 +13285,9 @@ public struct TelemetryErrorEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -13223,14 +13298,14 @@ public struct TelemetryErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - id: UUID of the action
         public init(
-            id: String
+            id: RUMActionID
         ) {
             self.id = id
         }
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// UUID of the application
         public let id: String
 
@@ -13250,7 +13325,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// UUID of the session
         public let id: String
 
@@ -13284,7 +13359,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     }
 
     /// The telemetry log information
-    public struct Telemetry: Codable {
+    public struct Telemetry: Codable, Equatable {
         /// Device properties
         public let device: RUMTelemetryDevice?
 
@@ -13337,7 +13412,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         }
 
         /// Error properties
-        public struct Error: Codable {
+        public struct Error: Codable, Equatable {
             /// The error type or kind (or code in some cases)
             public let kind: String?
 
@@ -13365,7 +13440,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -13420,10 +13495,20 @@ extension TelemetryErrorEvent.Telemetry {
             self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: TelemetryErrorEvent.Telemetry, rhs: TelemetryErrorEvent.Telemetry) -> Bool {
+        lhs.device == rhs.device &&
+        lhs.error == rhs.error &&
+        lhs.message == rhs.message &&
+        lhs.os == rhs.os &&
+        lhs.status == rhs.status &&
+        lhs.type == rhs.type &&
+        lhs.telemetryInfo.dd == rhs.telemetryInfo.dd
+    }
 }
 
 /// Schema of all properties of a telemetry usage event
-public struct TelemetryUsageEvent: RUMDataModel {
+public struct TelemetryUsageEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
@@ -13523,7 +13608,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     }
 
     /// Internal properties
-    public struct DD: Codable {
+    public struct DD: Codable, Equatable {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -13536,9 +13621,9 @@ public struct TelemetryUsageEvent: RUMDataModel {
     }
 
     /// Action properties
-    public struct Action: Codable {
+    public struct Action: Codable, Equatable {
         /// UUID of the action
-        public let id: String
+        public let id: RUMActionID
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -13549,14 +13634,14 @@ public struct TelemetryUsageEvent: RUMDataModel {
         /// - Parameters:
         ///   - id: UUID of the action
         public init(
-            id: String
+            id: RUMActionID
         ) {
             self.id = id
         }
     }
 
     /// Application properties
-    public struct Application: Codable {
+    public struct Application: Codable, Equatable {
         /// UUID of the application
         public let id: String
 
@@ -13576,7 +13661,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     }
 
     /// Session properties
-    public struct Session: Codable {
+    public struct Session: Codable, Equatable {
         /// UUID of the session
         public let id: String
 
@@ -13610,7 +13695,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     }
 
     /// The telemetry usage information
-    public struct Telemetry: Codable {
+    public struct Telemetry: Codable, Equatable {
         /// Device properties
         public let device: RUMTelemetryDevice?
 
@@ -13650,7 +13735,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             self.telemetryInfo = telemetryInfo
         }
 
-        public enum Usage: Codable {
+        public enum Usage: Codable, Equatable {
             case telemetryCommonFeaturesUsage(value: TelemetryCommonFeaturesUsage)
             case telemetryMobileFeaturesUsage(value: TelemetryMobileFeaturesUsage)
 
@@ -13691,7 +13776,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             }
 
             /// Schema of features usage common across SDKs
-            public enum TelemetryCommonFeaturesUsage: Codable {
+            public enum TelemetryCommonFeaturesUsage: Codable, Equatable {
                 case setTrackingConsent(value: SetTrackingConsent)
                 case stopSession(value: StopSession)
                 case startView(value: StartView)
@@ -13913,7 +13998,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     throw DecodingError.typeMismatch(TelemetryCommonFeaturesUsage.self, error)
                 }
 
-                public struct SetTrackingConsent: Codable {
+                public struct SetTrackingConsent: Codable, Equatable {
                     /// setTrackingConsent API
                     public let feature: String = "set-tracking-consent"
 
@@ -13942,7 +14027,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                 }
 
-                public struct StopSession: Codable {
+                public struct StopSession: Codable, Equatable {
                     /// stopSession API
                     public let feature: String = "stop-session"
 
@@ -13953,7 +14038,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct StartView: Codable {
+                public struct StartView: Codable, Equatable {
                     /// startView API
                     public let feature: String = "start-view"
 
@@ -13964,7 +14049,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetViewContext: Codable {
+                public struct SetViewContext: Codable, Equatable {
                     /// setViewContext API
                     public let feature: String = "set-view-context"
 
@@ -13975,7 +14060,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetViewContextProperty: Codable {
+                public struct SetViewContextProperty: Codable, Equatable {
                     /// setViewContextProperty API
                     public let feature: String = "set-view-context-property"
 
@@ -13986,7 +14071,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetViewName: Codable {
+                public struct SetViewName: Codable, Equatable {
                     /// setViewName API
                     public let feature: String = "set-view-name"
 
@@ -13997,7 +14082,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct GetViewContext: Codable {
+                public struct GetViewContext: Codable, Equatable {
                     /// getViewContext API
                     public let feature: String = "get-view-context"
 
@@ -14008,7 +14093,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AddAction: Codable {
+                public struct AddAction: Codable, Equatable {
                     /// addAction API
                     public let feature: String = "add-action"
 
@@ -14019,7 +14104,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AddError: Codable {
+                public struct AddError: Codable, Equatable {
                     /// addError API
                     public let feature: String = "add-error"
 
@@ -14030,7 +14115,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct GetGlobalContext: Codable {
+                public struct GetGlobalContext: Codable, Equatable {
                     /// getGlobalContext API
                     public let feature: String = "get-global-context"
 
@@ -14041,7 +14126,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetGlobalContext: Codable {
+                public struct SetGlobalContext: Codable, Equatable {
                     /// setGlobalContext, addAttribute APIs
                     public let feature: String = "set-global-context"
 
@@ -14052,7 +14137,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetGlobalContextProperty: Codable {
+                public struct SetGlobalContextProperty: Codable, Equatable {
                     /// setGlobalContextProperty API
                     public let feature: String = "set-global-context-property"
 
@@ -14063,7 +14148,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct RemoveGlobalContextProperty: Codable {
+                public struct RemoveGlobalContextProperty: Codable, Equatable {
                     /// removeGlobalContextProperty API
                     public let feature: String = "remove-global-context-property"
 
@@ -14074,7 +14159,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct ClearGlobalContext: Codable {
+                public struct ClearGlobalContext: Codable, Equatable {
                     /// clearGlobalContext API
                     public let feature: String = "clear-global-context"
 
@@ -14085,7 +14170,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct GetUser: Codable {
+                public struct GetUser: Codable, Equatable {
                     /// getUser API
                     public let feature: String = "get-user"
 
@@ -14096,7 +14181,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetUser: Codable {
+                public struct SetUser: Codable, Equatable {
                     /// setUser, setUserInfo APIs
                     public let feature: String = "set-user"
 
@@ -14107,7 +14192,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetUserProperty: Codable {
+                public struct SetUserProperty: Codable, Equatable {
                     /// setUserProperty API
                     public let feature: String = "set-user-property"
 
@@ -14118,7 +14203,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct RemoveUserProperty: Codable {
+                public struct RemoveUserProperty: Codable, Equatable {
                     /// removeUserProperty API
                     public let feature: String = "remove-user-property"
 
@@ -14129,7 +14214,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct ClearUser: Codable {
+                public struct ClearUser: Codable, Equatable {
                     /// clearUser API
                     public let feature: String = "clear-user"
 
@@ -14140,7 +14225,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct GetAccount: Codable {
+                public struct GetAccount: Codable, Equatable {
                     /// getAccount API
                     public let feature: String = "get-account"
 
@@ -14151,7 +14236,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetAccount: Codable {
+                public struct SetAccount: Codable, Equatable {
                     /// setAccount, setAccountProperty APIs
                     public let feature: String = "set-account"
 
@@ -14162,7 +14247,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct SetAccountProperty: Codable {
+                public struct SetAccountProperty: Codable, Equatable {
                     /// setAccountProperty API
                     public let feature: String = "set-account-property"
 
@@ -14173,7 +14258,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct RemoveAccountProperty: Codable {
+                public struct RemoveAccountProperty: Codable, Equatable {
                     /// removeAccountProperty API
                     public let feature: String = "remove-account-property"
 
@@ -14184,7 +14269,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct ClearAccount: Codable {
+                public struct ClearAccount: Codable, Equatable {
                     /// clearAccount API
                     public let feature: String = "clear-account"
 
@@ -14195,7 +14280,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AddFeatureFlagEvaluation: Codable {
+                public struct AddFeatureFlagEvaluation: Codable, Equatable {
                     /// addFeatureFlagEvaluation API
                     public let feature: String = "add-feature-flag-evaluation"
 
@@ -14206,7 +14291,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AddOperationStepVital: Codable {
+                public struct AddOperationStepVital: Codable, Equatable {
                     /// Operations step type
                     public let actionType: ActionType
 
@@ -14235,7 +14320,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     }
                 }
 
-                public struct GraphQLRequest: Codable {
+                public struct GraphQLRequest: Codable, Equatable {
                     /// GraphQL request detected
                     public let feature: String = "graphql-request"
 
@@ -14246,7 +14331,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AddViewLoadingTime: Codable {
+                public struct AddViewLoadingTime: Codable, Equatable {
                     /// addViewLoadingTime API
                     public let feature: String = "addViewLoadingTime"
 
@@ -14284,7 +14369,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             }
 
             /// Schema of mobile specific features usage
-            public enum TelemetryMobileFeaturesUsage: Codable {
+            public enum TelemetryMobileFeaturesUsage: Codable, Equatable {
                 case trackWebView(value: TrackWebView)
                 case androidNetworkInstrumentation(value: AndroidNetworkInstrumentation)
 
@@ -14324,7 +14409,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     throw DecodingError.typeMismatch(TelemetryMobileFeaturesUsage.self, error)
                 }
 
-                public struct TrackWebView: Codable {
+                public struct TrackWebView: Codable, Equatable {
                     /// trackWebView API
                     public let feature: String = "trackWebView"
 
@@ -14335,7 +14420,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
                     public init() { }
                 }
 
-                public struct AndroidNetworkInstrumentation: Codable {
+                public struct AndroidNetworkInstrumentation: Codable, Equatable {
                     /// Android network instrumentation
                     public let feature: String = "androidNetworkInstrumentation"
 
@@ -14368,7 +14453,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
     }
 
     /// View properties
-    public struct View: Codable {
+    public struct View: Codable, Equatable {
         /// UUID of the view
         public let id: String
 
@@ -14420,6 +14505,14 @@ extension TelemetryUsageEvent.Telemetry {
             self.telemetryInfo[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
         }
     }
+
+    public static func == (lhs: TelemetryUsageEvent.Telemetry, rhs: TelemetryUsageEvent.Telemetry) -> Bool {
+        lhs.device == rhs.device &&
+        lhs.os == rhs.os &&
+        lhs.type == rhs.type &&
+        lhs.usage == rhs.usage &&
+        lhs.telemetryInfo.dd == rhs.telemetryInfo.dd
+    }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/dacedf0e5a6034a47967c142cfb9f4fe3c10464a

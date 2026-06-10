@@ -11,6 +11,7 @@ import CodeGeneration
 public class RUMCodeDecorator: SwiftCodeDecorator {
     /// `RUMDataModel` protocol, implemented by all RUM models.
     private let rumDataModelProtocol = SwiftProtocol(name: "RUMDataModel", conformance: [codableProtocol])
+    private let equatableProtocol = SwiftProtocol(name: "Equatable", conformance: [])
 
     public init() {
         super.init(
@@ -44,12 +45,20 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
         }
     }
 
+    override public func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) throws -> SwiftAssociatedTypeEnum {
+        var associatedTypeEnum = try super.transform(associatedTypeEnum: associatedTypeEnum)
+        associatedTypeEnum.conformance.append(equatableProtocol)
+        return associatedTypeEnum
+    }
+
     override public func transform(struct: SwiftStruct) throws -> SwiftStruct {
         var `struct` = try super.transform(struct: `struct`)
 
         if context.parent == nil {
             `struct`.conformance = [rumDataModelProtocol] // Conform root structs to `RUMDataModel`
         }
+
+        `struct`.conformance.append(equatableProtocol)
 
         // Vital has a member `description` that needs to be renamed for Obj-C
         `struct`.properties = `struct`.properties.map {

@@ -13464,8 +13464,33 @@ public class objc_TelemetryConfigurationEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryConfigurationEventActionRUMActionID {
+        objc_TelemetryConfigurationEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryConfigurationEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14448,8 +14473,33 @@ public class objc_TelemetryDebugEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryDebugEventActionRUMActionID {
+        objc_TelemetryDebugEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryDebugEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryDebugEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryDebugEvent
+
+    internal init(root: objc_TelemetryDebugEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14726,8 +14776,33 @@ public class objc_TelemetryErrorEventAction: NSObject {
         self.root = root
     }
 
-    public var id: String {
-        root.swiftModel.action!.id
+    public var id: objc_TelemetryErrorEventActionRUMActionID {
+        objc_TelemetryErrorEventActionRUMActionID(root: root)
+    }
+}
+
+@objc(DDTelemetryErrorEventActionRUMActionID)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryErrorEventActionRUMActionID: NSObject {
+    internal let root: objc_TelemetryErrorEvent
+
+    internal init(root: objc_TelemetryErrorEvent) {
+        self.root = root
+    }
+
+    public var string: String? {
+        guard case .string(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
+    }
+
+    public var stringsArray: [String]? {
+        guard case .stringsArray(let value) = root.swiftModel.action!.id else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -14940,4 +15015,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ed69a908b5f05a97b984498526d50c0e97284c06
+// Generated from https://github.com/DataDog/rum-events-format/tree/dacedf0e5a6034a47967c142cfb9f4fe3c10464a

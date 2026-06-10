@@ -1012,6 +1012,8 @@
 		D297324B2A5C108700827599 /* MessageEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29732472A5C108700827599 /* MessageEmitter.swift */; };
 		D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D297324F2A5C109A00827599 /* MessageEmitterTests.swift */; };
 		D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29732502A5C109A00827599 /* WebViewTrackingTests.swift */; };
+		D297F6152FD9616700EC8619 /* Dictionary+EncodableEquality.swift in Sources */ = {isa = PBXBuildFile; fileRef = D297F6142FD9616700EC8619 /* Dictionary+EncodableEquality.swift */; };
+		D297F6172FD968B700EC8619 /* Dictionary+EncodableEqualityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D297F6162FD968B700EC8619 /* Dictionary+EncodableEqualityTests.swift */; };
 		D29A470D2D2ED49F0092BC79 /* Xoshiro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29A470C2D2ED49F0092BC79 /* Xoshiro.swift */; };
 		D29A470F2D2ED6410092BC79 /* Int64+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29A470E2D2ED6410092BC79 /* Int64+SessionReplay.swift */; };
 		D29A9F3C29DD84AB005C54A4 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
@@ -2876,6 +2878,8 @@
 		D29732472A5C108700827599 /* MessageEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageEmitter.swift; sourceTree = "<group>"; };
 		D297324F2A5C109A00827599 /* MessageEmitterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageEmitterTests.swift; sourceTree = "<group>"; };
 		D29732502A5C109A00827599 /* WebViewTrackingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingTests.swift; sourceTree = "<group>"; };
+		D297F6142FD9616700EC8619 /* Dictionary+EncodableEquality.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+EncodableEquality.swift"; sourceTree = "<group>"; };
+		D297F6162FD968B700EC8619 /* Dictionary+EncodableEqualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+EncodableEqualityTests.swift"; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29A470C2D2ED49F0092BC79 /* Xoshiro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Xoshiro.swift; sourceTree = "<group>"; };
 		D29A470E2D2ED6410092BC79 /* Int64+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int64+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -6181,6 +6185,7 @@
 				D23039D7298D5235001A1FA3 /* Foundation+Datadog.swift */,
 				D22F06D529DAFD500026CC3C /* FixedWidthInteger+Convenience.swift */,
 				D22F06D629DAFD500026CC3C /* TimeInterval+Convenience.swift */,
+				D297F6142FD9616700EC8619 /* Dictionary+EncodableEquality.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -6334,6 +6339,7 @@
 				3C3C9E2E2C64F470003AF22F /* Data+CryptoTests.swift */,
 				D263BCB229DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift */,
 				D263BCB329DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift */,
+				D297F6162FD968B700EC8619 /* Dictionary+EncodableEqualityTests.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -8490,6 +8496,7 @@
 				D23039F4298D5236001A1FA3 /* AnyCodable.swift in Sources */,
 				D29A9F9529DDB1DB005C54A4 /* UIKitExtensions.swift in Sources */,
 				6167E6E82B8122E900C3CA2D /* BacktraceReport.swift in Sources */,
+				D297F6152FD9616700EC8619 /* Dictionary+EncodableEquality.swift in Sources */,
 				110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */,
 				960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */,
 				960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */,
@@ -9044,6 +9051,7 @@
 				D2EBEE4429BA168200B15732 /* TraceIDTests.swift in Sources */,
 				D2EBEE4329BA168200B15732 /* TraceIDGeneratorTests.swift in Sources */,
 				D2DA23A7298D58F400C6C7E6 /* AppStateHistoryTests.swift in Sources */,
+				D297F6172FD968B700EC8619 /* Dictionary+EncodableEqualityTests.swift in Sources */,
 				D2EBEE3D29BA163E00B15732 /* W3CHTTPHeadersWriterTests.swift in Sources */,
 				D2DA23A4298D58F400C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
