@@ -65,7 +65,7 @@ public struct APISurface {
 /// This is created inside a `parse-module` child process (one per module, each with its own sourcekitd), which is
 /// the only safe way to parallelize parsing: the in-process SourceKit daemon silently drops results when hit from
 /// multiple threads in the same process.
-struct ParsedAPISurface {
+internal struct ParsedAPISurface {
     private let docs: [SwiftDocs]
 
     /// Reconstructs the module from its name and compiler arguments and parses it. No build is performed here; it
@@ -85,7 +85,7 @@ struct ParsedAPISurface {
 
 /// Holds a temporary patched package workspace used to run `xcodebuild` and
 /// automatically removes it when no longer referenced.
-final class PatchedPackageWorkspace {
+internal final class PatchedPackageWorkspace {
     let path: String
 
     init(originalPath: String) throws {

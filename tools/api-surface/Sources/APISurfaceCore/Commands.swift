@@ -135,7 +135,7 @@ public struct VerifyCommand: ParsableCommand {
 }
 
 /// A single output to produce: a language paired with the file it should be written to.
-struct APISurfaceOutput {
+internal struct APISurfaceOutput {
     let language: Language
     let outputFile: String
 }
@@ -264,7 +264,9 @@ private func parseModulesInParallel(
     languages: [Language],
     executablePath: String
 ) throws -> [[Language: String]] {
-    guard !surfaces.isEmpty else { return [] }
+    guard !surfaces.isEmpty else {
+        return []
+    }
 
     let tempDir = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         .appendingPathComponent("com.datadoghq.api-surface-parse-\(UUID().uuidString)", isDirectory: true)
