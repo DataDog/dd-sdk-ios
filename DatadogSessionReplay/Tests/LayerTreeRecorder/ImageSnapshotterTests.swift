@@ -250,22 +250,22 @@ struct ImageSnapshotterTests {
         let rootLayer = CALayer()
         rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
 
-        let textView = UITextView(frame: CGRect(x: 10, y: 10, width: 100, height: 40))
-        textView.text = "Hello"
-        textView.layer.contentsScale = 1
-        rootLayer.addSublayer(textView.layer)
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+        imageView.layer.contentsScale = 1
+        rootLayer.addSublayer(imageView.layer)
 
         let ignoredSublayer = CALayer()
         ignoredSublayer.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
         ignoredSublayer.backgroundColor = UIColor.red.cgColor
-        textView.layer.addSublayer(ignoredSublayer)
+        imageView.layer.addSublayer(ignoredSublayer)
 
         let snapshotter = ImageSnapshotter()
         let firstRoot = try #require(
-            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[textView.layer.replayID])
+        let firstResult = try #require(firstResults[imageView.layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         ignoredSublayer.backgroundColor = UIColor.blue.cgColor
@@ -277,7 +277,7 @@ struct ImageSnapshotterTests {
         rootLayer.addSublayer(occluder)
 
         let occludedRootSnapshot = try #require(
-            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let occludedRoot = try #require(occludedRootSnapshot.removingOccluded())
         let changeset = CALayerChangeset.mockChange(for: ignoredSublayer, aspects: .display)
@@ -286,16 +286,16 @@ struct ImageSnapshotterTests {
         let occludedResults = await snapshotter.takeImageSnapshots(for: occludedRoot, changeset: changeset, timeout: 1)
 
         // Then
-        #expect(!occludedRoot.sublayers.contains { $0.layer.matches(textView.layer) })
-        #expect(occludedResults[textView.layer.replayID] == nil)
+        #expect(!occludedRoot.sublayers.contains { $0.layer.matches(imageView.layer) })
+        #expect(occludedResults[imageView.layer.replayID] == nil)
 
         occluder.removeFromSuperlayer()
 
         let revealedRoot = try #require(
-            CALayerSnapshot(from: rootLayer, in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs))
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
-        let revealedResult = try #require(revealedResults[textView.layer.replayID])
+        let revealedResult = try #require(revealedResults[imageView.layer.replayID])
         let revealedImageSnapshot = try revealedResult.get()
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }

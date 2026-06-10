@@ -150,8 +150,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records progress semantics and ignores sublayers")
-    func recordsProgressSemanticsAndIgnoresSublayers() {
+    @Test("Records progress view as layer semantics")
+    func recordsProgressViewAsLayerSemantics() {
         // Given
         let progressView = UIProgressView()
         progressView.progress = 0.75
@@ -160,7 +160,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: progressView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .progress(.init(progress: 0.75)), ignoreSublayers: true))
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -178,8 +178,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text view semantics and ignores sublayers")
-    func recordsTextViewSemanticsAndIgnoresSublayers() {
+    @Test("Records text view as layer semantics")
+    func recordsTextViewAsLayerSemantics() {
         // Given
         let textView = UITextView()
         textView.text = "Body"
@@ -190,21 +190,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(
-            semantics: .text(
-                .init(
-                    text: "Body",
-                    isEditable: false,
-                    isSensitiveText: true
-                )
-            ),
-            ignoreSublayers: true
-        ))
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text field semantics and ignores sublayers")
-    func recordsTextFieldSemanticsAndIgnoresSublayers() {
+    @Test("Records text field as layer semantics")
+    func recordsTextFieldAsLayerSemantics() {
         // Given
         let textField = UITextField()
         textField.text = "Value"
@@ -215,16 +206,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(
-            semantics: .textField(
-                .init(
-                    text: "Value",
-                    placeholder: "Placeholder",
-                    isSensitiveText: true
-                )
-            ),
-            ignoreSublayers: true
-        ))
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
