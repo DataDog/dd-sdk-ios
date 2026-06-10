@@ -10,37 +10,50 @@ import XCTest
 @testable import DatadogFlags
 
 final class ExposureTrackerTests: XCTestCase {
-    func testItEvictsLeastRecentlyUsedAssignmentWhenCountLimitIsExceeded() {
+    func testItSuppressesRepeatedAssignment() {
         // Given
-        let tracker = ExposureTracker(countLimit: 2)
-        let exposure1 = ExposureTracker.Exposure(
+        let tracker = ExposureTracker()
+        let exposure = ExposureTracker.Exposure(
             targetingKey: "subject-1",
             flagKey: "flag-1",
             allocationKey: "allocation-a",
             variationKey: "variation-a"
         )
-        let exposure2 = ExposureTracker.Exposure(
+
+        // When
+        let firstTrack = tracker.track(exposure)
+        let secondTrack = tracker.track(exposure)
+
+        // Then
+        XCTAssertTrue(firstTrack)
+        XCTAssertFalse(secondTrack)
+    }
+
+    func testItTracksAssignmentCycle() {
+        // Given
+        let tracker = ExposureTracker()
+        let exposureA = ExposureTracker.Exposure(
             targetingKey: "subject-1",
-            flagKey: "flag-2",
+            flagKey: "flag-1",
             allocationKey: "allocation-a",
             variationKey: "variation-a"
         )
-        let exposure3 = ExposureTracker.Exposure(
+        let exposureB = ExposureTracker.Exposure(
             targetingKey: "subject-1",
-            flagKey: "flag-3",
-            allocationKey: "allocation-a",
-            variationKey: "variation-a"
+            flagKey: "flag-1",
+            allocationKey: "allocation-b",
+            variationKey: "variation-b"
         )
 
         // When
-        XCTAssertTrue(tracker.track(exposure1))
-        XCTAssertTrue(tracker.track(exposure2))
-        XCTAssertFalse(tracker.track(exposure1))
-        XCTAssertTrue(tracker.track(exposure3))
+        let firstTrack = tracker.track(exposureA)
+        let secondTrack = tracker.track(exposureB)
+        let thirdTrack = tracker.track(exposureA)
 
         // Then
-        XCTAssertFalse(tracker.track(exposure1), "Recently used exposure should remain cached")
-        XCTAssertTrue(tracker.track(exposure2), "Least recently used exposure should be evicted")
+        XCTAssertTrue(firstTrack)
+        XCTAssertTrue(secondTrack)
+        XCTAssertTrue(thirdTrack)
     }
 
     func testItTracksTwoSubjectsAcrossManyFlags() {

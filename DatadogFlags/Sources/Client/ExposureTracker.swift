@@ -14,7 +14,7 @@ internal final class ExposureTracker {
         let variationKey: String
     }
 
-    private struct ExposureKey: Hashable {
+    private final class ExposureKey: NSObject {
         let targetingKey: String
         let flagKey: String
 
@@ -22,9 +22,24 @@ internal final class ExposureTracker {
             self.targetingKey = exposure.targetingKey
             self.flagKey = exposure.flagKey
         }
+
+        override var hash: Int {
+            var hasher = Hasher()
+            hasher.combine(targetingKey)
+            hasher.combine(flagKey)
+            return hasher.finalize()
+        }
+
+        override func isEqual(_ object: Any?) -> Bool {
+            guard let other = object as? ExposureKey else {
+                return false
+            }
+
+            return targetingKey == other.targetingKey && flagKey == other.flagKey
+        }
     }
 
-    private struct Assignment: Equatable {
+    private final class Assignment {
         let allocationKey: String
         let variationKey: String
 
@@ -32,23 +47,26 @@ internal final class ExposureTracker {
             self.allocationKey = exposure.allocationKey
             self.variationKey = exposure.variationKey
         }
+
+        func isEqual(to other: Assignment) -> Bool {
+            allocationKey == other.allocationKey && variationKey == other.variationKey
+        }
     }
 
     // Keep enough latest assignments for the expected mobile case of 2 subjects x 2,500 flags.
-    // A count-based LRU keeps this bounded without reintroducing NSCache's non-deterministic eviction.
+    // Normal flag keys are typically tens of characters, so entry count is easier to reason about
+    // than object-size estimates.
     static let defaultCountLimit: Int = 5_000
 
-    private var assignmentsByExposureKey: [ExposureKey: Assignment] = [:]
-    private var exposureKeysByRecency: [ExposureKey] = []
-    private let countLimit: Int
+    private let assignmentsByExposureKey = NSCache<ExposureKey, Assignment>()
     private let lock: NSLocking
 
     init(
         countLimit: Int = defaultCountLimit,
         lock: NSLocking = NSLock()
     ) {
-        self.countLimit = countLimit
         self.lock = lock
+        self.assignmentsByExposureKey.countLimit = countLimit
     }
 
     func track(_ exposure: Exposure) -> Bool {
@@ -57,25 +75,11 @@ internal final class ExposureTracker {
 
         let key = ExposureKey(exposure)
         let assignment = Assignment(exposure)
-        guard assignmentsByExposureKey[key] != assignment else {
-            markRecentlyUsed(key)
+        guard assignmentsByExposureKey.object(forKey: key)?.isEqual(to: assignment) != true else {
             return false
         }
 
-        assignmentsByExposureKey[key] = assignment
-        markRecentlyUsed(key)
-        evictLeastRecentlyUsedEntriesIfNeeded()
+        assignmentsByExposureKey.setObject(assignment, forKey: key)
         return true
-    }
-
-    private func markRecentlyUsed(_ key: ExposureKey) {
-        exposureKeysByRecency.removeAll { $0 == key }
-        exposureKeysByRecency.append(key)
-    }
-
-    private func evictLeastRecentlyUsedEntriesIfNeeded() {
-        while assignmentsByExposureKey.count > countLimit, !exposureKeysByRecency.isEmpty {
-            assignmentsByExposureKey.removeValue(forKey: exposureKeysByRecency.removeFirst())
-        }
     }
 }
