@@ -28,10 +28,7 @@ extension CALayerSnapshot.SemanticObservation {
         case activityIndicator
         case label(LabelSemantics)
         case image(ImageSemantics)
-        case progress(ProgressSemantics)
         case stepper(StepperSemantics)
-        case text(TextSemantics)
-        case textField(TextFieldSemantics)
         case switchControl(SwitchControlSemantics)
         case webView(WebViewSemantics)
     }
@@ -49,14 +46,8 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)
-        case let progressView as UIProgressView:
-            self.init(progressView: progressView)
         case let stepper as UIStepper:
             self.init(stepper: stepper)
-        case let textView as UITextView:
-            self.init(textView: textView)
-        case let textField as UITextField:
-            self.init(textField: textField)
         case let switchControl as UISwitch:
             self.init(switchControl: switchControl)
         case let webView as WKWebView:
@@ -153,22 +144,6 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
-// MARK: - ProgressSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct ProgressSemantics: Sendable, Equatable {
-        let progress: Float
-    }
-
-    fileprivate init(progressView: UIProgressView) {
-        self.init(
-            semantics: .progress(.init(progress: progressView.progress)),
-            ignoreSublayers: true
-        )
-    }
-}
-
 // MARK: - StepperSemantics
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -180,54 +155,6 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(stepper: UIStepper) {
         self.init(
             semantics: .stepper(.init(value: stepper.value)),
-            ignoreSublayers: true
-        )
-    }
-}
-
-// MARK: - TextSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct TextSemantics: Sendable, Equatable {
-        let text: String?
-        let isEditable: Bool
-        let isSensitiveText: Bool
-    }
-
-    fileprivate init(textView: UITextView) {
-        self.init(
-            semantics: .text(
-                .init(
-                    text: textView.text,
-                    isEditable: textView.isEditable,
-                    isSensitiveText: textView.dd.isSensitiveText
-                )
-            ),
-            ignoreSublayers: true
-        )
-    }
-}
-
-// MARK: - TextFieldSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct TextFieldSemantics: Sendable, Equatable {
-        let text: String?
-        let placeholder: String?
-        let isSensitiveText: Bool
-    }
-
-    fileprivate init(textField: UITextField) {
-        self.init(
-            semantics: .textField(
-                .init(
-                    text: textField.text,
-                    placeholder: textField.placeholder,
-                    isSensitiveText: textField.dd.isSensitiveText
-                )
-            ),
             ignoreSublayers: true
         )
     }
