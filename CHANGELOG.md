@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 
 # 3.12.0 / 04-06-2026
 
@@ -14,7 +15,6 @@
 - [IMPROVEMENT] Add Objective-C API support for custom SDK instance names across all modules. See [#2955][]
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
-- [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 
 # 3.11.1 / 28-05-2026
 
