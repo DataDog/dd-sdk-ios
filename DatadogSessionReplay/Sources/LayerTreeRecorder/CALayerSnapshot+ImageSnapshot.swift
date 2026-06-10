@@ -37,11 +37,16 @@ extension CALayerSnapshot {
             return
         }
 
+        let previousSnapshotData = cache.snapshotData(forReplayID: replayID)
+        let hasChanges = changeset.hasContentChanges(for: layer)
+            || changeset.hasChanges(for: dependencies)
+            || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
+
         let request = ImageSnapshotRequest(
             layerSnapshot: self,
             visibleFrame: visibleFrame,
-            hasChanges: changeset.hasContentChanges(for: layer) || changeset.hasChanges(for: dependencies),
-            previousSnapshotData: cache.snapshotData(forReplayID: replayID)
+            hasChanges: hasChanges,
+            previousSnapshotData: previousSnapshotData
         )
 
         if let request, observation.ignoreSublayers || sublayers.isEmpty {

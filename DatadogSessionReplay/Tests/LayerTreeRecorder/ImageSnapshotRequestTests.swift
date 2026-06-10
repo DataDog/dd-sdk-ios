@@ -311,7 +311,8 @@ extension ImageSnapshotRequest {
 extension ImageSnapshotData {
     fileprivate static func mockAny(
         localRect: CGRect,
-        bounds: CGRect
+        bounds: CGRect,
+        dependencies: [CALayerReference] = []
     ) -> ImageSnapshotData {
         ImageSnapshotData(
             snapshot: ImageSnapshot(
@@ -321,7 +322,8 @@ extension ImageSnapshotData {
                 imagePrivacyLevel: .maskAll
             ),
             localRect: localRect,
-            bounds: bounds
+            bounds: bounds,
+            dependencies: dependencies
         )
     }
 }

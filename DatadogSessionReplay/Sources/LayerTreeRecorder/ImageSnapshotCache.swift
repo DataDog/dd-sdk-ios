@@ -74,20 +74,20 @@ internal final class ImageSnapshotCache {
         return .init(
             snapshot: snapshot,
             localRect: metadata.localRect,
-            bounds: metadata.bounds
+            bounds: metadata.bounds,
+            dependencies: metadata.dependencies
         )
     }
 
     func setSnapshotData(
         _ snapshotData: ImageSnapshotData,
-        forReplayID replayID: Int64,
-        dependencies: [CALayerReference] = []
+        forReplayID replayID: Int64
     ) {
         imageSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
         metadata[replayID] = .init(
             localRect: snapshotData.localRect,
             bounds: snapshotData.bounds,
-            dependencies: dependencies,
+            dependencies: snapshotData.dependencies,
             lastFrameNumber: frameNumber
         )
     }

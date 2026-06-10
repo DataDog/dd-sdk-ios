@@ -135,10 +135,10 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 .init(
                     snapshot: snapshot,
                     localRect: resolvedRequest.localRect,
-                    bounds: request.bounds
+                    bounds: request.bounds,
+                    dependencies: request.dependencies
                 ),
-                forReplayID: request.replayID,
-                dependencies: request.dependencies
+                forReplayID: request.replayID
             )
             return .success(snapshot)
         } catch ImageSnapshotRequestResolutionError.missingLayer {
