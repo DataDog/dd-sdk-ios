@@ -26,7 +26,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            compressionSampler: { false },
+            totalRAM: 4_000_000_000
         )
 
         // When
@@ -50,7 +51,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.name, "memory")
         XCTAssertEqual(event.timeseries.data.count, 2)
         XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryMax, 1_000_000)
-        XCTAssertGreaterThan(event.timeseries.data[0].dataPoint.memoryPercent, 0)
+        XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryPercent, 0.025, accuracy: 0.001)
     }
 
     func testWhenBatchSizeIsReached_itWritesCpuEvent() {
@@ -86,6 +87,130 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.name, "cpu")
         XCTAssertEqual(event.timeseries.data.count, 2)
         XCTAssertEqual(event.timeseries.data[0].dataPoint.cpuUsage, 42.5)
+    }
+
+    func testWhenBothReadersProvideData_itWritesBothMemoryAndCpuEvents() {
+        // Given
+        memoryReader.vitalData = 2_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 75.0 },
+            compressionSampler: { false },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "both batches written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-both", applicationID: "app-both", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data[0].dataPoint.memoryMax, 2_000_000)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0].timeseries.data[0].dataPoint.cpuUsage, 75.0)
+    }
+
+    func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 5.0))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-offset", applicationID: "app-offset", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — date and data point timestamps are server-adjusted
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        let event = events[0]
+        // timeseries.start is offset-adjusted ns; date is offset-adjusted ms
+        let expectedDateMs = event.timeseries.start / 1_000_000
+        XCTAssertEqual(event.date, expectedDateMs, accuracy: 100)
+        XCTAssertEqual(event.timeseries.data[0].timestamp, event.timeseries.start)
+    }
+
+    func testWhenContextSourceIsReactNative_itUsesContextSource() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(source: "react-native"))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-rn", applicationID: "app-rn", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].source, .reactNative)
+    }
+
+    func testWhenStartIsCalledWithoutStop_itFlushesPartialBufferBeforeNewSession() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            compressionSampler: { false },
+            totalRAM: 4_000_000_000
+        )
+
+        // Accumulate some samples in session-1
+        let firstExpectation = self.expectation(description: "first session samples")
+        firstExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
+        collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        // Start session-2 without calling stop() first
+        let secondExpectation = self.expectation(description: "session-2 started")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { secondExpectation.fulfill() }
+        collector.start(sessionID: "session-2", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        // Then — session-1's partial buffer was flushed and labelled with session-1
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected session-1 partial buffer to be flushed on re-start")
+        XCTAssertEqual(events[0].session.id, "session-1")
+        collector.stop()
     }
 
     // MARK: - Flush on stop
