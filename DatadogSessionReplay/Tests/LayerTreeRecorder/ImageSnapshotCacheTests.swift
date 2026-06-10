@@ -5,7 +5,6 @@
  */
 
 #if os(iOS)
-import DatadogInternal
 import Testing
 import UIKit
 
@@ -150,27 +149,4 @@ struct ImageSnapshotCacheTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshot {
-    fileprivate static func mockAny() -> ImageSnapshot {
-        ImageSnapshot(
-            image: UIImage(),
-            frame: .zero,
-            textAndInputPrivacyLevel: .maskAll,
-            imagePrivacyLevel: .maskAll
-        )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
-    fileprivate static func mockAny(
-        snapshot: ImageSnapshot = .mockAny(),
-        localRect: CGRect = .zero,
-        bounds: CGRect = .zero,
-        dependencies: [CALayerReference] = []
-    ) -> ImageSnapshotData {
-        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
-    }
-}
 #endif

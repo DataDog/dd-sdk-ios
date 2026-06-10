@@ -307,24 +307,4 @@ extension ImageSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
-    fileprivate static func mockAny(
-        localRect: CGRect,
-        bounds: CGRect,
-        dependencies: [CALayerReference] = []
-    ) -> ImageSnapshotData {
-        ImageSnapshotData(
-            snapshot: ImageSnapshot(
-                image: UIImage(),
-                frame: .zero,
-                textAndInputPrivacyLevel: .maskAll,
-                imagePrivacyLevel: .maskAll
-            ),
-            localRect: localRect,
-            bounds: bounds,
-            dependencies: dependencies
-        )
-    }
-}
 #endif

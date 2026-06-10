@@ -753,6 +753,7 @@
 		759200102FD2000100000001 /* ImageSnapshotRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592000F2FD2000100000001 /* ImageSnapshotRequest.swift */; };
 		759200122FD2000100000001 /* ImageSnapshotRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759200112FD2000100000001 /* ImageSnapshotRequestTests.swift */; };
 		759200142FD2000100000001 /* CALayerChangesetMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759200132FD2000100000001 /* CALayerChangesetMock.swift */; };
+		759200162FD2000100000001 /* ImageSnapshotMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759200152FD2000100000001 /* ImageSnapshotMocks.swift */; };
 		770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */; };
 		86092FDE2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		861FD6862DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
@@ -2746,6 +2747,7 @@
 		7592000F2FD2000100000001 /* ImageSnapshotRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshotRequest.swift; sourceTree = "<group>"; };
 		759200112FD2000100000001 /* ImageSnapshotRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshotRequestTests.swift; sourceTree = "<group>"; };
 		759200132FD2000100000001 /* CALayerChangesetMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerChangesetMock.swift; sourceTree = "<group>"; };
+		759200152FD2000100000001 /* ImageSnapshotMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshotMocks.swift; sourceTree = "<group>"; };
 		7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OcclusionMap.swift; sourceTree = "<group>"; };
 		7D0DE1D82F8B4F7FA24BD2C9 /* RecordingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingController.swift; sourceTree = "<group>"; };
 		86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityValuesMock.swift; sourceTree = "<group>"; };
@@ -4106,6 +4108,7 @@
 				5BF2BC722FC46F4A000E999C /* CALayerSnapshotFilterTests.swift */,
 				759200012FD2000100000001 /* CALayerSnapshotImageSnapshotRequestTests.swift */,
 				7592000D2FD2000100000001 /* ImageSnapshotCacheTests.swift */,
+				759200152FD2000100000001 /* ImageSnapshotMocks.swift */,
 				759200112FD2000100000001 /* ImageSnapshotRequestTests.swift */,
 				7592000B2FD2000100000001 /* ImageSnapshotterTests.swift */,
 				AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */,
@@ -8673,6 +8676,7 @@
 				EF5678AB9012CD345678EFAB /* CALayerSnapshotOcclusionTests.swift in Sources */,
 				BC9876FA1234CDEF56789ABC /* NSObject+CAFilter.swift in Sources */,
 				7592000E2FD2000100000001 /* ImageSnapshotCacheTests.swift in Sources */,
+				759200162FD2000100000001 /* ImageSnapshotMocks.swift in Sources */,
 				759200122FD2000100000001 /* ImageSnapshotRequestTests.swift in Sources */,
 				7592000C2FD2000100000001 /* ImageSnapshotterTests.swift in Sources */,
 				759200142FD2000100000001 /* CALayerChangesetMock.swift in Sources */,
