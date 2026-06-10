@@ -65,8 +65,8 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
-        let imageSnapshot = Self.mockImageSnapshot()
-        let snapshotData = Self.mockSnapshotData(snapshot: imageSnapshot)
+        let imageSnapshot = ImageSnapshot.mockAny()
+        let snapshotData = ImageSnapshotData.mockAny(snapshot: imageSnapshot)
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(snapshotData, forReplayID: snapshot.replayID)
 
@@ -339,7 +339,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         )
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(
-            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot(), dependencies: previousSnapshot.dependencies),
+            .mockAny(dependencies: previousSnapshot.dependencies),
             forReplayID: snapshot.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: textView.layer, aspects: .layout)
@@ -368,7 +368,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         )
         let cache = ImageSnapshotCache()
         cache.setSnapshotData(
-            Self.mockSnapshotData(snapshot: Self.mockImageSnapshot(), dependencies: snapshot.dependencies),
+            .mockAny(dependencies: snapshot.dependencies),
             forReplayID: snapshot.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: textView.layer, aspects: .layout)
@@ -569,26 +569,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.contains { $0.layer.matches(child) })
         #expect(!requests.contains { $0.layer.matches(parent) })
         #expect(!requests.contains { $0.layer.matches(webView.layer) })
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    private static func mockImageSnapshot() -> ImageSnapshot {
-        ImageSnapshot(
-            image: UIImage(),
-            frame: .zero,
-            textAndInputPrivacyLevel: .maskAll,
-            imagePrivacyLevel: .maskAll
-        )
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    private static func mockSnapshotData(
-        snapshot: ImageSnapshot,
-        localRect: CGRect = .zero,
-        bounds: CGRect = .zero,
-        dependencies: [CALayerReference] = []
-    ) -> ImageSnapshotData {
-        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
     }
 
     private final class BundledImageMock: UIImage, @unchecked Sendable {
