@@ -203,8 +203,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text field semantics and keeps sublayers")
-    func recordsTextFieldSemanticsAndKeepsSublayers() {
+    @Test("Records text field semantics and ignores sublayers")
+    func recordsTextFieldSemanticsAndIgnoresSublayers() {
         // Given
         let textField = UITextField()
         textField.text = "Value"
@@ -222,7 +222,8 @@ struct CALayerSnapshotSemanticObservationTests {
                     placeholder: "Placeholder",
                     isSensitiveText: true
                 )
-            )
+            ),
+            ignoreSublayers: true
         ))
     }
 
