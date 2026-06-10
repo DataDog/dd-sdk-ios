@@ -222,7 +222,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
-            let offsetNs = Int64(context.serverTimeOffset * 1_000_000_000)
+            let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let adjustedBatch = batch.map { sample in
                 RUMTimeseriesMemoryEvent.Timeseries.Data(
                     dataPoint: sample.dataPoint,
@@ -249,15 +249,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 version: context.version
             )
 
-            if useDelta,
-               let deltaData = DeltaEncoder.encodeMemory(adjustedBatch),
-               let eventData = try? JSONEncoder().encode(objectEvent),
-               var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
-               var ts = dict["timeseries"] as? [String: Any] {
-                ts["schema"] = "delta-object"
-                ts["data"] = deltaData
-                dict["timeseries"] = ts
-                writer.write(value: AnyEncodable(dict))
+            if useDelta {
+                if let deltaData = DeltaEncoder.encodeMemory(adjustedBatch),
+                   let eventData = try? JSONEncoder().encode(objectEvent),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["schema"] = "delta-object"
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    writer.write(value: AnyEncodable(dict))
+                }
             } else {
                 writer.write(value: objectEvent)
             }
@@ -279,7 +280,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
-            let offsetNs = Int64(context.serverTimeOffset * 1_000_000_000)
+            let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let adjustedBatch = batch.map { sample in
                 RUMTimeseriesCpuEvent.Timeseries.Data(
                     dataPoint: sample.dataPoint,
@@ -306,15 +307,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 version: context.version
             )
 
-            if useDelta,
-               let deltaData = DeltaEncoder.encodeCPU(adjustedBatch),
-               let eventData = try? JSONEncoder().encode(objectEvent),
-               var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
-               var ts = dict["timeseries"] as? [String: Any] {
-                ts["schema"] = "delta-scalar"
-                ts["data"] = deltaData
-                dict["timeseries"] = ts
-                writer.write(value: AnyEncodable(dict))
+            if useDelta {
+                if let deltaData = DeltaEncoder.encodeCPU(adjustedBatch),
+                   let eventData = try? JSONEncoder().encode(objectEvent),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["schema"] = "delta-scalar"
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    writer.write(value: AnyEncodable(dict))
+                }
             } else {
                 writer.write(value: objectEvent)
             }
