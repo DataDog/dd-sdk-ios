@@ -11,53 +11,81 @@ public struct APISurfaceError: Error, CustomStringConvertible {
     public let description: String
 }
 
+/// Builds a module interface for an SPM library.
+///
+/// Building is split from parsing so that all modules can be compiled serially into a single, shared derived data
+/// path (so common dependencies such as `DatadogInternal` compile only once and each leaf module compiles once),
+/// keeping the expensive SourceKit parsing as a separate, clearly-bounded step.
 public struct APISurface {
+    /// The name of the SPM library this surface was generated for.
+    public let libraryName: String
     private let module: Module
-    private let language: Language
-    private let patchedPackageWorkspace: PatchedPackageWorkspace
-    private let generator = Generator()
-    private let printer = Printer()
 
     // MARK: - Initialization
 
-    /// Creates API surface for an SPM library.
+    /// Builds the module interface for an SPM library.
+    ///
     /// - Parameters:
     ///   - libraryName: the name of Swift library for generating API surface.
-    ///   - path: the path to a folder containing `Package.swift`.
-    ///   - language: the language of the API surface.
-    public init(spmLibraryName libraryName: String, inPath path: String, language: Language) throws {
-        // Create patch folder:
-        let patchedPackageWorkspace = try PatchedPackageWorkspace(originalPath: path)
-
+    ///   - workspace: the shared, patched package workspace to run `xcodebuild` from.
+    ///   - derivedDataPath: the shared derived data path so `xcodebuild` reuses build artifacts across modules.
+    init(spmLibraryName libraryName: String, workspace: PatchedPackageWorkspace, derivedDataPath: String) throws {
         let module = Module(
             xcodeBuildArguments: [
                 "-scheme", libraryName,
                 "-destination", "platform=iOS Simulator,name=iPhone 17 Pro,OS=latest",
                 "-sdk", "iphonesimulator",
+                "-derivedDataPath", derivedDataPath,
             ],
-            inPath: patchedPackageWorkspace.path
+            inPath: workspace.path
         )
 
         guard let module = module else {
             throw APISurfaceError(description: "Failed to generate module interface with `SourceKittenFramework`.")
         }
 
+        self.libraryName = libraryName
         self.module = module
-        self.language = language
-        self.patchedPackageWorkspace = patchedPackageWorkspace
     }
 
-    // MARK: - Output
+    // MARK: - Parsing inputs
 
-    public func print() throws -> String {
-        let items = try generator.generateSurfaceItems(for: module, language: language)
-        return printer.print(items: items)
+    /// The module name as resolved by `xcodebuild`/SourceKitten (used to reconstruct the module for parsing).
+    var moduleName: String { module.name }
+
+    /// The compiler arguments SourceKit needs to parse this module.
+    ///
+    /// These are captured once from the build above and can be handed to a separate `parse-module` process so the
+    /// expensive SourceKit parsing runs in parallel without rebuilding (each process gets its own sourcekitd).
+    var compilerArguments: [String] { module.compilerArguments }
+}
+
+/// The parsed SourceKit documentation for a single module, ready to print for any language.
+///
+/// This is created inside a `parse-module` child process (one per module, each with its own sourcekitd), which is
+/// the only safe way to parallelize parsing: the in-process SourceKit daemon silently drops results when hit from
+/// multiple threads in the same process.
+struct ParsedAPISurface {
+    private let docs: [SwiftDocs]
+
+    /// Reconstructs the module from its name and compiler arguments and parses it. No build is performed here; it
+    /// relies on the build artifacts already produced into the shared derived data path by the parent process.
+    init(moduleName: String, compilerArguments: [String]) {
+        let module = Module(name: moduleName, compilerArguments: compilerArguments)
+        self.docs = module.docs
+    }
+
+    /// Prints the API surface for the given language from the already-parsed module documentation.
+    func print(language: Language) throws -> String {
+        // A fresh `Generator` per call keeps this method free of shared mutable state.
+        let items = try Generator().generateSurfaceItems(docs: docs, language: language)
+        return Printer().print(items: items)
     }
 }
 
 /// Holds a temporary patched package workspace used to run `xcodebuild` and
 /// automatically removes it when no longer referenced.
-private final class PatchedPackageWorkspace {
+final class PatchedPackageWorkspace {
     let path: String
 
     init(originalPath: String) throws {

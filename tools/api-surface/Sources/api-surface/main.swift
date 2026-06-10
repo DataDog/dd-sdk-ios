@@ -12,7 +12,8 @@ private struct RootCommand: ParsableCommand {
         abstract: "A tool to manage API surface files.",
         subcommands: [
             GenerateCommand.self,
-            VerifyCommand.self
+            VerifyCommand.self,
+            ParseModuleCommand.self
         ],
         defaultSubcommand: GenerateCommand.self
     )
