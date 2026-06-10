@@ -72,9 +72,3 @@ class MessageBusTests: XCTestCase {
         bus.flush()
     }
 }
-
-extension MessageBus: @retroactive Telemetry {
-    public func send(telemetry: DatadogInternal.TelemetryMessage) {
-        send(message: .telemetry(telemetry))
-    }
-}

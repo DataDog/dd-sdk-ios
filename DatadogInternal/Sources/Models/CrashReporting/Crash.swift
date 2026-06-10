@@ -6,7 +6,9 @@
 
 import Foundation
 
-public struct Crash {
+public struct Crash: BusMessage {
+    public static let key = "crash-report"
+
     /// The crash report.
     public let report: DDCrashReport
     /// The crash context
