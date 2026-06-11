@@ -107,8 +107,8 @@ public final class objc_Trace: NSObject {
         Trace.enable(with: configuration.swiftConfig)
     }
 
-    public static func enable(with configuration: objc_TraceConfiguration, instanceName: String) {
-        Trace.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName))
+    public static func enable(with configuration: objc_TraceConfiguration, instanceName: String?) {
+        Trace.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }
 
@@ -130,8 +130,8 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
         objc_Tracer(swiftTracer: Tracer.shared())
     }
 
-    public static func shared(instanceName: String) -> objc_OTTracer {
-        objc_Tracer(swiftTracer: Tracer.shared(in: CoreRegistry.instance(named: instanceName)))
+    public static func shared(instanceName: String?) -> objc_OTTracer {
+        objc_Tracer(swiftTracer: Tracer.shared(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)))
     }
 
     public func startSpan(_ operationName: String) -> objc_OTSpan {

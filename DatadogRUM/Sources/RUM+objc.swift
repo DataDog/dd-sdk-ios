@@ -733,8 +733,8 @@ public class objc_RUM: NSObject {
         RUM.enable(with: configuration.swiftConfig)
     }
 
-    public static func enable(with configuration: objc_RUMConfiguration, instanceName: String) {
-        RUM.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName))
+    public static func enable(with configuration: objc_RUMConfiguration, instanceName: String?) {
+        RUM.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }
 
@@ -756,8 +756,8 @@ public class objc_RUMMonitor: NSObject {
         objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared())
     }
 
-    public static func shared(instanceName: String) -> objc_RUMMonitor {
-        objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared(in: CoreRegistry.instance(named: instanceName)))
+    public static func shared(instanceName: String?) -> objc_RUMMonitor {
+        objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)))
     }
 
     public func currentSessionID(completion: @escaping (String?) -> Void) {
