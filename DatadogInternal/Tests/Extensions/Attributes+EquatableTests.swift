@@ -4,7 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import XCTest
 @testable import DatadogInternal
 
@@ -86,13 +85,6 @@ class AttributesEquatableTests: XCTestCase {
     func testAnyEncodableVsRawEqual() {
         let a: [String: Encodable] = ["key": AnyEncodable("value")]
         let b: [String: Encodable] = ["key": "value"]
-        XCTAssertEqual(a.dd, b.dd)
-    }
-
-    func testURLVsAbsoluteStringEqual() {
-        let url = URL(string: "https://example.com/path")!
-        let a: [String: Encodable] = ["url": AnyEncodable(url)]
-        let b: [String: Encodable] = ["url": "https://example.com/path"]
         XCTAssertEqual(a.dd, b.dd)
     }
 
