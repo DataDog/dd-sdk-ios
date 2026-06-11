@@ -177,6 +177,19 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records button as layer semantics ignoring image privacy")
+    func recordsButtonAsLayerSemanticsIgnoringImagePrivacy() {
+        // Given
+        let button = UIButton()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: button.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records stepper semantics and ignores sublayers")
     func recordsStepperSemanticsAndIgnoresSublayers() {
         // Given
@@ -187,7 +200,11 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: stepper.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .stepper(.init(value: 7)), ignoreSublayers: true))
+        #expect(observation == .init(
+            semantics: .stepper(.init(value: 7)),
+            ignoreSublayers: true,
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -264,13 +281,16 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .textInput(
-            .init(
-                isSensitiveText: true,
-                isEditable: true,
-                isEmpty: false
-            )
-        )))
+        #expect(observation == .init(
+            semantics: .textInput(
+                .init(
+                    isSensitiveText: true,
+                    isEditable: true,
+                    isEmpty: false
+                )
+            ),
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -284,13 +304,16 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .textInput(
-            .init(
-                isSensitiveText: false,
-                isEditable: true,
-                isEmpty: true
-            )
-        )))
+        #expect(observation == .init(
+            semantics: .textInput(
+                .init(
+                    isSensitiveText: false,
+                    isEditable: true,
+                    isEmpty: true
+                )
+            ),
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -304,7 +327,11 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: switchControl.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .switchControl(.init(isOn: true)), ignoreSublayers: true))
+        #expect(observation == .init(
+            semantics: .switchControl(.init(isOn: true)),
+            ignoreSublayers: true,
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

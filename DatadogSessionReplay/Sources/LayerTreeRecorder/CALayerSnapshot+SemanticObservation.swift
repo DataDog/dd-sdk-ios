@@ -50,10 +50,6 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)
-        case _ as UIProgressView:
-            self.init(semantics: .layer, ignoresImagePrivacy: true)
-        case _ as UISlider:
-            self.init(semantics: .layer, ignoresImagePrivacy: true)
         case let stepper as UIStepper:
             self.init(stepper: stepper)
         case let textView as UITextView:
@@ -67,6 +63,10 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(webView: webView)
         default:
             self.init(semantics: .layer)
+        }
+
+        if layer.delegate is UIControl || layer.delegate is UIProgressView {
+            ignoresImagePrivacy = true
         }
     }
 }
