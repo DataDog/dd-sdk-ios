@@ -47,6 +47,26 @@ class AttributesEquatableTests: XCTestCase {
         XCTAssertEqual(a.dd, b.dd)
     }
 
+    func testOneSidedAnyCodableEqual() throws {
+        let decoder = JSONDecoder()
+        let json = try decoder.decode([String: AnyCodable].self, from: #"{"env": "prod"}"#.data(using: .utf8)!)
+        let a: [String: Encodable] = json.mapValues { $0 as Encodable }
+        let b: [String: Encodable] = ["env": "prod"]
+        XCTAssertEqual(a.dd, b.dd)
+    }
+
+    func testAnyEncodableAttributesEqual() {
+        let a: [String: Encodable] = ["key": "value", "count": 42].dd.swiftAttributes
+        let b: [String: Encodable] = ["key": "value", "count": 42].dd.swiftAttributes
+        XCTAssertEqual(a.dd, b.dd)
+    }
+
+    func testAnyEncodableAttributesNotEqual() {
+        let a: [String: Encodable] = ["key": "value"].dd.swiftAttributes
+        let b: [String: Encodable] = ["key": "other"].dd.swiftAttributes
+        XCTAssertNotEqual(a.dd, b.dd)
+    }
+
     func testNestedJSONDecodedObjectNotEqual() throws {
         let decoder = JSONDecoder()
         let json1 = try decoder.decode([String: AnyCodable].self, from: #"{"meta": {"env": "prod"}}"#.data(using: .utf8)!)

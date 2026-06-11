@@ -32,10 +32,14 @@ extension DatadogExtension: Equatable where ExtendedType == [String: Encodable] 
 /// - All `Hashable` types — scalars, typed arrays (`[String]`, `[Int]`, …) — are compared
 ///   via `AnyHashable`. Non-`Hashable`, non-collection values are treated as unequal.
 private func isAnyEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    // Unwrap AnyCodable to reach the underlying Any value
-    if let l = lhs as? AnyCodable, let r = rhs as? AnyCodable {
-        return isAnyEqual(l.value, r.value)
-    }
+    // Unwrap AnyCodable independently on either side so a raw value and a decoded
+    // wrapper for the same content compare equal (e.g. after a JSON round-trip).
+    if let l = lhs as? AnyCodable { return isAnyEqual(l.value, rhs) }
+    if let r = rhs as? AnyCodable { return isAnyEqual(lhs, r.value) }
+
+    // Unwrap AnyEncodable (used by the ObjC bridge via `swiftAttributes`).
+    if let l = lhs as? AnyEncodable { return isAnyEqual(l.value, rhs) }
+    if let r = rhs as? AnyEncodable { return isAnyEqual(lhs, r.value) }
 
     if let l = lhs as? [Any], let r = rhs as? [Any] {
         guard l.count == r.count else {
