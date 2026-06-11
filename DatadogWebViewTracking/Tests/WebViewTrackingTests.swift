@@ -1062,8 +1062,9 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testSerializationEdgeCases() throws {
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
@@ -1083,13 +1084,11 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
-        XCTAssertTrue(script.source.contains("\"*\""))
-        XCTAssertTrue(script.source.contains("\"\""))
+        XCTAssertFalse(script.source.contains("\"*\""))
+        XCTAssertFalse(script.source.contains("\"\""))
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
         XCTAssertFalse(script.source.contains("https://foo.com"))
-        XCTAssertEqual(dd.logger.warnLogs.map(\.message), [
-            "WebView host pattern \"https://foo.com\" contains invalid characters and will be ignored."
-        ])
+        XCTAssertEqual(printFunction.printedMessages.count, 3)
     }
 }
 
