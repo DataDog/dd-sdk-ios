@@ -219,6 +219,26 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records nil text view input semantics")
+    func recordsNilTextViewInputSemantics() {
+        // Given
+        let textView = UITextView()
+        textView.text = nil
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: false,
+                isEditable: true,
+                isEmpty: true
+            )
+        )))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records text field input semantics and records sublayers")
     func recordsTextFieldInputSemanticsAndRecordsSublayers() {
         // Given

@@ -181,7 +181,7 @@ extension CALayerSnapshot.SemanticObservation {
                 .init(
                     isSensitiveText: textView.dd.isSensitiveText,
                     isEditable: textView.isEditable,
-                    isEmpty: textView.text.isEmpty
+                    isEmpty: textView.text?.isEmpty ?? true
                 )
             )
         )
