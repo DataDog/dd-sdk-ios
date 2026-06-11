@@ -79,80 +79,80 @@ public final class objc_Datadog: NSObject {
         Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
-    public static func setUserInfo(userId: String, instanceName: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
-        Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName))
+    public static func setUserInfo(userId: String, instanceName: String?, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
+        Datadog.setUserInfo(id: userId, name: name, email: email, extraInfo: extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func clearUserInfo() {
         Datadog.clearUserInfo()
     }
 
-    public static func clearUserInfo(instanceName: String) {
-        Datadog.clearUserInfo(in: CoreRegistry.instance(named: instanceName))
+    public static func clearUserInfo(instanceName: String?) {
+        Datadog.clearUserInfo(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func addUserExtraInfo(_ extraInfo: [String: Any]) {
         Datadog.addUserExtraInfo(extraInfo.dd.swiftAttributes)
     }
 
-    public static func addUserExtraInfo(_ extraInfo: [String: Any], instanceName: String) {
-        Datadog.addUserExtraInfo(extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName))
+    public static func addUserExtraInfo(_ extraInfo: [String: Any], instanceName: String?) {
+        Datadog.addUserExtraInfo(extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:]) {
         Datadog.setAccountInfo(id: accountId, name: name, extraInfo: extraInfo.dd.swiftAttributes)
     }
 
-    public static func setAccountInfo(accountId: String, instanceName: String, name: String? = nil, extraInfo: [String: Any] = [:]) {
-        Datadog.setAccountInfo(id: accountId, name: name, extraInfo: extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName))
+    public static func setAccountInfo(accountId: String, instanceName: String?, name: String? = nil, extraInfo: [String: Any] = [:]) {
+        Datadog.setAccountInfo(id: accountId, name: name, extraInfo: extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func addAccountExtraInfo(_ extraInfo: [String: Any]) {
         Datadog.addAccountExtraInfo(extraInfo.dd.swiftAttributes)
     }
 
-    public static func addAccountExtraInfo(_ extraInfo: [String: Any], instanceName: String) {
-        Datadog.addAccountExtraInfo(extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName))
+    public static func addAccountExtraInfo(_ extraInfo: [String: Any], instanceName: String?) {
+        Datadog.addAccountExtraInfo(extraInfo.dd.swiftAttributes, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func clearAccountInfo() {
         Datadog.clearAccountInfo()
     }
 
-    public static func clearAccountInfo(instanceName: String) {
-        Datadog.clearAccountInfo(in: CoreRegistry.instance(named: instanceName))
+    public static func clearAccountInfo(instanceName: String?) {
+        Datadog.clearAccountInfo(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func setTrackingConsent(consent: objc_TrackingConsent) {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }
 
-    public static func setTrackingConsent(consent: objc_TrackingConsent, instanceName: String) {
-        Datadog.set(trackingConsent: consent.sdkConsent, in: CoreRegistry.instance(named: instanceName))
+    public static func setTrackingConsent(consent: objc_TrackingConsent, instanceName: String?) {
+        Datadog.set(trackingConsent: consent.sdkConsent, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func isInitialized() -> Bool {
         return Datadog.isInitialized()
     }
 
-    public static func isInitialized(instanceName: String) -> Bool {
-        return Datadog.isInitialized(instanceName: instanceName)
+    public static func isInitialized(instanceName: String?) -> Bool {
+        return Datadog.isInitialized(instanceName: instanceName ?? CoreRegistry.defaultInstanceName)
     }
 
     public static func stopInstance() {
         Datadog.stopInstance()
     }
 
-    public static func stopInstance(instanceName: String) {
-        Datadog.stopInstance(named: instanceName)
+    public static func stopInstance(instanceName: String?) {
+        Datadog.stopInstance(named: instanceName ?? CoreRegistry.defaultInstanceName)
     }
 
     public static func clearAllData() {
         Datadog.clearAllData()
     }
 
-    public static func clearAllData(instanceName: String) {
-        Datadog.clearAllData(in: CoreRegistry.instance(named: instanceName))
+    public static func clearAllData(instanceName: String?) {
+        Datadog.clearAllData(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
@@ -160,8 +160,8 @@ public final class objc_Datadog: NSObject {
         Datadog.flushAndDeinitialize()
     }
 
-    public static func flushAndDeinitialize(instanceName: String) {
-        Datadog.flushAndDeinitialize(instanceName: instanceName)
+    public static func flushAndDeinitialize(instanceName: String?) {
+        Datadog.flushAndDeinitialize(instanceName: instanceName ?? CoreRegistry.defaultInstanceName)
     }
 #endif
 }

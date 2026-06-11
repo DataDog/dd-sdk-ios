@@ -92,24 +92,24 @@ public final class objc_Logs: NSObject {
         Logs.enable(with: configuration.configuration)
     }
 
-    public static func enable(with configuration: objc_LogsConfiguration, instanceName: String) {
-        Logs.enable(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName))
+    public static func enable(with configuration: objc_LogsConfiguration, instanceName: String?) {
+        Logs.enable(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func addAttribute(forKey key: String, value: Any) {
         Logs.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
-    public static func addAttribute(forKey key: String, value: Any, instanceName: String) {
-        Logs.addAttribute(forKey: key, value: AnyEncodable(value), in: CoreRegistry.instance(named: instanceName))
+    public static func addAttribute(forKey key: String, value: Any, instanceName: String?) {
+        Logs.addAttribute(forKey: key, value: AnyEncodable(value), in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     public static func removeAttribute(forKey key: String) {
         Logs.removeAttribute(forKey: key)
     }
 
-    public static func removeAttribute(forKey key: String, instanceName: String) {
-        Logs.removeAttribute(forKey: key, in: CoreRegistry.instance(named: instanceName))
+    public static func removeAttribute(forKey key: String, instanceName: String?) {
+        Logs.removeAttribute(forKey: key, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }
 
@@ -347,8 +347,8 @@ public final class objc_Logger: NSObject {
         return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration))
     }
 
-    public static func create(with configuration: objc_LoggerConfiguration, instanceName: String) -> objc_Logger {
-        return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName)))
+    public static func create(with configuration: objc_LoggerConfiguration, instanceName: String?) -> objc_Logger {
+        return objc_Logger(sdkLogger: Logger.create(with: configuration.configuration, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)))
     }
 }
 

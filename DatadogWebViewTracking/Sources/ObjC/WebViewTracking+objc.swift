@@ -59,6 +59,30 @@ public final class objc_WebViewTracking: NSObject {
         )
     }
 
+    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session
+    /// using wildcard host patterns, on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - webView: The web-view to track.
+    ///   - hostPatterns: Wildcard patterns to match against the WebView page hostname.
+    ///   - instanceName: The name of the SDK instance to use for tracking.
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
+    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
+    @objc
+    public static func enable(
+        webView: WKWebView,
+        hostPatterns: [String],
+        instanceName: String?,
+        logsSampleRate: SampleRate = .maxSampleRate
+    ) {
+        WebViewTracking.enable(
+            webView: webView,
+            hostPatterns: hostPatterns,
+            logsSampleRate: logsSampleRate,
+            in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)
+        )
+    }
+
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session on a named SDK instance.
     ///
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
@@ -73,7 +97,7 @@ public final class objc_WebViewTracking: NSObject {
     @objc
     public static func enable(
         webView: WKWebView,
-        instanceName: String,
+        instanceName: String?,
         hosts: Set<String> = [],
         logsSampleRate: SampleRate = .maxSampleRate
     ) {
@@ -81,7 +105,7 @@ public final class objc_WebViewTracking: NSObject {
             webView: webView,
             hosts: hosts,
             logsSampleRate: logsSampleRate,
-            in: CoreRegistry.instance(named: instanceName)
+            in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)
         )
     }
 

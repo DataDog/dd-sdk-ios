@@ -35,8 +35,8 @@ public final class objc_SessionReplay: NSObject {
     ///   - configuration: Configuration of the feature.
     ///   - instanceName: The name of the SDK instance to enable Session Replay on.
     @objc
-    public static func enable(with configuration: objc_SessionReplayConfiguration, instanceName: String) {
-        SessionReplay.enable(with: configuration._swift, in: CoreRegistry.instance(named: instanceName))
+    public static func enable(with configuration: objc_SessionReplayConfiguration, instanceName: String?) {
+        SessionReplay.enable(with: configuration._swift, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     /// Starts the recording manually.
@@ -47,8 +47,8 @@ public final class objc_SessionReplay: NSObject {
 
     /// Starts the recording manually on a named SDK instance.
     @objc
-    public static func startRecording(instanceName: String) {
-        SessionReplay.startRecording(in: CoreRegistry.instance(named: instanceName))
+    public static func startRecording(instanceName: String?) {
+        SessionReplay.startRecording(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 
     /// Stops the recording manually.
@@ -59,8 +59,8 @@ public final class objc_SessionReplay: NSObject {
 
     /// Stops the recording manually on a named SDK instance.
     @objc
-    public static func stopRecording(instanceName: String) {
-        SessionReplay.stopRecording(in: CoreRegistry.instance(named: instanceName))
+    public static func stopRecording(instanceName: String?) {
+        SessionReplay.stopRecording(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }
 
