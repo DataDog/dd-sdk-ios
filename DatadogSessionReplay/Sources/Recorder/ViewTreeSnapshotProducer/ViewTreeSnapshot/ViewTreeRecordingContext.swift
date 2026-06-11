@@ -26,6 +26,8 @@ public struct SessionReplayViewTreeRecordingContext {
     var viewControllerContext: ViewControllerContext = .init()
     /// Webviews caching.
     let webViewCache: NSHashTable<WKWebView>
+    /// Flutter views caching.
+    let flutterViewCache: NSHashTable<UIView>
     /// Heatmaps caching. When `nil`, heatmap identifier computation is skipped.
     let heatmapCache: HeatmapCache?
     /// The clipping rect to apply to wireframes.

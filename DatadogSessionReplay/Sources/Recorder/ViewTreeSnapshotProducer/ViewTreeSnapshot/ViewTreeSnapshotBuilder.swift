@@ -25,6 +25,8 @@ internal struct ViewTreeSnapshotBuilder {
     let featureFlags: SessionReplay.Configuration.FeatureFlags
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
+    /// The Flutter views cache.
+    let flutterViewCache: NSHashTable<UIView> = .weakObjects()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -40,6 +42,7 @@ internal struct ViewTreeSnapshotBuilder {
             coordinateSpace: rootView,
             ids: idsGenerator,
             webViewCache: webViewCache,
+            flutterViewCache: flutterViewCache,
             heatmapCache: heatmapCache,
             clip: rootView.bounds
         )
@@ -49,7 +52,8 @@ internal struct ViewTreeSnapshotBuilder {
             context: recorderContext,
             viewportSize: rootView.bounds.size,
             nodes: nodes,
-            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash)),
+            flutterViewSlotIDs: Set(flutterViewCache.allObjects.map(\.hash))
         )
         if let heatmapCache {
             core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
@@ -96,6 +100,7 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
         UIPickerViewRecorder(identifier: UUID()),
         UIDatePickerRecorder(identifier: UUID()),
         WKWebViewRecorder(identifier: UUID()),
+        FlutterViewRecorder(identifier: UUID()),
         UIProgressViewRecorder(identifier: UUID()),
         UIActivityIndicatorRecorder(identifier: UUID()),
     ]

@@ -55,6 +55,101 @@ public struct SRContentClip: Codable, Hashable {
     }
 }
 
+/// Schema of all properties of an EmbeddedViewWireframe.
+@_spi(Internal)
+public struct SREmbeddedViewWireframe: Codable, Hashable {
+    /// The border properties of this wireframe. The default value is null (no-border).
+    public let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    public let clip: SRContentClip?
+
+    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    public let height: Int64
+
+    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    public let id: Int64
+
+    /// Whether this embedded view is visible or not.
+    public let isVisible: Bool?
+
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
+    /// The style of this wireframe.
+    public let shapeStyle: SRShapeStyle?
+
+    /// Unique Id of the slot containing this embedded view.
+    public let slotId: String
+
+    /// The type of the wireframe.
+    public let type: String = "embedded_view"
+
+    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    public let width: Int64
+
+    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let x: Int64
+
+    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let y: Int64
+
+    public enum CodingKeys: String, CodingKey {
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case permanentId = "permanentId"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    }
+
+    /// Schema of all properties of an EmbeddedViewWireframe.
+    ///
+    /// - Parameters:
+    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+    ///   - clip: Schema of clipping information for a Wireframe.
+    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    ///   - isVisible: Whether this embedded view is visible or not.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    ///   - shapeStyle: The style of this wireframe.
+    ///   - slotId: Unique Id of the slot containing this embedded view.
+    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public init(
+        border: SRShapeBorder? = nil,
+        clip: SRContentClip? = nil,
+        height: Int64,
+        id: Int64,
+        isVisible: Bool? = nil,
+        permanentId: String? = nil,
+        shapeStyle: SRShapeStyle? = nil,
+        slotId: String,
+        width: Int64,
+        x: Int64,
+        y: Int64
+    ) {
+        self.border = border
+        self.clip = clip
+        self.height = height
+        self.id = id
+        self.isVisible = isVisible
+        self.permanentId = permanentId
+        self.shapeStyle = shapeStyle
+        self.slotId = slotId
+        self.width = width
+        self.x = x
+        self.y = y
+    }
+}
+
 /// Schema of a Record type which contains focus information.
 @_spi(Internal)
 public struct SRFocusRecord: Codable {
@@ -117,6 +212,9 @@ public struct SRFocusRecord: Codable {
 public struct SRFullSnapshotRecord: Codable {
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -125,6 +223,7 @@ public struct SRFullSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -133,31 +232,841 @@ public struct SRFullSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data:
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
     @_spi(Internal)
     public struct Data: Codable {
+        /// Optional composition tree describing the rendering hierarchy. When present, the player uses this tree for rendering order and group operations.
+        public let compositionTree: CompositionTree?
+
         /// The Wireframes contained by this Record.
         public let wireframes: [SRWireframe]
 
         public enum CodingKeys: String, CodingKey {
+            case compositionTree = "compositionTree"
             case wireframes = "wireframes"
         }
 
         ///
         /// - Parameters:
+        ///   - compositionTree: Optional composition tree describing the rendering hierarchy. When present, the player uses this tree for rendering order and group operations.
         ///   - wireframes: The Wireframes contained by this Record.
         public init(
+            compositionTree: CompositionTree? = nil,
             wireframes: [SRWireframe]
         ) {
+            self.compositionTree = compositionTree
             self.wireframes = wireframes
+        }
+
+        /// Optional composition tree describing the rendering hierarchy. When present, the player uses this tree for rendering order and group operations.
+        @_spi(Internal)
+        public struct CompositionTree: Codable {
+            /// Non-root composition layers referenced by the tree.
+            public let layers: [Layers]?
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            public let root: Root
+
+            public enum CodingKeys: String, CodingKey {
+                case layers = "layers"
+                case root = "root"
+            }
+
+            /// Optional composition tree describing the rendering hierarchy. When present, the player uses this tree for rendering order and group operations.
+            ///
+            /// - Parameters:
+            ///   - layers: Non-root composition layers referenced by the tree.
+            ///   - root: A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            public init(
+                layers: [Layers]? = nil,
+                root: Root
+            ) {
+                self.layers = layers
+                self.root = root
+            }
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            @_spi(Internal)
+            public struct Layers: Codable {
+                /// Ordered back-to-front references to child wireframes or child layers.
+                public let children: [Children]
+
+                /// Operation used when compositing the rendered group into its parent.
+                public let compositeOperation: CompositeOperation?
+
+                /// The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let height: Int64
+
+                /// Stable layer identifier, persistent throughout the view lifetime.
+                public let id: Int64
+
+                /// Ordered list of rendering modifiers applied to the composed layer output in array order.
+                public let modifiers: [Modifiers]?
+
+                /// The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let width: Int64
+
+                /// The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let x: Int64
+
+                /// The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let y: Int64
+
+                public enum CodingKeys: String, CodingKey {
+                    case children = "children"
+                    case compositeOperation = "compositeOperation"
+                    case height = "height"
+                    case id = "id"
+                    case modifiers = "modifiers"
+                    case width = "width"
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+                ///
+                /// - Parameters:
+                ///   - children: Ordered back-to-front references to child wireframes or child layers.
+                ///   - compositeOperation: Operation used when compositing the rendered group into its parent.
+                ///   - height: The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - id: Stable layer identifier, persistent throughout the view lifetime.
+                ///   - modifiers: Ordered list of rendering modifiers applied to the composed layer output in array order.
+                ///   - width: The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - x: The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                ///   - y: The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public init(
+                    children: [Children],
+                    compositeOperation: CompositeOperation? = nil,
+                    height: Int64,
+                    id: Int64,
+                    modifiers: [Modifiers]? = nil,
+                    width: Int64,
+                    x: Int64,
+                    y: Int64
+                ) {
+                    self.children = children
+                    self.compositeOperation = compositeOperation
+                    self.height = height
+                    self.id = id
+                    self.modifiers = modifiers
+                    self.width = width
+                    self.x = x
+                    self.y = y
+                }
+
+                /// A reference to a child wireframe or child layer in a composition layer.
+                @_spi(Internal)
+                public struct Children: Codable {
+                    /// The id of the referenced wireframe or layer.
+                    public let id: Int64
+
+                    /// The type of the child reference.
+                    public let type: ChildrenType
+
+                    public enum CodingKeys: String, CodingKey {
+                        case id = "id"
+                        case type = "type"
+                    }
+
+                    /// A reference to a child wireframe or child layer in a composition layer.
+                    ///
+                    /// - Parameters:
+                    ///   - id: The id of the referenced wireframe or layer.
+                    ///   - type: The type of the child reference.
+                    public init(
+                        id: Int64,
+                        type: ChildrenType
+                    ) {
+                        self.id = id
+                        self.type = type
+                    }
+
+                    /// The type of the child reference.
+                    @_spi(Internal)
+                    public enum ChildrenType: String, Codable {
+                        case wireframe = "wireframe"
+                        case layer = "layer"
+                    }
+                }
+
+                /// Operation used when compositing the rendered group into its parent.
+                @_spi(Internal)
+                public enum CompositeOperation: String, Codable {
+                    case sourceOver = "sourceOver"
+                    case destinationIn = "destinationIn"
+                    case plusDarker = "plusDarker"
+                }
+
+                /// A rendering modifier applied to the composed layer output.
+                @_spi(Internal)
+                public enum Modifiers: Codable {
+                    case compositionLayerClipModifier(value: CompositionLayerClipModifier)
+                    case compositionLayerOpacityModifier(value: CompositionLayerOpacityModifier)
+                    case compositionLayerColorMatrixModifier(value: CompositionLayerColorMatrixModifier)
+                    case compositionLayerGaussianBlurModifier(value: CompositionLayerGaussianBlurModifier)
+                    case compositionLayerBrightnessBiasModifier(value: CompositionLayerBrightnessBiasModifier)
+                    case compositionLayerSaturateModifier(value: CompositionLayerSaturateModifier)
+                    case compositionLayerBackgroundMaterialModifier(value: CompositionLayerBackgroundMaterialModifier)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .compositionLayerClipModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerOpacityModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerColorMatrixModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerGaussianBlurModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBrightnessBiasModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerSaturateModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBackgroundMaterialModifier(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(CompositionLayerClipModifier.self) {
+                            self = .compositionLayerClipModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerOpacityModifier.self) {
+                            self = .compositionLayerOpacityModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerColorMatrixModifier.self) {
+                            self = .compositionLayerColorMatrixModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerGaussianBlurModifier.self) {
+                            self = .compositionLayerGaussianBlurModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBrightnessBiasModifier.self) {
+                            self = .compositionLayerBrightnessBiasModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerSaturateModifier.self) {
+                            self = .compositionLayerSaturateModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBackgroundMaterialModifier.self) {
+                            self = .compositionLayerBackgroundMaterialModifier(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Modifiers`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Modifiers.self, error)
+                    }
+
+                    /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                    @_spi(Internal)
+                    public struct CompositionLayerClipModifier: Codable {
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        public let fillRule: FillRule?
+
+                        /// SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public let path: String
+
+                        /// The type of the modifier.
+                        public let type: String = "clip"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case fillRule = "fillRule"
+                            case path = "path"
+                            case type = "type"
+                        }
+
+                        /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                        ///
+                        /// - Parameters:
+                        ///   - fillRule: Path fill rule. Defaults to 'nonzero'.
+                        ///   - path: SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public init(
+                            fillRule: FillRule? = nil,
+                            path: String
+                        ) {
+                            self.fillRule = fillRule
+                            self.path = path
+                        }
+
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        @_spi(Internal)
+                        public enum FillRule: String, Codable {
+                            case nonzero = "nonzero"
+                            case evenodd = "evenodd"
+                        }
+                    }
+
+                    /// Opacity applied to the composed layer output at this point in the modifier order.
+                    @_spi(Internal)
+                    public struct CompositionLayerOpacityModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "opacity"
+
+                        /// Opacity value from 0 to 1.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Opacity applied to the composed layer output at this point in the modifier order.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Opacity value from 0 to 1.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerColorMatrixModifier: Codable {
+                        /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public let matrix: [Double]
+
+                        /// The type of the modifier.
+                        public let type: String = "colorMatrix"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case matrix = "matrix"
+                            case type = "type"
+                        }
+
+                        /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - matrix: 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public init(
+                            matrix: [Double]
+                        ) {
+                            self.matrix = matrix
+                        }
+                    }
+
+                    /// Gaussian blur applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerGaussianBlurModifier: Codable {
+                        /// Gaussian blur radius.
+                        public let radius: Double
+
+                        /// The type of the modifier.
+                        public let type: String = "gaussianBlur"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case radius = "radius"
+                            case type = "type"
+                        }
+
+                        /// Gaussian blur applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - radius: Gaussian blur radius.
+                        public init(
+                            radius: Double
+                        ) {
+                            self.radius = radius
+                        }
+                    }
+
+                    /// Adds a signed brightness bias to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerBrightnessBiasModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "brightnessBias"
+
+                        /// Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Adds a signed brightness bias to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Applies a saturation adjustment to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerSaturateModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "saturate"
+
+                        /// Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Applies a saturation adjustment to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Represents a platform background material effect captured as layer rendering state.
+                    @_spi(Internal)
+                    public struct CompositionLayerBackgroundMaterialModifier: Codable {
+                        /// Material kind.
+                        public let kind: Kind
+
+                        /// The type of the modifier.
+                        public let type: String = "backgroundMaterial"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case kind = "kind"
+                            case type = "type"
+                        }
+
+                        /// Represents a platform background material effect captured as layer rendering state.
+                        ///
+                        /// - Parameters:
+                        ///   - kind: Material kind.
+                        public init(
+                            kind: Kind
+                        ) {
+                            self.kind = kind
+                        }
+
+                        /// Material kind.
+                        @_spi(Internal)
+                        public enum Kind: String, Codable {
+                            case glass = "glass"
+                        }
+                    }
+                }
+            }
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            @_spi(Internal)
+            public struct Root: Codable {
+                /// Ordered back-to-front references to child wireframes or child layers.
+                public let children: [Children]
+
+                /// Operation used when compositing the rendered group into its parent.
+                public let compositeOperation: CompositeOperation?
+
+                /// The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let height: Int64
+
+                /// Stable layer identifier, persistent throughout the view lifetime.
+                public let id: Int64
+
+                /// Ordered list of rendering modifiers applied to the composed layer output in array order.
+                public let modifiers: [Modifiers]?
+
+                /// The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let width: Int64
+
+                /// The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let x: Int64
+
+                /// The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let y: Int64
+
+                public enum CodingKeys: String, CodingKey {
+                    case children = "children"
+                    case compositeOperation = "compositeOperation"
+                    case height = "height"
+                    case id = "id"
+                    case modifiers = "modifiers"
+                    case width = "width"
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+                ///
+                /// - Parameters:
+                ///   - children: Ordered back-to-front references to child wireframes or child layers.
+                ///   - compositeOperation: Operation used when compositing the rendered group into its parent.
+                ///   - height: The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - id: Stable layer identifier, persistent throughout the view lifetime.
+                ///   - modifiers: Ordered list of rendering modifiers applied to the composed layer output in array order.
+                ///   - width: The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - x: The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                ///   - y: The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public init(
+                    children: [Children],
+                    compositeOperation: CompositeOperation? = nil,
+                    height: Int64,
+                    id: Int64,
+                    modifiers: [Modifiers]? = nil,
+                    width: Int64,
+                    x: Int64,
+                    y: Int64
+                ) {
+                    self.children = children
+                    self.compositeOperation = compositeOperation
+                    self.height = height
+                    self.id = id
+                    self.modifiers = modifiers
+                    self.width = width
+                    self.x = x
+                    self.y = y
+                }
+
+                /// A reference to a child wireframe or child layer in a composition layer.
+                @_spi(Internal)
+                public struct Children: Codable {
+                    /// The id of the referenced wireframe or layer.
+                    public let id: Int64
+
+                    /// The type of the child reference.
+                    public let type: ChildrenType
+
+                    public enum CodingKeys: String, CodingKey {
+                        case id = "id"
+                        case type = "type"
+                    }
+
+                    /// A reference to a child wireframe or child layer in a composition layer.
+                    ///
+                    /// - Parameters:
+                    ///   - id: The id of the referenced wireframe or layer.
+                    ///   - type: The type of the child reference.
+                    public init(
+                        id: Int64,
+                        type: ChildrenType
+                    ) {
+                        self.id = id
+                        self.type = type
+                    }
+
+                    /// The type of the child reference.
+                    @_spi(Internal)
+                    public enum ChildrenType: String, Codable {
+                        case wireframe = "wireframe"
+                        case layer = "layer"
+                    }
+                }
+
+                /// Operation used when compositing the rendered group into its parent.
+                @_spi(Internal)
+                public enum CompositeOperation: String, Codable {
+                    case sourceOver = "sourceOver"
+                    case destinationIn = "destinationIn"
+                    case plusDarker = "plusDarker"
+                }
+
+                /// A rendering modifier applied to the composed layer output.
+                @_spi(Internal)
+                public enum Modifiers: Codable {
+                    case compositionLayerClipModifier(value: CompositionLayerClipModifier)
+                    case compositionLayerOpacityModifier(value: CompositionLayerOpacityModifier)
+                    case compositionLayerColorMatrixModifier(value: CompositionLayerColorMatrixModifier)
+                    case compositionLayerGaussianBlurModifier(value: CompositionLayerGaussianBlurModifier)
+                    case compositionLayerBrightnessBiasModifier(value: CompositionLayerBrightnessBiasModifier)
+                    case compositionLayerSaturateModifier(value: CompositionLayerSaturateModifier)
+                    case compositionLayerBackgroundMaterialModifier(value: CompositionLayerBackgroundMaterialModifier)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .compositionLayerClipModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerOpacityModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerColorMatrixModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerGaussianBlurModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBrightnessBiasModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerSaturateModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBackgroundMaterialModifier(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(CompositionLayerClipModifier.self) {
+                            self = .compositionLayerClipModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerOpacityModifier.self) {
+                            self = .compositionLayerOpacityModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerColorMatrixModifier.self) {
+                            self = .compositionLayerColorMatrixModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerGaussianBlurModifier.self) {
+                            self = .compositionLayerGaussianBlurModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBrightnessBiasModifier.self) {
+                            self = .compositionLayerBrightnessBiasModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerSaturateModifier.self) {
+                            self = .compositionLayerSaturateModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBackgroundMaterialModifier.self) {
+                            self = .compositionLayerBackgroundMaterialModifier(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Modifiers`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Modifiers.self, error)
+                    }
+
+                    /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                    @_spi(Internal)
+                    public struct CompositionLayerClipModifier: Codable {
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        public let fillRule: FillRule?
+
+                        /// SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public let path: String
+
+                        /// The type of the modifier.
+                        public let type: String = "clip"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case fillRule = "fillRule"
+                            case path = "path"
+                            case type = "type"
+                        }
+
+                        /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                        ///
+                        /// - Parameters:
+                        ///   - fillRule: Path fill rule. Defaults to 'nonzero'.
+                        ///   - path: SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public init(
+                            fillRule: FillRule? = nil,
+                            path: String
+                        ) {
+                            self.fillRule = fillRule
+                            self.path = path
+                        }
+
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        @_spi(Internal)
+                        public enum FillRule: String, Codable {
+                            case nonzero = "nonzero"
+                            case evenodd = "evenodd"
+                        }
+                    }
+
+                    /// Opacity applied to the composed layer output at this point in the modifier order.
+                    @_spi(Internal)
+                    public struct CompositionLayerOpacityModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "opacity"
+
+                        /// Opacity value from 0 to 1.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Opacity applied to the composed layer output at this point in the modifier order.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Opacity value from 0 to 1.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerColorMatrixModifier: Codable {
+                        /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public let matrix: [Double]
+
+                        /// The type of the modifier.
+                        public let type: String = "colorMatrix"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case matrix = "matrix"
+                            case type = "type"
+                        }
+
+                        /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - matrix: 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public init(
+                            matrix: [Double]
+                        ) {
+                            self.matrix = matrix
+                        }
+                    }
+
+                    /// Gaussian blur applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerGaussianBlurModifier: Codable {
+                        /// Gaussian blur radius.
+                        public let radius: Double
+
+                        /// The type of the modifier.
+                        public let type: String = "gaussianBlur"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case radius = "radius"
+                            case type = "type"
+                        }
+
+                        /// Gaussian blur applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - radius: Gaussian blur radius.
+                        public init(
+                            radius: Double
+                        ) {
+                            self.radius = radius
+                        }
+                    }
+
+                    /// Adds a signed brightness bias to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerBrightnessBiasModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "brightnessBias"
+
+                        /// Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Adds a signed brightness bias to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Applies a saturation adjustment to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerSaturateModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "saturate"
+
+                        /// Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Applies a saturation adjustment to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Represents a platform background material effect captured as layer rendering state.
+                    @_spi(Internal)
+                    public struct CompositionLayerBackgroundMaterialModifier: Codable {
+                        /// Material kind.
+                        public let kind: Kind
+
+                        /// The type of the modifier.
+                        public let type: String = "backgroundMaterial"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case kind = "kind"
+                            case type = "type"
+                        }
+
+                        /// Represents a platform background material effect captured as layer rendering state.
+                        ///
+                        /// - Parameters:
+                        ///   - kind: Material kind.
+                        public init(
+                            kind: Kind
+                        ) {
+                            self.kind = kind
+                        }
+
+                        /// Material kind.
+                        @_spi(Internal)
+                        public enum Kind: String, Codable {
+                            case glass = "glass"
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -186,7 +1095,7 @@ public struct SRImageWireframe: Codable, Hashable {
     /// MIME type of the image file
     public var mimeType: String?
 
-    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     public let permanentId: String?
 
     /// Unique identifier of the image resource
@@ -234,7 +1143,7 @@ public struct SRImageWireframe: Codable, Hashable {
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - isEmpty: Flag describing an image wireframe that should render an empty state placeholder
     ///   - mimeType: MIME type of the image file
-    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     ///   - resourceId: Unique identifier of the image resource
     ///   - shapeStyle: The style of this wireframe.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
@@ -277,6 +1186,9 @@ public struct SRIncrementalSnapshotRecord: Codable {
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -285,6 +1197,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -293,12 +1206,15 @@ public struct SRIncrementalSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data: Mobile-specific. Schema of a Session Replay IncrementalData type.
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
@@ -309,6 +1225,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
         case touchData(value: TouchData)
         case viewportResizeData(value: ViewportResizeData)
         case pointerInteractionData(value: PointerInteractionData)
+        case compositionTreeMutationData(value: CompositionTreeMutationData)
 
         // MARK: - Codable
 
@@ -324,6 +1241,8 @@ public struct SRIncrementalSnapshotRecord: Codable {
             case .viewportResizeData(let value):
                 try container.encode(value)
             case .pointerInteractionData(let value):
+                try container.encode(value)
+            case .compositionTreeMutationData(let value):
                 try container.encode(value)
             }
         }
@@ -346,6 +1265,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
             }
             if let value = try? container.decode(PointerInteractionData.self) {
                 self = .pointerInteractionData(value: value)
+                return
+            }
+            if let value = try? container.decode(CompositionTreeMutationData.self) {
+                self = .compositionTreeMutationData(value: value)
                 return
             }
             let error = DecodingError.Context(
@@ -449,6 +1372,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
                 case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                case embeddedViewWireframeUpdate(value: EmbeddedViewWireframeUpdate)
 
                 // MARK: - Codable
 
@@ -466,6 +1390,8 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     case .placeholderWireframeUpdate(let value):
                         try container.encode(value)
                     case .webviewWireframeUpdate(let value):
+                        try container.encode(value)
+                    case .embeddedViewWireframeUpdate(let value):
                         try container.encode(value)
                     }
                 }
@@ -492,6 +1418,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     }
                     if let value = try? container.decode(WebviewWireframeUpdate.self) {
                         self = .webviewWireframeUpdate(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(EmbeddedViewWireframeUpdate.self) {
+                        self = .embeddedViewWireframeUpdate(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -929,6 +1859,94 @@ public struct SRIncrementalSnapshotRecord: Codable {
                         self.y = y
                     }
                 }
+
+                /// Schema of all properties of an EmbeddedViewWireframeUpdate.
+                @_spi(Internal)
+                public struct EmbeddedViewWireframeUpdate: Codable {
+                    /// The border properties of this wireframe. The default value is null (no-border).
+                    public let border: SRShapeBorder?
+
+                    /// Schema of clipping information for a Wireframe.
+                    public let clip: SRContentClip?
+
+                    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    public let height: Int64?
+
+                    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    public let id: Int64
+
+                    /// Whether this embedded view is visible or not.
+                    public let isVisible: Bool?
+
+                    /// The style of this wireframe.
+                    public let shapeStyle: SRShapeStyle?
+
+                    /// Unique Id of the slot containing this embedded view.
+                    public let slotId: String
+
+                    /// The type of the wireframe.
+                    public let type: String = "embedded_view"
+
+                    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    public let width: Int64?
+
+                    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let x: Int64?
+
+                    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let y: Int64?
+
+                    public enum CodingKeys: String, CodingKey {
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+
+                    /// Schema of all properties of an EmbeddedViewWireframeUpdate.
+                    ///
+                    /// - Parameters:
+                    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+                    ///   - clip: Schema of clipping information for a Wireframe.
+                    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    ///   - isVisible: Whether this embedded view is visible or not.
+                    ///   - shapeStyle: The style of this wireframe.
+                    ///   - slotId: Unique Id of the slot containing this embedded view.
+                    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public init(
+                        border: SRShapeBorder? = nil,
+                        clip: SRContentClip? = nil,
+                        height: Int64? = nil,
+                        id: Int64,
+                        isVisible: Bool? = nil,
+                        shapeStyle: SRShapeStyle? = nil,
+                        slotId: String,
+                        width: Int64? = nil,
+                        x: Int64? = nil,
+                        y: Int64? = nil
+                    ) {
+                        self.border = border
+                        self.clip = clip
+                        self.height = height
+                        self.id = id
+                        self.isVisible = isVisible
+                        self.shapeStyle = shapeStyle
+                        self.slotId = slotId
+                        self.width = width
+                        self.x = x
+                        self.y = y
+                    }
+                }
             }
         }
 
@@ -1097,6 +2115,1210 @@ public struct SRIncrementalSnapshotRecord: Codable {
                 case pen = "pen"
             }
         }
+
+        /// Mobile-specific. Incremental data carrying composition tree layer mutations.
+        @_spi(Internal)
+        public struct CompositionTreeMutationData: Codable {
+            /// Full layer definitions for newly added layers.
+            public let adds: [Adds]?
+
+            /// Ids of layer definitions to remove. Removing a referenced layer also requires updating the parent or root child list.
+            public let removes: [Int64]?
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            public let root: Root?
+
+            /// The source of this type of incremental data.
+            public let source: Int64 = 10
+
+            /// Sparse updates for existing layers.
+            public let updates: [Updates]?
+
+            public enum CodingKeys: String, CodingKey {
+                case adds = "adds"
+                case removes = "removes"
+                case root = "root"
+                case source = "source"
+                case updates = "updates"
+            }
+
+            /// Mobile-specific. Incremental data carrying composition tree layer mutations.
+            ///
+            /// - Parameters:
+            ///   - adds: Full layer definitions for newly added layers.
+            ///   - removes: Ids of layer definitions to remove. Removing a referenced layer also requires updating the parent or root child list.
+            ///   - root: A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            ///   - updates: Sparse updates for existing layers.
+            public init(
+                adds: [Adds]? = nil,
+                removes: [Int64]? = nil,
+                root: Root? = nil,
+                updates: [Updates]? = nil
+            ) {
+                self.adds = adds
+                self.removes = removes
+                self.root = root
+                self.updates = updates
+            }
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            @_spi(Internal)
+            public struct Adds: Codable {
+                /// Ordered back-to-front references to child wireframes or child layers.
+                public let children: [Children]
+
+                /// Operation used when compositing the rendered group into its parent.
+                public let compositeOperation: CompositeOperation?
+
+                /// The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let height: Int64
+
+                /// Stable layer identifier, persistent throughout the view lifetime.
+                public let id: Int64
+
+                /// Ordered list of rendering modifiers applied to the composed layer output in array order.
+                public let modifiers: [Modifiers]?
+
+                /// The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let width: Int64
+
+                /// The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let x: Int64
+
+                /// The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let y: Int64
+
+                public enum CodingKeys: String, CodingKey {
+                    case children = "children"
+                    case compositeOperation = "compositeOperation"
+                    case height = "height"
+                    case id = "id"
+                    case modifiers = "modifiers"
+                    case width = "width"
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+                ///
+                /// - Parameters:
+                ///   - children: Ordered back-to-front references to child wireframes or child layers.
+                ///   - compositeOperation: Operation used when compositing the rendered group into its parent.
+                ///   - height: The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - id: Stable layer identifier, persistent throughout the view lifetime.
+                ///   - modifiers: Ordered list of rendering modifiers applied to the composed layer output in array order.
+                ///   - width: The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - x: The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                ///   - y: The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public init(
+                    children: [Children],
+                    compositeOperation: CompositeOperation? = nil,
+                    height: Int64,
+                    id: Int64,
+                    modifiers: [Modifiers]? = nil,
+                    width: Int64,
+                    x: Int64,
+                    y: Int64
+                ) {
+                    self.children = children
+                    self.compositeOperation = compositeOperation
+                    self.height = height
+                    self.id = id
+                    self.modifiers = modifiers
+                    self.width = width
+                    self.x = x
+                    self.y = y
+                }
+
+                /// A reference to a child wireframe or child layer in a composition layer.
+                @_spi(Internal)
+                public struct Children: Codable {
+                    /// The id of the referenced wireframe or layer.
+                    public let id: Int64
+
+                    /// The type of the child reference.
+                    public let type: ChildrenType
+
+                    public enum CodingKeys: String, CodingKey {
+                        case id = "id"
+                        case type = "type"
+                    }
+
+                    /// A reference to a child wireframe or child layer in a composition layer.
+                    ///
+                    /// - Parameters:
+                    ///   - id: The id of the referenced wireframe or layer.
+                    ///   - type: The type of the child reference.
+                    public init(
+                        id: Int64,
+                        type: ChildrenType
+                    ) {
+                        self.id = id
+                        self.type = type
+                    }
+
+                    /// The type of the child reference.
+                    @_spi(Internal)
+                    public enum ChildrenType: String, Codable {
+                        case wireframe = "wireframe"
+                        case layer = "layer"
+                    }
+                }
+
+                /// Operation used when compositing the rendered group into its parent.
+                @_spi(Internal)
+                public enum CompositeOperation: String, Codable {
+                    case sourceOver = "sourceOver"
+                    case destinationIn = "destinationIn"
+                    case plusDarker = "plusDarker"
+                }
+
+                /// A rendering modifier applied to the composed layer output.
+                @_spi(Internal)
+                public enum Modifiers: Codable {
+                    case compositionLayerClipModifier(value: CompositionLayerClipModifier)
+                    case compositionLayerOpacityModifier(value: CompositionLayerOpacityModifier)
+                    case compositionLayerColorMatrixModifier(value: CompositionLayerColorMatrixModifier)
+                    case compositionLayerGaussianBlurModifier(value: CompositionLayerGaussianBlurModifier)
+                    case compositionLayerBrightnessBiasModifier(value: CompositionLayerBrightnessBiasModifier)
+                    case compositionLayerSaturateModifier(value: CompositionLayerSaturateModifier)
+                    case compositionLayerBackgroundMaterialModifier(value: CompositionLayerBackgroundMaterialModifier)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .compositionLayerClipModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerOpacityModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerColorMatrixModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerGaussianBlurModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBrightnessBiasModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerSaturateModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBackgroundMaterialModifier(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(CompositionLayerClipModifier.self) {
+                            self = .compositionLayerClipModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerOpacityModifier.self) {
+                            self = .compositionLayerOpacityModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerColorMatrixModifier.self) {
+                            self = .compositionLayerColorMatrixModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerGaussianBlurModifier.self) {
+                            self = .compositionLayerGaussianBlurModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBrightnessBiasModifier.self) {
+                            self = .compositionLayerBrightnessBiasModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerSaturateModifier.self) {
+                            self = .compositionLayerSaturateModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBackgroundMaterialModifier.self) {
+                            self = .compositionLayerBackgroundMaterialModifier(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Modifiers`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Modifiers.self, error)
+                    }
+
+                    /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                    @_spi(Internal)
+                    public struct CompositionLayerClipModifier: Codable {
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        public let fillRule: FillRule?
+
+                        /// SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public let path: String
+
+                        /// The type of the modifier.
+                        public let type: String = "clip"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case fillRule = "fillRule"
+                            case path = "path"
+                            case type = "type"
+                        }
+
+                        /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                        ///
+                        /// - Parameters:
+                        ///   - fillRule: Path fill rule. Defaults to 'nonzero'.
+                        ///   - path: SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public init(
+                            fillRule: FillRule? = nil,
+                            path: String
+                        ) {
+                            self.fillRule = fillRule
+                            self.path = path
+                        }
+
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        @_spi(Internal)
+                        public enum FillRule: String, Codable {
+                            case nonzero = "nonzero"
+                            case evenodd = "evenodd"
+                        }
+                    }
+
+                    /// Opacity applied to the composed layer output at this point in the modifier order.
+                    @_spi(Internal)
+                    public struct CompositionLayerOpacityModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "opacity"
+
+                        /// Opacity value from 0 to 1.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Opacity applied to the composed layer output at this point in the modifier order.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Opacity value from 0 to 1.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerColorMatrixModifier: Codable {
+                        /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public let matrix: [Double]
+
+                        /// The type of the modifier.
+                        public let type: String = "colorMatrix"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case matrix = "matrix"
+                            case type = "type"
+                        }
+
+                        /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - matrix: 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public init(
+                            matrix: [Double]
+                        ) {
+                            self.matrix = matrix
+                        }
+                    }
+
+                    /// Gaussian blur applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerGaussianBlurModifier: Codable {
+                        /// Gaussian blur radius.
+                        public let radius: Double
+
+                        /// The type of the modifier.
+                        public let type: String = "gaussianBlur"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case radius = "radius"
+                            case type = "type"
+                        }
+
+                        /// Gaussian blur applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - radius: Gaussian blur radius.
+                        public init(
+                            radius: Double
+                        ) {
+                            self.radius = radius
+                        }
+                    }
+
+                    /// Adds a signed brightness bias to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerBrightnessBiasModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "brightnessBias"
+
+                        /// Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Adds a signed brightness bias to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Applies a saturation adjustment to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerSaturateModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "saturate"
+
+                        /// Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Applies a saturation adjustment to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Represents a platform background material effect captured as layer rendering state.
+                    @_spi(Internal)
+                    public struct CompositionLayerBackgroundMaterialModifier: Codable {
+                        /// Material kind.
+                        public let kind: Kind
+
+                        /// The type of the modifier.
+                        public let type: String = "backgroundMaterial"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case kind = "kind"
+                            case type = "type"
+                        }
+
+                        /// Represents a platform background material effect captured as layer rendering state.
+                        ///
+                        /// - Parameters:
+                        ///   - kind: Material kind.
+                        public init(
+                            kind: Kind
+                        ) {
+                            self.kind = kind
+                        }
+
+                        /// Material kind.
+                        @_spi(Internal)
+                        public enum Kind: String, Codable {
+                            case glass = "glass"
+                        }
+                    }
+                }
+            }
+
+            /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+            @_spi(Internal)
+            public struct Root: Codable {
+                /// Ordered back-to-front references to child wireframes or child layers.
+                public let children: [Children]
+
+                /// Operation used when compositing the rendered group into its parent.
+                public let compositeOperation: CompositeOperation?
+
+                /// The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let height: Int64
+
+                /// Stable layer identifier, persistent throughout the view lifetime.
+                public let id: Int64
+
+                /// Ordered list of rendering modifiers applied to the composed layer output in array order.
+                public let modifiers: [Modifiers]?
+
+                /// The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                public let width: Int64
+
+                /// The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let x: Int64
+
+                /// The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let y: Int64
+
+                public enum CodingKeys: String, CodingKey {
+                    case children = "children"
+                    case compositeOperation = "compositeOperation"
+                    case height = "height"
+                    case id = "id"
+                    case modifiers = "modifiers"
+                    case width = "width"
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
+                ///
+                /// - Parameters:
+                ///   - children: Ordered back-to-front references to child wireframes or child layers.
+                ///   - compositeOperation: Operation used when compositing the rendered group into its parent.
+                ///   - height: The height in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - id: Stable layer identifier, persistent throughout the view lifetime.
+                ///   - modifiers: Ordered list of rendering modifiers applied to the composed layer output in array order.
+                ///   - width: The width in pixels of the layer. Uses the same coordinate space as mobile wireframes.
+                ///   - x: The position in pixels on the X axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                ///   - y: The position in pixels on the Y axis of the layer in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public init(
+                    children: [Children],
+                    compositeOperation: CompositeOperation? = nil,
+                    height: Int64,
+                    id: Int64,
+                    modifiers: [Modifiers]? = nil,
+                    width: Int64,
+                    x: Int64,
+                    y: Int64
+                ) {
+                    self.children = children
+                    self.compositeOperation = compositeOperation
+                    self.height = height
+                    self.id = id
+                    self.modifiers = modifiers
+                    self.width = width
+                    self.x = x
+                    self.y = y
+                }
+
+                /// A reference to a child wireframe or child layer in a composition layer.
+                @_spi(Internal)
+                public struct Children: Codable {
+                    /// The id of the referenced wireframe or layer.
+                    public let id: Int64
+
+                    /// The type of the child reference.
+                    public let type: ChildrenType
+
+                    public enum CodingKeys: String, CodingKey {
+                        case id = "id"
+                        case type = "type"
+                    }
+
+                    /// A reference to a child wireframe or child layer in a composition layer.
+                    ///
+                    /// - Parameters:
+                    ///   - id: The id of the referenced wireframe or layer.
+                    ///   - type: The type of the child reference.
+                    public init(
+                        id: Int64,
+                        type: ChildrenType
+                    ) {
+                        self.id = id
+                        self.type = type
+                    }
+
+                    /// The type of the child reference.
+                    @_spi(Internal)
+                    public enum ChildrenType: String, Codable {
+                        case wireframe = "wireframe"
+                        case layer = "layer"
+                    }
+                }
+
+                /// Operation used when compositing the rendered group into its parent.
+                @_spi(Internal)
+                public enum CompositeOperation: String, Codable {
+                    case sourceOver = "sourceOver"
+                    case destinationIn = "destinationIn"
+                    case plusDarker = "plusDarker"
+                }
+
+                /// A rendering modifier applied to the composed layer output.
+                @_spi(Internal)
+                public enum Modifiers: Codable {
+                    case compositionLayerClipModifier(value: CompositionLayerClipModifier)
+                    case compositionLayerOpacityModifier(value: CompositionLayerOpacityModifier)
+                    case compositionLayerColorMatrixModifier(value: CompositionLayerColorMatrixModifier)
+                    case compositionLayerGaussianBlurModifier(value: CompositionLayerGaussianBlurModifier)
+                    case compositionLayerBrightnessBiasModifier(value: CompositionLayerBrightnessBiasModifier)
+                    case compositionLayerSaturateModifier(value: CompositionLayerSaturateModifier)
+                    case compositionLayerBackgroundMaterialModifier(value: CompositionLayerBackgroundMaterialModifier)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .compositionLayerClipModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerOpacityModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerColorMatrixModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerGaussianBlurModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBrightnessBiasModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerSaturateModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBackgroundMaterialModifier(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(CompositionLayerClipModifier.self) {
+                            self = .compositionLayerClipModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerOpacityModifier.self) {
+                            self = .compositionLayerOpacityModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerColorMatrixModifier.self) {
+                            self = .compositionLayerColorMatrixModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerGaussianBlurModifier.self) {
+                            self = .compositionLayerGaussianBlurModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBrightnessBiasModifier.self) {
+                            self = .compositionLayerBrightnessBiasModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerSaturateModifier.self) {
+                            self = .compositionLayerSaturateModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBackgroundMaterialModifier.self) {
+                            self = .compositionLayerBackgroundMaterialModifier(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Modifiers`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Modifiers.self, error)
+                    }
+
+                    /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                    @_spi(Internal)
+                    public struct CompositionLayerClipModifier: Codable {
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        public let fillRule: FillRule?
+
+                        /// SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public let path: String
+
+                        /// The type of the modifier.
+                        public let type: String = "clip"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case fillRule = "fillRule"
+                            case path = "path"
+                            case type = "type"
+                        }
+
+                        /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                        ///
+                        /// - Parameters:
+                        ///   - fillRule: Path fill rule. Defaults to 'nonzero'.
+                        ///   - path: SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public init(
+                            fillRule: FillRule? = nil,
+                            path: String
+                        ) {
+                            self.fillRule = fillRule
+                            self.path = path
+                        }
+
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        @_spi(Internal)
+                        public enum FillRule: String, Codable {
+                            case nonzero = "nonzero"
+                            case evenodd = "evenodd"
+                        }
+                    }
+
+                    /// Opacity applied to the composed layer output at this point in the modifier order.
+                    @_spi(Internal)
+                    public struct CompositionLayerOpacityModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "opacity"
+
+                        /// Opacity value from 0 to 1.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Opacity applied to the composed layer output at this point in the modifier order.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Opacity value from 0 to 1.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerColorMatrixModifier: Codable {
+                        /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public let matrix: [Double]
+
+                        /// The type of the modifier.
+                        public let type: String = "colorMatrix"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case matrix = "matrix"
+                            case type = "type"
+                        }
+
+                        /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - matrix: 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public init(
+                            matrix: [Double]
+                        ) {
+                            self.matrix = matrix
+                        }
+                    }
+
+                    /// Gaussian blur applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerGaussianBlurModifier: Codable {
+                        /// Gaussian blur radius.
+                        public let radius: Double
+
+                        /// The type of the modifier.
+                        public let type: String = "gaussianBlur"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case radius = "radius"
+                            case type = "type"
+                        }
+
+                        /// Gaussian blur applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - radius: Gaussian blur radius.
+                        public init(
+                            radius: Double
+                        ) {
+                            self.radius = radius
+                        }
+                    }
+
+                    /// Adds a signed brightness bias to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerBrightnessBiasModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "brightnessBias"
+
+                        /// Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Adds a signed brightness bias to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Applies a saturation adjustment to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerSaturateModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "saturate"
+
+                        /// Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Applies a saturation adjustment to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Represents a platform background material effect captured as layer rendering state.
+                    @_spi(Internal)
+                    public struct CompositionLayerBackgroundMaterialModifier: Codable {
+                        /// Material kind.
+                        public let kind: Kind
+
+                        /// The type of the modifier.
+                        public let type: String = "backgroundMaterial"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case kind = "kind"
+                            case type = "type"
+                        }
+
+                        /// Represents a platform background material effect captured as layer rendering state.
+                        ///
+                        /// - Parameters:
+                        ///   - kind: Material kind.
+                        public init(
+                            kind: Kind
+                        ) {
+                            self.kind = kind
+                        }
+
+                        /// Material kind.
+                        @_spi(Internal)
+                        public enum Kind: String, Codable {
+                            case glass = "glass"
+                        }
+                    }
+                }
+            }
+
+            /// Sparse update for a composition layer. Omitted fields are unchanged.
+            @_spi(Internal)
+            public struct Updates: Codable {
+                /// When present, replaces the full child list for this layer.
+                public let children: [Children]?
+
+                /// Updated composite operation for this layer.
+                public let compositeOperation: CompositeOperation?
+
+                /// Updated height in pixels. Uses the same coordinate space as mobile wireframes.
+                public let height: Int64?
+
+                /// The id of the layer to update.
+                public let id: Int64
+
+                /// When present, replaces the full modifier list for this layer.
+                public let modifiers: [Modifiers]?
+
+                /// Updated width in pixels. Uses the same coordinate space as mobile wireframes.
+                public let width: Int64?
+
+                /// Updated X position in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let x: Int64?
+
+                /// Updated Y position in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public let y: Int64?
+
+                public enum CodingKeys: String, CodingKey {
+                    case children = "children"
+                    case compositeOperation = "compositeOperation"
+                    case height = "height"
+                    case id = "id"
+                    case modifiers = "modifiers"
+                    case width = "width"
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// Sparse update for a composition layer. Omitted fields are unchanged.
+                ///
+                /// - Parameters:
+                ///   - children: When present, replaces the full child list for this layer.
+                ///   - compositeOperation: Updated composite operation for this layer.
+                ///   - height: Updated height in pixels. Uses the same coordinate space as mobile wireframes.
+                ///   - id: The id of the layer to update.
+                ///   - modifiers: When present, replaces the full modifier list for this layer.
+                ///   - width: Updated width in pixels. Uses the same coordinate space as mobile wireframes.
+                ///   - x: Updated X position in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                ///   - y: Updated Y position in absolute coordinates. Uses the same coordinate space as mobile wireframes.
+                public init(
+                    children: [Children]? = nil,
+                    compositeOperation: CompositeOperation? = nil,
+                    height: Int64? = nil,
+                    id: Int64,
+                    modifiers: [Modifiers]? = nil,
+                    width: Int64? = nil,
+                    x: Int64? = nil,
+                    y: Int64? = nil
+                ) {
+                    self.children = children
+                    self.compositeOperation = compositeOperation
+                    self.height = height
+                    self.id = id
+                    self.modifiers = modifiers
+                    self.width = width
+                    self.x = x
+                    self.y = y
+                }
+
+                /// A reference to a child wireframe or child layer in a composition layer.
+                @_spi(Internal)
+                public struct Children: Codable {
+                    /// The id of the referenced wireframe or layer.
+                    public let id: Int64
+
+                    /// The type of the child reference.
+                    public let type: ChildrenType
+
+                    public enum CodingKeys: String, CodingKey {
+                        case id = "id"
+                        case type = "type"
+                    }
+
+                    /// A reference to a child wireframe or child layer in a composition layer.
+                    ///
+                    /// - Parameters:
+                    ///   - id: The id of the referenced wireframe or layer.
+                    ///   - type: The type of the child reference.
+                    public init(
+                        id: Int64,
+                        type: ChildrenType
+                    ) {
+                        self.id = id
+                        self.type = type
+                    }
+
+                    /// The type of the child reference.
+                    @_spi(Internal)
+                    public enum ChildrenType: String, Codable {
+                        case wireframe = "wireframe"
+                        case layer = "layer"
+                    }
+                }
+
+                /// Updated composite operation for this layer.
+                @_spi(Internal)
+                public enum CompositeOperation: String, Codable {
+                    case sourceOver = "sourceOver"
+                    case destinationIn = "destinationIn"
+                    case plusDarker = "plusDarker"
+                }
+
+                /// A rendering modifier applied to the composed layer output.
+                @_spi(Internal)
+                public enum Modifiers: Codable {
+                    case compositionLayerClipModifier(value: CompositionLayerClipModifier)
+                    case compositionLayerOpacityModifier(value: CompositionLayerOpacityModifier)
+                    case compositionLayerColorMatrixModifier(value: CompositionLayerColorMatrixModifier)
+                    case compositionLayerGaussianBlurModifier(value: CompositionLayerGaussianBlurModifier)
+                    case compositionLayerBrightnessBiasModifier(value: CompositionLayerBrightnessBiasModifier)
+                    case compositionLayerSaturateModifier(value: CompositionLayerSaturateModifier)
+                    case compositionLayerBackgroundMaterialModifier(value: CompositionLayerBackgroundMaterialModifier)
+
+                    // MARK: - Codable
+
+                    public func encode(to encoder: Encoder) throws {
+                        // Encode only the associated value, without encoding enum case
+                        var container = encoder.singleValueContainer()
+
+                        switch self {
+                        case .compositionLayerClipModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerOpacityModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerColorMatrixModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerGaussianBlurModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBrightnessBiasModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerSaturateModifier(let value):
+                            try container.encode(value)
+                        case .compositionLayerBackgroundMaterialModifier(let value):
+                            try container.encode(value)
+                        }
+                    }
+
+                    public init(from decoder: Decoder) throws {
+                        // Decode enum case from associated value
+                        let container = try decoder.singleValueContainer()
+
+                        if let value = try? container.decode(CompositionLayerClipModifier.self) {
+                            self = .compositionLayerClipModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerOpacityModifier.self) {
+                            self = .compositionLayerOpacityModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerColorMatrixModifier.self) {
+                            self = .compositionLayerColorMatrixModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerGaussianBlurModifier.self) {
+                            self = .compositionLayerGaussianBlurModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBrightnessBiasModifier.self) {
+                            self = .compositionLayerBrightnessBiasModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerSaturateModifier.self) {
+                            self = .compositionLayerSaturateModifier(value: value)
+                            return
+                        }
+                        if let value = try? container.decode(CompositionLayerBackgroundMaterialModifier.self) {
+                            self = .compositionLayerBackgroundMaterialModifier(value: value)
+                            return
+                        }
+                        let error = DecodingError.Context(
+                            codingPath: container.codingPath,
+                            debugDescription: """
+                            Failed to decode `Modifiers`.
+                            Ran out of possibilities when trying to decode the value of associated type.
+                            """
+                        )
+                        throw DecodingError.typeMismatch(Modifiers.self, error)
+                    }
+
+                    /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                    @_spi(Internal)
+                    public struct CompositionLayerClipModifier: Codable {
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        public let fillRule: FillRule?
+
+                        /// SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public let path: String
+
+                        /// The type of the modifier.
+                        public let type: String = "clip"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case fillRule = "fillRule"
+                            case path = "path"
+                            case type = "type"
+                        }
+
+                        /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
+                        ///
+                        /// - Parameters:
+                        ///   - fillRule: Path fill rule. Defaults to 'nonzero'.
+                        ///   - path: SVG path string defining the clip region, in coordinates local to the layer rectangle.
+                        public init(
+                            fillRule: FillRule? = nil,
+                            path: String
+                        ) {
+                            self.fillRule = fillRule
+                            self.path = path
+                        }
+
+                        /// Path fill rule. Defaults to 'nonzero'.
+                        @_spi(Internal)
+                        public enum FillRule: String, Codable {
+                            case nonzero = "nonzero"
+                            case evenodd = "evenodd"
+                        }
+                    }
+
+                    /// Opacity applied to the composed layer output at this point in the modifier order.
+                    @_spi(Internal)
+                    public struct CompositionLayerOpacityModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "opacity"
+
+                        /// Opacity value from 0 to 1.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Opacity applied to the composed layer output at this point in the modifier order.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Opacity value from 0 to 1.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerColorMatrixModifier: Codable {
+                        /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public let matrix: [Double]
+
+                        /// The type of the modifier.
+                        public let type: String = "colorMatrix"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case matrix = "matrix"
+                            case type = "type"
+                        }
+
+                        /// Color transformation using a 4x5 matrix applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - matrix: 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
+                        public init(
+                            matrix: [Double]
+                        ) {
+                            self.matrix = matrix
+                        }
+                    }
+
+                    /// Gaussian blur applied to the composed layer output.
+                    @_spi(Internal)
+                    public struct CompositionLayerGaussianBlurModifier: Codable {
+                        /// Gaussian blur radius.
+                        public let radius: Double
+
+                        /// The type of the modifier.
+                        public let type: String = "gaussianBlur"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case radius = "radius"
+                            case type = "type"
+                        }
+
+                        /// Gaussian blur applied to the composed layer output.
+                        ///
+                        /// - Parameters:
+                        ///   - radius: Gaussian blur radius.
+                        public init(
+                            radius: Double
+                        ) {
+                            self.radius = radius
+                        }
+                    }
+
+                    /// Adds a signed brightness bias to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerBrightnessBiasModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "brightnessBias"
+
+                        /// Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Adds a signed brightness bias to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Brightness bias from -1 to 1 added to each normalized RGB channel (alpha is unchanged). 0 leaves content unchanged. Positive values brighten; negative values darken. Each channel is clamped to [0, 1] after the bias is applied.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Applies a saturation adjustment to the rendered layer contents.
+                    @_spi(Internal)
+                    public struct CompositionLayerSaturateModifier: Codable {
+                        /// The type of the modifier.
+                        public let type: String = "saturate"
+
+                        /// Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public let value: Double
+
+                        public enum CodingKeys: String, CodingKey {
+                            case type = "type"
+                            case value = "value"
+                        }
+
+                        /// Applies a saturation adjustment to the rendered layer contents.
+                        ///
+                        /// - Parameters:
+                        ///   - value: Saturation multiplier. 1 leaves content unchanged. 0 removes saturation.
+                        public init(
+                            value: Double
+                        ) {
+                            self.value = value
+                        }
+                    }
+
+                    /// Represents a platform background material effect captured as layer rendering state.
+                    @_spi(Internal)
+                    public struct CompositionLayerBackgroundMaterialModifier: Codable {
+                        /// Material kind.
+                        public let kind: Kind
+
+                        /// The type of the modifier.
+                        public let type: String = "backgroundMaterial"
+
+                        public enum CodingKeys: String, CodingKey {
+                            case kind = "kind"
+                            case type = "type"
+                        }
+
+                        /// Represents a platform background material effect captured as layer rendering state.
+                        ///
+                        /// - Parameters:
+                        ///   - kind: Material kind.
+                        public init(
+                            kind: Kind
+                        ) {
+                            self.kind = kind
+                        }
+
+                        /// Material kind.
+                        @_spi(Internal)
+                        public enum Kind: String, Codable {
+                            case glass = "glass"
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1189,7 +3411,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     /// Label of the placeholder
     public var label: String?
 
-    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     public let permanentId: String?
 
     /// The type of the wireframe.
@@ -1223,7 +3445,7 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - label: Label of the placeholder
-    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
     ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -1452,6 +3674,7 @@ public struct SRSegment: SRDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case kotlinMultiplatform = "kotlin-multiplatform"
+        case maui = "maui"
     }
 
     /// View properties
@@ -1554,7 +3777,7 @@ public struct SRShapeWireframe: Codable, Hashable {
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     public let id: Int64
 
-    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     public let permanentId: String?
 
     /// The style of this wireframe.
@@ -1592,7 +3815,7 @@ public struct SRShapeWireframe: Codable, Hashable {
     ///   - clip: Schema of clipping information for a Wireframe.
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -1794,7 +4017,7 @@ public struct SRTextWireframe: Codable, Hashable {
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     public let id: Int64
 
-    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     public let permanentId: String?
 
     /// The style of this wireframe.
@@ -1844,7 +4067,7 @@ public struct SRTextWireframe: Codable, Hashable {
     ///   - clip: Schema of clipping information for a Wireframe.
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - text: The text value of the wireframe.
     ///   - textPosition: Schema of all properties of a TextPosition.
@@ -2023,7 +4246,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
     /// Whether this webview is visible or not.
     public let isVisible: Bool?
 
-    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     public let permanentId: String?
 
     /// The style of this wireframe.
@@ -2067,7 +4290,7 @@ public struct SRWebviewWireframe: Codable, Hashable {
     ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
     ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
     ///   - isVisible: Whether this webview is visible or not.
-    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path (32 lowercase hex characters). Used to correlate wireframes with RUM action events.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
     ///   - shapeStyle: The style of this wireframe.
     ///   - slotId: Unique Id of the slot containing this webview.
     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
@@ -2108,6 +4331,7 @@ public enum SRWireframe: Codable {
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
+    case embeddedViewWireframe(value: SREmbeddedViewWireframe)
 
     // MARK: - Codable
 
@@ -2125,6 +4349,8 @@ public enum SRWireframe: Codable {
         case .placeholderWireframe(let value):
             try container.encode(value)
         case .webviewWireframe(let value):
+            try container.encode(value)
+        case .embeddedViewWireframe(let value):
             try container.encode(value)
         }
     }
@@ -2153,6 +4379,10 @@ public enum SRWireframe: Codable {
             self = .webviewWireframe(value: value)
             return
         }
+        if let value = try? container.decode(SREmbeddedViewWireframe.self) {
+            self = .embeddedViewWireframe(value: value)
+            return
+        }
         let error = DecodingError.Context(
             codingPath: container.codingPath,
             debugDescription: """
@@ -2164,4 +4394,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/79d6285a53f07fe507952081fef124dbc3bdeaf2
+// Generated from https://github.com/DataDog/rum-events-format/tree/local
