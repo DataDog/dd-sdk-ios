@@ -67,6 +67,27 @@ class AttributesEquatableTests: XCTestCase {
         XCTAssertNotEqual(a.dd, b.dd)
     }
 
+    func testNestedArrayDifferentCountNotEqual() {
+        let a: [String: Encodable] = ["tags": ["x", "y"]]
+        let b: [String: Encodable] = ["tags": ["x"]]
+        XCTAssertNotEqual(a.dd, b.dd)
+    }
+
+    func testNestedJSONDecodedArrayDifferentCountNotEqual() throws {
+        let decoder = JSONDecoder()
+        let json1 = try decoder.decode([String: AnyCodable].self, from: #"{"tags": ["x", "y"]}"#.data(using: .utf8)!)
+        let json2 = try decoder.decode([String: AnyCodable].self, from: #"{"tags": ["x"]}"#.data(using: .utf8)!)
+        let a: [String: Encodable] = json1.mapValues { $0 as Encodable }
+        let b: [String: Encodable] = json2.mapValues { $0 as Encodable }
+        XCTAssertNotEqual(a.dd, b.dd)
+    }
+
+    func testAnyEncodableVsRawEqual() {
+        let a: [String: Encodable] = ["key": AnyEncodable("value")]
+        let b: [String: Encodable] = ["key": "value"]
+        XCTAssertEqual(a.dd, b.dd)
+    }
+
     func testNestedJSONDecodedObjectNotEqual() throws {
         let decoder = JSONDecoder()
         let json1 = try decoder.decode([String: AnyCodable].self, from: #"{"meta": {"env": "prod"}}"#.data(using: .utf8)!)

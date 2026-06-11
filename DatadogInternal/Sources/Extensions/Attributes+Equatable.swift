@@ -22,44 +22,30 @@ extension DatadogExtension: Equatable where ExtendedType == [String: Encodable] 
             return isAnyEqual(lhsVal, rhsVal)
         }
     }
-}
 
-/// Recursively compares two values for equality.
-///
-/// Accepts `Any` (not `Encodable`) so Swift can open the existential for `AnyHashable` casting.
-/// - `[Any]` arrays and `[String: Any]` objects are compared element-wise (the storage
-///   format produced by `AnyDecodable` when decoding JSON arrays and objects).
-/// - All `Hashable` types — scalars, typed arrays (`[String]`, `[Int]`, …) — are compared
-///   via `AnyHashable`. Non-`Hashable`, non-collection values are treated as unequal.
-private func isAnyEqual(_ lhs: Any, _ rhs: Any) -> Bool {
-    // Unwrap AnyCodable independently on either side so a raw value and a decoded
-    // wrapper for the same content compare equal (e.g. after a JSON round-trip).
-    if let l = lhs as? AnyCodable { return isAnyEqual(l.value, rhs) }
-    if let r = rhs as? AnyCodable { return isAnyEqual(lhs, r.value) }
-
-    // Unwrap AnyEncodable (used by the ObjC bridge via `swiftAttributes`).
-    if let l = lhs as? AnyEncodable { return isAnyEqual(l.value, rhs) }
-    if let r = rhs as? AnyEncodable { return isAnyEqual(lhs, r.value) }
-
-    if let l = lhs as? [Any], let r = rhs as? [Any] {
-        guard l.count == r.count else {
+    /// Recursively compares two values for equality.
+    ///
+    /// Accepts `Any` (not `Encodable`) so Swift can open the existential for `AnyHashable` casting.
+    /// - `[Any]` arrays and `[String: Any]` objects are compared element-wise (the storage
+    ///   format produced by `AnyDecodable` when decoding JSON arrays and objects).
+    /// - All `Hashable` types — scalars, typed arrays (`[String]`, `[Int]`, …) — are compared
+    ///   via `AnyHashable`. Non-`Hashable`, non-collection values are treated as unequal.
+    private static func isAnyEqual(_ lhs: Any, _ rhs: Any) -> Bool {
+        switch (lhs, rhs) {
+        // Unwrap AnyCodable independently on either side so a raw value and a decoded
+        // wrapper for the same content compare equal (e.g. after a JSON round-trip).
+        case (let l as AnyCodable, _): return isAnyEqual(l.value, rhs)
+        case (_, let r as AnyCodable): return isAnyEqual(lhs, r.value)
+        // Unwrap AnyEncodable (used by the ObjC bridge via `swiftAttributes`).
+        case (let l as AnyEncodable, _): return isAnyEqual(l.value, rhs)
+        case (_, let r as AnyEncodable): return isAnyEqual(lhs, r.value)
+        case (let l as [Any], let r as [Any]) where l.count == r.count:
+            return zip(l, r).allSatisfy { isAnyEqual($0, $1) }
+        case (let l as [String: Any], let r as [String: Any]) where l.count == r.count:
+            return l.allSatisfy { key, lVal in r[key].map { isAnyEqual(lVal, $0) } ?? false }
+        case (let l as AnyHashable, let r as AnyHashable): return l == r
+        default:
             return false
         }
-
-        return zip(l, r).allSatisfy { isAnyEqual($0, $1) }
     }
-
-    if let l = lhs as? [String: Any], let r = rhs as? [String: Any] {
-        guard l.count == r.count else {
-            return false
-        }
-
-        return l.allSatisfy { key, lVal in r[key].map { isAnyEqual(lVal, $0) } ?? false }
-    }
-
-    guard let l = lhs as? AnyHashable, let r = rhs as? AnyHashable else {
-        return false
-    }
-
-    return l == r
 }
