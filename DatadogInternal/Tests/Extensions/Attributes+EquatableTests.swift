@@ -7,7 +7,7 @@
 import XCTest
 @testable import DatadogInternal
 
-class DictionaryEncodableEqualityTests: XCTestCase {
+class AttributesEquatableTests: XCTestCase {
     func testScalarsEqual() {
         let a: [String: Encodable] = ["key": "value", "count": 42]
         let b: [String: Encodable] = ["key": "value", "count": 42]
