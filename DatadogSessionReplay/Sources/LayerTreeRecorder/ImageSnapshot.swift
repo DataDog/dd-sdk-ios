@@ -44,6 +44,9 @@ internal struct ImageSnapshotData: Sendable {
 
     /// The source layer bounds captured when the image was rendered.
     let bounds: CGRect
+
+    /// Layer dependencies captured when the image was rendered.
+    let dependencies: [CALayerReference]
 }
 
 /// Failure reason for a layer image snapshot.

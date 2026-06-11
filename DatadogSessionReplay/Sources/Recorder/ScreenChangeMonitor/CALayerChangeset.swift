@@ -45,6 +45,14 @@ internal struct CALayerChangeset: Sendable, Equatable {
         }
         return aspects.contains(.display) || aspects.contains(.draw)
     }
+
+    func hasChanges(for layer: CALayerReference) -> Bool {
+        aspects(for: layer) != nil
+    }
+
+    func hasChanges<S: Sequence>(for layers: S) -> Bool where S.Element == CALayerReference {
+        layers.contains { hasChanges(for: $0) }
+    }
 }
 
 extension CALayerChangeset: CustomStringConvertible {
