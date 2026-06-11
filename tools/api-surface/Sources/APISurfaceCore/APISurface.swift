@@ -62,9 +62,10 @@ public struct APISurface {
 
 /// The parsed SourceKit documentation for a single module, ready to print for any language.
 ///
-/// This is created inside a `parse-module` child process (one per module, each with its own sourcekitd), which is
-/// the only safe way to parallelize parsing: the in-process SourceKit daemon silently drops results when hit from
-/// multiple threads in the same process.
+/// Created inside a `parse-module` child process (one per module). Parsing is isolated per process rather than
+/// parallelized across threads in a single process because, in our own testing, parsing modules concurrently on
+/// multiple threads produced incomplete output: declarations were silently dropped (e.g. the ObjC surface shrank
+/// from 3566 to 1204 lines). A fresh SourceKit state per child process avoids that.
 internal struct ParsedAPISurface {
     private let docs: [SwiftDocs]
 
