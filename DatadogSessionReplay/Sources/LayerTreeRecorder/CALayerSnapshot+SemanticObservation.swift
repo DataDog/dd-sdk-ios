@@ -18,6 +18,9 @@ extension CALayerSnapshot {
 
         /// When `true`, the semantic payload owns how this layer is represented and sublayers are not captured.
         var ignoreSublayers: Bool = false
+
+        /// When `true`, image privacy does not apply to image snapshots captured from this layer or its sublayers.
+        var ignoresImagePrivacy: Bool = false
     }
 }
 
@@ -47,6 +50,10 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)
+        case _ as UIProgressView:
+            self.init(semantics: .layer, ignoresImagePrivacy: true)
+        case _ as UISlider:
+            self.init(semantics: .layer, ignoresImagePrivacy: true)
         case let stepper as UIStepper:
             self.init(stepper: stepper)
         case let textView as UITextView:

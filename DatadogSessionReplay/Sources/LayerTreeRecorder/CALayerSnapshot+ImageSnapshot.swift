@@ -68,9 +68,7 @@ extension CALayerSnapshot {
             return false
         }
 
-        return observation.allowsImageSnapshot(
-            imagePrivacyLevel: imagePrivacyLevel
-        )
+        return observation.allowsImageSnapshot(imagePrivacyLevel: imagePrivacyLevel)
     }
 }
 
@@ -114,9 +112,7 @@ extension ImageSnapshotRequest {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
-    fileprivate func allowsImageSnapshot(
-        imagePrivacyLevel: ImagePrivacyLevel
-    ) -> Bool {
+    fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
         switch semantics {
         case .image where imagePrivacyLevel == .maskNone:
             return true
