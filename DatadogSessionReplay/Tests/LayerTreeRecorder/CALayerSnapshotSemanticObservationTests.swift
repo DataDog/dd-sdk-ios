@@ -150,8 +150,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records progress view as layer semantics")
-    func recordsProgressViewAsLayerSemantics() {
+    @Test("Records progress view as layer semantics ignoring image privacy")
+    func recordsProgressViewAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
         let progressView = UIProgressView()
         progressView.progress = 0.75
@@ -160,7 +160,20 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: progressView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .layer))
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records slider as layer semantics ignoring image privacy")
+    func recordsSliderAsLayerSemanticsIgnoringImagePrivacy() {
+        // Given
+        let slider = UISlider()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: slider.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
