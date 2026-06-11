@@ -178,8 +178,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text view as layer semantics")
-    func recordsTextViewAsLayerSemantics() {
+    @Test("Records text view input semantics and records sublayers")
+    func recordsTextViewInputSemanticsAndRecordsSublayers() {
         // Given
         let textView = UITextView()
         textView.text = "Body"
@@ -190,12 +190,37 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .layer))
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: true,
+                isEditable: false,
+                isEmpty: false
+            )
+        )))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text field as layer semantics")
-    func recordsTextFieldAsLayerSemantics() {
+    @Test("Records empty text view input semantics")
+    func recordsEmptyTextViewInputSemantics() {
+        // Given
+        let textView = UITextView()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: false,
+                isEditable: true,
+                isEmpty: true
+            )
+        )))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records text field input semantics and records sublayers")
+    func recordsTextFieldInputSemanticsAndRecordsSublayers() {
         // Given
         let textField = UITextField()
         textField.text = "Value"
@@ -206,7 +231,33 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .layer))
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: true,
+                isEditable: true,
+                isEmpty: false
+            )
+        )))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records empty text field input semantics")
+    func recordsEmptyTextFieldInputSemantics() {
+        // Given
+        let textField = UITextField()
+        textField.placeholder = "Placeholder"
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: false,
+                isEditable: true,
+                isEmpty: true
+            )
+        )))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

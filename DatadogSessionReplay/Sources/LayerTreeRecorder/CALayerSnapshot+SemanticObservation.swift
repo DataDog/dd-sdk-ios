@@ -29,6 +29,7 @@ extension CALayerSnapshot.SemanticObservation {
         case label(LabelSemantics)
         case image(ImageSemantics)
         case stepper(StepperSemantics)
+        case textInput(TextInputSemantics)
         case switchControl(SwitchControlSemantics)
         case webView(WebViewSemantics)
     }
@@ -48,6 +49,10 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(imageView: imageView)
         case let stepper as UIStepper:
             self.init(stepper: stepper)
+        case let textView as UITextView:
+            self.init(textView: textView)
+        case let textField as UITextField:
+            self.init(textField: textField)
         case let switchControl as UISwitch:
             self.init(switchControl: switchControl)
         case let webView as WKWebView:
@@ -156,6 +161,41 @@ extension CALayerSnapshot.SemanticObservation {
         self.init(
             semantics: .stepper(.init(value: stepper.value)),
             ignoreSublayers: true
+        )
+    }
+}
+
+// MARK: - TextInputSemantics
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    struct TextInputSemantics: Sendable, Equatable {
+        let isSensitiveText: Bool
+        let isEditable: Bool
+        let isEmpty: Bool
+    }
+
+    fileprivate init(textView: UITextView) {
+        self.init(
+            semantics: .textInput(
+                .init(
+                    isSensitiveText: textView.dd.isSensitiveText,
+                    isEditable: textView.isEditable,
+                    isEmpty: textView.text.isEmpty
+                )
+            )
+        )
+    }
+
+    fileprivate init(textField: UITextField) {
+        self.init(
+            semantics: .textInput(
+                .init(
+                    isSensitiveText: textField.dd.isSensitiveText,
+                    isEditable: true,
+                    isEmpty: textField.text?.isEmpty ?? true
+                )
+            )
         )
     }
 }
