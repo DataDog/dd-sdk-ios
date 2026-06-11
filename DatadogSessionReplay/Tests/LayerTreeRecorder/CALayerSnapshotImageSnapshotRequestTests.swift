@@ -230,6 +230,28 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips button image sublayer when button image privacy override masks all")
+    func skipsButtonImageSublayerWhenButtonImagePrivacyOverrideMasksAll() throws {
+        // Given
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        button.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskAll
+
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+        imageView.layer.contents = NSObject()
+        button.addSubview(imageView)
+
+        let snapshot = try #require(CALayerSnapshot(from: button.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips semantic image layer when image privacy masks non-bundled images")
     func skipsSemanticImageLayerWhenImagePrivacyMasksNonBundledImages() throws {
         // Given
