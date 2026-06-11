@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
+
 /// Equatable conformance for `DatadogExtension` wrapping `[String: Encodable]`.
 ///
 /// Used by generated RUM model `==` implementations to compare dynamic attribute
@@ -43,6 +45,10 @@ extension DatadogExtension: Equatable where ExtendedType == [String: Encodable] 
             return zip(l, r).allSatisfy { isAnyEqual($0, $1) }
         case (let l as [String: Any], let r as [String: Any]) where l.count == r.count:
             return l.allSatisfy { key, lVal in r[key].map { isAnyEqual(lVal, $0) } ?? false }
+        // Normalize URL to its absoluteString so it compares equal to the String
+        // produced by AnyEncodable's encode path after a JSON round-trip.
+        case (let l as URL, _): return isAnyEqual(l.absoluteString, rhs)
+        case (_, let r as URL): return isAnyEqual(lhs, r.absoluteString)
         case (let l as AnyHashable, let r as AnyHashable): return l == r
         default:
             return false
