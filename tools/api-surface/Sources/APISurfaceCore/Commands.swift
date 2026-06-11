@@ -229,10 +229,11 @@ private func generateAPISurface(
 /// Parses every built module, returning per module (in input order) a map of language to its printed surface body.
 ///
 /// Parsing runs in parallel via one `parse-module` child process per module when the running tool can re-invoke
-/// itself (i.e. when launched as the `api-surface` executable). Otherwise — for example under `swift test`, where the
-/// host executable is the test runner — it falls back to serial, in-process parsing. Serial in-process parsing is the
-/// only safe single-process option: SourceKit's in-process daemon (sourcekitd) silently drops results under
-/// concurrent requests from multiple threads.
+/// itself (i.e. when launched as the `api-surface` executable). Otherwise, for example under `swift test` where the
+/// host executable is the test runner, it falls back to serial, in-process parsing. We use child processes rather
+/// than threads because, in our own testing, parsing modules concurrently on multiple threads in a single process
+/// produced incomplete output (declarations were silently dropped); serial in-process parsing is the safe
+/// single-process fallback.
 private func parseModules(
     surfaces: [APISurface],
     languages: [Language]
