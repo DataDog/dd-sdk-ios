@@ -67,7 +67,8 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // Handle mouse down only for now
         }
 
-        guard let clickedView = event.window?.contentView?.hitTest(event.locationInWindow) else {
+        // Run hitTesting on the root view to include toolbar buttons and chrome.
+        guard let clickedView = event.window?.rootView?.hitTest(event.locationInWindow) else {
             return nil // We don't know what was clicked
         }
 
@@ -87,7 +88,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // Tapped view is not eligible for producing RUM Action
         }
 
-        guard let action = appKitPredicate.rumAction(targetView: view) else {
+        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
 
