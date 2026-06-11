@@ -106,6 +106,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             }
         }()
 
+        let vitalsReaders = configuration.vitalsUpdateFrequency.map {
+            VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -136,12 +140,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map {
-                VitalsReaders(
-                    frequency: $0.timeInterval,
-                    telemetry: core.telemetry
-                )
-            },
+            vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
@@ -185,16 +184,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
-            timeseriesCollector: {
-                guard configuration.enableTimeseries, let vitalsReaders = configuration.vitalsUpdateFrequency.map({
-                    VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
-                }) else { return nil }
-                return TimeseriesSessionCollector(
-                    memoryReader: vitalsReaders.memory,
+            timeseriesCollector: configuration.enableTimeseries ? vitalsReaders.map {
+                TimeseriesSessionCollector(
+                    memoryReader: $0.memory,
                     featureScope: featureScope,
                     batchSize: configuration.timeseriesBatchSize
                 )
-            }()
+            } : nil
         )
 
         self.monitor = Monitor(
