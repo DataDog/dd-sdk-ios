@@ -781,7 +781,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.lastStartedApplicationID, applicationID)
         XCTAssertNotNil(collector.lastStartedSessionID, "Session ID should be set")
         XCTAssertFalse(collector.lastStartedSessionID?.isEmpty ?? true)
-        XCTAssertEqual(collector.lastStartedSessionType, scope.context.sessionID != .nullUUID ? .user : .user)
+        XCTAssertEqual(collector.lastStartedSessionType, .user)
     }
 
     func testWhenAppEntersBackground_itPausesTimeseriesCollector() {
