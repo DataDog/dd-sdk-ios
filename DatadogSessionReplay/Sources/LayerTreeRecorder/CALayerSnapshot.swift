@@ -108,10 +108,15 @@ extension CALayerSnapshot {
             return nil
         }
 
-        let privacy = privacy.applying(layer.privacyOverrides)
+        var privacy = privacy.applying(layer.privacyOverrides)
+
         let observation = privacy.isPrivate
             ? SemanticObservation(semantics: .layer, ignoreSublayers: true)
             : SemanticObservation(layer: layer, context: context)
+
+        if observation.ignoresImagePrivacy, layer.privacyOverrides?.imagePrivacy == nil {
+            privacy.imagePrivacyLevel = .maskNone
+        }
 
         let childVisibleBounds = layer.masksToBounds
             ? absoluteFrame.intersection(visibleBounds)

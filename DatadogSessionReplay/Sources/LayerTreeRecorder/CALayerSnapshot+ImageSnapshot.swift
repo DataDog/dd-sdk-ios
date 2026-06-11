@@ -68,10 +68,7 @@ extension CALayerSnapshot {
             return false
         }
 
-        return observation.allowsImageSnapshot(
-            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
-            imagePrivacyLevel: imagePrivacyLevel
-        )
+        return observation.allowsImageSnapshot(imagePrivacyLevel: imagePrivacyLevel)
     }
 }
 
@@ -115,20 +112,13 @@ extension ImageSnapshotRequest {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
-    fileprivate func allowsImageSnapshot(
-        textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
-        imagePrivacyLevel: ImagePrivacyLevel
-    ) -> Bool {
+    fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
         switch semantics {
         case .image where imagePrivacyLevel == .maskNone:
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
-        case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSensitiveText:
-            return true
-        case .textField(let textField) where textAndInputPrivacyLevel == .maskSensitiveInputs && !textField.isSensitiveText:
-            return true
-        case .layer, .activityIndicator, .progress, .stepper, .switchControl:
+        case .layer, .activityIndicator, .stepper, .switchControl:
             return true
         default:
             return false
