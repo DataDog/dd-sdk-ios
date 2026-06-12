@@ -1660,7 +1660,7 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject
     public var dataPoint: objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint
     public var timestamp: NSNumber
 public class objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint: NSObject
-    public var memoryMax: NSNumber
+    public var memoryFootprint: NSNumber
     public var memoryPercent: NSNumber
 public enum objc_RUMTimeseriesMemoryEventTimeseriesSchema: Int
     case object
