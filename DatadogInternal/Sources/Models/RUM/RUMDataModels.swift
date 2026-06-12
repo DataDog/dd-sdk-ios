@@ -5560,26 +5560,26 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             /// Memory measurements for this sample
             public struct DataPoint: Codable {
                 /// Physical memory footprint of the process in bytes
-                public let memoryMax: Double
+                public let memoryFootprint: Double
 
                 /// Memory footprint as a percentage of total device RAM
                 public let memoryPercent: Double
 
                 public enum CodingKeys: String, CodingKey {
-                    case memoryMax = "memory_max"
+                    case memoryFootprint = "memory_footprint"
                     case memoryPercent = "memory_percent"
                 }
 
                 /// Memory measurements for this sample
                 ///
                 /// - Parameters:
-                ///   - memoryMax: Physical memory footprint of the process in bytes
+                ///   - memoryFootprint: Physical memory footprint of the process in bytes
                 ///   - memoryPercent: Memory footprint as a percentage of total device RAM
                 public init(
-                    memoryMax: Double,
+                    memoryFootprint: Double,
                     memoryPercent: Double
                 ) {
-                    self.memoryMax = memoryMax
+                    self.memoryFootprint = memoryFootprint
                     self.memoryPercent = memoryPercent
                 }
             }
@@ -14574,4 +14574,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e6e26ff3a738130481c33ca08b30ffcc55e3f6e1
+// Generated from https://github.com/DataDog/rum-events-format/tree/eb33e481c74c6d84bbf29b6417acb5f0f3bb3b02
