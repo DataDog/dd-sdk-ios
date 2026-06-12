@@ -305,6 +305,7 @@
 		5B1877C12FDC060E005AC2CE /* ImageSnapshot+Redaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1877C02FDC0607005AC2CE /* ImageSnapshot+Redaction.swift */; };
 		5B1877C92FDC3EF0005AC2CE /* UIImage+FeatureDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1877C82FDC3EE6005AC2CE /* UIImage+FeatureDetection.swift */; };
 		5B1877CB2FDC4737005AC2CE /* UIImage+Redaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1877CA2FDC4732005AC2CE /* UIImage+Redaction.swift */; };
+		5B1877CD2FDC5744005AC2CE /* UIImage+DominantColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1877CC2FDC573B005AC2CE /* UIImage+DominantColor.swift */; };
 		5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */; };
 		5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
 		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
@@ -2067,6 +2068,7 @@
 		5B1877C02FDC0607005AC2CE /* ImageSnapshot+Redaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ImageSnapshot+Redaction.swift"; sourceTree = "<group>"; };
 		5B1877C82FDC3EE6005AC2CE /* UIImage+FeatureDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+FeatureDetection.swift"; sourceTree = "<group>"; };
 		5B1877CA2FDC4732005AC2CE /* UIImage+Redaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Redaction.swift"; sourceTree = "<group>"; };
+		5B1877CC2FDC573B005AC2CE /* UIImage+DominantColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+DominantColor.swift"; sourceTree = "<group>"; };
 		5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackFlagsClientTests.swift; sourceTree = "<group>"; };
 		5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestTests.swift; sourceTree = "<group>"; };
 		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
@@ -4050,6 +4052,7 @@
 				61054E142A6EE10A00AAA894 /* UIImage+SessionReplay.swift */,
 				5B1877C82FDC3EE6005AC2CE /* UIImage+FeatureDetection.swift */,
 				5B1877CA2FDC4732005AC2CE /* UIImage+Redaction.swift */,
+				5B1877CC2FDC573B005AC2CE /* UIImage+DominantColor.swift */,
 				962D72BE2CF7538800F86EF0 /* CGImage+SessionReplay.swift */,
 				D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */,
 				61054E152A6EE10A00AAA894 /* UIView+SessionReplay.swift */,
@@ -8363,6 +8366,7 @@
 				61054E742A6EE10A00AAA894 /* ViewTreeSnapshotProducer.swift in Sources */,
 				61054E7E2A6EE10A00AAA894 /* NodeRecorder.swift in Sources */,
 				5BF2BAA52FBF39C0000E999C /* CALayerSnapshot+Filter.swift in Sources */,
+				5B1877CD2FDC5744005AC2CE /* UIImage+DominantColor.swift in Sources */,
 				759200042FD2000100000001 /* CALayerSnapshot+ImageSnapshot.swift in Sources */,
 				962D72BC2CF6436700F86EF0 /* GraphicsImage.swift in Sources */,
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,

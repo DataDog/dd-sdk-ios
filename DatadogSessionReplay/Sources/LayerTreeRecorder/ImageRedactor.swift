@@ -43,7 +43,7 @@ internal final class ImageRedactor {
     }
 
     private enum Constants {
-        static let redactionColor = UIColor.black
+        static let fallbackRedactionColor = UIColor.black
     }
 
     private let cache = NSCache<CacheKey, UIImage>()
@@ -82,7 +82,8 @@ internal final class ImageRedactor {
             rectangles = []
         }
 
-        let redactedImage = image.image(redactingRectangles: rectangles, color: Constants.redactionColor)
+        let redactionColor = image.dominantColor() ?? Constants.fallbackRedactionColor
+        let redactedImage = image.image(redactingRectangles: rectangles, color: redactionColor)
         cache.setObject(redactedImage, forKey: cacheKey)
 
         return redactedImage
