@@ -66,7 +66,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         self.dataStore = dataStore
         self.messageReceiver = messageReceiver
 
-        messageReceiver.receive(message: .context(context), from: NOPDatadogCore())
+        messageReceiver.receive(message: .context(context), from: self)
 
         PassthroughCoreMock.referenceCount += 1
     }
