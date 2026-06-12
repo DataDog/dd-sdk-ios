@@ -12,7 +12,9 @@ public func sanitizeHostPatterns(
 ) -> [String: Set<TracingHeaderType>] {
     var warnings: [String] = []
     let sanitized = patterns.reduce(into: [String: Set<TracingHeaderType>]()) { result, item in
-        guard let lowercased = validatedHostPattern(item.key, collectingWarningsInto: &warnings) else { return }
+        guard let lowercased = validatedHostPattern(item.key, collectingWarningsInto: &warnings) else {
+            return
+        }
         result[lowercased] = item.value
     }
     emitPatternWarnings(warnings, warningMessage: warningMessage)

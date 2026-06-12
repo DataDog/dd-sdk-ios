@@ -161,7 +161,6 @@ public enum WebViewTracking {
             hostPatterns,
             warningMessage: "The WebView host pattern configured for Datadog SDK is not valid"
         )
-
         let allowedWebViewHostsString = validPatterns
             .map { "\"\($0)\"" }
             .joined(separator: ",")

@@ -1088,7 +1088,7 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertFalse(script.source.contains("\"\""))
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
         XCTAssertFalse(script.source.contains("https://foo.com"))
-        XCTAssertEqual(printFunction.printedMessages.count, 3)
+        XCTAssertEqual(printFunction.printedMessages.filter { $0.contains("is not a valid host pattern") }.count, 3)
     }
 }
 
