@@ -24,7 +24,7 @@ internal enum DeltaEncoder {
     /// {
     ///   "precision": 4,
     ///   "ts": [absoluteNs, delta1, delta2, ...],
-    ///   "memory_max": [scaledInt64, delta1, delta2, ...],
+    ///   "memory_footprint": [scaledInt64, delta1, delta2, ...],
     ///   "memory_percent": [scaledInt64, delta1, ...]
     /// }
     /// ```
@@ -34,22 +34,22 @@ internal enum DeltaEncoder {
         }
 
         var ts: [Int64] = []
-        var memoryMax: [Int64] = []
+        var memoryFootprint: [Int64] = []
         var memoryPercent: [Int64] = []
 
         for (index, sample) in batch.enumerated() {
             if index == 0 {
                 ts.append(sample.timestamp)
-                memoryMax.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * scale))
+                memoryFootprint.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryFootprint * scale))
                 memoryPercent.append(Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * scale))
             } else {
                 let prev = batch[index - 1]
                 let (tsDelta, _) = sample.timestamp.subtractingReportingOverflow(prev.timestamp)
                 ts.append(tsDelta)
-                let curMax = Int64.ddWithNoOverflow(sample.dataPoint.memoryMax * scale)
-                let prevMax = Int64.ddWithNoOverflow(prev.dataPoint.memoryMax * scale)
+                let curMax = Int64.ddWithNoOverflow(sample.dataPoint.memoryFootprint * scale)
+                let prevMax = Int64.ddWithNoOverflow(prev.dataPoint.memoryFootprint * scale)
                 let (maxDelta, _) = curMax.subtractingReportingOverflow(prevMax)
-                memoryMax.append(maxDelta)
+                memoryFootprint.append(maxDelta)
                 let curPct = Int64.ddWithNoOverflow(sample.dataPoint.memoryPercent * scale)
                 let prevPct = Int64.ddWithNoOverflow(prev.dataPoint.memoryPercent * scale)
                 let (pctDelta, _) = curPct.subtractingReportingOverflow(prevPct)
@@ -61,7 +61,7 @@ internal enum DeltaEncoder {
             "precision": precision,
             "resolution": "ns",
             "ts": ts,
-            "memory_max": memoryMax,
+            "memory_footprint": memoryFootprint,
             "memory_percent": memoryPercent
         ]
     }

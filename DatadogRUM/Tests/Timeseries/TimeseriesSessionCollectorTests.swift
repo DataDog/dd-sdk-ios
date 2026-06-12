@@ -50,7 +50,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.timeseries.name, "memory")
         XCTAssertEqual(event.timeseries.data.count, 2)
-        XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryMax, 1_000_000)
+        XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryFootprint, 1_000_000)
         XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryPercent, 0.025, accuracy: 0.001)
     }
 
@@ -114,7 +114,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events")
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events")
-        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data[0].dataPoint.memoryMax, 2_000_000)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data[0].dataPoint.memoryFootprint, 2_000_000)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0].timeseries.data[0].dataPoint.cpuUsage, 75.0)
     }
 
@@ -380,7 +380,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let dataDict = try XCTUnwrap(tsDict["data"] as? [String: Any])
         XCTAssertEqual(dataDict["resolution"] as? String, "ns")
         XCTAssertNotNil(dataDict["ts"])
-        XCTAssertNotNil(dataDict["memory_max"])
+        XCTAssertNotNil(dataDict["memory_footprint"])
         XCTAssertNotNil(dataDict["memory_percent"])
     }
 
