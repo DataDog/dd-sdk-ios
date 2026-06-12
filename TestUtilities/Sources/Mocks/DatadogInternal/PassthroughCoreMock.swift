@@ -78,25 +78,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     /// The typed message bus — delegates to `_messageBus`.
     public var messageBus: MessageBus { _messageBus }
 
-    /// Subscribes `receiver` to the typed bus and, for `DatadogContext` receivers,
-    /// delivers the current context immediately (mirrors `DatadogCore.add(messageReceiver:forKey:)`).
-    public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
-        _messageBus.subscribe(receiver: receiver)
-        if let currentContext = context as? Receiver.Message {
-            receiver.receive(message: currentContext, from: self)
-        }
-    }
-
-    /// Removes `receiver` from the typed bus.
-    public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
-        _messageBus.unsubscribe(receiver: receiver)
-    }
-
-    /// Delivers `message` to the typed bus.
-    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
-        _messageBus.send(message: message, else: fallback)
-    }
-
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
@@ -112,28 +93,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     }
 
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        var handled = messageReceiver.receive(message: message, from: self)
-
-        // Bridge legacy FeatureMessage senders to the typed bus so BusMessageReceiver
-        // subscribers receive messages during the gradual migration to the typed bus.
-        switch message {
-        case let .telemetry(msg):
-            _messageBus.send(message: msg, else: { })
-            handled = true
-        case let .payload(value):
-            if let crash = value as? Crash {
-                // Deliver to typed bus; if no subscriber is registered, preserve the
-                // original fallback so callers can detect the unhandled case.
-                _messageBus.send(message: crash, else: {
-                    if !handled { fallback() }
-                })
-                return
-            }
-        default:
-            break
+        if !messageReceiver.receive(message: message, from: self) {
+            fallback()
         }
-
-        if !handled { fallback() }
     }
 
     /// no-op

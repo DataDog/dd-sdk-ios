@@ -557,6 +557,7 @@ internal struct CoreTelemetry: Telemetry {
     ///
     /// - Parameter telemetry: The telemtry message.
     func send(telemetry: TelemetryMessage) {
+        core?.messageBus.send(message: telemetry)
         core?.send(message: .telemetry(telemetry))
     }
 }

@@ -18,7 +18,7 @@ class DDInternalLoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock()
-        core.subscribe(receiver: telemetry)
+        core.messageBus.subscribe(receiver: telemetry)
     }
 
     override func tearDown() {

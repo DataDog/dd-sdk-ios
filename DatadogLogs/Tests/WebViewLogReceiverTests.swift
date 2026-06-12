@@ -206,7 +206,7 @@ class WebViewLogReceiverTests: XCTestCase {
                 ]
             )
         )
-        core.subscribe(receiver: telemetryReceiver)
+        core.messageBus.subscribe(receiver: telemetryReceiver)
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
@@ -237,7 +237,7 @@ class WebViewLogReceiverTests: XCTestCase {
         let telemetryReceiver = TelemetryReceiverMock()
         let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: telemetryReceiver)
+        core.messageBus.subscribe(receiver: telemetryReceiver)
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
