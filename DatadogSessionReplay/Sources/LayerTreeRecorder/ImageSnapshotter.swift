@@ -115,6 +115,9 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 snapshot = ImageSnapshot(
                     image: cachedSnapshot.image,
                     frame: resolvedRequest.frame,
+                    layerClass: request.layerClass,
+                    delegateClass: request.delegateClass,
+                    semantics: request.semantics,
                     textAndInputPrivacyLevel: request.textAndInputPrivacyLevel,
                     imagePrivacyLevel: request.imagePrivacyLevel
                 )
@@ -126,6 +129,9 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                         opaque: request.isOpaque
                     ),
                     frame: resolvedRequest.frame,
+                    layerClass: request.layerClass,
+                    delegateClass: request.delegateClass,
+                    semantics: request.semantics,
                     textAndInputPrivacyLevel: request.textAndInputPrivacyLevel,
                     imagePrivacyLevel: request.imagePrivacyLevel
                 )

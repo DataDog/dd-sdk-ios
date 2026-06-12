@@ -32,6 +32,9 @@ struct ImageSnapshotterTests {
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == root.absoluteFrame)
         #expect(imageSnapshot.image.size == root.bounds.size)
+        #expect(imageSnapshot.layerClass == root.layerClass)
+        #expect(imageSnapshot.delegateClass == root.delegateClass)
+        #expect(imageSnapshot.semantics == root.observation.semantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -124,8 +127,8 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Refreshes privacy metadata when cached image is reused")
-    func refreshesPrivacyMetadataWhenCachedImageIsReused() async throws {
+    @Test("Refreshes snapshot metadata when cached image is reused")
+    func refreshesSnapshotMetadataWhenCachedImageIsReused() async throws {
         // Given
         let rootLayer = CALayer()
         rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
@@ -148,6 +151,9 @@ struct ImageSnapshotterTests {
         let firstImageSnapshot = try firstResult.get()
 
         // When
+        let delegate = UIView()
+        layer.delegate = delegate
+
         let secondRoot = try #require(
             CALayerSnapshot(
                 from: rootLayer,
@@ -162,6 +168,9 @@ struct ImageSnapshotterTests {
         #expect(firstImageSnapshot.image === secondImageSnapshot.image)
         #expect(secondImageSnapshot.textAndInputPrivacyLevel == .maskSensitiveInputs)
         #expect(secondImageSnapshot.imagePrivacyLevel == .maskAll)
+        #expect(secondImageSnapshot.layerClass == CATextLayer.self)
+        #expect(secondImageSnapshot.delegateClass == UIView.self)
+        #expect(secondImageSnapshot.semantics == secondRoot.sublayers.first?.observation.semantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

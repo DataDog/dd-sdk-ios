@@ -16,6 +16,8 @@ internal struct ImageSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
     let layerClass: AnyClass
+    let delegateClass: AnyClass?
+    let semantics: CALayerSnapshot.SemanticObservation.Semantics
     let bounds: CGRect
     let absoluteFrame: CGRect
     let visibleFrame: CGRect
@@ -31,6 +33,8 @@ internal struct ImageSnapshotRequest: Sendable {
         replayID: Int64,
         layer: CALayerReference,
         layerClass: AnyClass,
+        delegateClass: AnyClass?,
+        semantics: CALayerSnapshot.SemanticObservation.Semantics,
         bounds: CGRect,
         absoluteFrame: CGRect,
         visibleFrame: CGRect,
@@ -45,6 +49,8 @@ internal struct ImageSnapshotRequest: Sendable {
         self.replayID = replayID
         self.layer = layer
         self.layerClass = layerClass
+        self.delegateClass = delegateClass
+        self.semantics = semantics
         self.bounds = bounds
         self.absoluteFrame = absoluteFrame
         self.visibleFrame = visibleFrame

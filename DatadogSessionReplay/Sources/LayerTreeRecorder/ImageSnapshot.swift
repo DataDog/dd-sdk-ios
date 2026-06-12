@@ -18,17 +18,27 @@ internal final class ImageSnapshot: Sendable {
     /// The image frame in the root layer coordinate space.
     let frame: CGRect
 
+    let layerClass: AnyClass
+    let delegateClass: AnyClass?
+    let semantics: CALayerSnapshot.SemanticObservation.Semantics
+
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
 
     init(
         image: UIImage,
         frame: CGRect,
+        layerClass: AnyClass,
+        delegateClass: AnyClass?,
+        semantics: CALayerSnapshot.SemanticObservation.Semantics,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel
     ) {
         self.image = image
         self.frame = frame
+        self.layerClass = layerClass
+        self.delegateClass = delegateClass
+        self.semantics = semantics
         self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
         self.imagePrivacyLevel = imagePrivacyLevel
     }

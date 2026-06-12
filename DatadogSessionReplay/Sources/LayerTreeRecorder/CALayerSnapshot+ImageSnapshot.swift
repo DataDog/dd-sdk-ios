@@ -96,6 +96,8 @@ extension ImageSnapshotRequest {
             replayID: layerSnapshot.replayID,
             layer: layerSnapshot.layer,
             layerClass: layerSnapshot.layerClass,
+            delegateClass: layerSnapshot.delegateClass,
+            semantics: layerSnapshot.observation.semantics,
             bounds: layerSnapshot.bounds,
             absoluteFrame: layerSnapshot.absoluteFrame,
             visibleFrame: visibleFrame,

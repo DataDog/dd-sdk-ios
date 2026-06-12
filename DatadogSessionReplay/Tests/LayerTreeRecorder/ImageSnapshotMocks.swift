@@ -16,6 +16,9 @@ extension ImageSnapshot {
         ImageSnapshot(
             image: UIImage(),
             frame: .zero,
+            layerClass: CALayer.self,
+            delegateClass: nil,
+            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll,
             imagePrivacyLevel: .maskAll
         )
