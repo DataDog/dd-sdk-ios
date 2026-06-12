@@ -568,7 +568,11 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 1)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["failure"] as? String, "blocker")
+        #if os(watchOS)
+        XCTAssertEqual(metric.attributes["blockers"] as? [String], ["low_battery"])
+        #else
         XCTAssertEqual(metric.attributes["blockers"] as? [String], ["offline", "low_battery"])
+        #endif
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
     }
 
