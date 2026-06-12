@@ -6,6 +6,7 @@
 
 #if !os(watchOS) && canImport(UIKit)
 import DatadogInternal
+import UIKit
 
 /// Protocol defining the predicate for UIKit view controller tracking in RUM.
 ///

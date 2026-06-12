@@ -138,7 +138,12 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     ///
     /// May return `nil` if there's no good guess and the RUM Action for given `view` should not be produced.
     private func bestActionTargetFor(view: DDView) -> DDView? {
-        if let ddControl = view as? DDControl {
+        if view.className == "NSToolbarItemViewer" {
+            // In toolbars, if no button was explicitly attributed to item.view, the
+            // class that returns itself from hitTest is NSToolbarItemViewer, not the
+            // synthesized button inside it (NSToolbarButton instance).
+            return view
+        } else if let ddControl = view as? DDControl {
             // If the `view` is a `DDControl` (interactive element), accept it.
             return ddControl
         } else {

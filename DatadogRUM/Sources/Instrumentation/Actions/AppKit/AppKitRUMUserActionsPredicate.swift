@@ -34,10 +34,6 @@ public struct DefaultAppKitRUMActionsPredicate {
 
         if view.accessibilityIdentifier().isEmpty == false {
             return "\(className)(\(view.accessibilityIdentifier()))"
-        } else if let button = view as? NSButton, button.title.isEmpty == false {
-            return button.title
-        } else if let control = view as? NSControl {
-            return className + (control.action.map { " \($0.description)" } ?? "")
         // Some SwiftUI components are UIKit under the hood,
         // but need to clean up tangled SwiftUI name
         // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
