@@ -681,6 +681,7 @@ extension RUM.Configuration {
     /// Feature Flag available in RUM
     public enum FeatureFlag: String {
         case none
+        case viewUpdates
     }
 }
 

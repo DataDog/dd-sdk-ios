@@ -106,6 +106,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
+    /// The last full view event sent through the mapper, stored for `viewUpdates` projection.
+    /// `nil` until the first event is written; non-`nil` after that.
+    private var lastSentViewEvent: RUMViewEvent?
+
     /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
@@ -673,11 +677,18 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(
-                value: event,
-                metadata: event.metadata(viewIndexInSession: viewIndexInSession),
-                completion: completionHandler
-            )
+            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent {
+                let update = previousEvent.update(from: event)
+                lastSentViewEvent = event
+                writer.write(value: update, completion: completionHandler)
+            } else {
+                lastSentViewEvent = event
+                writer.write(
+                    value: event,
+                    metadata: event.metadata(viewIndexInSession: viewIndexInSession),
+                    completion: completionHandler
+                )
+            }
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event

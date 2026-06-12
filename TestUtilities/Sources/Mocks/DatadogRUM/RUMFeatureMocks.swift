@@ -1152,6 +1152,7 @@ extension RUMScopeDependencies {
         },
         appStateManager: AppStateManaging = AppStateManagerMock(),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags = .defaults,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
         },
@@ -1186,6 +1187,7 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory,
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
             sessionType: sessionType
@@ -1218,6 +1220,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         appStateManager: AppStateManager? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
         sessionType: RUMSessionType? = nil
@@ -1248,6 +1251,7 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             appStateManager: appStateManager ?? self.appStateManager,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
+            featureFlags: featureFlags ?? self.featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
             sessionType: sessionType
@@ -1316,40 +1320,6 @@ extension RUMViewScope {
         viewIndexInSession: Int = 0
     ) -> RUMViewScope {
         return RUMViewScope(
-            isInitialView: isInitialView,
-            parent: parent,
-            dependencies: dependencies,
-            identity: identity,
-            path: path,
-            name: name,
-            customTimings: customTimings,
-            startTime: startTime,
-            serverTimeOffset: serverTimeOffset,
-            interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: viewIndexInSession
-        )
-    }
-}
-
-extension RUMViewScope_ {
-    public static func mockAny() -> RUMViewScope_ {
-        return mockWith()
-    }
-
-    static func mockWith(
-        isInitialView: Bool = false,
-        parent: RUMContextProvider = RUMContextProviderMock(),
-        dependencies: RUMScopeDependencies = .mockAny(),
-        identity: ViewIdentifier = .mockViewIdentifier(),
-        path: String = .mockAny(),
-        name: String = .mockAny(),
-        customTimings: [String: Int64] = [:],
-        startTime: Date = .mockAny(),
-        serverTimeOffset: TimeInterval = .zero,
-        interactionToNextViewMetric: INVMetricTracking? = nil,
-        viewIndexInSession: Int = 0
-    ) -> RUMViewScope_ {
-        return RUMViewScope_(
             isInitialView: isInitialView,
             parent: parent,
             dependencies: dependencies,
