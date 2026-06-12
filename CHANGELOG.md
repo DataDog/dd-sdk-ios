@@ -13,8 +13,6 @@
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
 - [IMPROVEMENT] Add Objective-C API support for custom SDK instance names across all modules. See [#2955][]
-- [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
-- [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
 
 # 3.11.1 / 28-05-2026
 
@@ -1180,7 +1178,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
 [#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
 [#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
-[#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975 
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
 
 [@00fa9a]: https://github.com/00FA9A
