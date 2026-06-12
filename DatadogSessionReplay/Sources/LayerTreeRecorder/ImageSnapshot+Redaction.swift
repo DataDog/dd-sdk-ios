@@ -11,7 +11,7 @@ import UIKit
 
 /// Redaction to apply to a rendered image snapshot.
 @available(iOS 13.0, tvOS 13.0, *)
-internal enum ImageRedactionAction: Equatable {
+internal enum ImageRedactionAction: Hashable {
     case none
     case redactText
     case redactFaces
