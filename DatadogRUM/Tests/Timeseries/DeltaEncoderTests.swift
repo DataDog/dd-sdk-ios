@@ -18,7 +18,7 @@ class DeltaEncoderTests: XCTestCase {
 
     func testEncodeMemory_returnsNilForSingleSample() {
         let sample = RUMTimeseriesMemoryEvent.Timeseries.Data(
-            dataPoint: .init(memoryMax: 100.0, memoryPercent: 10.0),
+            dataPoint: .init(memoryFootprint: 100.0, memoryPercent: 10.0),
             timestamp: 1_000_000_000
         )
         XCTAssertNil(DeltaEncoder.encodeMemory([sample]))
@@ -27,9 +27,9 @@ class DeltaEncoderTests: XCTestCase {
     func testEncodeMemory_correctDeltaEncoding() throws {
         // Given
         let samples: [RUMTimeseriesMemoryEvent.Timeseries.Data] = [
-            .init(dataPoint: .init(memoryMax: 100.0, memoryPercent: 10.0), timestamp: 1_000_000_000),
-            .init(dataPoint: .init(memoryMax: 200.5, memoryPercent: 20.0), timestamp: 2_000_000_000),
-            .init(dataPoint: .init(memoryMax: 200.5, memoryPercent: 20.5), timestamp: 3_000_000_000)
+            .init(dataPoint: .init(memoryFootprint: 100.0, memoryPercent: 10.0), timestamp: 1_000_000_000),
+            .init(dataPoint: .init(memoryFootprint: 200.5, memoryPercent: 20.0), timestamp: 2_000_000_000),
+            .init(dataPoint: .init(memoryFootprint: 200.5, memoryPercent: 20.5), timestamp: 3_000_000_000)
         ]
 
         // When
@@ -42,9 +42,9 @@ class DeltaEncoderTests: XCTestCase {
         let ts = try XCTUnwrap(result["ts"] as? [Int64])
         XCTAssertEqual(ts, [1_000_000_000, 1_000_000_000, 1_000_000_000])
 
-        // memory_max: 100*10000=1_000_000, (200.5-100)*10000=1_005_000, 0
-        let memoryMax = try XCTUnwrap(result["memory_max"] as? [Int64])
-        XCTAssertEqual(memoryMax, [1_000_000, 1_005_000, 0])
+        // memory_footprint: 100*10000=1_000_000, (200.5-100)*10000=1_005_000, 0
+        let memoryFootprint = try XCTUnwrap(result["memory_footprint"] as? [Int64])
+        XCTAssertEqual(memoryFootprint, [1_000_000, 1_005_000, 0])
 
         // memory_percent: 10*10000=100_000, (20-10)*10000=100_000, (20.5-20)*10000=5_000
         let memoryPercent = try XCTUnwrap(result["memory_percent"] as? [Int64])
@@ -55,12 +55,12 @@ class DeltaEncoderTests: XCTestCase {
         // Values scaled to near Int64.max / Int64.min to exercise subtractingReportingOverflow
         let hugeBytes = Double(Int64.max) / 10_000.0
         let samples: [RUMTimeseriesMemoryEvent.Timeseries.Data] = [
-            .init(dataPoint: .init(memoryMax: hugeBytes, memoryPercent: 100.0), timestamp: Int64.max),
-            .init(dataPoint: .init(memoryMax: 0.0, memoryPercent: 0.0), timestamp: 0)
+            .init(dataPoint: .init(memoryFootprint: hugeBytes, memoryPercent: 100.0), timestamp: Int64.max),
+            .init(dataPoint: .init(memoryFootprint: 0.0, memoryPercent: 0.0), timestamp: 0)
         ]
         // Should not crash
         let result = try XCTUnwrap(DeltaEncoder.encodeMemory(samples))
-        XCTAssertNotNil(result["memory_max"] as? [Int64])
+        XCTAssertNotNil(result["memory_footprint"] as? [Int64])
     }
 
     // MARK: - CPU encoding

@@ -6551,8 +6551,8 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint: NSObject {
         self.root = root
     }
 
-    public var memoryMax: NSNumber {
-        root.swiftModel.dataPoint.memoryMax as NSNumber
+    public var memoryFootprint: NSNumber {
+        root.swiftModel.dataPoint.memoryFootprint as NSNumber
     }
 
     public var memoryPercent: NSNumber {
@@ -15458,4 +15458,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/41a1741091c4690633728ca86dee85fa12ef3fe1
+// Generated from https://github.com/DataDog/rum-events-format/tree/eb33e481c74c6d84bbf29b6417acb5f0f3bb3b02
