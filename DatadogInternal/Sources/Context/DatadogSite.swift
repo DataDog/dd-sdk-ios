@@ -54,7 +54,7 @@ extension DatadogSite {
     }
 
     /// The base CDN URL for fetching remote configuration documents.
-    /// The full URL (with API version path and ID) is constructed by `RemoteConfigurationSynchronizer`.
+    /// The full URL (with API version path and ID) is constructed by DatadogCore.
     public var remoteConfigurationEndpoint: URL {
         // swiftlint:disable:next force_unwrapping
         URL(string: "https://sdk-configuration.\(host)/")!

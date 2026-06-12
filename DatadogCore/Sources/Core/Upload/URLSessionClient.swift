@@ -35,22 +35,11 @@ internal class URLSessionClient: HTTPClient {
         self.session = session
     }
 
-    func fetch(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data), Error>) -> Void) {
-        let task = session.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            guard let http = response as? HTTPURLResponse, let data = data else {
-                completion(.failure(URLSessionTransportInconsistencyException()))
-                return
-            }
-            completion(.success((http, data)))
-        }
-        task.resume()
-    }
-
-    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void
+    ) {
         let task = session.dataTask(with: request) { data, response, error in
             completion(httpClientResult(for: (data, response, error)))
         }
@@ -76,17 +65,16 @@ private func basicHTTPAuthentication(username: String, password: String) -> Stri
     return "Basic \(credential)"
 }
 
-/// As `URLSession` returns 3-values-tuple for request execution, this function applies consistency constraints and turns
-/// it into only two possible states of `HTTPTransportResult`.
-private func httpClientResult(for urlSessionTaskCompletion: (Data?, URLResponse?, Error?)) -> Result<HTTPURLResponse, Error> {
-    let (_, response, error) = urlSessionTaskCompletion
+/// Returns a typed HTTP result from `URLSession`'s completion values.
+private func httpClientResult(for urlSessionTaskCompletion: (Data?, URLResponse?, Error?)) -> Result<(HTTPURLResponse, Data?), Error> {
+    let (data, response, error) = urlSessionTaskCompletion
 
     if let error = error {
         return .failure(error)
     }
 
     if let httpResponse = response as? HTTPURLResponse {
-        return .success(httpResponse)
+        return .success((httpResponse, data))
     }
 
     return .failure(URLSessionTransportInconsistencyException())

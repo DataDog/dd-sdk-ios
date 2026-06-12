@@ -12,27 +12,20 @@ internal protocol HTTPClient {
     /// - Parameters:
     ///   - request: The request to be sent.
     ///   - delegate: The task-specific delegate.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, delegate: URLSessionTaskDelegate?, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void)
-
-    /// Fetches the provided request using HTTP and returns both the response and the response body.
-    /// - Parameters:
-    ///   - request: The request to be sent.
-    ///   - completion: A closure that receives a Result containing either an (HTTPURLResponse, Data) pair or an Error.
-    func fetch(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data), Error>) -> Void)
+    ///   - completion: A closure that receives a Result containing either the HTTP response and body or an Error.
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void
+    )
 }
 
 extension HTTPClient {
     /// Sends the provided request using HTTP.
     /// - Parameters:
     ///   - request: The request to be sent.
-    ///   - completion: A closure that receives a Result containing either an HTTPURLResponse or an Error.
-    func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+    ///   - completion: A closure that receives a Result containing either the HTTP response and body or an Error.
+    func send(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data?), Error>) -> Void) {
         self.send(request: request, delegate: nil, completion: completion)
-    }
-
-    /// Default no-op — concrete types that support response body data must provide their own implementation.
-    func fetch(request: URLRequest, completion: @escaping (Result<(HTTPURLResponse, Data), Error>) -> Void) {
-        completion(.failure(NSError(domain: "HTTPClient", code: -1, userInfo: [NSLocalizedDescriptionKey: "fetch(_:) not implemented"])))
     }
 }

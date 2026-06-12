@@ -7,24 +7,25 @@
 import Foundation
 import DatadogInternal
 
-/// Owns the remote configuration cache and fetch lifecycle.
-///
-/// Created by `DatadogCore` during initialization when a `remoteConfigurationID` is provided.
-/// Call `sync(_:)` to fire a CDN fetch and update the cache.
+/// Provides the last successfully fetched remote configuration and refreshes its cache.
 ///
 /// TODO: Also trigger `sync()` on every app foreground transition so remote config
 /// is refreshed while the app is in use, not only at SDK init (RFC §Caching Strategy).
-internal final class RemoteConfigurationSynchronizer {
+internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
     let directory: Directory
     let httpClient: HTTPClient
 
     /// The result of the last cache read or CDN fetch.
-    /// `.success(data)` — data is available.
+    /// `.success(remoteConfiguration)` — remote configuration is available.
     /// `.failure` — no cache yet, or a read/write error.
     @ReadWriteLock
-    private(set) var cache: Result<Data, RemoteConfigurationError>
+    private(set) var cache: Result<RemoteConfiguration, RemoteConfigurationError>
+
+    var remoteConfiguration: RemoteConfiguration? {
+        try? cache.get()
+    }
 
     init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
         self.id = id
@@ -39,11 +40,22 @@ internal final class RemoteConfigurationSynchronizer {
 
     // MARK: - Private
 
-    private static func readCache(id: String, from directory: Directory) -> Result<Data, RemoteConfigurationError> {
+    private static func readCache(id: String, from directory: Directory) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        let data: Data
         do {
-            return .success(try directory.file(named: "\(id).json").read())
+            data = try directory.file(named: "\(id).json").read()
         } catch {
             return .failure(.diskError)
+        }
+
+        return decode(data)
+    }
+
+    private static func decode(_ data: Data) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        do {
+            return .success(try JSONDecoder().decode(RemoteConfiguration.self, from: data))
+        } catch {
+            return .failure(.decodingError(error))
         }
     }
 
@@ -52,7 +64,7 @@ internal final class RemoteConfigurationSynchronizer {
     /// Fires an async CDN fetch and updates the cache on success.
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
-    func sync(_ completionHandler: @escaping (Result<Data, RemoteConfigurationError>) -> Void) {
+    func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Build request with conditional ETag header if a previous ETag is stored.
         // Only send If-None-Match when the cache is usable — if cache is .failure,
         // a 304 response would leave us with no data to serve.
@@ -67,7 +79,7 @@ internal final class RemoteConfigurationSynchronizer {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
 
-        httpClient.fetch(request: request) { result in
+        httpClient.send(request: request, delegate: nil) { result in
             switch result {
             case .failure(let error):
                 completionHandler(.failure(.networkError(error)))
@@ -87,18 +99,26 @@ internal final class RemoteConfigurationSynchronizer {
                 }
 
                 // 3. Empty body
-                guard !data.isEmpty else {
+                guard let data = data, !data.isEmpty else {
                     completionHandler(.failure(.emptyBody))
+                    return
+                }
+
+                let remoteConfiguration: RemoteConfiguration
+                switch Self.decode(data) {
+                case .success(let decodedRemoteConfiguration):
+                    remoteConfiguration = decodedRemoteConfiguration
+                case .failure(let error):
+                    completionHandler(.failure(error))
                     return
                 }
 
                 // All checks passed — persist to disk and update in-memory cache.
                 // File.write uses .atomic (write to temp, then rename), so the update is
                 // all-or-nothing: the existing file is never left in a truncated state.
-                // Note: schema validation before write is deferred to RUM-16387.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
-                    self.cache = .success(data)
+                    self.cache = .success(remoteConfiguration)
 
                     // Store ETag for conditional requests on the next sync.
                     // If the response has no ETag, delete any stale validator so we
@@ -114,7 +134,7 @@ internal final class RemoteConfigurationSynchronizer {
                         try? self.directory.file(named: etagFileName).delete()
                     }
 
-                    completionHandler(.success(data))
+                    completionHandler(.success(remoteConfiguration))
                 } catch {
                     completionHandler(.failure(.diskError))
                 }
@@ -127,6 +147,7 @@ internal enum RemoteConfigurationError: Error, LocalizedError {
     case networkError(Error)
     case httpError(Int)
     case emptyBody
+    case decodingError(Error)
     case diskError
 
     var errorDescription: String? {
@@ -134,6 +155,7 @@ internal enum RemoteConfigurationError: Error, LocalizedError {
         case .networkError(let error): return "Network error: \(error.localizedDescription)"
         case .httpError(let code): return "Non-2xx response: HTTP \(code)"
         case .emptyBody: return "Empty response body"
+        case .decodingError(let error): return "Remote configuration decoding failed: \(error.localizedDescription)"
         case .diskError: return "Remote configuration disk read/write failed"
         }
     }

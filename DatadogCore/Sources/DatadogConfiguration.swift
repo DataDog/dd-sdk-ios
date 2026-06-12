@@ -247,8 +247,5 @@ extension Datadog {
 
         /// The default application state provider for accessing [application state](https://developer.apple.com/documentation/uikit/uiapplication/state).
         internal var appStateProvider: AppStateProvider = DefaultAppStateProvider()
-
-        /// Default remote configuration provider.
-        internal var remoteConfigurationProvider: RemoteConfigurationProvider = DefaultRemoteConfigurationProvider()
     }
 }
