@@ -63,6 +63,13 @@
     [DDURLSessionInstrumentation disableWithDelegateClass:[MockDelegate class]];
 }
 
+- (void)testURLSessionInstrumentationInstanceNameAPI {
+    DDURLSessionInstrumentationConfiguration *config = [[DDURLSessionInstrumentationConfiguration alloc] initWithDelegateClass:[MockDelegate class]];
+    NSString *instanceName = @"urlsession-test-instance";
+    [DDURLSessionInstrumentation enableDurationBreakdownWith:config instanceName:instanceName];
+    [DDURLSessionInstrumentation disableWithDelegateClass:[MockDelegate class] instanceName:instanceName];
+}
+
 #pragma clang diagnostic pop
 
 @end

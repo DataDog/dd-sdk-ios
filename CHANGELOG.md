@@ -11,6 +11,7 @@
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
+- [IMPROVEMENT] Add Objective-C API support for custom SDK instance names across all modules. See [#2955][]
 
 # 3.11.1 / 28-05-2026
 
@@ -1173,6 +1174,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
 [#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
+[#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
