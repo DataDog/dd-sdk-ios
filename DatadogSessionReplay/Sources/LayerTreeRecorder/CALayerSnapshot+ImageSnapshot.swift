@@ -37,11 +37,16 @@ extension CALayerSnapshot {
             return
         }
 
+        let previousSnapshotData = cache.snapshotData(forReplayID: replayID)
+        let hasChanges = changeset.hasContentChanges(for: layer)
+            || changeset.hasChanges(for: dependencies)
+            || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
+
         let request = ImageSnapshotRequest(
             layerSnapshot: self,
             visibleFrame: visibleFrame,
-            hasContentChanges: changeset.hasContentChanges(for: layer),
-            previousSnapshotData: cache.snapshotData(forReplayID: replayID)
+            hasChanges: hasChanges,
+            previousSnapshotData: previousSnapshotData
         )
 
         if let request, observation.ignoreSublayers || sublayers.isEmpty {
@@ -63,10 +68,7 @@ extension CALayerSnapshot {
             return false
         }
 
-        return observation.allowsImageSnapshot(
-            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
-            imagePrivacyLevel: imagePrivacyLevel
-        )
+        return observation.allowsImageSnapshot(imagePrivacyLevel: imagePrivacyLevel)
     }
 }
 
@@ -75,7 +77,7 @@ extension ImageSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
         visibleFrame: CGRect,
-        hasContentChanges: Bool,
+        hasChanges: Bool,
         previousSnapshotData: ImageSnapshotData?
     ) {
         guard layerSnapshot.allowsImageSnapshot else {
@@ -84,7 +86,8 @@ extension ImageSnapshotRequest {
 
         if layerSnapshot.layerClass == CALayer.self,
            layerSnapshot.contentsClass == nil,
-           !hasContentChanges,
+           layerSnapshot.dependencies.isEmpty,
+           !hasChanges,
            previousSnapshotData == nil {
             return nil
         }
@@ -98,7 +101,8 @@ extension ImageSnapshotRequest {
             visibleFrame: visibleFrame,
             isOpaque: layerSnapshot.isOpaque,
             hasContents: layerSnapshot.contentsClass != nil,
-            hasContentChanges: hasContentChanges,
+            dependencies: layerSnapshot.dependencies,
+            hasChanges: hasChanges,
             textAndInputPrivacyLevel: layerSnapshot.textAndInputPrivacyLevel,
             imagePrivacyLevel: layerSnapshot.imagePrivacyLevel,
             previousSnapshotData: previousSnapshotData
@@ -108,20 +112,13 @@ extension ImageSnapshotRequest {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
-    fileprivate func allowsImageSnapshot(
-        textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
-        imagePrivacyLevel: ImagePrivacyLevel
-    ) -> Bool {
+    fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
         switch semantics {
         case .image where imagePrivacyLevel == .maskNone:
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
-        case .text(let text) where textAndInputPrivacyLevel == .maskSensitiveInputs && !text.isSensitiveText:
-            return true
-        case .textField(let textField) where textAndInputPrivacyLevel == .maskSensitiveInputs && !textField.isSensitiveText:
-            return true
-        case .layer, .activityIndicator, .progress, .stepper, .switchControl:
+        case .layer, .activityIndicator, .stepper, .switchControl:
             return true
         default:
             return false

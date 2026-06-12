@@ -28,6 +28,7 @@ internal final class ImageSnapshotCache {
     private struct Metadata {
         let localRect: CGRect
         let bounds: CGRect
+        let dependencies: [CALayerReference]
         var lastFrameNumber: UInt64
     }
 
@@ -73,17 +74,39 @@ internal final class ImageSnapshotCache {
         return .init(
             snapshot: snapshot,
             localRect: metadata.localRect,
-            bounds: metadata.bounds
+            bounds: metadata.bounds,
+            dependencies: metadata.dependencies
         )
     }
 
-    func setSnapshotData(_ snapshotData: ImageSnapshotData, forReplayID replayID: Int64) {
+    func setSnapshotData(
+        _ snapshotData: ImageSnapshotData,
+        forReplayID replayID: Int64
+    ) {
         imageSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
         metadata[replayID] = .init(
             localRect: snapshotData.localRect,
             bounds: snapshotData.bounds,
+            dependencies: snapshotData.dependencies,
             lastFrameNumber: frameNumber
         )
+    }
+
+    @MainActor
+    func removeSnapshotDataForChanges(in changeset: CALayerChangeset) {
+        var replayIDs = Set<Int64>()
+
+        for change in changeset.contentChanges {
+            if let replayID = change.layer.resolve()?.replayID {
+                replayIDs.insert(replayID)
+            }
+        }
+
+        for (replayID, metadata) in metadata where changeset.hasChanges(for: metadata.dependencies) {
+            replayIDs.insert(replayID)
+        }
+
+        removeSnapshotData(forReplayIDs: replayIDs)
     }
 
     func removeSnapshotData(forReplayID replayID: Int64) {
