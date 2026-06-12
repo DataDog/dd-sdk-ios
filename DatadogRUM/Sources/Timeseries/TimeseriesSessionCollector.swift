@@ -186,7 +186,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         if let bytes = memoryReader.readVitalData() {
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             let dataPoint = RUMTimeseriesMemoryEvent.Timeseries.Data(
-                dataPoint: .init(memoryMax: bytes, memoryPercent: memoryPercent),
+                dataPoint: .init(memoryFootprint: bytes, memoryPercent: memoryPercent),
                 timestamp: now
             )
             memoryBuffer.append(dataPoint)
