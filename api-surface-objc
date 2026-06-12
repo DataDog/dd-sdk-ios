@@ -106,7 +106,7 @@ public final class objc_LogsConfiguration: NSObject
     public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?)
 public final class objc_Logs: NSObject
     public static func enable(with configuration: objc_LogsConfiguration = .init())
-    public static func enable(with configuration: objc_LogsConfiguration,instanceName: String?)
+    public static func enable(with configuration: objc_LogsConfiguration, instanceName: String?)
     public static func addAttribute(forKey key: String, value: Any)
     public static func addAttribute(forKey key: String, value: Any, instanceName: String?)
     public static func removeAttribute(forKey key: String)
@@ -148,7 +148,7 @@ public final class objc_Logger: NSObject
     public func add(tag: String)
     public func remove(tag: String)
     public static func create(with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger
-    public static func create(with configuration: objc_LoggerConfiguration,instanceName: String?) -> objc_Logger
+    public static func create(with configuration: objc_LoggerConfiguration, instanceName: String?) -> objc_Logger
 [?] extension objc_Logger
     public func _internal_sync_critical(message: String,error: Error?,attributes: [String: Any])
 public class objc_LogEvent: NSObject
