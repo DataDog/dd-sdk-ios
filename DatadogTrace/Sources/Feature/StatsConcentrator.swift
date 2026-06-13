@@ -7,15 +7,6 @@
 import Foundation
 import DatadogInternal
 
-// MARK: - Trilean
-
-/// Matches the protobuf `Trilean` enum used in `ClientGroupedStats.is_trace_root`.
-internal enum Trilean: Int, Encodable, Hashable, Sendable {
-    case notSet = 0
-    case `true` = 1
-    case `false` = 2
-}
-
 // MARK: - Aggregation Key
 
 /// The set of dimensions by which spans are grouped within a time bucket.

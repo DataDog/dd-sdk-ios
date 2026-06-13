@@ -76,10 +76,21 @@ extension Trace {
         /// Default: `nil`.
         public var customEndpoint: URL?
 
+        /// Custom server url for sending client-side stats.
+        ///
+        /// Stats are uploaded to a different intake than spans (`/api/v0.2/stats` vs `/api/v2/spans`),
+        /// so a separate override is required. Used mainly for integration tests against mock servers
+        /// and for advanced setups with self-hosted collectors.
+        ///
+        /// Has no effect unless `statsComputationEnabled` is also `true`.
+        ///
+        /// Default: `nil`.
+        public var customStatsEndpoint: URL?
+
         /// Enables client-side stats computation for APM.
         ///
         /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency distributions)
-        /// locally on all finished spans — including sampled-out ones — and uploads them to the Datadog
+        /// locally on all finished spans, including sampled-out ones, and uploads them to the Datadog
         /// stats intake. This provides accurate RED metrics regardless of the trace sampling rate.
         ///
         /// Default: `false`.
@@ -168,6 +179,7 @@ extension Trace {
         ///   - networkInfoEnabled: Determines if traces should be enriched with network connection information.
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
+        ///   - customStatsEndpoint: Custom server url for sending client-side stats.
         ///   - statsComputationEnabled: Enables client-side stats computation for APM.
         public init(
             sampleRate: SampleRate = .maxSampleRate,
@@ -178,6 +190,7 @@ extension Trace {
             networkInfoEnabled: Bool = false,
             eventMapper: EventMapper? = nil,
             customEndpoint: URL? = nil,
+            customStatsEndpoint: URL? = nil,
             statsComputationEnabled: Bool = false
         ) {
             self.sampleRate = sampleRate
@@ -188,6 +201,7 @@ extension Trace {
             self.networkInfoEnabled = networkInfoEnabled
             self.eventMapper = eventMapper
             self.customEndpoint = customEndpoint
+            self.customStatsEndpoint = customStatsEndpoint
             self.statsComputationEnabled = statsComputationEnabled
         }
     }

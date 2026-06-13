@@ -313,6 +313,8 @@ public enum Trace
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
+        public var customStatsEndpoint: URL?
+        public var statsComputationEnabled: Bool
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public enum FirstPartyHostsTracing
@@ -321,7 +323,7 @@ public enum Trace
             public static let defaultRedactedStatusCodes: Set<Int> = [404]
             public var redactedStatusCodes: Set<Int>
             public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
-        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil,customStatsEndpoint: URL? = nil,statsComputationEnabled: Bool = false)
 public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
