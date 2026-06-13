@@ -82,11 +82,11 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(stats.requestBuilder is StatsRequestBuilder)
     }
 
-    func testWhenStatsComputationEnabledWithCustomEndpoint_thenRequestBuilderUsesCustomURL() throws {
+    func testWhenStatsComputationEnabledWithCustomStatsEndpoint_thenRequestBuilderUsesCustomURL() throws {
         // Given
         let customURL: URL = .mockRandom()
         config.statsComputationEnabled = true
-        config.customEndpoint = customURL
+        config.customStatsEndpoint = customURL
 
         // When
         Trace.enable(with: config, in: core)
@@ -95,6 +95,21 @@ class ClientStatsFeatureTests: XCTestCase {
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
         let requestBuilder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, customURL)
+    }
+
+    func testWhenStatsComputationEnabledWithCustomEndpointOnly_thenStatsRequestBuilderDoesNotUseIt() throws {
+        // Given: customEndpoint is for spans, not stats. Setting it must not affect the stats request builder.
+        let spansURL: URL = .mockRandom()
+        config.statsComputationEnabled = true
+        config.customEndpoint = spansURL
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        let requestBuilder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+        XCTAssertNil(requestBuilder.customIntakeURL)
     }
 
     // MARK: - Feature Name

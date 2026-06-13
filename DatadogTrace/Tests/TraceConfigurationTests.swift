@@ -21,6 +21,20 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertFalse(config.networkInfoEnabled)
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
+        XCTAssertNil(config.customStatsEndpoint)
+        XCTAssertFalse(config.statsComputationEnabled)
+    }
+
+    func testCustomStatsEndpointInitParameter() {
+        // Given
+        let endpoint = URL(string: "https://stats.example.com")!
+
+        // When
+        let config = Trace.Configuration(customStatsEndpoint: endpoint)
+
+        // Then
+        XCTAssertEqual(config.customStatsEndpoint, endpoint)
+        XCTAssertNil(config.customEndpoint, "customEndpoint should remain independent of customStatsEndpoint")
     }
 
     func testDefaultURLSessionTrackingConfiguration() {

@@ -1275,6 +1275,14 @@
 		E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */; };
 		E7CSS02129C4D5A800000021 /* StatsConcentrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS02429C4D5A800000024 /* StatsConcentrator.swift */; };
 		E7CSS02329C4D5A800000023 /* StatsConcentratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS02629C4D5A800000026 /* StatsConcentratorTests.swift */; };
+		E7CSS03129C4D5A800000031 /* MsgPackEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS03429C4D5A800000034 /* MsgPackEncoder.swift */; };
+		E7CSS03329C4D5A800000033 /* MsgPackEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS03629C4D5A800000036 /* MsgPackEncoderTests.swift */; };
+		E7CSS04129C4D5A800000041 /* ClientStatsPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS04429C4D5A800000044 /* ClientStatsPayload.swift */; };
+		E7CSS04329C4D5A800000043 /* ClientStatsPayloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS04629C4D5A800000046 /* ClientStatsPayloadTests.swift */; };
+		E7CSS05129C4D5A800000051 /* StatsPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS05429C4D5A800000054 /* StatsPayload.swift */; };
+		E7CSS05329C4D5A800000053 /* StatsPayloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS05629C4D5A800000056 /* StatsPayloadTests.swift */; };
+		E7CSS06329C4D5A800000063 /* MsgPackTestDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS06629C4D5A800000066 /* MsgPackTestDecoder.swift */; };
+		E7CSS07129C4D5A800000071 /* Trilean.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS07429C4D5A800000074 /* Trilean.swift */; };
 		D2C1A50B29C4C4CB00946C31 /* SpanEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A8A524509FAA00DA608C /* SpanEventBuilder.swift */; };
 		D2C1A50C29C4C4CB00946C31 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
@@ -3042,6 +3050,14 @@
 		E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeatureTests.swift; sourceTree = "<group>"; };
 		E7CSS02429C4D5A800000024 /* StatsConcentrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsConcentrator.swift; sourceTree = "<group>"; };
 		E7CSS02629C4D5A800000026 /* StatsConcentratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsConcentratorTests.swift; sourceTree = "<group>"; };
+		E7CSS03429C4D5A800000034 /* MsgPackEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MsgPackEncoder.swift; sourceTree = "<group>"; };
+		E7CSS03629C4D5A800000036 /* MsgPackEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MsgPackEncoderTests.swift; sourceTree = "<group>"; };
+		E7CSS04429C4D5A800000044 /* ClientStatsPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsPayload.swift; sourceTree = "<group>"; };
+		E7CSS04629C4D5A800000046 /* ClientStatsPayloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsPayloadTests.swift; sourceTree = "<group>"; };
+		E7CSS05429C4D5A800000054 /* StatsPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsPayload.swift; sourceTree = "<group>"; };
+		E7CSS05629C4D5A800000056 /* StatsPayloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsPayloadTests.swift; sourceTree = "<group>"; };
+		E7CSS06629C4D5A800000066 /* MsgPackTestDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MsgPackTestDecoder.swift; sourceTree = "<group>"; };
+		E7CSS07429C4D5A800000074 /* Trilean.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trilean.swift; sourceTree = "<group>"; };
 		D2546C0729AF55E90054E00B /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
 		D2546C0A29AF56270054E00B /* MessageReceivers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReceivers.swift; sourceTree = "<group>"; };
 		D2552AF42BBC47D900A45725 /* WebEventIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEventIntegrationTests.swift; sourceTree = "<group>"; };
@@ -6657,6 +6673,7 @@
 				095AE9512F7D30BD00C332AE /* Sampling */,
 				61C5A87A24509A0C00DA608C /* Utils */,
 				973EF724C408F6C307F8D322 /* DDSketch */,
+				E7CSS03729C4D5A800000037 /* Stats */,
 			);
 			name = DatadogTrace;
 			path = ../DatadogTrace/Sources;
@@ -6680,6 +6697,7 @@
 				E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */,
 				E7CSS02629C4D5A800000026 /* StatsConcentratorTests.swift */,
 				C3DA51A343C9DC7532745612 /* DDSketch */,
+				E7CSS03829C4D5A800000038 /* Stats */,
 			);
 			name = DatadogTraceTests;
 			path = ../DatadogTrace/Tests;
@@ -7179,6 +7197,28 @@
 				F105FFCAFF3B8B9C95CDD5D9 /* ProtoEncoderTests.swift */,
 			);
 			path = DDSketch;
+			sourceTree = "<group>";
+		};
+		E7CSS03729C4D5A800000037 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				E7CSS04429C4D5A800000044 /* ClientStatsPayload.swift */,
+				E7CSS03429C4D5A800000034 /* MsgPackEncoder.swift */,
+				E7CSS05429C4D5A800000054 /* StatsPayload.swift */,
+				E7CSS07429C4D5A800000074 /* Trilean.swift */,
+			);
+			path = Stats;
+			sourceTree = "<group>";
+		};
+		E7CSS03829C4D5A800000038 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				E7CSS04629C4D5A800000046 /* ClientStatsPayloadTests.swift */,
+				E7CSS03629C4D5A800000036 /* MsgPackEncoderTests.swift */,
+				E7CSS06629C4D5A800000066 /* MsgPackTestDecoder.swift */,
+				E7CSS05629C4D5A800000056 /* StatsPayloadTests.swift */,
+			);
+			path = Stats;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -9255,6 +9295,10 @@
 				E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */,
 				E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */,
 				E7CSS02129C4D5A800000021 /* StatsConcentrator.swift in Sources */,
+				E7CSS03129C4D5A800000031 /* MsgPackEncoder.swift in Sources */,
+				E7CSS04129C4D5A800000041 /* ClientStatsPayload.swift in Sources */,
+				E7CSS05129C4D5A800000051 /* StatsPayload.swift in Sources */,
+				E7CSS07129C4D5A800000071 /* Trilean.swift in Sources */,
 				E7CSS01129C4D5A800000011 /* SpanSnapshot.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
 				D2C1A50529C4C4CB00946C31 /* DatadogTracer.swift in Sources */,
@@ -9283,6 +9327,10 @@
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */,
 				E7CSS02329C4D5A800000023 /* StatsConcentratorTests.swift in Sources */,
+				E7CSS03329C4D5A800000033 /* MsgPackEncoderTests.swift in Sources */,
+				E7CSS04329C4D5A800000043 /* ClientStatsPayloadTests.swift in Sources */,
+				E7CSS05329C4D5A800000053 /* StatsPayloadTests.swift in Sources */,
+				E7CSS06329C4D5A800000063 /* MsgPackTestDecoder.swift in Sources */,
 				E7CSS01329C4D5A800000013 /* SpanSnapshotTests.swift in Sources */,
 				615192D02BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
