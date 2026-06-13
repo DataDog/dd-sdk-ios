@@ -111,7 +111,7 @@ class IntegrationTests: XCTestCase {
             "--path", fixturesPackageFolder().path,
             "--language", "swift",
             "--output-file", generatedFile,
-            referenceFile
+            "--reference-file", referenceFile
         ])
         try verifyCommand.run()
     }
@@ -149,7 +149,7 @@ class IntegrationTests: XCTestCase {
             "--path", fixturesPackageFolder().path,
             "--language", "swift",
             "--output-file", generatedFile,
-            referenceFile
+            "--reference-file", referenceFile
         ])
 
         XCTAssertThrowsError(try verifyCommand.run()) { error in
