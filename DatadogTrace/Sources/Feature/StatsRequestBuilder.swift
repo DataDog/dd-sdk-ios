@@ -14,7 +14,8 @@ import DatadogInternal
 /// batch therefore get distinct sequence numbers, which is acceptable because the value is used
 /// for identification, not for stats aggregation.
 internal final class StatsSequenceNumberProvider {
-    @ReadWriteLock private var value: UInt64 = 0
+    @ReadWriteLock
+    private var value: UInt64 = 0
 
     /// Returns the next sequence number, starting at `1` for the first call.
     func next() -> UInt64 {
