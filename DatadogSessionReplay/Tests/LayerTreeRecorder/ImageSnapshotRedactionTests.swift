@@ -150,6 +150,27 @@ struct ImageSnapshotRedactionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts text field canvas views when masking all inputs")
+    func redactsTextFieldCanvasViewsWhenMaskingAllInputs() throws {
+        // Given
+        let snapshot = ImageSnapshot.mockAny(
+            delegateClass: try textFieldCanvasClass(),
+            textAndInputPrivacyLevel: .maskAllInputs
+        )
+        let textInput = CALayerSnapshot.SemanticObservation.TextInputSemantics(
+            isSensitiveText: false,
+            isEditable: true,
+            isEmpty: false
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: textInput)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact read-only text input layout fragments when masking all inputs")
     func doesNotRedactReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
@@ -453,6 +474,10 @@ private extension UIImage {
 
 private func textLayoutFragmentClass() throws -> AnyClass {
     try #require(NSClassFromString("_UITextLayoutFragmentView"))
+}
+
+private func textFieldCanvasClass() throws -> AnyClass {
+    try #require(NSClassFromString("_UITextFieldCanvasView"))
 }
 
 private func imageLayerClass() throws -> AnyClass {

@@ -38,7 +38,7 @@ extension UIImage {
         }
 
         filter.setValue(inputImage, forKey: kCIInputImageKey)
-        filter.setValue(inputImage.extent, forKey: "inputExtent")
+        filter.setValue(CIVector(cgRect: inputImage.extent), forKey: "inputExtent")
         filter.setValue(count, forKey: "inputCount")
 
         guard let outputImage = filter.outputImage else {

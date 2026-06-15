@@ -80,7 +80,8 @@ extension ImageSnapshot {
 
     private var isTextLayoutFragment: Bool {
         delegateClassName == "_UITextLayoutFragmentView" ||
-        delegateClassName == "_UITextViewCanvasView"
+        delegateClassName == "_UITextViewCanvasView" ||
+        delegateClassName == "_UITextFieldCanvasView"
     }
 
     private var isStaticText: Bool {
