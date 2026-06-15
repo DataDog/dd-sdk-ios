@@ -25,3 +25,14 @@ extension Trilean: Encodable {
         try container.encode(Int32(rawValue))
     }
 }
+
+extension Trilean: Decodable {
+    /// Decodes from the `Int32` raw value written by `encode(to:)`. Required so
+    /// `ExportedGroupedStats` can round-trip through the feature's JSON storage before
+    /// being mapped to the wire payload. Unknown raw values fall back to `notSet`.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(Int32.self)
+        self = Trilean(rawValue: Int(rawValue)) ?? .notSet
+    }
+}

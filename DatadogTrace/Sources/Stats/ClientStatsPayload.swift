@@ -170,3 +170,41 @@ internal struct ClientGroupedStats: Encodable {
         self.serviceSource = serviceSource
     }
 }
+
+// MARK: - Mapping from the concentrator's exported types
+
+extension ClientStatsBucket {
+    /// Maps a `StatsConcentrator`-exported bucket into the wire-format bucket.
+    init(_ exported: ExportedBucket) {
+        self.init(
+            start: exported.start,
+            duration: exported.duration,
+            stats: exported.stats.map(ClientGroupedStats.init)
+        )
+    }
+}
+
+extension ClientGroupedStats {
+    /// Maps a `StatsConcentrator`-exported grouped-stats entry into the wire-format entry.
+    /// `ExportedGroupedStats.synthetics` is dropped because the wire model hardcodes
+    /// `Synthetics` to `false` (the mobile SDK has no synthetic-test concept).
+    init(_ exported: ExportedGroupedStats) {
+        self.init(
+            service: exported.service,
+            name: exported.name,
+            resource: exported.resource,
+            httpStatusCode: exported.httpStatusCode,
+            type: exported.type,
+            spanKind: exported.spanKind,
+            isTraceRoot: exported.isTraceRoot,
+            hits: exported.hits,
+            errors: exported.errors,
+            duration: exported.duration,
+            topLevelHits: exported.topLevelHits,
+            okSummary: exported.okSummary,
+            errorSummary: exported.errorSummary,
+            peerTags: exported.peerTags,
+            serviceSource: exported.serviceSource
+        )
+    }
+}
