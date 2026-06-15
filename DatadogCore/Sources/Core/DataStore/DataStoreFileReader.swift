@@ -46,6 +46,6 @@ internal struct DataStoreFileReader {
             throw DataStoreFileReadingError.insufficientVersionBytes
         }
 
-        return data.withUnsafeBytes { $0.load(as: T.self) }
+        return data.withUnsafeBytes { $0.loadUnaligned(as: T.self) }
     }
 }
