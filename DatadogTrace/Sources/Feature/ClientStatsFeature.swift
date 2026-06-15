@@ -35,7 +35,9 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     ) {
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            runtimeID: UUID().uuidString,
+            sequenceNumberProvider: StatsSequenceNumberProvider()
         )
         self.messageReceiver = NOPFeatureMessageReceiver()
         self.performanceOverride = nil
