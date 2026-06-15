@@ -42,7 +42,7 @@ class HostPatternSanitizerTests: XCTestCase {
             "⚠️ Pattern not valid: '*.foo.*.bar.com' is not a valid host pattern and will be dropped."
         ))
         XCTAssertTrue(printFunction.printedMessages.contains(
-            "⚠️ Pattern not valid: '' is not a valid host pattern and will be dropped."
+            "⚠️ Pattern not valid: '' is not a valid host name and will be dropped."
         ))
     }
 
