@@ -7,7 +7,35 @@
 /// Equatable conformance for `DatadogExtension` wrapping `[String: Encodable]`.
 ///
 /// Used by generated RUM model `==` implementations to compare dynamic attribute
-/// dictionaries whose value type (`Encodable`) has no built-in equality.
+/// dictionaries whose value type (`Encodable`) has no built-in equality. This drives
+/// view-event diffing: two events whose attribute dictionaries compare equal produce
+/// no delta for the `context` field.
+///
+/// ## Comparison strategy
+///
+/// Values are compared recursively via `isAnyEqual(_:_:)`:
+/// - `AnyCodable` / `AnyEncodable` wrappers are unwrapped before comparison so that
+///   a raw Swift value and its decoded or ObjC-bridged wrapper for the same content
+///   compare equal.
+/// - `[Any]` arrays and `[String: Any]` dictionaries are compared element-wise
+///   (the in-memory format used by `AnyDecodable` for JSON collections).
+/// - Any remaining `Hashable` scalar — `Bool`, `Int`, `String`, typed arrays, … — is
+///   compared via `AnyHashable`.
+///
+/// ## Known limitations
+///
+/// - **Non-`Hashable` custom types**: a custom `Encodable` value that does not also
+///   conform to `Hashable` falls through to the `default` branch and is always
+///   considered unequal. Unchanged attributes of such a type will therefore always
+///   appear as changed in a delta and trigger a redundant update event. This is an
+///   inherent limitation of type-erased `Encodable` storage; a proper fix would
+///   require JSON-encoding both sides for comparison, which is too costly for
+///   in-memory diffing.
+/// - **ObjC `NSNumber` vs Swift `Bool`**: `AnyEncodable` unwrapping handles the
+///   common ObjC-bridge path, but a bare `NSNumber(value: true)` reaching the
+///   `AnyHashable` branch compares unequal to a Swift `Bool`. This edge case only
+///   arises when the same attribute key is written from both ObjC and Swift code;
+///   it is a pre-existing cross-bridge limitation and is not specific to this PR.
 extension DatadogExtension: Equatable where ExtendedType == [String: Encodable] {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         guard lhs.type.count == rhs.type.count else {
@@ -23,13 +51,8 @@ extension DatadogExtension: Equatable where ExtendedType == [String: Encodable] 
         }
     }
 
-    /// Recursively compares two values for equality.
-    ///
-    /// Accepts `Any` (not `Encodable`) so Swift can open the existential for `AnyHashable` casting.
-    /// - `[Any]` arrays and `[String: Any]` objects are compared element-wise (the storage
-    ///   format produced by `AnyDecodable` when decoding JSON arrays and objects).
-    /// - All `Hashable` types — scalars, typed arrays (`[String]`, `[Int]`, …) — are compared
-    ///   via `AnyHashable`. Non-`Hashable`, non-collection values are treated as unequal.
+    /// Recursively compares two values for equality. See the type-level documentation for the
+    /// full comparison strategy and known limitations.
     private static func isAnyEqual(_ lhs: Any, _ rhs: Any) -> Bool {
         switch (lhs, rhs) {
         // Unwrap AnyCodable independently on either side so a raw value and a decoded
