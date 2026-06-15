@@ -56,7 +56,7 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// The remote configuration provider, if configured.
-    let remoteConfigurationProvider: RemoteConfigurationProvider?
+    var remoteConfigurationProvider: RemoteConfigurationProvider?
 
     /// The last successfully fetched remote configuration, if any.
     var remoteConfiguration: RemoteConfiguration? {

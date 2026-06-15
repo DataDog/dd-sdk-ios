@@ -62,12 +62,16 @@ class RemoteConfigurationTests: XCTestCase {
         super.tearDown()
     }
 
-    private func makeProvider(id: String = "test-id") -> RemoteConfigurationProvider {
+    private func makeProvider(
+        id: String = "test-id",
+        telemetry: Telemetry = NOPTelemetry()
+    ) -> RemoteConfigurationProvider {
         RemoteConfigurationProvider(
             id: id,
             site: .us1,
             directory: coreDir.coreDirectory,
-            httpClient: httpClient
+            httpClient: httpClient,
+            telemetry: telemetry
         )
     }
 
@@ -132,6 +136,21 @@ class RemoteConfigurationTests: XCTestCase {
         let rc = makeProvider()
         guard case .failure = rc.cache else {
             return XCTFail("Expected cache to be .failure when no file exists on disk")
+        }
+    }
+
+    func testInitCacheDiskReadFailureReportsTelemetry() throws {
+        try FileManager.default.createDirectory(
+            at: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
+            withIntermediateDirectories: false
+        )
+        let telemetry = TelemetryMock()
+
+        let rc = makeProvider(telemetry: telemetry)
+
+        XCTAssertTrue(telemetry.messages.firstError()?.message.hasPrefix("[RemoteConfig] Cache read failed") == true)
+        guard case .failure(.diskError) = rc.cache else {
+            return XCTFail("Expected cache to be .failure when cached file cannot be read")
         }
     }
 

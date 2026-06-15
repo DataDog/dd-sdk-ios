@@ -16,6 +16,7 @@ internal final class RemoteConfigurationProvider {
     let site: DatadogSite
     let directory: Directory
     let httpClient: HTTPClient
+    private let telemetry: Telemetry
 
     /// The result of the last cache read or CDN fetch.
     /// `.success(remoteConfiguration)` — remote configuration is available.
@@ -27,25 +28,43 @@ internal final class RemoteConfigurationProvider {
         try? cache.get()
     }
 
-    init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
+    init(
+        id: String,
+        site: DatadogSite,
+        directory: Directory,
+        httpClient: HTTPClient,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         self.id = id
         self.site = site
         self.directory = directory
         self.httpClient = httpClient
+        self.telemetry = telemetry
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        self._cache = ReadWriteLock(wrappedValue: Self.readCache(id: id, from: directory))
+        self._cache = ReadWriteLock(wrappedValue: Self.readCache(id: id, from: directory, telemetry: telemetry))
     }
 
     // MARK: - Private
 
-    private static func readCache(id: String, from directory: Directory) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+    private static func readCache(
+        id: String,
+        from directory: Directory,
+        telemetry: Telemetry
+    ) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        let fileName = "\(id).json"
+        guard directory.hasFile(named: fileName) else {
+            return .failure(.diskError)
+        }
+
         let data: Data
         do {
-            data = try directory.file(named: "\(id).json").read()
+            data = try directory.file(named: fileName).read()
         } catch {
-            return .failure(.diskError)
+            let error = RemoteConfigurationError.diskError
+            telemetry.error("[RemoteConfig] Cache read failed", error: error)
+            return .failure(error)
         }
 
         return decode(data)
@@ -93,8 +112,7 @@ internal final class RemoteConfigurationProvider {
 
                 // 2. Non-2xx HTTP status
                 guard (200..<300).contains(http.statusCode) else {
-                    let error = RemoteConfigurationError.httpError(http.statusCode)
-                    completionHandler(.failure(error))
+                    completionHandler(.failure(.httpError(http.statusCode)))
                     return
                 }
 

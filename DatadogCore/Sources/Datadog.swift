@@ -424,15 +424,6 @@ extension DatadogCore {
         )
 
         let httpClient = configuration.httpClientFactory(configuration.proxyConfiguration)
-        let remoteConfigurationProvider = configuration.remoteConfigurationID.map {
-            RemoteConfigurationProvider(
-                id: $0,
-                site: configuration.site,
-                directory: directory.coreDirectory,
-                httpClient: httpClient
-            )
-        }
-
         self.init(
             directory: directory,
             dateProvider: configuration.dateProvider,
@@ -471,13 +462,23 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension,
-            remoteConfigurationProvider: remoteConfigurationProvider
+            isRunFromExtension: isRunFromExtension
         )
 
-        remoteConfigurationProvider?.sync { result in
-            if case .failure(let error) = result {
-                self.telemetry.error("[RemoteConfig] Sync failed", error: error)
+        if let remoteConfigurationID = configuration.remoteConfigurationID {
+            let remoteConfigurationProvider = RemoteConfigurationProvider(
+                id: remoteConfigurationID,
+                site: configuration.site,
+                directory: directory.coreDirectory,
+                httpClient: httpClient,
+                telemetry: self.telemetry
+            )
+            self.remoteConfigurationProvider = remoteConfigurationProvider
+
+            remoteConfigurationProvider.sync { result in
+                if case .failure(let error) = result {
+                    self.telemetry.error("[RemoteConfig] Sync failed", error: error)
+                }
             }
         }
 
