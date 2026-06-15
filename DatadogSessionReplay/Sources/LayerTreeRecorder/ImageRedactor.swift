@@ -11,7 +11,7 @@ import UIKit
 @available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageRedactionResult {
     case image(UIImage)
-    case placeholder
+    case placeholder(UIColor)
 }
 
 /// Redacts images before they are converted into replay payloads.
@@ -19,17 +19,14 @@ internal enum ImageRedactionResult {
 internal final class ImageRedactor {
     private final class CacheKey: NSObject {
         private let identifier: ObjectIdentifier
-        private let action: ImageRedactionAction
 
-        init(image: UIImage, action: ImageRedactionAction) {
+        init(image: UIImage) {
             self.identifier = ObjectIdentifier(image)
-            self.action = action
         }
 
         override var hash: Int {
             var hasher = Hasher()
             hasher.combine(identifier)
-            hasher.combine(action)
             return hasher.finalize()
         }
 
@@ -38,12 +35,8 @@ internal final class ImageRedactor {
                 return false
             }
 
-            return identifier == other.identifier && action == other.action
+            return identifier == other.identifier
         }
-    }
-
-    private enum Constants {
-        static let fallbackRedactionColor = UIColor.black
     }
 
     private let cache = NSCache<CacheKey, UIImage>()
@@ -56,32 +49,21 @@ internal final class ImageRedactor {
         case .none:
             return .image(image)
         case .placeholder:
-            return .placeholder
+            return .placeholder(image.redactionColor)
         case .redactText:
-            return .image(try redactedImage(for: image, action: action))
+            return .image(try imageRedactingText(from: image))
         }
     }
 
-    private func redactedImage(
-        for image: UIImage,
-        action: ImageRedactionAction
-    ) throws -> UIImage {
-        let cacheKey = CacheKey(image: image, action: action)
+    private func imageRedactingText(from image: UIImage) throws -> UIImage {
+        let cacheKey = CacheKey(image: image)
 
         if let cachedImage = cache.object(forKey: cacheKey) {
             return cachedImage
         }
 
-        let rectangles: [CGRect]
-        switch action {
-        case .redactText:
-            rectangles = try image.textRectangles()
-        case .none, .placeholder:
-            rectangles = []
-        }
-
-        let redactionColor = image.dominantColor() ?? Constants.fallbackRedactionColor
-        let redactedImage = image.image(redactingRectangles: rectangles, color: redactionColor)
+        let rectangles = try image.textRectangles()
+        let redactedImage = image.image(redactingRectangles: rectangles)
         cache.setObject(redactedImage, forKey: cacheKey)
 
         return redactedImage

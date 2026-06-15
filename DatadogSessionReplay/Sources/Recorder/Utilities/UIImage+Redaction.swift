@@ -8,14 +8,18 @@
 import UIKit
 
 extension UIImage {
-    func image(redactingRectangles rects: [CGRect], color: UIColor) -> UIImage {
+    var redactionColor: UIColor {
+        dominantColor ?? .black
+    }
+
+    func image(redactingRectangles rects: [CGRect], color: UIColor? = nil) -> UIImage {
         guard !rects.isEmpty else {
             return self
         }
 
         return UIGraphicsImageRenderer(size: size, format: imageRendererFormat).image { context in
             draw(at: .zero)
-            color.setFill()
+            (color ?? redactionColor).setFill()
             rects
                 .map { $0.intersection(CGRect(origin: .zero, size: size)) }
                 .filter { !$0.isNull }

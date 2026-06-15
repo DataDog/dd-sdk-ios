@@ -27,17 +27,18 @@ struct ImageRedactorTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Returns placeholder when image should not be sent")
-    func returnsPlaceholderWhenImageShouldNotBeSent() throws {
+    @Test("Returns placeholder with background color when image should not be sent")
+    func returnsPlaceholderWithBackgroundColorWhenImageShouldNotBeSent() throws {
         // Given
         let redactor = ImageRedactor()
-        let image = UIImage()
+        let image = UIImage.mockWith(color: .red)
 
         // When
         let result = try redactor.redact(image, action: .placeholder)
 
         // Then
-        #expect(result.isPlaceholder)
+        let backgroundColor = try #require(result.backgroundColor)
+        #expect(backgroundColor == .red)
     }
 }
 
@@ -51,12 +52,23 @@ private extension ImageRedactionResult {
         return image
     }
 
-    var isPlaceholder: Bool {
-        guard case .placeholder = self else {
-            return false
+    var backgroundColor: UIColor? {
+        guard case let .placeholder(backgroundColor) = self else {
+            return nil
         }
 
-        return true
+        return backgroundColor
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension UIImage {
+    static func mockWith(color: UIColor) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10))
+        return renderer.image { context in
+            color.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
+        }
     }
 }
 #endif

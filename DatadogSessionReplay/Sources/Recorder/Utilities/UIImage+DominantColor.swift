@@ -8,9 +8,18 @@
 import UIKit
 import CoreImage
 
+private var dominantColorKey: UInt8 = 0
+
 extension UIImage {
-    func dominantColor() -> UIColor? {
-        return dominantColors(count: 1, context: .sessionReplay).first?.color
+    var dominantColor: UIColor? {
+        if let color = objc_getAssociatedObject(self, &dominantColorKey) as? UIColor {
+            return color
+        }
+
+        let color = dominantColors(count: 1, context: .sessionReplay).first?.color
+        objc_setAssociatedObject(self, &dominantColorKey, color, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+        return color
     }
 
     private func dominantColors(
