@@ -42,7 +42,7 @@ extension ImageSnapshot {
     func redactionAction(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> ImageRedactionAction {
-        guard case .layer = semantics else {
+        guard hasLayerSemantics else {
             return .none
         }
 

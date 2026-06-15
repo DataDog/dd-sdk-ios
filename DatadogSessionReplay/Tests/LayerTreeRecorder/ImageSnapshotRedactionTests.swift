@@ -21,8 +21,7 @@ struct ImageSnapshotRedactionTests {
         let image = UIImage()
         let snapshot = ImageSnapshot.mockAny(
             image: image,
-            layerClass: CALayer.self,
-            semantics: .layer
+            layerClass: CALayer.self
         )
 
         // When
@@ -41,7 +40,6 @@ struct ImageSnapshotRedactionTests {
         let snapshot = ImageSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
-            semantics: .layer,
             imagePrivacyLevel: .maskAll
         )
 
@@ -59,7 +57,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: CALayer.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll,
             imagePrivacyLevel: .maskAll
         )
@@ -77,7 +74,7 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: UIImageView.self,
-            semantics: .image(.init(image: UIImage(), highlightedImage: nil, isHighlighted: false, tintColor: nil)),
+            hasLayerSemantics: false,
             textAndInputPrivacyLevel: .maskAll,
             imagePrivacyLevel: .maskAll
         )
@@ -176,7 +173,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: TestCGDrawingLayer.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -193,7 +189,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             delegateClass: TestCGDrawingView.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -210,7 +205,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             delegateClass: UILabel.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -227,7 +221,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: TestUILabelLayer.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -244,7 +237,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: CATextLayer.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -261,7 +253,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: CATextLayer.self,
-            semantics: .layer,
             textAndInputPrivacyLevel: .maskAllInputs
         )
 
@@ -278,7 +269,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: try imageLayerClass(),
-            semantics: .layer,
             imagePrivacyLevel: .maskAll
         )
 
@@ -295,7 +285,6 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: try imageLayerClass(),
-            semantics: .layer,
             imagePrivacyLevel: .maskNone
         )
 
@@ -314,7 +303,6 @@ struct ImageSnapshotRedactionTests {
         let snapshot = ImageSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
-            semantics: .layer,
             imagePrivacyLevel: .maskNonBundledOnly
         )
 
@@ -333,7 +321,6 @@ struct ImageSnapshotRedactionTests {
         let maskNonBundledOnlySnapshot = ImageSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
-            semantics: .layer,
             imagePrivacyLevel: .maskNonBundledOnly
         )
 

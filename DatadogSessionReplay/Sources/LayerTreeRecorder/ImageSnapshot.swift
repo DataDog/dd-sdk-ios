@@ -20,7 +20,7 @@ internal final class ImageSnapshot: Sendable {
 
     let layerClass: AnyClass
     let delegateClass: AnyClass?
-    let semantics: CALayerSnapshot.SemanticObservation.Semantics
+    let hasLayerSemantics: Bool
 
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -30,7 +30,7 @@ internal final class ImageSnapshot: Sendable {
         frame: CGRect,
         layerClass: AnyClass,
         delegateClass: AnyClass?,
-        semantics: CALayerSnapshot.SemanticObservation.Semantics,
+        hasLayerSemantics: Bool,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel
     ) {
@@ -38,7 +38,7 @@ internal final class ImageSnapshot: Sendable {
         self.frame = frame
         self.layerClass = layerClass
         self.delegateClass = delegateClass
-        self.semantics = semantics
+        self.hasLayerSemantics = hasLayerSemantics
         self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
         self.imagePrivacyLevel = imagePrivacyLevel
     }

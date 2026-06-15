@@ -97,7 +97,7 @@ extension ImageSnapshotRequest {
             layer: layerSnapshot.layer,
             layerClass: layerSnapshot.layerClass,
             delegateClass: layerSnapshot.delegateClass,
-            semantics: layerSnapshot.observation.semantics,
+            hasLayerSemantics: layerSnapshot.observation.semantics == .layer,
             bounds: layerSnapshot.bounds,
             absoluteFrame: layerSnapshot.absoluteFrame,
             visibleFrame: visibleFrame,

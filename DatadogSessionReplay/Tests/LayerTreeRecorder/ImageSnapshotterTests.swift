@@ -34,7 +34,7 @@ struct ImageSnapshotterTests {
         #expect(imageSnapshot.image.size == root.bounds.size)
         #expect(imageSnapshot.layerClass == root.layerClass)
         #expect(imageSnapshot.delegateClass == root.delegateClass)
-        #expect(imageSnapshot.semantics == root.observation.semantics)
+        #expect(imageSnapshot.hasLayerSemantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -170,7 +170,7 @@ struct ImageSnapshotterTests {
         #expect(secondImageSnapshot.imagePrivacyLevel == .maskAll)
         #expect(secondImageSnapshot.layerClass == CATextLayer.self)
         #expect(secondImageSnapshot.delegateClass == UIView.self)
-        #expect(secondImageSnapshot.semantics == secondRoot.sublayers.first?.observation.semantics)
+        #expect(secondImageSnapshot.hasLayerSemantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

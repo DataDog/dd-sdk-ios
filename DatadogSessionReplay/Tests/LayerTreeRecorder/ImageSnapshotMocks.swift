@@ -17,7 +17,7 @@ extension ImageSnapshot {
         frame: CGRect = .zero,
         layerClass: AnyClass = CALayer.self,
         delegateClass: AnyClass? = nil,
-        semantics: CALayerSnapshot.SemanticObservation.Semantics = .layer,
+        hasLayerSemantics: Bool = true,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
         imagePrivacyLevel: ImagePrivacyLevel = .maskAll
     ) -> ImageSnapshot {
@@ -26,7 +26,7 @@ extension ImageSnapshot {
             frame: frame,
             layerClass: layerClass,
             delegateClass: delegateClass,
-            semantics: semantics,
+            hasLayerSemantics: hasLayerSemantics,
             textAndInputPrivacyLevel: textAndInputPrivacyLevel,
             imagePrivacyLevel: imagePrivacyLevel
         )
