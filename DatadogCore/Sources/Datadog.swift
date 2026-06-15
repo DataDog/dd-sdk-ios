@@ -475,9 +475,9 @@ extension DatadogCore {
             )
             self.remoteConfigurationProvider = remoteConfigurationProvider
 
-            remoteConfigurationProvider.sync { result in
+            remoteConfigurationProvider.sync { [weak self] result in
                 if case .failure(let error) = result {
-                    self.telemetry.error("[RemoteConfig] Sync failed", error: error)
+                    self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
                 }
             }
         }
