@@ -23,26 +23,6 @@ extension UIImage {
             .map(\.boundingBox)
             .map(convertFromBoundingBox)
     }
-
-    func faceRectangles() throws -> [CGRect] {
-        let request = VNDetectFaceRectanglesRequest()
-
-        if #available(iOS 15.0, tvOS 15.0, *) {
-            request.revision = VNDetectFaceRectanglesRequestRevision3
-        } else {
-            request.revision = VNDetectFaceRectanglesRequestRevision2
-        }
-
-        try performFeatureDetection(with: request)
-
-        guard let results = request.results else {
-            return []
-        }
-
-        return results
-            .map(\.boundingBox)
-            .map(convertFromBoundingBox)
-    }
 }
 
 extension UIImage {

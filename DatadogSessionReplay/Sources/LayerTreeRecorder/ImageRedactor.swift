@@ -57,7 +57,7 @@ internal final class ImageRedactor {
             return .image(image)
         case .placeholder:
             return .placeholder
-        case .redactText, .redactFaces:
+        case .redactText:
             return .image(try redactedImage(for: image, action: action))
         }
     }
@@ -76,8 +76,6 @@ internal final class ImageRedactor {
         switch action {
         case .redactText:
             rectangles = try image.textRectangles()
-        case .redactFaces:
-            rectangles = try image.faceRectangles()
         case .none, .placeholder:
             rectangles = []
         }

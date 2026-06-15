@@ -14,7 +14,6 @@ import UIKit
 internal enum ImageRedactionAction: Hashable {
     case none
     case redactText
-    case redactFaces
     case placeholder
 }
 
@@ -27,16 +26,12 @@ extension ImageSnapshot {
             return .none
         }
 
-        if isImageLayer && imagePrivacyLevel == .maskAll {
-            return .placeholder
+        if isImageLayer {
+            return imageLayerRedactionAction
         }
 
         if shouldRedactText(parentTextInput: parentTextInput) {
             return .redactText
-        }
-
-        if isImageLayer {
-            return .redactFaces
         }
 
         return .none
@@ -76,6 +71,20 @@ extension ImageSnapshot {
 
     private var isImageLayer: Bool {
         layerClassName == "SwiftUI.ImageLayer"
+    }
+
+    private var imageLayerRedactionAction: ImageRedactionAction {
+        switch imagePrivacyLevel {
+        case .maskNone:
+            return .none
+        case .maskNonBundledOnly:
+            guard let cgImage = image.cgImage else {
+                return .placeholder
+            }
+            return cgImage.isLikelyBundled(scale: image.scale) ? .none : .placeholder
+        case .maskAll:
+            return .placeholder
+        }
     }
 
     private var layerClassName: String {

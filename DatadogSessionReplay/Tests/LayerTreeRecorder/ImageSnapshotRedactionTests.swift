@@ -7,6 +7,7 @@
 #if os(iOS)
 import ObjectiveC
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 
@@ -250,27 +251,58 @@ struct ImageSnapshotRedactionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Redacts faces in SwiftUI image layers when not masking all images")
-    func redactsFacesInSwiftUIImageLayersWhenNotMaskingAllImages() throws {
+    @Test("Does not redact SwiftUI image layers when image masking is disabled")
+    func doesNotRedactSwiftUIImageLayersWhenImageMaskingIsDisabled() throws {
         // Given
-        let maskNoneSnapshot = ImageSnapshot.mockAny(
+        let snapshot = ImageSnapshot.mockAny(
             layerClass: try imageLayerClass(),
             semantics: .layer,
             imagePrivacyLevel: .maskNone
         )
-        let maskNonBundledOnlySnapshot = ImageSnapshot.mockAny(
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: nil)
+
+        // Then
+        #expect(action == .none)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Does not redact small SwiftUI image layers when masking non-bundled images")
+    func doesNotRedactSmallSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
+        // Given
+        let image = UIImage(cgImage: MockCGImage.mockWith(width: 100), scale: 1, orientation: .up)
+        let snapshot = ImageSnapshot.mockAny(
+            image: image,
             layerClass: try imageLayerClass(),
             semantics: .layer,
             imagePrivacyLevel: .maskNonBundledOnly
         )
 
         // When
-        let maskNoneAction = maskNoneSnapshot.redactionAction(parentTextInput: nil)
+        let action = snapshot.redactionAction(parentTextInput: nil)
+
+        // Then
+        #expect(action == .none)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Uses placeholder for large SwiftUI image layers when masking non-bundled images")
+    func usesPlaceholderForLargeSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
+        // Given
+        let image = UIImage(cgImage: MockCGImage.mockWith(width: 150), scale: 1, orientation: .up)
+        let maskNonBundledOnlySnapshot = ImageSnapshot.mockAny(
+            image: image,
+            layerClass: try imageLayerClass(),
+            semantics: .layer,
+            imagePrivacyLevel: .maskNonBundledOnly
+        )
+
+        // When
         let maskNonBundledOnlyAction = maskNonBundledOnlySnapshot.redactionAction(parentTextInput: nil)
 
         // Then
-        #expect(maskNoneAction == .redactFaces)
-        #expect(maskNonBundledOnlyAction == .redactFaces)
+        #expect(maskNonBundledOnlyAction == .placeholder)
     }
 }
 
