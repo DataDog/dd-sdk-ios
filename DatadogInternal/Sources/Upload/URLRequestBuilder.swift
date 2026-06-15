@@ -27,12 +27,14 @@ public struct URLRequestBuilder {
 
         public enum ContentType {
             case applicationJSON
+            case applicationMsgPack
             case textPlainUTF8
             case multipartFormData(boundary: String)
 
             public var toString: String {
                 switch self {
                 case .applicationJSON: return "application/json"
+                case .applicationMsgPack: return "application/msgpack"
                 case .textPlainUTF8: return "text/plain;charset=UTF-8"
                 case .multipartFormData(let boundary): return "multipart/form-data; boundary=\(boundary)"
                 }
