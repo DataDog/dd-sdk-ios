@@ -15,6 +15,45 @@ import UIKit
 
 struct ImageSnapshotRedactionTests {
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Returns the original image when no redaction is needed")
+    func returnsOriginalImageWhenNoRedactionIsNeeded() throws {
+        // Given
+        let image = UIImage()
+        let snapshot = ImageSnapshot.mockAny(
+            image: image,
+            layerClass: CALayer.self,
+            semantics: .layer
+        )
+
+        // When
+        let result = try snapshot.redacted(parentTextInput: nil)
+
+        // Then
+        let redactedImage = try #require(result.image)
+        #expect(redactedImage === image)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Returns placeholder with background color when image should not be sent")
+    func returnsPlaceholderWithBackgroundColorWhenImageShouldNotBeSent() throws {
+        // Given
+        let image = UIImage.mockWith(color: .red)
+        let snapshot = ImageSnapshot.mockAny(
+            image: image,
+            layerClass: try imageLayerClass(),
+            semantics: .layer,
+            imagePrivacyLevel: .maskAll
+        )
+
+        // When
+        let result = try snapshot.redacted(parentTextInput: nil)
+
+        // Then
+        let backgroundColor = try #require(result.placeholderColor)
+        #expect(backgroundColor == .red)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact generic layer snapshots")
     func doesNotRedactGenericLayerSnapshots() {
         // Given
@@ -314,6 +353,36 @@ private final class TestUILabelLayer: CALayer {}
 
 @available(iOS 13.0, tvOS 13.0, *)
 private final class TestCGDrawingView: UIView {}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension ImageRedactionResult {
+    var image: UIImage? {
+        guard case let .image(image) = self else {
+            return nil
+        }
+
+        return image
+    }
+
+    var placeholderColor: UIColor? {
+        guard case let .placeholder(color) = self else {
+            return nil
+        }
+
+        return color
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension UIImage {
+    static func mockWith(color: UIColor) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10))
+        return renderer.image { context in
+            color.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
+        }
+    }
+}
 
 private func textLayoutFragmentClass() throws -> AnyClass {
     try #require(NSClassFromString("_UITextLayoutFragmentView"))

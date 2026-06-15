@@ -7,9 +7,29 @@
 #if os(iOS)
 import UIKit
 
+private var redactedImageKey: UInt8 = 0
+
 extension UIImage {
     var redactionColor: UIColor {
         dominantColor ?? .black
+    }
+
+    func redactingText() throws -> UIImage {
+        if let redactedImage = objc_getAssociatedObject(self, &redactedImageKey) {
+            return redactedImage as? UIImage ?? self
+        }
+
+        let rectangles = try textRectangles()
+
+        guard !rectangles.isEmpty else {
+            objc_setAssociatedObject(self, &redactedImageKey, NSNull(), .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            return self
+        }
+
+        let redactedImage = image(redactingRectangles: rectangles)
+        objc_setAssociatedObject(self, &redactedImageKey, redactedImage, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+
+        return redactedImage
     }
 
     func image(redactingRectangles rects: [CGRect], color: UIColor? = nil) -> UIImage {

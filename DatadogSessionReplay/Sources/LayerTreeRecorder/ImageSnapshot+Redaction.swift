@@ -17,8 +17,28 @@ internal enum ImageRedactionAction: Hashable {
     case placeholder
 }
 
+/// Redacted image or placeholder instruction.
+@available(iOS 13.0, tvOS 13.0, *)
+internal enum ImageRedactionResult {
+    case image(UIImage)
+    case placeholder(UIColor)
+}
+
 @available(iOS 13.0, tvOS 13.0, *)
 extension ImageSnapshot {
+    func redacted(
+        parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
+    ) throws -> ImageRedactionResult {
+        switch redactionAction(parentTextInput: parentTextInput) {
+        case .none:
+            return .image(image)
+        case .redactText:
+            return .image(try image.redactingText())
+        case .placeholder:
+            return .placeholder(image.redactionColor)
+        }
+    }
+
     func redactionAction(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> ImageRedactionAction {
