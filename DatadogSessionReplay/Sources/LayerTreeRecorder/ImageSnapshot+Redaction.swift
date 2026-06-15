@@ -82,10 +82,10 @@ extension ImageSnapshot {
     }
 
     private var isStaticText: Bool {
-        layerClass == CATextLayer.self ||
+        layerClass.isSubclass(of: CATextLayer.self) ||
         layerClassName.hasSuffix("CGDrawingLayer") ||
         layerClassName.hasSuffix("UILabelLayer") ||
-        delegateClass == UILabel.self ||
+        delegateClass?.isSubclass(of: UILabel.self) == true ||
         delegateClassName?.hasSuffix("CGDrawingView") == true
     }
 

@@ -216,6 +216,22 @@ struct ImageSnapshotRedactionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts UILabel subclass backed layers when masking all text")
+    func redactsUILabelSubclassBackedLayersWhenMaskingAllText() {
+        // Given
+        let snapshot = ImageSnapshot.mockAny(
+            delegateClass: TestLabel.self,
+            textAndInputPrivacyLevel: .maskAll
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: nil)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts UILabel layers when masking all text")
     func redactsUILabelLayersWhenMaskingAllText() {
         // Given
@@ -237,6 +253,22 @@ struct ImageSnapshotRedactionTests {
         // Given
         let snapshot = ImageSnapshot.mockAny(
             layerClass: CATextLayer.self,
+            textAndInputPrivacyLevel: .maskAll
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: nil)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts CATextLayer subclasses when masking all text")
+    func redactsCATextLayerSubclassesWhenMaskingAllText() {
+        // Given
+        let snapshot = ImageSnapshot.mockAny(
+            layerClass: TestTextLayer.self,
             textAndInputPrivacyLevel: .maskAll
         )
 
@@ -337,6 +369,12 @@ private final class TestCGDrawingLayer: CALayer {}
 
 @available(iOS 13.0, tvOS 13.0, *)
 private final class TestUILabelLayer: CALayer {}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private final class TestTextLayer: CATextLayer {}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private final class TestLabel: UILabel {}
 
 @available(iOS 13.0, tvOS 13.0, *)
 private final class TestCGDrawingView: UIView {}
