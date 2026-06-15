@@ -150,6 +150,48 @@ struct ImageSnapshotRedactionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Does not redact read-only text input layout fragments when masking all inputs")
+    func doesNotRedactReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
+        // Given
+        let snapshot = ImageSnapshot.mockAny(
+            delegateClass: try textLayoutFragmentClass(),
+            textAndInputPrivacyLevel: .maskAllInputs
+        )
+        let textInput = CALayerSnapshot.SemanticObservation.TextInputSemantics(
+            isSensitiveText: false,
+            isEditable: false,
+            isEmpty: false
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: textInput)
+
+        // Then
+        #expect(action == .none)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts sensitive read-only text input layout fragments when masking all inputs")
+    func redactsSensitiveReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
+        // Given
+        let snapshot = ImageSnapshot.mockAny(
+            delegateClass: try textLayoutFragmentClass(),
+            textAndInputPrivacyLevel: .maskAllInputs
+        )
+        let textInput = CALayerSnapshot.SemanticObservation.TextInputSemantics(
+            isSensitiveText: true,
+            isEditable: false,
+            isEmpty: false
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: textInput)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact empty text input descendants")
     func doesNotRedactEmptyTextInputDescendants() {
         // Given

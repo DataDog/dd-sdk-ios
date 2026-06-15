@@ -68,7 +68,9 @@ extension ImageSnapshot {
             switch textAndInputPrivacyLevel {
             case .maskSensitiveInputs:
                 return parentTextInput.isSensitiveText
-            case .maskAllInputs, .maskAll:
+            case .maskAllInputs:
+                return parentTextInput.isSensitiveText || parentTextInput.isEditable
+            case .maskAll:
                 return true
             }
         }
