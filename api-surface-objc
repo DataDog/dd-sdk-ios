@@ -3012,7 +3012,10 @@ public class objc_TelemetryConfigurationEvent: NSObject
 public class objc_TelemetryConfigurationEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryConfigurationEventAction: NSObject
-    public var id: String
+    public var id: objc_TelemetryConfigurationEventActionRUMActionID
+public class objc_TelemetryConfigurationEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryConfigurationEventApplication: NSObject
     public var id: String
 public class objc_TelemetryConfigurationEventSession: NSObject
@@ -3208,7 +3211,10 @@ public class objc_TelemetryDebugEvent: NSObject
 public class objc_TelemetryDebugEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryDebugEventAction: NSObject
-    public var id: String
+    public var id: objc_TelemetryDebugEventActionRUMActionID
+public class objc_TelemetryDebugEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryDebugEventApplication: NSObject
     public var id: String
 public class objc_TelemetryDebugEventSession: NSObject
@@ -3263,7 +3269,10 @@ public class objc_TelemetryErrorEvent: NSObject
 public class objc_TelemetryErrorEventDD: NSObject
     public var formatVersion: NSNumber
 public class objc_TelemetryErrorEventAction: NSObject
-    public var id: String
+    public var id: objc_TelemetryErrorEventActionRUMActionID
+public class objc_TelemetryErrorEventActionRUMActionID: NSObject
+    public var string: String?
+    public var stringsArray: [String]?
 public class objc_TelemetryErrorEventApplication: NSObject
     public var id: String
 public class objc_TelemetryErrorEventSession: NSObject
