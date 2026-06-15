@@ -88,14 +88,17 @@ internal final class StatsBucket {
 // MARK: - Exportable Bucket
 
 /// A flushed bucket ready for serialization and upload.
-internal struct ExportedBucket: Encodable, Sendable {
+///
+/// Conforms to `Codable` so it can be written to the feature's storage as JSON and later
+/// decoded back by `StatsRequestBuilder` for encoding into the MessagePack wire payload.
+internal struct ExportedBucket: Codable, Sendable {
     let start: UInt64
     let duration: UInt64
     let stats: [ExportedGroupedStats]
 }
 
 /// A single grouped stats entry ready for serialization.
-internal struct ExportedGroupedStats: Encodable, Sendable {
+internal struct ExportedGroupedStats: Codable, Sendable {
     let service: String
     let name: String
     let resource: String
