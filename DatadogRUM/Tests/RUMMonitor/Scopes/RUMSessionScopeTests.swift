@@ -784,6 +784,40 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.lastStartedSessionType, .user)
     }
 
+    func testWhenSessionIsNotSampled_itDoesNotStartTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+
+        // When
+        _ = RUMSessionScope.mockWith(
+            parent: parent,
+            dependencies: .mockWith(samplingRate: 0, timeseriesCollector: collector)
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 0)
+    }
+
+    func testWhenSessionIsCreatedInBackground_itStartsThenPausesTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        let sessionStartTime = Date()
+        var context = self.context
+        context.applicationStateHistory = .mockAppInBackground(since: sessionStartTime)
+
+        // When
+        _ = RUMSessionScope.mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            context: context,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.pauseCallCount, 1)
+    }
+
     func testWhenAppEntersBackground_itPausesTimeseriesCollector() {
         // Given
         let collector = TimeseriesCollectorSpy()
