@@ -52,9 +52,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         compressionSampler: @escaping () -> Bool = { Bool.random() },
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory)
     ) {
-        precondition(batchSize >= 2, "timeseriesBatchSize must be at least 2 — delta encoding requires a minimum of 2 samples")
         self.memoryReader = memoryReader
-        self.batchSize = batchSize
+        self.batchSize = max(2, batchSize)
         self.samplingInterval = samplingInterval
         self.collectInBackground = collectInBackground
         self.featureScope = featureScope
