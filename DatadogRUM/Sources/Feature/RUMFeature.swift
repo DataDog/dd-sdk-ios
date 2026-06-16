@@ -188,7 +188,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 TimeseriesSessionCollector(
                     memoryReader: $0.memory,
                     featureScope: featureScope,
-                    batchSize: configuration.timeseriesBatchSize
+                    batchSize: configuration.timeseriesBatchSize,
+                    collectInBackground: configuration.trackBackgroundEvents
                 )
             } : nil
         )
