@@ -120,10 +120,17 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     }
 
     func finish(at time: Date) {
-        if warnIfFinished("finish(at:)") {
+        var shouldRun = true
+        _isFinished.mutate {
+            if warnIfFinished("finish(at:)", isFinished: $0) {
+                shouldRun = false
+                return
+            }
+            $0 = true
+        }
+        if !shouldRun {
             return
         }
-        isFinished = true
 
         if let activity = activityReference {
             ddTracer.removeSpan(span: self)
@@ -169,6 +176,10 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     // MARK: - Private
 
     private func warnIfFinished(_ methodName: String) -> Bool {
+        warnIfFinished(methodName, isFinished: isFinished)
+    }
+
+    private func warnIfFinished(_ methodName: String, isFinished: Bool) -> Bool {
         return warn(
             if: isFinished,
             message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."

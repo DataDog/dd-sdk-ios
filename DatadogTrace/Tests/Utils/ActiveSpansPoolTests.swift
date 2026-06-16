@@ -100,8 +100,8 @@ class ActiveSpansPoolTests: XCTestCase, Sendable {
             return secondSpan
         }
 
-        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         let (firstSpan, secondSpan) = try await (task1.value, task2.value)
+        XCTAssertEqual(tracer.activeSpan?.dd.ddContext.spanID, oneSpan.dd.ddContext.spanID)
         oneSpan.finish()
         firstSpan.finish()
         secondSpan.finish()
