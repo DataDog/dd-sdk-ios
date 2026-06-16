@@ -1090,8 +1090,9 @@ class WebViewTrackingTests: XCTestCase {
         // "https://foo.com" is sanitized to "foo.com" by HostsSanitizer (parity with traceWithHeaders)
         XCTAssertFalse(script.source.contains("https://foo.com"))
         XCTAssertTrue(script.source.contains("\"foo.com\""))
-        // 3 warnings: "*" dropped, "" dropped, "https://foo.com" sanitized with a URL warning
-        XCTAssertEqual(printFunction.printedMessages.count, 3)
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("\"*\"") && $0.contains("is not a valid host pattern") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("\"\"") && $0.contains("is not a valid host name") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("https://foo.com") })
     }
 }
 

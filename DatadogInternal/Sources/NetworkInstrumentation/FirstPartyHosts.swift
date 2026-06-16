@@ -46,7 +46,7 @@ public struct FirstPartyHosts: Equatable {
             self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
         case .traceWithPatterns(let patterns):
             self.init(hostPatterns: patterns)
-        default:
+        case .none:
             return nil
         }
     }
