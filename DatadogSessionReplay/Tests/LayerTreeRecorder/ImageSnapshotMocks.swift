@@ -12,12 +12,23 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension ImageSnapshot {
-    static func mockAny() -> ImageSnapshot {
+    static func mockAny(
+        image: UIImage = UIImage(),
+        frame: CGRect = .zero,
+        layerClass: AnyClass = CALayer.self,
+        delegateClass: AnyClass? = nil,
+        hasLayerSemantics: Bool = true,
+        textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
+        imagePrivacyLevel: ImagePrivacyLevel = .maskAll
+    ) -> ImageSnapshot {
         ImageSnapshot(
-            image: UIImage(),
-            frame: .zero,
-            textAndInputPrivacyLevel: .maskAll,
-            imagePrivacyLevel: .maskAll
+            image: image,
+            frame: frame,
+            layerClass: layerClass,
+            delegateClass: delegateClass,
+            hasLayerSemantics: hasLayerSemantics,
+            textAndInputPrivacyLevel: textAndInputPrivacyLevel,
+            imagePrivacyLevel: imagePrivacyLevel
         )
     }
 }
