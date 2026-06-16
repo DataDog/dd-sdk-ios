@@ -1268,6 +1268,8 @@
 		D2F448E22D43A3DC007BB995 /* CompletionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */; };
 		D2F44FB8299AA1DA0074B0D9 /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D2F44FC2299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */; };
+		D2F597612FE17E4500146E62 /* TelemetryInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F597602FE17E4500146E62 /* TelemetryInterceptor.swift */; };
+		D2F597632FE17E5F00146E62 /* TelemetryInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F597622FE17E5F00146E62 /* TelemetryInterceptorTests.swift */; };
 		D2F8235329915E12003C7E99 /* DatadogSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F8235229915E12003C7E99 /* DatadogSite.swift */; };
 		D2FB1254292E0E96005B13F8 /* TrackingConsentPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FB1253292E0E92005B13F8 /* TrackingConsentPublisher.swift */; };
 		D2FB1257292E0F0E005B13F8 /* TrackingConsentPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */; };
@@ -3004,6 +3006,8 @@
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
 		D2F448E02D43A3DC007BB995 /* CompletionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionHandler.swift; sourceTree = "<group>"; };
 		D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
+		D2F597602FE17E4500146E62 /* TelemetryInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryInterceptor.swift; sourceTree = "<group>"; };
+		D2F597622FE17E5F00146E62 /* TelemetryInterceptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryInterceptorTests.swift; sourceTree = "<group>"; };
 		D2F8235229915E12003C7E99 /* DatadogSite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSite.swift; sourceTree = "<group>"; };
 		D2FB1253292E0E92005B13F8 /* TrackingConsentPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisher.swift; sourceTree = "<group>"; };
 		D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisherTests.swift; sourceTree = "<group>"; };
@@ -5022,6 +5026,7 @@
 				D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */,
 				D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */,
 				5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */,
+				D2F597602FE17E4500146E62 /* TelemetryInterceptor.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -6261,6 +6266,7 @@
 				9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */,
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 				5B1D02932E8ED6BE00AB2391 /* FlagEvaluationReceiverTests.swift */,
+				D2F597622FE17E5F00146E62 /* TelemetryInterceptorTests.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -8886,6 +8892,7 @@
 				265496D42D81C5B10094B6E2 /* RUMAccount.swift in Sources */,
 				D253EE962B988CA90010B589 /* ViewCache.swift in Sources */,
 				11EA5C272DC288DD00E8DFA2 /* RUM+objc.swift in Sources */,
+				D2F597612FE17E4500146E62 /* TelemetryInterceptor.swift in Sources */,
 				D29A9F8429DD85BB005C54A4 /* RUMResourceScope.swift in Sources */,
 				D29A9F7329DD85BB005C54A4 /* RUMApplicationScope.swift in Sources */,
 				3CFF4F972C09E64C006F191D /* WatchdogTerminationMonitor.swift in Sources */,
@@ -9027,6 +9034,7 @@
 				A7E6EA852D314A9B00997201 /* AnonymousIdentifierManagerTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
 				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
+				D2F597632FE17E5F00146E62 /* TelemetryInterceptorTests.swift in Sources */,
 				965A1B282F8E6402006A4B4E /* Monitor+AttributeEncodingTests.swift in Sources */,
 				D29A9FB829DDB483005C54A4 /* RUMViewScopeTests.swift in Sources */,
 				D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */,
