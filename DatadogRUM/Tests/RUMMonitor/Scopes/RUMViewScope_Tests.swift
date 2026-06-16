@@ -109,7 +109,7 @@ class RUMViewScope_Tests: XCTestCase {
         DDTAssertValidRUMUUID(update.view.id)
         XCTAssertEqual(update.view.url, "UIViewController")
         XCTAssertEqual(update.dd.documentVersion, 2)
-        XCTAssertEqual(update.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertNil(update.context)  // context unchanged between full event and stop → diffed to nil
 
         // Delta fields that changed.
         XCTAssertFalse(try XCTUnwrap(update.view.isActive))
@@ -264,12 +264,13 @@ class RUMViewScope_Tests: XCTestCase {
             "The command should be ignored."
         )
 
-        // context is always forwarded in update events — attributes must be the initial ones.
+        // Full view events always carry context.
         writer.events(ofType: RUMViewEvent.self).forEach {
             XCTAssertEqual($0.context?.contextInfo as? [String: String], initialAttributes)
         }
+        // Update events diff context — unchanged between full event and stop → nil.
         writer.events(ofType: RUMViewUpdateEvent.self).forEach {
-            XCTAssertEqual($0.context?.contextInfo as? [String: String], initialAttributes)
+            XCTAssertNil($0.context)
         }
     }
 

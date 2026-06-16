@@ -17,24 +17,22 @@ extension RUMViewEvent {
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
     ///   `self.dd.documentVersion` is incremented by one.
     ///
-    /// Fields containing `[String: Encodable]` (account, context, featureFlags, usr)
-    /// cannot be cheaply compared and are always forwarded from `event`.
     func update(from event: RUMViewEvent) -> RUMViewUpdateEvent {
         RUMViewUpdateEvent(
             dd: .init(documentVersion: dd.documentVersion + 1, from: event.dd),
-            account: event.account,
+            account: diff(account, event.account),
             application: .init(event.application),
             buildId: diff(buildId, event.buildId),
             buildVersion: diff(buildVersion, event.buildVersion),
             ciTest: diff(ciTest, event.ciTest),
             connectivity: diff(connectivity, event.connectivity),
             container: diffMap(container, event.container, RUMViewUpdateEvent.Container.init),
-            context: event.context,
+            context: diff(context, event.context),
             date: event.date,
             ddtags: diff(ddtags, event.ddtags),
             device: diff(device, event.device),
             display: diffMap(display, event.display, RUMViewUpdateEvent.Display.init),
-            featureFlags: event.featureFlags.map { .init($0) },
+            featureFlags: diffMap(featureFlags, event.featureFlags, RUMViewUpdateEvent.FeatureFlags.init),
             os: diff(os, event.os),
             privacy: diffMap(privacy, event.privacy, RUMViewUpdateEvent.Privacy.init),
             service: diff(service, event.service),
@@ -43,7 +41,7 @@ extension RUMViewEvent {
             stream: diffMap(stream, event.stream, RUMViewUpdateEvent.Stream.init),
             synthetics: diff(synthetics, event.synthetics),
             tab: diffMap(tab, event.tab, RUMViewUpdateEvent.TAB.init),
-            usr: event.usr,
+            usr: diff(usr, event.usr),
             version: diff(version, event.version),
             view: .init(old: view, new: event.view)
         )
