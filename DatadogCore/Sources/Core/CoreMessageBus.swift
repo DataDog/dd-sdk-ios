@@ -222,7 +222,7 @@ extension CoreMessageBus: Flushable {
     }
 }
 
-extension MessageBus: Telemetry {
+extension CoreMessageBus: Telemetry {
     func send(telemetry: TelemetryMessage) {
         send(message: .telemetry(telemetry))
     }
