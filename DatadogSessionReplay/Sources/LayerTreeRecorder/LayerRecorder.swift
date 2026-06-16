@@ -61,21 +61,23 @@ internal actor LayerRecorder: LayerRecording {
         let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(context: context)
 
         guard
-            let layerTreeSnapshot,
+            var layerTreeSnapshot,
             let root = layerTreeSnapshot.root.removingOccluded()
         else {
             return
         }
 
+        layerTreeSnapshot.root = root
+
         let remainingTime = max(0, timeoutInterval - (timeSource.now - startTime))
         let imageSnapshots = await imageSnapshotter.takeImageSnapshots(
-            for: root,
+            for: layerTreeSnapshot.root,
             changeset: changeset,
             timeout: remainingTime
         )
 
-        _ = (root, touchSnapshot, imageSnapshots)
-        // TODO: PANA-7592 Process optimized layer tree, image snapshots, and touch snapshots
+        _ = (layerTreeSnapshot, touchSnapshot, imageSnapshots)
+        // TODO: PANA-7784 Process optimized layer tree, image snapshots, and touch snapshots
     }
 
     private func takeSnapshot(context: LayerRecordingContext) async -> (LayerTreeSnapshot?, TouchSnapshot?) {
