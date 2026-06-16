@@ -17,8 +17,8 @@ extension RUMViewEvent {
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
     ///   `self.dd.documentVersion` is incremented by one.
     ///
-    /// Fields containing `[String: Encodable]` (account, context, featureFlags, usr,
-    /// synthetics) cannot be cheaply compared and are always forwarded from `event`.
+    /// Fields containing `[String: Encodable]` (account, context, featureFlags, usr)
+    /// cannot be cheaply compared and are always forwarded from `event`.
     func update(from event: RUMViewEvent) -> RUMViewUpdateEvent {
         RUMViewUpdateEvent(
             dd: .init(documentVersion: dd.documentVersion + 1, from: event.dd),
@@ -41,7 +41,7 @@ extension RUMViewEvent {
             session: .init(event.session),
             source: diff(source, event.source).map { .init($0) },
             stream: diffMap(stream, event.stream, RUMViewUpdateEvent.Stream.init),
-            synthetics: event.synthetics,
+            synthetics: diff(synthetics, event.synthetics),
             tab: diffMap(tab, event.tab, RUMViewUpdateEvent.TAB.init),
             usr: event.usr,
             version: diff(version, event.version),
