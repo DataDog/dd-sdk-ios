@@ -27,6 +27,14 @@ description: Use when creating a pull request in dd-sdk-ios. Use when writing PR
 
 The repo has a PR template at `.github/PULL_REQUEST_TEMPLATE.md`. Read it and fill in all sections.
 
+**Before pushing**, show the user the commits that will be pushed and ask for confirmation:
+
+```bash
+git log origin/develop..HEAD --oneline
+```
+
+Ask: "Shall I push these commits and open the PR?" Only proceed after the user confirms.
+
 **Before running the command**, show the user the proposed PR title and full body and ask for confirmation. Only run `gh pr create` after the user approves.
 
 ```bash
