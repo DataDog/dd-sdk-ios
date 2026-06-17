@@ -14,7 +14,7 @@ extension OpenTelemetryApi.SpanId {
     func toDatadog() -> SpanID {
         var data = Data(count: 8)
         self.copyBytesTo(dest: &data, destOffset: 0)
-        let integerLiteral = UInt64(bigEndian: data.withUnsafeBytes { $0.load(as: UInt64.self) })
+        let integerLiteral = UInt64(bigEndian: data.withUnsafeBytes { $0.loadUnaligned(as: UInt64.self) })
         return .init(integerLiteral: integerLiteral)
     }
 }

@@ -4,20 +4,19 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Aggregates observed `CALayer` changes over time and delivers changesets at a
-// minimum interval. Records which aspects changed per layer and invokes a
-// handler with a `CALayerChangeset` for batching, correlation, and reporting.
-
 #if os(iOS)
 import QuartzCore
 
+/// Collects layer changes and delivers them in throttled batches.
+///
+/// The aggregator merges changes for the same layer inside one delivery window.
+/// It ignores changes triggered while a batch is being delivered.
 internal final class CALayerChangeAggregator {
     var handler: ((CALayerChangeset) -> Void)?
 
     private let minimumDeliveryInterval: TimeInterval
     private let timerScheduler: any TimerScheduler
+    private let screenChangeFilter: ScreenChangeFilter
 
     private var isRunning = false
     private var isDeliveringChanges = false
@@ -28,10 +27,12 @@ internal final class CALayerChangeAggregator {
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler,
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
         handler: ((CALayerChangeset) -> Void)? = nil
     ) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
         self.timerScheduler = timerScheduler
+        self.screenChangeFilter = screenChangeFilter
         self.handler = handler
     }
 
@@ -60,8 +61,12 @@ internal final class CALayerChangeAggregator {
     }
 
     private func record(_ layer: CALayer, aspect: CALayerChange.Aspect.Set) {
-        // Only record on the main thread and ignore changes triggered in the delivery handler
-        guard Thread.isMainThread, isRunning, !isDeliveringChanges else {
+        // Only record on the main thread and ignore changes triggered by SDK work.
+        guard Thread.isMainThread else {
+            return
+        }
+
+        guard isRunning, !isDeliveringChanges, screenChangeFilter.acceptsChanges else {
             return
         }
 

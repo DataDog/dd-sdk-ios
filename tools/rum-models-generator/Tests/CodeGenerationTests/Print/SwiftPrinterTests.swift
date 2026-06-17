@@ -769,6 +769,83 @@ final class SwiftPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingSwiftAssociatedTypeEnumWithDiscriminator() throws {
+        let enumeration = SwiftAssociatedTypeEnum(
+            name: "Modifier",
+            comment: nil,
+            cases: [
+                SwiftAssociatedTypeEnum.Case(
+                    label: "opacityModifier",
+                    associatedType: SwiftTypeReference(referencedTypeName: "OpacityModifier"),
+                    discriminatorValue: "opacity"
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "saturateModifier",
+                    associatedType: SwiftTypeReference(referencedTypeName: "SaturateModifier"),
+                    discriminatorValue: "saturate"
+                )
+            ],
+            conformance: [codableProtocol],
+            discriminatorCodingKey: "type"
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [enumeration])
+
+        let expected = """
+
+        public enum Modifier: Codable {
+            case opacityModifier(value: OpacityModifier)
+            case saturateModifier(value: SaturateModifier)
+
+            private enum DiscriminatorCodingKeys: String, CodingKey {
+                case discriminator = "type"
+            }
+
+            // MARK: - Codable
+
+            public func encode(to encoder: Encoder) throws {
+                // Encode only the associated value, without encoding enum case
+                var container = encoder.singleValueContainer()
+
+                switch self {
+                case .opacityModifier(let value):
+                    try container.encode(value)
+                case .saturateModifier(let value):
+                    try container.encode(value)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                // Decode enum case from discriminator
+                let container = try decoder.singleValueContainer()
+                let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
+
+                switch try discriminatorContainer.decode(String.self, forKey: .discriminator) {
+                case "opacity":
+                    self = .opacityModifier(value: try container.decode(OpacityModifier.self))
+                    return
+                case "saturate":
+                    self = .saturateModifier(value: try container.decode(SaturateModifier.self))
+                    return
+                default:
+                    let error = DecodingError.Context(
+                        codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                        debugDescription: \"\"\"
+                        Failed to decode `Modifier`.
+                        Discriminator `type` did not match any known case.
+                        \"\"\"
+                    )
+                    throw DecodingError.dataCorrupted(error)
+                }
+            }
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
+
     func testPrintingSwiftStructAndEnumWithAttribute() throws {
         let `struct` = SwiftStruct(
             name: "Foo",

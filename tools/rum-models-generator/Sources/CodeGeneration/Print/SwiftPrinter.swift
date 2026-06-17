@@ -414,6 +414,54 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
     }
 
     private func printAssociatedTypeEnum(_ enumeration: SwiftAssociatedTypeEnum) throws {
+        struct DiscriminatorCase {
+            let enumCase: SwiftAssociatedTypeEnum.Case
+            let associatedTypeDeclaration: String
+            let valueLiteral: String
+            let valueType: String
+        }
+
+        func discriminatorValueDeclaration(_ value: SwiftPropertyDefaultValue) throws -> (type: String, literal: String) {
+            switch value {
+            case let stringValue as String:
+                let escaped = stringValue
+                    .replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "\"", with: "\\\"")
+                return ("String", "\"\(escaped)\"")
+            case let integerValue as Int:
+                return ("Int", "\(integerValue)")
+            case let integerValue as Int64:
+                return ("Int64", "\(integerValue)")
+            default:
+                throw Exception.unimplemented("Discriminator value `\(value)` is not supported")
+            }
+        }
+
+        func discriminatorCases() throws -> [DiscriminatorCase]? {
+            guard let discriminatorCodingKey = enumeration.discriminatorCodingKey else {
+                return nil
+            }
+
+            let cases: [DiscriminatorCase] = try enumeration.cases.map { `case` in
+                let discriminatorValue = try `case`.discriminatorValue.unwrapOrThrow(
+                    .illegal("Missing discriminator value for `\(enumeration.name).\(`case`.label)` using `\(discriminatorCodingKey)`")
+                )
+                let valueDeclaration = try discriminatorValueDeclaration(discriminatorValue)
+                return try DiscriminatorCase(
+                    enumCase: `case`,
+                    associatedTypeDeclaration: typeDeclaration(`case`.associatedType),
+                    valueLiteral: valueDeclaration.literal,
+                    valueType: valueDeclaration.type
+                )
+            }
+
+            if let first = cases.first, cases.contains(where: { $0.valueType != first.valueType }) {
+                throw Exception.illegal("Discriminator `\(discriminatorCodingKey)` mixes value types in `\(enumeration.name)`")
+            }
+
+            return cases
+        }
+
         func printEncodingImplemenation() {
             writeLine("\(configuration.accessLevel) func encode(to encoder: Encoder) throws {")
             indentRight()
@@ -434,39 +482,97 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             writeLine("}")
         }
 
-        func printDecodingImplemenation() throws {
-            writeLine("\(configuration.accessLevel) init(from decoder: Decoder) throws {")
+        func printShapeBasedDecodingImplementation() throws {
+            writeLine("// Decode enum case from associated value")
+            writeLine("let container = try decoder.singleValueContainer()")
+            writeEmptyLine()
+
+            try enumeration.cases.forEach { `case` in
+                writeLine("if let value = try? container.decode(\(try typeDeclaration(`case`.associatedType)).self) {")
+                indentRight()
+                    writeLine("self = .\(`case`.backtickLabel)(value: value)")
+                    writeLine("return")
+                indentLeft()
+                writeLine("}")
+            }
+
+            writeLine("let error = DecodingError.Context(")
             indentRight()
-                writeLine("// Decode enum case from associated value")
-                writeLine("let container = try decoder.singleValueContainer()")
-                writeEmptyLine()
+                writeLine("codingPath: container.codingPath,")
+                writeLine("debugDescription: \"\"\"")
+                writeLine("Failed to decode `\(enumeration.name)`.")
+                writeLine("Ran out of possibilities when trying to decode the value of associated type.")
+                writeLine("\"\"\"")
+            indentLeft()
+            writeLine(")")
+            writeLine("throw DecodingError.typeMismatch(\(enumeration.name).self, error)")
+        }
 
-                try enumeration.cases.forEach { `case` in
-                    writeLine("if let value = try? container.decode(\(try typeDeclaration(`case`.associatedType)).self) {")
-                    indentRight()
-                        writeLine("self = .\(`case`.backtickLabel)(value: value)")
-                        writeLine("return")
-                    indentLeft()
-                    writeLine("}")
-                }
+        func printDiscriminatorBasedDecodingImplementation(cases: [DiscriminatorCase]) throws {
+            let discriminatorCodingKey = try enumeration.discriminatorCodingKey.unwrapOrThrow(
+                .inconsistency("Discriminator cases require a discriminator coding key")
+            )
+            let valueType = try (cases.first?.valueType).unwrapOrThrow(
+                .illegal("Discriminator `\(discriminatorCodingKey)` in `\(enumeration.name)` has no cases")
+            )
 
+            writeLine("// Decode enum case from discriminator")
+            writeLine("let container = try decoder.singleValueContainer()")
+            writeLine("let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)")
+            writeEmptyLine()
+            writeLine("switch try discriminatorContainer.decode(\(valueType).self, forKey: .discriminator) {")
+            cases.forEach { `case` in
+                let decodedValue = "try container.decode(\(`case`.associatedTypeDeclaration).self)"
+                writeLine("case \(`case`.valueLiteral):")
+                indentRight()
+                    writeLine("self = .\(`case`.enumCase.backtickLabel)(value: \(decodedValue))")
+                    writeLine("return")
+                indentLeft()
+            }
+            writeLine("default:")
+            indentRight()
                 writeLine("let error = DecodingError.Context(")
                 indentRight()
-                    writeLine("codingPath: container.codingPath,")
+                    writeLine("codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],")
                     writeLine("debugDescription: \"\"\"")
                     writeLine("Failed to decode `\(enumeration.name)`.")
-                    writeLine("Ran out of possibilities when trying to decode the value of associated type.")
+                    writeLine("Discriminator `\(discriminatorCodingKey)` did not match any known case.")
                     writeLine("\"\"\"")
                 indentLeft()
                 writeLine(")")
-                writeLine("throw DecodingError.typeMismatch(\(enumeration.name).self, error)")
+                writeLine("throw DecodingError.dataCorrupted(error)")
+            indentLeft()
+            writeLine("}")
+        }
 
+        func printDecodingImplemenation(discriminatorCases: [DiscriminatorCase]?) throws {
+            writeLine("\(configuration.accessLevel) init(from decoder: Decoder) throws {")
+            indentRight()
+                if let discriminatorCases {
+                    try printDiscriminatorBasedDecodingImplementation(cases: discriminatorCases)
+                } else {
+                    try printShapeBasedDecodingImplementation()
+                }
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printDiscriminatorCodingKeys() throws {
+            guard let discriminatorCodingKey = enumeration.discriminatorCodingKey else {
+                return
+            }
+
+            writeEmptyLine()
+            writeLine("private enum DiscriminatorCodingKeys: String, CodingKey {")
+            indentRight()
+                writeLine("case discriminator = \"\(discriminatorCodingKey)\"")
             indentLeft()
             writeLine("}")
         }
 
         let implementedProtocols = enumeration.conformance.map { $0.name }
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
+        let discriminatorCases = try discriminatorCases()
 
         printComment(enumeration.comment)
         if let attribute = configuration.accessLevel.attribute {
@@ -479,13 +585,17 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             writeLine("case \(`case`.backtickLabel)(value: \(associatedTypeDeclaration))")
         }
 
+        if discriminatorCases != nil {
+            try printDiscriminatorCodingKeys()
+        }
+
         if enumeration.conforms(to: codableProtocol) {
             writeEmptyLine()
             writeLine("// MARK: - Codable")
             writeEmptyLine()
             printEncodingImplemenation()
             writeEmptyLine()
-            try printDecodingImplemenation()
+            try printDecodingImplemenation(discriminatorCases: discriminatorCases)
         }
 
         try printNestedTypes(in: enumeration)

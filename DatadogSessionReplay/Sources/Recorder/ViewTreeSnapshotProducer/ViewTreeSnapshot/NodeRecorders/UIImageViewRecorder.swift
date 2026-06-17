@@ -141,26 +141,6 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     }
 }
 
-fileprivate extension UIImage {
-    @available(iOS 13.0, *)
-    var isContextual: Bool {
-        return isSymbolImage || isBundled || isAlwaysTemplate
-    }
-
-    @available(iOS 13.0, *)
-    var isTinted: Bool {
-        return isSymbolImage || isAlwaysTemplate
-    }
-
-    private var isBundled: Bool {
-        return description.contains("named(")
-    }
-
-    private var isAlwaysTemplate: Bool {
-        return renderingMode == .alwaysTemplate
-    }
-}
-
 fileprivate extension UIImageView {
     var isSystemControlBackground: Bool {
         return isButtonBackground || isBarBackground

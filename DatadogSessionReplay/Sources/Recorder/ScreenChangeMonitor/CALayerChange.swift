@@ -4,17 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Represents a change observed on a `CALayer`.
-//
-// Captures which aspects changed (display, draw, layout) for downstream processing
-// and correlation. Designed to be a lightweight signal between observation and
-// reporting components.
-
 #if os(iOS)
 import QuartzCore
 
+/// A change observed on a `CALayer`.
+///
+/// It records which layer aspects changed: display, draw, layout, or any
+/// combination of them.
 internal struct CALayerChange: Sendable, Equatable {
     enum Aspect: Int8, CaseIterable, Sendable {
         case display

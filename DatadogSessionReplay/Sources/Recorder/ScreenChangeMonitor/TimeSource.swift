@@ -4,15 +4,19 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Minimal abstraction for retrieving current time values used by screen
-// change monitoring internals.
-
 #if os(iOS)
 import Foundation
+import QuartzCore
 
+/// Provides the current time used by recording components.
 internal protocol TimeSource {
     var now: TimeInterval { get }
+}
+
+/// Time source backed by Core Animation's monotonic media time.
+internal struct MediaTimeSource: TimeSource {
+    var now: TimeInterval {
+        CACurrentMediaTime()
+    }
 }
 #endif

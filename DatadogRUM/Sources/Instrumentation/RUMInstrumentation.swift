@@ -56,12 +56,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     // MARK: - Initialization
 
     #if !os(watchOS)
+    //swiftlint:disable function_default_parameter_at_end
     init(
         featureScope: FeatureScope,
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
+        trackScrollAndSwipeActions: Bool = true,
         longTaskThreshold: TimeInterval?,
         appHangThreshold: TimeInterval?,
         mainQueue: DispatchQueue,
@@ -135,10 +137,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }()
 
         #if !os(tvOS)
-        // Create scroll handler and swizzler if UIKit action tracking is enabled:
+        // Create scroll handler and swizzler if UIKit action tracking is enabled
+        // AND the `trackScrollAndSwipeActions` feature flag is set:
         let scrollHandler: RUMScrollHandler?
         let scrollViewSwizzler: UIScrollViewSwizzler?
-        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate {
+        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate, trackScrollAndSwipeActions {
             let handler = RUMScrollHandler(
                 dateProvider: dateProvider,
                 predicate: uiKitRUMActionsPredicate
@@ -194,6 +197,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.appHangs?.start()
         self.memoryWarningMonitor?.start()
     }
+    //swiftlint:enable function_default_parameter_at_end
 
     #else
 

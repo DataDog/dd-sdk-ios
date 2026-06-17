@@ -30,18 +30,18 @@ class LogsDataModels_objcTests: XCTestCase {
 
         // Then
         XCTAssertEqual(swiftDevice.architecture, objcDevice.architecture)
-        XCTAssertEqual(swiftDevice.batteryLevel, objcDevice.batteryLevel)
+        XCTAssertEqual(swiftDevice.batteryLevel, objcDevice.batteryLevel?.doubleValue)
         XCTAssertEqual(swiftDevice.brand, objcDevice.brand)
-        XCTAssertEqual(swiftDevice.brightnessLevel, objcDevice.brightnessLevel)
-        XCTAssertEqual(swiftDevice.isLowRam, objcDevice.isLowRam)
+        XCTAssertEqual(swiftDevice.brightnessLevel, objcDevice.brightnessLevel?.doubleValue)
+        XCTAssertEqual(swiftDevice.isLowRam, objcDevice.isLowRam?.boolValue)
         XCTAssertEqual(swiftDevice.locale, objcDevice.locale)
         XCTAssertEqual(swiftDevice.locales, objcDevice.locales)
-        XCTAssertEqual(swiftDevice.logicalCpuCount, objcDevice.logicalCpuCount)
+        XCTAssertEqual(swiftDevice.logicalCpuCount, objcDevice.logicalCpuCount?.doubleValue)
         XCTAssertEqual(swiftDevice.model, objcDevice.model)
         XCTAssertEqual(swiftDevice.name, objcDevice.name)
-        XCTAssertEqual(swiftDevice.powerSavingMode, objcDevice.powerSavingMode)
+        XCTAssertEqual(swiftDevice.powerSavingMode, objcDevice.powerSavingMode?.boolValue)
         XCTAssertEqual(swiftDevice.timeZone, objcDevice.timeZone)
-        XCTAssertEqual(swiftDevice.totalRam, objcDevice.totalRam)
+        XCTAssertEqual(swiftDevice.totalRam, objcDevice.totalRam?.doubleValue)
         XCTAssertEqual(swiftDevice.type, objcDevice.type.toSwift)
     }
 }

@@ -34,6 +34,30 @@ struct CALayerChangesetTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Display, draw, and layout changes are tracked changes")
+    func hasChanges() {
+        // Given
+        let displayLayer = CALayer()
+        let drawLayer = CALayer()
+        let layoutLayer = CALayer()
+        let unchangedLayer = CALayer()
+
+        let changeset = CALayerChangeset(
+            [
+                ObjectIdentifier(displayLayer): CALayerChange(layer: .init(displayLayer), aspects: .display),
+                ObjectIdentifier(drawLayer): CALayerChange(layer: .init(drawLayer), aspects: .draw),
+                ObjectIdentifier(layoutLayer): CALayerChange(layer: .init(layoutLayer), aspects: .layout)
+            ]
+        )
+
+        // Then
+        #expect(changeset.hasChanges(for: .init(displayLayer)))
+        #expect(changeset.hasChanges(for: .init(drawLayer)))
+        #expect(changeset.hasChanges(for: .init(layoutLayer)))
+        #expect(!changeset.hasChanges(for: .init(unchangedLayer)))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Deallocated layers do not return stale aspects")
     func deallocatedLayerDoesNotReturnStaleAspects() {
         // Given

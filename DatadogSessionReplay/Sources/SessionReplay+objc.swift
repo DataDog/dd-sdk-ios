@@ -29,16 +29,38 @@ public final class objc_SessionReplay: NSObject {
         SessionReplay.enable(with: configuration._swift)
     }
 
+    /// Enables Datadog Session Replay feature on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - instanceName: The name of the SDK instance to enable Session Replay on.
+    @objc
+    public static func enable(with configuration: objc_SessionReplayConfiguration, instanceName: String?) {
+        SessionReplay.enable(with: configuration._swift, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
+    }
+
     /// Starts the recording manually.
     @objc
     public static func startRecording() {
         SessionReplay.startRecording(in: CoreRegistry.default)
     }
 
+    /// Starts the recording manually on a named SDK instance.
+    @objc
+    public static func startRecording(instanceName: String?) {
+        SessionReplay.startRecording(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
+    }
+
     /// Stops the recording manually.
     @objc
     public static func stopRecording() {
         SessionReplay.stopRecording(in: CoreRegistry.default)
+    }
+
+    /// Stops the recording manually on a named SDK instance.
+    @objc
+    public static func stopRecording(instanceName: String?) {
+        SessionReplay.stopRecording(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }
 

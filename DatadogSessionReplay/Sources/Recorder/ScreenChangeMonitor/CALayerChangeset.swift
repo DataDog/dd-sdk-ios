@@ -4,17 +4,22 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Represents the layer changes accumulated over a time interval,
-// keyed by layer identity. Provides lookup of changed aspects for a layer reference.
-
 #if os(iOS)
 import QuartzCore
 
+/// Layer changes collected over one delivery window.
+///
+/// Changes are keyed by layer identity. Callers can ask which aspects changed
+/// for a live layer reference.
 internal struct CALayerChangeset: Sendable, Equatable {
     var isEmpty: Bool {
         changes.isEmpty
+    }
+
+    var contentChanges: [CALayerChange] {
+        changes.values.filter { change in
+            change.aspects.contains(.display) || change.aspects.contains(.draw)
+        }
     }
 
     private let changes: [ObjectIdentifier: CALayerChange]
@@ -39,6 +44,14 @@ internal struct CALayerChangeset: Sendable, Equatable {
             return false
         }
         return aspects.contains(.display) || aspects.contains(.draw)
+    }
+
+    func hasChanges(for layer: CALayerReference) -> Bool {
+        aspects(for: layer) != nil
+    }
+
+    func hasChanges<S: Sequence>(for layers: S) -> Bool where S.Element == CALayerReference {
+        layers.contains { hasChanges(for: $0) }
     }
 }
 

@@ -307,6 +307,8 @@ public enum objc_RUMErrorSource: Int {
     case console
     /// Custom error source.
     case custom
+    /// Error originated in a logger.
+    case logger
 
     internal var swiftType: RUMErrorSource {
         switch self {
@@ -315,6 +317,7 @@ public enum objc_RUMErrorSource: Int {
         case .webview: return .webview
         case .custom: return .custom
         case .console: return .console
+        case .logger: return .logger
         default: return .custom
         }
     }
@@ -452,6 +455,26 @@ public enum objc_RUMFeatureOperationFailureReason: Int {
         case .abandoned: return .abandoned
         case .other: return .other
         }
+    }
+}
+
+@objc(DDOperationOptions)
+@objcMembers
+@_spi(objc)
+public class objc_OperationOptions: NSObject {
+    internal let swiftType: OperationOptions
+
+    internal init(swiftType: OperationOptions) {
+        self.swiftType = swiftType
+    }
+}
+
+@objc(DDProfilingOptions)
+@objcMembers
+@_spi(objc)
+public final class objc_ProfilingOptions: objc_OperationOptions {
+    public init(sampleRate: Float) {
+        super.init(swiftType: ProfilingOptions(sampleRate: sampleRate))
     }
 }
 
@@ -709,6 +732,10 @@ public class objc_RUM: NSObject {
     public static func enable(with configuration: objc_RUMConfiguration) {
         RUM.enable(with: configuration.swiftConfig)
     }
+
+    public static func enable(with configuration: objc_RUMConfiguration, instanceName: String?) {
+        RUM.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
+    }
 }
 
 @objc(DDRUMMonitor)
@@ -727,6 +754,10 @@ public class objc_RUMMonitor: NSObject {
 
     public static func shared() -> objc_RUMMonitor {
         objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared())
+    }
+
+    public static func shared(instanceName: String?) -> objc_RUMMonitor {
+        objc_RUMMonitor(swiftRUMMonitor: RUMMonitor.shared(in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)))
     }
 
     public func currentSessionID(completion: @escaping (String?) -> Void) {

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(objc)
 @testable import DatadogRUM
 
 private protocol RUMDataFormatConvertible {
@@ -90,6 +91,7 @@ class RUMInternalDataModelsMappingTests: XCTestCase {
             case .source: XCTAssertEqual(internalSource, .source)
             case .webview: XCTAssertEqual(internalSource, .webview)
             case .console: XCTAssertEqual(internalSource, .console)
+            case .logger: XCTAssertEqual(internalSource, .logger)
             }
         }
         // verify all known cases
@@ -98,5 +100,10 @@ class RUMInternalDataModelsMappingTests: XCTestCase {
         verifyErrorSource(.source)
         verifyErrorSource(.webview)
         verifyErrorSource(.console)
+        verifyErrorSource(.logger)
+    }
+
+    func testObjcRUMErrorSourceLoggerMapsToSwiftLogger() {
+        XCTAssertEqual(objc_RUMErrorSource.logger.swiftType, .logger)
     }
 }
