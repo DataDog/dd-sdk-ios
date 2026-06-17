@@ -19,7 +19,7 @@ SCHEMAS_REPO = 'https://github.com/DataDog/rum-events-format.git'
 
 # JSON Schema paths (relative to cwd)
 RUM_SCHEMA_PATH = '/rum-events-format/schemas/rum-events-mobile-schema.json'
-SR_SCHEMA_PATH = '/rum-events-format/schemas/session-replay-mobile-schema.json'
+SR_SCHEMA_PATH = '/Users/juancarlos.naranjojaramillo/Development/sdk-flutter-workspace/rum-events-format/schemas/session-replay-mobile-schema.json'
 
 # Generated file paths (relative to repository root)
 RUM_SWIFT_GENERATED_FILE_PATH = '/DatadogInternal/Sources/Models/RUM/RUMDataModels.swift'
@@ -182,7 +182,8 @@ def generate_rum_models(ctx: Context):
 
 
 def generate_sr_models(ctx: Context):
-    sha = clone_schemas_repo(git_ref=ctx.git_ref)
+    # LOCAL OVERRIDE: using local rum-events-format instead of cloning. Revert before committing.
+    sha = 'local'
 
     with open(ctx.sr_swift_generated_file_path, 'w') as file:
         code = generate_code(ctx, language='swift', convention='sr', json_schema=ctx.sr_schema_path, git_sha=sha)
@@ -232,7 +233,7 @@ if __name__ == "__main__":
         context = Context(
             cli_executable_path=build_swift_cli(),
             rum_schema_path=os.path.abspath(f'{script_dir}/{RUM_SCHEMA_PATH}'),
-            sr_schema_path=os.path.abspath(f'{script_dir}/{SR_SCHEMA_PATH}'),
+            sr_schema_path=os.path.abspath(SR_SCHEMA_PATH),
             git_ref=args.git_ref if args.command else None,
             rum_swift_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_SWIFT_GENERATED_FILE_PATH}'),
             rum_objc_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_OBJC_GENERATED_FILE_PATH}'),

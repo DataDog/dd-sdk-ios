@@ -93,6 +93,13 @@ internal class SnapshotProcessor: SnapshotProcessing {
         // build hidden webview and Flutter wireframes and place them at the beginning
         wireframes = builder.hiddenWebViewWireframes() + builder.hiddenEmbeddedViewWireframes() + wireframes
 
+        let embeddedWireframes = wireframes.compactMap { wf -> SREmbeddedViewWireframe? in
+            if case .embeddedViewWireframe(let ev) = wf { return ev } else { return nil }
+        }
+        if !embeddedWireframes.isEmpty {
+            NSLog("[DD-SR] SnapshotProcessor cycle — embedded_view candidates: \(embeddedWireframes.map { "slotId=\($0.slotId) isVisible=\(String(describing: $0.isVisible))" })")
+        }
+
         interceptWireframes?(wireframes)
 
         var records: [SRRecord] = []
@@ -110,6 +117,9 @@ internal class SnapshotProcessor: SnapshotProcessing {
             // Such can be added to current segment.
             // Prefer creating "incremental snapshot" records but fallback to "full snapshot" (unexpected):
             let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
+            if !embeddedWireframes.isEmpty {
+                NSLog("[DD-SR] SnapshotProcessor incremental diff — \(record != nil ? "SENDING (changes detected)" : "SUPPRESSED (no changes)")")
+            }
             record.flatMap { records.append($0) }
 
             // Create viewport orientation change record
