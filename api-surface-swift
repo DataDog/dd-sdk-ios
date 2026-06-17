@@ -248,13 +248,13 @@ public protocol OTSpan: Sendable
     func tracer() -> OTTracer
     func setOperationName(_ operationName: String)
     func setTag(key: String, value: OTTagValue)
-    func log(fields: [String: Encodable], timestamp: Date)
+    func log(fields: [String: Encodable & Sendable], timestamp: Date)
     func setBaggageItem(key: String, value: String)
     func baggageItem(withKey key: String) -> String?
     func finish(at time: Date)
     func setActive() -> OTSpan
 public extension OTSpan
-    func log(fields: [String: Encodable])
+    func log(fields: [String: Encodable & Sendable])
     func finish()
 public extension OTSpan
     func setError(_ error: Error,file: StaticString = #fileID,line: UInt = #line)

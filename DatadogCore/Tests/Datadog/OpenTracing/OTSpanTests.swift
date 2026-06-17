@@ -8,7 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogTrace
 
-private final class MockSpan: OTSpan {
+private final class MockSpan: OTSpan, @unchecked Sendable {
     let context: OTSpanContext = DDNoopGlobals.context
     func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
@@ -18,14 +18,14 @@ private final class MockSpan: OTSpan {
     func setActive() -> OTSpan { self }
     func finish(at time: Date) {}
 
-    var logs: [[String: Encodable]] = []
+    var logs: [[String: Encodable & Sendable]] = []
 
-    func log(fields: [String: Encodable], timestamp: Date) {
+    func log(fields: [String: Encodable & Sendable], timestamp: Date) {
         logs.append(fields)
     }
 }
 
-private extension Dictionary where Key == String, Value == Encodable {
+private extension Dictionary where Key == String, Value == Encodable & Sendable {
     func otEvent() throws -> String {
         try XCTUnwrap(self[OTLogFields.event] as? String)
     }

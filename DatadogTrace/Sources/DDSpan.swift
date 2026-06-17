@@ -25,7 +25,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     private var tags: [String: OTTagValue]
     /// Span log fields.
     @ReadWriteLock
-    private var logFields: [[String: Encodable]]
+    private var logFields: [[String: Encodable & Sendable]]
     /// If this span has completed.
     @ReadWriteLock
     private var isFinished: Bool
@@ -107,11 +107,11 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         return self
     }
 
-    func log(fields: [String: Encodable], timestamp: Date) {
+    func log(fields: [String: Encodable & Sendable], timestamp: Date) {
         log(message: nil, fields: fields, timestamp: timestamp)
     }
 
-    func log(message: String?, fields: [String: Encodable], timestamp: Date) {
+    func log(message: String?, fields: [String: Encodable & Sendable], timestamp: Date) {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
