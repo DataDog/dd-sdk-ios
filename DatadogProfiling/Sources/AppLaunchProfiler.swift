@@ -25,6 +25,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     private static let lock = NSLock()
 
     private let profilingSamplerProvider: ProfilingSamplerProvider
+    private let quotaChecker: ProfilingQuotaChecking
 
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
@@ -41,6 +42,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     init(
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking,
         telemetryController: ProfilingTelemetryController = .init(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
@@ -48,6 +50,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.profilingSamplerProvider = profilingSamplerProvider
+        self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
@@ -74,6 +77,17 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             currentServerTimeOffset = message.ttid.serverTimeOffset
             dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
+            defer { Self.unregisterInstance() }
+            // Quota is fail-open while pending or unavailable; only an explicit rejection drops app-launch.
+            guard !quotaChecker.isRejectedByQuota else {
+                stopProfilerOnQuotaRejectionIfNeeded()
+                telemetryController.sendProfileDropped(
+                    for: operation,
+                    reason: .quotaRejected(quotaChecker.quotaResult?.reason)
+                )
+                return false
+            }
+
             if profilingSamplerProvider.isContinuousProfilingConfigured == false
                 && self.currentRUMVitals.didCompleteOperations() {
                 dd_profiler_stop()
@@ -82,7 +96,6 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
             currentRUMVitals[message.ttid.key] = message.ttid
 
-            defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
                 telemetryController.sendNoProfile(for: operation)
                 return false
@@ -116,6 +129,15 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
         Self.appLaunchProfile = currentProfile
 
         return currentProfile
+    }
+
+    private func stopProfilerOnQuotaRejectionIfNeeded() {
+        guard Self.currentPendingInstances <= 1 else {
+            return
+        }
+
+        dd_profiler_stop()
+        updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
     }
 }
 

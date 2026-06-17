@@ -90,12 +90,16 @@ internal final class ProfilingTelemetryController {
         )
     }
 
-    /// Sends a metric for a profile that was captured but intentionally not written.
-    func sendProfileNotWritten(for operation: ProfilingOperation) {
+    /// Sends a metric for a profile that was intentionally dropped.
+    func sendProfileDropped(
+        for operation: ProfilingOperation,
+        reason: ProfilingSessionMetric.ProfileDropReason = .noProfiledEvents
+    ) {
         send(
-            .profileNotWritten(
+            .profileDropped(
                 startReason: operation.startReason,
                 status: .current,
+                reason: reason,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
             )
