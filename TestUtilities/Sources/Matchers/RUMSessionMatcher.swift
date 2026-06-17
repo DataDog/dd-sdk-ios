@@ -633,10 +633,14 @@ extension RUMSessionMatcher: CustomStringConvertible {
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
     /// Uses per-view `durationNs` so that `viewUpdates` deltas (which carry the final `timeSpent`) are accounted for.
     private var sessionEndTimestampNs: Int64? {
-        views.compactMap { view -> Int64? in
-            guard let startMs = view.viewEvents.first?.date, let durationNs = view.durationNs else { return nil }
-            return startMs * 1_000_000 + durationNs
-        }.max()
+        views
+            .compactMap { view -> Int64? in
+                guard let startMs = view.viewEvents.first?.date, let durationNs = view.durationNs else {
+                    return nil
+                }
+                return startMs * 1_000_000 + durationNs
+            }
+            .max()
     }
 
     public var sessionStartDate: Date? { sessionStartTimestampMs.map { Date(millisecondsSince1970: $0) } }
