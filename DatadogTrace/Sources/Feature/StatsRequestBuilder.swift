@@ -61,6 +61,10 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             .map(ClientStatsBucket.init)
 
         let clientStats = ClientStatsPayload(
+            // Always empty on mobile: there is no stable, meaningful device hostname
+            // (and reporting one would be a privacy concern), so `DatadogContext` exposes
+            // none. `Hostname` is a server-tracer field in the protobuf model; the intake
+            // accepts it empty. Matches the Android SDK.
             hostname: "",
             env: context.env,
             version: context.version,
