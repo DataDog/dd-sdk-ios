@@ -97,6 +97,15 @@ public class RUMSessionMatcher {
 
         /// `RUMVitalAppLaunch` events tracked during this visit.
         public fileprivate(set) var appLaunchEvents: [RUMVitalAppLaunchEvent] = []
+
+        /// `RUMViewUpdate` (delta) events tracked during this visit.
+        public fileprivate(set) var viewUpdateEvents: [RUMViewUpdateEvent] = []
+
+        /// Returns the most recent non-nil value for a given field across `viewUpdateEvents`, scanning newest-first.
+        /// Use this in `_Tests` variants when the field may have been set in an earlier delta and the stop-event delta carries `nil` (unchanged).
+        public func latestUpdateValue<T>(_ keyPath: KeyPath<RUMViewUpdateEvent, T?>) -> T? {
+            viewUpdateEvents.reversed().lazy.compactMap { $0[keyPath: keyPath] }.first
+        }
     }
 
     /// RUM application ID for this session.
@@ -112,6 +121,7 @@ public class RUMSessionMatcher {
     public let allEvents: [RUMEventMatcher]
 
     public let viewEventMatchers: [RUMEventMatcher]
+    public let viewUpdateEventMatchers: [RUMEventMatcher]
     public let actionEventMatchers: [RUMEventMatcher]
     public let resourceEventMatchers: [RUMEventMatcher]
     public let errorEventMatchers: [RUMEventMatcher]
@@ -121,6 +131,9 @@ public class RUMSessionMatcher {
 
     /// `RUMView` events tracked in this session.
     public let viewEvents: [RUMViewEvent]
+
+    /// `RUMViewUpdate` (delta) events tracked in this session.
+    public let viewUpdateEvents: [RUMViewUpdateEvent]
 
     /// `RUMAction` events tracked in this session.
     public let actionEvents: [RUMActionEvent]
@@ -158,6 +171,7 @@ public class RUMSessionMatcher {
         self.sessionID = sessionID
         self.allEvents = sessionEventMatchers
         self.viewEventMatchers = eventsMatchersByType["view"] ?? []
+        self.viewUpdateEventMatchers = eventsMatchersByType["view_update"] ?? []
         self.actionEventMatchers = eventsMatchersByType["action"] ?? []
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
@@ -171,7 +185,11 @@ public class RUMSessionMatcher {
             return vitalType == "app_launch"
         }
 
-        let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
+        let viewEvents: [RUMViewEvent] = try viewEventMatchers
+            .map { matcher in try matcher.model() }
+
+        let viewUpdateEvents: [RUMViewUpdateEvent] = try viewUpdateEventMatchers
+            .map { matcher in try matcher.model() }
 
         let actionEvents: [RUMActionEvent] = try actionEventMatchers
             .map { matcher in try matcher.model() }
@@ -282,6 +300,16 @@ public class RUMSessionMatcher {
             }
         }
 
+        try viewUpdateEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
+                visit.viewUpdateEvents.append(rumEvent)
+            } else {
+                throw RUMSessionConsistencyException(
+                    description: "Cannot link RUM view_update Event to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                )
+            }
+        }
+
         // Sort visits by time
         let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
@@ -297,9 +325,8 @@ public class RUMSessionMatcher {
 
         // Sort view events in each visit by document version
         visits.forEach { visit in
-            visit.viewEvents = visit.viewEvents.sorted { viewUpdate1, viewUpdate2 in
-                viewUpdate1.dd.documentVersion < viewUpdate2.dd.documentVersion
-            }
+            visit.viewEvents = visit.viewEvents.sorted { $0.dd.documentVersion < $1.dd.documentVersion }
+            visit.viewUpdateEvents = visit.viewUpdateEvents.sorted { $0.dd.documentVersion < $1.dd.documentVersion }
         }
 
         // Validate ViewVisit's view.isActive for each events
@@ -323,6 +350,7 @@ public class RUMSessionMatcher {
 
         self.views = visitsEventOrderedByTime
         self.viewEvents = viewEvents
+        self.viewUpdateEvents = viewUpdateEvents
         self.actionEvents = actionEvents
         self.resourceEvents = resourceEvents
         self.errorEvents = errorEvents
@@ -574,7 +602,13 @@ extension RUMSessionMatcher.View {
     public var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
 
     /// The duration of this view, in nanoseconds.
-    public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
+    /// When `viewUpdates` is on, the stop delta may carry nil `timeSpent` if it didn't change from the
+    /// previous delta (e.g. two events fired at the same mock timestamp). Scan newest-first for the
+    /// last non-nil value, then fall back to the initial full event.
+    public var durationNs: Int64? {
+        viewUpdateEvents.reversed().lazy.compactMap { $0.view.timeSpent }.first
+            ?? viewEvents.last?.view.timeSpent
+    }
 
     /// The duration of this view, in seconds.
     public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
@@ -590,7 +624,13 @@ extension RUMSessionMatcher: CustomStringConvertible {
     private var sessionStartTimestampNs: Int64? { sessionStartTimestampMs.map { $0 * 1_000_000 } }
 
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
-    private var sessionEndTimestampNs: Int64? { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() }
+    /// Uses per-view `durationNs` so that `viewUpdates` deltas (which carry the final `timeSpent`) are accounted for.
+    private var sessionEndTimestampNs: Int64? {
+        views.compactMap { view -> Int64? in
+            guard let startMs = view.viewEvents.first?.date, let durationNs = view.durationNs else { return nil }
+            return startMs * 1_000_000 + durationNs
+        }.max()
+    }
 
     public var sessionStartDate: Date? { sessionStartTimestampMs.map { Date(millisecondsSince1970: $0) } }
 
