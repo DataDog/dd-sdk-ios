@@ -39,7 +39,7 @@ extension ProfilingQuotaChecking {
 /// Checks profiling quota admission for the active RUM session.
 ///
 /// This service owns the quota request lifecycle and session-scoped result cache.
-/// It starts a quota request when a RUM session id is observed with granted
+/// It starts a quota request when a sampled-in RUM session id is observed with granted
 /// tracking consent, ignores stale responses for previous sessions and fails open
 /// on request or decoding errors.
 internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
@@ -74,7 +74,8 @@ extension ProfilingQuotaChecker: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .context(context) = message,
               context.trackingConsent == .granted,
-              let rumContext = context.additionalContext(ofType: RUMCoreContext.self) else {
+              let rumContext = context.additionalContext(ofType: RUMCoreContext.self),
+              rumContext.sessionSampler.isSampled else {
             return false
         }
 

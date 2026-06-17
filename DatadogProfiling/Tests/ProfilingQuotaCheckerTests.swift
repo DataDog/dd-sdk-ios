@@ -91,6 +91,28 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
         XCTAssertNil(checker.quotaResult)
     }
 
+    func testDoesNothingWhenRUMSessionIsSampledOut() {
+        // Given
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockResponseWith(statusCode: 200),
+                data: quotaResponse(admitted: true, reason: .quotaOk)
+            )
+        )
+        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+
+        // When
+        _ = checker.receive(message: FeatureMessage.context(context), from: PassthroughCoreMock())
+
+        // Then
+        XCTAssertEqual(server.waitAndReturnRequests(count: 0, timeout: 0.1).count, 0)
+        XCTAssertNil(checker.quotaResult)
+    }
+
     func testStartsQuotaRequestWhenTrackingConsentBecomesGranted() {
         // Given
         let server = ServerMock(

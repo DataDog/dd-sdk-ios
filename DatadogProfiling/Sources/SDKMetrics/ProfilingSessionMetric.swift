@@ -20,13 +20,31 @@ internal final class ProfilingSessionMetric {
         static let sessionKey = "profiling_session"
         static let noProfileErrorMessage = "No profile was stored."
         static let noDataErrorMessage = "Error serializing the profile."
-        static let profileNotWrittenErrorMessage = "Profile was not written because no profiled events were collected."
+        static let noProfiledEventsErrorMessage = "Profile was not written because no profiled events were collected."
+        static let quotaErrorMessage = "Profile was not written because profiling quota rejected the session."
     }
 
     enum StartReason: String {
         case applicationLaunch = "application_launch"
         case continuous = "continuous"
         case rumOperation = "rum_operation"
+    }
+
+    enum ProfileDropReason: Equatable {
+        case noProfiledEvents
+        case quotaRejected(DDProfiling.QuotaReason?)
+
+        var errorMessage: String {
+            switch self {
+            case .noProfiledEvents:
+                return Constants.noProfiledEventsErrorMessage
+            case .quotaRejected(let reason):
+                guard let reason else {
+                    return Constants.quotaErrorMessage
+                }
+                return "\(Constants.quotaErrorMessage) Quota reason: \(reason.rawValue)."
+            }
+        }
     }
 
     var metricName: String { Constants.name }
@@ -138,16 +156,17 @@ extension ProfilingSessionMetric {
         )
     }
 
-    static func profileNotWritten(
+    static func profileDropped(
         startReason: StartReason,
         status: ProfilingContext.Status,
+        reason: ProfileDropReason = .noProfiledEvents,
         cycleIndex: Int? = nil,
         appStartInfo: String? = nil
     ) -> ProfilingSessionMetric {
         .init(
             startReason: startReason,
             status: status,
-            errorMessage: Constants.profileNotWrittenErrorMessage,
+            errorMessage: reason.errorMessage,
             cycleIndex: cycleIndex,
             appStartInfo: appStartInfo
         )
