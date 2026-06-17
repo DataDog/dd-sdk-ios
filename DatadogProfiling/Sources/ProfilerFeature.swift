@@ -60,9 +60,12 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             AppLaunchProfiler(
                 core: core,
                 profilingSamplerProvider: profilingSamplerProvider,
+                quotaChecker: quotaChecker,
                 telemetryController: telemetryController
             )
         )
+
+        messageReceivers.append(quotaChecker)
 
         if let datadogProfiler = DatadogProfiler(
             core: core,
@@ -71,7 +74,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration
         ) {
-            messageReceivers.append(quotaChecker)
             messageReceivers.append(datadogProfiler)
         }
 

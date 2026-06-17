@@ -138,7 +138,7 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
     }
 
-    func testMessageReceiver_doesNotCheckQuota_whenDatadogProfilerIsNotCreated() {
+    func testMessageReceiver_checksQuotaForAppLaunchProfiler_whenDatadogProfilerIsNotCreated() {
         // Given
         let firstFeature = ProfilerFeature(
             core: PassthroughCoreMock(),
@@ -166,7 +166,7 @@ final class ProfilerFeatureTests: XCTestCase {
         _ = secondFeature.messageReceiver.receive(message: .context(context), from: secondCore)
 
         // Then
-        XCTAssertTrue(quotaChecker.receivedContexts.isEmpty)
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
         withExtendedLifetime(firstFeature) {}
         withExtendedLifetime(secondFeature) {}
     }
