@@ -106,6 +106,13 @@ public class RUMSessionMatcher {
         public func latestUpdateValue<T>(_ keyPath: KeyPath<RUMViewUpdateEvent, T?>) -> T? {
             viewUpdateEvents.reversed().lazy.compactMap { $0[keyPath: keyPath] }.first
         }
+
+        /// Whether this view is currently active.
+        /// Checks `viewUpdateEvents` newest-first (delta — only non-nil when `isActive` changes), then falls back to `viewEvents.last`.
+        public var isActive: Bool? {
+            viewUpdateEvents.reversed().lazy.compactMap { $0.view.isActive }.first
+                ?? viewEvents.last?.view.isActive
+        }
     }
 
     /// RUM application ID for this session.
