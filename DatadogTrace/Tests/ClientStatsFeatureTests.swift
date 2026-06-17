@@ -288,6 +288,36 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(provider.next(), 3)
     }
 
+    func testSequenceNumberProviderSupportsConcurrentAccess() {
+        // Given
+        let provider = StatsSequenceNumberProvider()
+        let threadCount = 16
+        let iterationsPerThread = 1_000
+        let total = threadCount * iterationsPerThread
+
+        var perThread = [[UInt64]](repeating: [], count: threadCount)
+        let lock = NSLock()
+
+        // When: every thread hammers `next()` concurrently.
+        DispatchQueue.concurrentPerform(iterations: threadCount) { thread in
+            var local: [UInt64] = []
+            local.reserveCapacity(iterationsPerThread)
+            for _ in 0..<iterationsPerThread {
+                local.append(provider.next())
+            }
+            lock.lock()
+            perThread[thread] = local
+            lock.unlock()
+        }
+
+        // Then: no value is dropped or handed out twice, and the counter is left consistent.
+        let all = perThread.flatMap { $0 }
+        XCTAssertEqual(all.count, total)
+        XCTAssertEqual(Set(all).count, total, "Concurrent next() calls must each return a unique value")
+        XCTAssertEqual(all.max(), UInt64(total))
+        XCTAssertEqual(provider.next(), UInt64(total) + 1)
+    }
+
     func testSequenceNumberIncrementsAcrossRequests() throws {
         // Given
         let builder = makeRequestBuilder()
