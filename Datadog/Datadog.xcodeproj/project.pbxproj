@@ -19,7 +19,7 @@
 		09A936A12F0EB989000B6379 /* SamplingPriority.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369B2F0EB989000B6379 /* SamplingPriority.swift */; };
 		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
 		1019DFD92FB1BB2E006599B4 /* DatadogSiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */; };
-		10E9062A2FBDB81A002D5F45 /* RemoteConfigurationSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */; };
+		10E9062A2FBDB81A002D5F45 /* RemoteConfigurationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */; };
 		10E9062C2FBDBA4B002D5F45 /* RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D6D2D95A48B00732D5F /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
@@ -1775,7 +1775,7 @@
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		0D2A20EFB1D82D0B8AC781F9 /* HeatmapMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapMocks.swift; sourceTree = "<group>"; };
 		1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSiteTests.swift; sourceTree = "<group>"; };
-		10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationSynchronizer.swift; sourceTree = "<group>"; };
+		10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationProvider.swift; sourceTree = "<group>"; };
 		10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationTests.swift; sourceTree = "<group>"; };
 		11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationMocks.swift; sourceTree = "<group>"; };
 		11030D752D96EC5300732D5F /* ViewHitchesMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHitchesMetric.swift; sourceTree = "<group>"; };
@@ -4464,7 +4464,7 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				10E906292FBDB818002D5F45 /* RemoteConfigurationSynchronizer.swift */,
+				10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */,
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				D214DAA429E072D7004D0AE8 /* MessageBus.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
@@ -7922,7 +7922,7 @@
 				617699182A860D9D0030022B /* HTTPClient.swift in Sources */,
 				D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				61133BD42423979B00786299 /* FileReader.swift in Sources */,
-				10E9062A2FBDB81A002D5F45 /* RemoteConfigurationSynchronizer.swift in Sources */,
+				10E9062A2FBDB81A002D5F45 /* RemoteConfigurationProvider.swift in Sources */,
 				D29294E0291D5ED100F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				61D3E0D9277B23F1008BE766 /* KronosNTPProtocol.swift in Sources */,
 				61D3E0DA277B23F1008BE766 /* KronosTimeFreeze.swift in Sources */,

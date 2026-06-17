@@ -423,12 +423,13 @@ extension DatadogCore {
             site: configuration.site
         )
 
+        let httpClient = configuration.httpClientFactory(configuration.proxyConfiguration)
         self.init(
             directory: directory,
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
+            httpClient: httpClient,
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,
@@ -461,13 +462,23 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension,
-            remoteConfiguration: configuration.remoteConfigurationID.map { ($0, configuration.site) }
+            isRunFromExtension: isRunFromExtension
         )
 
-        synchronizer?.sync { [weak self] result in
-            if case .failure(let error) = result {
-                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+        if let remoteConfigurationID = configuration.remoteConfigurationID {
+            let remoteConfigurationProvider = RemoteConfigurationProvider(
+                id: remoteConfigurationID,
+                site: configuration.site,
+                directory: directory.coreDirectory,
+                httpClient: httpClient,
+                telemetry: self.telemetry
+            )
+            self.remoteConfigurationProvider = remoteConfigurationProvider
+
+            remoteConfigurationProvider.sync { [weak self] result in
+                if case .failure(let error) = result {
+                    self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+                }
             }
         }
 

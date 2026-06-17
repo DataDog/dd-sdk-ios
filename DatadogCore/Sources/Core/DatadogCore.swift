@@ -55,9 +55,13 @@ internal final class DatadogCore {
     /// The message-bus instance.
     let bus = MessageBus()
 
-    /// Owns the remote configuration cache and fetch lifecycle.
-    /// `nil` when `remoteConfiguration` was not set at init.
-    internal let synchronizer: RemoteConfigurationSynchronizer?
+    /// The remote configuration provider, if configured.
+    var remoteConfigurationProvider: RemoteConfigurationProvider?
+
+    /// The last successfully fetched remote configuration, if any.
+    var remoteConfiguration: RemoteConfiguration? {
+        remoteConfigurationProvider?.remoteConfiguration
+    }
 
     /// Registry for Features.
     @ReadWriteLock
@@ -79,10 +83,6 @@ internal final class DatadogCore {
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
-    /// The last successfully fetched and cached remote configuration, if any.
-    @ReadWriteLock
-    var remoteConfiguration: RemoteConfiguration? = nil
-
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -94,7 +94,7 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
-    ///   - remoteConfiguration: The remote configuration ID and site; `nil` when not configured.
+    ///   - remoteConfigurationProvider: The remote configuration provider, if configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
@@ -107,10 +107,11 @@ internal final class DatadogCore {
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
         isRunFromExtension: Bool = false,
-        remoteConfiguration: (id: String, site: DatadogSite)? = nil
+        remoteConfigurationProvider: RemoteConfigurationProvider? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
+        self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
@@ -124,9 +125,6 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-        self.synchronizer = remoteConfiguration.map {
-            RemoteConfigurationSynchronizer(id: $0.id, site: $0.site, directory: directory.coreDirectory, httpClient: httpClient)
-        }
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)

@@ -7,43 +7,74 @@
 import Foundation
 import DatadogInternal
 
-/// Owns the remote configuration cache and fetch lifecycle.
-///
-/// Created by `DatadogCore` during initialization when a `remoteConfigurationID` is provided.
-/// Call `sync(_:)` to fire a CDN fetch and update the cache.
+/// Provides the last successfully fetched remote configuration and refreshes its cache.
 ///
 /// TODO: Also trigger `sync()` on every app foreground transition so remote config
 /// is refreshed while the app is in use, not only at SDK init (RFC §Caching Strategy).
-internal final class RemoteConfigurationSynchronizer {
+internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
     let directory: Directory
     let httpClient: HTTPClient
+    private let telemetry: Telemetry
 
     /// The result of the last cache read or CDN fetch.
-    /// `.success(data)` — data is available.
+    /// `.success(remoteConfiguration)` — remote configuration is available.
     /// `.failure` — no cache yet, or a read/write error.
     @ReadWriteLock
-    private(set) var cache: Result<Data, Error>
+    private(set) var cache: Result<RemoteConfiguration, RemoteConfigurationError>
 
-    init(id: String, site: DatadogSite, directory: Directory, httpClient: HTTPClient) {
+    var remoteConfiguration: RemoteConfiguration? {
+        try? cache.get()
+    }
+
+    init(
+        id: String,
+        site: DatadogSite,
+        directory: Directory,
+        httpClient: HTTPClient,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         self.id = id
         self.site = site
         self.directory = directory
         self.httpClient = httpClient
+        self.telemetry = telemetry
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        self._cache = ReadWriteLock(wrappedValue: Self.readCache(id: id, from: directory))
+        self._cache = ReadWriteLock(wrappedValue: Self.readCache(id: id, from: directory, telemetry: telemetry))
     }
 
     // MARK: - Private
 
-    private static func readCache(id: String, from directory: Directory) -> Result<Data, Error> {
+    private static func readCache(
+        id: String,
+        from directory: Directory,
+        telemetry: Telemetry
+    ) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        let fileName = "\(id).json"
+        guard directory.hasFile(named: fileName) else {
+            return .failure(.diskError)
+        }
+
+        let data: Data
         do {
-            return .success(try directory.file(named: "\(id).json").read())
+            data = try directory.file(named: fileName).read()
         } catch {
+            let error = RemoteConfigurationError.diskError
+            telemetry.error("[RemoteConfig] Cache read failed", error: error)
             return .failure(error)
+        }
+
+        return decode(data)
+    }
+
+    private static func decode(_ data: Data) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        do {
+            return .success(try JSONDecoder().decode(RemoteConfiguration.self, from: data))
+        } catch {
+            return .failure(.decodingError(error))
         }
     }
 
@@ -52,7 +83,7 @@ internal final class RemoteConfigurationSynchronizer {
     /// Fires an async CDN fetch and updates the cache on success.
     ///
     /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
-    func sync(_ completionHandler: @escaping (Result<Data, Error>) -> Void) {
+    func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Build request with conditional ETag header if a previous ETag is stored.
         // Only send If-None-Match when the cache is usable — if cache is .failure,
         // a 304 response would leave us with no data to serve.
@@ -67,10 +98,10 @@ internal final class RemoteConfigurationSynchronizer {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
 
-        httpClient.fetch(request: request) { result in
+        httpClient.send(request: request, delegate: nil) { result in
             switch result {
             case .failure(let error):
-                completionHandler(.failure(error))
+                completionHandler(.failure(.networkError(error)))
 
             case .success(let (http, data)):
                 // 1. Not Modified — existing cache is still valid
@@ -81,24 +112,31 @@ internal final class RemoteConfigurationSynchronizer {
 
                 // 2. Non-2xx HTTP status
                 guard (200..<300).contains(http.statusCode) else {
-                    completionHandler(.failure(RemoteConfigurationError.httpError(http.statusCode)))
+                    completionHandler(.failure(.httpError(http.statusCode)))
                     return
                 }
 
                 // 3. Empty body
-                guard !data.isEmpty else {
-                    completionHandler(.failure(RemoteConfigurationError.emptyBody))
+                guard let data = data, !data.isEmpty else {
+                    completionHandler(.failure(.emptyBody))
                     return
                 }
 
-                // TODO RUM-16387: Validate the schema before saving
+                let remoteConfiguration: RemoteConfiguration
+                switch Self.decode(data) {
+                case .success(let decodedRemoteConfiguration):
+                    remoteConfiguration = decodedRemoteConfiguration
+                case .failure(let error):
+                    completionHandler(.failure(error))
+                    return
+                }
 
                 // All checks passed — persist to disk and update in-memory cache.
                 // File.write uses .atomic (write to temp, then rename), so the update is
                 // all-or-nothing: the existing file is never left in a truncated state.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
-                    self.cache = .success(data)
+                    self.cache = .success(remoteConfiguration)
 
                     // Store ETag for conditional requests on the next sync.
                     // If the response has no ETag, delete any stale validator so we
@@ -114,23 +152,29 @@ internal final class RemoteConfigurationSynchronizer {
                         try? self.directory.file(named: etagFileName).delete()
                     }
 
-                    completionHandler(.success(data))
+                    completionHandler(.success(remoteConfiguration))
                 } catch {
-                    completionHandler(.failure(error))
+                    completionHandler(.failure(.diskError))
                 }
             }
         }
     }
 }
 
-private enum RemoteConfigurationError: Error, LocalizedError {
+internal enum RemoteConfigurationError: Error, LocalizedError {
+    case networkError(Error)
     case httpError(Int)
     case emptyBody
+    case decodingError(Error)
+    case diskError
 
     var errorDescription: String? {
         switch self {
+        case .networkError(let error): return "Network error: \(error.localizedDescription)"
         case .httpError(let code): return "Non-2xx response: HTTP \(code)"
         case .emptyBody: return "Empty response body"
+        case .decodingError(let error): return "Remote configuration decoding failed: \(error.localizedDescription)"
+        case .diskError: return "Remote configuration disk read/write failed"
         }
     }
 }
