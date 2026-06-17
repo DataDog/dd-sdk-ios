@@ -121,7 +121,7 @@ class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCom
         XCTAssertEqual(view2.latestUpdateValue(\.view.resource?.count) ?? 0, 0)
         XCTAssertEqual(view2.latestUpdateValue(\.view.error?.count), 1)
         // feature flags may be in the initial event or in a delta depending on when they were set
-        let viewFeatureFlags = try XCTUnwrap(view2.latestUpdateValue(\.featureFlags) ?? view2.viewEvents.last?.featureFlags)
+        let viewFeatureFlags = try XCTUnwrap(view2.latestUpdateValue(\.featureFlags))
         XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? AnyCodable)?.value as? Bool, false)
         XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? AnyCodable)?.value as? String, "mock_value")
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
