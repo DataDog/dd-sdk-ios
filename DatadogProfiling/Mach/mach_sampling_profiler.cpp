@@ -67,6 +67,13 @@ static constexpr size_t STACK_REGION_MAX_READ = 65536; // 64 KB safety cap
 // 128 bytes covers the vast majority of real-world frames without over-reading.
 static constexpr size_t STACK_REGION_FRAME_SIZE_ESTIMATE = 128;
 
+struct frame_pointer_pair_t {
+    void* next_frame_pointer;
+    void* return_address;
+};
+
+static_assert(sizeof(frame_pointer_pair_t) == sizeof(void*) * 2, "Frame pointer pair must stay two pointers.");
+
 // Main thread pthread identifier for comparison
 static pthread_t g_main_pthread = NULL;
 
@@ -98,7 +105,8 @@ static size_t read_memory_region(void* addr, uint8_t* buf, size_t size) {
     }
 
     const uintptr_t address = reinterpret_cast<uintptr_t>(addr);
-    if (address > UINTPTR_MAX - size) {
+    const uintptr_t buffer = reinterpret_cast<uintptr_t>(buf);
+    if (address > UINTPTR_MAX - size || buffer > UINTPTR_MAX - size) {
         return 0;
     }
 
@@ -146,7 +154,7 @@ static size_t read_stack_region_by_pages(void* sp, uint8_t* buf, size_t size) {
         }
 
         total_read += bytes_read;
-        if (total_read == size || current_address > UINTPTR_MAX - bytes_read) {
+        if (total_read == size) {
             break;
         }
 
@@ -321,18 +329,18 @@ static bool read_frame_pair_from_snapshot(
     uintptr_t stack_base,
     const uint8_t* stack_buf,
     size_t bytes_read,
-    void* next_frame[2]
+    frame_pointer_pair_t* next_frame
 ) {
-    if (stack_base == 0 || stack_buf == nullptr || bytes_read < sizeof(void*[2]) || fp < stack_base) {
+    if (stack_base == 0 || stack_buf == nullptr || bytes_read < sizeof(frame_pointer_pair_t) || fp < stack_base) {
         return false;
     }
 
     const uintptr_t fp_offset = fp - stack_base;
-    if (fp_offset > bytes_read - sizeof(void*[2])) {
+    if (fp_offset > bytes_read - sizeof(frame_pointer_pair_t)) {
         return false;
     }
 
-    memcpy(static_cast<void*>(next_frame), stack_buf + fp_offset, sizeof(void*[2]));
+    memcpy(static_cast<void*>(next_frame), stack_buf + fp_offset, sizeof(frame_pointer_pair_t));
     return true;
 }
 
@@ -343,12 +351,12 @@ static bool read_frame_pair_from_snapshot(
  * snapshot. It preserves stack accuracy for large frames without returning to
  * faulting memory reads; vm_read_overwrite reports failure instead of crashing.
  */
-static bool read_frame_pair_from_memory(uintptr_t fp, void* next_frame[2]) {
+static bool read_frame_pair_from_memory(uintptr_t fp, frame_pointer_pair_t* next_frame) {
     return read_memory_region(
         reinterpret_cast<void*>(fp),
         reinterpret_cast<uint8_t*>(next_frame),
-        sizeof(void*[2])
-    ) == sizeof(void*[2]);
+        sizeof(frame_pointer_pair_t)
+    ) == sizeof(frame_pointer_pair_t);
 }
 
 /**
@@ -387,15 +395,15 @@ static void walk_frames(
         // so fp must be at or above sp when a stack snapshot is available.
         if (stack_base != 0 && fp_addr < stack_base) break;
 
-        void* next_frame[2];
-        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, next_frame)) {
-            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, next_frame)) {
+        frame_pointer_pair_t next_frame;
+        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
+            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
                 break;
             }
         }
 
-        fp = next_frame[0];  // next frame pointer (saved x29 / rbp)
-        pc = next_frame[1];  // return address (saved lr / return addr on stack)
+        fp = next_frame.next_frame_pointer;  // saved x29 / rbp
+        pc = next_frame.return_address;  // saved lr / return address on stack
 
         if (!is_valid_userspace_addr(reinterpret_cast<uintptr_t>(pc))) break;
     }
