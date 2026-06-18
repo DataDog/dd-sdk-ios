@@ -89,6 +89,11 @@ struct sample_entry {
     uint64_t timestamp_ns{0};
     uint64_t frames[SAMPLE_STACK_DEPTH]{};
     uint32_t frame_count{0};
+    /// Class name for Obj-C/Swift instances observed via the swizzle path;
+    /// nullptr for raw C/zone-hook allocations. Pointer lifetime is the
+    /// caller's responsibility (Obj-C class names from class_getName are
+    /// stable for the life of the class).
+    const char* class_name{nullptr};
 };
 
 // MARK: - Global state
@@ -213,7 +218,8 @@ size_t bucket_for(uint64_t ptr) {
 /// CAS. Returns true if the slot was claimed; false if the table was
 /// effectively full (every probe collided).
 bool insert_sample(uint64_t addr, uint64_t size, double weight,
-                   const uint64_t* frames, uint32_t frame_count) {
+                   const uint64_t* frames, uint32_t frame_count,
+                   const char* class_name) {
     const size_t start = bucket_for(addr);
     for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
         const size_t idx = (start + i) % SAMPLE_TABLE_CAPACITY;
@@ -229,6 +235,7 @@ bool insert_sample(uint64_t addr, uint64_t size, double weight,
             const uint32_t to_copy = (frame_count > SAMPLE_STACK_DEPTH) ? SAMPLE_STACK_DEPTH : frame_count;
             std::memcpy(g_samples[idx].frames, frames, to_copy * sizeof(uint64_t));
             g_samples[idx].frame_count = to_copy;
+            g_samples[idx].class_name = class_name;
             return true;
         }
     }
@@ -282,7 +289,9 @@ uint32_t capture_backtrace(uint64_t* frames, uint32_t max_frames) {
 /// returns a pointer. Handles diagnostic counters, the Poisson decision,
 /// and (when sampled) the table insertion. Returns the input pointer
 /// unchanged so hook wrappers can `return record_allocation(...)`.
-void* record_allocation(void* ptr, size_t size) {
+/// @param class_name Optional Obj-C/Swift class name (from class_getName);
+///                   stored verbatim in the sample. nullptr for zone-hook path.
+void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr) {
     if (ptr == nullptr) {
         return ptr;
     }
@@ -321,7 +330,7 @@ void* record_allocation(void* ptr, size_t size) {
     uint64_t frames[SAMPLE_STACK_DEPTH];
     const uint32_t frame_count = capture_backtrace(frames, SAMPLE_STACK_DEPTH);
     const double weight = poisson_weight_for_size(size);
-    insert_sample(reinterpret_cast<uint64_t>(ptr), size, weight, frames, frame_count);
+    insert_sample(reinterpret_cast<uint64_t>(ptr), size, weight, frames, frame_count, class_name);
     tls_in_profiler = false;
 
     g_sampled_allocations.fetch_add(1, std::memory_order_relaxed);
@@ -605,6 +614,32 @@ extern "C" dd_memory_install_status_t dd_memory_profiler_start(uint64_t poisson_
     return status;
 }
 
+extern "C" bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes) {
+    // Idempotent: if already running (zone-hook or passive), just re-enable.
+    if (g_profiler_enabled.load(std::memory_order_acquire)) {
+        return true;
+    }
+
+    if (g_timebase.denom == 0) {
+        mach_timebase_info(&g_timebase);
+    }
+
+    if (!ensure_sample_table_allocated()) {
+        return false;
+    }
+
+    g_poisson_rate_bytes = (poisson_rate_bytes > 0) ? poisson_rate_bytes
+                                                    : DD_MEMORY_POISSON_DEFAULT_RATE_BYTES;
+    g_start_ticks = mach_absolute_time();
+    reset_diagnostics();
+    g_profiler_enabled.store(true, std::memory_order_release);
+    return true;
+}
+
+extern "C" void dd_memory_observe_allocation(const void* ptr, uint64_t size, const char* class_name) {
+    record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size), class_name);
+}
+
 extern "C" void dd_memory_profiler_stop(void) {
     // We don't restore the original zone function pointers. Another
     // tool may have replaced them after us; restoring our captured
@@ -653,7 +688,7 @@ extern "C" dd_memory_snapshot_t dd_memory_snapshot_capture(void) {
         out[written].weight = g_samples[i].weight;
         out[written].timestamp_ns = g_samples[i].timestamp_ns;
         out[written].frame_count = g_samples[i].frame_count;
-        out[written].class_name = nullptr;
+        out[written].class_name = g_samples[i].class_name;
         std::memcpy(out[written].frames, g_samples[i].frames,
                     sizeof(uint64_t) * SAMPLE_STACK_DEPTH);
         written += 1;

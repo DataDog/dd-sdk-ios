@@ -139,6 +139,32 @@ typedef struct dd_memory_snapshot {
 dd_memory_install_status_t dd_memory_profiler_start(uint64_t poisson_rate_bytes);
 
 /**
+ * Starts the profiler in passive mode: allocates the sample table, initializes
+ * the Poisson sampler, and flips the enabled flag — but installs NO malloc_zone
+ * hooks. Allocations must be reported externally via dd_memory_observe_allocation.
+ *
+ * Used by the +allocWithZone: swizzling spike (memory_swizzle_poc): the Obj-C
+ * runtime hands the swizzle a freshly-allocated object with its class identity
+ * intact, and we observe it through this passive path.
+ *
+ * @param poisson_rate_bytes Average bytes between sampled allocations. Pass 0 for default.
+ * @return true if the passive mode was activated; false if sample table allocation failed.
+ */
+bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes);
+
+/**
+ * Records an externally-observed allocation. Goes through the same Poisson
+ * sampler, reentrancy guard, and side-table machinery as the zone-hook path.
+ *
+ * @param ptr Allocation pointer; NULL is a no-op.
+ * @param size Allocation size in bytes.
+ * @param class_name Optional class name (e.g. from class_getName for Obj-C instances).
+ *                   Must outlive the sample (typically a static string from the Obj-C runtime).
+ *                   Pass NULL when no class identity is available.
+ */
+void dd_memory_observe_allocation(const void* ptr, uint64_t size, const char* class_name);
+
+/**
  * Disables sampling and removes hooks.
  *
  * The hook function pointers may remain installed (we cannot reliably restore
