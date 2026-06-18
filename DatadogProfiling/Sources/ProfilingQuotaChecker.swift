@@ -234,15 +234,22 @@ private struct QuotaResponse: Decodable {
 }
 
 private extension QuotaResponse.Attributes {
+    /// Converts quota response attributes into the session-scoped upload gate.
+    ///
+    /// `admitted` is the source of truth for quota admission/rejection reasons. This keeps
+    /// the SDK correct if `admitted` and `reason` disagree, or if a new backend rejection
+    /// reason is normalized to `.undefined`. Explicit fail-open reasons keep uploads enabled
+    /// regardless of `admitted`.
     var quotaResult: ProfilingQuotaResult {
+        let decision: ProfilingQuotaResult.Decision
         switch reason {
-        case .backendUnavailable:
-            return .init(decision: .quotaOK, reason: reason)
-        case .timeout, .apiError:
-            return .init(decision: .quotaOK, reason: .apiError)
+        case .backendUnavailable, .timeout, .apiError:
+            decision = .quotaOK
         case .quotaOk, .quotaExceeded, .orgDisabled, .undefined:
-            return .init(decision: admitted ? .quotaOK : .quotaKO, reason: reason)
+            decision = admitted ? .quotaOK : .quotaKO
         }
+
+        return .init(decision: decision, reason: reason)
     }
 }
 

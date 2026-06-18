@@ -231,9 +231,9 @@ private extension DatadogProfiler {
             defer { previousAppState = currentAppState }
 
             switch profilingSamplerProvider.continuousProfilingSampled {
-            case true:
+            case true?:
                 operation = .continuousProfiling
-            case false:
+            case false?:
                 operation = .customProfiling
 
                 if isContinuousProfilingGraceAvailable {
@@ -243,7 +243,7 @@ private extension DatadogProfiler {
                     // the shared native profiler to harvest TTID.
                     isContinuousProfilingGraceAvailable = false
                     let canProfile = shouldKeepProfilerRunning()
-                    if canProfile || !canWaitForAppLaunchVital {
+                    if canProfile || !shouldWaitForAppLaunchVital {
                         updateProfilerState(canProfile: canProfile)
                     }
                     return
@@ -432,7 +432,7 @@ private extension DatadogProfiler {
         }
     }
 
-    var canWaitForAppLaunchVital: Bool {
+    var shouldWaitForAppLaunchVital: Bool {
         // If continuous profiling samples out before TTID, keep the shared native profiler
         // briefly so AppLaunchProfiler can harvest the launch profile.
         hasReceivedAppLaunchVital == false

@@ -103,7 +103,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 }
 
                 // Skip Datadog's own intake requests to prevent infinite recursion
-                if self.isDatadogIntakeRequest(currentRequest) {
+                if self.hasDatadogAuthHeader(request: currentRequest) {
                     return
                 }
 
@@ -359,7 +359,7 @@ extension NetworkInstrumentationFeature {
     ///
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
-    private func isDatadogIntakeRequest(_ request: URLRequest?) -> Bool {
+    private func hasDatadogAuthHeader(request: URLRequest?) -> Bool {
         // Datadog internal requests authenticate with either `DD-API-KEY` or `DD-CLIENT-TOKEN`.
         // This catches both this SDK's own uploads (preventing recursion) and other Datadog
         // tooling that may run in the same process (e.g. `DatadogSDKTesting`'s CI Visibility
