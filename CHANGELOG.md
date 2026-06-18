@@ -2,6 +2,7 @@
 
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
 - [IMPROVEMENT] Non-encodable attribute values are now encoded as their string description instead of being silently dropped. See [#TODO][]
+- [IMPROVEMENT] Non-encodable attribute values are now encoded as their string description instead of being silently dropped. See [#3003][]
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
 - [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 
@@ -1203,6 +1204,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
+[#3003]: https://github.com/DataDog/dd-sdk-ios/pull/3003
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
