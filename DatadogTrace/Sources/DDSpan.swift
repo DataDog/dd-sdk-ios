@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class DDSpan: OTSpan {
+internal final class DDSpan: OTSpan, @unchecked Sendable {
     /// The `Tracer` which created this span.
     private let ddTracer: DatadogTracer
     /// Span context.
@@ -22,10 +22,10 @@ internal final class DDSpan: OTSpan {
     private var operationName: String
     /// Span tags.
     @ReadWriteLock
-    private var tags: [String: Encodable]
+    private var tags: [String: OTTagValue]
     /// Span log fields.
     @ReadWriteLock
-    private var logFields: [[String: Encodable]]
+    private var logFields: [[String: Encodable & Sendable]]
     /// If this span has completed.
     @ReadWriteLock
     private var isFinished: Bool
@@ -41,7 +41,7 @@ internal final class DDSpan: OTSpan {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable],
+        tags: [String: OTTagValue],
         eventBuilder: SpanEventBuilder,
         eventWriter: SpanWriteContext
     ) {
@@ -74,7 +74,7 @@ internal final class DDSpan: OTSpan {
         self.operationName = operationName
     }
 
-    func setTag(key: String, value: Encodable) {
+    func setTag(key: String, value: OTTagValue) {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
@@ -107,11 +107,11 @@ internal final class DDSpan: OTSpan {
         return self
     }
 
-    func log(fields: [String: Encodable], timestamp: Date) {
+    func log(fields: [String: Encodable & Sendable], timestamp: Date) {
         log(message: nil, fields: fields, timestamp: timestamp)
     }
 
-    func log(message: String?, fields: [String: Encodable], timestamp: Date) {
+    func log(message: String?, fields: [String: Encodable & Sendable], timestamp: Date) {
         if warnIfFinished("log(fields:timestamp:)") {
             return
         }
@@ -120,10 +120,17 @@ internal final class DDSpan: OTSpan {
     }
 
     func finish(at time: Date) {
-        if warnIfFinished("finish(at:)") {
+        var shouldRun = true
+        _isFinished.mutate {
+            if warnIfFinished("finish(at:)", isFinished: $0) {
+                shouldRun = false
+                return
+            }
+            $0 = true
+        }
+        if !shouldRun {
             return
         }
-        isFinished = true
 
         if let activity = activityReference {
             ddTracer.removeSpan(span: self)
@@ -169,6 +176,10 @@ internal final class DDSpan: OTSpan {
     // MARK: - Private
 
     private func warnIfFinished(_ methodName: String) -> Bool {
+        warnIfFinished(methodName, isFinished: isFinished)
+    }
+
+    private func warnIfFinished(_ methodName: String, isFinished: Bool) -> Bool {
         return warn(
             if: isFinished,
             message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."

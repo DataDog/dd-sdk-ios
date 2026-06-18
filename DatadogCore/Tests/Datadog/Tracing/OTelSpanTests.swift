@@ -83,6 +83,54 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(try parentSpanMatcher.traceID(), try childSpanMatcher.traceID())
         XCTAssertEqual(try parentSpanMatcher.spanID(), try childSpanMatcher.parentSpanID())
     }
+
+    func testAddLink() throws {
+        let core = DatadogCoreProxy()
+        defer { XCTAssertNoThrow(try core.flushAndTearDown())}
+
+        Trace.enable(in: core)
+
+        // Given
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider(in: core)
+        )
+
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+
+        let span1 = tracer
+            .spanBuilder(spanName: "Span 1")
+            .startSpan()
+
+        let span2 = tracer
+            .spanBuilder(spanName: "Span 2")
+            .startSpan()
+
+        // When
+        span1.addLink(spanContext: span2.context, attributes: ["weight": .int(42)])
+
+        span1.end()
+        span2.end()
+
+        // Then
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spans.count, 2)
+
+        let span1Matcher = try XCTUnwrap(spans.first(where: { try $0.operationName() == "Span 1" }))
+        let span2Matcher = try XCTUnwrap(spans.first(where: { try $0.operationName() == "Span 2" }))
+        let linksString = try XCTUnwrap(span1Matcher.meta.links())
+        let links: [[String: AnyDecodable]] = try JSONDecoder().decode([[String: AnyDecodable]].self, from: linksString.utf8Data)
+        XCTAssertEqual(links.count, 1)
+        let firstLink = try XCTUnwrap(links.first)
+
+        XCTAssertEqual(firstLink["trace_id"]?.value as? String, try span2Matcher.traceID()?.toString(representation: .hexadecimal))
+        XCTAssertEqual(firstLink["span_id"]?.value as? String, try span2Matcher.spanID()?.toString(representation: .hexadecimal))
+
+        let attributes = try XCTUnwrap(firstLink["attributes"]?.value as? [String: String])
+        XCTAssertEqual(attributes["weight"], "42")
+    }
 }
 
 extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeValue {

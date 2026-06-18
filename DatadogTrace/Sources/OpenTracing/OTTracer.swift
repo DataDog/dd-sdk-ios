@@ -5,7 +5,7 @@ import DatadogInternal
 /// to create OTSpans, inject/extract them between processes, and so on.
 /// 
 /// Tracer should be thread-safe.
-public protocol OTTracer {
+public protocol OTTracer: Sendable {
     /// Start a new span with the given operation name.
     ///
     /// - parameter operationName: the operation name for the newly-started span
@@ -20,7 +20,7 @@ public protocol OTTracer {
     func startSpan(
         operationName: String,
         references: [OTReference]?,
-        tags: [String: Encodable]?,
+        tags: [String: OTTagValue]?,
         startTime: Date?
     ) -> OTSpan
 
@@ -35,7 +35,7 @@ public protocol OTTracer {
     /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
-        tags: [String: Encodable]?,
+        tags: [String: OTTagValue]?,
         startTime: Date?,
         customSampleRate: SampleRate?
     ) -> OTSpan
@@ -97,7 +97,7 @@ public extension OTTracer {
     func startSpan(
         operationName: String,
         childOf parent: OTSpanContext? = nil,
-        tags: [String: Encodable]? = nil,
+        tags: [String: OTTagValue]? = nil,
         startTime: Date? = nil
     ) -> OTSpan {
         let references = parent.map { [OTReference.child(of: $0)] }
@@ -120,7 +120,7 @@ public extension OTTracer {
     /// - returns:            a valid Span instance; it is the caller's responsibility to call `finish()`.
     func startRootSpan(
         operationName: String,
-        tags: [String: Encodable]? = nil,
+        tags: [String: OTTagValue]? = nil,
         startTime: Date? = nil,
         customSampleRate: SampleRate? = nil
     ) -> OTSpan {
