@@ -11,8 +11,8 @@ import DatadogInternal
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
 internal protocol AppKitEventCommandFactory {
-    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand?
     func command(from event: NSEvent) -> RUMAddUserActionCommand?
+    func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand?
 }
 
 // MARK: macOS implementation
@@ -36,21 +36,16 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         self.swiftUIDetector = swiftUIDetector
     }
 
-    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand? {
-
-        if let view = from as? NSView, let rumAction = createAppKitActionCommand(from: view) {
-            return rumAction
-        }
-
-        if let menuItem = from as? NSMenuItem,  let rumAction = createAppKitActionCommand(from: menuItem) {
+    func command(from event: NSEvent) -> RUMAddUserActionCommand? {
+        if let rumAction = createAppKitActionCommand(from: event) {
             return rumAction
         }
 
         return nil
     }
 
-    func command(from event: NSEvent) -> RUMAddUserActionCommand? {
-        if let rumAction = createAppKitActionCommand(from: event) {
+    func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
+        if let rumAction = createAppKitActionCommand(from: menuItem) {
             return rumAction
         }
 

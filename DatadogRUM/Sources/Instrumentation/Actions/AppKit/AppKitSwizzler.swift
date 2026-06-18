@@ -8,57 +8,64 @@
 import AppKit
 import DatadogInternal
 
+/// Installs AppKit action tracking without swizzling.
+///
+/// Two AppKit input modalities are observed:
+/// - **Controls / toolbar / window chrome**: a local `NSEvent` monitor catches `leftMouseDown` and
+///   hit-tests the clicked view.
+/// - **Menu items**: `NSMenu.didSendActionNotification` is observed, since menu tracking runs its own
+///   event pump and never surfaces clicks through the app's `NSEvent` queue (so the local monitor can't
+///   see them). The notification fires right after AppKit dispatches a menu item's action and carries the
+///   selected `NSMenuItem` in `userInfo["MenuItem"]`.
+///
+/// The type keeps the `DDApplicationSwizzler` name and `swizzle()`/`unswizzle()` lifecycle to stay
+/// symmetric with the UIKit implementation and the shared call sites in `RUMInstrumentation`.
 internal final class DDApplicationSwizzler {
+    /// `userInfo` key carrying the selected `NSMenuItem` in `NSMenu.didSendActionNotification`.
+    private static let menuItemUserInfoKey = "MenuItem"
+
     private(set) var eventMonitor: Any?
-    let sendAction: NSControlSendAction
+    private(set) var menuObserver: NSObjectProtocol?
     let handler: RUMActionsHandling
 
     init(handler: RUMActionsHandling) throws {
-        self.sendAction = try NSControlSendAction(handler: handler)
         self.handler = handler
     }
 
     func swizzle() {
-        sendAction.swizzle()
-        eventMonitor.map { NSEvent.removeMonitor($0) }
-        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown, handler: { [weak handler] event in
-            handler?.notify_sendEvent(event: event)
-            return event
-        })
+        installEventMonitor()
+        installMenuObserver()
     }
 
     internal func unswizzle() {
-        sendAction.unswizzle()
         eventMonitor.map { NSEvent.removeMonitor($0) }
         eventMonitor = nil
+
+        menuObserver.map { NotificationCenter.default.removeObserver($0) }
+        menuObserver = nil
     }
 
-    // MARK: - Swizzlings
-
-    class NSControlSendAction: MethodSwizzler <
-        @convention(c) (NSApplication, Selector, Selector?, Any?, Any?) -> Bool,
-        @convention(block) (NSApplication, Selector?, Any?, Any?) -> Bool
-    > {
-        private static let selector = #selector(NSApplication.sendAction(_:to:from:))
-        private let method: Method
-        private let handler: RUMActionsHandling
-
-        init(handler: RUMActionsHandling) throws {
-            self.method = try dd_class_getInstanceMethod(NSApplication.self, Self.selector)
-            self.handler = handler
+    /// Observes `leftMouseDown` events for controls, toolbar items and window chrome.
+    private func installEventMonitor() {
+        eventMonitor.map { NSEvent.removeMonitor($0) }
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak handler] event in
+            handler?.notify_sendEvent(event: event)
+            return event
         }
+    }
 
-        func swizzle() {
-            typealias Signature = @convention(block) (NSApplication, Selector?, Any?, Any?) -> Bool
-            swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] app, selector, target, from in
-                    let result = previousImplementation(app, Self.selector, selector, target, from)
-                    if result {
-                        handler?.notify_sendAction(app: app, action: selector, target: target, from: from)
-                    }
-                    return result
-                }
+    /// Observes menu item selections, which the local event monitor cannot see.
+    private func installMenuObserver() {
+        menuObserver.map { NotificationCenter.default.removeObserver($0) }
+        menuObserver = NotificationCenter.default.addObserver(
+            forName: NSMenu.didSendActionNotification,
+            object: nil,
+            queue: .main
+        ) { [weak handler] notification in
+            guard let menuItem = notification.userInfo?[Self.menuItemUserInfoKey] as? NSMenuItem else {
+                return
             }
+            handler?.notify_menuItemSelected(menuItem)
         }
     }
 }
