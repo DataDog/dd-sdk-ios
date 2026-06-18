@@ -56,7 +56,8 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// The remote configuration provider, if configured.
-    var remoteConfigurationProvider: RemoteConfigurationProvider?
+    @ReadWriteLock
+    var remoteConfigurationProvider: RemoteConfigurationProvider? = nil
 
     /// The last successfully fetched remote configuration, if any.
     var remoteConfiguration: RemoteConfiguration? {
@@ -99,9 +100,9 @@ internal final class DatadogCore {
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-    	performance: PerformancePreset,
-    	httpClient: HTTPClient,
-    	encryption: DataEncryption?,
+        performance: PerformancePreset,
+        httpClient: HTTPClient,
+        encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
         maxBatchesPerUpload: Int,
@@ -327,6 +328,7 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
     }

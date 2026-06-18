@@ -22,6 +22,31 @@ private struct FeatureMock: DatadogRemoteFeature {
     var performanceOverride: PerformancePresetOverride? = nil
 }
 
+private final class PendingHTTPClientMock: HTTPClient {
+    private typealias Completion = (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+
+    private let queue = DispatchQueue(label: "com.datadoghq.PendingHTTPClientMock-\(UUID().uuidString)")
+    private var requests: [URLRequest] = []
+    private var completions: [Completion] = []
+
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+    ) {
+        queue.sync {
+            requests.append(request)
+            completions.append(completion)
+        }
+    }
+
+    func requestsSent() -> [URLRequest] {
+        queue.sync {
+            requests
+        }
+    }
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -43,8 +68,10 @@ class DatadogCoreTests: XCTestCase {
             id: "test-id",
             site: .us1,
             directory: temporaryCoreDirectory.coreDirectory,
-            httpClient: HTTPClientMock()
+            httpClient: PendingHTTPClientMock(),
+            notificationCenter: NotificationCenter()
         )
+        remoteConfigurationProvider.start { _ in }
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -384,6 +411,53 @@ class DatadogCoreTests: XCTestCase {
         core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
+
+#if canImport(UIKit)
+    func testWhenStoppingInstance_itStopsRemoteConfigurationProvider() throws {
+        // Given
+        let notificationCenter = NotificationCenter()
+        let httpClient = PendingHTTPClientMock()
+        weak var weakProvider: RemoteConfigurationProvider?
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny(),
+            remoteConfigurationProvider: {
+                let provider = RemoteConfigurationProvider(
+                    id: "test-id",
+                    site: .us1,
+                    directory: temporaryCoreDirectory.coreDirectory,
+                    httpClient: httpClient,
+                    notificationCenter: notificationCenter
+                )
+                weakProvider = provider
+                provider.start { _ in }
+                return provider
+            }()
+        )
+
+        XCTAssertEqual(httpClient.requestsSent().count, 1)
+
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        XCTAssertEqual(httpClient.requestsSent().count, 2)
+
+        // When
+        core.stop()
+
+        // Then
+        XCTAssertNotNil(core.remoteConfigurationProvider)
+        XCTAssertNotNil(weakProvider)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        XCTAssertEqual(httpClient.requestsSent().count, 2)
+    }
+#endif
 
     func testItAppendsUserDataIfAnonymousIdentifierExists() {
         let core = DatadogCore(

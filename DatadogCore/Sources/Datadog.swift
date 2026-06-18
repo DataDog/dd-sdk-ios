@@ -471,13 +471,12 @@ extension DatadogCore {
                 site: configuration.site,
                 directory: directory.coreDirectory,
                 httpClient: httpClient,
-                telemetry: self.telemetry
+                notificationCenter: configuration.notificationCenter
             )
             self.remoteConfigurationProvider = remoteConfigurationProvider
-
-            remoteConfigurationProvider.sync { [weak self] result in
+            remoteConfigurationProvider.start { [weak self] result in
                 if case .failure(let error) = result {
-                    self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+                    self?.telemetry.error("[RemoteConfig] Load failed", error: error)
                 }
             }
         }

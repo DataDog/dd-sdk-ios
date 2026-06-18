@@ -7,22 +7,22 @@
 import Foundation
 import DatadogInternal
 
-/// Provides the last successfully fetched remote configuration and refreshes its cache.
-///
-/// TODO: Also trigger `sync()` on every app foreground transition so remote config
-/// is refreshed while the app is in use, not only at SDK init (RFC §Caching Strategy).
+/// Provides the last successfully fetched remote configuration.
+/// Refreshes when started and when the app enters foreground.
 internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
     let directory: Directory
     let httpClient: HTTPClient
-    private let telemetry: Telemetry
+    private let notificationCenter: NotificationCenter
+    @ReadWriteLock
+    private var foregroundObserver: NSObjectProtocol?
 
     /// The result of the last cache read or CDN fetch.
     /// `.success(remoteConfiguration)` — remote configuration is available.
     /// `.failure` — no cache yet, or a read/write error.
     @ReadWriteLock
-    private(set) var cache: Result<RemoteConfiguration, RemoteConfigurationError>
+    private(set) var cache: Result<RemoteConfiguration, RemoteConfigurationError> = .failure(.diskError)
 
     var remoteConfiguration: RemoteConfiguration? {
         try? cache.get()
@@ -33,38 +33,68 @@ internal final class RemoteConfigurationProvider {
         site: DatadogSite,
         directory: Directory,
         httpClient: HTTPClient,
-        telemetry: Telemetry = NOPTelemetry()
+        notificationCenter: NotificationCenter
     ) {
         self.id = id
         self.site = site
         self.directory = directory
         self.httpClient = httpClient
-        self.telemetry = telemetry
+        self.notificationCenter = notificationCenter
+    }
+
+    func start(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        self._cache = ReadWriteLock(wrappedValue: Self.readCache(id: id, from: directory, telemetry: telemetry))
+        let cached = Self.readCache(id: id, from: directory)
+        if let cached {
+            cache = cached
+            completionHandler(cached)
+        }
+
+        #if canImport(UIKit)
+        foregroundObserver = notificationCenter.addObserver(
+            forName: ApplicationNotifications.willEnterForeground,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            self?.sync { _ in }
+        }
+        #endif
+
+        sync(cached == nil ? completionHandler : { _ in })
+    }
+
+    func stop() {
+        #if canImport(UIKit)
+        var observer: NSObjectProtocol?
+        _foregroundObserver.mutate {
+            observer = $0
+            $0 = nil
+        }
+
+        if let observer {
+            notificationCenter.removeObserver(observer)
+        }
+        #endif
     }
 
     // MARK: - Private
 
     private static func readCache(
         id: String,
-        from directory: Directory,
-        telemetry: Telemetry
-    ) -> Result<RemoteConfiguration, RemoteConfigurationError> {
+        from directory: Directory
+    ) -> Result<RemoteConfiguration, RemoteConfigurationError>? {
         let fileName = "\(id).json"
         guard directory.hasFile(named: fileName) else {
-            return .failure(.diskError)
+            return nil
         }
 
         let data: Data
         do {
             data = try directory.file(named: fileName).read()
         } catch {
-            let error = RemoteConfigurationError.diskError
-            telemetry.error("[RemoteConfig] Cache read failed", error: error)
-            return .failure(error)
+            return .failure(.diskError)
         }
 
         return decode(data)
@@ -78,12 +108,8 @@ internal final class RemoteConfigurationProvider {
         }
     }
 
-    // MARK: - Internal
-
     /// Fires an async CDN fetch and updates the cache on success.
-    ///
-    /// - Parameter completionHandler: Called with the fetch result when the operation (and any cache write) is done.
-    func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
+    private func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Build request with conditional ETag header if a previous ETag is stored.
         // Only send If-None-Match when the cache is usable — if cache is .failure,
         // a 304 response would leave us with no data to serve.
@@ -98,14 +124,18 @@ internal final class RemoteConfigurationProvider {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
         }
 
-        httpClient.send(request: request, delegate: nil) { result in
+        httpClient.send(request: request, delegate: nil) { [weak self] result in
+            guard let self else {
+                return
+            }
+
             switch result {
             case .failure(let error):
                 completionHandler(.failure(.networkError(error)))
 
             case .success(let (http, data)):
                 // 1. Not Modified — existing cache is still valid
-                if http.statusCode == 304 {
+                if http.statusCode == 304, case .success = self.cache {
                     completionHandler(self.cache)
                     return
                 }
@@ -136,7 +166,8 @@ internal final class RemoteConfigurationProvider {
                 // all-or-nothing: the existing file is never left in a truncated state.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
-                    self.cache = .success(remoteConfiguration)
+                    let result: Result<RemoteConfiguration, RemoteConfigurationError> = .success(remoteConfiguration)
+                    self.cache = result
 
                     // Store ETag for conditional requests on the next sync.
                     // If the response has no ETag, delete any stale validator so we
@@ -151,8 +182,7 @@ internal final class RemoteConfigurationProvider {
                         // try? silently handles the case where the file does not exist
                         try? self.directory.file(named: etagFileName).delete()
                     }
-
-                    completionHandler(.success(remoteConfiguration))
+                    completionHandler(result)
                 } catch {
                     completionHandler(.failure(.diskError))
                 }
