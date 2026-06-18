@@ -2,6 +2,7 @@ module DatadogMachProfiler {
   header "dd_profiler.h"
   header "dd_pprof.h"
   header "memory_profiler.h"
+  header "memory_swizzle_poc.h"
   header "vm_region_walker.h"
   export *
 
