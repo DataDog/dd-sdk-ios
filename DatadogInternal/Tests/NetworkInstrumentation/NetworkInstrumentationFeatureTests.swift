@@ -1858,9 +1858,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             taskCompleted.fulfill()
         }
         task.resume()
+        task.cancel()
 
-        // Wait for task to complete
-        wait(for: [taskCompleted], timeout: 10)
+        // Wait for the cancellation completion.
+        wait(for: [taskCompleted], timeout: 1)
 
         // Then - Verify SDK request with DD-API-KEY was not intercepted
         XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-API-KEY header, even to custom endpoints")
@@ -1878,7 +1879,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
 
         // When - Make a request with DD-CLIENT-TOKEN (used by the profiling quota admission API)
-        let quotaURL = URL(string: "https://quota.browser-intake-datadoghq.com/api/v2/profiling/quota?session_id=test")!
+        let quotaURL = URL(string: "http://custom-endpoint.example.com/api/v2/profiling/quota?session_id=test")!
         var request = URLRequest(url: quotaURL)
         request.setValue(.mockRandom(), forHTTPHeaderField: "DD-CLIENT-TOKEN")
 
@@ -1887,8 +1888,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             taskCompleted.fulfill()
         }
         task.resume()
+        task.cancel()
 
-        wait(for: [taskCompleted], timeout: 10)
+        // Wait for the cancellation completion.
+        wait(for: [taskCompleted], timeout: 1)
 
         // Then
         XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-CLIENT-TOKEN header")
