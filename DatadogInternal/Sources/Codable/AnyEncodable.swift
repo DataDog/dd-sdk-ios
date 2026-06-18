@@ -121,11 +121,12 @@ extension _AnyEncodable {
         case let encodable as Encodable:
             try encodable.encode(to: encoder)
         default:
-            let context = EncodingError.Context(
-                codingPath: container.codingPath,
-                debugDescription: "AnyEncodable value cannot be encoded: \(type(of: value))"
-            )
-            throw EncodingError.invalidValue(value, context)
+            // As a last resort, encode the value's string description.
+            // This handles cross-platform types (e.g. Kotlin data classes bridged via KMP)
+            // whose `.description` produces a human-readable representation.
+            let stringValue = String(describing: value)
+            DD.logger.debug("AnyEncodable: value of type '\(type(of: value))' is not encodable. It will be encoded as its string description: '\(stringValue)'.")
+            try container.encode(stringValue)
         }
     }
 

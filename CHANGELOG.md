@@ -1,6 +1,9 @@
 # Unreleased
 
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
+- [IMPROVEMENT] Non-encodable attribute values are now encoded as their string description instead of being silently dropped. See [#TODO][]
+- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 
 # 3.14.0 / 15-07-2026
 

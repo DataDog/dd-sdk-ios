@@ -156,6 +156,19 @@ class AnyEncodableTests: XCTestCase {
         XCTAssert(encodedJSONObject["double"] is Double)
     }
 
+    func testNonEncodableValueFallsBackToStringDescription() throws {
+        // Non-encodable type — simulates a Kotlin data class bridged via KMP
+        class NonEncodable: NSObject {
+            override var description: String { "NonEncodable(foo=bar)" }
+        }
+
+        let dictionary: [String: Any] = ["object-value": NonEncodable()]
+        let json = try JSONEncoder().encode(AnyEncodable(dictionary))
+        let result = try JSONSerialization.jsonObject(with: json) as! [String: String]
+
+        XCTAssertEqual(result["object-value"], "NonEncodable(foo=bar)")
+    }
+
     func testStringInterpolationEncoding() throws {
         let dictionary: [String: Any] = [
             "boolean": "\(true)",
