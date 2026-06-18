@@ -77,10 +77,14 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             currentServerTimeOffset = message.ttid.serverTimeOffset
             dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
-            defer { Self.unregisterInstance() }
+            defer {
+                if Self.unregisterInstance(stopProfiler: quotaChecker.isRejectedByQuota) {
+                    updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
+                }
+            }
+
             // Quota is fail-open while pending or unavailable; only an explicit rejection drops app-launch.
             guard !quotaChecker.isRejectedByQuota else {
-                stopProfilerOnQuotaRejectionIfNeeded()
                 telemetryController.sendProfileDropped(
                     for: operation,
                     reason: .quotaRejected(quotaChecker.quotaResult?.reason)
@@ -130,15 +134,6 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
         return currentProfile
     }
-
-    private func stopProfilerOnQuotaRejectionIfNeeded() {
-        guard Self.currentPendingInstances <= 1 else {
-            return
-        }
-
-        dd_profiler_stop()
-        updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
-    }
 }
 
 // MARK: - Handle AppLaunchProfiler instances
@@ -153,15 +148,26 @@ private extension AppLaunchProfiler {
     }
 
     /// Decrements the pending instance counter and destroys the profiler when all instances are done.
-    static func unregisterInstance() {
+    @discardableResult
+    static func unregisterInstance(stopProfiler: Bool = false) -> Bool {
         lock.lock()
         defer { lock.unlock() }
 
         pendingInstances -= 1
-        if pendingInstances <= 0 {
-            dd_pprof_destroy(Self.appLaunchProfile)
-            Self.appLaunchProfile = nil
+        guard pendingInstances <= 0 else {
+            return false
         }
+
+        if stopProfiler {
+            dd_profiler_stop()
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+        }
+
+        dd_pprof_destroy(Self.appLaunchProfile)
+        Self.appLaunchProfile = nil
+        return stopProfiler
     }
 }
 

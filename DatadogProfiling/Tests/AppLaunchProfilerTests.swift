@@ -612,6 +612,7 @@ extension AppLaunchProfilerTests {
 
         XCTAssertEqual(dd_profiler_start(), 1)
         Thread.sleep(forTimeInterval: 0.05)
+        let rejectedLaunchProfile = try XCTUnwrap(dd_profiler_get_profile())
 
         // When
         _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)), from: core)
@@ -621,6 +622,7 @@ extension AppLaunchProfilerTests {
         XCTAssertTrue(core.metadata.isEmpty)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+        XCTAssertNotEqual(dd_profiler_get_profile(), rejectedLaunchProfile)
 
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(profilingContext.quotaReason, .quotaExceeded)
