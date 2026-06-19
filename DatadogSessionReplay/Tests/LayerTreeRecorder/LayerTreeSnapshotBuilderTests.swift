@@ -12,6 +12,7 @@ import WebKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct LayerTreeSnapshotBuilderTests {
     @available(iOS 13.0, tvOS 13.0, *)

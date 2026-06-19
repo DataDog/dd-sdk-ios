@@ -10,6 +10,7 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerReplayIDTests {
     @available(iOS 13.0, tvOS 13.0, *)

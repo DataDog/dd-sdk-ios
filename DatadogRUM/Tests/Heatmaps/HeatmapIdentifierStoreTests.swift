@@ -11,6 +11,7 @@ import UIKit
 
 @testable import DatadogRUM
 
+@Suite(.datadogTesting)
 @MainActor
 struct HeatmapIdentifierStoreTests {
     @available(iOS 13.0, tvOS 13.0, *)

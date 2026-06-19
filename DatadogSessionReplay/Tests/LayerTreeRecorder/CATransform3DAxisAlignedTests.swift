@@ -10,6 +10,7 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct CATransform3DAxisAlignedTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test(
