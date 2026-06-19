@@ -122,7 +122,6 @@ extension Trace {
                     sampleRate: Float = .maxSampleRate,
                     traceControlInjection: TraceContextInjection = .sampled
                 )
-
             }
 
             /// The default set of HTTP status codes whose `resource.name` span tag is redacted.

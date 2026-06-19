@@ -473,7 +473,6 @@ extension RUM.Configuration.URLSessionTracking {
             sampleRate: Float = .maxSampleRate,
             traceControlInjection: TraceContextInjection = .sampled
         )
-
     }
 
     /// Configuration for capturing HTTP headers from network requests and responses.

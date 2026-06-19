@@ -80,7 +80,6 @@ public final class objc_URLSessionInstrumentationConfiguration: NSObject
 public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hosts: Set<String>)
-    public init(hostPatterns: [String])
 public final class objc_URLSessionInstrumentation: NSObject
     public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration)
     public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String?)
@@ -349,8 +348,6 @@ public final class objc_TraceFirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
     public init(hosts: Set<String>)
     public init(hosts: Set<String>, sampleRate: Float)
-    public init(hostPatterns: [String])
-    public init(hostPatterns: [String], sampleRate: Float)
 public final class objc_TraceURLSessionTracking: NSObject
     public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
@@ -3427,8 +3424,6 @@ public class objc_FirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
     public init(hosts: Set<String>)
     public init(hosts: Set<String>, sampleRate: Float)
-    public init(hostPatterns: [String])
-    public init(hostPatterns: [String], sampleRate: Float)
 public class objc_URLSessionTracking: NSObject
     override public init()
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_FirstPartyHostsTracing)
