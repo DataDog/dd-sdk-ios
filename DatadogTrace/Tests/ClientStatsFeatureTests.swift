@@ -138,6 +138,281 @@ class ClientStatsFeatureTests: XCTestCase {
 
         XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
+
+    // MARK: - Request Builder - Encoding
+
+    func testWhenBuildingRequest_itTargetsStatsIntakeWithMsgPackContentType() throws {
+        // Given
+        let context: DatadogContext = .mockWith(clientToken: "client-token", source: "ios", ciAppOrigin: nil)
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: makeExportedBucket())],
+            with: context,
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        XCTAssertEqual(request.url, context.site.endpoint.appendingPathComponent("api/v0.2/stats"))
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Type"], "application/msgpack")
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], "client-token")
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], "ios")
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], context.sdkVersion)
+        XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
+    }
+
+    func testWhenBuildingRequest_itCompressesBodyWithDeflate() throws {
+        // Given: a payload large and repetitive enough that deflate shrinks it.
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: makeExportedBucket(groupCount: 20))],
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        XCTAssertEqual(request.allHTTPHeaderFields?["Content-Encoding"], "deflate")
+        XCTAssertNotNil(try request.decompressed().httpBody)
+    }
+
+    func testWhenBuildingRequest_itEncodesEnvelopeFromContext() throws {
+        // Given
+        let context: DatadogContext = .mockWith(
+            service: "ios-app",
+            env: "staging",
+            version: "1.2.3",
+            sdkVersion: "2.0.0"
+        )
+        let builder = makeRequestBuilder(runtimeID: "runtime-id")
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: makeExportedBucket())],
+            with: context,
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        let clientStats = try firstClientStatsPayload(in: request)
+        XCTAssertEqual(clientStats["Hostname"] as? String, "")
+        XCTAssertEqual(clientStats["Env"] as? String, "staging")
+        XCTAssertEqual(clientStats["Version"] as? String, "1.2.3")
+        XCTAssertEqual(clientStats["Service"] as? String, "ios-app")
+        XCTAssertEqual(clientStats["TracerVersion"] as? String, "2.0.0")
+        XCTAssertEqual(clientStats["Lang"] as? String, "ios")
+        XCTAssertEqual(clientStats["RuntimeID"] as? String, "runtime-id")
+        XCTAssertEqual(clientStats["Sequence"] as? Int64, 1)
+    }
+
+    func testWhenBuildingRequest_itMapsExportedBucketsOntoWirePayload() throws {
+        // Given
+        let bucket = makeExportedBucket(start: 1_000, duration: 10_000_000_000, groupCount: 1)
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: bucket)],
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        let clientStats = try firstClientStatsPayload(in: request)
+        let buckets = try XCTUnwrap(clientStats["Stats"] as? [Any?])
+        XCTAssertEqual(buckets.count, 1)
+
+        let bucketFields = try mapFields(buckets[0])
+        XCTAssertEqual(bucketFields["Start"] as? Int64, 1_000)
+        XCTAssertEqual(bucketFields["Duration"] as? Int64, 10_000_000_000)
+
+        let groups = try XCTUnwrap(bucketFields["Stats"] as? [Any?])
+        let group = try mapFields(groups[0])
+        XCTAssertEqual(group["Service"] as? String, "service-0")
+        XCTAssertEqual(group["Name"] as? String, "operation")
+        XCTAssertEqual(group["Resource"] as? String, "GET /resource")
+        XCTAssertEqual(group["HTTPStatusCode"] as? Int64, 200)
+        XCTAssertEqual(group["Hits"] as? Int64, 10)
+        XCTAssertEqual(group["Errors"] as? Int64, 2)
+        XCTAssertEqual(group["IsTraceRoot"] as? Int64, Int64(Trilean.true.rawValue))
+        XCTAssertEqual(group["Synthetics"] as? Bool, false)
+        XCTAssertEqual(group["OkSummary"] as? Data, Data(repeating: 0x1, count: 64))
+
+        let peerTags = try XCTUnwrap(group["PeerTags"] as? [Any?])
+        XCTAssertEqual(peerTags.compactMap { $0 as? String }, ["peer.service:db"])
+    }
+
+    func testWhenBuildingRequestFromMultipleEvents_itEncodesAllBuckets() throws {
+        // Given
+        let events = [
+            makeEvent(from: makeExportedBucket(start: 1_000)),
+            makeEvent(from: makeExportedBucket(start: 2_000)),
+        ]
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: events,
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then: all buckets land under a single ClientStatsPayload (one tracer).
+        let envelope = try decodeEnvelope(in: request)
+        let clientStatsArray = try XCTUnwrap(envelope["Stats"] as? [Any?])
+        XCTAssertEqual(clientStatsArray.count, 1)
+
+        let clientStats = try mapFields(clientStatsArray[0])
+        let buckets = try XCTUnwrap(clientStats["Stats"] as? [Any?])
+        XCTAssertEqual(buckets.count, 2)
+    }
+
+    func testWhenEventsAreEmpty_itThrows() {
+        let builder = makeRequestBuilder()
+        XCTAssertThrowsError(
+            try builder.request(
+                for: [],
+                with: .mockAny(),
+                execution: .init(previousResponseCode: nil, attempt: 0)
+            )
+        )
+    }
+
+    func testSequenceNumberProviderIncrementsMonotonically() {
+        let provider = StatsSequenceNumberProvider()
+        XCTAssertEqual(provider.next(), 1)
+        XCTAssertEqual(provider.next(), 2)
+        XCTAssertEqual(provider.next(), 3)
+    }
+
+    func testSequenceNumberProviderSupportsConcurrentAccess() {
+        // Given
+        let provider = StatsSequenceNumberProvider()
+        let threadCount = 16
+        let iterationsPerThread = 1_000
+        let total = threadCount * iterationsPerThread
+
+        var perThread = [[UInt64]](repeating: [], count: threadCount)
+        let lock = NSLock()
+
+        // When: every thread hammers `next()` concurrently.
+        DispatchQueue.concurrentPerform(iterations: threadCount) { thread in
+            var local: [UInt64] = []
+            local.reserveCapacity(iterationsPerThread)
+            for _ in 0..<iterationsPerThread {
+                local.append(provider.next())
+            }
+            lock.lock()
+            perThread[thread] = local
+            lock.unlock()
+        }
+
+        // Then: no value is dropped or handed out twice, and the counter is left consistent.
+        let all = perThread.flatMap { $0 }
+        XCTAssertEqual(all.count, total)
+        XCTAssertEqual(Set(all).count, total, "Concurrent next() calls must each return a unique value")
+        XCTAssertEqual(all.max(), UInt64(total))
+        XCTAssertEqual(provider.next(), UInt64(total) + 1)
+    }
+
+    func testSequenceNumberIncrementsAcrossRequests() throws {
+        // Given
+        let builder = makeRequestBuilder()
+        let execution = ExecutionContext(previousResponseCode: nil, attempt: 0)
+
+        // When
+        let first = try builder.request(
+            for: [makeEvent(from: makeExportedBucket())],
+            with: .mockAny(),
+            execution: execution
+        )
+        let second = try builder.request(
+            for: [makeEvent(from: makeExportedBucket())],
+            with: .mockAny(),
+            execution: execution
+        )
+
+        // Then
+        XCTAssertEqual(try firstClientStatsPayload(in: first)["Sequence"] as? Int64, 1)
+        XCTAssertEqual(try firstClientStatsPayload(in: second)["Sequence"] as? Int64, 2)
+    }
+
+    func testCustomStatsEndpointOverridesURL() {
+        let customURL: URL = .mockRandom()
+        let builder = makeRequestBuilder(customIntakeURL: customURL)
+        XCTAssertEqual(builder.url(with: .mockAny()), customURL)
+    }
+
+    // MARK: - Request Builder - Helpers
+
+    private func makeRequestBuilder(
+        customIntakeURL: URL? = nil,
+        runtimeID: String = "runtime-id",
+        sequenceNumberProvider: StatsSequenceNumberProvider = StatsSequenceNumberProvider()
+    ) -> StatsRequestBuilder {
+        StatsRequestBuilder(
+            customIntakeURL: customIntakeURL,
+            telemetry: NOPTelemetry(),
+            runtimeID: runtimeID,
+            sequenceNumberProvider: sequenceNumberProvider
+        )
+    }
+
+    /// Encodes an `ExportedBucket` the same way the feature storage does (JSON), producing a
+    /// stored `Event` for the request builder to decode.
+    private func makeEvent(from bucket: ExportedBucket) -> Event {
+        // swiftlint:disable:next force_try
+        let data = try! JSONEncoder.dd.default().encode(bucket)
+        return Event(data: data)
+    }
+
+    private func makeExportedBucket(
+        start: UInt64 = 1_000,
+        duration: UInt64 = 10_000_000_000,
+        groupCount: Int = 1
+    ) -> ExportedBucket {
+        let stats = (0..<groupCount).map { index in
+            ExportedGroupedStats(
+                service: "service-\(index)",
+                name: "operation",
+                resource: "GET /resource",
+                httpStatusCode: 200,
+                type: "web",
+                spanKind: "server",
+                isTraceRoot: .true,
+                synthetics: false,
+                hits: 10,
+                errors: 2,
+                duration: 5_000,
+                topLevelHits: 10,
+                okSummary: Data(repeating: 0x1, count: 64),
+                errorSummary: Data(repeating: 0x2, count: 64),
+                peerTags: ["peer.service:db"],
+                serviceSource: "src"
+            )
+        }
+        return ExportedBucket(start: start, duration: duration, stats: stats)
+    }
+
+    private func decodeEnvelope(in request: URLRequest) throws -> [String: Any?] {
+        let body = try XCTUnwrap(request.decompressed().httpBody)
+        var decoder = MsgPackTestDecoder(data: body)
+        return Dictionary(uniqueKeysWithValues: try decoder.readMap())
+    }
+
+    private func firstClientStatsPayload(in request: URLRequest) throws -> [String: Any?] {
+        let envelope = try decodeEnvelope(in: request)
+        let clientStatsArray = try XCTUnwrap(envelope["Stats"] as? [Any?])
+        return try mapFields(clientStatsArray[0])
+    }
+
+    private func mapFields(_ value: Any?) throws -> [String: Any?] {
+        let entries = try XCTUnwrap(value as? [(String, Any?)])
+        return Dictionary(uniqueKeysWithValues: entries.map { ($0.0, $0.1) })
+    }
 }
 
 private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
