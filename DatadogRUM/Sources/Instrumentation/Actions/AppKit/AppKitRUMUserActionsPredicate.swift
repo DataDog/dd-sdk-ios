@@ -43,6 +43,19 @@ public struct DefaultAppKitRUMActionsPredicate {
             return className
         }
     }
+
+    private func targetName(for menuItem: NSMenuItem) -> String {
+        let className = NSStringFromClass(type(of: menuItem))
+
+        if menuItem.accessibilityIdentifier().isEmpty == false {
+            return "\(className)(\(menuItem.accessibilityIdentifier()))"
+        // Some SwiftUI components are UIKit under the hood,
+        // but need to clean up tangled SwiftUI name
+        // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
+        } else {
+            return className
+        }
+    }
 }
 
 // MARK: iOS DefaultUIKitRUMActionsPredicate
@@ -56,7 +69,7 @@ extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
 
     public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
         return RUMAction(
-            name: "'\(targetMenuItem.title)' Menu Item",
+            name: targetName(for: targetMenuItem),
             attributes: [:]
         )
     }
