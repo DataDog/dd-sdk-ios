@@ -43,16 +43,26 @@ internal extension DDView {
         }
     }
 
+    #if os(macOS)
     /// Determines if capturing this view is safe for user privacy
     @objc var isSafeForPrivacy: Bool {
         guard let window = self.window else {
-            return false // The view is invisible, we can't determine if it's safe
+            return false // The view is not on a window hierarchy, we can't determine if it's safe
+        }
+        return true
+    }
+    #else
+    /// Determines if capturing this view is safe for user privacy
+    @objc var isSafeForPrivacy: Bool {
+        guard let window = self.window else {
+            return false // The view is not on a window hierarchy, we can't determine if it's safe
         }
         guard !NSStringFromClass(type(of: window)).contains("Keyboard") else {
             return false // The window class name suggests that it's the on-screen keyboard
         }
         return true
     }
+    #endif
 
     @objc var isSwiftUIView: Bool {
         return NSStringFromClass(type(of: self)).contains("SwiftUI")
