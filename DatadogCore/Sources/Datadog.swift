@@ -424,6 +424,16 @@ extension DatadogCore {
         )
 
         let httpClient = configuration.httpClientFactory(configuration.proxyConfiguration)
+        let remoteConfigurationProvider = configuration.remoteConfigurationID.map {
+            RemoteConfigurationProvider(
+                id: $0,
+                site: configuration.site,
+                directory: directory.coreDirectory,
+                httpClient: httpClient,
+                notificationCenter: configuration.notificationCenter
+            )
+        }
+
         self.init(
             directory: directory,
             dateProvider: configuration.dateProvider,
@@ -462,24 +472,9 @@ extension DatadogCore {
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            isRunFromExtension: isRunFromExtension,
+            remoteConfigurationProvider: remoteConfigurationProvider
         )
-
-        if let remoteConfigurationID = configuration.remoteConfigurationID {
-            let remoteConfigurationProvider = RemoteConfigurationProvider(
-                id: remoteConfigurationID,
-                site: configuration.site,
-                directory: directory.coreDirectory,
-                httpClient: httpClient,
-                notificationCenter: configuration.notificationCenter
-            )
-            self.remoteConfigurationProvider = remoteConfigurationProvider
-            remoteConfigurationProvider.start { [weak self] result in
-                if case .failure(let error) = result {
-                    self?.telemetry.error("[RemoteConfig] Load failed", error: error)
-                }
-            }
-        }
 
         telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,

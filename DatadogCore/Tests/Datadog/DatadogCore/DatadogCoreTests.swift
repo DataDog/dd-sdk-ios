@@ -71,8 +71,6 @@ class DatadogCoreTests: XCTestCase {
             httpClient: PendingHTTPClientMock(),
             notificationCenter: NotificationCenter()
         )
-        remoteConfigurationProvider.start { _ in }
-
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
@@ -412,7 +410,6 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 
-#if canImport(UIKit)
     func testWhenStoppingInstance_itStopsRemoteConfigurationProvider() throws {
         // Given
         let notificationCenter = NotificationCenter()
@@ -438,7 +435,6 @@ class DatadogCoreTests: XCTestCase {
                     notificationCenter: notificationCenter
                 )
                 weakProvider = provider
-                provider.start { _ in }
                 return provider
             }()
         )
@@ -457,7 +453,6 @@ class DatadogCoreTests: XCTestCase {
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
         XCTAssertEqual(httpClient.requestsSent().count, 2)
     }
-#endif
 
     func testItAppendsUserDataIfAnonymousIdentifierExists() {
         let core = DatadogCore(

@@ -7,8 +7,7 @@
 import Foundation
 import DatadogInternal
 
-/// Provides the last successfully fetched remote configuration.
-/// Refreshes when started and when the app enters foreground.
+/// Fetches remote configuration when started and when the app enters foreground.
 internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
@@ -17,16 +16,6 @@ internal final class RemoteConfigurationProvider {
     private let notificationCenter: NotificationCenter
     @ReadWriteLock
     private var foregroundObserver: NSObjectProtocol?
-
-    /// The result of the last cache read or CDN fetch.
-    /// `.success(remoteConfiguration)` — remote configuration is available.
-    /// `.failure` — no cache yet, or a read/write error.
-    @ReadWriteLock
-    private(set) var cache: Result<RemoteConfiguration, RemoteConfigurationError> = .failure(.diskError)
-
-    var remoteConfiguration: RemoteConfiguration? {
-        try? cache.get()
-    }
 
     init(
         id: String,
@@ -48,35 +37,25 @@ internal final class RemoteConfigurationProvider {
         // present after a previous successful fetch — absent on first launch.
         let cached = Self.readCache(id: id, from: directory)
         if let cached {
-            cache = cached
             completionHandler(cached)
         }
 
-        #if canImport(UIKit)
         foregroundObserver = notificationCenter.addObserver(
             forName: ApplicationNotifications.willEnterForeground,
             object: nil,
             queue: nil
         ) { [weak self] _ in
-            self?.sync { _ in }
+            self?.sync(completionHandler)
         }
-        #endif
 
-        sync(cached == nil ? completionHandler : { _ in })
+        sync(completionHandler)
     }
 
     func stop() {
-        #if canImport(UIKit)
-        var observer: NSObjectProtocol?
-        _foregroundObserver.mutate {
-            observer = $0
-            $0 = nil
+        _foregroundObserver.mutate { observer in
+            observer.map { notificationCenter.removeObserver($0) }
+            observer = nil
         }
-
-        if let observer {
-            notificationCenter.removeObserver(observer)
-        }
-        #endif
     }
 
     // MARK: - Private
@@ -108,17 +87,15 @@ internal final class RemoteConfigurationProvider {
         }
     }
 
-    /// Fires an async CDN fetch and updates the cache on success.
+    /// Fires an async CDN fetch and persists the configuration on success.
     private func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Build request with conditional ETag header if a previous ETag is stored.
-        // Only send If-None-Match when the cache is usable — if cache is .failure,
-        // a 304 response would leave us with no data to serve.
         var request = URLRequest(url: site.remoteConfigurationEndpoint
             .appendingPathComponent("v1")
             .appendingPathComponent(id)
             .appendingPathExtension("json"))
 
-        if case .success = cache,
+        if directory.hasFile(named: "\(id).json"),
            let data = try? directory.file(named: "\(id).etag").read(),
            let etag = String(data: data, encoding: .utf8) {
             request.setValue(etag, forHTTPHeaderField: "If-None-Match")
@@ -134,9 +111,13 @@ internal final class RemoteConfigurationProvider {
                 completionHandler(.failure(.networkError(error)))
 
             case .success(let (http, data)):
-                // 1. Not Modified — existing cache is still valid
-                if http.statusCode == 304, case .success = self.cache {
-                    completionHandler(self.cache)
+                // 1. Not Modified — existing persisted configuration is still valid.
+                if http.statusCode == 304 {
+                    if let cached = Self.readCache(id: self.id, from: self.directory), case .success = cached {
+                        completionHandler(cached)
+                    } else {
+                        completionHandler(.failure(.httpError(http.statusCode)))
+                    }
                     return
                 }
 
@@ -161,14 +142,11 @@ internal final class RemoteConfigurationProvider {
                     return
                 }
 
-                // All checks passed — persist to disk and update in-memory cache.
+                // All checks passed — persist to disk.
                 // File.write uses .atomic (write to temp, then rename), so the update is
                 // all-or-nothing: the existing file is never left in a truncated state.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
-                    let result: Result<RemoteConfiguration, RemoteConfigurationError> = .success(remoteConfiguration)
-                    self.cache = result
-
                     // Store ETag for conditional requests on the next sync.
                     // If the response has no ETag, delete any stale validator so we
                     // never send If-None-Match for a different representation.
@@ -182,7 +160,7 @@ internal final class RemoteConfigurationProvider {
                         // try? silently handles the case where the file does not exist
                         try? self.directory.file(named: etagFileName).delete()
                     }
-                    completionHandler(result)
+                    completionHandler(.success(remoteConfiguration))
                 } catch {
                     completionHandler(.failure(.diskError))
                 }

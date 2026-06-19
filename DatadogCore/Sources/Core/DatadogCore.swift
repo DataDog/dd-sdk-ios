@@ -57,12 +57,11 @@ internal final class DatadogCore {
 
     /// The remote configuration provider, if configured.
     @ReadWriteLock
-    var remoteConfigurationProvider: RemoteConfigurationProvider? = nil
+    var remoteConfigurationProvider: RemoteConfigurationProvider?
 
     /// The last successfully fetched remote configuration, if any.
-    var remoteConfiguration: RemoteConfiguration? {
-        remoteConfigurationProvider?.remoteConfiguration
-    }
+    @ReadWriteLock
+    var remoteConfiguration: RemoteConfiguration?
 
     /// Registry for Features.
     @ReadWriteLock
@@ -133,6 +132,15 @@ internal final class DatadogCore {
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
             self?.send(message: .context(context))
+        }
+
+        self.remoteConfigurationProvider?.start { [weak self] result in
+            switch result {
+            case .success(let remoteConfiguration):
+                self?.remoteConfiguration = remoteConfiguration
+            case .failure(let error):
+                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+            }
         }
     }
 
