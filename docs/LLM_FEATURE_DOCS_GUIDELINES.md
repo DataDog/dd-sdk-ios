@@ -23,7 +23,7 @@ DatadogRUM/RUM_FEATURE.md
 DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 DatadogTrace/TRACE_FEATURE.md
 DatadogProfiling/PROFILING_FEATURE.md
-DatadogLogs/LOGS_FEATURE.md            # (future)
+DatadogLogs/LOGS_FEATURE.md
 DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
 
@@ -53,7 +53,7 @@ Every feature doc contains these core sections, in order. Optional sections are 
 
 ### Overview
 - Brief description of feature purpose
-- Platform availability (iOS, tvOS, watchOS, visionOS)
+- Platform availability — use the format `**Platform**: iOS, tvOS, watchOS, visionOS` (list only platforms declared in the podspec; add a note for platforms where functionality is limited or absent)
 - Key dependencies (e.g. "requires RUM")
 
 ### Quick Start Example

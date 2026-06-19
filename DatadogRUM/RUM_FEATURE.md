@@ -15,6 +15,11 @@ tracked_files:
 
 RUM tracks user interactions, views, resources, errors, and performance metrics in iOS applications. It requires initialization via `Datadog.initialize()` before enabling.
 
+**Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
+- **iOS / visionOS**: Full feature set.
+- **tvOS**: UIKit and SwiftUI view tracking, UIKit action tracking (press-based), app hangs, long tasks, vitals, slow frames, memory warnings. No SwiftUI action auto-tracking, no scroll/swipe tracking, no watchdog terminations.
+- **watchOS**: App hangs and long tasks only. No auto-tracking predicates, no vitals, no slow frames, no memory warnings.
+
 ## Quick Start Example
 
 ```swift
