@@ -205,7 +205,7 @@ Unit Tests (watchOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
@@ -224,7 +224,7 @@ Unit Tests (visionOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
