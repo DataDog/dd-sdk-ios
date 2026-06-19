@@ -677,7 +677,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent {
+            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent, viewIndexInSession != 0 {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
                 writer.write(value: update, completion: completionHandler)

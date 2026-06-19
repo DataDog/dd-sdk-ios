@@ -54,7 +54,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         XCTAssertTrue(
@@ -140,7 +140,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         XCTAssertTrue(
@@ -191,7 +191,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         XCTAssertTrue(
@@ -237,7 +237,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         XCTAssertTrue(
@@ -287,7 +287,7 @@ class RUMViewScope_Tests: XCTestCase {
                 startTime: .mockAny(),
                 serverTimeOffset: .zero,
                 interactionToNextViewMetric: INVMetricMock(),
-                viewIndexInSession: .mockAny()
+                viewIndexInSession: 1
             )
         }
 
@@ -333,7 +333,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: processLaunchDate,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         _ = scope.process(command: RUMApplicationStartCommand.mockWith(time: currentTime), context: context, writer: writer)
@@ -372,7 +372,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: .mockDecember15th2019At10AMUTC(),
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer)
@@ -408,7 +408,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: .mockDecember15th2019At10AMUTC(),
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
         XCTAssertTrue(
             scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer)
@@ -441,7 +441,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer))
 
@@ -480,7 +480,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer))
         XCTAssertFalse(scope.process(command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer))
@@ -515,7 +515,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: .mockAny(),
             serverTimeOffset: .zero,
             interactionToNextViewMetric: nil,
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(), context: context, writer: writer)
@@ -557,7 +557,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: nil,
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime), context: context, writer: writer)
@@ -587,7 +587,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: nil,
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime), context: context, writer: writer)
@@ -638,7 +638,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: Date(),
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer))
         XCTAssertTrue(scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1"), context: context, writer: writer))
@@ -692,7 +692,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer))
@@ -733,7 +733,7 @@ class RUMViewScope_Tests: XCTestCase {
             startTime: Date(),
             serverTimeOffset: .zero,
             interactionToNextViewMetric: INVMetricMock(),
-            viewIndexInSession: .mockAny()
+            viewIndexInSession: 1
         )
 
         featureScope.eventWriteContext { context, writer in
