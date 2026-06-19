@@ -50,10 +50,6 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
     public init(hosts: Set<String>) {
         swiftType = .trace(hosts: hosts)
     }
-
-    public init(hostPatterns: [String]) {
-        swiftType = .traceWithPatterns(hostPatterns: hostPatterns)
-    }
 }
 
 @objc(DDURLSessionInstrumentation)

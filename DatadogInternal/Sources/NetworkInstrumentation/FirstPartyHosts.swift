@@ -44,37 +44,24 @@ public struct FirstPartyHosts: Equatable {
             self.init(hosts)
         case .traceWithHeaders(let hostsWithHeaders):
             self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
-        case .traceWithPatterns(let patterns):
-            self.init(hostPatterns: patterns)
         case .none:
             return nil
         }
-    }
-
-    public init(hostPatterns: [String]) {
-        self.hostsWithTracingHeaderTypes = [:]
-        let dict = hostPatterns.reduce(into: [String: Set<TracingHeaderType>]()) { $0[$1] = [.datadog, .tracecontext] }
-        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
-            dict,
-            warningMessage: "The first party host pattern configured for Datadog SDK is not valid"
-        )
-    }
-
-    internal init(hostPatterns: [String: Set<TracingHeaderType>]) {
-        self.hostsWithTracingHeaderTypes = [:]
-        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
-            hostPatterns,
-            warningMessage: "The first party host pattern configured for Datadog SDK is not valid"
-        )
     }
 
     internal init(
         hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         hostsSanitizer: HostsSanitizing = HostsSanitizer()
     ) {
+        let plainEntries = hostsWithTracingHeaderTypes.filter { !$0.key.contains("*") }
+        let wildcardEntries = hostsWithTracingHeaderTypes.filter { $0.key.contains("*") }
         self.hostsWithTracingHeaderTypes = hostsSanitizer.sanitized(
-            hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes,
-            warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
+            hostsWithTracingHeaderTypes: plainEntries,
+            warningMessage: "The first party host configured for Datadog SDK is not valid"
+        )
+        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
+            wildcardEntries,
+            warningMessage: "The first party host configured for Datadog SDK is not valid"
         )
     }
 
@@ -102,14 +89,9 @@ public struct FirstPartyHosts: Equatable {
     }
 
     private func matchesWildcardPattern(host: String, pattern: String) -> Bool {
-        guard pattern.contains("*") else {
-            return host == pattern || host.hasSuffix(".\(pattern)")
-        }
         let parts = pattern.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
-        guard parts.count == 2 else {
-            return false
-        }
-        return host.hasPrefix(parts[0]) && host.hasSuffix(parts[1]) && host.count > parts[0].count + parts[1].count
+        let regex = "^\(NSRegularExpression.escapedPattern(for: parts[0])).+\(NSRegularExpression.escapedPattern(for: parts[1]))$"
+        return host.range(of: regex, options: .regularExpression) != nil
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.

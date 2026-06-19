@@ -449,6 +449,8 @@ extension RUM.Configuration.URLSessionTracking {
     public enum FirstPartyHostsTracing {
         /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
         ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
+        ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
         ///   - sampleRate: The sampling rate for tracing. This is ignored if Trace is enabled and there is an active span. Must be a value between `0.0` and `100.0`. Default: `100`.
@@ -461,6 +463,8 @@ extension RUM.Configuration.URLSessionTracking {
 
         /// Trace given hosts with using custom tracing headers.
         ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
+        ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
         /// - `sampleRate` - The sampling rate for tracing. This is ignored if Trace is enabled and there is an active span. Must be a value between `0.0` and `100.0`. Default: `100`.
         /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.sampled`.
@@ -470,17 +474,6 @@ extension RUM.Configuration.URLSessionTracking {
             traceControlInjection: TraceContextInjection = .sampled
         )
 
-        /// Trace hosts matching the given wildcard patterns using Datadog and W3C `tracecontext` tracing headers.
-        ///
-        /// - `hostPatterns` - Wildcard patterns for hosts to trace. Use `*` as a wildcard (e.g. `"*.example.com"`).
-        ///   Patterns must not include the "http(s)://" prefix.
-        /// - `sampleRate` - The sampling rate for tracing. This is ignored if Trace is enabled and there is an active span. Must be a value between `0.0` and `100.0`. Default: `100`.
-        /// - `traceControlInjection` - The strategy for injecting trace context into requests. Default: `.sampled`.
-        case traceWithPatterns(
-            hostPatterns: [String],
-            sampleRate: Float = .maxSampleRate,
-            traceControlInjection: TraceContextInjection = .sampled
-        )
     }
 
     /// Configuration for capturing HTTP headers from network requests and responses.

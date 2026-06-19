@@ -155,34 +155,34 @@ class FirstPartyHostsTests: XCTestCase {
     // MARK: - Wildcard Pattern Matching
 
     func testWildcardPattern_matchesSubdomains() {
-        let hosts = FirstPartyHosts(hostPatterns: ["*.example.com": [.datadog, .tracecontext]])
+        let hosts = FirstPartyHosts(["*.example.com": [.datadog, .tracecontext]])
 
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://api.example.com/path")), [.datadog, .tracecontext])
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://staging.example.com")), [.datadog, .tracecontext])
     }
 
     func testWildcardPattern_doesNotMatchApex() {
-        let hosts = FirstPartyHosts(hostPatterns: ["*.example.com": [.datadog]])
+        let hosts = FirstPartyHosts(["*.example.com": [.datadog]])
 
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://example.com")), [])
     }
 
     func testWildcardPattern_doesNotMatchUnrelatedHosts() {
-        let hosts = FirstPartyHosts(hostPatterns: ["*.example.com": [.datadog]])
+        let hosts = FirstPartyHosts(["*.example.com": [.datadog]])
 
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://evil.com")), [])
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://notexample.com")), [])
     }
 
     func testPrefixWildcardPattern_matchesCorrectly() {
-        let hosts = FirstPartyHosts(hostPatterns: ["preview-*.shopist.io": [.tracecontext]])
+        let hosts = FirstPartyHosts(["preview-*.shopist.io": [.tracecontext]])
 
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://preview-abc.shopist.io")), [.tracecontext])
         XCTAssertEqual(hosts.tracingHeaderTypes(for: URL(string: "https://app.shopist.io")), [])
     }
 
     func testWildcardPattern_multiplePatterns_returnsUnion() {
-        let hosts = FirstPartyHosts(hostPatterns: [
+        let hosts = FirstPartyHosts([
             "*.example.com": [.datadog],
             "*.shopist.io": [.tracecontext]
         ])
@@ -192,8 +192,8 @@ class FirstPartyHostsTests: XCTestCase {
     }
 
     func testWildcardAndPlainHosts_bothMatch() {
-        var hosts: FirstPartyHosts? = FirstPartyHosts(hostsWithTracingHeaderTypes: ["example.com": [.b3]])
-        hosts += FirstPartyHosts(hostPatterns: ["*.staging.shopist.io": [.datadog]])
+        var hosts: FirstPartyHosts? = FirstPartyHosts(["example.com": [.b3]])
+        hosts += FirstPartyHosts(["*.staging.shopist.io": [.datadog]])
 
         XCTAssertEqual(hosts?.tracingHeaderTypes(for: URL(string: "https://example.com")), [.b3])
         XCTAssertEqual(hosts?.tracingHeaderTypes(for: URL(string: "https://api.staging.shopist.io")), [.datadog])
@@ -201,16 +201,16 @@ class FirstPartyHostsTests: XCTestCase {
     }
 
     func testPlusOperator_preservesPatterns() {
-        let a = FirstPartyHosts(hostPatterns: ["*.example.com": [.datadog]])
-        let b = FirstPartyHosts(hostsWithTracingHeaderTypes: ["other.com": [.tracecontext]])
+        let a = FirstPartyHosts(["*.example.com": [.datadog]])
+        let b = FirstPartyHosts(["other.com": [.tracecontext]])
         let merged = a + b
 
         XCTAssertEqual(merged.tracingHeaderTypes(for: URL(string: "https://api.example.com")), [.datadog])
         XCTAssertEqual(merged.tracingHeaderTypes(for: URL(string: "https://other.com")), [.tracecontext])
     }
 
-    func testInitFromFirstPartyHostsTracing_traceWithPatterns_matchesSubdomains() {
-        let hosts = FirstPartyHosts(firstPartyHosts: .traceWithPatterns(hostPatterns: ["*.example.com"]))
+    func testInitFromFirstPartyHostsTracing_traceWithHeaders_matchesWildcardSubdomains() {
+        let hosts = FirstPartyHosts(firstPartyHosts: .traceWithHeaders(hostsWithHeaders: ["*.example.com": [.datadog, .tracecontext]]))
 
         XCTAssertEqual(hosts?.tracingHeaderTypes(for: URL(string: "https://api.example.com")), [.datadog, .tracecontext])
         XCTAssertEqual(hosts?.tracingHeaderTypes(for: URL(string: "https://example.com")), [])

@@ -51,6 +51,12 @@ class HostPatternSanitizerTests: XCTestCase {
         XCTAssertEqual(sanitized["example.com"], [.datadog])
     }
 
+    func testTrailingDotPattern_isDropped() {
+        let sanitized = sanitizeHostPatterns(["*.": [.datadog]], warningMessage: "")
+        XCTAssertNil(sanitized["*."])
+        XCTAssertEqual(sanitized.count, 0)
+    }
+
     func testBareWildcard_isDropped() {
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print

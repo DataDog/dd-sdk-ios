@@ -58,6 +58,11 @@ private func validatedWildcardPattern(_ pattern: String, collectingWarningsInto 
         warnings.append("'\(pattern)' is not a valid host pattern and will be dropped.")
         return nil
     }
+    let parts = lowercased.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+    guard parts[1].count > 1 else {
+        warnings.append("'\(pattern)' is not a valid host pattern and will be dropped.")
+        return nil
+    }
     return lowercased
 }
 
