@@ -1,0 +1,60 @@
+# ─── Core ────────────────────────────────────────────────────────────────────
+
+common --enable_bzlmod
+
+# Prefix Bazel's convenience symlinks with a dot so they are hidden and won't
+# clutter the workspace root. Ignored via .gitignore with .bazel-*.
+common --symlink_prefix=bazel/
+
+# ─── Platforms ───────────────────────────────────────────────────────────────
+
+# Default: iOS simulator on Apple Silicon
+build --platforms=@build_bazel_apple_support//platforms:ios_sim_arm64
+
+# Named configs — use with --config=<name>
+build:ios      --platforms=@build_bazel_apple_support//platforms:ios_sim_arm64
+build:tvos     --platforms=@build_bazel_apple_support//platforms:tvos_sim_arm64
+build:watchos  --platforms=@build_bazel_apple_support//platforms:watchos_sim_arm64
+build:visionos --platforms=@build_bazel_apple_support//platforms:visionos_sim_arm64
+build:macos    --platforms=@build_bazel_apple_support//platforms:darwin_arm64
+
+# ─── Local performance ────────────────────────────────────────────────────────
+
+# Disk cache — free persistent local cache across builds
+build --disk_cache=~/.cache/bazel-dd-sdk-ios
+
+# BLAKE3 digest hashing — up to 5x faster digest calculation for large binaries
+startup --digest_function=blake3
+
+# Larger digest cache (default 50k is too low for a multi-module SDK)
+build --cache_computed_file_digests=500000
+
+# Global Swift module cache — up to 10x faster incremental Swift compilations
+build --features=swift.use_global_module_cache
+
+# Disable macOS sandbox — sandbox adds significant overhead on macOS with no
+# correctness benefit for a single-developer local build
+build --spawn_strategy=worker,local
+build --noworker_sandboxing
+
+# ─── Swift ───────────────────────────────────────────────────────────────────
+
+# No dSYMs for local builds (speeds up linking)
+build --apple_generate_dsym=false
+
+# -enable-testing is set per swift_library target via copts (see BUILD files)
+
+# ─── Tests ───────────────────────────────────────────────────────────────────
+
+# Target a specific booted simulator — avoids simulator creation race conditions.
+# Update the UDID when switching machines or simulators.
+# List available: xcrun simctl list devices available
+test --test_arg=--destination=platform=ios_simulator,id=813F5952-882E-40D5-9DB6-EB563C50BA57
+
+test --test_output=errors
+
+# ─── CI config (use with --config=ci) ────────────────────────────────────────
+
+# On CI: no disk cache (ephemeral runners), generate dSYMs for symbolication
+build:ci --disk_cache=
+build:ci --apple_generate_dsym=true

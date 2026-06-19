@@ -25,6 +25,8 @@ __pycache__
 # CI job artifacts
 artifacts/
 
+# Bazel convenience symlinks live in bazel/ — ignored via bazel/.gitignore
+
 # AI files
 .claude/settings.local.json
 

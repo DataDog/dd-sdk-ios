@@ -1,0 +1,28 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@rules_apple//apple:ios.bzl", "ios_unit_test")
+
+swift_library(
+    name = "DatadogFlags",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogFlags",
+    copts = ["-enable-testing"],
+    deps = ["//DatadogInternal"],
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogFlagsTestsLib",
+    srcs = glob(["Tests/**/*.swift"]),
+    testonly = True,
+    deps = [
+        ":DatadogFlags",
+        "//TestUtilities",
+    ],
+)
+
+ios_unit_test(
+    name = "DatadogFlagsTests",
+    bundle_id = "com.datadoghq.DatadogFlagsTests",
+    minimum_os_version = "12.0",
+    deps = [":DatadogFlagsTestsLib"],
+)

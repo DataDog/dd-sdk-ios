@@ -1,0 +1,4 @@
+# Bazel places convenience symlinks here (bin, out, testlogs).
+# Ignore everything except this file.
+*
+!.gitignore

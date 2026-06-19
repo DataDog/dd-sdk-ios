@@ -1,0 +1,22 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+swift_library(
+    name = "TestUtilities",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "TestUtilities",
+    copts = ["-DDD_SDK_COMPILED_FOR_TESTING"],
+    testonly = True,
+    deps = [
+        "//DatadogCore",
+        "//DatadogCore:DatadogPrivate",
+        "//DatadogInternal",
+        "//DatadogLogs",
+        "//DatadogRUM",
+        "//DatadogSessionReplay",
+        "//DatadogTrace",
+        "//DatadogCrashReporting",
+        "//DatadogWebViewTracking",
+        "//DatadogFlags",
+    ],
+    visibility = ["//visibility:public"],
+)

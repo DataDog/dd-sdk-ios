@@ -1,0 +1,4 @@
+module DatadogRUMPrivate {
+    header "DDForwardingProxyBase.h"
+    export *
+}

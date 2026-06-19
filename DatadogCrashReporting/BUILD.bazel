@@ -1,0 +1,33 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@rules_apple//apple:ios.bzl", "ios_unit_test")
+
+swift_library(
+    name = "DatadogCrashReporting",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogCrashReporting",
+    copts = ["-enable-testing"],
+    deps = [
+        "//DatadogInternal",
+        "@swiftpkg_kscrash//:Recording",
+        "@swiftpkg_kscrash//:Filters",
+    ],
+    # TODO: PrivacyInfo.xcprivacy — needs rules_apple resource bundling for framework targets
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogCrashReportingTestsLib",
+    srcs = glob(["Tests/**/*.swift"]),
+    testonly = True,
+    deps = [
+        ":DatadogCrashReporting",
+        "//TestUtilities",
+    ],
+)
+
+ios_unit_test(
+    name = "DatadogCrashReportingTests",
+    bundle_id = "com.datadoghq.DatadogCrashReportingTests",
+    minimum_os_version = "12.0",
+    deps = [":DatadogCrashReportingTestsLib"],
+)

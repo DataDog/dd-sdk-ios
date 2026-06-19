@@ -1,0 +1,54 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_interop_hint", "swift_library")
+load("@rules_apple//apple:ios.bzl", "ios_unit_test")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+# C++ profiler implementation — already has module.modulemap in Mach/include/
+swift_interop_hint(
+    name = "DatadogMachProfiler_interop",
+    module_map = "Mach/include/module.modulemap",
+    module_name = "DatadogMachProfiler",
+)
+
+cc_library(
+    name = "DatadogMachProfiler",
+    srcs = glob([
+        "Mach/**/*.cpp",
+        "Mach/**/*.c",
+    ]),
+    hdrs = glob(["Mach/include/**/*.h"]),
+    includes = ["Mach/include"],
+    aspect_hints = [":DatadogMachProfiler_interop"],
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogProfiling",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogProfiling",
+    copts = ["-enable-testing"],
+    deps = [
+        "//DatadogInternal",
+        ":DatadogMachProfiler",
+    ],
+    # TODO: PrivacyInfo.xcprivacy — needs rules_apple resource bundling for framework targets
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogProfilingTestsLib",
+    srcs = glob(["Tests/**/*.swift"]),
+    copts = ["-Xfrontend", "-enable-experimental-cxx-interop"],
+    testonly = True,
+    deps = [
+        ":DatadogMachProfiler",
+        ":DatadogProfiling",
+        "//TestUtilities",
+    ],
+)
+
+ios_unit_test(
+    name = "DatadogProfilingTests",
+    bundle_id = "com.datadoghq.DatadogProfilingTests",
+    minimum_os_version = "12.0",
+    deps = [":DatadogProfilingTestsLib"],
+)

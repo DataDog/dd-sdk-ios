@@ -1,0 +1,38 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_interop_hint", "swift_library")
+load("@rules_cc//cc:objc_library.bzl", "objc_library")
+
+# Tells rules_swift how to expose DatadogPrivate's ObjC headers to Swift
+swift_interop_hint(
+    name = "DatadogPrivate_interop",
+    module_map = "Private/include/module.modulemap",
+    module_name = "DatadogPrivate",
+)
+
+# ObjC private implementation — used by DatadogCore for exception handling and launch detection
+objc_library(
+    name = "DatadogPrivate",
+    srcs = glob(["Private/**/*.m"]),
+    hdrs = glob(["Private/include/**/*.h"]),
+    includes = ["Private/include"],
+    aspect_hints = [":DatadogPrivate_interop"],
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogCore",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogCore",
+    copts = ["-enable-testing", "-DDD_SDK_COMPILED_FOR_TESTING"],
+    generates_header = True,
+    generated_header_name = "DatadogCore-Swift.h",
+    deps = [
+        "//DatadogInternal",
+        ":DatadogPrivate",
+    ],
+    # TODO: PrivacyInfo.xcprivacy — needs rules_apple resource bundling for framework targets
+    visibility = ["//visibility:public"],
+)
+
+# Note: DatadogCore/Tests is an Xcode workspace-only integration test directory —
+# it has no corresponding SPM test target and is not included here.
+# Those tests exercise cross-module behaviour and compile against the full Xcode workspace.

@@ -1,0 +1,48 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_interop_hint", "swift_library")
+load("@rules_apple//apple:ios.bzl", "ios_unit_test")
+load("@rules_cc//cc:objc_library.bzl", "objc_library")
+
+swift_interop_hint(
+    name = "DatadogRUMPrivate_interop",
+    module_map = "Private/include/module.modulemap",
+    module_name = "DatadogRUMPrivate",
+)
+
+objc_library(
+    name = "DatadogRUMPrivate",
+    srcs = glob(["Private/**/*.m"]),
+    hdrs = glob(["Private/include/**/*.h"]),
+    includes = ["Private/include"],
+    aspect_hints = [":DatadogRUMPrivate_interop"],
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogRUM",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogRUM",
+    copts = ["-enable-testing"],
+    deps = [
+        "//DatadogInternal",
+        ":DatadogRUMPrivate",
+    ],
+    # TODO: PrivacyInfo.xcprivacy — needs rules_apple resource bundling for framework targets
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogRUMTestsLib",
+    srcs = glob(["Tests/**/*.swift"]),
+    testonly = True,
+    deps = [
+        ":DatadogRUM",
+        "//TestUtilities",
+    ],
+)
+
+ios_unit_test(
+    name = "DatadogRUMTests",
+    bundle_id = "com.datadoghq.DatadogRUMTests",
+    minimum_os_version = "12.0",
+    deps = [":DatadogRUMTestsLib"],
+)

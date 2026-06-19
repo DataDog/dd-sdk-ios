@@ -1,0 +1,28 @@
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@rules_apple//apple:ios.bzl", "ios_unit_test")
+
+swift_library(
+    name = "DatadogWebViewTracking",
+    srcs = glob(["Sources/**/*.swift"]),
+    module_name = "DatadogWebViewTracking",
+    copts = ["-enable-testing", "-DDD_SDK_COMPILED_FOR_TESTING"],
+    deps = ["//DatadogInternal"],
+    visibility = ["//visibility:public"],
+)
+
+swift_library(
+    name = "DatadogWebViewTrackingTestsLib",
+    srcs = glob(["Tests/**/*.swift"]),
+    testonly = True,
+    deps = [
+        ":DatadogWebViewTracking",
+        "//TestUtilities",
+    ],
+)
+
+ios_unit_test(
+    name = "DatadogWebViewTrackingTests",
+    bundle_id = "com.datadoghq.DatadogWebViewTrackingTests",
+    minimum_os_version = "12.0",
+    deps = [":DatadogWebViewTrackingTestsLib"],
+)

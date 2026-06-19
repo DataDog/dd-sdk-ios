@@ -1,0 +1,5 @@
+module DatadogPrivate {
+    header "ObjcAppLaunchHandler.h"
+    header "ObjcExceptionHandler.h"
+    export *
+}
