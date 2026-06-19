@@ -653,10 +653,14 @@ class RemoteLoggerTests: XCTestCase {
     /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
     ///   types using `AnyEncodable(value)` to bypass compile-time checks.
 
-    func testWhenMultipleAttributesFailToEncode_itSkipsAllMalformedAttributes() throws {
+    func testWhenMultipleAttributesAreNonEncodable_itEncodesThemAsStringsAndSendsEvent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+
+        class DescribableObject: NSObject {
+            override var description: String { "DescribableObject()" }
+        }
 
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -674,36 +678,39 @@ class RemoteLoggerTests: XCTestCase {
         logger.addAttribute(forKey: "valid", value: "test")
         logger.addAttribute(forKey: "onComplete", value: AnyEncodable(closure1))
         logger.addAttribute(forKey: "callback", value: AnyEncodable(closure2))
-        logger.addAttribute(forKey: "custom_object", value: AnyEncodable(NSObject()))
+        logger.addAttribute(forKey: "custom_object", value: AnyEncodable(DescribableObject()))
         logger.info("Test message")
 
-        // Then - encode to trigger error handling
+        // Then
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
-
-        // Encode to JSON
         let jsonData = try JSONEncoder().encode(log)
         let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
 
-        // Event sent with only valid attribute
+        // Valid attribute present, non-encodable ones encoded as strings
         XCTAssertEqual(jsonObject["valid"] as? String, "test")
-        XCTAssertNil(jsonObject["onComplete"])
-        XCTAssertNil(jsonObject["callback"])
-        XCTAssertNil(jsonObject["custom_object"])
+        XCTAssertEqual(jsonObject["onComplete"] as? String, "(Function)")
+        XCTAssertEqual(jsonObject["callback"] as? String, "(Function)")
+        XCTAssertEqual(jsonObject["custom_object"] as? String, "DescribableObject()")
 
-        // And all errors logged
+        // And debug logs emitted (no errors)
         XCTAssertEqual(
-            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            dd.logger.debugLogs.filter { $0.message.contains("It will be encoded as its string description") }.count,
             3
         )
+        XCTAssertTrue(dd.logger.errorLogs.isEmpty)
     }
 
-    func testWhenOnlyMalformedAttributesAdded_itSendsEventWithoutCustomAttributes() throws {
+    func testWhenAllAttributesAreNonEncodable_itEncodesThemAsStringsAndSendsEvent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+
+        class DescribableObject: NSObject {
+            override var description: String { "DescribableObject()" }
+        }
 
         let logger = RemoteLogger(
             featureScope: featureScope,
@@ -716,30 +723,28 @@ class RemoteLoggerTests: XCTestCase {
         )
 
         // When
-        logger.addAttribute(forKey: "invalid1", value: AnyEncodable(NSObject()))
-        logger.addAttribute(forKey: "invalid2", value: AnyEncodable(NSObject()))
+        logger.addAttribute(forKey: "attr1", value: AnyEncodable(DescribableObject()))
+        logger.addAttribute(forKey: "attr2", value: AnyEncodable(DescribableObject()))
         logger.info("Test message")
 
-        // Then - encode to trigger error handling
+        // Then
         let logs = featureScope.eventsWritten(ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
         XCTAssertEqual(log.message, "Test message")
 
-        // Encode to JSON
         let jsonData = try JSONEncoder().encode(log)
         let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
 
-        // Event still sent, just without custom attributes (all were malformed)
         XCTAssertEqual(jsonObject["message"] as? String, "Test message")
-        XCTAssertNil(jsonObject["invalid1"])
-        XCTAssertNil(jsonObject["invalid2"])
+        XCTAssertEqual(jsonObject["attr1"] as? String, "DescribableObject()")
+        XCTAssertEqual(jsonObject["attr2"] as? String, "DescribableObject()")
 
-        // And errors logged
         XCTAssertEqual(
-            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            dd.logger.debugLogs.filter { $0.message.contains("It will be encoded as its string description") }.count,
             2
         )
+        XCTAssertTrue(dd.logger.errorLogs.isEmpty)
     }
 }

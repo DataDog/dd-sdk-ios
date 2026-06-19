@@ -46,25 +46,27 @@ class AttributeEncodingTests: XCTestCase {
         XCTAssertEqual(jsonObject["intAttr"] as? Int, 42)
     }
 
-    func testEncodeAttributeWithInvalidValueSkipsAttributeAndLogsError() throws {
+    func testEncodeAttributeWithNonEncodableValueFallsBackToStringDescription() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        class NonEncodableObject {}
+        class NonEncodableObject: NSObject {
+            override var description: String { "NonEncodableObject()" }
+        }
 
         struct TestEvent: Encodable {
             let nonEncodableValue: Any
 
             enum CodingKeys: String, CodingKey {
                 case validAttr
-                case invalidAttr
+                case nonEncodableAttr
             }
 
             func encode(to encoder: Encoder) throws {
                 var container = encoder.container(keyedBy: CodingKeys.self)
                 container.encodeAttribute(AnyEncodable("valid"), forKey: .validAttr, attributeName: CodingKeys.validAttr.rawValue)
-                container.encodeAttribute(AnyEncodable(nonEncodableValue), forKey: .invalidAttr, attributeName: CodingKeys.invalidAttr.rawValue)
+                container.encodeAttribute(AnyEncodable(nonEncodableValue), forKey: .nonEncodableAttr, attributeName: CodingKeys.nonEncodableAttr.rawValue)
             }
         }
 
@@ -72,15 +74,14 @@ class AttributeEncodingTests: XCTestCase {
         let encodedData = try encoder.encode(TestEvent(nonEncodableValue: NonEncodableObject()))
         let jsonObject = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
 
-        // Then - valid attribute is present, invalid is skipped
+        // Then - both attributes are present; non-encodable is encoded as its string description
         XCTAssertEqual(jsonObject["validAttr"] as? String, "valid")
-        XCTAssertNil(jsonObject["invalidAttr"])
+        XCTAssertEqual(jsonObject["nonEncodableAttr"] as? String, "NonEncodableObject()")
 
-        // And error is logged
-        let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(
-            errorLog.message.contains("Failed to encode attribute 'invalidAttr'")
-        )
+        // And a debug log is emitted (not an error — the attribute is not dropped)
+        let debugLog = try XCTUnwrap(dd.logger.debugLog)
+        XCTAssertTrue(debugLog.message.contains("It will be encoded as its string description: 'NonEncodableObject()'"))
+        XCTAssertNil(dd.logger.errorLog)
     }
 
     func testEncodeAttributeWithCustomContextUsesNoPrefix() throws {
@@ -88,21 +89,18 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        class NonEncodableObject {}
+        // An Encodable that always throws — exercises the encodeAttribute error path
+        struct ThrowingEncodable: Encodable {
+            func encode(to encoder: Encoder) throws {
+                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
+            }
+        }
 
         struct TestEvent: Encodable {
-            enum CodingKeys: String, CodingKey {
-                case customAttr
-            }
-
+            enum CodingKeys: String, CodingKey { case customAttr }
             func encode(to encoder: Encoder) throws {
                 var container = encoder.container(keyedBy: CodingKeys.self)
-                container.encodeAttribute(
-                    AnyEncodable(NonEncodableObject()),
-                    forKey: .customAttr,
-                    attributeName: CodingKeys.customAttr.rawValue,
-                    context: .custom
-                )
+                container.encodeAttribute(ThrowingEncodable(), forKey: .customAttr, attributeName: CodingKeys.customAttr.rawValue, context: .custom)
             }
         }
 
@@ -119,35 +117,26 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        struct UserInfoStruct: Encodable {
-            enum CodingKeys: String, CodingKey {
-                case customField = "usr.customField"
-            }
-
-            let value: Any
-
+        struct ThrowingEncodable: Encodable {
             func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                container.encodeAttribute(
-                    AnyEncodable(value),
-                    forKey: .customField,
-                    attributeName: "customField",  // Customer-facing name without prefix
-                    context: .userInfo
-                )
+                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
             }
         }
 
-        class NonEncodableObject {}
-        let testStruct = UserInfoStruct(value: NonEncodableObject())
+        struct UserInfoStruct: Encodable {
+            enum CodingKeys: String, CodingKey { case customField = "usr.customField" }
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                container.encodeAttribute(ThrowingEncodable(), forKey: .customField, attributeName: "customField", context: .userInfo)
+            }
+        }
 
         // When
-        _ = try encoder.encode(testStruct)
+        _ = try encoder.encode(UserInfoStruct())
 
         // Then
         let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(
-            errorLog.message.contains("Failed to encode user info attribute 'customField'")
-        )
+        XCTAssertTrue(errorLog.message.contains("Failed to encode user info attribute 'customField'"))
     }
 
     func testEncodeAttributeWithAccountInfoContextUsesCorrectPrefix() throws {
@@ -155,35 +144,26 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        struct AccountInfoStruct: Encodable {
-            enum CodingKeys: String, CodingKey {
-                case accountField = "account.accountField"
-            }
-
-            let value: Any
-
+        struct ThrowingEncodable: Encodable {
             func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                container.encodeAttribute(
-                    AnyEncodable(value),
-                    forKey: .accountField,
-                    attributeName: "accountField",  // Customer-facing name without prefix
-                    context: .accountInfo
-                )
+                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
             }
         }
 
-        class NonEncodableObject {}
-        let testStruct = AccountInfoStruct(value: NonEncodableObject())
+        struct AccountInfoStruct: Encodable {
+            enum CodingKeys: String, CodingKey { case accountField = "account.accountField" }
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                container.encodeAttribute(ThrowingEncodable(), forKey: .accountField, attributeName: "accountField", context: .accountInfo)
+            }
+        }
 
         // When
-        _ = try encoder.encode(testStruct)
+        _ = try encoder.encode(AccountInfoStruct())
 
         // Then
         let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(
-            errorLog.message.contains("Failed to encode account attribute 'accountField'")
-        )
+        XCTAssertTrue(errorLog.message.contains("Failed to encode account attribute 'accountField'"))
     }
 
     func testEncodeAttributeWithInternalContextUsesCorrectPrefix() throws {
@@ -191,35 +171,26 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        struct InternalStruct: Encodable {
-            enum CodingKeys: String, CodingKey {
-                case internalField
-            }
-
-            let value: Any
-
+        struct ThrowingEncodable: Encodable {
             func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                container.encodeAttribute(
-                    AnyEncodable(value),
-                    forKey: .internalField,
-                    attributeName: CodingKeys.internalField.rawValue,
-                    context: .internal
-                )
+                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
             }
         }
 
-        class NonEncodableObject {}
-        let testStruct = InternalStruct(value: NonEncodableObject())
+        struct InternalStruct: Encodable {
+            enum CodingKeys: String, CodingKey { case internalField }
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                container.encodeAttribute(ThrowingEncodable(), forKey: .internalField, attributeName: CodingKeys.internalField.rawValue, context: .internal)
+            }
+        }
 
         // When
-        _ = try encoder.encode(testStruct)
+        _ = try encoder.encode(InternalStruct())
 
         // Then
         let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(
-            errorLog.message.contains("Failed to encode internal attribute 'internalField'")
-        )
+        XCTAssertTrue(errorLog.message.contains("Failed to encode internal attribute 'internalField'"))
     }
 
     func testEncodeAttributeErrorMessageIncludesDroppedNotice() throws {
@@ -227,16 +198,17 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        class NonEncodableObject {}
+        struct ThrowingEncodable: Encodable {
+            func encode(to encoder: Encoder) throws {
+                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
+            }
+        }
 
         struct TestEvent: Encodable {
-            enum CodingKeys: String, CodingKey {
-                case attr
-            }
-
+            enum CodingKeys: String, CodingKey { case attr }
             func encode(to encoder: Encoder) throws {
                 var container = encoder.container(keyedBy: CodingKeys.self)
-                container.encodeAttribute(AnyEncodable(NonEncodableObject()), forKey: .attr, attributeName: CodingKeys.attr.rawValue)
+                container.encodeAttribute(ThrowingEncodable(), forKey: .attr, attributeName: CodingKeys.attr.rawValue)
             }
         }
 
@@ -245,8 +217,6 @@ class AttributeEncodingTests: XCTestCase {
 
         // Then
         let errorLog = try XCTUnwrap(dd.logger.errorLog)
-        XCTAssertTrue(
-            errorLog.message.contains("This attribute will be dropped from the event")
-        )
+        XCTAssertTrue(errorLog.message.contains("This attribute will be dropped from the event"))
     }
 }

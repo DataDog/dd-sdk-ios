@@ -218,10 +218,14 @@ class DDSpanTests: XCTestCase {
     /// - **Swift APIs with manual wrapping**: Swift API requires `Encodable`, but customers can explicitly wrap non-encodable
     ///   types using `AnyEncodable(value)` to bypass compile-time checks.
 
-    func testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags() throws {
+    func testWhenMultipleSpanTagsAreNonEncodable_itEncodesThemAsStringsAndSendsSpan() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+
+        class DescribableObject: NSObject {
+            override var description: String { "DescribableObject()" }
+        }
 
         let core = PassthroughCoreMock()
         let tracer: DatadogTracer = .mockWith(core: core)
@@ -233,7 +237,7 @@ class DDSpanTests: XCTestCase {
         span.setTag(key: "valid_tag", value: "test_value")
         span.setTag(key: "onComplete", value: AnyEncodable(closure1) as! OTTagValue)
         span.setTag(key: "callback", value: AnyEncodable(closure2) as! OTTagValue)
-        span.setTag(key: "custom_object", value: AnyEncodable(NSObject()) as! OTTagValue)
+        span.setTag(key: "custom_object", value: AnyEncodable(DescribableObject()) as! OTTagValue)
         span.finish()
 
         // Then
@@ -241,36 +245,45 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(events.count, 1)
 
         let spanEvent = try XCTUnwrap(events.first?.spans.first)
-
-        // Encode to JSON to trigger attribute encoding
         let jsonData = try JSONEncoder().encode(spanEvent)
         let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
 
-        // Span sent with only valid tag
-        XCTAssertEqual(jsonObject["meta.valid_tag"] as? String, "test_value")
-        XCTAssertNil(jsonObject["meta.onComplete"])
-        XCTAssertNil(jsonObject["meta.callback"])
-        XCTAssertNil(jsonObject["meta.custom_object"])
+        // Valid tag present, non-encodable ones encoded as strings
+        // Note: span tags go through an extra JSON-encoding step (value → JSON string),
+        // so a String "DescribableObject()" becomes "\"DescribableObject()\"" in the final JSON.
+        let tag1 = try XCTUnwrap(jsonObject["meta.valid_tag"] as? String)
+        XCTAssertEqual(tag1, "test_value")
+        let tag2 = try XCTUnwrap(jsonObject["meta.onComplete"] as? String)
+        XCTAssertEqual(tag2, "\"(Function)\"")
+        let tag3 = try XCTUnwrap(jsonObject["meta.callback"] as? String)
+        XCTAssertEqual(tag3, "\"(Function)\"")
+        let tag4 = try XCTUnwrap(jsonObject["meta.custom_object"] as? String)
+        XCTAssertTrue(tag4.contains("DescribableObject()"))
 
-        // And all errors logged
+        // And debug logs emitted (no errors)
         XCTAssertEqual(
-            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            dd.logger.debugLogs.filter { $0.message.contains("It will be encoded as its string description") }.count,
             3
         )
+        XCTAssertTrue(dd.logger.errorLogs.isEmpty)
     }
 
-    func testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags() throws {
+    func testWhenAllSpanTagsAreNonEncodable_itEncodesThemAsStringsAndSendsSpan() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
+
+        class DescribableObject: NSObject {
+            override var description: String { "DescribableObject()" }
+        }
 
         let core = PassthroughCoreMock()
         let tracer: DatadogTracer = .mockWith(core: core)
         let span = tracer.startSpan(operationName: "test operation")
 
         // When
-        span.setTag(key: "invalid_tag1", value: AnyEncodable(NSObject()) as! OTTagValue)
-        span.setTag(key: "invalid_tag2", value: AnyEncodable(NSObject()) as! OTTagValue)
+        span.setTag(key: "tag1", value: AnyEncodable(DescribableObject()) as! OTTagValue)
+        span.setTag(key: "tag2", value: AnyEncodable(DescribableObject()) as! OTTagValue)
         span.finish()
 
         // Then
@@ -280,18 +293,16 @@ class DDSpanTests: XCTestCase {
         let spanEvent = try XCTUnwrap(events.first?.spans.first)
         XCTAssertEqual(spanEvent.operationName, "test operation")
 
-        // Encode to JSON
         let jsonData = try JSONEncoder().encode(spanEvent)
         let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
 
-        // Span still sent, just without custom tags
-        XCTAssertNil(jsonObject["meta.invalid_tag1"])
-        XCTAssertNil(jsonObject["meta.invalid_tag2"])
+        XCTAssertTrue((jsonObject["meta.tag1"] as? String)?.contains("DescribableObject()") == true)
+        XCTAssertTrue((jsonObject["meta.tag2"] as? String)?.contains("DescribableObject()") == true)
 
-        // And errors logged
         XCTAssertEqual(
-            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
+            dd.logger.debugLogs.filter { $0.message.contains("It will be encoded as its string description") }.count,
             2
         )
+        XCTAssertTrue(dd.logger.errorLogs.isEmpty)
     }
 }
