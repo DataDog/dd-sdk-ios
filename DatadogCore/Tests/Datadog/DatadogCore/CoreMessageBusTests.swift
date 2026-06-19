@@ -259,8 +259,3 @@ private final class BetaReceiver: BusMessageReceiver {
     }
 }
 
-extension CoreMessageBus: @retroactive Telemetry {
-    public func send(telemetry: DatadogInternal.TelemetryMessage) {
-        send(message: .telemetry(telemetry))
-    }
-}
