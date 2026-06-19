@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// TODO: RUM-16908 Merge into `RUMManualInstrumentationScenarioTests` once `viewUpdates` feature flag is removed
+
 import DatadogInternal
 import HTTPServerMock
 import TestUtilities
