@@ -258,4 +258,3 @@ private final class BetaReceiver: BusMessageReceiver {
         onReceive(message, core)
     }
 }
-
