@@ -57,6 +57,15 @@ public struct DefaultAppKitRUMActionsPredicate {
             return baseName
         }
 
+        // Detects clicks on the 3 traffic-light window buttons and adjusts
+        // the name for something more user-friendly.
+        switch baseName {
+        case "_NSThemeZoomWidget": return "Window Zoom Button"
+        case "_NSThemeWidget": return "Window Minimize Button"
+        case "_NSThemeCloseWidget": return "Window Close Button"
+        default: break
+        }
+
         // The kind is exposed as the cell's accessibility role (AppKit derives it from the
         // bezel + cell configuration). It must be read from the cell: NSButton itself reports
         // `.unknown`. Both disclosure styles (triangle and rounded) report `.disclosureTriangle`.
