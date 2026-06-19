@@ -57,6 +57,41 @@ public enum WebViewTracking {
         }
     }
 
+    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session,
+    /// using wildcard host patterns for matching.
+    ///
+    /// If the content loaded in WebView uses Datadog Browser SDK and its hostname matches one of the
+    /// specified patterns, web events will be correlated with the RUM session from native SDK.
+    ///
+    /// Patterns support a single `*` wildcard: `"*.example.com"`, `"preview-*.shopist.io"`, `"shopist.io"`.
+    /// Patterns with more than one `*` are dropped with a warning.
+    ///
+    /// - Parameters:
+    ///   - webView: The web-view to track.
+    ///   - hostPatterns: Wildcard patterns to match against the WebView page hostname.
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
+    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
+    ///   - core: Datadog SDK core to use for tracking.
+    public static func enable(
+        webView: WKWebView,
+        hostPatterns: [String],
+        logsSampleRate: SampleRate = .maxSampleRate,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        do {
+            try runOnMainThreadSync {
+                try enableOrThrow(
+                    tracking: webView,
+                    hostPatterns: hostPatterns,
+                    logsSampleRate: logsSampleRate,
+                    in: core
+                )
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
     /// Disables Datadog iOS SDK and Datadog Browser SDK integration.
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
@@ -87,31 +122,9 @@ public enum WebViewTracking {
         logsSampleRate: Float,
         in core: DatadogCoreProtocol
     ) throws {
-        guard !(core is NOPDatadogCore) else {
-            throw ProgrammerError(
-                description: "Datadog SDK must be initialized before calling `WebViewTracking.enable(webView:)`."
-            )
-        }
-
-        let controller = webView.configuration.userContentController
-        let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
-        guard !isTracking else {
-            DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+        guard try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hosts:)", in: core) else {
             return
         }
-
-        let bridgeName = DDScriptMessageHandler.name
-
-        let messageHandler = DDScriptMessageHandler(
-            emitter: MessageEmitter(
-                logsSampler: Sampler(samplingRate: logsSampleRate),
-                core: core
-            )
-        )
-
-        // Prevent fatal error: `Attempt to add script message handler with name 'DatadogEventBridge' when one already exists.`
-        controller.removeScriptMessageHandler(forName: bridgeName)
-        controller.add(messageHandler, name: bridgeName)
 
         // `WKScriptMessageHandlerWithReply` returns `Promise` and `browser-sdk` expects immediate values.
         // We inject a user script to return `allowedWebViewHosts` instead of using `WKScriptMessageHandlerWithReply`
@@ -131,6 +144,80 @@ public enum WebViewTracking {
         injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
 
         core.telemetry.usage(event: .trackWebView)
+    }
+
+    @MainActor
+    static func enableOrThrow(
+        tracking webView: WKWebView,
+        hostPatterns: [String],
+        logsSampleRate: Float,
+        in core: DatadogCoreProtocol
+    ) throws {
+        guard try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hostPatterns:)", in: core) else {
+            return
+        }
+
+        let validPatterns: [String] = hostPatterns.compactMap { pattern in
+            let lowercased = pattern.lowercased()
+            let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-*")
+            if lowercased.unicodeScalars.contains(where: { !allowedCharacters.contains($0) }) {
+                DD.logger.warn("WebView host pattern \"\(pattern)\" contains invalid characters and will be ignored.")
+                return nil
+            }
+            let wildcardCount = lowercased.filter { $0 == "*" }.count
+            if wildcardCount > 1 {
+                DD.logger.warn("WebView host pattern \"\(pattern)\" contains more than one wildcard and will be ignored.")
+                return nil
+            }
+            return lowercased
+        }
+
+        let allowedWebViewHostsString = validPatterns
+            .map { "\"\($0)\"" }
+            .joined(separator: ",")
+
+        let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
+        let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
+
+        try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
+
+        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
+
+        core.telemetry.usage(event: .trackWebView)
+    }
+
+    @MainActor
+    private static func prepareWebView(
+        _ webView: WKWebView,
+        logsSampleRate: Float,
+        callerName: String,
+        in core: DatadogCoreProtocol
+    ) throws -> Bool {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `WebViewTracking.enable(webView:)`."
+            )
+        }
+
+        let controller = webView.configuration.userContentController
+        let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
+        guard !isTracking else {
+            DD.logger.warn("`\(callerName)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+            return false
+        }
+
+        let bridgeName = DDScriptMessageHandler.name
+        let messageHandler = DDScriptMessageHandler(
+            emitter: MessageEmitter(
+                logsSampler: Sampler(samplingRate: logsSampleRate),
+                core: core
+            )
+        )
+        // Prevent fatal error: `Attempt to add script message handler with name 'DatadogEventBridge' when one already exists.`
+        controller.removeScriptMessageHandler(forName: bridgeName)
+        controller.add(messageHandler, name: bridgeName)
+
+        return true
     }
 
     /// Injects the Javascript bridge code in the WebView user scripts.

@@ -171,11 +171,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
 
-        dependencies.timeseriesCollector?.start(
-            sessionID: sessionUUID.rawValue.uuidString.lowercased(),
-            applicationID: dependencies.rumApplicationID,
-            sessionType: dependencies.sessionType
-        )
+        if sampler.isSampled {
+            dependencies.timeseriesCollector?.start(
+                sessionID: sessionUUID.rawValue.uuidString.lowercased(),
+                applicationID: dependencies.rumApplicationID,
+                sessionType: dependencies.sessionType
+            )
+            if !context.applicationStateHistory.currentState.isRunningInForeground {
+                dependencies.timeseriesCollector?.pause()
+            }
+        }
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -281,11 +286,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 appLaunchManager.process(command, context: context, writer: writer)
+                dependencies.timeseriesCollector?.pause()
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
+                dependencies.timeseriesCollector?.resume()
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager

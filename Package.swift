@@ -127,12 +127,18 @@ let package = Package(
             name: "DatadogRUM",
             dependencies: [
                 .target(name: "DatadogInternal"),
+                .target(name: "DatadogRUMPrivate"),
             ],
             path: "DatadogRUM",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
-            ]
+            ],
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+        ),
+        .target(
+            name: "DatadogRUMPrivate",
+            path: "DatadogRUM/Private"
         ),
         .testTarget(
             name: "DatadogRUMTests",

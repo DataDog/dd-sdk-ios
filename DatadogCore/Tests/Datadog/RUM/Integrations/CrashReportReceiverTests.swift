@@ -331,7 +331,9 @@ class CrashReportReceiverTests: XCTestCase {
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With Active View
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
-        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        // `viewIsActive: true` seeds the field deterministically so the recovery code's flip
+        // to `false` always shows up in the diff, making the strict assertion below reliable.
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(viewIsActive: true, crashCount: 0)
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -359,6 +361,19 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Then
         let sendRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
+
+        // Assert exactly which fields the recovery code mutates — catches PII leak regressions
+        // by ensuring no other fields are silently added or modified during recovery.
+        DDAssertJSONDiff(lastRUMViewEvent, sendRUMViewEvent) { diffs in
+            diffs.assertExact(different: [
+                "_dd.document_version",
+                "date",
+                "ddtags",
+                "view.crash.count",
+                "view.error.count",
+                "view.is_active"
+            ])
+        }
 
         XCTAssertTrue(
             sendRUMViewEvent.application.id == lastRUMViewEvent.application.id

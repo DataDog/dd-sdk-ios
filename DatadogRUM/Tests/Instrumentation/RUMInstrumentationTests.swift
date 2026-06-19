@@ -144,6 +144,40 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    #if !os(tvOS)
+    func testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView() throws {
+        // When
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
+            swiftUIRUMViewsPredicate: nil,
+            swiftUIRUMActionsPredicate: nil,
+            trackScrollAndSwipeActions: false,
+            longTaskThreshold: nil,
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenter: .default,
+            bundleType: .iOSApp,
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
+        )
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            DDAssertActiveSwizzlings(["sendEvent:"])
+            XCTAssertNil(instrumentation.scrollViewSwizzler)
+            XCTAssertNil(instrumentation.scrollHandler)
+        }
+    }
+    #endif
+
     func testWhenOnlyLongTasksThresholdIsConfigured_itInstrumentsRunLoop() throws {
         // When
         let instrumentation = RUMInstrumentation(

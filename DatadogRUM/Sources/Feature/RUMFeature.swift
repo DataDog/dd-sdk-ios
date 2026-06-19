@@ -112,11 +112,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
             if let sessionScope {
-                let sessionID = sessionScope.sessionUUID.rawValue.uuidString
+                let sessionID = sessionScope.sessionUUID.toRUMDataFormat
                 let isDiscarded = !sessionScope.sampler.isSampled
                 onSessionStart?(sessionID, isDiscarded)
             }
             _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        }
+
+        let vitalsReaders = configuration.vitalsUpdateFrequency.map {
+            VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
         }
 
         let dependencies = RUMScopeDependencies(
@@ -149,12 +153,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map {
-                VitalsReaders(
-                    frequency: $0.timeInterval,
-                    telemetry: core.telemetry
-                )
-            },
+            vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
@@ -198,15 +197,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
-            timeseriesCollector: {
-                guard configuration.enableTimeseries, let vitalsReaders = configuration.vitalsUpdateFrequency.map({
-                    VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
-                }) else { return nil }
-                return TimeseriesSessionCollector(
-                    memoryReader: vitalsReaders.memory,
-                    featureScope: featureScope
+            timeseriesCollector: configuration.enableTimeseries ? vitalsReaders.map {
+                TimeseriesSessionCollector(
+                    memoryReader: $0.memory,
+                    featureScope: featureScope,
+                    batchSize: configuration.timeseriesBatchSize,
+                    collectInBackground: configuration.trackBackgroundEvents
                 )
-            }()
+            } : nil
         )
 
         self.monitor = Monitor(
@@ -240,6 +238,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,

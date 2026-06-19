@@ -4,32 +4,16 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// A weak, `Sendable` identity wrapper for `CALayer`.
-//
-// Use this for liveness checks and identity comparison without retaining the layer.
-// No direct access is exposed; use `resolve()` on the main actor to work with the
-// layer if it's still alive.
-
 #if os(iOS)
 import QuartzCore
 
+/// Weak identity wrapper for a `CALayer`.
+///
+/// Use it to compare layer identity without keeping the layer alive.
+/// Call `resolve()` on the main actor when the live layer is needed.
 internal struct CALayerReference: @unchecked Sendable {
     var identifier: ObjectIdentifier? {
         layer.map(ObjectIdentifier.init)
-    }
-
-    var `class`: AnyClass? {
-        layer.map {
-            type(of: $0)
-        }
-    }
-
-    var delegateClass: AnyClass? {
-        layer?.delegate.flatMap {
-            type(of: $0)
-        }
     }
 
     private weak var layer: CALayer?

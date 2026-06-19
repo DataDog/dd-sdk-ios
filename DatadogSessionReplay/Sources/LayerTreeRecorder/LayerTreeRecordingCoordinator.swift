@@ -8,6 +8,10 @@
 import Foundation
 @preconcurrency import DatadogInternal
 
+/// Connects RUM context, sampling, screen-change monitoring, and layer recording.
+///
+/// It starts monitoring only when Session Replay is enabled and the current
+/// session is sampled.
 @available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerTreeRecordingCoordinator: RecordingController {
     let replaySampleRate: SampleRate

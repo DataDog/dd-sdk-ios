@@ -69,6 +69,15 @@ public final class objc_URLSessionInstrumentation: NSObject {
         URLSessionInstrumentation.enableDurationBreakdown(with: configuration.swiftConfig)
     }
 
+    /// Enables duration breakdown capture for URLSession tasks on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - instanceName: The name of the SDK instance to use.
+    public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String?) {
+        URLSessionInstrumentation.enableDurationBreakdown(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
+    }
+
     /// Enables URLSession instrumentation.
     ///
     /// - Parameters:
@@ -78,10 +87,28 @@ public final class objc_URLSessionInstrumentation: NSObject {
         URLSessionInstrumentation.enable(with: configuration.swiftConfig)
     }
 
+    /// Enables URLSession instrumentation on a named SDK instance.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    ///   - instanceName: The name of the SDK instance to use.
+    @available(*, deprecated, renamed: "enableDurationBreakdown(with:instanceName:)", message: "Use enableDurationBreakdown(with:instanceName:) instead.")
+    public static func enable(configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String?) {
+        URLSessionInstrumentation.enable(with: configuration.swiftConfig, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
+    }
+
     /// Disables URLSession instrumentation.
     /// - Parameters:
     ///   - delegateClass: The delegate class to unbind.
     public static func disable(delegateClass: URLSessionDataDelegate.Type) {
         URLSessionInstrumentation.disable(delegateClass: delegateClass)
+    }
+
+    /// Disables URLSession instrumentation on a named SDK instance.
+    /// - Parameters:
+    ///   - delegateClass: The delegate class to unbind.
+    ///   - instanceName: The name of the SDK instance to disable.
+    public static func disable(delegateClass: URLSessionDataDelegate.Type, instanceName: String?) {
+        URLSessionInstrumentation.disable(delegateClass: delegateClass, in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName))
     }
 }

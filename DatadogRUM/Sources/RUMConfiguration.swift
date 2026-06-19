@@ -20,6 +20,8 @@ import QuartzCore
 @_exported import struct DatadogInternal.RUMActionEvent
 @_exported import struct DatadogInternal.RUMLongTaskEvent
 @_exported import struct DatadogInternal.ProfilingOptions
+@_exported import protocol DatadogInternal.CACurrentMediaTimeProvider
+@_exported import struct DatadogInternal.MediaTimeProvider
 // swiftlint:enable duplicate_imports
 
 extension RUM {
@@ -275,7 +277,7 @@ extension RUM {
         /// RUM session start callback.
         ///
         /// It takes 2 arguments:
-        /// - Newly started session ID.
+        /// - Newly started session ID, matching the `session.id` field in emitted RUM events.
         /// - Flag indicating whether or not the session was discarded due to the sampling rate.
         /// Keep the implementation fast and do not make any assumptions on the thread that runs this callback.
         ///
@@ -333,6 +335,11 @@ extension RUM {
         ///
         /// Default: `false`.
         public var enableTimeseries: Bool
+
+        /// The number of samples collected before a timeseries batch is flushed.
+        ///
+        /// Default: `30`.
+        public var timeseriesBatchSize: Int
 
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
@@ -544,7 +551,7 @@ extension RUM.Configuration {
     ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
     ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
     ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
-    ///   - onSessionStart: RUM session start callback. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback receiving a session ID matching emitted RUM event `session.id`. Default: `nil`.
     ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
     ///   - trackAnonymousUser: Enables the collection of anonymous user id across sessions. Default: `true`.
     ///   - trackMemoryWarnings: Enables the collection of memory warnings. Default: `true`.
@@ -552,6 +559,7 @@ extension RUM.Configuration {
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - enableTimeseries: Enables collection of memory and CPU timeseries events. Default: `false`.
+    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `30`.
     ///   - featureFlags: Experimental feature flags.
     /// 
     /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
@@ -588,6 +596,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
+        timeseriesBatchSize: Int = 30,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -618,6 +627,7 @@ extension RUM.Configuration {
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.enableTimeseries = enableTimeseries
+        self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
     #else
@@ -645,6 +655,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
+        timeseriesBatchSize: Int = 30,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -670,6 +681,7 @@ extension RUM.Configuration {
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
         self.enableTimeseries = enableTimeseries
+        self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
     #endif
@@ -694,12 +706,24 @@ extension RUM.Configuration {
     /// Feature Flag available in RUM
     public enum FeatureFlag: String {
         case none
+        /// When `false`, disables automatic scroll and swipe action tracking
+        /// performed by the SDK via `UIScrollView.delegate` swizzling.
+        /// Defaults to `true`. Has no effect if `uiKitActionsPredicate` is `nil`.
+        ///
+        /// Note: in addition to suppressing `action.type = scroll/swipe` events, it also means these
+        /// gestures will no longer count as candidate "last interactions" for INV
+        /// (Interaction-to-Next-View) attribution.
+        case trackScrollAndSwipeActions
     }
 }
 
 extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
-    public static var defaults: Self { [:] }
+    public static var defaults: Self {
+        [
+            .trackScrollAndSwipeActions: true
+        ]
+    }
 
     /// Accesses the feature flag value.
     ///

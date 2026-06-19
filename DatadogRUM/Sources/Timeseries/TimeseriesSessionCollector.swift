@@ -10,10 +10,12 @@ import DatadogInternal
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)
+    func pause()
+    func resume()
     func stop()
 }
 
-/// Collects memory and CPU samples at 1s intervals during a RUM session and flushes them
+/// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
 /// as `RUMTimeseriesMemoryEvent` / `RUMTimeseriesCpuEvent` batches via the RUM feature scope.
 ///
 /// At session start a coin is flipped: 50% of sessions send full-array `object` schema events,
@@ -24,6 +26,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let compressionSampler: () -> Bool
     private let batchSize: Int
     private let samplingInterval: TimeInterval
+    private let collectInBackground: Bool
     private let featureScope: FeatureScope
     private let totalRAM: Double
 
@@ -34,6 +37,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var useDeltaCompression: Bool = false
     private var timer: DispatchSourceTimer?
+    private var isPaused: Bool = false
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -43,14 +47,17 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 30,
         samplingInterval: TimeInterval = 1,
+        collectInBackground: Bool = false,
         cpuUsageProvider: (() -> Double?)? = nil,
-        compressionSampler: @escaping () -> Bool = { Bool.random() }
+        compressionSampler: @escaping () -> Bool = { Bool.random() },
+        totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory)
     ) {
         self.memoryReader = memoryReader
-        self.batchSize = batchSize
+        self.batchSize = max(2, batchSize)
         self.samplingInterval = samplingInterval
+        self.collectInBackground = collectInBackground
         self.featureScope = featureScope
-        self.totalRAM = Double(ProcessInfo.processInfo.physicalMemory)
+        self.totalRAM = totalRAM
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
         self.compressionSampler = compressionSampler
     }
@@ -80,6 +87,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
         var total = 0.0
         for i in 0..<threadsCount {
+            defer {
+                mach_port_deallocate(mach_task_self_, threadsList[Int(i)])
+            }
             var info = thread_basic_info()
             var infoCount = mach_msg_type_number_t(THREAD_INFO_MAX)
             let kr = withUnsafeMutablePointer(to: &info) {
@@ -96,25 +106,53 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         #endif
     }
 
-    /// Resets state, flips the compression coin, and starts a 1s sampling timer for the new session.
+    /// Resets state, flips the compression coin, and starts the sampling timer for the new session.
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
             }
+            self.flushMemory()
+            self.flushCPU()
             self.sessionID = sessionID
             self.applicationID = applicationID
             self.sessionType = sessionType
             self.useDeltaCompression = self.compressionSampler()
             self.memoryBuffer = []
             self.cpuBuffer = []
+            self.isPaused = false
 
             self.timer?.cancel()
-            let timer = DispatchSource.makeTimerSource(queue: self.queue)
-            timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
-            timer.setEventHandler { [weak self] in self?.sample() }
-            timer.resume()
-            self.timer = timer
+            self.timer = self.makeTimer()
+        }
+    }
+
+    /// Suspends sampling and flushes buffered data. Session state is preserved for `resume()`. Idempotent.
+    /// No-op when `collectInBackground` is `true`.
+    func pause() {
+        queue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+            if self.collectInBackground || self.isPaused || self.timer == nil {
+                return
+            }
+            self.timer?.cancel()
+            self.timer = nil
+            self.isPaused = true
+            self.flushMemory()
+            self.flushCPU()
+        }
+    }
+
+    /// Resumes sampling after `pause()`. Idempotent — only takes effect if currently paused.
+    func resume() {
+        queue.async { [weak self] in
+            guard let self = self, self.isPaused else {
+                return
+            }
+            self.isPaused = false
+            self.timer = self.makeTimer()
         }
     }
 
@@ -126,20 +164,29 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             self.timer?.cancel()
             self.timer = nil
+            self.isPaused = false
             self.flushMemory()
             self.flushCPU()
         }
     }
 
+    private func makeTimer() -> DispatchSourceTimer {
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
+        timer.setEventHandler { [weak self] in self?.sample() }
+        timer.resume()
+        return timer
+    }
+
     // MARK: - Private
 
     private func sample() {
-        let now = Int64(Date().timeIntervalSince1970 * 1_000_000_000)
+        let now = Int64.ddWithNoOverflow(Date().timeIntervalSince1970 * 1_000_000_000)
 
         if let bytes = memoryReader.readVitalData() {
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             let dataPoint = RUMTimeseriesMemoryEvent.Timeseries.Data(
-                dataPoint: .init(memoryMax: bytes, memoryPercent: memoryPercent),
+                dataPoint: .init(memoryFootprint: bytes, memoryPercent: memoryPercent),
                 timestamp: now
             )
             memoryBuffer.append(dataPoint)
@@ -175,32 +222,42 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
+            let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
+            let adjustedBatch = batch.map { sample in
+                RUMTimeseriesMemoryEvent.Timeseries.Data(
+                    dataPoint: sample.dataPoint,
+                    timestamp: sample.timestamp + offsetNs
+                )
+            }
+            let adjustedStart = start + offsetNs
+            let adjustedEnd = end + offsetNs
             let objectEvent = RUMTimeseriesMemoryEvent(
                 dd: .init(),
                 application: .init(id: applicationID),
-                date: start / 1_000_000,
+                date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 service: context.service,
                 session: .init(id: sessionID, type: sessionType),
-                source: .ios,
+                source: .init(rawValue: context.source) ?? .ios,
                 timeseries: .init(
-                    data: batch,
-                    end: end,
+                    data: adjustedBatch,
+                    end: adjustedEnd,
                     id: eventID,
                     schema: .object,
-                    start: start
+                    start: adjustedStart
                 ),
                 version: context.version
             )
 
-            if useDelta,
-               let deltaData = DeltaEncoder.encodeMemory(batch),
-               let eventData = try? JSONEncoder().encode(objectEvent),
-               var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
-               var ts = dict["timeseries"] as? [String: Any] {
-                ts["schema"] = "delta-object"
-                ts["data"] = deltaData
-                dict["timeseries"] = ts
-                writer.write(value: AnyEncodable(dict))
+            if useDelta {
+                if let deltaData = DeltaEncoder.encodeMemory(adjustedBatch),
+                   let eventData = try? JSONEncoder().encode(objectEvent),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["schema"] = "delta-object"
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    writer.write(value: AnyEncodable(dict))
+                }
             } else {
                 writer.write(value: objectEvent)
             }
@@ -222,32 +279,42 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let useDelta = self.useDeltaCompression
 
         featureScope.eventWriteContext { context, writer in
+            let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
+            let adjustedBatch = batch.map { sample in
+                RUMTimeseriesCpuEvent.Timeseries.Data(
+                    dataPoint: sample.dataPoint,
+                    timestamp: sample.timestamp + offsetNs
+                )
+            }
+            let adjustedStart = start + offsetNs
+            let adjustedEnd = end + offsetNs
             let objectEvent = RUMTimeseriesCpuEvent(
                 dd: .init(),
                 application: .init(id: applicationID),
-                date: start / 1_000_000,
+                date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 service: context.service,
                 session: .init(id: sessionID, type: sessionType),
-                source: .ios,
+                source: .init(rawValue: context.source) ?? .ios,
                 timeseries: .init(
-                    data: batch,
-                    end: end,
+                    data: adjustedBatch,
+                    end: adjustedEnd,
                     id: eventID,
                     schema: .object,
-                    start: start
+                    start: adjustedStart
                 ),
                 version: context.version
             )
 
-            if useDelta,
-               let deltaData = DeltaEncoder.encodeCPU(batch),
-               let eventData = try? JSONEncoder().encode(objectEvent),
-               var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
-               var ts = dict["timeseries"] as? [String: Any] {
-                ts["schema"] = "delta-scalar"
-                ts["data"] = deltaData
-                dict["timeseries"] = ts
-                writer.write(value: AnyEncodable(dict))
+            if useDelta {
+                if let deltaData = DeltaEncoder.encodeCPU(adjustedBatch),
+                   let eventData = try? JSONEncoder().encode(objectEvent),
+                   var dict = try? JSONSerialization.jsonObject(with: eventData) as? [String: Any],
+                   var ts = dict["timeseries"] as? [String: Any] {
+                    ts["schema"] = "delta-scalar"
+                    ts["data"] = deltaData
+                    dict["timeseries"] = ts
+                    writer.write(value: AnyEncodable(dict))
+                }
             } else {
                 writer.write(value: objectEvent)
             }

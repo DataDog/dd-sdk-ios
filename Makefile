@@ -388,45 +388,33 @@ endif
 # Define the list of Datadog modules for API surface generation
 DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiling
 
-# Generate api-surface files for Datadog APIs
+# Generate api-surface files for Datadog APIs.
+# Builds and parses each module once, emitting both the Swift and ObjC surfaces in a single run.
 api-surface:
 	@$(ECHO_TITLE) "make api-surface"
-	@echo "Generating api-surface-swift"
+	@echo "Generating api-surface (swift + objc)"
 	@cd tools/api-surface && \
 		swift run api-surface generate \
 		--path ../../ \
-		--language swift \
 		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file ../../$(SWIFT_OUTPUT_PATH)
+		--language swift --output-file ../../$(SWIFT_OUTPUT_PATH) \
+		--language objc --output-file ../../$(OBJC_OUTPUT_PATH)
 
-	@echo "Generating api-surface-objc"
-	@cd tools/api-surface && \
-		swift run api-surface generate \
-		--path ../../ \
-		--language objc \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file ../../$(OBJC_OUTPUT_PATH)
-
-# Verify API surface files for Datadog APIs
+# Verify API surface files for Datadog APIs (Swift + ObjC) in a single run.
 api-surface-verify:
 	@$(ECHO_TITLE) "make api-surface-verify"
-	@echo "Verifying api-surface-swift"
+	@echo "Verifying api-surface (swift + objc)"
 	@cd tools/api-surface && \
 		swift run api-surface verify \
 		--path ../../ \
-		--language swift \
 		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file /tmp/api-surface-swift-generated \
-		../../api-surface-swift
+		--language swift --output-file /tmp/api-surface-swift-generated --reference-file ../../api-surface-swift \
+		--language objc --output-file /tmp/api-surface-objc-generated --reference-file ../../api-surface-objc
 
-	@echo "Verifying api-surface-objc"
-	@cd tools/api-surface && \
-		swift run api-surface verify \
-		--path ../../ \
-		--language objc \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file /tmp/api-surface-objc-generated \
-		../../api-surface-objc
+# Verify feature doc files are up to date
+feature-docs-verify:
+	@$(ECHO_TITLE) "make feature-docs-verify"
+	@./tools/feature-docs-verify.sh
 
 # Builds API documentation using the same process as Swift Package Index.
 spi-docs-build:

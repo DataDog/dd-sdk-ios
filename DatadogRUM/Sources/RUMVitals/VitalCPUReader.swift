@@ -11,8 +11,11 @@ import DatadogInternal
 internal class VitalCPUReader: SamplingBasedVitalReader {
     /// host_cpu_load_info_count is 4 (tested in iOS 14.4)
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
+    private static let cpuTicksCounterRange = UInt64(UInt32.max) + 1
     private var totalInactiveTicks: UInt64 = 0
     private var utilizedTicksWhenResigningActive: UInt64? = nil
+    private var utilizedTicksRolloverOffset: UInt64 = 0
+    private var lastRawUtilizedTicks: UInt32? = nil
     /// Telemetry interface.
     private let telemetry: Telemetry
 
@@ -51,6 +54,26 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     }
 
     private func readUtilizedTicks() -> UInt64? {
+        guard let rawTicks = readRawUtilizedTicks() else {
+            return nil
+        }
+
+        // cpu_ticks is a UInt32 counter; unwrap it so callers can safely subtract monotonic values.
+        if let lastRawUtilizedTicks, rawTicks < lastRawUtilizedTicks {
+            let (newRolloverOffset, didOverflow) = utilizedTicksRolloverOffset.addingReportingOverflow(Self.cpuTicksCounterRange)
+            guard didOverflow == false else {
+                telemetry.error("CPU Vital rollover offset overflowed.")
+                return nil
+            }
+            utilizedTicksRolloverOffset = newRolloverOffset
+        }
+
+        lastRawUtilizedTicks = rawTicks
+        let ticks = UInt64(rawTicks)
+        return utilizedTicksRolloverOffset + ticks
+    }
+
+    internal func readRawUtilizedTicks() -> UInt32? {
         // it must be set to host_cpu_load_info_count_size >= host_cpu_load_info_count
         // implementation: https://github.com/opensource-apple/xnu/blob/master/osfmk/kern/host.c#L425
         var host_cpu_load_info_count_size = mach_msg_type_number_t(Self.host_cpu_load_info_count)
@@ -88,6 +111,6 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
          therefore even at the worst-case, precision isn't lost during this conversion below.
          */
         let userTicks = cpuLoadInfo.cpu_ticks.0
-        return UInt64(userTicks)
+        return userTicks
     }
 }

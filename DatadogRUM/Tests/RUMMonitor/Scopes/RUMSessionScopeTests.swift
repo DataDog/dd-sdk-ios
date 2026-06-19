@@ -781,7 +781,85 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.lastStartedApplicationID, applicationID)
         XCTAssertNotNil(collector.lastStartedSessionID, "Session ID should be set")
         XCTAssertFalse(collector.lastStartedSessionID?.isEmpty ?? true)
-        XCTAssertEqual(collector.lastStartedSessionType, scope.context.sessionID != .nullUUID ? .user : .user)
+        XCTAssertEqual(collector.lastStartedSessionType, .user)
+    }
+
+    func testWhenSessionIsNotSampled_itDoesNotStartTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+
+        // When
+        _ = RUMSessionScope.mockWith(
+            parent: parent,
+            dependencies: .mockWith(samplingRate: 0, timeseriesCollector: collector)
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 0)
+    }
+
+    func testWhenSessionIsCreatedInBackground_itStartsThenPausesTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        let sessionStartTime = Date()
+        var context = self.context
+        context.applicationStateHistory = .mockAppInBackground(since: sessionStartTime)
+
+        // When
+        _ = RUMSessionScope.mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            context: context,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // Then
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.pauseCallCount, 1)
+    }
+
+    func testWhenAppEntersBackground_itPausesTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        let currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: currentTime, event: .didEnterBackground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(collector.pauseCallCount, 1)
+        XCTAssertEqual(collector.resumeCallCount, 0)
+    }
+
+    func testWhenAppEntersForeground_itResumesTimeseriesCollector() {
+        // Given
+        let collector = TimeseriesCollectorSpy()
+        let currentTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: currentTime,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(collector.resumeCallCount, 1)
+        XCTAssertEqual(collector.pauseCallCount, 0)
     }
 }
 
@@ -789,6 +867,8 @@ class RUMSessionScopeTests: XCTestCase {
 
 private class TimeseriesCollectorSpy: TimeseriesCollecting {
     var startCallCount = 0
+    var pauseCallCount = 0
+    var resumeCallCount = 0
     var stopCallCount = 0
     var lastStartedSessionID: String?
     var lastStartedApplicationID: String?
@@ -800,6 +880,9 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
         lastStartedApplicationID = applicationID
         lastStartedSessionType = sessionType
     }
+
+    func pause() { pauseCallCount += 1 }
+    func resume() { resumeCallCount += 1 }
 
     func stop() {
         stopCallCount += 1
