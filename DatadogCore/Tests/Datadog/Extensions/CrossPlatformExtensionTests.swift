@@ -11,11 +11,16 @@ import TestUtilities
 @testable import DatadogCore
 
 class CrossPlatformExtensionTests: XCTestCase {
+    override func tearDown() {
+        CrossPlatformExtension.unsubscribeFromSharedContext()
+        CoreRegistry.unregisterDefault()
+        super.tearDown()
+    }
+
     func testSubscribe_receivesContextUpdates() throws {
         // Given
         let core = DatadogCoreProxy()
         CoreRegistry.register(default: core)
-        defer { CoreRegistry.unregisterDefault() }
 
         @ReadWriteLock
         var lastContext: SharedContext?
@@ -29,7 +34,6 @@ class CrossPlatformExtensionTests: XCTestCase {
         try core.flushAndTearDown()
 
         // Then
-        // Verify we eventually get the user and account info
         XCTAssertEqual(lastContext?.userId, "user-123", "Should have user ID in final context")
         XCTAssertEqual(lastContext?.accountId, "account-456", "Should have account ID in final context")
     }

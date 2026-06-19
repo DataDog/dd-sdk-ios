@@ -53,7 +53,7 @@ internal final class DatadogCore {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus = CoreMessageBus()
 
     /// Registry for Features.
     @ReadWriteLock
@@ -121,7 +121,8 @@ internal final class DatadogCore {
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
-            self?.send(message: .context(context))
+            self?.bus.send(message: context)                       // typed bus (new receivers)
+            self?.send(message: .context(context))       // legacy bus (receivers pending migration)
         }
     }
 
@@ -323,6 +324,8 @@ internal final class DatadogCore {
 }
 
 extension DatadogCore: DatadogCoreProtocol {
+    var messageBus: MessageBus { bus }
+
     /// Registers a Feature instance.
     ///
     /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can

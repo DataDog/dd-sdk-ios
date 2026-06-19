@@ -15,7 +15,7 @@ import DatadogInternal
 @objcMembers
 @_spi(Internal)
 public final class CrossPlatformExtension: NSObject {
-    private static var contextSharingTransformer: ContextSharingTransformer?
+    private static var contextSubscription: MessageBusSubscription?
 
     /// Subscribes to shared context updates.
     ///
@@ -26,21 +26,20 @@ public final class CrossPlatformExtension: NSObject {
     /// - Parameter toSharedContext: A closure that receives `SharedContext` updates. Called on context changes.
     @objc
     public static func subscribe(toSharedContext: @escaping (SharedContext?) -> Void) {
-        if Self.contextSharingTransformer == nil {
-            let core = CoreRegistry.default
-            let contextSharingTransformer = ContextSharingTransformer()
-            try? core.register(feature: ContextSharingFeature(messageReceiver: contextSharingTransformer))
-            Self.contextSharingTransformer = contextSharingTransformer
+        guard contextSubscription == nil else {
+            return
         }
-        contextSharingTransformer?.publish(to: toSharedContext)
+        contextSubscription = CoreRegistry.default.messageBus.subscribe { (context: DatadogContext, _) in
+            toSharedContext(SharedContext(datadogContext: context))
+        }
     }
 
-    /// Drops the subscription to `SharedContext`, and removes the static refrence.
+    /// Drops the subscription to `SharedContext`.
     ///
     /// Note: that it doesn't remove the registered feature.
     @objc
     public static func unsubscribeFromSharedContext() {
-        contextSharingTransformer?.cancel()
-        contextSharingTransformer = nil
+        contextSubscription.map { CoreRegistry.default.messageBus.unsubscribe($0) }
+        contextSubscription = nil
     }
 }
