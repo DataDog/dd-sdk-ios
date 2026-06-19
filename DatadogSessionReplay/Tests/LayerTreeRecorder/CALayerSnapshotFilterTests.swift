@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import DatadogSDKTesting
 import Testing
 
 @testable import DatadogSessionReplay

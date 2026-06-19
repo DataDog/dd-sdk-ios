@@ -7,6 +7,7 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import DatadogSDKTesting
 import Testing
 import UIKit
 

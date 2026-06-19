@@ -6,6 +6,7 @@
 
 #if !os(watchOS)
 
+import DatadogSDKTesting
 import Testing
 import UIKit
 import TestUtilities

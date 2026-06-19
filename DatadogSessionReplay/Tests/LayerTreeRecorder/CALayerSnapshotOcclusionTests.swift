@@ -7,6 +7,7 @@
 #if os(iOS)
 import CoreGraphics
 import QuartzCore
+import DatadogSDKTesting
 import Testing
 import UIKit
 

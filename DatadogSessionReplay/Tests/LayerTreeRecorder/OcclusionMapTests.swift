@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import CoreGraphics
+import DatadogSDKTesting
 import Testing
 
 @testable import DatadogSessionReplay

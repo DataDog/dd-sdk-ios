@@ -8,6 +8,7 @@
 import ObjectiveC
 import QuartzCore
 import TestUtilities
+import DatadogSDKTesting
 import Testing
 import UIKit
 
