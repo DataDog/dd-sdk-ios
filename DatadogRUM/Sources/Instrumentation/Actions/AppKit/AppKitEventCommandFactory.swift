@@ -150,8 +150,6 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
                 return parent is DDTableViewCell
                 || parent is DDCollectionViewCell
                 || parent is DDControl
-                || parent.isUIAlertActionView
-                || parent.isUIAlertTextField
             }
             return bestParent // best parent or `nil`
         }
