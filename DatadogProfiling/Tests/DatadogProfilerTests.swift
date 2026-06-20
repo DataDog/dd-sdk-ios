@@ -75,6 +75,29 @@ final class DatadogProfilerTests: XCTestCase {
         XCTAssertFalse(result, "Continuous profiler and AppLaunch profiler consume app launch vitals")
     }
 
+    func testReceiveTTFDMessage_afterApplicationLaunchVital() {
+        // Given
+        let profiler = continuousProfiler()
+        let launchVital: Vital = .mockWith(stepType: nil)
+
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: launchVital)),
+            from: core
+        )
+
+        // When
+        let result = profiler.receive(
+            message: .payload(OperationMessage(
+                attributes: mockRandomAttributes(),
+                operation: .mockWith(stepType: nil, duration: 2_000_000_000)
+            )),
+            from: core
+        )
+
+        // Then
+        XCTAssertTrue(result, "Operation messages should be consumed by continuous profiler after app launch")
+    }
+
     func testReceiveLongTask() {
         // Given
         let profiler = continuousProfiler()
@@ -243,6 +266,44 @@ extension DatadogProfilerTests {
         let rumEvents = try typedRUMEvents(from: metadata)
         let vitalIDs = eventIDs(ofType: "vital", in: rumEvents)
         XCTAssertTrue(vitalIDs.contains(startOperation.id))
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testApplicationDidEnterBackground_includesTTFDVitalFromOperationMessageInProfile() throws {
+        // Given
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        let ttfdVital = Vital.mockWith(
+            id: "ttfd-id",
+            name: "time_to_full_display",
+            operationKey: nil,
+            stepType: nil,
+            date: dateProvider.now,
+            duration: 2_000_000_000
+        )
+
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: ttfdVital)), from: core)
+
+        // When
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        waitForProfileWrite {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        let vitalIDs = eventIDs(ofType: "vital", in: rumEvents)
+        XCTAssertEqual(vitalIDs, ["ttfd-id"])
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attributeVitalIDs = try XCTUnwrap(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String])
+        XCTAssertEqual(attributeVitalIDs, ["ttfd-id"])
         withExtendedLifetime(profiler) {}
     }
 
