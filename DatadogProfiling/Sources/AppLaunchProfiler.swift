@@ -108,7 +108,10 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             self.write(profile: profile, rumVitals: Array(self.currentRUMVitals.values))
             return false
         } else if case let .payload(message as OperationMessage) = message {
-            if message.operation.stepType == .start {
+            // Capture vitals like TTFD that are not operation steps.
+            if message.operation.stepType == nil {
+                currentRUMVitals[message.operation.key] = message.operation
+            } else if message.operation.stepType == .start {
                 currentRUMVitals[message.operation.key] = message.operation
             } else if var startVital = currentRUMVitals[message.operation.key] {
                 // Add duration to vital to help Profiling backend label correctly the samples of this vital

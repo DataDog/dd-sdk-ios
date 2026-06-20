@@ -63,8 +63,22 @@ private extension RUMAppLaunchManager {
 
         self.timeToInitialDisplay = ttid
         let ttidVitalId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
+        var ttfdVitalId: String?
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+
+        if let timeToFullDisplay, let timeToInitialDisplay {
+            let ttfdVital = Vital(
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
+                date: context.launchInfo.processLaunchDate,
+                serverTimeOffset: context.serverTimeOffset,
+                duration: max(timeToInitialDisplay, timeToFullDisplay).dd.toInt64Nanoseconds
+            )
+            ttfdVitalId = ttfdVital.id
+
+            sendTTFDMessageToProfiler(vital: ttfdVital)
+        }
 
         sendTTIDMessageToProfiler(
             vital: .init(
@@ -73,8 +87,7 @@ private extension RUMAppLaunchManager {
                 date: context.launchInfo.processLaunchDate,
                 serverTimeOffset: context.serverTimeOffset,
                 duration: ttid.dd.toInt64Nanoseconds
-            ),
-            activeView: activeView
+            )
         )
 
         dependencies.appStateManager.previousAppStateInfo { [weak self] previousAppStateInfo in
@@ -105,14 +118,15 @@ private extension RUMAppLaunchManager {
                 if let timeToFullDisplay {
                     let ttfd = max(ttid, timeToFullDisplay)
                     self.writeVitalEvent(
-                        vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                        vitalId: ttfdVitalId ?? dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
                         duration: Double(ttfd.dd.toInt64Nanoseconds),
                         appLaunchMetric: .ttfd,
                         startupType: startupType,
                         attributes: attributes,
                         context: context,
                         writer: writer,
-                        activeView: activeView
+                        activeView: activeView,
+                        profiling: profiling
                     )
 
                     telemetryController.trackTTFD(duration: timeToFullDisplay.dd.toInt64Nanoseconds)
@@ -224,10 +238,8 @@ private extension RUMAppLaunchManager {
         telemetryController.track(ttidEvent: vitalEvent, context: context)
     }
 
-    func sendTTIDMessageToProfiler(vital: Vital, activeView: RUMViewScope?) {
-        var contextAttributes: [String: Encodable] = parent.rumContextAttributes
-        contextAttributes[RUMCoreContext.IDs.vitalID] = vital.id
-
+    func sendTTIDMessageToProfiler(vital: Vital) {
+        let contextAttributes: [String: Encodable] = parent.rumContextAttributes
         dependencies.featureScope.send(message: .payload(TTIDMessage(attributes: contextAttributes, ttid: vital)))
     }
 }
@@ -245,16 +257,27 @@ private extension RUMAppLaunchManager {
             let attributes = command.globalAttributes
                 .merging(command.attributes) { $1 }
             let ttfd = max(timeToInitialDisplay, timeToFullDisplay)
+            let ttfdVital = Vital(
+                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                name: RUMVitalAppLaunchEvent.Vital.AppLaunchMetric.ttfd.name,
+                date: context.launchInfo.processLaunchDate,
+                serverTimeOffset: context.serverTimeOffset,
+                duration: ttfd.dd.toInt64Nanoseconds
+            )
+            let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+
+            sendTTFDMessageToProfiler(vital: ttfdVital)
 
             self.writeVitalEvent(
-                vitalId: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                vitalId: ttfdVital.id,
                 duration: Double(ttfd.dd.toInt64Nanoseconds),
                 appLaunchMetric: .ttfd,
                 startupType: startupType,
                 attributes: attributes,
                 context: context,
                 writer: writer,
-                activeView: activeView
+                activeView: activeView,
+                profiling: profiling
             )
         }
     }
@@ -273,6 +296,11 @@ private extension RUMAppLaunchManager {
         }
 
         return true
+    }
+
+    func sendTTFDMessageToProfiler(vital: Vital) {
+        let contextAttributes: [String: Encodable] = parent.rumContextAttributes
+        dependencies.featureScope.send(message: .payload(OperationMessage(attributes: contextAttributes, operation: vital)))
     }
 }
 
