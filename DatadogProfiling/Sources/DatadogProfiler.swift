@@ -298,11 +298,13 @@ private extension DatadogProfiler {
             }
             attributes = message.attributes
 
-            switch message.operation.stepType {
-            case .start:
+            // Capture vitals like TTFD that are not operation steps.
+            if message.operation.stepType == nil {
+                currentRUMVitals[message.operation.key] = message.operation
+            } else if message.operation.stepType == .start {
                 currentRUMVitals[message.operation.key] = message.operation
                 updateProfilerState(canProfile: shouldKeepProfilerRunning())
-            case .end:
+            } else if message.operation.stepType == .end {
                 if var startVital = currentRUMVitals[message.operation.key] {
                     // Add duration to vital to help Profiling backend label correctly the samples of this vital
                     let duration = message.operation.date.timeIntervalSince(startVital.date)
@@ -316,7 +318,6 @@ private extension DatadogProfiler {
                         fireTimer(after: fireInterval)
                     }
                 }
-            default: break
             }
         }
     }

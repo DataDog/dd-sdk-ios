@@ -403,6 +403,45 @@ final class AppLaunchProfilerTests: XCTestCase {
         let vitalIDs = try eventIDs(ofType: "vital", from: metadata)
         XCTAssertEqual(vitalIDs.count, 2)
         XCTAssertTrue(vitalIDs.contains("start-id"))
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attributeVitalIDs = try XCTUnwrap(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String])
+        XCTAssertTrue(attributeVitalIDs.contains("start-id"))
+    }
+
+    func testApplicationLaunchWithTTFDVital_includesTTIDAndTTFDInProfile() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let profiler = appLaunchProfiler(core: core, isContinuousProfiling: false)
+        let ttidVital = Vital.mockWith(
+            id: "ttid-id",
+            name: "time_to_initial_display",
+            operationKey: nil,
+            stepType: nil,
+            duration: 1_000_000_000
+        )
+        let ttfdVital = Vital.mockWith(
+            id: "ttfd-id",
+            name: "time_to_full_display",
+            operationKey: nil,
+            stepType: nil,
+            duration: 2_000_000_000
+        )
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        // When
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: ttfdVital)), from: core)
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: ttidVital)), from: core)
+
+        // Then
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let vitalIDs = try eventIDs(ofType: "vital", from: metadata)
+        XCTAssertEqual(Set(vitalIDs), Set(["ttid-id", "ttfd-id"]))
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        let attributeVitalIDs = try XCTUnwrap(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String])
+        XCTAssertEqual(Set(attributeVitalIDs), Set(["ttid-id", "ttfd-id"]))
     }
 
     func testApplicationLaunchWithOrphanedEndVital_excludesOrphanedFromProfile() throws {
