@@ -857,6 +857,7 @@
 		D218B0462D072C8400E3F82C /* SessionReplayTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */; };
 		D218B0482D072CF300E3F82C /* SessionReplayTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */; };
 		D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */; };
+		AA00CC001111111111110004 /* FlutterMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00CC001111111111110003 /* FlutterMessage.swift */; };
 		D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */; };
 		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
@@ -1206,6 +1207,7 @@
 		D2C1A52829C4C8CB00946C31 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		D2C5D5282B83FD5300B63F36 /* WebViewMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AE740F2AD6EE4E008DB9BB /* WebViewMessageTests.swift */; };
 		D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */; };
+		AA00CC001111111111110002 /* FlutterRecordReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00CC001111111111110001 /* FlutterRecordReceiver.swift */; };
 		D2C5D52D2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */; };
 		D2C7E3AB28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */; };
 		D2D0E1F22E3CE59700BA4113 /* mach_profiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E1F12E3CE59700BA4113 /* mach_profiler.cpp */; };
@@ -2734,6 +2736,7 @@
 		D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayTelemetry.swift; sourceTree = "<group>"; };
 		D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayTelemetryTests.swift; sourceTree = "<group>"; };
 		D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewMessage.swift; sourceTree = "<group>"; };
+		AA00CC001111111111110003 /* FlutterMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterMessage.swift; sourceTree = "<group>"; };
 		D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
@@ -2949,6 +2952,7 @@
 		D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
 		D2C179E02DD2388800556F68 /* TraceCoreContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceCoreContext.swift; sourceTree = "<group>"; };
 		D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewRecordReceiver.swift; sourceTree = "<group>"; };
+		AA00CC001111111111110001 /* FlutterRecordReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlutterRecordReceiver.swift; sourceTree = "<group>"; };
 		D2C5D52C2B84F6D800B63F36 /* WebViewRecordReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewRecordReceiverTests.swift; sourceTree = "<group>"; };
 		D2C5D52F2B84F71200B63F36 /* WebRecordIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebRecordIntegrationTests.swift; sourceTree = "<group>"; };
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
@@ -4075,6 +4079,7 @@
 				7D0DE1D82F8B4F7FA24BD2C9 /* RecordingController.swift */,
 				61054E3C2A6EE10A00AAA894 /* SessionReplayFeature.swift */,
 				61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */,
+				AA00CC001111111111110001 /* FlutterRecordReceiver.swift */,
 				D2C5D52A2B84F6AB00B63F36 /* WebViewRecordReceiver.swift */,
 				61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */,
 				D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */,
@@ -5054,6 +5059,7 @@
 				6167E6E02B81204B00C3CA2D /* CrashReporting */,
 				619F5CEB2BF5089B004BFE70 /* RUM */,
 				D2EA0F442C0E1A8700CB20F8 /* SessionReplay */,
+				AA00CC001111111111110005 /* FlutterTracking */,
 				D25C834D2B88A261008E73B1 /* WebViewTracking */,
 			);
 			path = Models;
@@ -6320,6 +6326,14 @@
 				D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */,
 			);
 			path = WebViewTracking;
+			sourceTree = "<group>";
+		};
+		AA00CC001111111111110005 /* FlutterTracking */ = {
+			isa = PBXGroup;
+			children = (
+				AA00CC001111111111110003 /* FlutterMessage.swift */,
+			);
+			path = FlutterTracking;
 			sourceTree = "<group>";
 		};
 		D25EE93529C4C3C300CE3839 /* DatadogTrace */ = {
@@ -8197,6 +8211,7 @@
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
+				AA00CC001111111111110002 /* FlutterRecordReceiver.swift in Sources */,
 				D2C5D52B2B84F6AB00B63F36 /* WebViewRecordReceiver.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
 				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
@@ -8567,6 +8582,7 @@
 				D23039E3298D5236001A1FA3 /* BatteryStatus.swift in Sources */,
 				D2E8A8E82DCBBA5100CF7C63 /* RUMCoreContext.swift in Sources */,
 				D2EBEE2A29BA160F00B15732 /* TracingHTTPHeaders.swift in Sources */,
+				AA00CC001111111111110004 /* FlutterMessage.swift in Sources */,
 				D21A94F22B8397CA00AC4256 /* WebViewMessage.swift in Sources */,
 				D23039EC298D5236001A1FA3 /* LaunchInfo.swift in Sources */,
 				6175C3512BCE66DB006FAAB0 /* TraceContext.swift in Sources */,
