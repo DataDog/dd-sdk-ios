@@ -80,7 +80,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
 
         guard let targetView = bestActionTargetFor(view: view) else {
-            return nil // Tapped view is not eligible for producing RUM Action
+            return nil // Clicked view is not eligible for producing RUM Action
         }
 
         guard let action = appKitPredicate.rumAction(targetView: targetView) else {
@@ -100,11 +100,6 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         guard let appKitPredicate else {
             return nil
         }
-
-        // TODO: RUM-16659 How to check this?
-//        guard menuItem.isSafeForPrivacy else {
-//            return nil // no valid view
-//        }
 
         guard let action = appKitPredicate.rumAction(targetMenuItem: menuItem) else {
             return nil
@@ -144,8 +139,8 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         } else {
             // If the `view` is not an interactive element, check if it's a child of a known view hierarchy
             // which can be considered as interactive.
-            // For now this includes checking if the interacted view is an (in-)direct child of the `DDTableViewCell`
-            // or `DDCollectionViewCell`, which is a common pattern when building list-based navigation on iOS.
+            // This includes checking if the interacted view is an (in-)direct child of the `NSTableCellView`
+            // or `NSCollectionViewItem`.
             let bestParent = view.findInParentHierarchy { parent in
                 return parent is DDTableViewCell
                 || parent is DDCollectionViewCell
