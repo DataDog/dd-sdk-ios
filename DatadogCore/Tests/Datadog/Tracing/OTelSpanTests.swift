@@ -86,7 +86,7 @@ final class OTelSpanTests: XCTestCase {
 
     func testAddLink() throws {
         let core = DatadogCoreProxy()
-        defer { XCTAssertNoThrow(try core.flushAndTearDown())}
+        defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
 
         Trace.enable(in: core)
 
@@ -125,8 +125,8 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(links.count, 1)
         let firstLink = try XCTUnwrap(links.first)
 
-        XCTAssertEqual(firstLink["trace_id"]?.value as? String, try span2Matcher.traceID()?.toString(representation: .hexadecimal))
-        XCTAssertEqual(firstLink["span_id"]?.value as? String, try span2Matcher.spanID()?.toString(representation: .hexadecimal))
+        XCTAssertEqual(firstLink["trace_id"]?.value as? String, try span2Matcher.traceID()?.toString(representation: .hexadecimal32Chars))
+        XCTAssertEqual(firstLink["span_id"]?.value as? String, try span2Matcher.spanID()?.toString(representation: .hexadecimal16Chars))
 
         let attributes = try XCTUnwrap(firstLink["attributes"]?.value as? [String: String])
         XCTAssertEqual(attributes["weight"], "42")
