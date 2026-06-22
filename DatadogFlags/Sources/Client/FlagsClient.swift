@@ -248,11 +248,15 @@ extension FlagsClient: FlagsClientProtocol {
             return FlagDetails(key: key, value: defaultValue, error: .typeMismatch)
         }
 
+        var metadata: [String: AnyValue] = [:]
+        metadata["allocationKey"] = .string(flagAssignment.allocationKey)
+
         let details = FlagDetails(
             key: key,
             value: value,
             variant: flagAssignment.variationKey,
-            reason: flagAssignment.reason
+            reason: flagAssignment.reason,
+            metadata: metadata
         )
 
         trackEvaluation(key: key, assignment: flagAssignment, context: context)

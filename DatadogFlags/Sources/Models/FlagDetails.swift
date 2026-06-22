@@ -4,8 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
-
 /// An error tha occurs during feature flag evaluation.
 ///
 /// Indicates why a flag evaluation may have failed or returned a default value.
@@ -71,6 +69,11 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     /// value is from a successful evaluation or a fallback to the default value.
     public var error: FlagEvaluationError?
 
+    /// Additional metadata about the flag evaluation.
+    ///
+    /// Contains fields from the flag assignment such as `allocationKey`.
+    public var metadata: [String: AnyValue]
+
     /// Creates detailed flag evaluation information.
     ///
     /// - Parameters:
@@ -79,17 +82,20 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     ///   - variant: The variant key served, if any.
     ///   - reason: The evaluation reason, if available.
     ///   - error: Any error that occurred during evaluation.
+    ///   - metadata: Additional metadata about the evaluation, such as `allocationKey`.
     public init(
         key: String,
         value: T,
         variant: String? = nil,
         reason: String? = nil,
-        error: FlagEvaluationError? = nil
+        error: FlagEvaluationError? = nil,
+        metadata: [String: AnyValue] = [:]
     ) {
         self.key = key
         self.value = value
         self.variant = variant
         self.reason = reason
         self.error = error
+        self.metadata = metadata
     }
 }
