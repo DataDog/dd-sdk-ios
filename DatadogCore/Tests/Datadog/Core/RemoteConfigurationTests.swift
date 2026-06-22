@@ -492,47 +492,47 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(provider) {}
     }
 
-    func test304ResponseReturnsPersistedConfiguration() throws {
+    func test304ResponsePreservesCache() throws {
         // Given — pre-populate persisted configuration
         let existing = remoteConfigurationData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
-        let requestExpectation = expectation(description: "request completes")
-        let completionExpectation = expectation(description: "cached remote configuration is returned")
-        completionExpectation.expectedFulfillmentCount = 2
 
+        let requestExpectation = expectation(description: "CDN request is sent")
         MockURLProtocol.requestHandler = { request in
             requestExpectation.fulfill()
             return (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil as Data?)
         }
+
+        // completion is called once synchronously from cache; NOT again after CDN 304
+        let cacheExpectation = expectation(description: "cached config returned once from start")
         let rc = makeProvider(start: false)
         rc.start { result in
-            if case .success(let remoteConfiguration) = result,
-               remoteConfiguration.rum?.applicationId == "existing-application-id" {
-                completionExpectation.fulfill()
+            if case .success(let config) = result, config.rum?.applicationId == "existing-application-id" {
+                cacheExpectation.fulfill()
             }
         }
 
-        wait(for: [requestExpectation], timeout: 2)
-        wait(for: [completionExpectation], timeout: 2)
-
+        wait(for: [requestExpectation, cacheExpectation], timeout: 2)
         XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "File must be unchanged after 304")
         withExtendedLifetime(rc) {}
     }
 
-    func test304ResponseWithoutCacheReturnsHTTPError() {
+    func test304ResponseWithoutCacheDoesNotCallCompletion() {
+        // Given — no persisted configuration, CDN returns 304 (unusual server-side scenario)
         let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 304)), start: false)
 
-        let expectation = expectation(description: "sync returns http error")
-        rc.start { result in
-            if case .failure(.httpError(304)) = result {
-                expectation.fulfill()
-            }
+        // No cache → no synchronous completion. CDN 304 → no completion either.
+        let unexpectedCompletion = expectation(description: "completion should not be called")
+        unexpectedCompletion.isInverted = true
+        rc.start { _ in
+            unexpectedCompletion.fulfill()
         }
-        waitForExpectations(timeout: 2)
+        waitForExpectations(timeout: 0.5)
 
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        withExtendedLifetime(rc) {}
     }
 
 #if canImport(UIKit)
