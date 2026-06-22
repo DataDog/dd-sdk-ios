@@ -85,7 +85,7 @@ class CrashContextCoreProviderTests: XCTestCase {
         XCTAssertNotNil(provider.currentCrashContext?.lastRUMViewEvent)
 
         // When
-        core.messageBus.send(message: RUMViewReset())
+        core.messageBus.send(message: RUMViewResetMessage())
         provider.flush()
 
         // Then

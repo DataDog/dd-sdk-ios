@@ -106,7 +106,7 @@ extension CrashContextCoreProvider {
             bus.subscribe { [weak self] (message: RUMViewEvent, _) in
                 self?.queue.async { self?.viewEvent = message }
             },
-            bus.subscribe { [weak self] (_: RUMViewReset, _) in
+            bus.subscribe { [weak self] (_: RUMViewResetMessage, _) in
                 self?.queue.async { self?.viewEvent = nil }
             },
             bus.subscribe { [weak self] (message: RUMSessionState, _) in

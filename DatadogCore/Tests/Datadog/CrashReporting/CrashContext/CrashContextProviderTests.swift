@@ -129,7 +129,7 @@ class CrashContextProviderTests: XCTestCase {
         // When
         core.messageBus.send(message: sdkContext) // receive initial SDK context
         core.messageBus.send(message: rumView)
-        core.messageBus.send(message: RUMViewReset())
+        core.messageBus.send(message: RUMViewResetMessage())
 
         // Then
         provider.flush()
@@ -150,7 +150,7 @@ class CrashContextProviderTests: XCTestCase {
         // When
         core.messageBus.send(message: DatadogContext.mockRandom()) // receive initial SDK context
         core.messageBus.send(message: rumView)
-        core.messageBus.send(message: RUMViewReset())
+        core.messageBus.send(message: RUMViewResetMessage())
         core.messageBus.send(message: nextSDKContext)
 
         // Then
@@ -306,7 +306,7 @@ class CrashContextProviderTests: XCTestCase {
                 { _ = localProvider.currentCrashContext },
                 { localCore.messageBus.send(message: DatadogContext.mockRandom()) },
                 { localCore.messageBus.send(message: viewEvent) },
-                { localCore.messageBus.send(message: RUMViewReset()) },
+                { localCore.messageBus.send(message: RUMViewResetMessage()) },
                 { localCore.messageBus.send(message: sessionState) },
             ],
             iterations: 50
