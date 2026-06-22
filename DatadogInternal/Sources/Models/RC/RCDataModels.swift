@@ -8,1070 +8,286 @@
 
 // swiftlint:disable all
 
-/// RUM Browser & Mobile SDKs Remote Configuration properties
+/// iOS RUM SDK Remote Configuration
 public struct RemoteConfiguration: Codable {
-    /// RUM feature Remote Configuration properties
+    public let platform: String = "ios"
+
+    public let profiling: Profiling?
+
     public let rum: RUM?
 
+    public let sessionReplay: SessionReplay?
+
+    public let trace: Trace?
+
     public enum CodingKeys: String, CodingKey {
+        case platform = "platform"
+        case profiling = "profiling"
         case rum = "rum"
+        case sessionReplay = "sessionReplay"
+        case trace = "trace"
     }
 
-    /// RUM Browser & Mobile SDKs Remote Configuration properties
+    /// iOS RUM SDK Remote Configuration
     ///
     /// - Parameters:
-    ///   - rum: RUM feature Remote Configuration properties
+    ///   - profiling:
+    ///   - rum:
+    ///   - sessionReplay:
+    ///   - trace:
     public init(
-        rum: RUM? = nil
+        profiling: Profiling? = nil,
+        rum: RUM? = nil,
+        sessionReplay: SessionReplay? = nil,
+        trace: Trace? = nil
     ) {
+        self.profiling = profiling
         self.rum = rum
+        self.sessionReplay = sessionReplay
+        self.trace = trace
     }
 
-    /// RUM feature Remote Configuration properties
-    public struct RUM: Codable {
-        /// URLs where tracing is allowed
-        public let allowedTracingUrls: [AllowedTracingUrls]?
+    public struct Profiling: Codable {
+        public let applicationLaunchSampleRate: Double?
 
-        /// Origins where tracking is allowed
-        public let allowedTrackingOrigins: [AllowedTrackingOrigins]?
-
-        /// UUID of the application
-        public let applicationId: String
-
-        /// Function to define global context
-        public let context: [Context]?
-
-        /// Session replay default privacy level
-        public let defaultPrivacyLevel: String?
-
-        /// Privacy control for action name
-        public let enablePrivacyForActionName: Bool?
-
-        /// The environment for this application
-        public let env: String?
-
-        /// The service name for this application
-        public let service: String?
-
-        /// The percentage of sessions with RUM & Session Replay pricing tracked
-        public let sessionReplaySampleRate: Double?
-
-        /// The percentage of sessions tracked
-        public let sessionSampleRate: Double?
-
-        /// The percentage of traces sampled
-        public let traceSampleRate: Double?
-
-        /// Whether to track sessions across subdomains
-        public let trackSessionAcrossSubdomains: Bool?
-
-        /// Function to define user information
-        public let user: [User]?
-
-        /// The version for this application
-        public let version: Version?
+        public let continuousSampleRate: Double?
 
         public enum CodingKeys: String, CodingKey {
-            case allowedTracingUrls = "allowedTracingUrls"
-            case allowedTrackingOrigins = "allowedTrackingOrigins"
-            case applicationId = "applicationId"
-            case context = "context"
-            case defaultPrivacyLevel = "defaultPrivacyLevel"
-            case enablePrivacyForActionName = "enablePrivacyForActionName"
-            case env = "env"
-            case service = "service"
-            case sessionReplaySampleRate = "sessionReplaySampleRate"
-            case sessionSampleRate = "sessionSampleRate"
-            case traceSampleRate = "traceSampleRate"
-            case trackSessionAcrossSubdomains = "trackSessionAcrossSubdomains"
-            case user = "user"
-            case version = "version"
+            case applicationLaunchSampleRate = "applicationLaunchSampleRate"
+            case continuousSampleRate = "continuousSampleRate"
         }
 
-        /// RUM feature Remote Configuration properties
         ///
         /// - Parameters:
-        ///   - allowedTracingUrls: URLs where tracing is allowed
-        ///   - allowedTrackingOrigins: Origins where tracking is allowed
-        ///   - applicationId: UUID of the application
-        ///   - context: Function to define global context
-        ///   - defaultPrivacyLevel: Session replay default privacy level
-        ///   - enablePrivacyForActionName: Privacy control for action name
-        ///   - env: The environment for this application
-        ///   - service: The service name for this application
-        ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
-        ///   - sessionSampleRate: The percentage of sessions tracked
-        ///   - traceSampleRate: The percentage of traces sampled
-        ///   - trackSessionAcrossSubdomains: Whether to track sessions across subdomains
-        ///   - user: Function to define user information
-        ///   - version: The version for this application
+        ///   - applicationLaunchSampleRate:
+        ///   - continuousSampleRate:
         public init(
-            allowedTracingUrls: [AllowedTracingUrls]? = nil,
-            allowedTrackingOrigins: [AllowedTrackingOrigins]? = nil,
-            applicationId: String,
-            context: [Context]? = nil,
-            defaultPrivacyLevel: String? = nil,
-            enablePrivacyForActionName: Bool? = nil,
-            env: String? = nil,
-            service: String? = nil,
-            sessionReplaySampleRate: Double? = nil,
-            sessionSampleRate: Double? = nil,
-            traceSampleRate: Double? = nil,
-            trackSessionAcrossSubdomains: Bool? = nil,
-            user: [User]? = nil,
-            version: Version? = nil
+            applicationLaunchSampleRate: Double? = nil,
+            continuousSampleRate: Double? = nil
         ) {
-            self.allowedTracingUrls = allowedTracingUrls
-            self.allowedTrackingOrigins = allowedTrackingOrigins
+            self.applicationLaunchSampleRate = applicationLaunchSampleRate
+            self.continuousSampleRate = continuousSampleRate
+        }
+    }
+
+    public struct RUM: Codable {
+        /// Minimum main-thread freeze duration to report as an app hang. Omit to disable.
+        public let appHangThresholdMs: Double?
+
+        /// UUID of the RUM application
+        public let applicationId: String
+
+        public let env: String?
+
+        /// Minimum main-thread task duration to report as a long task
+        public let longTaskThresholdMs: Double?
+
+        public let service: String?
+
+        public let telemetrySampleRate: Double?
+
+        public let trackAnonymousUser: Bool?
+
+        public let trackBackgroundEvents: Bool?
+
+        public let trackFrustrations: Bool?
+
+        public let trackMemoryWarnings: Bool?
+
+        public let trackResources: Bool?
+
+        public let trackSlowFrames: Bool?
+
+        public let trackUserInteractions: Bool?
+
+        public let trackWatchdogTerminations: Bool?
+
+        public let vitalsUpdateFrequency: VitalsUpdateFrequency?
+
+        public enum CodingKeys: String, CodingKey {
+            case appHangThresholdMs = "appHangThresholdMs"
+            case applicationId = "applicationId"
+            case env = "env"
+            case longTaskThresholdMs = "longTaskThresholdMs"
+            case service = "service"
+            case telemetrySampleRate = "telemetrySampleRate"
+            case trackAnonymousUser = "trackAnonymousUser"
+            case trackBackgroundEvents = "trackBackgroundEvents"
+            case trackFrustrations = "trackFrustrations"
+            case trackMemoryWarnings = "trackMemoryWarnings"
+            case trackResources = "trackResources"
+            case trackSlowFrames = "trackSlowFrames"
+            case trackUserInteractions = "trackUserInteractions"
+            case trackWatchdogTerminations = "trackWatchdogTerminations"
+            case vitalsUpdateFrequency = "vitalsUpdateFrequency"
+        }
+
+        ///
+        /// - Parameters:
+        ///   - appHangThresholdMs: Minimum main-thread freeze duration to report as an app hang. Omit to disable.
+        ///   - applicationId: UUID of the RUM application
+        ///   - env:
+        ///   - longTaskThresholdMs: Minimum main-thread task duration to report as a long task
+        ///   - service:
+        ///   - telemetrySampleRate:
+        ///   - trackAnonymousUser:
+        ///   - trackBackgroundEvents:
+        ///   - trackFrustrations:
+        ///   - trackMemoryWarnings:
+        ///   - trackResources:
+        ///   - trackSlowFrames:
+        ///   - trackUserInteractions:
+        ///   - trackWatchdogTerminations:
+        ///   - vitalsUpdateFrequency:
+        public init(
+            appHangThresholdMs: Double? = nil,
+            applicationId: String,
+            env: String? = nil,
+            longTaskThresholdMs: Double? = nil,
+            service: String? = nil,
+            telemetrySampleRate: Double? = nil,
+            trackAnonymousUser: Bool? = nil,
+            trackBackgroundEvents: Bool? = nil,
+            trackFrustrations: Bool? = nil,
+            trackMemoryWarnings: Bool? = nil,
+            trackResources: Bool? = nil,
+            trackSlowFrames: Bool? = nil,
+            trackUserInteractions: Bool? = nil,
+            trackWatchdogTerminations: Bool? = nil,
+            vitalsUpdateFrequency: VitalsUpdateFrequency? = nil
+        ) {
+            self.appHangThresholdMs = appHangThresholdMs
             self.applicationId = applicationId
-            self.context = context
-            self.defaultPrivacyLevel = defaultPrivacyLevel
-            self.enablePrivacyForActionName = enablePrivacyForActionName
             self.env = env
+            self.longTaskThresholdMs = longTaskThresholdMs
             self.service = service
-            self.sessionReplaySampleRate = sessionReplaySampleRate
-            self.sessionSampleRate = sessionSampleRate
-            self.traceSampleRate = traceSampleRate
-            self.trackSessionAcrossSubdomains = trackSessionAcrossSubdomains
-            self.user = user
-            self.version = version
+            self.telemetrySampleRate = telemetrySampleRate
+            self.trackAnonymousUser = trackAnonymousUser
+            self.trackBackgroundEvents = trackBackgroundEvents
+            self.trackFrustrations = trackFrustrations
+            self.trackMemoryWarnings = trackMemoryWarnings
+            self.trackResources = trackResources
+            self.trackSlowFrames = trackSlowFrames
+            self.trackUserInteractions = trackUserInteractions
+            self.trackWatchdogTerminations = trackWatchdogTerminations
+            self.vitalsUpdateFrequency = vitalsUpdateFrequency
         }
 
-        public struct AllowedTracingUrls: Codable {
-            public let match: Match
+        public enum VitalsUpdateFrequency: String, Codable {
+            case frequent = "frequent"
+            case average = "average"
+            case rare = "rare"
+            case never = "never"
+        }
+    }
 
-            /// List of propagator types
-            public let propagatorTypes: [PropagatorTypes]?
+    public struct SessionReplay: Codable {
+        public let imagePrivacy: ImagePrivacy?
 
-            public enum CodingKeys: String, CodingKey {
-                case match = "match"
-                case propagatorTypes = "propagatorTypes"
-            }
+        public let sampleRate: Double?
 
-            ///
-            /// - Parameters:
-            ///   - match:
-            ///   - propagatorTypes: List of propagator types
-            public init(
-                match: Match,
-                propagatorTypes: [PropagatorTypes]? = nil
-            ) {
-                self.match = match
-                self.propagatorTypes = propagatorTypes
-            }
+        /// Whether Session Replay starts recording as soon as the SDK initializes
+        public let startRecordingImmediately: Bool?
 
-            public struct Match: Codable {
-                /// Remote config serialized type of match
-                public let rcSerializedType: RcSerializedType
+        public let textAndInputPrivacy: TextAndInputPrivacy?
 
-                /// Match value
-                public let value: String
+        public let touchPrivacy: TouchPrivacy?
 
-                public enum CodingKeys: String, CodingKey {
-                    case rcSerializedType = "rcSerializedType"
-                    case value = "value"
-                }
-
-                ///
-                /// - Parameters:
-                ///   - rcSerializedType: Remote config serialized type of match
-                ///   - value: Match value
-                public init(
-                    rcSerializedType: RcSerializedType,
-                    value: String
-                ) {
-                    self.rcSerializedType = rcSerializedType
-                    self.value = value
-                }
-
-                /// Remote config serialized type of match
-                public enum RcSerializedType: String, Codable {
-                    case string = "string"
-                    case regex = "regex"
-                }
-            }
-
-            public enum PropagatorTypes: String, Codable {
-                case datadog = "datadog"
-                case b3 = "b3"
-                case b3multi = "b3multi"
-                case tracecontext = "tracecontext"
-            }
+        public enum CodingKeys: String, CodingKey {
+            case imagePrivacy = "imagePrivacy"
+            case sampleRate = "sampleRate"
+            case startRecordingImmediately = "startRecordingImmediately"
+            case textAndInputPrivacy = "textAndInputPrivacy"
+            case touchPrivacy = "touchPrivacy"
         }
 
-        public struct AllowedTrackingOrigins: Codable {
-            /// Remote config serialized type of match
-            public let rcSerializedType: RcSerializedType
-
-            /// Match value
-            public let value: String
-
-            public enum CodingKeys: String, CodingKey {
-                case rcSerializedType = "rcSerializedType"
-                case value = "value"
-            }
-
-            ///
-            /// - Parameters:
-            ///   - rcSerializedType: Remote config serialized type of match
-            ///   - value: Match value
-            public init(
-                rcSerializedType: RcSerializedType,
-                value: String
-            ) {
-                self.rcSerializedType = rcSerializedType
-                self.value = value
-            }
-
-            /// Remote config serialized type of match
-            public enum RcSerializedType: String, Codable {
-                case string = "string"
-                case regex = "regex"
-            }
+        ///
+        /// - Parameters:
+        ///   - imagePrivacy:
+        ///   - sampleRate:
+        ///   - startRecordingImmediately: Whether Session Replay starts recording as soon as the SDK initializes
+        ///   - textAndInputPrivacy:
+        ///   - touchPrivacy:
+        public init(
+            imagePrivacy: ImagePrivacy? = nil,
+            sampleRate: Double? = nil,
+            startRecordingImmediately: Bool? = nil,
+            textAndInputPrivacy: TextAndInputPrivacy? = nil,
+            touchPrivacy: TouchPrivacy? = nil
+        ) {
+            self.imagePrivacy = imagePrivacy
+            self.sampleRate = sampleRate
+            self.startRecordingImmediately = startRecordingImmediately
+            self.textAndInputPrivacy = textAndInputPrivacy
+            self.touchPrivacy = touchPrivacy
         }
 
-        public struct Context: Codable {
-            public let key: String
-
-            public let value: Value
-
-            public enum CodingKeys: String, CodingKey {
-                case key = "key"
-                case value = "value"
-            }
-
-            ///
-            /// - Parameters:
-            ///   - key:
-            ///   - value:
-            public init(
-                key: String,
-                value: Value
-            ) {
-                self.key = key
-                self.value = value
-            }
-
-            public enum Value: Codable {
-                case js(value: Js)
-                case cookie(value: Cookie)
-                case dom(value: Dom)
-                case localStorage(value: LocalStorage)
-
-                // MARK: - Codable
-
-                public func encode(to encoder: Encoder) throws {
-                    // Encode only the associated value, without encoding enum case
-                    var container = encoder.singleValueContainer()
-
-                    switch self {
-                    case .js(let value):
-                        try container.encode(value)
-                    case .cookie(let value):
-                        try container.encode(value)
-                    case .dom(let value):
-                        try container.encode(value)
-                    case .localStorage(let value):
-                        try container.encode(value)
-                    }
-                }
-
-                public init(from decoder: Decoder) throws {
-                    // Decode enum case from associated value
-                    let container = try decoder.singleValueContainer()
-
-                    if let value = try? container.decode(Js.self) {
-                        self = .js(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(Cookie.self) {
-                        self = .cookie(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(Dom.self) {
-                        self = .dom(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(LocalStorage.self) {
-                        self = .localStorage(value: value)
-                        return
-                    }
-                    let error = DecodingError.Context(
-                        codingPath: container.codingPath,
-                        debugDescription: """
-                        Failed to decode `Value`.
-                        Ran out of possibilities when trying to decode the value of associated type.
-                        """
-                    )
-                    throw DecodingError.typeMismatch(Value.self, error)
-                }
-
-                public struct Js: Codable {
-                    public let extractor: Extractor?
-
-                    public let path: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "js"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case path = "path"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - path:
-                    public init(
-                        extractor: Extractor? = nil,
-                        path: String
-                    ) {
-                        self.extractor = extractor
-                        self.path = path
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct Cookie: Codable {
-                    public let extractor: Extractor?
-
-                    public let name: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "cookie"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case name = "name"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - name:
-                    public init(
-                        extractor: Extractor? = nil,
-                        name: String
-                    ) {
-                        self.extractor = extractor
-                        self.name = name
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct Dom: Codable {
-                    public let attribute: String?
-
-                    public let extractor: Extractor?
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let selector: String
-
-                    public let strategy: String = "dom"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case attribute = "attribute"
-                        case extractor = "extractor"
-                        case rcSerializedType = "rcSerializedType"
-                        case selector = "selector"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - attribute:
-                    ///   - extractor:
-                    ///   - selector:
-                    public init(
-                        attribute: String? = nil,
-                        extractor: Extractor? = nil,
-                        selector: String
-                    ) {
-                        self.attribute = attribute
-                        self.extractor = extractor
-                        self.selector = selector
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct LocalStorage: Codable {
-                    public let extractor: Extractor?
-
-                    public let key: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "localStorage"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case key = "key"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - key:
-                    public init(
-                        extractor: Extractor? = nil,
-                        key: String
-                    ) {
-                        self.extractor = extractor
-                        self.key = key
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-            }
+        public enum ImagePrivacy: String, Codable {
+            case maskNone = "mask_none"
+            case maskNonBundledOnly = "mask_non_bundled_only"
+            case maskAll = "mask_all"
         }
 
-        public struct User: Codable {
-            public let key: String
-
-            public let value: Value
-
-            public enum CodingKeys: String, CodingKey {
-                case key = "key"
-                case value = "value"
-            }
-
-            ///
-            /// - Parameters:
-            ///   - key:
-            ///   - value:
-            public init(
-                key: String,
-                value: Value
-            ) {
-                self.key = key
-                self.value = value
-            }
-
-            public enum Value: Codable {
-                case js(value: Js)
-                case cookie(value: Cookie)
-                case dom(value: Dom)
-                case localStorage(value: LocalStorage)
-
-                // MARK: - Codable
-
-                public func encode(to encoder: Encoder) throws {
-                    // Encode only the associated value, without encoding enum case
-                    var container = encoder.singleValueContainer()
-
-                    switch self {
-                    case .js(let value):
-                        try container.encode(value)
-                    case .cookie(let value):
-                        try container.encode(value)
-                    case .dom(let value):
-                        try container.encode(value)
-                    case .localStorage(let value):
-                        try container.encode(value)
-                    }
-                }
-
-                public init(from decoder: Decoder) throws {
-                    // Decode enum case from associated value
-                    let container = try decoder.singleValueContainer()
-
-                    if let value = try? container.decode(Js.self) {
-                        self = .js(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(Cookie.self) {
-                        self = .cookie(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(Dom.self) {
-                        self = .dom(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(LocalStorage.self) {
-                        self = .localStorage(value: value)
-                        return
-                    }
-                    let error = DecodingError.Context(
-                        codingPath: container.codingPath,
-                        debugDescription: """
-                        Failed to decode `Value`.
-                        Ran out of possibilities when trying to decode the value of associated type.
-                        """
-                    )
-                    throw DecodingError.typeMismatch(Value.self, error)
-                }
-
-                public struct Js: Codable {
-                    public let extractor: Extractor?
-
-                    public let path: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "js"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case path = "path"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - path:
-                    public init(
-                        extractor: Extractor? = nil,
-                        path: String
-                    ) {
-                        self.extractor = extractor
-                        self.path = path
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct Cookie: Codable {
-                    public let extractor: Extractor?
-
-                    public let name: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "cookie"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case name = "name"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - name:
-                    public init(
-                        extractor: Extractor? = nil,
-                        name: String
-                    ) {
-                        self.extractor = extractor
-                        self.name = name
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct Dom: Codable {
-                    public let attribute: String?
-
-                    public let extractor: Extractor?
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let selector: String
-
-                    public let strategy: String = "dom"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case attribute = "attribute"
-                        case extractor = "extractor"
-                        case rcSerializedType = "rcSerializedType"
-                        case selector = "selector"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - attribute:
-                    ///   - extractor:
-                    ///   - selector:
-                    public init(
-                        attribute: String? = nil,
-                        extractor: Extractor? = nil,
-                        selector: String
-                    ) {
-                        self.attribute = attribute
-                        self.extractor = extractor
-                        self.selector = selector
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-
-                public struct LocalStorage: Codable {
-                    public let extractor: Extractor?
-
-                    public let key: String
-
-                    public let rcSerializedType: String = "dynamic"
-
-                    public let strategy: String = "localStorage"
-
-                    public enum CodingKeys: String, CodingKey {
-                        case extractor = "extractor"
-                        case key = "key"
-                        case rcSerializedType = "rcSerializedType"
-                        case strategy = "strategy"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - extractor:
-                    ///   - key:
-                    public init(
-                        extractor: Extractor? = nil,
-                        key: String
-                    ) {
-                        self.extractor = extractor
-                        self.key = key
-                    }
-
-                    public struct Extractor: Codable {
-                        /// Remote config serialized type for regex extraction
-                        public let rcSerializedType: String = "regex"
-
-                        /// Regex pattern for value extraction
-                        public let value: String
-
-                        public enum CodingKeys: String, CodingKey {
-                            case rcSerializedType = "rcSerializedType"
-                            case value = "value"
-                        }
-
-                        ///
-                        /// - Parameters:
-                        ///   - value: Regex pattern for value extraction
-                        public init(
-                            value: String
-                        ) {
-                            self.value = value
-                        }
-                    }
-                }
-            }
+        public enum TextAndInputPrivacy: String, Codable {
+            case maskSensitiveInputs = "mask_sensitive_inputs"
+            case maskAllInputs = "mask_all_inputs"
+            case maskAll = "mask_all"
         }
 
-        /// The version for this application
-        public enum Version: Codable {
-            case js(value: Js)
-            case cookie(value: Cookie)
-            case dom(value: Dom)
-            case localStorage(value: LocalStorage)
+        public enum TouchPrivacy: String, Codable {
+            case show = "show"
+            case hide = "hide"
+        }
+    }
 
-            // MARK: - Codable
+    public struct Trace: Codable {
+        public let sampleRate: Double?
 
-            public func encode(to encoder: Encoder) throws {
-                // Encode only the associated value, without encoding enum case
-                var container = encoder.singleValueContainer()
+        public let traceContextInjection: TraceContextInjection?
 
-                switch self {
-                case .js(let value):
-                    try container.encode(value)
-                case .cookie(let value):
-                    try container.encode(value)
-                case .dom(let value):
-                    try container.encode(value)
-                case .localStorage(let value):
-                    try container.encode(value)
-                }
-            }
+        /// Hostnames for which distributed tracing headers are injected
+        public let tracedHosts: [String]?
 
-            public init(from decoder: Decoder) throws {
-                // Decode enum case from associated value
-                let container = try decoder.singleValueContainer()
+        /// Tracing header formats injected on requests to all traced hosts
+        public let tracingHeaderTypes: [TracingHeaderTypes]?
 
-                if let value = try? container.decode(Js.self) {
-                    self = .js(value: value)
-                    return
-                }
-                if let value = try? container.decode(Cookie.self) {
-                    self = .cookie(value: value)
-                    return
-                }
-                if let value = try? container.decode(Dom.self) {
-                    self = .dom(value: value)
-                    return
-                }
-                if let value = try? container.decode(LocalStorage.self) {
-                    self = .localStorage(value: value)
-                    return
-                }
-                let error = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription: """
-                    Failed to decode `Version`.
-                    Ran out of possibilities when trying to decode the value of associated type.
-                    """
-                )
-                throw DecodingError.typeMismatch(Version.self, error)
-            }
+        public enum CodingKeys: String, CodingKey {
+            case sampleRate = "sampleRate"
+            case traceContextInjection = "traceContextInjection"
+            case tracedHosts = "tracedHosts"
+            case tracingHeaderTypes = "tracingHeaderTypes"
+        }
 
-            public struct Js: Codable {
-                public let extractor: Extractor?
+        ///
+        /// - Parameters:
+        ///   - sampleRate:
+        ///   - traceContextInjection:
+        ///   - tracedHosts: Hostnames for which distributed tracing headers are injected
+        ///   - tracingHeaderTypes: Tracing header formats injected on requests to all traced hosts
+        public init(
+            sampleRate: Double? = nil,
+            traceContextInjection: TraceContextInjection? = nil,
+            tracedHosts: [String]? = nil,
+            tracingHeaderTypes: [TracingHeaderTypes]? = nil
+        ) {
+            self.sampleRate = sampleRate
+            self.traceContextInjection = traceContextInjection
+            self.tracedHosts = tracedHosts
+            self.tracingHeaderTypes = tracingHeaderTypes
+        }
 
-                public let path: String
+        public enum TraceContextInjection: String, Codable {
+            case all = "all"
+            case sampled = "sampled"
+        }
 
-                public let rcSerializedType: String = "dynamic"
-
-                public let strategy: String = "js"
-
-                public enum CodingKeys: String, CodingKey {
-                    case extractor = "extractor"
-                    case path = "path"
-                    case rcSerializedType = "rcSerializedType"
-                    case strategy = "strategy"
-                }
-
-                ///
-                /// - Parameters:
-                ///   - extractor:
-                ///   - path:
-                public init(
-                    extractor: Extractor? = nil,
-                    path: String
-                ) {
-                    self.extractor = extractor
-                    self.path = path
-                }
-
-                public struct Extractor: Codable {
-                    /// Remote config serialized type for regex extraction
-                    public let rcSerializedType: String = "regex"
-
-                    /// Regex pattern for value extraction
-                    public let value: String
-
-                    public enum CodingKeys: String, CodingKey {
-                        case rcSerializedType = "rcSerializedType"
-                        case value = "value"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - value: Regex pattern for value extraction
-                    public init(
-                        value: String
-                    ) {
-                        self.value = value
-                    }
-                }
-            }
-
-            public struct Cookie: Codable {
-                public let extractor: Extractor?
-
-                public let name: String
-
-                public let rcSerializedType: String = "dynamic"
-
-                public let strategy: String = "cookie"
-
-                public enum CodingKeys: String, CodingKey {
-                    case extractor = "extractor"
-                    case name = "name"
-                    case rcSerializedType = "rcSerializedType"
-                    case strategy = "strategy"
-                }
-
-                ///
-                /// - Parameters:
-                ///   - extractor:
-                ///   - name:
-                public init(
-                    extractor: Extractor? = nil,
-                    name: String
-                ) {
-                    self.extractor = extractor
-                    self.name = name
-                }
-
-                public struct Extractor: Codable {
-                    /// Remote config serialized type for regex extraction
-                    public let rcSerializedType: String = "regex"
-
-                    /// Regex pattern for value extraction
-                    public let value: String
-
-                    public enum CodingKeys: String, CodingKey {
-                        case rcSerializedType = "rcSerializedType"
-                        case value = "value"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - value: Regex pattern for value extraction
-                    public init(
-                        value: String
-                    ) {
-                        self.value = value
-                    }
-                }
-            }
-
-            public struct Dom: Codable {
-                public let attribute: String?
-
-                public let extractor: Extractor?
-
-                public let rcSerializedType: String = "dynamic"
-
-                public let selector: String
-
-                public let strategy: String = "dom"
-
-                public enum CodingKeys: String, CodingKey {
-                    case attribute = "attribute"
-                    case extractor = "extractor"
-                    case rcSerializedType = "rcSerializedType"
-                    case selector = "selector"
-                    case strategy = "strategy"
-                }
-
-                ///
-                /// - Parameters:
-                ///   - attribute:
-                ///   - extractor:
-                ///   - selector:
-                public init(
-                    attribute: String? = nil,
-                    extractor: Extractor? = nil,
-                    selector: String
-                ) {
-                    self.attribute = attribute
-                    self.extractor = extractor
-                    self.selector = selector
-                }
-
-                public struct Extractor: Codable {
-                    /// Remote config serialized type for regex extraction
-                    public let rcSerializedType: String = "regex"
-
-                    /// Regex pattern for value extraction
-                    public let value: String
-
-                    public enum CodingKeys: String, CodingKey {
-                        case rcSerializedType = "rcSerializedType"
-                        case value = "value"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - value: Regex pattern for value extraction
-                    public init(
-                        value: String
-                    ) {
-                        self.value = value
-                    }
-                }
-            }
-
-            public struct LocalStorage: Codable {
-                public let extractor: Extractor?
-
-                public let key: String
-
-                public let rcSerializedType: String = "dynamic"
-
-                public let strategy: String = "localStorage"
-
-                public enum CodingKeys: String, CodingKey {
-                    case extractor = "extractor"
-                    case key = "key"
-                    case rcSerializedType = "rcSerializedType"
-                    case strategy = "strategy"
-                }
-
-                ///
-                /// - Parameters:
-                ///   - extractor:
-                ///   - key:
-                public init(
-                    extractor: Extractor? = nil,
-                    key: String
-                ) {
-                    self.extractor = extractor
-                    self.key = key
-                }
-
-                public struct Extractor: Codable {
-                    /// Remote config serialized type for regex extraction
-                    public let rcSerializedType: String = "regex"
-
-                    /// Regex pattern for value extraction
-                    public let value: String
-
-                    public enum CodingKeys: String, CodingKey {
-                        case rcSerializedType = "rcSerializedType"
-                        case value = "value"
-                    }
-
-                    ///
-                    /// - Parameters:
-                    ///   - value: Regex pattern for value extraction
-                    public init(
-                        value: String
-                    ) {
-                        self.value = value
-                    }
-                }
-            }
+        public enum TracingHeaderTypes: String, Codable {
+            case datadog = "datadog"
+            case b3 = "b3"
+            case b3multi = "b3multi"
+            case tracecontext = "tracecontext"
         }
     }
 }
 
-// Generated from https://github.com/DataDog/dd-go/blob/0e826636c2da5ed0223e01e537c3f4b96d6e347f/remote-config/apps/rc-schema-validation/schemas/rum-sdk-config.json
+// Generated from https://github.com/DataDog/dd-go/blob/2fc3a72fc0222d5275db1c478dbfee942dd0f816/remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/STAGING/ios.json

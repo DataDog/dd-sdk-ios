@@ -25,6 +25,7 @@ internal class JSONSchema: Decodable {
         case readOnly = "readOnly"
         case ref = "$ref"
         case defs = "$defs"
+        case definitions = "definitions"
         case oneOf = "oneOf"
         case anyOf = "anyOf"
         case allOf = "allOf"
@@ -90,6 +91,7 @@ internal class JSONSchema: Decodable {
         self.readOnly = try container.decodeIfPresent(Bool.self, forKey: .readOnly)
         self.ref = try container.decodeIfPresent(String.self, forKey: .ref)
         self.defs = try container.decodeIfPresent([String: JSONSchema].self, forKey: .defs)
+        self.definitions = try container.decodeIfPresent([String: JSONSchema].self, forKey: .definitions)
         self.allOf = try container.decodeIfPresent([JSONSchema].self, forKey: .allOf)
         self.oneOf = try container.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
         self.anyOf = try container.decodeIfPresent([JSONSchema].self, forKey: .anyOf)
@@ -169,6 +171,9 @@ internal class JSONSchema: Decodable {
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#defs
     private(set) var defs: [String: JSONSchema]?
 
+    /// In-document schema definitions (draft-07 `definitions` keyword, equivalent to `$defs`).
+    private(set) var definitions: [String: JSONSchema]?
+
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.1
     private(set) var allOf: [JSONSchema]?
@@ -191,6 +196,8 @@ internal class JSONSchema: Decodable {
         switch key {
         case "$defs":
             return path.dropFirst().first.flatMap { schema.defs?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "definitions":
+            return path.dropFirst().first.flatMap { schema.definitions?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
         case "properties":
             return path.dropFirst().first.flatMap { schema.properties?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
         case "items":
@@ -247,16 +254,25 @@ internal class JSONSchema: Decodable {
         }
 
         // resolve `$ref`
+        // Refs follow the JSON Reference format: `[file]#[/json/pointer]`
+        // Both parts are optional: `#/foo` (in-document), `other.json` (whole file), `other.json#/foo` (cross-file).
         try ref.map { ref in
-            if ref.hasPrefix("#") {
-                // In-document reference using JSON Pointer (e.g. `#/$defs/TypeName`, `#/properties/foo`, `#`)
-                let parts = ref.dropFirst().split(separator: "/").map(String.init)
-                guard let resolved = Self.navigate(parts[...], in: effectiveRoot) else {
-                    throw Exception.unimplemented("Unsupported in-document $ref path: \(ref)")
+            let range = ref.range(of: "#")
+            let file = range.map { String(ref[ref.startIndex..<$0.lowerBound]) } ?? ref
+            let fragment = range.map { String(ref[$0.upperBound...]) }
+
+            let root = file.isEmpty
+                ? effectiveRoot
+                : try reader.read(directory.appendingPathComponent(file))
+
+            if let fragment, !fragment.isEmpty {
+                let parts = fragment.split(separator: "/").map(String.init)
+                guard let resolved = Self.navigate(parts[...], in: root) else {
+                    throw Exception.unimplemented("Unsupported $ref path: \(ref)")
                 }
                 merge(with: resolved)
             } else {
-                merge(with: try reader.read(directory.appendingPathComponent(ref)))
+                merge(with: root)
             }
         }
 

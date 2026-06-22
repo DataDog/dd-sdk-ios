@@ -33,7 +33,7 @@ public class RCCodeDecorator: SwiftCodeDecorator {
         }
 
         // Rename the root schema type to a product-neutral name.
-        if fixedName == "RUMSdkConfig" {
+        if fixedName.hasPrefix("RUMSdkConfig") {
             fixedName = "RemoteConfiguration"
         }
 
