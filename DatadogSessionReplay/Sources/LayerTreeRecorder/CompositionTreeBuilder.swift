@@ -11,6 +11,8 @@ import UIKit
 /// Builds the composition tree produced by the layer recording pipeline.
 @available(iOS 13.0, tvOS 13.0, *)
 internal class CompositionTreeBuilder {
+    private typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
+
     struct Output {
         let compositionTree: SRCompositionTree
         let wireframes: [SRWireframe]
@@ -42,7 +44,7 @@ internal class CompositionTreeBuilder {
         resources.removeAll(keepingCapacity: true)
         pendingWebViewSlotIDs = webViewSlotIDs
 
-        let rootLayer = makeCompositionLayer(from: root)
+        let rootLayer = makeCompositionLayer(from: root, parentTextInput: nil)
 
         return Output(
             compositionTree: SRCompositionTree(
@@ -54,9 +56,12 @@ internal class CompositionTreeBuilder {
         )
     }
 
-    private func makeCompositionLayer(from snapshot: CALayerSnapshot) -> SRCompositionLayer {
+    private func makeCompositionLayer(
+        from snapshot: CALayerSnapshot,
+        parentTextInput: TextInputSemantics?
+    ) -> SRCompositionLayer {
         SRCompositionLayer(
-            children: children(for: snapshot),
+            children: children(for: snapshot, parentTextInput: parentTextInput),
             compositeOperation: snapshot.compositingFilter
                 .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
             height: Int64.ddWithNoOverflow(snapshot.absoluteFrame.height),
@@ -68,9 +73,14 @@ internal class CompositionTreeBuilder {
         )
     }
 
-    private func children(for snapshot: CALayerSnapshot) -> [SRCompositionLayerChild] {
+    private func children(
+        for snapshot: CALayerSnapshot,
+        parentTextInput: TextInputSemantics?
+    ) -> [SRCompositionLayerChild] {
+        let parentTextInput = snapshot.observation.textInputSemantics ?? parentTextInput
+
         guard !snapshot.sublayers.isEmpty else {
-            return makeWireframeReference(for: snapshot)
+            return makeWireframeReference(for: snapshot, parentTextInput: parentTextInput)
                 .map { [$0] } ?? []
         }
 
@@ -80,31 +90,37 @@ internal class CompositionTreeBuilder {
         // We don't support containers with image or custom content because `CALayer.render(in:)`
         // renders both the layer and its sublayers
         if snapshot.hasBackgroundColor || snapshot.hasBorder,
-           let backgroundWireframe = makeWireframeReference(for: snapshot) {
+           let backgroundWireframe = makeWireframeReference(for: snapshot, parentTextInput: parentTextInput) {
             children.append(backgroundWireframe)
         }
 
         children.append(
             contentsOf: snapshot.sublayers.compactMap { sublayer in
-                childReference(for: sublayer)
+                childReference(for: sublayer, parentTextInput: parentTextInput)
             }
         )
 
         return children
     }
 
-    private func childReference(for snapshot: CALayerSnapshot) -> SRCompositionLayerChild? {
+    private func childReference(
+        for snapshot: CALayerSnapshot,
+        parentTextInput: TextInputSemantics?
+    ) -> SRCompositionLayerChild? {
         guard !snapshot.sublayers.isEmpty || snapshot.requiresCompositionLayer else {
-            return makeWireframeReference(for: snapshot)
+            return makeWireframeReference(for: snapshot, parentTextInput: parentTextInput)
         }
 
-        let layer = makeCompositionLayer(from: snapshot)
+        let layer = makeCompositionLayer(from: snapshot, parentTextInput: parentTextInput)
         layers.append(layer)
 
         return .init(id: layer.id, type: .layer)
     }
 
-    private func makeWireframeReference(for snapshot: CALayerSnapshot) -> SRCompositionLayerChild? {
+    private func makeWireframeReference(
+        for _: CALayerSnapshot,
+        parentTextInput _: TextInputSemantics?
+    ) -> SRCompositionLayerChild? {
         // TBD
         nil
     }
@@ -113,6 +129,16 @@ internal class CompositionTreeBuilder {
         let result = pendingWebViewSlotIDs.map(SRWireframe.init(hiddenWebViewSlotID:))
         pendingWebViewSlotIDs.removeAll()
         return result
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension CALayerSnapshot.SemanticObservation {
+    var textInputSemantics: TextInputSemantics? {
+        guard case .textInput(let textInput) = semantics else {
+            return nil
+        }
+        return textInput
     }
 }
 
