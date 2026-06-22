@@ -56,8 +56,7 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// The remote configuration provider, if configured.
-    @ReadWriteLock
-    var remoteConfigurationProvider: RemoteConfigurationProvider?
+    let remoteConfigurationProvider: RemoteConfigurationProvider?
 
     /// The last successfully fetched remote configuration, if any.
     @ReadWriteLock

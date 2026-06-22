@@ -35,8 +35,7 @@ internal final class RemoteConfigurationProvider {
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        let cached = Self.readCache(id: id, from: directory)
-        if let cached {
+        if let cached = Self.readCache(id: id, from: directory) {
             completionHandler(cached)
         }
 
@@ -117,11 +116,6 @@ internal final class RemoteConfigurationProvider {
             case .success(let (http, data)):
                 // 1. Not Modified — existing persisted configuration is still valid.
                 if http.statusCode == 304 {
-                    if let cached = Self.readCache(id: self.id, from: self.directory), case .success = cached {
-                        completionHandler(cached)
-                    } else {
-                        completionHandler(.failure(.httpError(http.statusCode)))
-                    }
                     return
                 }
 
