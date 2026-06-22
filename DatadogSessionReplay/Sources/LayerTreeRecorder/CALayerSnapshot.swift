@@ -112,7 +112,7 @@ extension CALayerSnapshot {
 
         let observation = privacy.isPrivate
             ? SemanticObservation(semantics: .layer, ignoreSublayers: true)
-            : SemanticObservation(layer: layer, context: context)
+            : SemanticObservation(layer: layer, absoluteFrame: absoluteFrame, context: context)
 
         if observation.ignoresImagePrivacy, layer.privacyOverrides?.imagePrivacy == nil {
             privacy.imagePrivacyLevel = .maskNone

@@ -346,7 +346,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: webView.layer, context: context)
 
         // Then
-        #expect(observation == .init(semantics: .webView(.init(slotID: webView.hash)), ignoreSublayers: true))
+        #expect(
+            observation == .init(
+                semantics: .webView(.init(slotID: webView.hash, slotFrame: webView.frame)),
+                ignoreSublayers: true
+            )
+        )
         #expect(webViewCache.allObjects.first === webView)
     }
 }

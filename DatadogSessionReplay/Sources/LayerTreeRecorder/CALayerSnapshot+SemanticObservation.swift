@@ -42,6 +42,11 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     @MainActor
     init(layer: CALayer, context: CALayerSnapshot.Context) {
+        self.init(layer: layer, absoluteFrame: layer.frame, context: context)
+    }
+
+    @MainActor
+    init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
             self.init(semantics: .activityIndicator, ignoreSublayers: true)
@@ -60,7 +65,7 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(switchControl: switchControl)
         case let webView as WKWebView:
             context.webViewCache.add(webView)
-            self.init(webView: webView)
+            self.init(webView: webView, absoluteFrame: absoluteFrame)
         default:
             self.init(semantics: .layer)
         }
@@ -229,11 +234,17 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     struct WebViewSemantics: Sendable, Equatable {
         let slotID: Int
+        let slotFrame: CGRect
     }
 
-    fileprivate init(webView: WKWebView) {
+    fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
         self.init(
-            semantics: .webView(.init(slotID: webView.hash)),
+            semantics: .webView(
+                .init(
+                    slotID: webView.hash,
+                    slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
+                )
+            ),
             ignoreSublayers: true
         )
     }

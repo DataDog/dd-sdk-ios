@@ -123,7 +123,7 @@ internal class CompositionTreeBuilder {
     ) -> SRCompositionLayerChild? {
         switch snapshot.observation.semantics {
         case .webView(let webView):
-            let wireframe = SRWireframe(layerSnapshot: snapshot, webViewSlotID: webView.slotID)
+            let wireframe = SRWireframe(layerSnapshot: snapshot, webView: webView)
 
             wireframes.append(wireframe)
             pendingWebViewSlotIDs.remove(webView.slotID)
@@ -168,18 +168,21 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init(layerSnapshot: CALayerSnapshot, webViewSlotID slotID: Int) {
+    fileprivate init(
+        layerSnapshot: CALayerSnapshot,
+        webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
+    ) {
         self = .webviewWireframe(
             value: .init(
                 border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
-                id: Int64(slotID),
+                height: Int64.ddWithNoOverflow(webView.slotFrame.height),
+                id: Int64(webView.slotID),
                 isVisible: true,
                 shapeStyle: .init(layerSnapshot: layerSnapshot),
-                slotId: String(slotID),
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
-                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                slotId: String(webView.slotID),
+                width: Int64.ddWithNoOverflow(webView.slotFrame.width),
+                x: Int64.ddWithNoOverflow(webView.slotFrame.minX),
+                y: Int64.ddWithNoOverflow(webView.slotFrame.minY)
             )
         )
     }

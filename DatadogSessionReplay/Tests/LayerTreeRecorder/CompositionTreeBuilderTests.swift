@@ -15,6 +15,14 @@ import WebKit
 
 @MainActor
 struct CompositionTreeBuilderTests {
+    private final class SafeAreaWebView: WKWebView {
+        var stubbedSafeAreaInsets: UIEdgeInsets = .zero
+
+        override var safeAreaInsets: UIEdgeInsets {
+            stubbedSafeAreaInsets
+        }
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates visible webview wireframe")
     func buildCreatesVisibleWebViewWireframe() throws {
@@ -65,6 +73,40 @@ struct CompositionTreeBuilderTests {
         #expect(wireframe.shapeStyle?.opacity == nil)
         #expect(wireframe.clip == nil)
         #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build offsets webview wireframe for safe-area adjusted content")
+    func buildOffsetsWebViewWireframeForSafeAreaAdjustedContent() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let webView = SafeAreaWebView(frame: CGRect(x: 10, y: 20, width: 60, height: 40))
+        webView.stubbedSafeAreaInsets = UIEdgeInsets(top: 30, left: 0, bottom: 0, right: 0)
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+        rootView.addSubview(webView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny()))
+        let slotID = webView.hash
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [slotID],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .webviewWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a webview wireframe")
+            return
+        }
+
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 50)
+        #expect(wireframe.width == 60)
+        #expect(wireframe.height == 40)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
