@@ -51,9 +51,12 @@ extension RUMViewEvent {
 // MARK: - Diff helpers
 
 private func diff<T: Equatable>(_ old: T?, _ new: T?) -> T? { old == new ? nil : new }
-private func diff<T: Equatable>(_ old: T, _ new: T) -> T? { old == new ? nil : new }
 private func diffMap<T: Equatable, U>(_ old: T?, _ new: T?, _ transform: (T) -> U) -> U? {
     diff(old, new).map(transform)
+}
+
+private func diffMap<T: Equatable, U>(_ old: T?, _ new: T?, _ transform: (T?, T) -> U) -> U? {
+    diff(old, new).map { transform(old, $0) }
 }
 
 // MARK: - Enum init extensions (safe conversion, no force-unwrap)
@@ -248,7 +251,7 @@ private extension RUMViewUpdateEvent.TAB {
 private extension RUMViewUpdateEvent.View {
     init(old: RUMViewEvent.View, new: RUMViewEvent.View) {
         self.init(
-            accessibility: diff(old.accessibility, new.accessibility).map { .init($0) },
+            accessibility: diffMap(old.accessibility, new.accessibility, RUMViewUpdateEvent.View.Accessibility.init),
             action: diff(old.action, new.action).map { .init($0) },
             cpuTicksCount: diff(old.cpuTicksCount, new.cpuTicksCount),
             cpuTicksPerSecond: diff(old.cpuTicksPerSecond, new.cpuTicksPerSecond),
@@ -306,30 +309,30 @@ private extension RUMViewUpdateEvent.View {
 // MARK: - View sub-struct projections
 
 private extension RUMViewUpdateEvent.View.Accessibility {
-    init(_ s: RUMViewEvent.View.Accessibility) {
+    init(old: RUMViewEvent.View.Accessibility?, new: RUMViewEvent.View.Accessibility) {
         self.init(
-            assistiveSwitchEnabled: s.assistiveSwitchEnabled,
-            assistiveTouchEnabled: s.assistiveTouchEnabled,
-            boldTextEnabled: s.boldTextEnabled,
-            buttonShapesEnabled: s.buttonShapesEnabled,
-            closedCaptioningEnabled: s.closedCaptioningEnabled,
-            grayscaleEnabled: s.grayscaleEnabled,
-            increaseContrastEnabled: s.increaseContrastEnabled,
-            invertColorsEnabled: s.invertColorsEnabled,
-            monoAudioEnabled: s.monoAudioEnabled,
-            onOffSwitchLabelsEnabled: s.onOffSwitchLabelsEnabled,
-            reduceMotionEnabled: s.reduceMotionEnabled,
-            reduceTransparencyEnabled: s.reduceTransparencyEnabled,
-            reducedAnimationsEnabled: s.reducedAnimationsEnabled,
-            rtlEnabled: s.rtlEnabled,
-            screenReaderEnabled: s.screenReaderEnabled,
-            shakeToUndoEnabled: s.shakeToUndoEnabled,
-            shouldDifferentiateWithoutColor: s.shouldDifferentiateWithoutColor,
-            singleAppModeEnabled: s.singleAppModeEnabled,
-            speakScreenEnabled: s.speakScreenEnabled,
-            speakSelectionEnabled: s.speakSelectionEnabled,
-            textSize: s.textSize,
-            videoAutoplayEnabled: s.videoAutoplayEnabled
+            assistiveSwitchEnabled: diff(old?.assistiveSwitchEnabled, new.assistiveSwitchEnabled),
+            assistiveTouchEnabled: diff(old?.assistiveTouchEnabled, new.assistiveTouchEnabled),
+            boldTextEnabled: diff(old?.boldTextEnabled, new.boldTextEnabled),
+            buttonShapesEnabled: diff(old?.buttonShapesEnabled, new.buttonShapesEnabled),
+            closedCaptioningEnabled: diff(old?.closedCaptioningEnabled, new.closedCaptioningEnabled),
+            grayscaleEnabled: diff(old?.grayscaleEnabled, new.grayscaleEnabled),
+            increaseContrastEnabled: diff(old?.increaseContrastEnabled, new.increaseContrastEnabled),
+            invertColorsEnabled: diff(old?.invertColorsEnabled, new.invertColorsEnabled),
+            monoAudioEnabled: diff(old?.monoAudioEnabled, new.monoAudioEnabled),
+            onOffSwitchLabelsEnabled: diff(old?.onOffSwitchLabelsEnabled, new.onOffSwitchLabelsEnabled),
+            reduceMotionEnabled: diff(old?.reduceMotionEnabled, new.reduceMotionEnabled),
+            reduceTransparencyEnabled: diff(old?.reduceTransparencyEnabled, new.reduceTransparencyEnabled),
+            reducedAnimationsEnabled: diff(old?.reducedAnimationsEnabled, new.reducedAnimationsEnabled),
+            rtlEnabled: diff(old?.rtlEnabled, new.rtlEnabled),
+            screenReaderEnabled: diff(old?.screenReaderEnabled, new.screenReaderEnabled),
+            shakeToUndoEnabled: diff(old?.shakeToUndoEnabled, new.shakeToUndoEnabled),
+            shouldDifferentiateWithoutColor: diff(old?.shouldDifferentiateWithoutColor, new.shouldDifferentiateWithoutColor),
+            singleAppModeEnabled: diff(old?.singleAppModeEnabled, new.singleAppModeEnabled),
+            speakScreenEnabled: diff(old?.speakScreenEnabled, new.speakScreenEnabled),
+            speakSelectionEnabled: diff(old?.speakSelectionEnabled, new.speakSelectionEnabled),
+            textSize: diff(old?.textSize, new.textSize),
+            videoAutoplayEnabled: diff(old?.videoAutoplayEnabled, new.videoAutoplayEnabled)
         )
     }
 }

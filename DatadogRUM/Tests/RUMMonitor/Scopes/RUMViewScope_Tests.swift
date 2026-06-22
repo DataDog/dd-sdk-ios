@@ -748,4 +748,135 @@ class RUMViewScope_Tests: XCTestCase {
         let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
         DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext)
     }
+
+    // MARK: - Accessibility
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testAccessibilityDelta_onlyChangedFieldsAreSentInUpdate() throws {
+        // Given
+        let reader = AccessibilityReaderMock(state: AccessibilityInfo(
+            textSize: "medium",
+            screenReaderEnabled: false,
+            boldTextEnabled: true,
+            reduceTransparencyEnabled: nil,
+            reduceMotionEnabled: nil,
+            buttonShapesEnabled: nil,
+            invertColorsEnabled: nil,
+            increaseContrastEnabled: nil,
+            assistiveSwitchEnabled: nil,
+            assistiveTouchEnabled: nil,
+            videoAutoplayEnabled: nil,
+            closedCaptioningEnabled: nil,
+            monoAudioEnabled: nil,
+            shakeToUndoEnabled: nil,
+            reducedAnimationsEnabled: nil,
+            shouldDifferentiateWithoutColor: nil,
+            grayscaleEnabled: nil,
+            singleAppModeEnabled: nil,
+            onOffSwitchLabelsEnabled: nil,
+            speakScreenEnabled: nil,
+            speakSelectionEnabled: nil,
+            rtlEnabled: nil
+        ))
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(accessibilityReader: reader, featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: scope.identity), context: context, writer: writer)
+
+        // When — only screenReaderEnabled changes
+        reader.state = AccessibilityInfo(
+            textSize: "medium",
+            screenReaderEnabled: true,
+            boldTextEnabled: true,
+            reduceTransparencyEnabled: nil,
+            reduceMotionEnabled: nil,
+            buttonShapesEnabled: nil,
+            invertColorsEnabled: nil,
+            increaseContrastEnabled: nil,
+            assistiveSwitchEnabled: nil,
+            assistiveTouchEnabled: nil,
+            videoAutoplayEnabled: nil,
+            closedCaptioningEnabled: nil,
+            monoAudioEnabled: nil,
+            shakeToUndoEnabled: nil,
+            reducedAnimationsEnabled: nil,
+            shouldDifferentiateWithoutColor: nil,
+            grayscaleEnabled: nil,
+            singleAppModeEnabled: nil,
+            onOffSwitchLabelsEnabled: nil,
+            speakScreenEnabled: nil,
+            speakSelectionEnabled: nil,
+            rtlEnabled: nil
+        )
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(), context: context, writer: writer)
+
+        // Then — update carries only the changed field
+        let update = try XCTUnwrap(writer.events(ofType: RUMViewUpdateEvent.self).first)
+        let accessibility = try XCTUnwrap(update.view.accessibility)
+        XCTAssertEqual(accessibility.screenReaderEnabled, true, "Changed field should be present")
+        XCTAssertNil(accessibility.boldTextEnabled, "Unchanged field should be nil (no change)")
+        XCTAssertNil(accessibility.textSize, "Unchanged field should be nil (no change)")
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testAccessibilityDelta_noUpdateWhenNothingChanges() throws {
+        // Given
+        let reader = AccessibilityReaderMock(state: AccessibilityInfo(
+            textSize: "medium",
+            screenReaderEnabled: false,
+            boldTextEnabled: true,
+            reduceTransparencyEnabled: nil,
+            reduceMotionEnabled: nil,
+            buttonShapesEnabled: nil,
+            invertColorsEnabled: nil,
+            increaseContrastEnabled: nil,
+            assistiveSwitchEnabled: nil,
+            assistiveTouchEnabled: nil,
+            videoAutoplayEnabled: nil,
+            closedCaptioningEnabled: nil,
+            monoAudioEnabled: nil,
+            shakeToUndoEnabled: nil,
+            reducedAnimationsEnabled: nil,
+            shouldDifferentiateWithoutColor: nil,
+            grayscaleEnabled: nil,
+            singleAppModeEnabled: nil,
+            onOffSwitchLabelsEnabled: nil,
+            speakScreenEnabled: nil,
+            speakSelectionEnabled: nil,
+            rtlEnabled: nil
+        ))
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(accessibilityReader: reader, featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "MyView",
+            customTimings: [:],
+            startTime: .mockDecember15th2019At10AMUTC(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        _ = scope.process(command: RUMStartViewCommand.mockWith(identity: scope.identity), context: context, writer: writer)
+
+        // When — accessibility state unchanged
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(), context: context, writer: writer)
+
+        // Then — update carries no accessibility field
+        let update = try XCTUnwrap(writer.events(ofType: RUMViewUpdateEvent.self).first)
+        XCTAssertNil(update.view.accessibility, "Accessibility should be nil when nothing changed")
+    }
 }
