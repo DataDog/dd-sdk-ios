@@ -118,11 +118,21 @@ internal class CompositionTreeBuilder {
     }
 
     private func makeWireframeReference(
-        for _: CALayerSnapshot,
+        for snapshot: CALayerSnapshot,
         parentTextInput _: TextInputSemantics?
     ) -> SRCompositionLayerChild? {
+        switch snapshot.observation.semantics {
+        case .webView(let webView):
+            let wireframe = SRWireframe(layerSnapshot: snapshot, webViewSlotID: webView.slotID)
+
+            wireframes.append(wireframe)
+            pendingWebViewSlotIDs.remove(webView.slotID)
+
+            return SRCompositionLayerChild(id: Int64(webView.slotID), type: .wireframe)
         // TBD
-        nil
+        default:
+            return nil
+        }
     }
 
     private func makeHiddenWebViewWireframes() -> [SRWireframe] {
@@ -156,5 +166,54 @@ extension SRWireframe {
             )
         )
     }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init(layerSnapshot: CALayerSnapshot, webViewSlotID slotID: Int) {
+        self = .webviewWireframe(
+            value: .init(
+                border: .init(layerSnapshot: layerSnapshot),
+                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                id: Int64(slotID),
+                isVisible: true,
+                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                slotId: String(slotID),
+                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+            )
+        )
+    }
+}
+
+extension SRShapeBorder {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init?(layerSnapshot: CALayerSnapshot) {
+        guard
+            let borderColor = layerSnapshot.borderColor,
+            layerSnapshot.borderWidth > 0
+        else {
+            return nil
+        }
+        self.init(
+            color: hexString(from: borderColor) ?? .fallbackColor,
+            width: Int64.ddWithNoOverflow(layerSnapshot.borderWidth.rounded(.up))
+        )
+    }
+}
+extension SRShapeStyle {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init?(layerSnapshot: CALayerSnapshot) {
+        guard let backgroundColor = layerSnapshot.backgroundColor else {
+            return nil
+        }
+        self.init(
+            backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
+            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init),
+        )
+    }
+}
+
+extension String {
+    fileprivate static let fallbackColor = "#FF0000FF"
 }
 #endif

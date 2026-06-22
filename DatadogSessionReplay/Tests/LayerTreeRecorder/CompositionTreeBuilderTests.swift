@@ -7,12 +7,66 @@
 #if os(iOS)
 import QuartzCore
 import Testing
+import UIKit
+import WebKit
 
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
 @MainActor
 struct CompositionTreeBuilderTests {
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates visible webview wireframe")
+    func buildCreatesVisibleWebViewWireframe() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let webView = WKWebView(frame: CGRect(x: 10, y: 20, width: 60, height: 40))
+        webView.layer.backgroundColor = UIColor.red.cgColor
+        webView.layer.borderColor = UIColor.green.cgColor
+        webView.layer.borderWidth = 2
+        webView.layer.cornerRadius = 6
+        rootView.addSubview(webView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny()))
+        let slotID = webView.hash
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [slotID],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == Int64(slotID))
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+        #expect(hiddenWebViewSlotIDs(in: output.wireframes).isEmpty)
+
+        #expect(output.wireframes.count == 1)
+        guard case .webviewWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a webview wireframe")
+            return
+        }
+
+        #expect(wireframe.id == Int64(slotID))
+        #expect(wireframe.slotId == String(slotID))
+        #expect(wireframe.isVisible == true)
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 60)
+        #expect(wireframe.height == 40)
+        #expect(wireframe.border?.color == "#00FF00FF")
+        #expect(wireframe.border?.width == 2)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+        #expect(wireframe.shapeStyle?.cornerRadius == 6)
+        #expect(wireframe.shapeStyle?.opacity == nil)
+        #expect(wireframe.clip == nil)
+        #expect(output.resources.isEmpty)
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
