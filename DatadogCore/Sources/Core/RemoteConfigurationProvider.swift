@@ -40,6 +40,7 @@ internal final class RemoteConfigurationProvider {
             completionHandler(cached)
         }
 
+#if canImport(UIKit)
         foregroundObserver = notificationCenter.addObserver(
             forName: ApplicationNotifications.willEnterForeground,
             object: nil,
@@ -47,13 +48,16 @@ internal final class RemoteConfigurationProvider {
         ) { [weak self] _ in
             self?.sync(completionHandler)
         }
+#endif
 
         sync(completionHandler)
     }
 
     func stop() {
         _foregroundObserver.mutate { observer in
+#if canImport(UIKit)
             observer.map { notificationCenter.removeObserver($0) }
+#endif
             observer = nil
         }
     }
