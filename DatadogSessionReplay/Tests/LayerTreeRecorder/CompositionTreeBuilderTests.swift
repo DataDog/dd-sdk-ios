@@ -9,6 +9,7 @@ import QuartzCore
 import Testing
 import UIKit
 import WebKit
+import DatadogInternal
 
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -107,6 +108,126 @@ struct CompositionTreeBuilderTests {
         #expect(wireframe.y == 50)
         #expect(wireframe.width == 60)
         #expect(wireframe.height == 40)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates text wireframe for label")
+    func buildCreatesTextWireframeForLabel() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let label = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 30))
+        label.text = "Hello, world!"
+        label.textColor = .blue
+        label.textAlignment = .right
+        label.font = .systemFont(ofSize: 17)
+        label.adjustsFontSizeToFitWidth = true
+        label.lineBreakMode = .byTruncatingMiddle
+        label.layer.backgroundColor = UIColor.red.cgColor
+        label.layer.borderColor = UIColor.green.cgColor
+        label.layer.borderWidth = 2
+        label.layer.cornerRadius = 4
+        rootView.addSubview(label)
+
+        let root = try #require(CALayerSnapshot(
+            from: rootView.layer,
+            in: .mockAny(textAndInputPrivacyLevel: .maskSensitiveInputs)
+        ))
+        let labelSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == labelSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .textWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a text wireframe")
+            return
+        }
+
+        #expect(wireframe.id == labelSnapshot.replayID)
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 30)
+        #expect(wireframe.text == "Hello, world!")
+        #expect(wireframe.textPosition?.alignment?.horizontal == .right)
+        #expect(wireframe.textPosition?.alignment?.vertical == .center)
+        #expect(wireframe.textPosition?.padding == nil)
+        #expect(wireframe.textStyle.color == "#0000FFFF")
+        #expect(wireframe.textStyle.size == 15)
+        #expect(wireframe.textStyle.truncationMode == .middle)
+        #expect(wireframe.border?.color == "#00FF00FF")
+        #expect(wireframe.border?.width == 2)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+        #expect(wireframe.shapeStyle?.cornerRadius == 4)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build masks label text for mask all privacy")
+    func buildMasksLabelTextForMaskAllPrivacy() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let label = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 30))
+        label.text = "Hello world"
+        rootView.addSubview(label)
+
+        let root = try #require(CALayerSnapshot(
+            from: rootView.layer,
+            in: .mockAny(textAndInputPrivacyLevel: .maskAll)
+        ))
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .textWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a text wireframe")
+            return
+        }
+
+        #expect(wireframe.text == "xxxxx xxxxx")
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build skips empty label without appearance")
+    func buildSkipsEmptyLabelWithoutAppearance() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let label = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 30))
+        rootView.addSubview(label)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny()))
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.isEmpty)
+        #expect(output.wireframes.isEmpty)
+        #expect(output.resources.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

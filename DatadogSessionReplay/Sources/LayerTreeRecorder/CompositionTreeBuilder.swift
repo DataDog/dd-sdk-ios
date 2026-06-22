@@ -122,6 +122,14 @@ internal class CompositionTreeBuilder {
         parentTextInput _: TextInputSemantics?
     ) -> SRCompositionLayerChild? {
         switch snapshot.observation.semantics {
+        case .label(let label):
+            guard let wireframe = SRWireframe(layerSnapshot: snapshot, label: label) else {
+                return nil
+            }
+
+            wireframes.append(wireframe)
+
+            return SRCompositionLayerChild(id: snapshot.replayID, type: .wireframe)
         case .webView(let webView):
             let wireframe = SRWireframe(layerSnapshot: snapshot, webView: webView)
 
@@ -168,6 +176,35 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init?(
+        layerSnapshot: CALayerSnapshot,
+        label: CALayerSnapshot.SemanticObservation.LabelSemantics
+    ) {
+        let text = layerSnapshot.textAndInputPrivacyLevel.staticTextObfuscator.mask(text: label.text ?? "")
+        let hasVisibleText = !text.isEmpty
+        let hasVisibleAppearance = layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder
+
+        guard hasVisibleText || hasVisibleAppearance else {
+            return nil
+        }
+
+        self = .textWireframe(
+            value: .init(
+                border: .init(layerSnapshot: layerSnapshot),
+                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                id: layerSnapshot.replayID,
+                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                text: text,
+                textPosition: .init(label: label),
+                textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
+                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+            )
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init(
         layerSnapshot: CALayerSnapshot,
         webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
@@ -184,6 +221,40 @@ extension SRWireframe {
                 x: Int64.ddWithNoOverflow(webView.slotFrame.minX),
                 y: Int64.ddWithNoOverflow(webView.slotFrame.minY)
             )
+        )
+    }
+}
+
+extension SRTextPosition {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init(label: CALayerSnapshot.SemanticObservation.LabelSemantics) {
+        self.init(
+            alignment: .init(systemTextAlignment: label.textAlignment)
+        )
+    }
+}
+
+extension SRTextStyle {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init(
+        label: CALayerSnapshot.SemanticObservation.LabelSemantics,
+        frame: CGRect
+    ) {
+        var fontSize = Int64.ddWithNoOverflow(label.font?.pointSize ?? .fallbackFontSize)
+
+        if let text = label.text, !text.isEmpty, label.adjustsFontSizeToFitWidth {
+            let calculatedFontSize = Int64(sqrt(frame.width * frame.height / CGFloat(text.count)))
+
+            if calculatedFontSize < fontSize {
+                fontSize = calculatedFontSize
+            }
+        }
+
+        self.init(
+            color: label.textColor.flatMap { hexString(from: $0.cgColor) } ?? .fallbackColor,
+            family: .fallbackFontFamily,
+            size: fontSize,
+            truncationMode: .init(label.lineBreakMode)
         )
     }
 }
@@ -218,5 +289,10 @@ extension SRShapeStyle {
 
 extension String {
     fileprivate static let fallbackColor = "#FF0000FF"
+    fileprivate static let fallbackFontFamily = "-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif"
+}
+
+extension CGFloat {
+    fileprivate static let fallbackFontSize: Self = 10
 }
 #endif
