@@ -170,6 +170,7 @@ extension SpanEventBuilder {
         networkInfoEnabled: Bool = false,
         eventsMapper: SpanEventMapper? = nil,
         bundleWithRUM: Bool = false,
+        statsComputationEnabled: Bool = false,
         telemetry: Telemetry = NOPTelemetry()
     ) -> SpanEventBuilder {
         let builder = SpanEventBuilder(
@@ -177,6 +178,7 @@ extension SpanEventBuilder {
             networkInfoEnabled: networkInfoEnabled,
             eventsMapper: eventsMapper,
             bundleWithRUM: bundleWithRUM,
+            statsComputationEnabled: statsComputationEnabled,
             telemetry: telemetry
         )
         builder.attributesEncoder.outputFormatting = [.sortedKeys] // to ensure stable order of JSON keys among OS versions
@@ -196,6 +198,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
         duration: TimeInterval = .mockAny(),
         isError: Bool = .mockAny(),
         source: String = .mockAny(),
+        clientComputesStats: Bool = false,
         origin: String? = nil,
         samplingRate: SampleRate = .maxSampleRate,
         samplingPriority: SamplingPriority = .mockAny(),
@@ -220,6 +223,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
             duration: duration,
             isError: isError,
             source: source,
+            clientComputesStats: clientComputesStats,
             origin: origin,
             samplingRate: samplingRate,
             samplingPriority: samplingPriority,
@@ -249,6 +253,7 @@ extension SpanEvent: AnyMockable, RandomMockable {
             duration: .mockRandom(),
             isError: .random(),
             source: .mockRandom(),
+            clientComputesStats: .random(),
             origin: .mockRandom(),
             samplingRate: .mockRandom(),
             samplingPriority: .mockRandom(),
