@@ -34,12 +34,14 @@ class WebViewTrackingTests: XCTestCase {
             let delegate = WarmUpNavigationDelegate {
                 loaded.fulfill()
             }
-            let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
-            webView.navigationDelegate = delegate
-            Self.warmUpWebView = webView
+            withExtendedLifetime(delegate) {
+                let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+                webView.navigationDelegate = delegate
+                Self.warmUpWebView = webView
 
-            webView.loadHTMLString("<html><body>warmup</body></html>", baseURL: nil)
-            wait(for: [loaded], timeout: 60.0)
+                webView.loadHTMLString("<html><body>warmup</body></html>", baseURL: nil)
+                wait(for: [loaded], timeout: 60.0)
+            }
         }
     }
 
