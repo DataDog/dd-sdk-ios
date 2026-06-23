@@ -421,6 +421,70 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNotNil(ttidMessage.attributes[RUMCoreContext.IDs.sessionID])
     }
 
+    func testTTFDCommand_whenReceivedAfterTTIDBeforeStartupType_reusesTTFDVitalIDAndAttributes() throws {
+        // Given
+        let featureScope = FeatureScopeMock()
+        let appStateManager = AppStateManagerMock()
+        appStateManager.shouldDeferPreviousAppStateInfoCallback = true
+        mockDependencies = .mockWith(featureScope: featureScope, appStateManager: appStateManager)
+        manager = RUMAppLaunchManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            telemetryController: .init()
+        )
+
+        let ttid = 1.0
+        let ttfd = 2.0
+        let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid),
+            globalAttributes: ["command": "ttid"]
+        )
+        let ttfdCommand: RUMTimeToFullDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttfd),
+            globalAttributes: [
+                "command": "ttfd",
+                "overridden": "global"
+            ],
+            attributes: [
+                "overridden": "local",
+                "ttfd": "attribute"
+            ]
+        )
+
+        // When
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
+
+        // Then
+        let messages = featureScope.messagesSent()
+        XCTAssertEqual(messages.count, 2)
+
+        let ttidMessage = try XCTUnwrap(messages.first?.asPayload as? TTIDMessage)
+        let ttfdMessage = try XCTUnwrap(messages.last?.asPayload as? OperationMessage)
+        XCTAssertEqual(ttidMessage.ttid.name, "time_to_initial_display")
+        XCTAssertEqual(ttfdMessage.operation.name, "time_to_full_display")
+        XCTAssertNil(ttfdMessage.operation.stepType)
+        XCTAssertEqual(ttfdMessage.operation.duration, ttfd.dd.toInt64Nanoseconds)
+        XCTAssertNotNil(ttfdMessage.attributes[RUMCoreContext.IDs.applicationID])
+        XCTAssertNotNil(ttfdMessage.attributes[RUMCoreContext.IDs.sessionID])
+
+        XCTAssertEqual(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).count, 0)
+
+        appStateManager.completePreviousAppStateInfo()
+
+        let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
+        XCTAssertEqual(vitalEvents.count, 2)
+        XCTAssertEqual(vitalEvents.map(\.vital.appLaunchMetric), [.ttid, .ttfd])
+
+        let ttfdEvent = try XCTUnwrap(vitalEvents.last)
+        XCTAssertEqual(ttfdEvent.vital.id, ttfdMessage.operation.id)
+        XCTAssertEqual(ttfdEvent.context?.contextInfo as? [String: String], [
+            "command": "ttfd",
+            "overridden": "local",
+            "ttfd": "attribute"
+        ])
+    }
+
     func testTTFDCommand_createsAppLaunchVitalEventsForPreWarmingLaunches() throws {
         // Given
         let processLaunchDate = Date()
