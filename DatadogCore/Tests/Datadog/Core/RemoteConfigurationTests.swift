@@ -74,6 +74,7 @@ class RemoteConfigurationTests: XCTestCase {
         id: String = "test-id",
         httpClient: HTTPClient? = nil,
         notificationCenter: NotificationCenter = NotificationCenter(),
+        dateProvider: DateProvider = SystemDateProvider(),
         start: Bool = true
     ) -> RemoteConfigurationProvider {
         let provider = RemoteConfigurationProvider(
@@ -81,7 +82,8 @@ class RemoteConfigurationTests: XCTestCase {
             site: .us1,
             directory: coreDir.coreDirectory,
             httpClient: httpClient ?? self.httpClient,
-            notificationCenter: notificationCenter
+            notificationCenter: notificationCenter,
+            dateProvider: dateProvider
         )
         if start {
             provider.start { _ in }
@@ -595,6 +597,129 @@ class RemoteConfigurationTests: XCTestCase {
 
         wait(for: [completionExpectation], timeout: 2)
         XCTAssertEqual(completionLock.withLock { completionCount }, 2)
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundSyncsWhenLastSyncDateIsNil() {
+        // Given — init sync fails, lastSyncDate stays nil
+        let notificationCenter = NotificationCenter()
+        let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
+        let requestLock = NSLock()
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestLock.lock()
+            requestCount += 1
+            let count = requestCount
+            requestLock.unlock()
+            if count == 1 {
+                throw URLError(.networkConnectionLost)
+            }
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, foregroundPayload)
+        }
+        let rc = makeProvider(notificationCenter: notificationCenter)
+
+        // When — foreground fires immediately after a failed init sync
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        // Then — sync fires because lastSyncDate is nil
+        waitForPersistedConfiguration(applicationID: "foreground-application-id")
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundSyncsWhenTTLElapsed() {
+        // Given — init sync succeeds, then TTL elapses
+        let notificationCenter = NotificationCenter()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
+        let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
+        let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
+        let requestLock = NSLock()
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestLock.lock()
+            requestCount += 1
+            let payload = requestCount == 1 ? initialPayload : foregroundPayload
+            requestLock.unlock()
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
+        }
+        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        waitForPersistedConfiguration(applicationID: "initial-application-id")
+
+        // When — TTL elapses and foreground fires
+        dateProvider.advance(bySeconds: 360)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        // Then — sync fires
+        waitForPersistedConfiguration(applicationID: "foreground-application-id")
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundDoesNotSyncWhenTTLNotElapsed() {
+        // Given — init sync succeeds, TTL not elapsed
+        let notificationCenter = NotificationCenter()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
+        let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
+        let requestLock = NSLock()
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestLock.lock()
+            requestCount += 1
+            requestLock.unlock()
+            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, initialPayload)
+        }
+        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        waitForPersistedConfiguration(applicationID: "initial-application-id")
+
+        let countAfterInit = requestLock.withLock { requestCount }
+
+        // When — only 1 minute passes and foreground fires
+        dateProvider.advance(bySeconds: 60)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        // Then — no additional sync fires within TTL
+        let noSyncExpectation = expectation(description: "no foreground sync within TTL")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+            XCTAssertEqual(requestLock.withLock { requestCount }, countAfterInit, "No sync should fire within TTL")
+            noSyncExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 2)
+        withExtendedLifetime(rc) {}
+    }
+
+    func testForegroundDoesNotSyncAfter304WithinTTL() throws {
+        // Given — init sync returns 304, TTL not elapsed
+        let notificationCenter = NotificationCenter()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
+        let cachedPayload = remoteConfigurationData(applicationID: "cached-application-id")
+        try cachedPayload.write(
+            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
+            options: .atomic
+        )
+        let requestLock = NSLock()
+        var requestCount = 0
+        MockURLProtocol.requestHandler = { request in
+            requestLock.lock()
+            requestCount += 1
+            requestLock.unlock()
+            return (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
+        }
+        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+
+        // Wait for init sync (304)
+        let initExpectation = expectation(description: "init sync completes")
+        wait(until: { requestLock.withLock { requestCount } == 1 }, andThenFulfill: initExpectation)
+        waitForExpectations(timeout: 2)
+
+        // When — foreground fires within TTL
+        dateProvider.advance(bySeconds: 60)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        // Then — no additional request fires
+        let noSyncExpectation = expectation(description: "no foreground sync after 304 within TTL")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+            XCTAssertEqual(requestLock.withLock { requestCount }, 1, "No sync should fire within TTL after 304")
+            noSyncExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 2)
         withExtendedLifetime(rc) {}
     }
 
