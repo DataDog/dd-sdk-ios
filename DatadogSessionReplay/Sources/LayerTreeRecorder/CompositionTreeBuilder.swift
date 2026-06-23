@@ -136,7 +136,7 @@ internal class CompositionTreeBuilder {
             SRWireframe(layerSnapshot: snapshot, label: label)
         case (.textInput, .none):
             SRWireframe(layerSnapshot: snapshot)
-        case (.image, .none):
+        case (.image(let image), .none) where image.hasContent:
             // Private image
             SRWireframe(
                 placeholderFor: snapshot,
@@ -144,6 +144,9 @@ internal class CompositionTreeBuilder {
                     ? .contentImagePlaceholder
                     : .imagePlaceholder
             )
+        case (.image, .none):
+            // Empty image
+            SRWireframe(layerSnapshot: snapshot)
         case (.webView(let webView), _):
             makeVisibleWebViewWireframe(for: snapshot, webView: webView)
         default:

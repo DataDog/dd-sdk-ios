@@ -538,6 +538,31 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build skips empty image view without appearance")
+    func buildSkipsEmptyImageViewWithoutAppearance() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let imageView = UIImageView(frame: CGRect(x: 10, y: 20, width: 100, height: 40))
+        rootView.addSubview(imageView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskAll)))
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.isEmpty)
+        #expect(output.wireframes.isEmpty)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates placeholder for timed out image snapshot")
     func buildCreatesPlaceholderForTimedOutImageSnapshot() throws {
         // Given

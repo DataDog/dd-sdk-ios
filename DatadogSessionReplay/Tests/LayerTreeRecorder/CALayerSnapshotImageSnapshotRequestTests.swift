@@ -146,6 +146,23 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips empty semantic image layer")
+    func skipsEmptySemanticImageLayer() throws {
+        // Given
+        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        imageView.layer.contents = NSObject()
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips semantic image layer when image privacy masks all")
     func skipsSemanticImageLayerWhenImagePrivacyMasksAll() throws {
         // Given

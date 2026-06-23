@@ -135,7 +135,7 @@ struct CALayerSnapshotSemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .image(
-                .init(isContextual: false)
+                .init(hasContent: true, isContextual: false)
             ),
             ignoreSublayers: true
         ))

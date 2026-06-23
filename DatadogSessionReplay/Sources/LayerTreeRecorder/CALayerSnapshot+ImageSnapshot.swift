@@ -115,6 +115,8 @@ extension ImageSnapshotRequest {
 extension CALayerSnapshot.SemanticObservation {
     fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
         switch semantics {
+        case .image(let image) where !image.hasContent:
+            return false
         case .image where imagePrivacyLevel == .maskNone:
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
