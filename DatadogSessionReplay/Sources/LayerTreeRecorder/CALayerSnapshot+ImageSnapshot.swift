@@ -7,7 +7,6 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
-import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
@@ -125,20 +124,6 @@ extension CALayerSnapshot.SemanticObservation {
         default:
             return false
         }
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation.ImageSemantics {
-    fileprivate var isContextual: Bool {
-        guard let resolvedImage else {
-            return false
-        }
-        return resolvedImage.isContextual
-    }
-
-    private var resolvedImage: UIImage? {
-        isHighlighted ? highlightedImage ?? image : image
     }
 }
 #endif

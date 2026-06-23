@@ -140,22 +140,14 @@ extension NSAttributedString {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct ImageSemantics: Sendable, Equatable {
-        let image: UIImage?
-        let highlightedImage: UIImage?
-        let isHighlighted: Bool
-        let tintColor: UIColor?
+        let isContextual: Bool
     }
 
     fileprivate init(imageView: UIImageView) {
+        let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
+
         self.init(
-            semantics: .image(
-                .init(
-                    image: imageView.image,
-                    highlightedImage: imageView.highlightedImage,
-                    isHighlighted: imageView.isHighlighted,
-                    tintColor: imageView.tintColor
-                )
-            ),
+            semantics: .image(.init(isContextual: image?.isContextual ?? false)),
             ignoreSublayers: true
         )
     }

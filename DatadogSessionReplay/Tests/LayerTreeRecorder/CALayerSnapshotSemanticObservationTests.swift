@@ -126,11 +126,8 @@ struct CALayerSnapshotSemanticObservationTests {
     @Test("Records image semantics and ignores sublayers")
     func recordsImageSemanticsAndIgnoresSublayers() {
         // Given
-        let image = UIImage()
-        let highlightedImage = UIImage()
-        let imageView = UIImageView(image: image, highlightedImage: highlightedImage)
+        let imageView = UIImageView(image: UIImage())
         imageView.isHighlighted = true
-        imageView.tintColor = .green
 
         // When
         let observation = CALayerSnapshot.SemanticObservation(layer: imageView.layer, context: .mockAny())
@@ -138,12 +135,7 @@ struct CALayerSnapshotSemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .image(
-                .init(
-                    image: image,
-                    highlightedImage: highlightedImage,
-                    isHighlighted: true,
-                    tintColor: .green
-                )
+                .init(isContextual: false)
             ),
             ignoreSublayers: true
         ))
