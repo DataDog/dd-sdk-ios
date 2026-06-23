@@ -45,8 +45,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Given
         let command = RUMOperationStepVitalCommand.mockRandom()
         let view: RUMViewScope = .mockAny()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
 
         // When
+        mockContext.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
         manager.process(
             command,
             context: mockContext,
@@ -90,6 +92,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(vital.stepType, command.stepType)
         XCTAssertEqual(vital.failureReason, command.failureReason)
         XCTAssertNil(vital.vitalDescription)
+
+        // Profiling Status
+        XCTAssertEqual(event.dd.profiling?.status, .running)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testFeatureOperationCommand_sendsOperationMessageWithServerTimeOffset() throws {

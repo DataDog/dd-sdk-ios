@@ -28,6 +28,8 @@ final class DatadogProfilerTests: XCTestCase {
     }
 
     override func tearDown() {
+        profilerQueue.sync {}
+        core.messageReceiver = NOPFeatureMessageReceiver()
         DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
@@ -113,7 +115,7 @@ final class DatadogProfilerTests: XCTestCase {
             operationKey: completedOperationStart.operationKey,
             stepType: .end
         )
-        let ongoingOperationStart = Vital.mockWith(name: "ongoing-operation", stepType: .start)
+        let ongoingOperationStart = Vital.mockWith(name: "ongoing-operation", stepType: .start, date: dateProvider.now)
         let hang = DurationEvent(id: "hang-id", type: .error, start: 0, duration: 500)
         let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 0, duration: 100)
         let launchVital: Vital = .mockWith(stepType: nil)
@@ -319,8 +321,12 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
+        let attributes: [AttributeKey: AttributeValue] = [
+            RUMCoreContext.IDs.sessionID: "long-task-session-id",
+            RUMCoreContext.IDs.viewID: "long-task-view-id"
+        ]
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: attributes, longTask: longTask)), from: core)
         flushQueue()
 
         // When
@@ -337,6 +343,9 @@ extension DatadogProfilerTests {
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
         let rumEvents = try typedRUMEvents(from: metadata)
         XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [longTask.id])
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "long-task-session-id")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? String, "long-task-view-id")
         withExtendedLifetime(profiler) {}
     }
 
@@ -350,8 +359,12 @@ extension DatadogProfilerTests {
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
+        let attributes: [AttributeKey: AttributeValue] = [
+            RUMCoreContext.IDs.sessionID: "app-hang-session-id",
+            RUMCoreContext.IDs.viewID: "app-hang-view-id"
+        ]
         let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
-        XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
+        XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: attributes, hang: hang)), from: core))
 
         // When
         core.context = .mockWith(applicationStateHistory: .mockWith(
@@ -367,6 +380,9 @@ extension DatadogProfilerTests {
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
         let rumEvents = try typedRUMEvents(from: metadata)
         XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), [hang.id])
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "app-hang-session-id")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? String, "app-hang-view-id")
         withExtendedLifetime(profiler) {}
     }
 }
@@ -416,28 +432,123 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testReceiveContextWhenContinuousProfilingSamplesOut_andVitalIsOngoing() {
+    func testReceiveContext_startsContinuousProfiler_whenSessionIsSampledIn() {
         // Given
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider)
         connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
-        let startOperation = Vital.mockWith(stepType: .start)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+
+        // When
         core.context = .mockWith(
             applicationStateHistory: .mockAppInForeground(),
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
         )
         flushQueue()
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_stopsContinuousProfiler_whenSessionIsSampledOut() {
+        // Given
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            dateProvider: dateProvider
+        )
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground()
+        )
+        flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         _ = profiler.receive(
-            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
             from: core
         )
+        flushQueue()
 
         // When
         core.context = .mockWith(
             applicationStateHistory: .mockAppInForeground(),
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+        flushQueue()
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_keepsNativeProfilerRunning_whenSessionIsSampledOutBeforeAppLaunchVital() {
+        // Given
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When - the RUM session samples out before AppLaunchProfiler can harvest TTID.
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+        flushQueue()
+
+        // Then - app-launch profiling keeps the shared native profiler alive.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When - TTID is processed.
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+
+        // Then - the sampled-out continuous profiler can stop after app-launch harvesting.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveOperationStart_afterContinuousProfilingSamplesOut_startsCustomProfiling() {
+        // Given
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            dateProvider: dateProvider
+        )
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
+
+        // When
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
+            from: core
         )
         flushQueue()
 
@@ -448,14 +559,20 @@ extension DatadogProfilerTests {
 
     func testReceiveOperationStartWhenContinuousProfilingSamplesOut_andVitalStarts() {
         // Given
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let dateProvider = DateProviderMock()
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
         profilingSamplerProvider.updateWith(
             deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: 0)
         )
-        let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider)
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            dateProvider: dateProvider
+        )
+        shareCurrentContext(with: profiler)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
 
-        let startOperation = Vital.mockWith(stepType: .start)
+        let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
 
         // When
         _ = profiler.receive(
@@ -484,9 +601,12 @@ extension DatadogProfilerTests {
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
-        waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED
+        }
 
         // Then
+        XCTAssertTrue(core.metadata.isEmpty)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
     }
@@ -564,11 +684,12 @@ extension DatadogProfilerTests {
         )
 
         // When - operations complete, sampled-out continuous profiling should use the custom timer path.
-        waitForProfileWrite {
-            _ = profiler.receive(
-                message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)),
-                from: core
-            )
+        _ = profiler.receive(
+            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)),
+            from: core
+        )
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED && core.metadata.isEmpty == false
         }
 
         // Then
@@ -933,8 +1054,9 @@ extension DatadogProfilerTests {
         let endOp: Vital = .mockWith(name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
 
         // When - operations complete, profiler stops and writes via timer (no background notification needed)
-        waitForProfileWrite {
-            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED && core.metadata.isEmpty == false
         }
 
         // Then
@@ -961,8 +1083,9 @@ extension DatadogProfilerTests {
         let endOp = Vital.mockWith(id: "end-id", name: startOp.name, operationKey: startOp.operationKey, stepType: .end)
 
         // When
-        waitForProfileWrite {
-            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOp)), from: core)
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED && core.metadata.isEmpty == false
         }
 
         // Then
@@ -1044,8 +1167,8 @@ extension DatadogProfilerTests {
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
         flushQueue()
 
-        // Advance past customProfilingCutOffTime
-        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.customProfilingCutOffTime + 1)
+        // Advance past the RUM event cutoff.
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.cutOffTime + 1)
 
         // When - app launch vital received after cutoff
         let launchVital = Vital.mockWith()
@@ -1204,7 +1327,8 @@ extension DatadogProfilerTests {
         // When
         let second = DatadogProfiler(
             core: core,
-            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true)
+            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
+            quotaChecker: quotaChecker()
         )
         XCTAssertNil(second)
 
@@ -1245,7 +1369,8 @@ extension DatadogProfilerTests {
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             let profiler = DatadogProfiler(
                 core: core,
-                profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true)
+                profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
+                quotaChecker: quotaChecker()
             )
             lock.lock()
             profilers.append(profiler)
@@ -1306,23 +1431,31 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testContinuousProfiler_sendsProfilingSessionMetric_whenProfileIsNotWritten() throws {
+    func testContinuousProfiler_sendsProfilingSessionMetric_whenProfileIsDropped() throws {
         // Given
         let telemetry = TelemetryMock()
         let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+        let dateProvider = DateProviderMock()
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
         profilingSamplerProvider.updateWith(
             deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
         )
         let profiler = continuousProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
-            profilingInterval: 0.05,
-            telemetryController: telemetryController
+            telemetryController: telemetryController,
+            dateProvider: dateProvider
         )
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
 
         // When
-        waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        waitForProfileWrite(expectingWrite: false) {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
 
         // Then
         let metric = try firstProfilingSessionMetric(from: telemetry)
@@ -1330,7 +1463,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(metric.cycleIndex, 0)
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
-        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.profileNotWrittenErrorMessage)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfiledEventsErrorMessage)
         XCTAssertNil(metric.errorCode)
         XCTAssertTrue(core.metadata.isEmpty)
         withExtendedLifetime(profiler) {}
@@ -1359,8 +1492,9 @@ extension DatadogProfilerTests {
         )
 
         // When
-        waitForProfileWrite {
-            _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED && core.metadata.isEmpty == false
         }
 
         // Then
@@ -1372,6 +1506,416 @@ extension DatadogProfilerTests {
         XCTAssertEqual(metric.stoppedReason, ProfilingContext.Status.StopReason.manual.rawValue)
         XCTAssertNil(metric.errorCode)
         XCTAssertNil(metric.errorMessage)
+        withExtendedLifetime(profiler) {}
+    }
+}
+
+// MARK: - Profiling Quota
+
+extension DatadogProfilerTests {
+    func testQuotaIsCheckedAsSoonAsContextIsShared() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let sessionID: UUID = .mockAny()
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sessionID, sessionSampleRate: .maxSampleRate)]
+        )
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+
+        // Then
+        XCTAssertEqual(
+            quotaChecker.receivedContexts.compactMap { $0.additionalContext(ofType: RUMCoreContext.self)?.sessionID },
+            [sessionID.uuidString.lowercased()]
+        )
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaRejection_stopsAndDoesNotWriteContinuousProfile() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        let rejectedTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        rejectedTrace.pointee = .mockWith(tid: 1, addresses: [0x100001000])
+        dd_pprof_add_samples(dd_profiler_get_profile(), rejectedTrace, 1)
+        dd_free(rejectedTrace)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED
+        }
+
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
+        flushQueue()
+
+        // When
+        waitForProfileWrite(expectingWrite: false, timeout: 0.15) {}
+
+        // Then
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaRejectionBeforeAppLaunchVital_stopsNativeProfilerImmediately() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        // When - quota rejects before TTID has been harvested.
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+
+        // Then - continuous, custom and app-launch profiling are disabled for the rejected session.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        // When - TTID is processed.
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+
+        // Then - app launch does not restart profiling after quota rejection.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaRejectionBeforeAppLaunchVital_doesNotRestartNativeProfiler_whenAppIsBackgrounded() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            dateProvider: dateProvider,
+            quotaChecker: quotaChecker
+        )
+        let rumContext = RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(since: dateProvider.now.addingTimeInterval(-1)),
+            additionalContext: [rumContext]
+        )
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When - the app backgrounds while quota is still pending.
+        core.context = .mockWith(
+            applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: dateProvider.now.addingTimeInterval(-1),
+                transitions: [(state: .background, date: dateProvider.now)]
+            ),
+            additionalContext: [rumContext]
+        )
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        // When - quota rejects before TTID is harvested.
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+        _ = core.messageReceiver.receive(message: .context(core.context), from: core)
+        flushQueue()
+
+        // Then - app-launch preservation does not override background profiling conditions.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaRejectionBeforeAppLaunchVital_stopsNativeProfilerImmediately_whenAppLaunchVitalIsNotReceived() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            dateProvider: dateProvider,
+            quotaChecker: quotaChecker
+        )
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        // When - quota rejects before TTID and no TTID message is ever received.
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        flushQueue()
+
+        // Then - quota rejection is enough to stop the native profiler; no app-launch fallback timer is needed.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaResultReset_restartsContinuousProfile_whenAppStateIsUnchanged() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let firstSessionID: UUID = .mockAny()
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: firstSessionID, sessionSampleRate: .maxSampleRate)]
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED
+        }
+
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaOK, reason: .quotaOk)
+        }
+        let secondSessionID: UUID = .mockAny()
+
+        // When - RUM rotates session while the app stays active.
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: [RUMCoreContext.mockWith(sessionID: secondSessionID, sessionSampleRate: .maxSampleRate)]
+        )
+
+        // Then
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_RUNNING
+        }
+        let runningProfilingContext = core.context.additionalContext(ofType: ProfilingContext.self)
+        XCTAssertEqual(runningProfilingContext?.status, .running)
+        XCTAssertNil(runningProfilingContext?.quotaReason)
+        XCTAssertEqual(
+            quotaChecker.receivedContexts.compactMap { $0.additionalContext(ofType: RUMCoreContext.self)?.sessionID },
+            [firstSessionID.uuidString.lowercased(), secondSessionID.uuidString.lowercased()]
+        )
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQuotaRejection_discardsRejectedRUMEventsBeforeNextAdmittedProfile() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+        let dateProvider = DateProviderMock()
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        profilingSamplerProvider.updateWith(
+            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            telemetryController: telemetryController,
+            dateProvider: dateProvider,
+            quotaChecker: quotaChecker
+        )
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+
+        let rejectedLongTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        _ = profiler.receive(
+            message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: rejectedLongTask)),
+            from: core
+        )
+        flushQueue()
+
+        // When - the stopped profiler has no native profile to flush for the rejected session.
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        waitForProfileWrite(expectingWrite: false) {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+
+        // Then - the rejected profile is not written, and the rejected RUM event is discarded.
+        XCTAssertTrue(core.metadata.isEmpty)
+        let noProfileMetric = try firstProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(
+            noProfileMetric.errorMessage,
+            ProfilingSessionMetric.Constants.noProfileErrorMessage
+        )
+
+        // When - a later session is admitted and writes a profile.
+        quotaChecker.quotaResult = .init(decision: .quotaOK, reason: .quotaOk)
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .background,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .inactive, date: dateProvider.now)]
+        ))
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        let admittedLongTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        _ = profiler.receive(
+            message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: admittedLongTask)),
+            from: core
+        )
+        flushQueue()
+
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        waitForProfileWrite {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+
+        // Then - only the admitted session RUM event is attached.
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let rumEvents = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [admittedLongTask.id])
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testCustomProfiler_stopsAndDoesNotWriteProfile_whenQuotaIsRejected() throws {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
+        let dateProvider = DateProviderMock(now: initialDate)
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: false)
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(since: initialDate.addingTimeInterval(-1)),
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            profilingInterval: 0.05,
+            dateProvider: dateProvider,
+            quotaChecker: quotaChecker
+        )
+        connectMessageReceiver(
+            to: profiler,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker
+        )
+        dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith())),
+            from: core
+        )
+        flushQueue()
+
+        let startOp: Vital = .mockWith(stepType: .start, date: dateProvider.now)
+        _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
+        flushQueue()
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaKO, reason: .quotaExceeded)
+        }
+
+        // When
+        core.context = core.context
+        waitUntil(timeout: 1.0) {
+            dd_profiler_get_status() == DD_PROFILER_STATUS_STOPPED
+        }
+
+        // Then
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 2)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(profilingContext.quotaReason, .quotaExceeded)
         withExtendedLifetime(profiler) {}
     }
 }
@@ -1415,11 +1959,13 @@ private extension DatadogProfilerTests {
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
         telemetryController: ProfilingTelemetryController = .init(),
-        dateProvider: DateProvider = DateProviderMock()
+        dateProvider: DateProvider = DateProviderMock(),
+        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock()
     ) -> DatadogProfiler {
-        DatadogProfiler(
+        return DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker,
             queue: profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -1432,11 +1978,13 @@ private extension DatadogProfilerTests {
         profilingConditions: ProfilingConditions = ProfilingConditions(),
         profilingInterval: TimeInterval = .infinity,
         telemetryController: ProfilingTelemetryController = .init(),
-        dateProvider: DateProvider = DateProviderMock()
+        dateProvider: DateProvider = DateProviderMock(),
+        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock()
     ) -> DatadogProfiler {
         DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
+            quotaChecker: quotaChecker,
             queue: profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -1447,6 +1995,14 @@ private extension DatadogProfilerTests {
 
     func profilingSamplerProvider(isContinuousProfiling: Bool) -> ProfilingSamplerProvider {
         ProfilingSamplerProvider(continuousSampleRate: isContinuousProfiling ? .maxSampleRate : 0)
+    }
+
+    func quotaChecker() -> ProfilingQuotaCheckerMock {
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.receiveHandler = { _ in
+            .init(decision: .quotaOK, reason: .quotaOk)
+        }
+        return quotaChecker
     }
 
     func shareCurrentContext(with profiler: DatadogProfiler) {
@@ -1466,15 +2022,41 @@ private extension DatadogProfilerTests {
 
     func connectMessageReceiver(
         to profiler: DatadogProfiler,
-        profilingSamplerProvider: ProfilingSamplerProvider
+        profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking? = nil
     ) {
-        let messageReceiver = CombinedFeatureMessageReceiver(
+        var receivers: [FeatureMessageReceiver] = [
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
             profiler
-        )
+        ]
+        if let quotaChecker {
+            receivers.append(quotaChecker)
+        }
+
+        let messageReceiver = CombinedFeatureMessageReceiver(receivers)
         core.messageReceiver = messageReceiver
         _ = messageReceiver.receive(message: .context(core.context), from: core)
         flushQueue()
+    }
+
+    func waitUntil(
+        timeout: TimeInterval,
+        pollInterval: TimeInterval = 0.01,
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        condition: () -> Bool
+    ) {
+        let deadline = Date().addingTimeInterval(timeout)
+
+        while Date() < deadline {
+            if condition() {
+                return
+            }
+
+            Thread.sleep(forTimeInterval: pollInterval)
+        }
+
+        XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
 #endif // !os(watchOS)

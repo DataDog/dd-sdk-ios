@@ -25,6 +25,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     private static let lock = NSLock()
 
     private let profilingSamplerProvider: ProfilingSamplerProvider
+    private let quotaChecker: ProfilingQuotaChecking
 
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
@@ -41,6 +42,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     init(
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking,
         telemetryController: ProfilingTelemetryController = .init(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
@@ -48,6 +50,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
 
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.profilingSamplerProvider = profilingSamplerProvider
+        self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
@@ -74,6 +77,21 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
             currentServerTimeOffset = message.ttid.serverTimeOffset
             dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
+            defer {
+                if Self.unregisterInstance(stopProfiler: quotaChecker.isRejectedByQuota) {
+                    updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
+                }
+            }
+
+            // Quota is fail-open while pending or unavailable; only an explicit rejection drops app-launch.
+            guard !quotaChecker.isRejectedByQuota else {
+                telemetryController.sendProfileDropped(
+                    for: operation,
+                    reason: .quotaRejected(quotaChecker.quotaResult?.reason)
+                )
+                return false
+            }
+
             if profilingSamplerProvider.isContinuousProfilingConfigured == false
                 && self.currentRUMVitals.didCompleteOperations() {
                 dd_profiler_stop()
@@ -82,7 +100,6 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
 
             currentRUMVitals[message.ttid.key] = message.ttid
 
-            defer { Self.unregisterInstance() }
             guard let profile = appLaunchProfile() else {
                 telemetryController.sendNoProfile(for: operation)
                 return false
@@ -131,15 +148,26 @@ private extension AppLaunchProfiler {
     }
 
     /// Decrements the pending instance counter and destroys the profiler when all instances are done.
-    static func unregisterInstance() {
+    @discardableResult
+    static func unregisterInstance(stopProfiler: Bool = false) -> Bool {
         lock.lock()
         defer { lock.unlock() }
 
         pendingInstances -= 1
-        if pendingInstances <= 0 {
-            dd_pprof_destroy(Self.appLaunchProfile)
-            Self.appLaunchProfile = nil
+        guard pendingInstances <= 0 else {
+            return false
         }
+
+        if stopProfiler {
+            dd_profiler_stop()
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+        }
+
+        dd_pprof_destroy(Self.appLaunchProfile)
+        Self.appLaunchProfile = nil
+        return stopProfiler
     }
 }
 

@@ -29,8 +29,8 @@ internal protocol ProfilingHandler {
 
 extension ProfilingHandler {
     @discardableResult
-    func updateProfilingContext() -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: .current)
+    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) -> ProfilingContext {
+        let profilingContext = ProfilingContext(status: .current, quotaReason: quotaReason)
         self.featureScope.set(context: profilingContext)
 
         return profilingContext

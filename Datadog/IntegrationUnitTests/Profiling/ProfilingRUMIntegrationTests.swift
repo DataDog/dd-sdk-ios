@@ -223,22 +223,24 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
         // When
         enableRUM(sessionSampleRate: Fixtures.sampledInRUMSessionRate, sessionUUID: sessionUUID)
-        enableProfiling(continuousSampleRate: Fixtures.continuousSampledOutRate)
+        enableProfiling(applicationLaunchSampleRate: 0, continuousSampleRate: Fixtures.continuousSampledOutRate)
 
         startRUMView()
 
         // Then
         waitAndAssertRUMViewEvents()
         waitUntilContinuousProfilingSampled(false)
-        waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "continuous profiling is stopped")
 
         startVital(name: vitalName, operationKey: operationKey)
         waitUntilProfilerStatus(DD_PROFILER_STATUS_RUNNING, description: "profiler is running for the custom vital")
+        wait(during: Fixtures.minProfileDuration) {}
 
         finishVital(name: vitalName, operationKey: operationKey)
         waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "profiler is stopped after the custom vital")
 
-        let attachments = try XCTUnwrap(waitForProfileAttachments().last)
+        let profileAttachments = waitForProfileAttachments()
+        XCTAssertEqual(profileAttachments.count, 1)
+        let attachments = try XCTUnwrap(profileAttachments.last)
         let rumVitals = try rumVitals(from: attachments)
         XCTAssertEqual(rumVitals.count, 1)
         XCTAssertEqual(rumVitals.first?["name"] as? String, vitalName)

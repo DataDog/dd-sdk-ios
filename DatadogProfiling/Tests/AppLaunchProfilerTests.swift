@@ -478,6 +478,45 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(sampleCount, 0, "Profile should have no samples after all instances received")
     }
 
+    func testMultipleInstances_whenFirstInstanceIsRejectedByQuota_keepsProfileForOtherInstances() {
+        // Given
+        let rejectedCore = PassthroughCoreMock()
+        let admittedCore = PassthroughCoreMock()
+
+        let rejectedQuotaChecker = ProfilingQuotaCheckerMock()
+        rejectedQuotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+        let admittedQuotaChecker = ProfilingQuotaCheckerMock()
+        admittedQuotaChecker.quotaResult = .init(decision: .quotaOK, reason: .quotaOk)
+
+        let rejectedProfiler = appLaunchProfiler(core: rejectedCore, quotaChecker: rejectedQuotaChecker)
+        let admittedProfiler = appLaunchProfiler(core: admittedCore, quotaChecker: admittedQuotaChecker)
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+        Thread.sleep(forTimeInterval: 0.05)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 2)
+
+        // When
+        _ = rejectedProfiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)),
+            from: rejectedCore
+        )
+
+        // Then
+        XCTAssertTrue(rejectedCore.events.isEmpty)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 1)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        _ = admittedProfiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)),
+            from: admittedCore
+        )
+
+        // Then
+        XCTAssertEqual(admittedCore.events.count, 1)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+    }
+
     func testConcurrentRegistration_isThreadSafe() {
         // Given
         let iterations = 100
@@ -555,6 +594,49 @@ extension AppLaunchProfilerTests {
         XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfileErrorMessage)
         XCTAssertNotNil(metric.errorCode)
     }
+
+    func testReceive_whenQuotaIsRejected_dropsProfileAndSendsProfileDroppedMetric() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+        let core = PassthroughCoreMock(context: .mockWith(
+            launchInfo: .mockWith(launchReason: .userLaunch)
+        ))
+        let profiler = appLaunchProfiler(
+            core: core,
+            quotaChecker: quotaChecker,
+            telemetryController: ProfilingTelemetryController(telemetry: telemetry)
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+        Thread.sleep(forTimeInterval: 0.05)
+        let rejectedLaunchProfile = try XCTUnwrap(dd_profiler_get_profile())
+
+        // When
+        _ = profiler.receive(message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)), from: core)
+
+        // Then
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(AppLaunchProfiler.currentPendingInstances, 0)
+        XCTAssertNotEqual(dd_profiler_get_profile(), rejectedLaunchProfile)
+
+        let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(profilingContext.quotaReason, .quotaExceeded)
+
+        let metric = try lastProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
+        XCTAssertEqual(metric.appStartInfo, "user_launch")
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+        XCTAssertEqual(
+            metric.errorMessage,
+            "\(ProfilingSessionMetric.Constants.quotaErrorMessage) Quota reason: quota_exceeded."
+        )
+    }
 }
 
 // MARK: - Private
@@ -567,6 +649,7 @@ private extension AppLaunchProfilerTests {
     func appLaunchProfiler(
         core: DatadogCoreProtocol = PassthroughCoreMock(),
         isContinuousProfiling: Bool = false,
+        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock(),
         telemetryController: ProfilingTelemetryController = .init()
     ) -> AppLaunchProfiler {
         let profilingSamplerProvider = ProfilingSamplerProvider(
@@ -576,6 +659,7 @@ private extension AppLaunchProfilerTests {
         return AppLaunchProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker,
             telemetryController: telemetryController
         )
     }

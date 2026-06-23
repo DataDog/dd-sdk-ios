@@ -51,11 +51,13 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTIDCommand_createsAppLaunchVitalEvent() throws {
         // Given
         let ttid = 2.0
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         let command: RUMTimeToInitialDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid)
         )
 
         // When
+        mockContext.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
         manager.process(command, context: mockContext, writer: mockWriter)
 
         // Then
@@ -90,6 +92,10 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertNil(event.synthetics)
         XCTAssertNil(event.usr)
         XCTAssertNotNil(event.version)
+
+        // Profiling Status
+        XCTAssertEqual(event.dd.profiling?.status, .running)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testTTIDCommand_appliesServerTimeOffsetToAppLaunchEventAndProfilerMessage() throws {

@@ -23,8 +23,8 @@ internal final class DatadogProfiler: ProfilingHandler {
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
         /// Minimum profile duration during continuous profiling.
         static let minProfileDuration: TimeInterval = 5 // 5 seconds profiles
-        /// Default cut off duration for custom profiling.
-        static let customProfilingCutOffTime: TimeInterval = 60 // 1 minute cutoff
+        /// Maximum time to keep profiling alive while waiting for RUM events.
+        static let cutOffTime: TimeInterval = 60 // 1 minute cutoff
     }
 
     static let defaultQueue = DispatchQueue(
@@ -39,6 +39,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     /// The queue used to synchronize the profiling data and the writes.
     private let queue: DispatchQueue
     private let profilingSamplerProvider: ProfilingSamplerProvider
+    private let quotaChecker: ProfilingQuotaChecking
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
@@ -67,13 +68,18 @@ internal final class DatadogProfiler: ProfilingHandler {
     // Current profiling mode
     private(set) var operation: ProfilingOperation
     /// Allows continuous profiling to temporarily run while waiting for the first
-    /// RUM-linked sampling decision. The grace is consumed on the first timer cycle
-    /// or when the app backgrounds before a decision is received.
+    /// RUM-linked sampling decision. The grace is consumed when a definitive decision
+    /// arrives, on the first timer cycle, or when the app backgrounds before a decision
+    /// is received.
     private var isContinuousProfilingGraceAvailable: Bool
+    /// Tracks profiler stops caused by quota rejection so a later session quota reset can
+    /// restart profiling without waiting for an unrelated app-state or condition change.
+    private var isStoppedByQuota = false
 
     init?(
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -94,6 +100,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.queue = queue
         self.profilingSamplerProvider = profilingSamplerProvider
+        self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
@@ -103,13 +110,41 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.previousCustomProfilingStartDate = dateProvider.now
         self.operation = profilingSamplerProvider.isContinuousProfilingConfigured ? .continuousProfiling : .customProfiling
         self.isContinuousProfilingGraceAvailable = profilingSamplerProvider.isContinuousProfilingConfigured
+            && profilingSamplerProvider.continuousProfilingSampled == nil
 
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
+
+        quotaChecker.onQuotaResultUpdate = { [weak self] result in
+            self?.queue.async { [weak self] in
+                guard let self else {
+                    return
+                }
+
+                if result?.decision == .quotaKO {
+                    // Quota is evaluated per RUM session. Once rejected, disable profiling for
+                    // continuous, custom and app-launch profiles in that session.
+                    cleanUpState()
+                    isStoppedByQuota = true
+                    updateProfilerState(canProfile: shouldKeepProfilerRunning())
+                    discardCurrentProfile()
+                } else if isStoppedByQuota {
+                    // A new session clears the previous quota result before the next check completes.
+                    // Restart immediately when profiling is otherwise allowed, matching quota fail-open.
+                    let canProfile = shouldKeepProfilerRunning()
+                    isStoppedByQuota = false
+                    updateProfilerState(canProfile: canProfile)
+                    if canProfile && timer == nil {
+                        startTimer()
+                    }
+                }
+            }
+        }
     }
 
     deinit {
+        stopTimer()
         Self.lock.lock()
         Self.hasActiveInstance = false
         Self.lock.unlock()
@@ -195,8 +230,25 @@ private extension DatadogProfiler {
             let currentAppState = context.applicationStateHistory.currentState
             defer { previousAppState = currentAppState }
 
-            if let isContinuousProfiling = profilingSamplerProvider.continuousProfilingSampled {
-                operation = isContinuousProfiling ? .continuousProfiling : .customProfiling
+            switch profilingSamplerProvider.continuousProfilingSampled {
+            case true?:
+                operation = .continuousProfiling
+            case false?:
+                operation = .customProfiling
+
+                if isContinuousProfilingGraceAvailable {
+                    // The profiler was running optimistically while waiting for the RUM
+                    // sampling decision. If that decision samples out continuous profiling,
+                    // stop the optimistic profiler unless app-launch profiling still needs
+                    // the shared native profiler to harvest TTID.
+                    isContinuousProfilingGraceAvailable = false
+                    let canProfile = shouldKeepProfilerRunning()
+                    if canProfile || !shouldWaitForAppLaunchVital {
+                        updateProfilerState(canProfile: canProfile)
+                    }
+                    return
+                }
+            case .none: break
             }
 
             if currentAppState == .background {
@@ -226,23 +278,22 @@ private extension DatadogProfiler {
     }
 
     func handleAppLaunch(message: TTIDMessage) {
+        hasReceivedAppLaunchVital = true
         queue.async { [weak self] in
             guard let self else {
                 return
             }
             attributes = message.attributes
 
-            // Remove events that were handled by `AppLaunchProfiler`
-            currentRUMVitals = currentRUMVitals.ongoingOperations()
-            hangs.removeAll()
-            longTasks.removeAll()
+            // Remove events that were handled by `AppLaunchProfiler`.
+            cleanUpState()
             updateProfilerState(canProfile: shouldKeepProfilerRunning())
         }
     }
 
     func handleOperation(message: OperationMessage) {
         queue.async { [weak self] in
-            guard let self else {
+            guard let self, !quotaChecker.isRejectedByQuota else {
                 return
             }
             attributes = message.attributes
@@ -272,13 +323,21 @@ private extension DatadogProfiler {
 
     func handleAppHang(message: AppHangMessage) {
         queue.async { [weak self] in
-            self?.hangs.append(message.hang)
+            guard let self, !self.quotaChecker.isRejectedByQuota else {
+                return
+            }
+            attributes = message.attributes
+            hangs.append(message.hang)
         }
     }
 
     func handleLongTask(message: LongTaskMessage) {
         queue.async { [weak self] in
-            self?.longTasks.append(message.longTask)
+            guard let self, !self.quotaChecker.isRejectedByQuota else {
+                return
+            }
+            attributes = message.attributes
+            longTasks.append(message.longTask)
         }
     }
 
@@ -298,10 +357,14 @@ private extension DatadogProfiler {
                 startTimer()
             }
         case .running:
-            if canProfile == false {
-                dd_profiler_stop()
-                updateProfilingContext()
+            if canProfile {
+                if timer == nil {
+                    startTimer()
+                }
+            } else {
                 stopTimer()
+                dd_profiler_stop()
+                updateProfilingContext(quotaReason: quotaChecker.isRejectedByQuota ? quotaChecker.quotaResult?.reason : nil)
             }
         default: break
         }
@@ -311,6 +374,7 @@ private extension DatadogProfiler {
         previousCustomProfilingStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
             telemetryController.sendNoProfile(for: operation)
+            cleanUpState()
             return
         }
 
@@ -322,20 +386,38 @@ private extension DatadogProfiler {
                 hangs: hangs,
                 longTasks: longTasks
             )
-            cleanUpState()
         } else {
-            telemetryController.sendProfileNotWritten(for: operation)
+            telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
         }
+
+        cleanUpState()
+    }
+
+    func discardCurrentProfile() {
+        guard let profile = dd_profiler_flush_and_get_profile() else {
+            return
+        }
+        dd_pprof_destroy(profile)
+    }
+
+    var profileDropReason: ProfilingSessionMetric.ProfileDropReason {
+        quotaChecker.isRejectedByQuota ? .quotaRejected(quotaChecker.quotaResult?.reason) : .noProfiledEvents
     }
 
     var canWriteProfile: Bool {
-        // At least Custom Profiling is running
-        self.currentRUMVitals.count > 0
-        // Continuous Profiling is sampled in and there are events of interest
-        || (profilingSamplerProvider.continuousProfilingSampled == true && (hangs.count > 0 || longTasks.count > 0))
+        let hasCustomProfilingData = currentRUMVitals.count > 0
+        let hasContinuousProfilingData = profilingSamplerProvider.continuousProfilingSampled == true
+            && (hangs.count > 0 || longTasks.count > 0)
+
+        // Keep quota fail-open while the check is pending. Only explicit rejection prevents writing.
+        return (hasCustomProfilingData || hasContinuousProfilingData) && !quotaChecker.isRejectedByQuota
     }
 
     func shouldKeepProfilerRunning() -> Bool {
+        guard !quotaChecker.isRejectedByQuota else {
+            return false
+        }
+
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             switch profilingSamplerProvider.continuousProfilingSampled {
             case .some(true): // It is Continuous Profiling running
@@ -350,23 +432,34 @@ private extension DatadogProfiler {
         }
     }
 
+    var shouldWaitForAppLaunchVital: Bool {
+        // If continuous profiling samples out before TTID, keep the shared native profiler
+        // briefly so AppLaunchProfiler can harvest the launch profile.
+        hasReceivedAppLaunchVital == false
+            && dateProvider.now.timeIntervalSince(previousCustomProfilingStartDate) < Constants.cutOffTime
+    }
+
     var isCustomProfiling: Bool {
         profilingSamplerProvider.isContinuousProfilingConfigured == false
             || profilingSamplerProvider.continuousProfilingSampled == false
     }
 
     func canExtendCustomProfiling() -> Bool {
-        currentRUMVitals.ongoingOperations().contains {
-            dateProvider.now.timeIntervalSince($1.date) < Constants.customProfilingCutOffTime
+        guard !quotaChecker.isRejectedByQuota else {
+            return false
+        }
+
+        return currentRUMVitals.ongoingOperations().contains {
+            dateProvider.now.timeIntervalSince($1.date) < Constants.cutOffTime
         }
     }
 
     func cleanUpState() {
-        // if it is custom profiling and reached the cutoff time
-        if canExtendCustomProfiling() == false {
-            currentRUMVitals.removeAll()
-        } else {
+        // Preserve ongoing custom operations across normal flushes; quota rejection discards all RUM references.
+        if canExtendCustomProfiling() {
             currentRUMVitals = currentRUMVitals.ongoingOperations()
+        } else {
+            currentRUMVitals.removeAll()
         }
         hangs.removeAll()
         longTasks.removeAll()
