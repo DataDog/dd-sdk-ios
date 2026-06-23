@@ -231,6 +231,114 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates shape wireframe for layer appearance")
+    func buildCreatesShapeWireframeForLayerAppearance() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 100)
+
+        let layer = CALayer()
+        layer.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        layer.backgroundColor = UIColor.red.cgColor
+        layer.borderColor = UIColor.green.cgColor
+        layer.borderWidth = 2
+        layer.cornerRadius = 4
+        rootLayer.addSublayer(layer)
+
+        let root = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let layerSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == layerSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(wireframe.id == layerSnapshot.replayID)
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 40)
+        #expect(wireframe.border?.color == "#00FF00FF")
+        #expect(wireframe.border?.width == 2)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+        #expect(wireframe.shapeStyle?.cornerRadius == 4)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates shape wireframe for text input appearance")
+    func buildCreatesShapeWireframeForTextInputAppearance() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let textView = UITextView(frame: CGRect(x: 10, y: 20, width: 100, height: 40))
+        textView.backgroundColor = .red
+        textView.layer.borderColor = UIColor.green.cgColor
+        textView.layer.borderWidth = 2
+
+        let contentLayer = CALayer()
+        contentLayer.frame = CGRect(x: 5, y: 6, width: 20, height: 10)
+        contentLayer.backgroundColor = UIColor.blue.cgColor
+        textView.layer.addSublayer(contentLayer)
+
+        rootView.addSubview(textView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny()))
+        let textInputSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == textInputSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .layer)
+
+        let textInputLayer = try #require(output.compositionTree.layers?.first { $0.id == textInputSnapshot.replayID })
+        #expect(textInputLayer.children.contains {
+            $0.id == textInputSnapshot.replayID && $0.type == .wireframe
+        })
+
+        let shapeWireframes = output.wireframes.compactMap { wireframe -> SRShapeWireframe? in
+            guard case .shapeWireframe(let shapeWireframe) = wireframe else {
+                return nil
+            }
+            return shapeWireframe
+        }
+        let wireframe = try #require(shapeWireframes.first {
+            $0.id == textInputSnapshot.replayID
+        })
+
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 40)
+        #expect(wireframe.border?.color == "#00FF00FF")
+        #expect(wireframe.border?.width == 2)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates image wireframe for image snapshot")
     func buildCreatesImageWireframeForImageSnapshot() throws {
         // Given
@@ -289,6 +397,105 @@ struct CompositionTreeBuilderTests {
         #expect(wireframe.resourceId == resource.calculateIdentifier())
         #expect(wireframe.border == nil)
         #expect(wireframe.shapeStyle == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates image wireframe for control snapshot")
+    func buildCreatesImageWireframeForControlSnapshot() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 20, width: 40, height: 40))
+        activityIndicator.startAnimating()
+        rootView.addSubview(activityIndicator)
+
+        let root = try #require(CALayerSnapshot(
+            from: rootView.layer,
+            in: .mockAny(textAndInputPrivacyLevel: .maskAll, imagePrivacyLevel: .maskAll)
+        ))
+        let controlSnapshot = try #require(root.sublayers.first)
+        let renderedImage = ImageSnapshot.mockAny(
+            image: UIImage.mockWith(color: .red),
+            frame: controlSnapshot.absoluteFrame,
+            layerClass: controlSnapshot.layerClass,
+            delegateClass: controlSnapshot.delegateClass,
+            hasLayerSemantics: false,
+            textAndInputPrivacyLevel: .maskAll,
+            imagePrivacyLevel: .maskAll
+        )
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [controlSnapshot.replayID: .success(renderedImage)]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == controlSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .imageWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected an image wireframe")
+            return
+        }
+
+        #expect(output.resources.count == 1)
+        #expect(wireframe.id == controlSnapshot.replayID)
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 40)
+        #expect(wireframe.height == 40)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates shape wireframe when image snapshot redacts to placeholder")
+    func buildCreatesShapeWireframeWhenImageSnapshotRedactsToPlaceholder() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 100)
+
+        let layer = CALayer()
+        layer.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        rootLayer.addSublayer(layer)
+
+        let root = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let layerSnapshot = try #require(root.sublayers.first)
+        let renderedImage = ImageSnapshot.mockAny(
+            image: UIImage.mockWith(color: .red),
+            frame: layerSnapshot.absoluteFrame,
+            layerClass: try imageLayerClass(),
+            delegateClass: layerSnapshot.delegateClass,
+            hasLayerSemantics: true,
+            imagePrivacyLevel: .maskAll
+        )
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [layerSnapshot.replayID: .success(renderedImage)]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == layerSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(wireframe.id == layerSnapshot.replayID)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+        #expect(output.resources.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -437,5 +644,9 @@ struct CompositionTreeBuilderTests {
             return value.slotId
         }
     }
+}
+
+private func imageLayerClass() throws -> AnyClass {
+    try #require(NSClassFromString("SwiftUI.ImageLayer"))
 }
 #endif

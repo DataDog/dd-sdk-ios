@@ -26,6 +26,39 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    init?(layerSnapshot: CALayerSnapshot) {
+        guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder else {
+            return nil
+        }
+
+        self = .shapeWireframe(
+            value: .init(
+                border: .init(layerSnapshot: layerSnapshot),
+                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                id: layerSnapshot.replayID,
+                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+            )
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    init(layerSnapshot: CALayerSnapshot, placeholderColor: UIColor) {
+        self = .shapeWireframe(
+            value: .init(
+                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                id: layerSnapshot.replayID,
+                shapeStyle: .init(backgroundColor: hexString(from: placeholderColor.cgColor) ?? .fallbackColor),
+                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+            )
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
         label: CALayerSnapshot.SemanticObservation.LabelSemantics

@@ -118,49 +118,76 @@ internal class CompositionTreeBuilder {
 
     private func makeWireframeReference(
         for snapshot: CALayerSnapshot,
-        parentTextInput _: TextInputSemantics?
+        parentTextInput textInput: TextInputSemantics?
     ) -> SRCompositionLayerChild? {
-        switch snapshot.observation.semantics {
-        case .label(let label):
-            guard let wireframe = SRWireframe(layerSnapshot: snapshot, label: label) else {
-                return nil
-            }
-
-            wireframes.append(wireframe)
-
-            return SRCompositionLayerChild(id: snapshot.replayID, type: .wireframe)
-        case .image:
-            guard let wireframe = makeImageWireframe(for: snapshot) else {
-                return nil
-            }
-
-            wireframes.append(wireframe)
-
-            return SRCompositionLayerChild(id: snapshot.replayID, type: .wireframe)
-        case .webView(let webView):
-            let wireframe = SRWireframe(layerSnapshot: snapshot, webView: webView)
-
-            wireframes.append(wireframe)
-            pendingWebViewSlotIDs.remove(webView.slotID)
-
-            return SRCompositionLayerChild(id: Int64(webView.slotID), type: .wireframe)
-        // TBD
+        let wireframe: SRWireframe? = switch (
+            snapshot.observation.semantics,
+            imageSnapshotResults[snapshot.replayID]
+        ) {
+        case (.layer, .some(let result)),
+            (.activityIndicator, .some(let result)),
+            (.image, .some(let result)),
+            (.stepper, .some(let result)),
+            (.switchControl, .some(let result)):
+            makeImageSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
+        case (.layer, .none):
+            SRWireframe(layerSnapshot: snapshot)
+        case (.label(let label), _):
+            SRWireframe(layerSnapshot: snapshot, label: label)
+        case (.textInput, .none):
+            SRWireframe(layerSnapshot: snapshot)
+        case (.image, .none):
+            // Private image
+            SRWireframe(
+                placeholderFor: snapshot,
+                label: snapshot.imagePrivacyLevel == .maskNonBundledOnly
+                    ? .contentImagePlaceholder
+                    : .imagePlaceholder
+            )
+        case (.webView(let webView), _):
+            makeVisibleWebViewWireframe(for: snapshot, webView: webView)
         default:
+            nil
+        }
+
+        guard let wireframe else {
             return nil
         }
+
+        wireframes.append(wireframe)
+        return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
     }
 
-    private func makeImageWireframe(for layerSnapshot: CALayerSnapshot) -> SRWireframe? {
-        switch imageSnapshotResults[layerSnapshot.replayID] {
+    private func makeImageSnapshotWireframe(
+        for layerSnapshot: CALayerSnapshot,
+        result: ImageSnapshotResult,
+        parentTextInput textInput: TextInputSemantics?
+    ) -> SRWireframe? {
+        switch result {
         case .success(let imageSnapshot):
-            let resource = ImageSnapshotResource(image: imageSnapshot.image)
-            resources.append(resource)
+            do {
+                switch try imageSnapshot.redacted(parentTextInput: textInput) {
+                case .image(let image):
+                    let resource = ImageSnapshotResource(image: image)
+                    resources.append(resource)
 
-            return SRWireframe(
-                id: layerSnapshot.replayID,
-                imageSnapshot: imageSnapshot,
-                resource: resource
-            )
+                    return SRWireframe(
+                        id: layerSnapshot.replayID,
+                        imageSnapshot: imageSnapshot,
+                        resource: resource
+                    )
+                case .placeholder(let color):
+                    return SRWireframe(
+                        layerSnapshot: layerSnapshot,
+                        placeholderColor: color
+                    )
+                }
+            } catch {
+                return SRWireframe(
+                    placeholderFor: layerSnapshot,
+                    label: .redactedPlaceholder
+                )
+            }
         case .failure(.timedOut):
             return SRWireframe(
                 placeholderFor: layerSnapshot,
@@ -168,14 +195,16 @@ internal class CompositionTreeBuilder {
             )
         case .failure(.discarded):
             return nil
-        case .none:
-            return SRWireframe(
-                placeholderFor: layerSnapshot,
-                label: layerSnapshot.imagePrivacyLevel == .maskNonBundledOnly
-                    ? .contentImagePlaceholder
-                    : .imagePlaceholder
-            )
         }
+    }
+
+    private func makeVisibleWebViewWireframe(
+        for layerSnapshot: CALayerSnapshot,
+        webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
+    ) -> SRWireframe {
+        let wireframe = SRWireframe(layerSnapshot: layerSnapshot, webView: webView)
+        pendingWebViewSlotIDs.remove(webView.slotID)
+        return wireframe
     }
 
     private func makeHiddenWebViewWireframes() -> [SRWireframe] {
@@ -189,6 +218,19 @@ extension String {
     fileprivate static let imagePlaceholder = "Image"
     fileprivate static let contentImagePlaceholder = "Content Image"
     fileprivate static let timedOutPlaceholder = "Timed out"
+    fileprivate static let redactedPlaceholder = "Redacted"
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension CALayerSnapshot {
+    var wireframeID: Int64 {
+        switch observation.semantics {
+        case .webView(let webView):
+            return Int64(webView.slotID)
+        default:
+            return replayID
+        }
+    }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
