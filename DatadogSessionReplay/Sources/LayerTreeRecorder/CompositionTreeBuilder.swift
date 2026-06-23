@@ -5,8 +5,7 @@
  */
 
 #if os(iOS)
-import Foundation
-import UIKit
+import DatadogInternal
 
 /// Builds the composition tree produced by the layer recording pipeline.
 @available(iOS 13.0, tvOS 13.0, *)
@@ -130,6 +129,14 @@ internal class CompositionTreeBuilder {
             wireframes.append(wireframe)
 
             return SRCompositionLayerChild(id: snapshot.replayID, type: .wireframe)
+        case .image:
+            guard let wireframe = makeImageWireframe(for: snapshot) else {
+                return nil
+            }
+
+            wireframes.append(wireframe)
+
+            return SRCompositionLayerChild(id: snapshot.replayID, type: .wireframe)
         case .webView(let webView):
             let wireframe = SRWireframe(layerSnapshot: snapshot, webView: webView)
 
@@ -143,11 +150,45 @@ internal class CompositionTreeBuilder {
         }
     }
 
+    private func makeImageWireframe(for layerSnapshot: CALayerSnapshot) -> SRWireframe? {
+        switch imageSnapshotResults[layerSnapshot.replayID] {
+        case .success(let imageSnapshot):
+            let resource = ImageSnapshotResource(image: imageSnapshot.image)
+            resources.append(resource)
+
+            return SRWireframe(
+                id: layerSnapshot.replayID,
+                imageSnapshot: imageSnapshot,
+                resource: resource
+            )
+        case .failure(.timedOut):
+            return SRWireframe(
+                placeholderFor: layerSnapshot,
+                label: .timedOutPlaceholder
+            )
+        case .failure(.discarded):
+            return nil
+        case .none:
+            return SRWireframe(
+                placeholderFor: layerSnapshot,
+                label: layerSnapshot.imagePrivacyLevel == .maskNonBundledOnly
+                    ? .contentImagePlaceholder
+                    : .imagePlaceholder
+            )
+        }
+    }
+
     private func makeHiddenWebViewWireframes() -> [SRWireframe] {
         let result = pendingWebViewSlotIDs.map(SRWireframe.init(hiddenWebViewSlotID:))
         pendingWebViewSlotIDs.removeAll()
         return result
     }
+}
+
+extension String {
+    fileprivate static let imagePlaceholder = "Image"
+    fileprivate static let contentImagePlaceholder = "Content Image"
+    fileprivate static let timedOutPlaceholder = "Timed out"
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -158,141 +199,5 @@ private extension CALayerSnapshot.SemanticObservation {
         }
         return textInput
     }
-}
-
-extension SRWireframe {
-    fileprivate init(hiddenWebViewSlotID slotID: Int) {
-        self = .webviewWireframe(
-            value: .init(
-                height: 0,
-                id: Int64(slotID),
-                isVisible: false,
-                slotId: String(slotID),
-                width: 0,
-                x: 0,
-                y: 0
-            )
-        )
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(
-        layerSnapshot: CALayerSnapshot,
-        label: CALayerSnapshot.SemanticObservation.LabelSemantics
-    ) {
-        let text = layerSnapshot.textAndInputPrivacyLevel.staticTextObfuscator.mask(text: label.text ?? "")
-        let hasVisibleText = !text.isEmpty
-        let hasVisibleAppearance = layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder
-
-        guard hasVisibleText || hasVisibleAppearance else {
-            return nil
-        }
-
-        self = .textWireframe(
-            value: .init(
-                border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
-                text: text,
-                textPosition: .init(label: label),
-                textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
-                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
-            )
-        )
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init(
-        layerSnapshot: CALayerSnapshot,
-        webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
-    ) {
-        self = .webviewWireframe(
-            value: .init(
-                border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(webView.slotFrame.height),
-                id: Int64(webView.slotID),
-                isVisible: true,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
-                slotId: String(webView.slotID),
-                width: Int64.ddWithNoOverflow(webView.slotFrame.width),
-                x: Int64.ddWithNoOverflow(webView.slotFrame.minX),
-                y: Int64.ddWithNoOverflow(webView.slotFrame.minY)
-            )
-        )
-    }
-}
-
-extension SRTextPosition {
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init(label: CALayerSnapshot.SemanticObservation.LabelSemantics) {
-        self.init(
-            alignment: .init(systemTextAlignment: label.textAlignment)
-        )
-    }
-}
-
-extension SRTextStyle {
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init(
-        label: CALayerSnapshot.SemanticObservation.LabelSemantics,
-        frame: CGRect
-    ) {
-        var fontSize = Int64.ddWithNoOverflow(label.font?.pointSize ?? .fallbackFontSize)
-
-        if let text = label.text, !text.isEmpty, label.adjustsFontSizeToFitWidth {
-            let calculatedFontSize = Int64(sqrt(frame.width * frame.height / CGFloat(text.count)))
-
-            if calculatedFontSize < fontSize {
-                fontSize = calculatedFontSize
-            }
-        }
-
-        self.init(
-            color: label.textColor.flatMap { hexString(from: $0.cgColor) } ?? .fallbackColor,
-            family: .fallbackFontFamily,
-            size: fontSize,
-            truncationMode: .init(label.lineBreakMode)
-        )
-    }
-}
-
-extension SRShapeBorder {
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(layerSnapshot: CALayerSnapshot) {
-        guard
-            let borderColor = layerSnapshot.borderColor,
-            layerSnapshot.borderWidth > 0
-        else {
-            return nil
-        }
-        self.init(
-            color: hexString(from: borderColor) ?? .fallbackColor,
-            width: Int64.ddWithNoOverflow(layerSnapshot.borderWidth.rounded(.up))
-        )
-    }
-}
-extension SRShapeStyle {
-    @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(layerSnapshot: CALayerSnapshot) {
-        guard let backgroundColor = layerSnapshot.backgroundColor else {
-            return nil
-        }
-        self.init(
-            backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
-            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init),
-        )
-    }
-}
-
-extension String {
-    fileprivate static let fallbackColor = "#FF0000FF"
-    fileprivate static let fallbackFontFamily = "-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif"
-}
-
-extension CGFloat {
-    fileprivate static let fallbackFontSize: Self = 10
 }
 #endif

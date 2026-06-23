@@ -231,6 +231,166 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates image wireframe for image snapshot")
+    func buildCreatesImageWireframeForImageSnapshot() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let imageView = UIImageView(image: UIImage.mockWith(color: .red))
+        imageView.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        imageView.layer.backgroundColor = UIColor.blue.cgColor
+        imageView.layer.borderColor = UIColor.green.cgColor
+        imageView.layer.borderWidth = 2
+        imageView.layer.cornerRadius = 4
+        rootView.addSubview(imageView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let imageSnapshot = try #require(root.sublayers.first)
+        let snapshotImage = UIImage.mockWith(color: .red)
+        let renderedImage = ImageSnapshot.mockAny(
+            image: snapshotImage,
+            frame: imageSnapshot.absoluteFrame,
+            layerClass: imageSnapshot.layerClass,
+            delegateClass: imageSnapshot.delegateClass,
+            hasLayerSemantics: false,
+            imagePrivacyLevel: .maskNone
+        )
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [imageSnapshot.replayID: .success(renderedImage)]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == imageSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .imageWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected an image wireframe")
+            return
+        }
+
+        let resource = try #require(output.resources.first)
+        #expect(output.resources.count == 1)
+        #expect(resource.mimeType == "image/png")
+        #expect(resource.calculateData().isEmpty == false)
+        #expect(wireframe.id == imageSnapshot.replayID)
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 40)
+        #expect(wireframe.isEmpty == false)
+        #expect(wireframe.mimeType == resource.mimeType)
+        #expect(wireframe.resourceId == resource.calculateIdentifier())
+        #expect(wireframe.border == nil)
+        #expect(wireframe.shapeStyle == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates placeholder for image without snapshot result")
+    func buildCreatesPlaceholderForImageWithoutSnapshotResult() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        rootView.addSubview(imageView)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskNonBundledOnly))
+        )
+        let imageSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.wireframes.count == 1)
+        guard case .placeholderWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a placeholder wireframe")
+            return
+        }
+
+        #expect(wireframe.id == imageSnapshot.replayID)
+        #expect(wireframe.label == "Content Image")
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 40)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates placeholder for timed out image snapshot")
+    func buildCreatesPlaceholderForTimedOutImageSnapshot() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        rootView.addSubview(imageView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let imageSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [imageSnapshot.replayID: .failure(.timedOut)]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.wireframes.count == 1)
+        guard case .placeholderWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a placeholder wireframe")
+            return
+        }
+
+        #expect(wireframe.id == imageSnapshot.replayID)
+        #expect(wireframe.label == "Timed out")
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build skips discarded image snapshot")
+    func buildSkipsDiscardedImageSnapshot() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        rootView.addSubview(imageView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let imageSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [imageSnapshot.replayID: .failure(.discarded)]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.isEmpty)
+        #expect(output.wireframes.isEmpty)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given

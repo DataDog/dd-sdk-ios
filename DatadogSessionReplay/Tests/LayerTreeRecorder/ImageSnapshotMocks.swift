@@ -44,4 +44,14 @@ extension ImageSnapshotData {
         ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
     }
 }
+
+extension UIImage {
+    static func mockWith(color: UIColor) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10))
+        return renderer.image { context in
+            color.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
+        }
+    }
+}
 #endif
