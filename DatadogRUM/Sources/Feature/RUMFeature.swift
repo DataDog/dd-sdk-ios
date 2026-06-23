@@ -158,7 +158,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
-            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: core.messageBus),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
                 let viewEndedController = ViewEndedController(
@@ -268,6 +268,25 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
+        let crashReportReceiver = CrashReportReceiver(
+            featureScope: featureScope,
+            applicationID: configuration.applicationID,
+            dateProvider: configuration.dateProvider,
+            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            uuidGenerator: configuration.uuidGenerator,
+            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+            syntheticsTest: {
+                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+                } else {
+                    return nil
+                }
+            }(),
+            eventsMapper: eventsMapper
+        )
+        core.messageBus.subscribe(receiver: crashReportReceiver)
+
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
@@ -287,23 +306,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache
             ),
-            CrashReportReceiver(
-                featureScope: featureScope,
-                applicationID: configuration.applicationID,
-                dateProvider: configuration.dateProvider,
-                sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                trackBackgroundEvents: configuration.trackBackgroundEvents,
-                uuidGenerator: configuration.uuidGenerator,
-                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-                syntheticsTest: {
-                    if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
-                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                    } else {
-                        return nil
-                    }
-                }(),
-                eventsMapper: eventsMapper
-            )
+            crashReportReceiver
         ]
 
         if let watchdogTermination = watchdogTermination {

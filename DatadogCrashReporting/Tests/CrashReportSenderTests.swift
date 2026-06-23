@@ -17,7 +17,7 @@ class CrashReportSenderTests: XCTestCase {
         // Given
         let receiver = CrashReceiverMock()
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: receiver)
+        core.messageBus.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .granted)
         let crashReport: DDCrashReport = .mockAny()
@@ -35,7 +35,7 @@ class CrashReportSenderTests: XCTestCase {
         // Given
         let receiver = CrashReceiverMock()
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: receiver)
+        core.messageBus.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .notGranted)
         let crashReport: DDCrashReport = .mockAny()
@@ -51,7 +51,7 @@ class CrashReportSenderTests: XCTestCase {
         // Given
         let receiver = CrashReceiverMock()
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: receiver)
+        core.messageBus.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(trackingConsent: .pending)
         let crashReport: DDCrashReport = .mockAny()
@@ -67,7 +67,7 @@ class CrashReportSenderTests: XCTestCase {
         // Given
         let receiver = CrashReceiverMock()
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: receiver)
+        core.messageBus.subscribe(receiver: receiver)
         let sender = MessageBusSender(core: core)
         let crashContext: CrashContext = .mockWith(
             service: "test-service",

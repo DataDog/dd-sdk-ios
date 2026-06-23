@@ -58,7 +58,7 @@ class CrashReporterTests: XCTestCase {
         let rumCrashReceiver = CrashReceiverMock()
 
         let core = PassthroughCoreMock()
-        core.subscribe(receiver: rumCrashReceiver)
+        core.messageBus.subscribe(receiver: rumCrashReceiver)
 
         let plugin = CrashReportingPluginMock()
 
