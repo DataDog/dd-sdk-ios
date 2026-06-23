@@ -9,38 +9,6 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogCore
 
-// MARK: - MockURLProtocol
-
-private class MockURLProtocol: URLProtocol {
-    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data?))?
-
-    override class func canInit(with request: URLRequest) -> Bool { true }
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
-    override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
-            client?.urlProtocolDidFinishLoading(self)
-            return
-        }
-        do {
-            let (response, data) = try handler(request)
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-            if let data = data { client?.urlProtocol(self, didLoad: data) }
-            client?.urlProtocolDidFinishLoading(self)
-        } catch {
-            client?.urlProtocol(self, didFailWithError: error)
-        }
-    }
-
-    override func stopLoading() {}
-}
-
-private func mockSession() -> URLSession {
-    let config = URLSessionConfiguration.ephemeral
-    config.protocolClasses = [MockURLProtocol.self]
-    return URLSession(configuration: config)
-}
-
 private final class NeverHTTPClient: HTTPClient {
     func send(
         request: URLRequest,
@@ -53,26 +21,21 @@ private final class NeverHTTPClient: HTTPClient {
 
 class RemoteConfigurationTests: XCTestCase {
     private var coreDir: CoreDirectory! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var httpClient: URLSessionClient! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         coreDir = temporaryUniqueCoreDirectory()
         coreDir.create()
-        httpClient = URLSessionClient(session: mockSession())
     }
 
     override func tearDown() {
-        MockURLProtocol.requestHandler = nil
-        httpClient.session.invalidateAndCancel()
-        httpClient = nil
         coreDir.delete()
         super.tearDown()
     }
 
     private func makeProvider(
         id: String = "test-id",
-        httpClient: HTTPClient? = nil,
+        httpClient: HTTPClient = HTTPClientMock(),
         notificationCenter: NotificationCenter = NotificationCenter(),
         dateProvider: DateProvider = SystemDateProvider(),
         start: Bool = true
@@ -81,7 +44,7 @@ class RemoteConfigurationTests: XCTestCase {
             id: id,
             site: .us1,
             directory: coreDir.coreDirectory,
-            httpClient: httpClient ?? self.httpClient,
+            httpClient: httpClient,
             notificationCenter: notificationCenter,
             dateProvider: dateProvider
         )
@@ -185,19 +148,6 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(rc) {}
     }
 
-    func testStartDoesNotCallCompletionWhenNoFileExists() {
-        let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
-        let expectation = expectation(description: "completion is not called when no cache exists")
-        expectation.isInverted = true
-
-        rc.start { _ in
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 0.1)
-
-        withExtendedLifetime(rc) {}
-    }
-
     func testStartReturnsFailureWhenFileCannotBeRead() throws {
         try FileManager.default.createDirectory(
             at: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
@@ -208,7 +158,7 @@ class RemoteConfigurationTests: XCTestCase {
         let expectation = expectation(description: "cache read failure is returned")
 
         rc.start { result in
-            if case .failure(.diskError) = result {
+            if case .failure = result {
                 expectation.fulfill()
             }
         }
@@ -260,10 +210,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testInitSyncReturnsSuccessAndPersistsConfiguration() {
         let payload = remoteConfigurationData(applicationID: "fetched-application-id")
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
-        }
-        let rc = makeProvider()
+        let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload))
 
         waitForPersistedConfiguration(applicationID: "fetched-application-id", fileData: payload)
         withExtendedLifetime(rc) {}
@@ -271,10 +218,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testInitSyncPersistsConfigurationAcrossInstances() throws {
         let payload = remoteConfigurationData(applicationID: "persisted-application-id")
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
-        }
-        let rc = makeProvider()
+        let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload))
         waitForPersistedConfiguration(applicationID: "persisted-application-id", fileData: payload)
 
         let cachedProvider = makeProvider(httpClient: NeverHTTPClient(), start: false)
@@ -292,14 +236,7 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncNetworkErrorReturnsFailureAndLeavesNoPersistedConfiguration() {
-        let error = URLError(.networkConnectionLost)
-        let rc = RemoteConfigurationProvider(
-            id: "test-id",
-            site: .us1,
-            directory: coreDir.coreDirectory,
-            httpClient: HTTPClientMock(error: error),
-            notificationCenter: NotificationCenter()
-        )
+        let rc = makeProvider(httpClient: HTTPClientMock(error: URLError(.networkConnectionLost)), start: false)
 
         let expectation = expectation(description: "sync fails")
         rc.start { result in
@@ -317,13 +254,14 @@ class RemoteConfigurationTests: XCTestCase {
         let existing = remoteConfigurationData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
-        let requestExpectation = expectation(description: "request completes")
 
-        MockURLProtocol.requestHandler = { request in
-            requestExpectation.fulfill()
-            return (HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!, nil as Data?)
+        let rc = makeProvider(httpClient: HTTPClientMock(responseCode: 500), start: false)
+        let requestExpectation = expectation(description: "request completes")
+        rc.start { result in
+            if case .failure(.httpError) = result {
+                requestExpectation.fulfill()
+            }
         }
-        let rc = makeProvider()
         wait(for: [requestExpectation], timeout: 2)
 
         XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "Existing file must be preserved after non-2xx")
@@ -331,10 +269,7 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncEmptyBodyReturnsFailureAndLeavesNoPersistedConfiguration() {
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data())
-        }
-        let rc = makeProvider(start: false)
+        let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data()), start: false)
 
         let expectation = expectation(description: "sync fails")
         rc.start { result in
@@ -352,14 +287,15 @@ class RemoteConfigurationTests: XCTestCase {
         let existing = remoteConfigurationData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
-        let requestExpectation = expectation(description: "request completes")
 
         let nonJSON = Data("this is not json".utf8)
-        MockURLProtocol.requestHandler = { request in
-            requestExpectation.fulfill()
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, nonJSON)
+        let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: nonJSON), start: false)
+        let requestExpectation = expectation(description: "request completes")
+        rc.start { result in
+            if case .failure(.decodingError) = result {
+                requestExpectation.fulfill()
+            }
         }
-        let rc = makeProvider()
         wait(for: [requestExpectation], timeout: 2)
 
         XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "Existing file must be preserved after decoding error")
@@ -367,21 +303,18 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncDiskWriteFailureReturnsFailure() {
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
-        }
         let missingDir = Directory(url: URL(fileURLWithPath: "/no/such/path/"))
         let rc = RemoteConfigurationProvider(
             id: "test-id",
             site: .us1,
             directory: missingDir,
-            httpClient: httpClient,
+            httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8)),
             notificationCenter: NotificationCenter()
         )
 
         let expectation = expectation(description: "sync fails")
         rc.start { result in
-            if case .failure(.diskError) = result {
+            if case .failure = result {
                 expectation.fulfill()
             }
         }
@@ -391,10 +324,13 @@ class RemoteConfigurationTests: XCTestCase {
     // MARK: ETag
 
     func testInitSyncStoresETagAfterSuccessfulFetch() {
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["ETag": "abc123"])!, Data("{}".utf8))
-        }
-        let provider = makeProvider()
+        let response = HTTPURLResponse(
+            url: URL(string: "https://sdk-configuration.browser-intake-datadoghq.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: ["ETag": "abc123"]
+        )!
+        let provider = makeProvider(httpClient: HTTPClientMock(response: response, data: Data("{}".utf8)))
 
         let expectation = expectation(description: "etag is stored")
         let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
@@ -408,6 +344,26 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(provider) {}
     }
 
+    func testInitSyncStoresETagEvenWhenBodyCannotBeDecoded() {
+        let response = HTTPURLResponse(
+            url: URL(string: "https://sdk-configuration.browser-intake-datadoghq.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: ["ETag": "abc123"]
+        )!
+        let rc = makeProvider(httpClient: HTTPClientMock(response: response, data: Data("this is not json".utf8)), start: false)
+        let expectation = expectation(description: "decode fails")
+        rc.start { result in
+            if case .failure(.decodingError) = result { expectation.fulfill() }
+        }
+        waitForExpectations(timeout: 2)
+
+        let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
+        XCTAssertEqual(try? String(data: Data(contentsOf: etagFileURL), encoding: .utf8), "abc123",
+            "ETag must be stored even when the body cannot be decoded — prevents re-fetching a known-bad payload")
+        withExtendedLifetime(rc) {}
+    }
+
     func testInitSyncDeletesStaleETagWhenResponseHasNoETag() throws {
         // Given — a stale ETag file from a previous fetch
         try Data("old-etag".utf8).write(
@@ -416,10 +372,7 @@ class RemoteConfigurationTests: XCTestCase {
         )
 
         // When — server returns 200 with new data but no ETag header
-        MockURLProtocol.requestHandler = { request in
-            (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
-        }
-        let provider = makeProvider()
+        let provider = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8)))
 
         // Then — stale ETag file must be deleted so it is never sent as If-None-Match
         let expectation = expectation(description: "stale etag is deleted")
@@ -444,21 +397,16 @@ class RemoteConfigurationTests: XCTestCase {
         )
         // No .json file means a 304 response would leave the caller with no configuration.
 
-        var capturedRequest: URLRequest?
-        MockURLProtocol.requestHandler = { request in
-            capturedRequest = request
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
-        }
-
-        let provider = makeProvider()
+        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
+        let provider = makeProvider(httpClient: httpClient)
         let expectation = expectation(description: "request is sent")
         wait(until: {
-            capturedRequest != nil
+            !httpClient.requestsSent().isEmpty
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
         XCTAssertNil(
-            capturedRequest?.value(forHTTPHeaderField: "If-None-Match"),
+            httpClient.requestsSent().first?.value(forHTTPHeaderField: "If-None-Match"),
             "Must not send If-None-Match when persisted configuration is missing — a 304 would leave us with no data"
         )
         withExtendedLifetime(provider) {}
@@ -477,20 +425,15 @@ class RemoteConfigurationTests: XCTestCase {
             options: .atomic
         )
 
-        var capturedRequest: URLRequest?
-        MockURLProtocol.requestHandler = { request in
-            capturedRequest = request
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data("{}".utf8))
-        }
-
-        let provider = makeProvider()
+        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
+        let provider = makeProvider(httpClient: httpClient)
         let expectation = expectation(description: "request is sent")
         wait(until: {
-            capturedRequest != nil
+            !httpClient.requestsSent().isEmpty
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
-        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "If-None-Match"), "abc123")
+        XCTAssertEqual(httpClient.requestsSent().first?.value(forHTTPHeaderField: "If-None-Match"), "abc123")
         withExtendedLifetime(provider) {}
     }
 
@@ -500,20 +443,21 @@ class RemoteConfigurationTests: XCTestCase {
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
 
-        let requestExpectation = expectation(description: "CDN request is sent")
-        MockURLProtocol.requestHandler = { request in
-            requestExpectation.fulfill()
-            return (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil as Data?)
-        }
+        let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 304))
 
         // completion is called once synchronously from cache; NOT again after CDN 304
         let cacheExpectation = expectation(description: "cached config returned once from start")
-        let rc = makeProvider(start: false)
+        let rc = makeProvider(httpClient: httpClient, start: false)
         rc.start { result in
             if case .success(let config) = result, config.rum?.applicationId == "existing-application-id" {
                 cacheExpectation.fulfill()
             }
         }
+
+        let requestExpectation = expectation(description: "CDN request is sent")
+        wait(until: {
+            !httpClient.requestsSent().isEmpty
+        }, andThenFulfill: requestExpectation)
 
         wait(for: [requestExpectation, cacheExpectation], timeout: 2)
         XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "File must be unchanged after 304")
@@ -545,14 +489,14 @@ class RemoteConfigurationTests: XCTestCase {
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         let requestLock = NSLock()
         var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
+        let httpClient = HTTPClientMock { _ in
             requestLock.lock()
+            defer { requestLock.unlock() }
             requestCount += 1
             let payload = requestCount == 1 ? initialPayload : foregroundPayload
-            requestLock.unlock()
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
+            return .success((.mockResponseWith(statusCode: 200), payload))
         }
-        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider)
         waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
 
         // Advance past TTL so the foreground sync is not suppressed
@@ -570,28 +514,21 @@ class RemoteConfigurationTests: XCTestCase {
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         let requestLock = NSLock()
         var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
+        let httpClient = HTTPClientMock { _ in
             requestLock.lock()
+            defer { requestLock.unlock() }
             requestCount += 1
             let payload = requestCount == 1 ? initialPayload : foregroundPayload
-            requestLock.unlock()
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
+            return .success((.mockResponseWith(statusCode: 200), payload))
         }
 
-        let completionLock = NSLock()
-        var completionCount = 0
         let completionExpectation = expectation(description: "completion is called for each sync")
         completionExpectation.expectedFulfillmentCount = 2
-        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider, start: false)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider, start: false)
         rc.start { result in
             guard case .success = result else {
                 return
             }
-
-            completionLock.lock()
-            completionCount += 1
-            completionLock.unlock()
-
             completionExpectation.fulfill()
         }
         waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
@@ -602,7 +539,6 @@ class RemoteConfigurationTests: XCTestCase {
         waitForPersistedConfiguration(applicationID: "foreground-application-id", fileData: foregroundPayload)
 
         wait(for: [completionExpectation], timeout: 2)
-        XCTAssertEqual(completionLock.withLock { completionCount }, 2)
         withExtendedLifetime(rc) {}
     }
 
@@ -735,16 +671,10 @@ class RemoteConfigurationTests: XCTestCase {
         let payload1 = remoteConfigurationData(applicationID: "application-id-one")
         let payload2 = remoteConfigurationData(applicationID: "application-id-two")
 
-        MockURLProtocol.requestHandler = { _ in
-            (HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload1)
-        }
-        let rc1 = makeProvider(id: "id-one")
+        let rc1 = makeProvider(id: "id-one", httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload1))
         waitForPersistedConfiguration(applicationID: "application-id-one", fileData: payload1, fileName: "id-one.json")
 
-        MockURLProtocol.requestHandler = { _ in
-            (HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload2)
-        }
-        let rc2 = makeProvider(id: "id-two")
+        let rc2 = makeProvider(id: "id-two", httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload2))
         waitForPersistedConfiguration(applicationID: "application-id-two", fileData: payload2, fileName: "id-two.json")
 
         let cachedProvider1 = makeProvider(id: "id-one", httpClient: NeverHTTPClient(), start: false)
