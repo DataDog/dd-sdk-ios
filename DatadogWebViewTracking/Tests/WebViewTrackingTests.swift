@@ -15,6 +15,47 @@ import DatadogInternal
 
 @MainActor
 class WebViewTrackingTests: XCTestCase {
+    private static var warmUpWebView: WKWebView?
+
+    /// Warms up WebKit before running tests.
+    ///
+    /// WebKit takes a while to load on slow CI servers, and causes tests to be flaky. This setup method
+    /// warms up WebKit (rendering and JS engines) before proceeding. This way, tests like
+    /// `testItChangesBridgeDecisionOnSessionRollover` should not fail randomly.
+    ///
+    /// - Note: This should be a class `setUp` method but can't because it calls `wait(for:timeout:)`
+    /// which is a class method.
+    override func setUp() {
+        super.setUp()
+
+        if Self.warmUpWebView == nil {
+            // WebKit not warmed up yet, let's do that now.
+            let loaded = XCTestExpectation(description: "WebKit warm-up")
+            let delegate = WarmUpNavigationDelegate {
+                loaded.fulfill()
+            }
+            let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+            webView.navigationDelegate = delegate
+            Self.warmUpWebView = webView
+
+            webView.loadHTMLString("<html><body>warmup</body></html>", baseURL: nil)
+            wait(for: [loaded], timeout: 60.0)
+        }
+    }
+
+    /// Fulfills a closure when the warm-up navigation finishes loading.
+    private final class WarmUpNavigationDelegate: NSObject, WKNavigationDelegate {
+        private let onFinish: () -> Void
+
+        init(onFinish: @escaping () -> Void) {
+            self.onFinish = onFinish
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {         // swiftlint:disable:this implicitly_unwrapped_optional
+            onFinish()
+        }
+    }
+
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
         let config = WKWebViewConfiguration()
@@ -213,6 +254,12 @@ class WebViewTrackingTests: XCTestCase {
             }
 
             wait(for: [innerExpectation], timeout: 5.0)
+
+            // Throttle: pump the run loop briefly between polls instead of busy-spinning
+            // `evaluateJavaScript`, which otherwise floods the WebContent process with IPC.
+            if !isDone {
+                RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+            }
         }
 
         wait(for: [outerExpectation], timeout: 10.0)
@@ -249,9 +296,6 @@ class WebViewTrackingTests: XCTestCase {
 
         core.flush()
 
-        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-//        Thread.sleep(forTimeInterval: 1.0)
-
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -268,8 +312,6 @@ class WebViewTrackingTests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
 
         webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
-
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "false", webView: webView, description: "sessionUUID1")
 
@@ -288,9 +330,7 @@ class WebViewTrackingTests: XCTestCase {
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
-
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
