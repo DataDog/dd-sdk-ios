@@ -25,22 +25,37 @@ class WebViewTrackingTests: XCTestCase {
     ///
     /// - Note: This should be a class `setUp` method but can't because it calls `wait(for:timeout:)`
     /// which is a class method.
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
         if Self.warmUpWebView == nil {
+            struct WarmUpError: LocalizedError {
+                var errorDescription: String?
+            }
+
             // WebKit not warmed up yet, let's do that now.
             let loaded = XCTestExpectation(description: "WebKit warm-up")
             let delegate = WarmUpNavigationDelegate {
                 loaded.fulfill()
             }
-            withExtendedLifetime(delegate) {
+            try withExtendedLifetime(delegate) {
                 let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
                 webView.navigationDelegate = delegate
                 Self.warmUpWebView = webView
 
                 webView.loadHTMLString("<html><body>warmup</body></html>", baseURL: nil)
-                wait(for: [loaded], timeout: 60.0)
+                let jsExpectation = XCTestExpectation(description: "JS engine warm-up")
+                var warmUpError: WarmUpError?
+                webView.evaluateJavaScript("String(41 + 1)") { result, error in
+                    if error != nil || (result as? String) != "42" {
+                        warmUpError = WarmUpError(errorDescription: "Failed warm-up JS run. Error: \(String(describing: error)); Result: \(String(describing: result))")
+                    }
+                    jsExpectation.fulfill()
+                }
+                wait(for: [loaded, jsExpectation], timeout: 60.0)
+                if let warmUpError {
+                    throw warmUpError
+                }
             }
         }
     }
@@ -267,6 +282,34 @@ class WebViewTrackingTests: XCTestCase {
         wait(for: [outerExpectation], timeout: 10.0)
     }
 
+    /// Loads a simulated request on a WebView, and waits for the page to finish loading.
+    private func loadAndWait(on webView: WKWebView, request: URLRequest, responseHTML: String) {
+        final class NavigationDelegate: NSObject, WKNavigationDelegate {
+            let expectation: XCTestExpectation
+
+            var expectedNavigation: WKNavigation?
+
+            init(expectation: XCTestExpectation) {
+                self.expectation = expectation
+            }
+
+            func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { // swiftlint:disable:this implicitly_unwrapped_optional
+                if navigation == expectedNavigation {
+                    expectation.fulfill()
+                }
+            }
+        }
+
+        let expectation = XCTestExpectation(description: "Load request")
+        let delegate = NavigationDelegate(expectation: expectation)
+        webView.navigationDelegate = delegate
+        withExtendedLifetime(delegate) {
+            delegate.expectedNavigation = webView.loadSimulatedRequest(request, responseHTML: responseHTML)
+            wait(for: [expectation], timeout: 10)
+            webView.navigationDelegate = nil
+        }
+    }
+
     @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
@@ -311,9 +354,7 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        Thread.sleep(forTimeInterval: 1.0)
-
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "false", webView: webView, description: "sessionUUID1")
 
@@ -332,19 +373,9 @@ class WebViewTrackingTests: XCTestCase {
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-        let loadedAboutPage = XCTestExpectation(description: "About page loaded")
-        let delegate = WarmUpNavigationDelegate {
-            loadedAboutPage.fulfill()
-        }
-        webView.navigationDelegate = delegate
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
 
-        withExtendedLifetime(delegate) {
-            webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
-
-            wait(for: [loadedAboutPage], timeout: 10)
-
-            waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
-        }
+        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
 
     @available(iOS 15.0, *)
@@ -391,8 +422,6 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        Thread.sleep(forTimeInterval: 1.0)
-
         // Load a page containing a same-origin iframe with a nested iframe
         let html = """
         <html><body>
@@ -400,10 +429,7 @@ class WebViewTrackingTests: XCTestCase {
             <iframe srcdoc="<html><body>Outer iframe<iframe srcdoc='<html><body>Nested iframe</body></html>'></iframe></body></html>"></iframe>
         </body></html>
         """
-        webView.loadSimulatedRequest(
-            URLRequest(url: URL(string: "http://localhost")!),
-            responseHTML: html
-        )
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost")!), responseHTML: html)
 
         let mainJS = "window.DatadogEventBridge.getIsTraceSampled()"
         let iframeJS = "window.frames[0].DatadogEventBridge.getIsTraceSampled()"
