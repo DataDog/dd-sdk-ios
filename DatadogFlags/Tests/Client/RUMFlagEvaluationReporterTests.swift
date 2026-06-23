@@ -22,7 +22,7 @@ final class RUMFlagEvaluationReporterTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let recorder = RUMFlagEvaluationRecorder()
-        core.subscribe(receiver: recorder)
+        core.messageBus.subscribe(receiver: recorder)
         let reporter = RUMFlagEvaluationReporter(messageBus: core.messageBus)
 
         // When
