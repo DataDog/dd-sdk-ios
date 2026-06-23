@@ -774,4 +774,60 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
     }
+
+    // MARK: - Client-Side Stats opt-out tag (`_dd.compute_stats`)
+
+    func testWhenStatsComputationIsEnabled_itStampsComputeStatsZero() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertTrue(span.clientComputesStats)
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "Backend should be told to skip its own stats computation")
+    }
+
+    func testWhenStatsComputationIsDisabled_itOmitsComputeStatsTag() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertFalse(span.clientComputesStats)
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertNil(json["meta._dd.compute_stats"], "The tag must be omitted so the backend keeps computing stats (backwards-compatible default)")
+    }
 }
