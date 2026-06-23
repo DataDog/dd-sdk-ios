@@ -19,6 +19,9 @@ internal struct SpanEventBuilder: Sendable {
     let eventsMapper: SpanEventMapper?
     /// If spans should be enriched with the current RUM context.
     let bundleWithRUM: Bool
+    /// Whether client-side stats computation is enabled. When `true`, spans are stamped with
+    /// `meta._dd.compute_stats = "0"` so the backend skips its own (double-counting) computation.
+    let statsComputationEnabled: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
     /// Span attributes encoder
@@ -91,6 +94,7 @@ internal struct SpanEventBuilder: Sendable {
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: context.source,
+            clientComputesStats: statsComputationEnabled,
             origin: context.ciAppOrigin,
             samplingRate: samplingRate,
             samplingPriority: samplingPriority,
