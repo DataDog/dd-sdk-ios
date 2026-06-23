@@ -332,9 +332,19 @@ class WebViewTrackingTests: XCTestCase {
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
+        let loadedAboutPage = XCTestExpectation(description: "About page loaded")
+        let delegate = WarmUpNavigationDelegate {
+            loadedAboutPage.fulfill()
+        }
+        webView.navigationDelegate = delegate
 
-        waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
+        withExtendedLifetime(delegate) {
+            webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
+
+            wait(for: [loadedAboutPage], timeout: 10)
+
+            waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
+        }
     }
 
     @available(iOS 15.0, *)
