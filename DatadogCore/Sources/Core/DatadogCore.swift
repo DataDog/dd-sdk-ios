@@ -56,12 +56,11 @@ internal final class DatadogCore {
     let bus = MessageBus()
 
     /// The remote configuration provider, if configured.
-    var remoteConfigurationProvider: RemoteConfigurationProvider?
+    let remoteConfigurationProvider: RemoteConfigurationProvider?
 
     /// The last successfully fetched remote configuration, if any.
-    var remoteConfiguration: RemoteConfiguration? {
-        remoteConfigurationProvider?.remoteConfiguration
-    }
+    @ReadWriteLock
+    var remoteConfiguration: RemoteConfiguration?
 
     /// Registry for Features.
     @ReadWriteLock
@@ -99,9 +98,9 @@ internal final class DatadogCore {
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-    	performance: PerformancePreset,
-    	httpClient: HTTPClient,
-    	encryption: DataEncryption?,
+        performance: PerformancePreset,
+        httpClient: HTTPClient,
+        encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
         maxBatchesPerUpload: Int,
@@ -132,6 +131,15 @@ internal final class DatadogCore {
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
             self?.send(message: .context(context))
+        }
+
+        self.remoteConfigurationProvider?.start { [weak self] result in
+            switch result {
+            case .success(let remoteConfiguration):
+                self?.remoteConfiguration = remoteConfiguration
+            case .failure(let error):
+                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
+            }
         }
     }
 
@@ -327,6 +335,7 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
     }
