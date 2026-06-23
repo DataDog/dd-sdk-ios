@@ -283,6 +283,7 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     /// Loads a simulated request on a WebView, and waits for the page to finish loading.
+    @available(iOS 15.0, *)
     private func loadAndWait(on webView: WKWebView, request: URLRequest, responseHTML: String) {
         final class NavigationDelegate: NSObject, WKNavigationDelegate {
             let expectation: XCTestExpectation
