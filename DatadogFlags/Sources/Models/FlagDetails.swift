@@ -71,6 +71,12 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     /// value is from a successful evaluation or a fallback to the default value.
     public var error: FlagEvaluationError?
 
+    /// The allocation key associated with this flag evaluation.
+    ///
+    /// Identifies the allocation bucket used when evaluating the flag. `nil` if the flag
+    /// was not found, evaluation failed, or no allocation was associated with this evaluation.
+    public var allocationKey: String?
+
     /// Creates detailed flag evaluation information.
     ///
     /// - Parameters:
@@ -79,17 +85,20 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
     ///   - variant: The variant key served, if any.
     ///   - reason: The evaluation reason, if available.
     ///   - error: Any error that occurred during evaluation.
+    ///   - allocationKey: The allocation key for the evaluation, or `nil` if not available.
     public init(
         key: String,
         value: T,
         variant: String? = nil,
         reason: String? = nil,
-        error: FlagEvaluationError? = nil
+        error: FlagEvaluationError? = nil,
+        allocationKey: String? = nil
     ) {
         self.key = key
         self.value = value
         self.variant = variant
         self.reason = reason
         self.error = error
+        self.allocationKey = allocationKey
     }
 }

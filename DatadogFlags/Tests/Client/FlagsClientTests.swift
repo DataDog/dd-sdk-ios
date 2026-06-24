@@ -232,7 +232,8 @@ final class FlagsClientTests: XCTestCase {
                 key: "boolean-flag",
                 value: true,
                 variant: "variation-124",
-                reason: "TARGETING_MATCH"
+                reason: "TARGETING_MATCH",
+                allocationKey: "allocation-124"
             )
         )
         XCTAssertEqual(
@@ -477,6 +478,52 @@ final class FlagsClientTests: XCTestCase {
             )
         )
         XCTAssertNil(flagAssignments["missing-flag"])
+    }
+
+    func testGetDetails_errorPathsHaveEmptyAllocationKey() {
+        // Given — a client with no context (providerNotReady) and one string flag (for typeMismatch)
+        let providerNotReadyClient = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        let clientWithFlags = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: false
+                        )
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let providerNotReadyDetails = providerNotReadyClient.getDetails(key: "any-flag", defaultValue: false)
+        let flagNotFoundDetails = clientWithFlags.getDetails(key: "missing-flag", defaultValue: false)
+        let typeMismatchDetails = clientWithFlags.getDetails(key: "string-flag", defaultValue: false)
+
+        // Then — all error paths return nil allocationKey
+        XCTAssertEqual(providerNotReadyDetails.error, .providerNotReady)
+        XCTAssertNil(providerNotReadyDetails.allocationKey)
+
+        XCTAssertEqual(flagNotFoundDetails.error, .flagNotFound)
+        XCTAssertNil(flagNotFoundDetails.allocationKey)
+
+        XCTAssertEqual(typeMismatchDetails.error, .typeMismatch)
+        XCTAssertNil(typeMismatchDetails.allocationKey)
     }
 
     func testSendFlagEvaluation() {
