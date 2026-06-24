@@ -51,7 +51,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidComplete.expectedFulfillmentCount = expectedFulfillmentCount
 
-        let delivery: ServerMock.Delivery = error.map { .failure(error: $0) } ?? .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: dataSize))
+        let delivery: ServerMock.Delivery = error.map { .failure(error: $0) } ?? .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: dataSize))
         let server = ServerMock(delivery: delivery, skipIsMainThreadCheck: true)
 
         scopeHandler(to: server)
@@ -110,7 +110,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)))
 
         handler.onRequestMutation = { _, _, _ in notifyRequestMutation.fulfill() }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -584,6 +584,67 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
+    func testRegisteredDelegate_doesNotBufferMediaResponseBody() throws {
+        // Regression test for RUM-16927: media responses must not be buffered at all in
+        // registered-delegate mode — raw bytes are useless for resourceAttributesProvider
+        // and large files would cause OOM.
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockWith(statusCode: 200, mimeType: "image/jpeg"),
+                data: .mockRandom(ofSize: 1024 * 1024) // 1 MB
+            ),
+            skipIsMainThreadCheck: true
+        )
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        session.dataTask(with: URL.mockAny()).resume()
+
+        wait(for: [notifyInterceptionDidComplete], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertNil(interception.data, "Media response body must not be buffered")
+        XCTAssertFalse(interception.isBodyTruncated, "Media responses are excluded before the cap, not truncated")
+    }
+
+    func testRegisteredDelegate_truncatesBodyAtSizeCap() throws {
+        // Regression test for RUM-16927: non-media responses larger than maxBufferedBodySize
+        // must be capped and isBodyTruncated must be set so the caller can log a warning.
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let overCapSize = NetworkInstrumentationFeature.maxBufferedBodySize + 1024
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockWith(statusCode: 200, mimeType: "application/json"),
+                data: .mockRandom(ofSize: overCapSize)
+            ),
+            skipIsMainThreadCheck: true
+        )
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        session.dataTask(with: URL.mockAny()).resume()
+
+        wait(for: [notifyInterceptionDidComplete], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertNotNil(interception.data, "Body must be partially buffered up to the cap")
+        XCTAssertLessThanOrEqual(interception.data!.count, NetworkInstrumentationFeature.maxBufferedBodySize, "Buffered size must not exceed cap")
+        XCTAssertTrue(interception.isBodyTruncated, "Must signal truncation for the caller to warn")
+    }
+
     // MARK: - Automatic Mode
 
     func testAutomaticMode_tracksTasksWithoutDelegateRegistration() throws {
@@ -998,7 +1059,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         let server = ServerMock(
-            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)),
             skipIsMainThreadCheck: true
         )
         scopeHandler(to: server)

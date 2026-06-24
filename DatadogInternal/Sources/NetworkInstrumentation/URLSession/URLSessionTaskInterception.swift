@@ -39,7 +39,13 @@ public class URLSessionTaskInterception {
     /// - Task completed with error
     /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
     /// - Task is a download task (data is saved to file instead of captured in memory)
+    /// - Response is a media type (image, video, audio) in registered-delegate mode
+    /// - Response body exceeded `NetworkInstrumentationFeature.maxBufferedBodySize` in registered-delegate mode
     public private(set) var data: Data?
+
+    /// Whether the response body was truncated due to exceeding the max buffered body size.
+    /// Only relevant in registered-delegate mode; always `false` in automatic mode.
+    internal private(set) var isBodyTruncated = false
     /// Response size in bytes received during this interception.
     ///
     /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseBodySize?.decoded` is unavailable.
@@ -113,6 +119,10 @@ public class URLSessionTaskInterception {
         } else {
             self.data = nextData
         }
+    }
+
+    func markBodyTruncated() {
+        isBodyTruncated = true
     }
 
     func register(request: ImmutableRequest) {

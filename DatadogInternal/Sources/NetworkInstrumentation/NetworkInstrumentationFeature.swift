@@ -21,6 +21,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
     static var name: String { Feature.networkInstrumentation }
 
+    /// Maximum number of response body bytes buffered per task in registered-delegate mode.
+    /// Prevents OOM when downloading large files (RUM-16927).
+    static let maxBufferedBodySize = 512 * 1_024 // 512 KB
+
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
     private let queue = DispatchQueue(
@@ -531,6 +535,32 @@ extension NetworkInstrumentationFeature {
             guard let self = self, let interception = self.interceptions[task] else {
                 return
             }
+            // In registered-delegate mode, data arrives as incremental chunks that get appended
+            // into interception.data — buffering a full multi-MB response duplicates it in memory
+            // and causes OOM under memory pressure (RUM-16927).
+            // In automatic mode the full Data is already in URLSession memory before we see it,
+            // so there is no duplication risk and we keep buffering as-is.
+            if interception.trackingMode == .registeredDelegate {
+                let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
+
+                // Media types have no useful body content for resourceAttributesProvider or
+                // GraphQL error extraction — drop immediately.
+                guard !isMediaMimeType(mimeType) else { return }
+
+                // Cap body size as a safety net for all other types (large JSON, text, etc.).
+                let buffered = interception.data?.count ?? 0
+                guard buffered < NetworkInstrumentationFeature.maxBufferedBodySize else {
+                    interception.markBodyTruncated()
+                    return
+                }
+                let available = NetworkInstrumentationFeature.maxBufferedBodySize - buffered
+                if data.count > available {
+                    // Clip this chunk so the buffer lands exactly on the cap.
+                    interception.register(nextData: Data(data.prefix(available)))
+                    interception.markBodyTruncated()
+                    return
+                }
+            }
             interception.register(nextData: data)
         }
     }
@@ -574,11 +604,32 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
+    /// Returns `true` for media content types that contain no useful body data for the SDK.
+    /// Raw image, video, audio, and binary bytes carry no information for GraphQL error extraction
+    /// or `resourceAttributesProvider` attributes; only `URLResponse` metadata (size, type, status) matters.
+    private func isMediaMimeType(_ mimeType: String) -> Bool {
+        mimeType.hasPrefix("image/") ||
+        mimeType.hasPrefix("video/") ||
+        mimeType.hasPrefix("audio/") ||
+        mimeType == "application/octet-stream"
+    }
+
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?, endMediaTime: CFTimeInterval? = nil) {
         // Register `endDate` if provided.
         // Note: in registered delegate mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
         if let endDate {
             interception.register(endDate: endDate, mediaTime: endMediaTime)
+        }
+
+        if interception.isBodyTruncated {
+            let url = interception.request.url?.absoluteString ?? "(unknown)"
+            DD.logger.warn(
+                """
+                Response body for \(url) was truncated to \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB. \
+                The full body is not available in resourceAttributesProvider. \
+                If you need the full body, consider streaming or processing the response outside the SDK.
+                """
+            )
         }
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
