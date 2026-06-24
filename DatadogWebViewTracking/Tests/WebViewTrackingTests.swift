@@ -255,31 +255,52 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     private func waitForJS(_ js: String, toReturn expectedResult: String, webView: WKWebView, description: String) {
-        let outerExpectation = XCTestExpectation(description: "\(description) should be \(expectedResult)")
+        var runs = 0
+        let maxDuration: TimeInterval = 10
 
-        var isDone = false
+        func runAndWait() -> Bool? {
+            runs += 1
+            print("Attempt \(runs): \(description)")
 
-        while !isDone {
-            let innerExpectation = XCTestExpectation()
+            // Passed means:
+            //   nil: The block didn't execute
+            //   true: The block executed and the expected condition was asserted.
+            //   false: The block executed and the expected condition failed to be asserted.
+            var passed: Bool? = nil // No need for sync since the handler is MainActor
 
             webView.evaluateJavaScript(js) { result, error in
-                if error == nil && (result as? String) == expectedResult {
-                    isDone = true
-                    outerExpectation.fulfill()
-                }
-                innerExpectation.fulfill()
+                passed = (error == nil && (result as? String) == expectedResult)
             }
 
-            wait(for: [innerExpectation], timeout: 5.0)
+            // We can't use an XCTExpectation here since a timeout would cause the test to fail,
+            // which is not necessarily the case. We also can't use a DispatchSemaphore since both
+            // the wait and signal (inside the evaluateJavaScript handler) run on the same thread,
+            // meaning the thread would be blocked by the wait call and the handler would never run.
+            // So we do polling.
+            let timeout = Date(timeIntervalSinceNow: 2)
+            while passed == nil && Date() < timeout {
+                RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+            }
+
+            let endDescription = passed.map { "\($0)" } ?? "timeout"
+            print("  Attempt \(runs) of \(description) ended with \(endDescription)")
+            return passed
+        }
+
+        let startDate = Date()
+        let endDate = startDate + maxDuration
+
+        while Date() < endDate {
+            if runAndWait() == true {
+                return
+            }
 
             // Throttle: pump the run loop briefly between polls instead of busy-spinning
             // `evaluateJavaScript`, which otherwise floods the WebContent process with IPC.
-            if !isDone {
-                RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
-            }
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
         }
 
-        wait(for: [outerExpectation], timeout: 10.0)
+        XCTFail("\(description) failed after trying for \(maxDuration) secs.")
     }
 
     /// Loads a simulated request on a WebView, and waits for the page to finish loading.
