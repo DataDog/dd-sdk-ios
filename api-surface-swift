@@ -1531,7 +1531,7 @@ public struct FlagAssignment: Equatable
     public var variation: Variation
     public var reason: String
     public var doLog: Bool
-    public init(allocationKey: String,variationKey: String,variation: Variation,reason: String,doLog: Bool)
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool)
     public init(from decoder: any Decoder) throws
     public func encode(to encoder: any Encoder) throws
 public enum FlagEvaluationError: Error
