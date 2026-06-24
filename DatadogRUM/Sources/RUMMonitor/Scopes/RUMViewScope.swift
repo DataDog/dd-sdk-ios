@@ -677,17 +677,24 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent, viewIndexInSession != 0 {
+            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
                 writer.write(value: update, completion: completionHandler)
             } else {
-                lastSentViewEvent = event
                 writer.write(
                     value: event,
                     metadata: event.metadata(viewIndexInSession: viewIndexInSession),
                     completion: completionHandler
                 )
+                // Only promote to baseline if the event will not be dropped by RUMViewEventsFilter.
+                // The filter discards events where indexInSession == 0 AND duration == 1ns — the initial
+                // view's placeholder written when command.time == viewStartTime. Storing that dropped event
+                // as baseline would produce deltas against an event the backend never received.
+                // Subsequent views' 1ns start event is kept by the filter, so it is safe as baseline.
+                if viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
+                    lastSentViewEvent = event
+                }
             }
 
             // Only update fatal error context when this event describes the still-active view,

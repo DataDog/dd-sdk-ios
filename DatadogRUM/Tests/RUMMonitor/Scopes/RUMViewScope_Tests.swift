@@ -879,4 +879,74 @@ class RUMViewScope_Tests: XCTestCase {
         let update = try XCTUnwrap(writer.events(ofType: RUMViewUpdateEvent.self).first)
         XCTAssertNil(update.view.accessibility, "Accessibility should be nil when nothing changed")
     }
+
+    // MARK: - Baseline Promotion
+
+    func testInitialView_firstEventIsNotStoredAsBaseline_secondEventIsAlsoFull() throws {
+        // The very first event of the initial view has timeSpent = 1ns (floored to minimumTimeSpent when
+        // command.time == viewStartTime). RUMViewEventsFilter discards that event on the backend, so it
+        // must NOT be stored as baseline — otherwise the second event would be diffed against a dropped event.
+        // Expected sequence: full, full, delta.
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        var currentTime = startTime
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockWith(featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 0
+        )
+
+        // First command at t=0 → timeSpent = 1ns placeholder, written as full event, NOT stored as baseline.
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer)
+
+        // Second command at t>0 → timeSpent > 1ns, no baseline yet → written as full event, stored as baseline.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime), context: context, writer: writer)
+
+        // Third command at t>0 → baseline is set → written as delta.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer)
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2, "First two writes must be full events")
+        XCTAssertEqual(writer.events(ofType: RUMViewUpdateEvent.self).count, 1, "Only the third write is a delta")
+    }
+
+    func testSubsequentView_firstEventIsStoredAsBaseline_secondEventIsDelta() throws {
+        // Subsequent views (viewIndexInSession > 0) never write a 1ns placeholder — they always start with
+        // a real duration. Their first written event must be stored as baseline immediately so the second
+        // write is a delta.
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        var currentTime = startTime
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        // First command at t>0 → timeSpent > 1ns, stored as baseline immediately.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer)
+
+        // Second command → delta.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer)
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 1, "First write must be a full event")
+        XCTAssertEqual(writer.events(ofType: RUMViewUpdateEvent.self).count, 1, "Second write must be a delta")
+    }
 }
