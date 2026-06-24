@@ -15,11 +15,11 @@ extension RUMViewEvent {
     /// - `self` is the previously sent `RUMViewEvent` (stored in `RUMViewScope_.viewEvent`).
     /// - `event` is the newly built `RUMViewEvent` (post-mapper). Its values win.
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
-    ///   `self.dd.documentVersion` is incremented by one.
+    ///   `dd` is always forwarded wholesale from `event`.
     ///
     func update(from event: RUMViewEvent) -> RUMViewUpdateEvent {
         RUMViewUpdateEvent(
-            dd: .init(documentVersion: dd.documentVersion + 1, from: event.dd),
+            dd: .init(event.dd),
             account: diff(account, event.account),
             application: .init(event.application),
             buildId: diff(buildId, event.buildId),
@@ -136,14 +136,24 @@ private extension RUMViewUpdateEvent.View.LoadingType {
 // MARK: - DD projection
 
 private extension RUMViewUpdateEvent.DD {
-    init(documentVersion: Int64, from s: RUMViewEvent.DD) {
+    init(_ s: RUMViewEvent.DD) {
         self.init(
             browserSdkVersion: s.browserSdkVersion,
+            cls: s.cls.map { .init($0) },
             configuration: s.configuration.map { .init($0) },
-            documentVersion: documentVersion,
+            documentVersion: s.documentVersion,
+            pageStates: s.pageStates.map { $0.map { .init($0) } },
+            profiling: s.profiling.map { .init($0) },
+            replayStats: s.replayStats.map { .init($0) },
             sdkName: s.sdkName,
             session: s.session.map { .init($0) }
         )
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.CLS {
+    init(_ s: RUMViewEvent.DD.CLS) {
+        self.init(devicePixelRatio: s.devicePixelRatio)
     }
 }
 
@@ -153,7 +163,82 @@ private extension RUMViewUpdateEvent.DD.Configuration {
             profilingSampleRate: s.profilingSampleRate,
             sessionReplaySampleRate: s.sessionReplaySampleRate,
             sessionSampleRate: s.sessionSampleRate,
+            startSessionReplayRecordingManually: s.startSessionReplayRecordingManually,
             traceSampleRate: s.traceSampleRate
+        )
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.PageStates {
+    init(_ s: RUMViewEvent.DD.PageStates) {
+        self.init(start: s.start, state: .init(s.state))
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.PageStates.State {
+    init(_ s: RUMViewEvent.DD.PageStates.State) {
+        switch s {
+        case .active: self = .active
+        case .passive: self = .passive
+        case .hidden: self = .hidden
+        case .frozen: self = .frozen
+        case .terminated: self = .terminated
+        }
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.Profiling {
+    init(_ s: RUMViewEvent.DD.Profiling) {
+        self.init(
+            errorReason: s.errorReason.map { .init($0) },
+            quotaReason: s.quotaReason.map { .init($0) },
+            status: s.status.map { .init($0) }
+        )
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.Profiling.ErrorReason {
+    init(_ s: RUMViewEvent.DD.Profiling.ErrorReason) {
+        switch s {
+        case .notSupportedByBrowser: self = .notSupportedByBrowser
+        case .failedToLazyLoad: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader: self = .missingDocumentPolicyHeader
+        case .unexpectedException: self = .unexpectedException
+        }
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.Profiling.QuotaReason {
+    init(_ s: RUMViewEvent.DD.Profiling.QuotaReason) {
+        switch s {
+        case .quotaOk: self = .quotaOk
+        case .quotaExceeded: self = .quotaExceeded
+        case .orgDisabled: self = .orgDisabled
+        case .backendUnavailable: self = .backendUnavailable
+        case .undefined: self = .undefined
+        case .timeout: self = .timeout
+        case .apiError: self = .apiError
+        }
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.Profiling.Status {
+    init(_ s: RUMViewEvent.DD.Profiling.Status) {
+        switch s {
+        case .starting: self = .starting
+        case .running: self = .running
+        case .stopped: self = .stopped
+        case .error: self = .error
+        }
+    }
+}
+
+private extension RUMViewUpdateEvent.DD.ReplayStats {
+    init(_ s: RUMViewEvent.DD.ReplayStats) {
+        self.init(
+            recordsCount: s.recordsCount,
+            segmentsCount: s.segmentsCount,
+            segmentsTotalRawSize: s.segmentsTotalRawSize
         )
     }
 }
