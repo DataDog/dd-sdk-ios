@@ -70,9 +70,18 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(semantics: .layer)
         }
 
-        if layer.delegate is UIControl || layer.delegate is UIProgressView {
+        // Ignore image privacy for system UI chrome
+        if layer.delegate is UIControl
+            || layer.delegate is UIProgressView
+            || layer.delegate?.isBarBackground == true {
             ignoresImagePrivacy = true
         }
+    }
+}
+
+extension CALayerDelegate {
+    fileprivate var isBarBackground: Bool {
+        "\(type(of: self))" == "_UIBarBackground"
     }
 }
 
