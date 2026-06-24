@@ -54,9 +54,11 @@ internal final class RemoteConfigurationProvider {
             guard let self else {
                 return
             }
-            if let last = self.lastSyncDate,
-               self.dateProvider.now.timeIntervalSince(last) < self.minimumSyncInterval {
-                return
+            if let last = self.lastSyncDate {
+                let elapsed = self.dateProvider.now.timeIntervalSince(last)
+                if elapsed >= 0, elapsed < self.minimumSyncInterval {
+                    return
+                }
             }
             self.sync(completionHandler)
         }
