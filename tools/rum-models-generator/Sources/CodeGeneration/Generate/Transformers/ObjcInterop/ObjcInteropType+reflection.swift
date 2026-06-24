@@ -37,7 +37,8 @@ extension ObjcInteropTransitiveNestedClass: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftStruct.name
+        let parentObjcTypeName = (parentClass as! ObjcInteropReflectable).objcTypeName
+        return parentObjcTypeName + bridgedSwiftStruct.name.removingDuplicatedDDPrefix(after: parentObjcTypeName)
     }
 
     var swiftTypeName: String {
@@ -58,7 +59,8 @@ extension ObjcInteropNestedClass: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftStruct.name
+        let parentObjcTypeName = (parentClass as! ObjcInteropReflectable).objcTypeName
+        return parentObjcTypeName + bridgedSwiftStruct.name.removingDuplicatedDDPrefix(after: parentObjcTypeName)
     }
 
     var swiftTypeName: String {
@@ -76,7 +78,8 @@ extension ObjcInteropNestedEnum: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftEnum.name
+        let parentObjcTypeName = (parentClass as! ObjcInteropReflectable).objcTypeName
+        return parentObjcTypeName + bridgedSwiftEnum.name.removingDuplicatedDDPrefix(after: parentObjcTypeName)
     }
 
     var swiftTypeName: String {
@@ -97,7 +100,8 @@ extension ObjcInteropAssociatedTypeEnum: ObjcInteropReflectable {
     }
 
     var objcTypeName: String {
-        return (parentClass as! ObjcInteropReflectable).objcTypeName + bridgedSwiftAssociatedTypeEnum.name
+        let parentObjcTypeName = (parentClass as! ObjcInteropReflectable).objcTypeName
+        return parentObjcTypeName + bridgedSwiftAssociatedTypeEnum.name.removingDuplicatedDDPrefix(after: parentObjcTypeName)
     }
 
     var swiftTypeName: String {
@@ -118,6 +122,16 @@ extension ObjcInteropPropertyWrapper {
         } else {
             return swiftPropertyName
         }
+    }
+}
+
+private extension String {
+    func removingDuplicatedDDPrefix(after parentObjcTypeName: String) -> String {
+        guard parentObjcTypeName.hasSuffix("DD"), hasPrefix("DD") else {
+            return self
+        }
+
+        return String(dropFirst(2))
     }
 }
 

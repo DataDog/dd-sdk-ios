@@ -293,6 +293,8 @@ extension ImageSnapshotRequest {
             replayID: layer.replayID,
             layer: CALayerReference(layer),
             layerClass: type(of: layer),
+            delegateClass: layer.delegate.map { type(of: $0) },
+            hasLayerSemantics: true,
             bounds: layer.bounds,
             absoluteFrame: layer.frame,
             visibleFrame: visibleFrame ?? layer.frame,

@@ -163,12 +163,12 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
     }
 
-    func testTrackingProfilingSessionMetric_whenProfileIsNotWritten() throws {
+    func testTrackingProfilingSessionMetric_whenProfileIsDropped() throws {
         // Given
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
         // When
-        controller.sendProfileNotWritten(for: .customProfiling)
+        controller.sendProfileDropped(for: .customProfiling)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
@@ -176,7 +176,29 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
         XCTAssertNil(metric.errorCode)
-        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.profileNotWrittenErrorMessage)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfiledEventsErrorMessage)
+
+        let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
+    }
+
+    func testTrackingProfilingSessionMetric_whenProfileIsDroppedBecauseQuotaRejected() throws {
+        // Given
+        let controller = ProfilingTelemetryController(telemetry: telemetry)
+
+        // When
+        controller.sendProfileDropped(for: .customProfiling, reason: .quotaRejected(.quotaExceeded))
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
+        XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
+        XCTAssertNil(metric.duration)
+        XCTAssertNil(metric.fileSize)
+        XCTAssertNil(metric.errorCode)
+        XCTAssertEqual(
+            metric.errorMessage,
+            "\(ProfilingSessionMetric.Constants.quotaErrorMessage) Quota reason: quota_exceeded."
+        )
 
         let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
         XCTAssertEqual(metricTelemetry.sampleRate, 20.0)
@@ -189,7 +211,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
 
         // When
         controller.sendProfile(durationNs: 1, fileSize: 2, for: .continuousProfiling)
-        controller.sendProfileNotWritten(for: .customProfiling)
+        controller.sendProfileDropped(for: .customProfiling)
 
         // Then
         let diagnostics = telemetry.messages.compactMap { message in

@@ -22,6 +22,9 @@ final class ProfilerFeatureTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        DatadogProfiler.resetActiveInstance()
+        dd_profiler_stop()
+        dd_profiler_destroy()
         userDefaults = UserDefaults(suiteName: suiteName)!
         userDefaults.removePersistentDomain(forName: suiteName)
     }
@@ -29,6 +32,9 @@ final class ProfilerFeatureTests: XCTestCase {
     override func tearDown() {
         userDefaults.removePersistentDomain(forName: suiteName)
         userDefaults = nil
+        DatadogProfiler.resetActiveInstance()
+        dd_profiler_stop()
+        dd_profiler_destroy()
         super.tearDown()
     }
 
@@ -107,6 +113,62 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+    }
+
+    func testMessageReceiver_checksQuota_whenCustomEndpointIsConfigured() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let feature = ProfilerFeature(
+            core: core,
+            configuration: .init(customEndpoint: .mockRandom()),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            quotaChecker: quotaChecker,
+            userDefaults: userDefaults
+        )
+        let context: DatadogContext = .mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+
+        // When
+        _ = feature.messageReceiver.receive(message: .context(context), from: core)
+
+        // Then
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
+    }
+
+    func testMessageReceiver_checksQuotaForAppLaunchProfiler_whenDatadogProfilerIsNotCreated() {
+        // Given
+        let firstFeature = ProfilerFeature(
+            core: PassthroughCoreMock(),
+            configuration: .init(),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let secondCore = PassthroughCoreMock()
+        let secondFeature = ProfilerFeature(
+            core: secondCore,
+            configuration: .init(),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            quotaChecker: quotaChecker,
+            userDefaults: userDefaults
+        )
+        let context: DatadogContext = .mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
+        )
+
+        // When
+        _ = secondFeature.messageReceiver.receive(message: .context(context), from: secondCore)
+
+        // Then
+        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
+        withExtendedLifetime(firstFeature) {}
+        withExtendedLifetime(secondFeature) {}
     }
 
     func testProfilingSamplerProvider_isDeterministicForSameSessionID() {
