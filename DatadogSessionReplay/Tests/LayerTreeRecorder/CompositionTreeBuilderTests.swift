@@ -281,6 +281,47 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates hidden placeholder for private layer")
+    func buildCreatesHiddenPlaceholderForPrivateLayer() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let privateView = UIView(frame: CGRect(x: 10, y: 20, width: 100, height: 40))
+        privateView.dd.sessionReplayPrivacyOverrides.hide = true
+        rootView.addSubview(privateView)
+
+        let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny()))
+        let privateSnapshot = try #require(root.sublayers.first)
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshotResults: [:]
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == privateSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .wireframe)
+
+        #expect(output.wireframes.count == 1)
+        guard case .placeholderWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a placeholder wireframe")
+            return
+        }
+
+        #expect(wireframe.id == privateSnapshot.replayID)
+        #expect(wireframe.label == "Hidden")
+        #expect(wireframe.x == 10)
+        #expect(wireframe.y == 20)
+        #expect(wireframe.width == 100)
+        #expect(wireframe.height == 40)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for text input appearance")
     func buildCreatesShapeWireframeForTextInputAppearance() throws {
         // Given

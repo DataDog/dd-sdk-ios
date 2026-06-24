@@ -120,6 +120,11 @@ internal class CompositionTreeBuilder {
         for snapshot: CALayerSnapshot,
         parentTextInput textInput: TextInputSemantics?
     ) -> SRCompositionLayerChild? {
+        guard !snapshot.isPrivate else {
+            wireframes.append(SRWireframe(placeholderFor: snapshot, label: .hiddenPlaceholder))
+            return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
+        }
+
         let wireframe: SRWireframe? = switch (
             snapshot.observation.semantics,
             imageSnapshotResults[snapshot.replayID]
@@ -218,6 +223,7 @@ internal class CompositionTreeBuilder {
 }
 
 extension String {
+    fileprivate static let hiddenPlaceholder = "Hidden"
     fileprivate static let imagePlaceholder = "Image"
     fileprivate static let contentImagePlaceholder = "Content Image"
     fileprivate static let timedOutPlaceholder = "Timed out"
