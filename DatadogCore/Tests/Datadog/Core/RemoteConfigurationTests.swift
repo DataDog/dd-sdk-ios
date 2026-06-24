@@ -540,6 +540,7 @@ class RemoteConfigurationTests: XCTestCase {
 #if canImport(UIKit)
     func testWillEnterForegroundSyncsRemoteConfiguration() {
         let notificationCenter = NotificationCenter()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         let requestLock = NSLock()
@@ -551,9 +552,11 @@ class RemoteConfigurationTests: XCTestCase {
             requestLock.unlock()
             return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
         }
-        let rc = makeProvider(notificationCenter: notificationCenter)
+        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
         waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
 
+        // Advance past TTL so the foreground sync is not suppressed
+        dateProvider.advance(bySeconds: 360)
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
 
         waitForPersistedConfiguration(applicationID: "foreground-application-id", fileData: foregroundPayload)
@@ -562,6 +565,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func testWillEnterForegroundCallsCompletionAgain() {
         let notificationCenter = NotificationCenter()
+        let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
         let requestLock = NSLock()
@@ -578,7 +582,7 @@ class RemoteConfigurationTests: XCTestCase {
         var completionCount = 0
         let completionExpectation = expectation(description: "completion is called for each sync")
         completionExpectation.expectedFulfillmentCount = 2
-        let rc = makeProvider(notificationCenter: notificationCenter, start: false)
+        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider, start: false)
         rc.start { result in
             guard case .success = result else {
                 return
@@ -592,6 +596,8 @@ class RemoteConfigurationTests: XCTestCase {
         }
         waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
 
+        // Advance past TTL so the foreground sync is not suppressed
+        dateProvider.advance(bySeconds: 360)
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
         waitForPersistedConfiguration(applicationID: "foreground-application-id", fileData: foregroundPayload)
 
