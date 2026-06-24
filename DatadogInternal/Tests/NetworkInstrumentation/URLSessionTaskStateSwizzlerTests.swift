@@ -206,4 +206,36 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
 
         swizzler.unswizzle()
     }
+
+    func testSwizzling_nwTaskComplete_interceptsCompletion() throws {
+        guard #available(iOS 18.4, tvOS 18.4, macOS 15.4, watchOS 11.4, visionOS 2.4, *) else {
+            throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
+        }
+        guard URLSessionTaskStateSwizzler.NWTaskComplete.build() != nil else {
+            throw XCTSkip("NW task completion not supported on this platform/version")
+        }
+        let completionExpectation = expectation(description: "NWURLSessionTask completion intercepted")
+
+        // Given
+        let swizzler = URLSessionTaskStateSwizzler()
+        try swizzler.swizzle(interceptSetState: { _, state in
+            if state == URLSessionTask.State.completed.rawValue {
+                completionExpectation.fulfill()
+            }
+        })
+
+        // When - usesClassicLoadingMode = false forces NWURLSessionTask instances
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.usesClassicLoadingMode = false
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: URL(string: "https://localhost:1")!) { _, _, _ in }
+        let taskClassName = String(describing: type(of: task))
+        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        task.resume()
+
+        // Then
+        wait(for: [completionExpectation], timeout: 5)
+        swizzler.unswizzle()
+    }
 }

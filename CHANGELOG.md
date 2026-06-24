@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [FIX] Fix automatic URLSession network tracking not recording requests when `URLSessionConfiguration.usesClassicLoadingMode = false` on iOS/tvOS 18.4+. See [#3017][]
 - [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 
 # 3.12.0 / 04-06-2026
@@ -1177,6 +1178,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
 [#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
+[#3017]: https://github.com/DataDog/dd-sdk-ios/pull/3017
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

@@ -18,6 +18,7 @@ import Foundation
 internal final class URLSessionTaskStateSwizzler {
     private let lock: NSLocking
     private var taskSetState: TaskSetState?
+    private var nwTaskComplete: NWTaskComplete?
 
     init(lock: NSLocking = NSLock()) {
         self.lock = lock
@@ -31,6 +32,12 @@ internal final class URLSessionTaskStateSwizzler {
         defer { lock.unlock() }
         taskSetState = try TaskSetState.build()
         taskSetState?.swizzle(intercept: interceptSetState)
+        // NWURLSessionTask (usesClassicLoadingMode = false, iOS/tvOS 18.4+) bypasses setState:;
+        // completeTaskWithError: is its completion signal.
+        nwTaskComplete = NWTaskComplete.build()
+        nwTaskComplete?.swizzle { task, _ in
+            interceptSetState(task, URLSessionTask.State.completed.rawValue)
+        }
     }
 
     /// Unswizzles all.
@@ -39,6 +46,7 @@ internal final class URLSessionTaskStateSwizzler {
     func unswizzle() {
         lock.lock()
         taskSetState?.unswizzle()
+        nwTaskComplete?.unswizzle()
         lock.unlock()
     }
 
@@ -74,6 +82,38 @@ internal final class URLSessionTaskStateSwizzler {
                 return { task, state in
                     intercept(task, state)
                     previousImplementation(task, Self.selector, state)
+                }
+            }
+        }
+    }
+
+    /// Swizzles `NWURLSessionTask.completeTaskWithError:` — completion hook for the NW stack
+    /// (`usesClassicLoadingMode = false`, iOS/tvOS 18.4+). `TaskSetState` targets `__NSCFLocalSessionTask`
+    /// and never fires for NW tasks regardless of whether they have `setState:`.
+    class NWTaskComplete: MethodSwizzler<@convention(c) (URLSessionTask, Selector, Error?) -> Void, @convention(block) (URLSessionTask, Error?) -> Void> {
+        private static let selector = NSSelectorFromString("completeTaskWithError:")
+
+        private let method: Method
+
+        /// Returns `nil` if `NWURLSessionTask` is unavailable (iOS/tvOS < 18.4).
+        static func build() -> NWTaskComplete? {
+            guard let klass = NSClassFromString("NWURLSessionTask") else {
+                return nil
+            }
+            return try? NWTaskComplete(selector: self.selector, klass: klass)
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try dd_class_getInstanceMethod(klass, selector)
+            super.init()
+        }
+
+        func swizzle(intercept: @escaping (URLSessionTask, Error?) -> Void) {
+            typealias Signature = @convention(block) (URLSessionTask, Error?) -> Void
+            swizzle(method) { previousImplementation -> Signature in
+                return { task, error in
+                    intercept(task, error)
+                    previousImplementation(task, Self.selector, error)
                 }
             }
         }
