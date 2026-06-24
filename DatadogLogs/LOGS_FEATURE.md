@@ -7,6 +7,7 @@ tracked_files:
   - DatadogLogs/Sources/Logger.swift
   - DatadogLogs/Sources/LoggerProtocol.swift
   - DatadogLogs/Sources/Logs+objc.swift
+  - DatadogLogs/Sources/Log/LogEventEncoder.swift
 ---
 
 # Logs Feature
@@ -160,7 +161,7 @@ logger.error(
 - **Service**: `service` (default: SDK service value) — overrides `service` on log events.
 - **Logger name**: `name` — reported as `logger.name` on log events.
 - **Network info**: `networkInfoEnabled` (default: `false`) — attaches reachability, connection type, mobile carrier to every log.
-- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — attaches `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` when a sampled-in RUM session is active.
+- **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — attaches `application_id`, `session_id`, `view.id`, `user_action.id` when a sampled-in RUM session is active.
 - **Trace bundling**: `bundleWithTraceEnabled` (default: `true`) — attaches `dd.trace_id` and `dd.span_id` when an active trace span is present.
 
 ### Console Output

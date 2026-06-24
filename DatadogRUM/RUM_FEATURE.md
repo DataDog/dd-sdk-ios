@@ -18,7 +18,7 @@ RUM tracks user interactions, views, resources, errors, and performance metrics 
 **Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
 - **iOS / visionOS**: Full feature set.
 - **tvOS**: UIKit and SwiftUI view tracking, UIKit action tracking (press-based), app hangs, long tasks, vitals, slow frames, memory warnings. No SwiftUI action auto-tracking, no scroll/swipe tracking, no watchdog terminations.
-- **watchOS**: App hangs and long tasks only. No auto-tracking predicates, no vitals, no slow frames, no memory warnings.
+- **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, and session callbacks are available. `vitalsUpdateFrequency` and `trackSlowFrames` config options exist but are non-functional (DisplayLinker unavailable on watchOS).
 
 ## Quick Start Example
 
