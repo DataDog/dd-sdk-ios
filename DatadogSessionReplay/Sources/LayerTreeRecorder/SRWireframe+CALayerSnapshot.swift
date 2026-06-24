@@ -203,7 +203,7 @@ extension SRShapeStyle {
         }
         self.init(
             backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
-            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init),
+            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init)
         )
     }
 }
