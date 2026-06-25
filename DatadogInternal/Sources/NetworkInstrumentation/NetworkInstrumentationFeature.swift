@@ -546,7 +546,9 @@ extension NetworkInstrumentationFeature {
                 }
 
                 let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
-                guard !isMediaMimeType(mimeType) else { return }
+                guard !isMediaMimeType(mimeType) else {
+                    return
+                }
 
                 // When exceeded, discard all accumulated data — partial data is worse than nil
                 // since customers have no way to detect it's incomplete.
