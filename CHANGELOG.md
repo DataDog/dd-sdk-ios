@@ -4,6 +4,7 @@
 - [IMPROVEMENT] DatadogTrace now leverages Swift 6 compile time checking against data races. Types like `DDSpan` and `OTSpan` are now marked as Sendable and can be used safely across isolation barriers. External dependency `opentelemetry-swift-core` version was updated to 2.5.0. See [#2876][]
 - [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 - [FIX] Fix several instances where misaligned memory could be loaded without proper checking. See [#2995][]
+- [FIX] Prevent OOM crashes in registered-delegate mode when downloading large media files. In `URLSessionInstrumentation.enableDurationBreakdown(with:)`, response bodies for media types (`image/*`, `video/*`, `audio/*`, `application/octet-stream`) are no longer buffered in SDK memory. All other response bodies are capped at 512 KB. This affects the `data` parameter of `resourceAttributesProvider`: media responses now pass `nil`, and responses over 512 KB pass a truncated prefix. Behavior in automatic mode (completion-handler tasks) is unchanged. See [#3019][]
 
 # 3.12.0 / 04-06-2026
 
