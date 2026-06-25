@@ -1333,6 +1333,26 @@ public class SessionReplayWireframesBuilder
     public func hiddenWebViewWireframes() -> [SRWireframe]
 [?] extension SRContentClip
     public static func create(bottom: Int64?,left: Int64?,right: Int64?,top: Int64?) -> SRContentClip
+[?] extension SRCompositionLayer: Equatable
+    public static func == (lhs: SRCompositionLayer, rhs: SRCompositionLayer) -> Bool
+[?] extension SRCompositionLayerChild: Equatable
+    public static func == (lhs: SRCompositionLayerChild, rhs: SRCompositionLayerChild) -> Bool
+[?] extension SRCompositionLayerBackgroundMaterialModifier: Equatable
+    public static func == (lhs: SRCompositionLayerBackgroundMaterialModifier,rhs: SRCompositionLayerBackgroundMaterialModifier) -> Bool
+[?] extension SRCompositionLayerBrightnessBiasModifier: Equatable
+    public static func == (lhs: SRCompositionLayerBrightnessBiasModifier,rhs: SRCompositionLayerBrightnessBiasModifier) -> Bool
+[?] extension SRCompositionLayerClipModifier: Equatable
+    public static func == (lhs: SRCompositionLayerClipModifier,rhs: SRCompositionLayerClipModifier) -> Bool
+[?] extension SRCompositionLayerColorMatrixModifier: Equatable
+    public static func == (lhs: SRCompositionLayerColorMatrixModifier,rhs: SRCompositionLayerColorMatrixModifier) -> Bool
+[?] extension SRCompositionLayerGaussianBlurModifier: Equatable
+    public static func == (lhs: SRCompositionLayerGaussianBlurModifier,rhs: SRCompositionLayerGaussianBlurModifier) -> Bool
+[?] extension SRCompositionLayerOpacityModifier: Equatable
+    public static func == (lhs: SRCompositionLayerOpacityModifier,rhs: SRCompositionLayerOpacityModifier) -> Bool
+[?] extension SRCompositionLayerSaturateModifier: Equatable
+    public static func == (lhs: SRCompositionLayerSaturateModifier,rhs: SRCompositionLayerSaturateModifier) -> Bool
+[?] extension SRCompositionLayerModifier: Equatable
+    public static func == (lhs: SRCompositionLayerModifier, rhs: SRCompositionLayerModifier) -> Bool
 [?] extension SRImageWireframe
     public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool
     public func hash(into hasher: inout Hasher)
