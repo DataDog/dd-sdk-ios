@@ -23,7 +23,7 @@ class RemoteLoggerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        messageBus.subscribe(receiver: errorRecorder)
+        messageBus.messageBus.subscribe(receiver: errorRecorder)
     }
 
     // MARK: - Sending Error Message over Message Bus
