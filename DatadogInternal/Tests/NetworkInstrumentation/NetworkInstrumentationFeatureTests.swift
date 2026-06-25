@@ -585,14 +585,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testRegisteredDelegate_doesNotBufferMediaResponseBody() throws {
-        // Regression test for RUM-16927: media responses must not be buffered at all in
-        // registered-delegate mode — raw bytes are useless for resourceAttributesProvider
-        // and large files would cause OOM.
+        // Regression test for RUM-16927.
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         let server = ServerMock(
             delivery: .success(
                 response: .mockWith(statusCode: 200, mimeType: "image/jpeg"),
-                data: .mockRandom(ofSize: 1_024 * 1_024) // 1 MB
+                data: .mockRandom(ofSize: 1_024) // well under the 512 KB cap
             ),
             skipIsMainThreadCheck: true
         )
@@ -615,8 +613,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testRegisteredDelegate_truncatesBodyAtSizeCap() throws {
-        // Regression test for RUM-16927: non-media responses larger than maxBufferedBodySize
-        // must be capped and isBodyTruncated must be set so the caller can log a warning.
+        // Regression test for RUM-16927.
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         let overCapSize = NetworkInstrumentationFeature.maxBufferedBodySize + 1_024
         let server = ServerMock(
@@ -640,8 +637,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        XCTAssertNotNil(interception.data, "Body must be partially buffered up to the cap")
-        XCTAssertLessThanOrEqual(interception.data!.count, NetworkInstrumentationFeature.maxBufferedBodySize, "Buffered size must not exceed cap")
+        let bufferedData = try XCTUnwrap(interception.data, "Body must be partially buffered up to the cap")
+        XCTAssertLessThanOrEqual(bufferedData.count, NetworkInstrumentationFeature.maxBufferedBodySize, "Buffered size must not exceed cap")
         XCTAssertTrue(interception.isBodyTruncated, "Must signal truncation for the caller to warn")
     }
 
@@ -2153,7 +2150,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testRegisteredDelegate_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)))
         scopeHandler(to: server)
 
         // Given

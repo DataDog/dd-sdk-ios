@@ -40,7 +40,9 @@ public class URLSessionTaskInterception {
     /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
     /// - Task is a download task (data is saved to file instead of captured in memory)
     /// - Response is a media type (image, video, audio) in registered-delegate mode
-    /// - Response body exceeded `NetworkInstrumentationFeature.maxBufferedBodySize` in registered-delegate mode
+    ///
+    /// In registered-delegate mode, non-media responses are capped at `NetworkInstrumentationFeature.maxBufferedBodySize`.
+    /// If exceeded, `data` is a truncated prefix and `isBodyTruncated` is `true`.
     public private(set) var data: Data?
 
     /// Whether the response body was truncated due to exceeding the max buffered body size.

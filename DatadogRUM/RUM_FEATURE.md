@@ -75,7 +75,6 @@ RUM.enable(
             // Note: in registered-delegate mode (enableDurationBreakdown), `data` is:
             //   - nil for media types (image/*, video/*, audio/*, application/octet-stream)
             //   - a prefix of at most 512 KB for all other types (may be truncated)
-            // In automatic mode (completion-handler tasks) the full body is always available.
             resourceAttributesProvider: { request, response, data, error in
                 return ["custom.attribute": "value"]
             },

@@ -21,8 +21,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
     static var name: String { Feature.networkInstrumentation }
 
-    /// Maximum number of response body bytes buffered per task in registered-delegate mode.
-    /// Prevents OOM when downloading large files (RUM-16927).
+    /// Maximum response body bytes buffered per task in registered-delegate mode.
     static let maxBufferedBodySize = 512 * 1_024 // 512 KB
 
     /// Network Instrumentation serial queue for safe and serialized access to the
@@ -535,18 +534,13 @@ extension NetworkInstrumentationFeature {
             guard let self = self, let interception = self.interceptions[task] else {
                 return
             }
-            // In registered-delegate mode, data arrives as incremental chunks that get appended
-            // into interception.data — buffering a full multi-MB response duplicates it in memory
-            // and causes OOM under memory pressure (RUM-16927).
-            // In automatic mode the full Data is already in URLSession memory before we see it,
-            // so there is no duplication risk and we keep buffering as-is.
+            // In registered-delegate mode, data arrives as incremental chunks — buffering a full
+            // response duplicates it in memory (RUM-16927). In automatic mode, URLSession already
+            // holds the complete Data object, so no duplication occurs.
             if interception.trackingMode == .registeredDelegate {
                 let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
 
-                // Media types have no useful body content for resourceAttributesProvider or
-                // GraphQL error extraction — drop immediately.
                 guard !isMediaMimeType(mimeType) else {
-                    DD.logger.debug("Skipping response body buffering for media type '\(mimeType)' (registered-delegate mode).")
                     return
                 }
 
@@ -607,9 +601,7 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
-    /// Returns `true` for media content types that contain no useful body data for the SDK.
-    /// Raw image, video, audio, and binary bytes carry no information for GraphQL error extraction
-    /// or `resourceAttributesProvider` attributes; only `URLResponse` metadata (size, type, status) matters.
+    /// Returns `true` for MIME types whose body carries no useful data for the SDK.
     private func isMediaMimeType(_ mimeType: String) -> Bool {
         mimeType.hasPrefix("image/") ||
         mimeType.hasPrefix("video/") ||
