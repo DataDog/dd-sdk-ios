@@ -104,7 +104,9 @@ internal final class URLSessionTaskStateSwizzler {
 
         /// Returns `nil` if `NWURLSessionTask` is unavailable or if the selector is absent.
         static func build() -> NWTaskComplete? {
-            guard let klass = NSClassFromString("NWURLSessionTask") else { return nil }
+            guard let klass = NSClassFromString("NWURLSessionTask") else {
+                return nil
+            }
             return try? NWTaskComplete(selector: self.selector, klass: klass)
         }
 
@@ -133,7 +135,9 @@ internal final class URLSessionTaskStateSwizzler {
 
         /// Returns `nil` if `NWURLSessionTask` is unavailable or if the selector is absent.
         static func build() -> NWTaskCompleteRetryable? {
-            guard let klass = NSClassFromString("NWURLSessionTask") else { return nil }
+            guard let klass = NSClassFromString("NWURLSessionTask") else {
+                return nil
+            }
             return try? NWTaskCompleteRetryable(selector: self.selector, klass: klass)
         }
 

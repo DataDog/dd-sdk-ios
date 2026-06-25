@@ -86,8 +86,8 @@ internal final class URLSessionTaskSwizzler {
         /// Accepts either `completeTaskWithError:` or `completeTaskWithError:retryable:` (iOS 26+).
         static func build() -> NWTaskResume? {
             guard let klass = NSClassFromString("NWURLSessionTask"),
-                  (class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:")) != nil ||
-                   class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:retryable:")) != nil) else {
+                  class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:")) != nil ||
+                  class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:retryable:")) != nil else {
                 return nil
             }
             return try? NWTaskResume(selector: self.selector, klass: klass)
