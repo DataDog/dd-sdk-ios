@@ -592,7 +592,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let server = ServerMock(
             delivery: .success(
                 response: .mockWith(statusCode: 200, mimeType: "image/jpeg"),
-                data: .mockRandom(ofSize: 1024 * 1024) // 1 MB
+                data: .mockRandom(ofSize: 1_024 * 1_024) // 1 MB
             ),
             skipIsMainThreadCheck: true
         )
@@ -618,7 +618,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Regression test for RUM-16927: non-media responses larger than maxBufferedBodySize
         // must be capped and isBodyTruncated must be set so the caller can log a warning.
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let overCapSize = NetworkInstrumentationFeature.maxBufferedBodySize + 1024
+        let overCapSize = NetworkInstrumentationFeature.maxBufferedBodySize + 1_024
         let server = ServerMock(
             delivery: .success(
                 response: .mockWith(statusCode: 200, mimeType: "application/json"),

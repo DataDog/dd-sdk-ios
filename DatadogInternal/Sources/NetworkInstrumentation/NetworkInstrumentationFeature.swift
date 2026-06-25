@@ -545,7 +545,10 @@ extension NetworkInstrumentationFeature {
 
                 // Media types have no useful body content for resourceAttributesProvider or
                 // GraphQL error extraction — drop immediately.
-                guard !isMediaMimeType(mimeType) else { return }
+                guard !isMediaMimeType(mimeType) else {
+                    DD.logger.debug("Skipping response body buffering for media type '\(mimeType)' (registered-delegate mode).")
+                    return
+                }
 
                 // Cap body size as a safety net for all other types (large JSON, text, etc.).
                 let buffered = interception.data?.count ?? 0
