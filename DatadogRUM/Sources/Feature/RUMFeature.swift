@@ -271,6 +271,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
+        core.messageBus.subscribe(receiver: FlagEvaluationReceiver(monitor: monitor))
         self.crashReportReceiver = CrashReportReceiver(
             featureScope: featureScope,
             applicationID: configuration.applicationID,
@@ -302,7 +303,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 featureScope: featureScope,
                 monitor: monitor
             ),
-            FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
