@@ -8,7 +8,6 @@
 import CoreGraphics
 @_spi(Internal)
 import DatadogInternal
-import QuartzCore
 import Testing
 @_spi(Internal)
 import TestUtilities
@@ -198,99 +197,6 @@ private final class RecordWriterMock: RecordWriting {
 
     func write(nextRecord: EnrichedRecord) {
         records.append(nextRecord)
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-private extension LayerTreeSnapshot {
-    static func mockWith(
-        date: Date = Date(timeIntervalSince1970: 1),
-        applicationID: String = "app-id",
-        sessionID: String = "session-id",
-        viewID: String = "view-id",
-        viewportSize: CGSize = CGSize(width: 100, height: 200),
-        root: CALayerSnapshot = .mockRoot(),
-        webViewSlotIDs: Set<Int> = []
-    ) -> LayerTreeSnapshot {
-        return LayerTreeSnapshot(
-            date: date,
-            context: LayerRecordingContext(
-                textAndInputPrivacy: .maskSensitiveInputs,
-                imagePrivacy: .maskNone,
-                touchPrivacy: .show,
-                applicationID: applicationID,
-                sessionID: sessionID,
-                viewID: viewID,
-                viewServerTimeOffset: 0,
-                viewPath: "/view",
-                date: date,
-                telemetry: TelemetryMock()
-            ),
-            viewportSize: viewportSize,
-            root: root,
-            webViewSlotIDs: webViewSlotIDs
-        )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-private extension CALayerSnapshot {
-    static func mockRoot(
-        absoluteFrame: CGRect = CGRect(x: 0, y: 0, width: 100, height: 200),
-        sublayers: [CALayerSnapshot] = []
-    ) -> CALayerSnapshot {
-        return mockWith(
-            replayID: 1,
-            absoluteFrame: absoluteFrame,
-            backgroundColor: nil,
-            sublayers: sublayers
-        )
-    }
-
-    static func mockWith(
-        replayID: Int64,
-        absoluteFrame: CGRect,
-        backgroundColor: CGColor? = nil,
-        isPrivate: Bool = false,
-        sublayers: [CALayerSnapshot] = []
-    ) -> CALayerSnapshot {
-        let layer = CALayer()
-        return CALayerSnapshot(
-            layer: CALayerReference(layer),
-            replayID: replayID,
-            observation: .init(semantics: .layer),
-            layerClass: CALayer.self,
-            delegateClass: nil,
-            contentsClass: nil,
-            textAndInputPrivacyLevel: .maskSensitiveInputs,
-            imagePrivacyLevel: .maskNone,
-            isPrivate: isPrivate,
-            bounds: CGRect(origin: .zero, size: absoluteFrame.size),
-            position: absoluteFrame.origin,
-            zPosition: 0,
-            transform: CATransform3DIdentity,
-            absoluteFrame: absoluteFrame,
-            sublayers: sublayers,
-            dependencies: [],
-            sublayerTransform: CATransform3DIdentity,
-            mask: nil,
-            masksToBounds: false,
-            isOpaque: false,
-            backgroundColor: backgroundColor,
-            cornerRadii: .zero,
-            cornerCurve: .circular,
-            borderWidth: 0,
-            borderColor: nil,
-            opacity: 1,
-            allowsGroupOpacity: true,
-            compositingFilter: nil,
-            filters: [],
-            shadowColor: nil,
-            shadowOpacity: 0,
-            shadowOffset: .zero,
-            shadowRadius: 0,
-            shadowPath: nil
-        )
     }
 }
 
