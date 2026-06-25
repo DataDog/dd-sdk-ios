@@ -1483,6 +1483,7 @@ public protocol FlagsClientProtocol: AnyObject
     public func setEvaluationContext(_ context: FlagsEvaluationContext)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
 [?] extension FlagsClientProtocol
+    public func snapshot() -> FlagsSnapshot?
     public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool
     public func getStringValue(key: String, defaultValue: String) -> String
@@ -1561,6 +1562,14 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var error: FlagEvaluationError?
     public var allocationKey: String?
     public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
+public struct FlagsSnapshot: Equatable, Codable
+    public let assignments: [String: FlagSnapshot]
+    public init(assignments: [String: FlagSnapshot])
+public struct FlagSnapshot: Equatable, Codable
+    public let value: AnyValue
+    public let variant: String
+    public let reason: String
+    public init(value: AnyValue,variant: String,reason: String)
 public protocol FlagValue: Encodable
 public enum FlagsError: Error
     case networkError(Error)
