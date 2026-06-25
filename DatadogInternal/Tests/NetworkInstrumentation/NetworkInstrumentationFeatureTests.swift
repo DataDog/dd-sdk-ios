@@ -110,7 +110,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
 
         handler.onRequestMutation = { _, _, _ in notifyRequestMutation.fulfill() }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -1582,7 +1585,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
 
         let randomData: Data = .mockRandom()
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData),
+            skipIsMainThreadCheck: true
+        )
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -1993,7 +1999,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testAutomaticMode_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts
@@ -2024,7 +2033,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testAutomaticMode_injectsTraceHeadersForFirstPartyHosts() throws {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts
@@ -2059,7 +2071,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts that don't match the request URL
@@ -2090,9 +2105,129 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    func testAutomaticMode_tracksDataTaskWhenClassicLoadingModeIsDisabled() throws {
+        guard #available(iOS 18.4, tvOS 18.4, macOS 15.4, watchOS 11.4, visionOS 2.4, *) else {
+            throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
+        }
+        guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
+            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+        }
+        let taskCompleted = expectation(description: "Task completed")
+        let url = URL(string: "https://localhost:1")!
+        handler.shouldInterceptRequest = { $0.url == url }
+
+        // Given - Enable automatic mode and use the Network.framework-backed URLSession stack.
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.usesClassicLoadingMode = false
+
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+
+        // When
+        let task = session.dataTask(with: url) { _, _, _ in taskCompleted.fulfill() }
+        let taskClassName = String(describing: type(of: task))
+        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        task.resume()
+
+        // Then
+        wait(for: [taskCompleted], timeout: 5)
+        feature.flush()
+
+        let interception = try XCTUnwrap(
+            handler.interception(for: url),
+            "Automatic instrumentation should track URLSession tasks when usesClassicLoadingMode is false."
+        )
+        XCTAssertEqual(interception.trackingMode, .automatic)
+        XCTAssertNotNil(interception.completion, "Should capture completion for the Network.framework-backed task.")
+        XCTAssertNotNil(interception.startDate, "Should capture approximate start date.")
+        XCTAssertNotNil(interception.endDate, "Should capture approximate end date.")
+    }
+
+    func testAutomaticMode_tracksCompletionForDelegatelessNWTask() throws {
+        guard #available(iOS 18.4, tvOS 18.4, macOS 15.4, watchOS 11.4, visionOS 2.4, *) else {
+            throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
+        }
+        guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
+            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+        }
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let url = URL(string: "https://localhost:1")!
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.usesClassicLoadingMode = false
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+
+        // When - no completion handler: relies entirely on NWTaskComplete swizzle for end tracking
+        let task = session.dataTask(with: url)
+        let taskClassName = String(describing: type(of: task))
+        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        task.resume()
+
+        // Then
+        wait(for: [notifyInterceptionDidComplete], timeout: 5)
+
+        let interception = try XCTUnwrap(handler.interception(for: url))
+        XCTAssertEqual(interception.trackingMode, .automatic)
+        XCTAssertNotNil(interception.completion, "Should capture completion via NWTaskComplete swizzle.")
+        XCTAssertNotNil(interception.startDate)
+        XCTAssertNotNil(interception.endDate)
+    }
+
+    func testAutomaticMode_injectsTraceHeadersForFirstPartyHostsWithNWTask() throws {
+        guard #available(iOS 18.4, tvOS 18.4, macOS 15.4, watchOS 11.4, visionOS 2.4, *) else {
+            throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
+        }
+        guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
+            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+        }
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+
+        // Given
+        let url = URL(string: "https://localhost:1")!
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [url.host!: [.datadog, .tracecontext]])
+
+        var capturedHeaderTypes: Set<TracingHeaderType>?
+        handler.onRequestMutation = { _, headerTypes, _ in
+            capturedHeaderTypes = headerTypes
+            notifyRequestMutation.fulfill()
+        }
+        handler.onInterceptionDidStart = { interception in
+            XCTAssertTrue(interception.isFirstPartyRequest)
+            notifyInterceptionDidStart.fulfill()
+        }
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        // When - usesClassicLoadingMode = false forces NWURLSessionTask instances
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.usesClassicLoadingMode = false
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: url) { _, _, _ in }
+        let taskClassName = String(describing: type(of: task))
+        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        task.resume()
+
+        // Then
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(capturedHeaderTypes, [.datadog, .tracecontext])
+    }
+
     func testRegisteredDelegate_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
         scopeHandler(to: server)
 
         // Given

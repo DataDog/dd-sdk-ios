@@ -9,6 +9,7 @@ import Foundation
 internal final class URLSessionTaskSwizzler {
     private let lock: NSLocking
     private var taskResume: TaskResume?
+    private var nwTaskResume: NWTaskResume?
 
     init(lock: NSLocking = NSLock()) {
         self.lock = lock
@@ -22,6 +23,10 @@ internal final class URLSessionTaskSwizzler {
         defer { lock.unlock() }
         taskResume = try TaskResume.build()
         taskResume?.swizzle(intercept: interceptResume)
+        // NWURLSessionTask is used when usesClassicLoadingMode = false (iOS/tvOS 18.4+)
+        // and bypasses the __NSCFLocalSessionTask swizzle above.
+        nwTaskResume = NWTaskResume.build()
+        nwTaskResume?.swizzle(intercept: interceptResume)
     }
 
     /// Unswizzles all.
@@ -30,6 +35,7 @@ internal final class URLSessionTaskSwizzler {
     func unswizzle() {
         lock.lock()
         taskResume?.unswizzle()
+        nwTaskResume?.unswizzle()
         lock.unlock()
     }
 
@@ -52,6 +58,38 @@ internal final class URLSessionTaskSwizzler {
                 throw InternalError(description: "Failed to swizzle `URLSessionTask`: `\(className)` class not found.")
             }
             return try TaskResume(selector: self.selector, klass: klass)
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try dd_class_getInstanceMethod(klass, selector)
+            super.init()
+        }
+
+        func swizzle(intercept: @escaping (URLSessionTask) -> Void) {
+            typealias Signature = @convention(block) (URLSessionTask) -> Void
+            swizzle(method) { previousImplementation -> Signature in
+                return { task in
+                    intercept(task)
+                    previousImplementation(task, Self.selector)
+                }
+            }
+        }
+    }
+
+    /// Swizzles `NWURLSessionTask.resume()` — used when `usesClassicLoadingMode = false` (iOS/tvOS 18.4+).
+    class NWTaskResume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
+        private static let selector = #selector(URLSessionTask.resume)
+
+        private let method: Method
+
+        /// Returns `nil` if `NWURLSessionTask` is unavailable or if `completeTaskWithError:` is absent.
+        /// Both guards are required: tracking resume without completion would leave interceptions open permanently.
+        static func build() -> NWTaskResume? {
+            guard let klass = NSClassFromString("NWURLSessionTask"),
+                  class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:")) != nil else {
+                return nil
+            }
+            return try? NWTaskResume(selector: self.selector, klass: klass)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
