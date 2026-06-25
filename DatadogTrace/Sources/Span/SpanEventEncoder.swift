@@ -314,7 +314,9 @@ internal struct SpanEventEncoder {
             // The SDK owns `_dd.compute_stats` (encoded in `encodeDefaultMeta`). Drop any
             // user-provided value so it cannot override the SDK opt-out, which would otherwise
             // let the backend recompute stats and reintroduce double counting.
-            guard $0.key != SpanEventEncoder.reservedComputeStatsTagKey else { return }
+            guard $0.key != SpanEventEncoder.reservedComputeStatsTagKey else {
+                return
+            }
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
