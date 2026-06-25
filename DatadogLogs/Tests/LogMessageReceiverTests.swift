@@ -14,7 +14,7 @@ class LogMessageReceiverTests: XCTestCase {
         // Given
         let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
-        core.subscribe(receiver: LogMessageReceiver.mockAny())
+        core.messageBus.subscribe(receiver: LogMessageReceiver.mockAny())
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
@@ -53,7 +53,7 @@ class LogMessageReceiverTests: XCTestCase {
         // Given
         let expectation = expectation(description: "Send log")
         let core = PassthroughCoreMock(context: .mockAny())
-        core.subscribe(receiver: LogMessageReceiver.mockAny())
+        core.messageBus.subscribe(receiver: LogMessageReceiver.mockAny())
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
@@ -98,7 +98,7 @@ class LogMessageReceiverTests: XCTestCase {
         // Given
         let expectation = expectation(description: "Open scope but don't send log")
         let core = PassthroughCoreMock(context: .mockWith(service: "service-test"))
-        core.subscribe(receiver: LogMessageReceiver(
+        core.messageBus.subscribe(receiver: LogMessageReceiver(
             logEventMapper: SyncLogEventMapper { _ in nil }
         ))
         core.onEventWriteContext = { _ in expectation.fulfill() }
