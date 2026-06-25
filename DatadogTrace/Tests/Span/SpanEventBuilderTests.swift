@@ -799,7 +799,7 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         // Then
-        XCTAssertTrue(span.clientComputesStats)
+        XCTAssertTrue(span.clientSideStatsComputationEnabled)
         let json = try JSONEncoder().encode(span).toJSONObject()
         XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "Backend should be told to skip its own stats computation")
     }
@@ -826,8 +826,35 @@ class SpanEventBuilderTests: XCTestCase {
         )
 
         // Then
-        XCTAssertFalse(span.clientComputesStats)
+        XCTAssertFalse(span.clientSideStatsComputationEnabled)
         let json = try JSONEncoder().encode(span).toJSONObject()
         XCTAssertNil(json["meta._dd.compute_stats"], "The tag must be omitted so the backend keeps computing stats (backwards-compatible default)")
+    }
+
+    func testWhenStatsComputationIsEnabled_aUserComputeStatsTagCannotOverrideTheOptOut() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When the user tries to set the reserved `_dd.compute_stats` tag to a non-"0" value
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: ["_dd.compute_stats": "1"],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then the SDK-owned opt-out wins; the user value is dropped so the backend cannot
+        // be told to recompute stats (which would reintroduce double counting).
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "The user tag must not override the SDK opt-out")
     }
 }
