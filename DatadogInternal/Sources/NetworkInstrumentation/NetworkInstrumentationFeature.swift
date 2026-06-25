@@ -57,6 +57,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     @ReadWriteLock
     private var registeredDelegateClasses: [ObjectIdentifier: AnyClass] = [:]
 
+    /// Tasks whose response body was discarded after exceeding `maxBufferedBodySize` in registered-delegate mode.
+    private var truncatedInterceptions: Set<URLSessionTask> = []
+
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
     /// The interceptions **must** be accessed using the `queue`.
@@ -538,23 +541,19 @@ extension NetworkInstrumentationFeature {
             // response duplicates it in memory (RUM-16927). In automatic mode, URLSession already
             // holds the complete Data object, so no duplication occurs.
             if interception.trackingMode == .registeredDelegate {
+                guard !truncatedInterceptions.contains(task) else {
+                    return
+                }
+
                 let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
+                guard !isMediaMimeType(mimeType) else { return }
 
-                guard !isMediaMimeType(mimeType) else {
-                    return
-                }
-
-                // Cap body size as a safety net for all other types (large JSON, text, etc.).
+                // When exceeded, discard all accumulated data — partial data is worse than nil
+                // since customers have no way to detect it's incomplete.
                 let buffered = interception.data?.count ?? 0
-                guard buffered < NetworkInstrumentationFeature.maxBufferedBodySize else {
-                    interception.markBodyTruncated()
-                    return
-                }
-                let available = NetworkInstrumentationFeature.maxBufferedBodySize - buffered
-                if data.count > available {
-                    // Clip this chunk so the buffer lands exactly on the cap.
-                    interception.register(nextData: Data(data.prefix(available)))
-                    interception.markBodyTruncated()
+                if buffered + data.count > NetworkInstrumentationFeature.maxBufferedBodySize {
+                    interception.resetData()
+                    truncatedInterceptions.insert(task)
                     return
                 }
             }
@@ -616,10 +615,11 @@ extension NetworkInstrumentationFeature {
             interception.register(endDate: endDate, mediaTime: endMediaTime)
         }
 
-        if interception.isBodyTruncated {
-            let url = interception.request.url?.absoluteString ?? "(unknown)"
+        if truncatedInterceptions.remove(task) != nil {
+            // Log host+path only — query parameters may contain sensitive tokens.
+            let url = interception.request.url.map { "\($0.host ?? "")\($0.path)" } ?? "(unknown)"
             DD.logger.warn(
-                "resourceAttributesProvider: response body for \(url) was truncated to \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB."
+                "resourceAttributesProvider: response body for \(url) exceeded \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB and was not captured."
             )
         }
 

@@ -609,7 +609,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
         XCTAssertNil(interception.data, "Media response body must not be buffered")
-        XCTAssertFalse(interception.isBodyTruncated, "Media responses are excluded before the cap, not truncated")
     }
 
     func testRegisteredDelegate_truncatesBodyAtSizeCap() throws {
@@ -637,9 +636,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         let interception = try XCTUnwrap(handler.interceptions.first).value
-        let bufferedData = try XCTUnwrap(interception.data, "Body must be partially buffered up to the cap")
-        XCTAssertLessThanOrEqual(bufferedData.count, NetworkInstrumentationFeature.maxBufferedBodySize, "Buffered size must not exceed cap")
-        XCTAssertTrue(interception.isBodyTruncated, "Must signal truncation for the caller to warn")
+        XCTAssertNil(interception.data)
     }
 
     // MARK: - Automatic Mode

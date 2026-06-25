@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-03
+last_updated: 2026-06-25
 sdk_version: 3.12.0
-verified_against_commit: a0fb31f68
+verified_against_commit: 7904567cc
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -9,6 +9,7 @@ tracked_files:
   - DatadogTrace/Sources/OpenTracing/OTTracer.swift
   - DatadogTrace/Sources/OpenTracing/OTSpan.swift
   - DatadogTrace/Sources/OpenTracing/OTFormat.swift
+  - DatadogTrace/Sources/OpenTracing/OTTagValue.swift
   - DatadogTrace/Sources/OpenTelemetry/OTelTracerProvider.swift
   - DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift
   - DatadogTrace/Sources/Objc/OpenTracing/OTTracer+objc.swift
@@ -190,15 +191,16 @@ requestSpan.finish()
 
 ### Public API — Manual Instrumentation
 - **`DatadogTrace/Sources/Tracer.swift`** — Access point: `Tracer.shared(in:)` returns an `OTTracer`. Also defines `SpanTags` (`resource`, `operation`, `service`, `manualKeep`, `manualDrop`).
-- **`DatadogTrace/Sources/OpenTracing/OTTracer.swift`** — OpenTracing tracer protocol: `startSpan`, `startRootSpan`, `inject`, `extract`, `activeSpan`.
-- **`DatadogTrace/Sources/OpenTracing/OTSpan.swift`** — OpenTracing span protocol: `setTag`, `log`, `setBaggageItem`, `setActive`, `finish`, `setError`, `keepTrace`, `dropTrace`.
+- **`DatadogTrace/Sources/OpenTracing/OTTracer.swift`** — OpenTracing tracer protocol (`Sendable`): `startSpan`, `startRootSpan`, `inject`, `extract`, `activeSpan`. Tag parameters use `[String: OTTagValue]?`.
+- **`DatadogTrace/Sources/OpenTracing/OTSpan.swift`** — OpenTracing span protocol (`Sendable`): `setTag(key:value:)` (value is `OTTagValue`), `log(fields:)` (fields are `[String: Encodable & Sendable]`), `setBaggageItem`, `setActive`, `finish`, `setError`, `keepTrace`, `dropTrace`.
+- **`DatadogTrace/Sources/OpenTracing/OTTagValue.swift`** — `public typealias OTTagValue = Encodable & Sendable`. Used for all span tag values; custom tag types must conform to both `Encodable` and `Sendable`.
 - **`DatadogTrace/Sources/OpenTracing/OTFormat.swift`** — Format/carrier protocols for `inject` / `extract`.
 
 ### Public API — OpenTelemetry
 - **`DatadogTrace/Sources/OpenTelemetry/OTelTracerProvider.swift`** — `OTelTracerProvider` to register with `OpenTelemetry.registerTracerProvider(...)` and use the standard OpenTelemetry `Tracer` / `SpanBuilder` API.
 
 ### Public API — Objective-C Bridge
-- **`DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift`** — Objective-C Trace entry point and configuration bridge (`DDTrace`, `DDTraceConfiguration`, `DDTraceURLSessionTracking`, `DDTracer`).
+- **`DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift`** — Objective-C Trace entry point and configuration bridge (`DDTrace`, `DDTraceConfiguration`, `DDTraceURLSessionTracking`, `DDTracer`). Includes multi-instance variants: `+[DDTrace enableWith:instanceName:]` and `+[DDTracer sharedWithInstanceName:]`.
 - **`DatadogTrace/Sources/Objc/OpenTracing/OTTracer+objc.swift`**, **`OTSpan+objc.swift`**, **`OTSpanContext+objc.swift`** — Objective-C OpenTracing protocols and constants.
 - **`DatadogTrace/Sources/Objc/Tracing/DDSpan+objc.swift`**, **`DDSpanContext+objc.swift`** — Objective-C wrappers around Datadog span and span context implementations.
 - **`DatadogTrace/Sources/Objc/Tracing/Propagation/*+objc.swift`** — Objective-C wrappers for Datadog, W3C, B3 header writers and trace context injection.
@@ -237,12 +239,12 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 
 ### Span Enrichment
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
-- **Global tags**: `tags` — applied to every span from the default tracer.
+- **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
 
 ### Event Modification
-- **`eventMapper`** — `(SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast.
+- **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
 
 ### Manual Header Propagation
 For non-`URLSession` HTTP clients, build headers yourself:

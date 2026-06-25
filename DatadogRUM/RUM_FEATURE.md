@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-06-25
 sdk_version: 3.12.0
-verified_against_commit: 002d6f597
+verified_against_commit: 7904567cc
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -74,7 +74,7 @@ RUM.enable(
             // Optional: Add custom attributes to resources.
             // Note: in registered-delegate mode (enableDurationBreakdown), `data` is:
             //   - nil for media types (image/*, video/*, audio/*, application/octet-stream)
-            //   - a prefix of at most 512 KB for all other types (may be truncated)
+            //   - nil for responses over 512 KB (all other types)
             resourceAttributesProvider: { request, response, data, error in
                 return ["custom.attribute": "value"]
             },

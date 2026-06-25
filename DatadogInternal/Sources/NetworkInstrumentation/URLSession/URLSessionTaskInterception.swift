@@ -13,7 +13,7 @@ public enum TrackingMode {
     case automatic
 
     /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
-    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.) as well as the data via the delegate callback.
+    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.).
     case registeredDelegate
 }
 
@@ -31,24 +31,17 @@ public class URLSessionTaskInterception {
     public private(set) var metrics: ResourceMetrics?
     /// Task data received during this interception.
     ///
-    /// Data is collected in:
-    /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
-    /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
+    /// Collected via:
+    /// - Registered delegate mode: incremental `URLSessionDataDelegate` chunks
+    /// - Automatic mode: completion handler swizzling (tasks with completion handlers only)
     ///
-    /// `nil` for:
-    /// - Tasks without a completion handler in automatic mode (e.g., async/await)
-    /// - Download tasks (data is saved to file, not captured in memory)
-    /// - Media responses in registered-delegate mode (image, video, audio)
-    ///
-    /// May also be `nil` if the task completed with an error before any data was received.
-    ///
-    /// In registered-delegate mode, non-media responses are capped at `NetworkInstrumentationFeature.maxBufferedBodySize`.
-    /// If exceeded, `data` is a truncated prefix and `isBodyTruncated` is `true`.
+    /// `nil` when:
+    /// - No completion handler in automatic mode (e.g., async/await tasks)
+    /// - Download tasks (data is written to file, not memory)
+    /// - Media responses in registered-delegate mode (`image/*`, `video/*`, `audio/*`, `application/octet-stream`)
+    /// - Response body exceeds 512 KB in registered-delegate mode
+    /// - Task completed with an error before any data was received
     public private(set) var data: Data?
-
-    /// Whether the response body was truncated due to exceeding the max buffered body size.
-    /// Only relevant in registered-delegate mode; always `false` in automatic mode.
-    internal private(set) var isBodyTruncated = false
     /// Response size in bytes received during this interception.
     ///
     /// This is captured via `task.countOfBytesReceived` and serves as a fallback when `metrics.responseBodySize?.decoded` is unavailable.
@@ -124,8 +117,8 @@ public class URLSessionTaskInterception {
         }
     }
 
-    func markBodyTruncated() {
-        isBodyTruncated = true
+    func resetData() {
+        data = nil
     }
 
     func register(request: ImmutableRequest) {

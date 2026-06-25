@@ -362,7 +362,7 @@ extension RUM {
             /// **Constraints on the `data` parameter in registered-delegate mode**
             /// (`URLSessionInstrumentation.enableDurationBreakdown(with:)`):
             /// - Media responses (`image/*`, `video/*`, `audio/*`, `application/octet-stream`) always pass `nil`.
-            /// - All other responses are capped at 512 KB; `data` may be a truncated prefix for larger responses.
+            /// - All other responses are capped at 512 KB; `data` is `nil` for larger responses.
             ///
             /// Default: `nil`.
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
