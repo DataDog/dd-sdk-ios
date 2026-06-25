@@ -35,11 +35,12 @@ public class URLSessionTaskInterception {
     /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
     /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
     ///
-    /// Can be `nil` if:
-    /// - Task completed with error
-    /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
-    /// - Task is a download task (data is saved to file instead of captured in memory)
-    /// - Response is a media type (image, video, audio) in registered-delegate mode
+    /// `nil` for:
+    /// - Tasks without a completion handler in automatic mode (e.g., async/await)
+    /// - Download tasks (data is saved to file, not captured in memory)
+    /// - Media responses in registered-delegate mode (image, video, audio)
+    ///
+    /// May also be `nil` if the task completed with an error before any data was received.
     ///
     /// In registered-delegate mode, non-media responses are capped at `NetworkInstrumentationFeature.maxBufferedBodySize`.
     /// If exceeded, `data` is a truncated prefix and `isBodyTruncated` is `true`.
