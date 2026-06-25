@@ -627,11 +627,7 @@ extension NetworkInstrumentationFeature {
         if interception.isBodyTruncated {
             let url = interception.request.url?.absoluteString ?? "(unknown)"
             DD.logger.warn(
-                """
-                Response body for \(url) was truncated to \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB. \
-                The full body is not available in resourceAttributesProvider. \
-                If you need the full body, consider streaming or processing the response outside the SDK.
-                """
+                "resourceAttributesProvider: response body for \(url) was truncated to \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB."
             )
         }
 
