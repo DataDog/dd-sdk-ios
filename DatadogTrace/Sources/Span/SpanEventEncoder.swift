@@ -60,7 +60,7 @@ public struct SpanEvent: Encodable {
     /// Only `true` when client-side stats is enabled. When `false` the tag is omitted so the
     /// backend keeps computing stats — the backwards-compatible default for SDKs that don't
     /// emit the tag. Setting `"0"` while not actually uploading client stats would under-count.
-    internal let clientComputesStats: Bool
+    internal let clientSideStatsComputationEnabled: Bool
     /// The origin for the Span, it is used to label the spans used created under testing
     internal let origin: String?
     /// The sampling rate for the span (between 0 and 1)
@@ -122,6 +122,12 @@ public struct SpanEvent: Encodable {
 
 /// Encodes `SpanEvent` to given encoder.
 internal struct SpanEventEncoder {
+    /// Span-tag key owned exclusively by the SDK. It is encoded in `encodeDefaultMeta` based on
+    /// `clientSideStatsComputationEnabled`; any user-provided value for this key is dropped in
+    /// `encodeCustomMeta` so it cannot overwrite the SDK opt-out and silently reintroduce backend
+    /// double counting.
+    static let reservedComputeStatsTagKey = "_dd.compute_stats"
+
     /// Coding keys for permanent `SpanEvent` attributes.
     enum StaticCodingKeys: String, CodingKey {
         // MARK: - Attributes
@@ -233,7 +239,7 @@ internal struct SpanEventEncoder {
         try container.encode(span.source, forKey: .source)
         // The backend trace partitioner only inspects the first span of a chunk, but iOS uploads
         // one span per payload, so every eligible span carries the opt-out when CSS is active.
-        if span.clientComputesStats {
+        if span.clientSideStatsComputationEnabled {
             try container.encode("0", forKey: .computeStats)
         }
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
@@ -305,6 +311,10 @@ internal struct SpanEventEncoder {
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
         try span.tags.forEach {
+            // The SDK owns `_dd.compute_stats` (encoded in `encodeDefaultMeta`). Drop any
+            // user-provided value so it cannot override the SDK opt-out, which would otherwise
+            // let the backend recompute stats and reintroduce double counting.
+            guard $0.key != SpanEventEncoder.reservedComputeStatsTagKey else { return }
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }

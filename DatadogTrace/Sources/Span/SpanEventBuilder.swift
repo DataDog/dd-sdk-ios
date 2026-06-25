@@ -101,7 +101,7 @@ internal struct SpanEventBuilder: Sendable {
             duration: finishTime.timeIntervalSince(startTime),
             isError: tagsReducer.extractedIsError ?? false,
             source: context.source,
-            clientComputesStats: statsComputationEnabled,
+            clientSideStatsComputationEnabled: statsComputationEnabled,
             origin: context.ciAppOrigin,
             samplingRate: samplingRate,
             samplingPriority: samplingPriority,
