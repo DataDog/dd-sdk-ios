@@ -651,6 +651,7 @@ public class objc_RUMErrorEvent: NSObject
 public class objc_RUMErrorEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMErrorEventDDConfiguration?
+    public var debugIds: [objc_RUMErrorEventDDDebugIds]?
     public var formatVersion: NSNumber
     public var parentSpanId: String?
     public var profiling: objc_RUMErrorEventDDProfiling?
@@ -664,8 +665,11 @@ public class objc_RUMErrorEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMErrorEventDDDebugIds: NSObject
+    public var debugIdsInfo: [String: String]
 public class objc_RUMErrorEventDDProfiling: NSObject
     public var errorReason: objc_RUMErrorEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason
     public var status: objc_RUMErrorEventDDProfilingStatus
 public enum objc_RUMErrorEventDDProfilingErrorReason: Int
     case none
@@ -673,6 +677,15 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMErrorEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMErrorEventDDProfilingStatus: Int
     case none
     case starting
@@ -1024,6 +1037,7 @@ public class objc_RUMLongTaskEvent: NSObject
 public class objc_RUMLongTaskEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMLongTaskEventDDConfiguration?
+    public var debugIds: [objc_RUMLongTaskEventDDDebugIds]?
     public var discarded: NSNumber?
     public var formatVersion: NSNumber
     public var profiling: objc_RUMLongTaskEventDDProfiling?
@@ -1034,8 +1048,11 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMLongTaskEventDDDebugIds: NSObject
+    public var debugIdsInfo: [String: String]
 public class objc_RUMLongTaskEventDDProfiling: NSObject
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason
     public var status: objc_RUMLongTaskEventDDProfilingStatus
 public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int
     case none
@@ -1043,6 +1060,15 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMLongTaskEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMLongTaskEventDDProfilingStatus: Int
     case none
     case starting
@@ -1625,6 +1651,7 @@ public enum objc_RUMViewEventDDPageStatesState: Int
     case terminated
 public class objc_RUMViewEventDDProfiling: NSObject
     public var errorReason: objc_RUMViewEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMViewEventDDProfilingQuotaReason
     public var status: objc_RUMViewEventDDProfilingStatus
 public enum objc_RUMViewEventDDProfilingErrorReason: Int
     case none
@@ -1632,6 +1659,15 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMViewEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMViewEventDDProfilingStatus: Int
     case none
     case starting
@@ -2013,16 +2049,61 @@ public class objc_RUMViewUpdateEvent: NSObject
     public var view: objc_RUMViewUpdateEventView
 public class objc_RUMViewUpdateEventDD: NSObject
     public var browserSdkVersion: String?
+    public var cls: objc_RUMViewUpdateEventDDCLS?
     public var configuration: objc_RUMViewUpdateEventDDConfiguration?
     public var documentVersion: NSNumber
     public var formatVersion: NSNumber
+    public var pageStates: [objc_RUMViewUpdateEventDDPageStates]?
+    public var profiling: objc_RUMViewUpdateEventDDProfiling?
+    public var replayStats: objc_RUMViewUpdateEventDDReplayStats?
     public var sdkName: String?
     public var session: objc_RUMViewUpdateEventDDSession?
+public class objc_RUMViewUpdateEventDDCLS: NSObject
+    public var devicePixelRatio: NSNumber?
 public class objc_RUMViewUpdateEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var startSessionReplayRecordingManually: NSNumber?
     public var traceSampleRate: NSNumber?
+public class objc_RUMViewUpdateEventDDPageStates: NSObject
+    public var start: NSNumber
+    public var state: objc_RUMViewUpdateEventDDPageStatesState
+public enum objc_RUMViewUpdateEventDDPageStatesState: Int
+    case active
+    case passive
+    case hidden
+    case frozen
+    case terminated
+public class objc_RUMViewUpdateEventDDProfiling: NSObject
+    public var errorReason: objc_RUMViewUpdateEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMViewUpdateEventDDProfilingQuotaReason
+    public var status: objc_RUMViewUpdateEventDDProfilingStatus
+public enum objc_RUMViewUpdateEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMViewUpdateEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+public enum objc_RUMViewUpdateEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
+public class objc_RUMViewUpdateEventDDReplayStats: NSObject
+    public var recordsCount: NSNumber?
+    public var segmentsCount: NSNumber?
+    public var segmentsTotalRawSize: NSNumber?
 public class objc_RUMViewUpdateEventDDSession: NSObject
     public var plan: objc_RUMViewUpdateEventDDSessionPlan
     public var sessionPrecondition: objc_RUMViewUpdateEventDDSessionRUMSessionPrecondition
@@ -2405,6 +2486,7 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalAppLaunchEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalAppLaunchEventDDProfilingQuotaReason
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus
 public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int
     case none
@@ -2412,6 +2494,15 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalAppLaunchEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalAppLaunchEventDDProfilingStatus: Int
     case none
     case starting
@@ -2625,6 +2716,7 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalDurationEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalDurationEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalDurationEventDDProfilingQuotaReason
     public var status: objc_RUMVitalDurationEventDDProfilingStatus
 public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int
     case none
@@ -2632,6 +2724,15 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalDurationEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalDurationEventDDProfilingStatus: Int
     case none
     case starting
@@ -2834,6 +2935,7 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
     public var traceSampleRate: NSNumber?
 public class objc_RUMVitalOperationStepEventDDProfiling: NSObject
     public var errorReason: objc_RUMVitalOperationStepEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMVitalOperationStepEventDDProfilingQuotaReason
     public var status: objc_RUMVitalOperationStepEventDDProfilingStatus
 public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int
     case none
@@ -2841,6 +2943,15 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+public enum objc_RUMVitalOperationStepEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 public enum objc_RUMVitalOperationStepEventDDProfilingStatus: Int
     case none
     case starting
