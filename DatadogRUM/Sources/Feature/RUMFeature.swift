@@ -15,9 +15,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let messageReceiver: FeatureMessageReceiver
 
-    /// Typed-bus receiver for `RUMErrorMessage` sent by the Logs feature.
-    let errorMessageReceiver: ErrorMessageReceiver
-
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -271,11 +268,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
-        self.errorMessageReceiver = ErrorMessageReceiver(
-            featureScope: featureScope,
-            monitor: monitor
-        )
-
         var messageReceivers: [FeatureMessageReceiver] = [
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
@@ -283,6 +275,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
                 configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
+            ),
+            ErrorMessageReceiver(
+                featureScope: featureScope,
+                monitor: monitor
             ),
             FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(

@@ -44,7 +44,6 @@ public enum RUM {
         // Register RUM feature:
         let rum = try RUMFeature(in: core, configuration: configuration)
         try core.register(feature: rum)
-        core.messageBus.subscribe(receiver: rum.errorMessageReceiver)
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {
