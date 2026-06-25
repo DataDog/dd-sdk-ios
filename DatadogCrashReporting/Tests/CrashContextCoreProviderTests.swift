@@ -135,4 +135,21 @@ class CrashContextCoreProviderTests: XCTestCase {
         // Then — no message sent yet
         XCTAssertNil(provider.currentCrashContext)
     }
+
+    func testCrashContextIsSeedWithInitialContextAfterEnabling() {
+        // Given
+        let expectedContext: DatadogContext = .mockWith(service: "initial-service")
+        let core = PassthroughCoreMock(context: expectedContext)
+        let provider = CrashContextCoreProvider()
+
+        // When — simulate what enableOrThrow does:
+        provider.subscribe(to: core.messageBus)
+        core.scope(for: CrashReportingFeature.self).context { context in
+            provider.update(context: context)
+        }
+        provider.flush()
+
+        // Then — context is immediately available without waiting for a bus mutation
+        XCTAssertEqual(provider.currentCrashContext?.service, "initial-service")
+    }
 }

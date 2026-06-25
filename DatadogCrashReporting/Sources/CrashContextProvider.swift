@@ -70,7 +70,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     /// Updates crash context.
     ///
     /// - Parameter context: The updated core context.
-    fileprivate func update(context: DatadogContext) {
+    func update(context: DatadogContext) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
