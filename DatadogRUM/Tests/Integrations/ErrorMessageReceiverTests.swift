@@ -30,8 +30,8 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     func testReceivePartialLogError() throws {
         // When
-        let message: FeatureMessage = .payload(
-            RUMErrorMessage(
+        receiver.receive(
+            message: RUMErrorMessage(
                 time: Date(),
                 message: "message-test",
                 source: "logger",
@@ -39,13 +39,11 @@ class ErrorMessageReceiverTests: XCTestCase {
                 stack: nil,
                 attributes: [:],
                 binaryImages: nil
-            )
+            ),
+            from: NOPDatadogCore()
         )
 
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
-
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.source, .logger)
@@ -55,8 +53,10 @@ class ErrorMessageReceiverTests: XCTestCase {
         // Given
         let mockAttribute: String = .mockRandom()
         let mockBinaryImage: BinaryImage = .mockRandom()
-        let message: FeatureMessage = .payload(
-            RUMErrorMessage(
+
+        // When
+        receiver.receive(
+            message: RUMErrorMessage(
                 time: Date(),
                 message: "message-test",
                 source: "custom",
@@ -66,14 +66,11 @@ class ErrorMessageReceiverTests: XCTestCase {
                     "any-key": mockAttribute
                 ],
                 binaryImages: [mockBinaryImage]
-            )
+            ),
+            from: NOPDatadogCore()
         )
 
-        // When
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
-
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.type, "type-test")
