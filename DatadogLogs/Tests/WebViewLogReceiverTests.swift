@@ -65,9 +65,11 @@ class WebViewLogReceiverTests: XCTestCase {
         let value: String = .mockRandom()
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: ["test": value]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": value])),
+                from: core
+            )
         )
 
         // Then
@@ -115,9 +117,11 @@ class WebViewLogReceiverTests: XCTestCase {
         ]
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: webLogEvent),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(webLogEvent)),
+                from: core
+            )
         )
 
         // Then
@@ -163,9 +167,11 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: ["test": "value"]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
         )
 
         // Then
@@ -204,9 +210,11 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: ["test": "value"]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
         )
 
         // Then
@@ -233,9 +241,11 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: ["test": "value"]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
         )
 
         // Then
@@ -270,12 +280,14 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: [
-                "test": "value",
-                "usr": ["id": webUsrId, "name": webUsrName]
-            ]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log([
+                    "test": "value",
+                    "usr": ["id": webUsrId, "name": webUsrName]
+                ])),
+                from: core
+            )
         )
 
         // Then
@@ -302,12 +314,14 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: [
-                "test": "value",
-                "usr": ["anonymous_id": browserAnonymousId]
-            ]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log([
+                    "test": "value",
+                    "usr": ["anonymous_id": browserAnonymousId]
+                ])),
+                from: core
+            )
         )
 
         // Then
@@ -331,9 +345,11 @@ class WebViewLogReceiverTests: XCTestCase {
         core.onEventWriteContext = { _ in expectation.fulfill() }
 
         // When
-        messageReceiver.receive(
-            message: WebViewLogMessage(event: ["test": "value"]),
-            from: core
+        XCTAssert(
+            messageReceiver.receive(
+                message: .webview(.log(["test": "value"])),
+                from: core
+            )
         )
 
         // Then

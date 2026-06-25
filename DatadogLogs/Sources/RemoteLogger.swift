@@ -27,8 +27,6 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     /// Logs feature scope.
     let featureScope: FeatureScope
-    /// Typed message bus, used to forward log errors to RUM.
-    let messageBus: MessageBus
     /// Configuration specific to this logger.
     let configuration: Configuration
     /// Date provider for logs.
@@ -50,7 +48,6 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
     init(
         featureScope: FeatureScope,
-        messageBus: MessageBus,
         globalAttributes: SynchronizedAttributes,
         configuration: Configuration,
         dateProvider: DateProvider,
@@ -59,7 +56,6 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         backtraceReporter: BacktraceReporting?
     ) {
         self.featureScope = featureScope
-        self.messageBus = messageBus
         self.globalAttributes = globalAttributes
         self.loggerAttributes = SynchronizedAttributes(attributes: [:])
         self.loggerTags = SynchronizedTags(tags: [])
@@ -197,15 +193,17 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
                     busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
                 }
 
-                self.messageBus.send(
-                    message: RUMErrorMessage(
-                        time: date,
-                        message: log.error?.message ?? log.message,
-                        source: "logger",
-                        type: log.error?.kind,
-                        stack: log.error?.stack,
-                        attributes: busCombinedAttributes,
-                        binaryImages: binaryImages
+                self.featureScope.send(
+                    message: .payload(
+                        RUMErrorMessage(
+                            time: date,
+                            message: log.error?.message ?? log.message,
+                            source: "logger",
+                            type: log.error?.kind,
+                            stack: log.error?.stack,
+                            attributes: busCombinedAttributes,
+                            binaryImages: binaryImages
+                        )
                     )
                 )
             }

@@ -155,7 +155,6 @@ public struct Logger {
 
             return RemoteLogger(
                 featureScope: core.scope(for: LogsFeature.self),
-                messageBus: core.messageBus,
                 globalAttributes: feature.attributes,
                 configuration: RemoteLogger.Configuration(
                     service: configuration.service,
