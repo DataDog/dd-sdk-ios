@@ -211,7 +211,8 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         guard #available(iOS 18.4, tvOS 18.4, macOS 15.4, watchOS 11.4, visionOS 2.4, *) else {
             throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
         }
-        guard URLSessionTaskStateSwizzler.NWTaskComplete.build() != nil else {
+        guard URLSessionTaskStateSwizzler.NWTaskComplete.build() != nil ||
+              URLSessionTaskStateSwizzler.NWTaskCompleteRetryable.build() != nil else {
             throw XCTSkip("NW task completion not supported on this platform/version")
         }
         let completionExpectation = expectation(description: "NWURLSessionTask completion intercepted")

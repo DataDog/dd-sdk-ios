@@ -19,6 +19,7 @@ internal final class URLSessionTaskStateSwizzler {
     private let lock: NSLocking
     private var taskSetState: TaskSetState?
     private var nwTaskComplete: NWTaskComplete?
+    private var nwTaskCompleteRetryable: NWTaskCompleteRetryable?
 
     init(lock: NSLocking = NSLock()) {
         self.lock = lock
@@ -32,11 +33,18 @@ internal final class URLSessionTaskStateSwizzler {
         defer { lock.unlock() }
         taskSetState = try TaskSetState.build()
         taskSetState?.swizzle(intercept: interceptSetState)
-        // NWURLSessionTask (usesClassicLoadingMode = false, iOS/tvOS 18.4+) bypasses setState:;
-        // completeTaskWithError: is its completion signal.
-        nwTaskComplete = NWTaskComplete.build()
-        nwTaskComplete?.swizzle { task, _ in
-            interceptSetState(task, URLSessionTask.State.completed.rawValue)
+        // NWURLSessionTask bypasses setState:; hook into its completion method instead.
+        // iOS 26+ uses completeTaskWithError:retryable:; earlier versions use completeTaskWithError:.
+        nwTaskCompleteRetryable = NWTaskCompleteRetryable.build()
+        if nwTaskCompleteRetryable != nil {
+            nwTaskCompleteRetryable?.swizzle { task, _ in
+                interceptSetState(task, URLSessionTask.State.completed.rawValue)
+            }
+        } else {
+            nwTaskComplete = NWTaskComplete.build()
+            nwTaskComplete?.swizzle { task, _ in
+                interceptSetState(task, URLSessionTask.State.completed.rawValue)
+            }
         }
     }
 
@@ -47,6 +55,7 @@ internal final class URLSessionTaskStateSwizzler {
         lock.lock()
         taskSetState?.unswizzle()
         nwTaskComplete?.unswizzle()
+        nwTaskCompleteRetryable?.unswizzle()
         lock.unlock()
     }
 
@@ -87,19 +96,15 @@ internal final class URLSessionTaskStateSwizzler {
         }
     }
 
-    /// Swizzles `NWURLSessionTask.completeTaskWithError:` — completion hook for the NW stack
-    /// (`usesClassicLoadingMode = false`, iOS/tvOS 18.4+). `TaskSetState` targets `__NSCFLocalSessionTask`
-    /// and never fires for NW tasks regardless of whether they have `setState:`.
+    /// Swizzles `NWURLSessionTask.completeTaskWithError:` — NW stack completion hook (replaced by `NWTaskCompleteRetryable` on iOS 26+).
     class NWTaskComplete: MethodSwizzler<@convention(c) (URLSessionTask, Selector, Error?) -> Void, @convention(block) (URLSessionTask, Error?) -> Void> {
         private static let selector = NSSelectorFromString("completeTaskWithError:")
 
         private let method: Method
 
-        /// Returns `nil` if `NWURLSessionTask` is unavailable (iOS/tvOS < 18.4).
+        /// Returns `nil` if `NWURLSessionTask` is unavailable or if the selector is absent.
         static func build() -> NWTaskComplete? {
-            guard let klass = NSClassFromString("NWURLSessionTask") else {
-                return nil
-            }
+            guard let klass = NSClassFromString("NWURLSessionTask") else { return nil }
             return try? NWTaskComplete(selector: self.selector, klass: klass)
         }
 
@@ -114,6 +119,35 @@ internal final class URLSessionTaskStateSwizzler {
                 return { task, error in
                     intercept(task, error)
                     previousImplementation(task, Self.selector, error)
+                }
+            }
+        }
+    }
+
+    /// Swizzles `NWURLSessionTask.completeTaskWithError:retryable:` — iOS 26+ NW stack completion hook.
+    /// iOS 26 added a `retryable: Bool` parameter to the completion signal.
+    class NWTaskCompleteRetryable: MethodSwizzler<@convention(c) (URLSessionTask, Selector, Error?, Bool) -> Void, @convention(block) (URLSessionTask, Error?, Bool) -> Void> {
+        private static let selector = NSSelectorFromString("completeTaskWithError:retryable:")
+
+        private let method: Method
+
+        /// Returns `nil` if `NWURLSessionTask` is unavailable or if the selector is absent.
+        static func build() -> NWTaskCompleteRetryable? {
+            guard let klass = NSClassFromString("NWURLSessionTask") else { return nil }
+            return try? NWTaskCompleteRetryable(selector: self.selector, klass: klass)
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try dd_class_getInstanceMethod(klass, selector)
+            super.init()
+        }
+
+        func swizzle(intercept: @escaping (URLSessionTask, Error?) -> Void) {
+            typealias Signature = @convention(block) (URLSessionTask, Error?, Bool) -> Void
+            swizzle(method) { previousImplementation -> Signature in
+                return { task, error, retryable in
+                    intercept(task, error)
+                    previousImplementation(task, Self.selector, error, retryable)
                 }
             }
         }

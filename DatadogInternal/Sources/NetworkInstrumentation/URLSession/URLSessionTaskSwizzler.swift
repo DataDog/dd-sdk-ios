@@ -23,8 +23,7 @@ internal final class URLSessionTaskSwizzler {
         defer { lock.unlock() }
         taskResume = try TaskResume.build()
         taskResume?.swizzle(intercept: interceptResume)
-        // NWURLSessionTask is used when usesClassicLoadingMode = false (iOS/tvOS 18.4+)
-        // and bypasses the __NSCFLocalSessionTask swizzle above.
+        // NWURLSessionTask bypasses __NSCFLocalSessionTask, so it needs a separate swizzle.
         nwTaskResume = NWTaskResume.build()
         nwTaskResume?.swizzle(intercept: interceptResume)
     }
@@ -76,17 +75,19 @@ internal final class URLSessionTaskSwizzler {
         }
     }
 
-    /// Swizzles `NWURLSessionTask.resume()` — used when `usesClassicLoadingMode = false` (iOS/tvOS 18.4+).
+    /// Swizzles `NWURLSessionTask.resume()`.
     class NWTaskResume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
         private static let selector = #selector(URLSessionTask.resume)
 
         private let method: Method
 
-        /// Returns `nil` if `NWURLSessionTask` is unavailable or if `completeTaskWithError:` is absent.
-        /// Both guards are required: tracking resume without completion would leave interceptions open permanently.
+        /// Returns `nil` if `NWURLSessionTask` is unavailable or if no completion hook is present.
+        /// Both conditions are required: tracking resume without completion would leave interceptions open permanently.
+        /// Accepts either `completeTaskWithError:` or `completeTaskWithError:retryable:` (iOS 26+).
         static func build() -> NWTaskResume? {
             guard let klass = NSClassFromString("NWURLSessionTask"),
-                  class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:")) != nil else {
+                  (class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:")) != nil ||
+                   class_getInstanceMethod(klass, NSSelectorFromString("completeTaskWithError:retryable:")) != nil) else {
                 return nil
             }
             return try? NWTaskResume(selector: self.selector, klass: klass)

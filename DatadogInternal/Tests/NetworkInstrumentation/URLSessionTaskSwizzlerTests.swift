@@ -43,7 +43,7 @@ class URLSessionTaskSwizzlerTests: XCTestCase {
             throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
         }
         guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
-            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+            throw XCTSkip("NW task tracking not supported on this platform/version")
         }
         let intercepted = expectation(description: "NWURLSessionTask.resume intercepted")
 

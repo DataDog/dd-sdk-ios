@@ -2110,7 +2110,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
         }
         guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
-            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+            throw XCTSkip("NW task tracking not supported on this platform/version")
         }
         let taskCompleted = expectation(description: "Task completed")
         let url = URL(string: "https://localhost:1")!
@@ -2142,8 +2142,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
         XCTAssertEqual(interception.trackingMode, .automatic)
         XCTAssertNotNil(interception.completion, "Should capture completion for the Network.framework-backed task.")
-        XCTAssertNotNil(interception.startDate, "Should capture approximate start date.")
-        XCTAssertNotNil(interception.endDate, "Should capture approximate end date.")
+        XCTAssertNotNil(interception.startDate, "Should capture start date.")
+        XCTAssertNotNil(interception.endDate, "Should capture end date.")
     }
 
     func testAutomaticMode_tracksCompletionForDelegatelessNWTask() throws {
@@ -2151,7 +2151,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
         }
         guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
-            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+            throw XCTSkip("NW task tracking not supported on this platform/version")
         }
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         let url = URL(string: "https://localhost:1")!
@@ -2186,7 +2186,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             throw XCTSkip("usesClassicLoadingMode requires iOS 18.4+")
         }
         guard URLSessionTaskSwizzler.NWTaskResume.build() != nil else {
-            throw XCTSkip("NW task tracking not fully supported on this platform/version")
+            throw XCTSkip("NW task tracking not supported on this platform/version")
         }
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
