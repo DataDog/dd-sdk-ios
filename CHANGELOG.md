@@ -1,7 +1,9 @@
 # Unreleased
 
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [IMPROVEMENT] DatadogTrace now leverages Swift 6 compile time checking against data races. Types like `DDSpan` and `OTSpan` are now marked as Sendable and can be used safely across isolation barriers. External dependency `opentelemetry-swift-core` version was updated to 2.5.0. See [#2876][]
 - [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
+- [FIX] Fix several instances where misaligned memory could be loaded without proper checking. See [#2995][]
 
 # 3.12.0 / 04-06-2026
 
@@ -1163,6 +1165,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2855]: https://github.com/DataDog/dd-sdk-ios/pull/2855
 [#2856]: https://github.com/DataDog/dd-sdk-ios/pull/2856
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
+[#2876]: https://github.com/DataDog/dd-sdk-ios/pull/2876
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
 [#2941]: https://github.com/DataDog/dd-sdk-ios/pull/2941
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
@@ -1177,6 +1180,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
 [#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
+[#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
