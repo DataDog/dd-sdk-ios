@@ -273,7 +273,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
             name: UploadQualityMetric.name,
             attributes: [
                 UploadQualityMetric.track: featureName
-            ]
+            ],
+            sampleRate: .maxSampleRate // must always reach TelemetryInterceptor for Session Ended aggregation
         )
     }
 
@@ -284,7 +285,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 UploadQualityMetric.track: featureName,
                 UploadQualityMetric.failure: failure,
                 UploadQualityMetric.blockers: blockers
-            ]
+            ],
+            sampleRate: .maxSampleRate // must always reach TelemetryInterceptor for Session Ended aggregation
         )
     }
 }
