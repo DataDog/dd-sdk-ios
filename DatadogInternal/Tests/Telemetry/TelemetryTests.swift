@@ -138,6 +138,14 @@ class TelemetryTests: XCTestCase {
         XCTAssertNil(telemetry.messages.firstMetric(named: "metric name"))
     }
 
+    func testUsageIsDroppedWhenCallSiteSampleRateRejectsAll() {
+        // When
+        telemetry.usage(event: .stopSession, sampleRate: 0)
+
+        // Then
+        XCTAssertNil(telemetry.messages.firstUsage())
+    }
+
     func testHeadSampleRateInMethodCalledMetric() throws {
         XCTAssertNotNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100))
         XCTAssertNil(telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 0))
