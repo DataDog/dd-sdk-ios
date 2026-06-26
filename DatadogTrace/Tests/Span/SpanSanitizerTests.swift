@@ -112,4 +112,21 @@ class SpanSanitizerTests: XCTestCase {
             "If number of attributes needs to be limited, `tags` are removed prior to `extraInfo` attributes."
         )
     }
+
+    func testWhenNumberOfAttributesExceedsLimit_itKeepsTheReservedComputeStatsTag() {
+        let twiceTheLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        var mockTags = (0..<twiceTheLimit).reduce(into: [String: String]()) { tags, index in
+            tags["tag-\(index)"] = .mockAny()
+        }
+        mockTags[SpanTags.computeStats] = "0"
+
+        let span = SpanEvent.mockWith(tags: mockTags)
+
+        // When
+        let sanitized = SpanSanitizer().sanitize(span: span)
+
+        // Then the SDK-owned opt-out survives even though user tags were dropped to fit the limit.
+        XCTAssertEqual(sanitized.tags[SpanTags.computeStats], "0", "The reserved `_dd.compute_stats` tag must never be dropped by attribute limiting")
+    }
 }
