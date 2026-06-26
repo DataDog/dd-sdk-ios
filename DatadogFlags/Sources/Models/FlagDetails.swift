@@ -102,23 +102,4 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.allocationKey = allocationKey
     }
 
-    /// Creates detailed flag evaluation information.
-    ///
-    /// This overload preserves binary compatibility with prior SDK versions that did not include `allocationKey`.
-    ///
-    /// - Parameters:
-    ///   - key: The feature flag key.
-    ///   - value: The evaluated or default value.
-    ///   - variant: The variant key served, if any.
-    ///   - reason: The evaluation reason, if available.
-    ///   - error: Any error that occurred during evaluation.
-    public init(
-        key: String,
-        value: T,
-        variant: String? = nil,
-        reason: String? = nil,
-        error: FlagEvaluationError? = nil
-    ) {
-        self.init(key: key, value: value, variant: variant, reason: reason, error: error, allocationKey: nil)
-    }
 }

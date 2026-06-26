@@ -1546,7 +1546,6 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var error: FlagEvaluationError?
     public var allocationKey: String?
     public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
-    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil)
 public protocol FlagValue: Encodable
 public enum FlagsError: Error
     case networkError(Error)
