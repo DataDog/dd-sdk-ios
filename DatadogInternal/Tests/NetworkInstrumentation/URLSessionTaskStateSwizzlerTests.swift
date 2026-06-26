@@ -232,7 +232,9 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         defer { session.invalidateAndCancel() }
         let task = session.dataTask(with: URL(string: "https://localhost:1")!) { _, _, _ in }
         let taskClassName = String(describing: type(of: task))
-        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        guard taskClassName.hasPrefix("NWURLSession") else {
+            throw XCTSkip("usesClassicLoadingMode = false does not create NWURLSessionTask on this platform")
+        }
         task.resume()
 
         // Then

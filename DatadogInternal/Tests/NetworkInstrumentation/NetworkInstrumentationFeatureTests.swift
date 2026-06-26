@@ -2129,7 +2129,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // When
         let task = session.dataTask(with: url) { _, _, _ in taskCompleted.fulfill() }
         let taskClassName = String(describing: type(of: task))
-        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        guard taskClassName.hasPrefix("NWURLSession") else {
+            throw XCTSkip("usesClassicLoadingMode = false does not create NWURLSessionTask on this platform")
+        }
         task.resume()
 
         // Then
@@ -2168,7 +2170,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // When - no completion handler: relies entirely on NWTaskComplete swizzle for end tracking
         let task = session.dataTask(with: url)
         let taskClassName = String(describing: type(of: task))
-        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        guard taskClassName.hasPrefix("NWURLSession") else {
+            throw XCTSkip("usesClassicLoadingMode = false does not create NWURLSessionTask on this platform")
+        }
         task.resume()
 
         // Then
@@ -2214,7 +2218,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         defer { session.invalidateAndCancel() }
         let task = session.dataTask(with: url) { _, _, _ in }
         let taskClassName = String(describing: type(of: task))
-        XCTAssert(taskClassName.hasPrefix("NWURLSession"), "Expected NWURLSessionTask, got \(taskClassName)")
+        guard taskClassName.hasPrefix("NWURLSession") else {
+            throw XCTSkip("usesClassicLoadingMode = false does not create NWURLSessionTask on this platform")
+        }
         task.resume()
 
         // Then
