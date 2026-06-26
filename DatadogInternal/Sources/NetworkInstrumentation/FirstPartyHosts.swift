@@ -96,20 +96,20 @@ public struct FirstPartyHosts: Equatable {
 }
 
 public func += (left: inout FirstPartyHosts?, right: FirstPartyHosts) {
-    var result = FirstPartyHosts()
-    result.hostsWithTracingHeaderTypes = (left?.hostsWithTracingHeaderTypes ?? [:]).merging(
-        right.hostsWithTracingHeaderTypes, uniquingKeysWith: { $0.union($1) }
+    left = FirstPartyHosts(
+        left?.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
+            left.union(right)
+        }) ?? right.hostsWithTracingHeaderTypes
     )
-    left = result
 }
 
 public func + (left: FirstPartyHosts, right: FirstPartyHosts?) -> FirstPartyHosts {
     guard let right = right else {
         return left
     }
-    var result = FirstPartyHosts()
-    result.hostsWithTracingHeaderTypes = left.hostsWithTracingHeaderTypes.merging(
-        right.hostsWithTracingHeaderTypes, uniquingKeysWith: { $0.union($1) }
+    return FirstPartyHosts(
+        left.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
+            left.union(right)
+        })
     )
-    return result
 }
