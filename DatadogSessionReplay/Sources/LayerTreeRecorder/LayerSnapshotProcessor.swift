@@ -130,9 +130,9 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
             ]
         }
 
-        do {
-            var records: [SRRecord] = []
+        var records: [SRRecord] = []
 
+        do {
             if let record = try recordBuilder.wireframeMutationRecord(
                 from: snapshot,
                 wireframes: wireframes,
@@ -148,25 +148,25 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
             ) {
                 records.append(record)
             }
-
-            if let record = recordBuilder.viewportRecord(
-                from: snapshot,
-                previousSnapshot: lastSnapshot
-            ) {
-                records.append(record)
-            }
-
-            return records
         } catch {
             telemetry.error("[SR] Failed to build layer recording mutation records", error: error)
-            return [
+            records.append(
                 recordBuilder.fullSnapshotRecord(
                     from: snapshot,
                     compositionTree: compositionTree,
                     wireframes: wireframes
                 )
-            ]
+            )
         }
+
+        if let record = recordBuilder.viewportRecord(
+            from: snapshot,
+            previousSnapshot: lastSnapshot
+        ) {
+            records.append(record)
+        }
+
+        return records
     }
 
     private func trackRecord(key: String, value: Int64) {
