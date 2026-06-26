@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [FIX] Fix `DatadogFlags` exposure deduplication so assignment changes for the same subject and flag emit new exposure events. See [#2987][]
 
 # 3.12.0 / 04-06-2026
 
@@ -1173,6 +1174,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
 [#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
+[#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
