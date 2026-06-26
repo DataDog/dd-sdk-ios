@@ -461,17 +461,6 @@ private extension ImageRedactionResult {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
-private extension UIImage {
-    static func mockWith(color: UIColor) -> UIImage {
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10))
-        return renderer.image { context in
-            color.setFill()
-            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
-        }
-    }
-}
-
 private func textLayoutFragmentClass() throws -> AnyClass {
     try #require(NSClassFromString("_UITextLayoutFragmentView"))
 }

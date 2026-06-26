@@ -7,7 +7,6 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
-import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
@@ -116,6 +115,8 @@ extension ImageSnapshotRequest {
 extension CALayerSnapshot.SemanticObservation {
     fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
         switch semantics {
+        case .image(let image) where !image.hasContent:
+            return false
         case .image where imagePrivacyLevel == .maskNone:
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
@@ -125,20 +126,6 @@ extension CALayerSnapshot.SemanticObservation {
         default:
             return false
         }
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation.ImageSemantics {
-    fileprivate var isContextual: Bool {
-        guard let resolvedImage else {
-            return false
-        }
-        return resolvedImage.isContextual
-    }
-
-    private var resolvedImage: UIImage? {
-        isHighlighted ? highlightedImage ?? image : image
     }
 }
 #endif

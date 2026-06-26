@@ -97,14 +97,14 @@ extension CALayerSnapshot.CornerRadii {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    fileprivate var hasBackgroundColor: Bool {
+    var hasBackgroundColor: Bool {
         guard let backgroundColor else {
             return false
         }
         return backgroundColor.alpha > 0
     }
 
-    fileprivate var hasBorder: Bool {
+    var hasBorder: Bool {
         guard let borderColor, borderWidth > 0 else {
             return false
         }
