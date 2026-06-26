@@ -32,6 +32,9 @@ struct ImageSnapshotterTests {
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == root.absoluteFrame)
         #expect(imageSnapshot.image.size == root.bounds.size)
+        #expect(imageSnapshot.layerClass == root.layerClass)
+        #expect(imageSnapshot.delegateClass == root.delegateClass)
+        #expect(imageSnapshot.hasLayerSemantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -124,8 +127,8 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Refreshes privacy metadata when cached image is reused")
-    func refreshesPrivacyMetadataWhenCachedImageIsReused() async throws {
+    @Test("Refreshes snapshot metadata when cached image is reused")
+    func refreshesSnapshotMetadataWhenCachedImageIsReused() async throws {
         // Given
         let rootLayer = CALayer()
         rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
@@ -148,6 +151,9 @@ struct ImageSnapshotterTests {
         let firstImageSnapshot = try firstResult.get()
 
         // When
+        let delegate = UIView()
+        layer.delegate = delegate
+
         let secondRoot = try #require(
             CALayerSnapshot(
                 from: rootLayer,
@@ -162,6 +168,9 @@ struct ImageSnapshotterTests {
         #expect(firstImageSnapshot.image === secondImageSnapshot.image)
         #expect(secondImageSnapshot.textAndInputPrivacyLevel == .maskSensitiveInputs)
         #expect(secondImageSnapshot.imagePrivacyLevel == .maskAll)
+        #expect(secondImageSnapshot.layerClass == CATextLayer.self)
+        #expect(secondImageSnapshot.delegateClass == UIView.self)
+        #expect(secondImageSnapshot.hasLayerSemantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -239,6 +248,63 @@ struct ImageSnapshotterTests {
         let revealedRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
         let revealedResult = try #require(revealedResults[layer.replayID])
+        let revealedImageSnapshot = try revealedResult.get()
+        #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Invalidates cached image when occluded ignored sublayer changes")
+    func invalidatesCachedImageWhenOccludedIgnoredSublayerChanges() async throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+        imageView.layer.contentsScale = 1
+        rootLayer.addSublayer(imageView.layer)
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        ignoredSublayer.backgroundColor = UIColor.red.cgColor
+        imageView.layer.addSublayer(ignoredSublayer)
+
+        let snapshotter = ImageSnapshotter()
+        let firstRoot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
+        )
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults[imageView.layer.replayID])
+        let firstImageSnapshot = try firstResult.get()
+
+        ignoredSublayer.backgroundColor = UIColor.blue.cgColor
+
+        let occluder = CALayer()
+        occluder.frame = rootLayer.bounds
+        occluder.backgroundColor = UIColor.white.cgColor
+        occluder.zPosition = 1
+        rootLayer.addSublayer(occluder)
+
+        let occludedRootSnapshot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
+        )
+        let occludedRoot = try #require(occludedRootSnapshot.removingOccluded())
+        let changeset = CALayerChangeset.mockChange(for: ignoredSublayer, aspects: .display)
+
+        // When
+        let occludedResults = await snapshotter.takeImageSnapshots(for: occludedRoot, changeset: changeset, timeout: 1)
+
+        // Then
+        #expect(!occludedRoot.sublayers.contains { $0.layer.matches(imageView.layer) })
+        #expect(occludedResults[imageView.layer.replayID] == nil)
+
+        occluder.removeFromSuperlayer()
+
+        let revealedRoot = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
+        )
+        let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
+        let revealedResult = try #require(revealedResults[imageView.layer.replayID])
         let revealedImageSnapshot = try revealedResult.get()
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }

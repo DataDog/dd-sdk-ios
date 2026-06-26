@@ -41,6 +41,8 @@ internal struct CALayerSnapshot: Sendable {
     let absoluteFrame: CGRect
 
     var sublayers: [CALayerSnapshot]
+    /// Live descendant layers omitted from `sublayers` but captured when this layer is rendered as an image.
+    let dependencies: [CALayerReference]
     let sublayerTransform: CATransform3D
 
     let mask: CALayerReference?
@@ -106,18 +108,24 @@ extension CALayerSnapshot {
             return nil
         }
 
-        let privacy = privacy.applying(layer.privacyOverrides)
+        var privacy = privacy.applying(layer.privacyOverrides)
+
         let observation = privacy.isPrivate
             ? SemanticObservation(semantics: .layer, ignoreSublayers: true)
-            : SemanticObservation(layer: layer, context: context)
+            : SemanticObservation(layer: layer, absoluteFrame: absoluteFrame, context: context)
+
+        if observation.ignoresImagePrivacy, layer.privacyOverrides?.imagePrivacy == nil {
+            privacy.imagePrivacyLevel = .maskNone
+        }
 
         let childVisibleBounds = layer.masksToBounds
             ? absoluteFrame.intersection(visibleBounds)
             : visibleBounds
 
-        let sublayers = observation.ignoreSublayers || childVisibleBounds.isEmpty
-            ? []
-            : layer.sublayers?.compactMap {
+        let sublayers = if observation.ignoreSublayers || childVisibleBounds.isEmpty {
+            [CALayerSnapshot]()
+        } else {
+            layer.sublayers?.compactMap {
                 CALayerSnapshot(
                     from: $0,
                     rootLayer: rootLayer,
@@ -126,6 +134,19 @@ extension CALayerSnapshot {
                     context: context
                 )
             } ?? []
+        }
+
+        let dependencies = if observation.ignoreSublayers && !childVisibleBounds.isEmpty {
+            layer.sublayers?.flatMap {
+                $0.visibleDependencies(
+                    rootLayer: rootLayer,
+                    visibleBounds: childVisibleBounds
+                )
+                .map(CALayerReference.init)
+            } ?? []
+        } else {
+            [CALayerReference]()
+        }
 
         var cornerRadii = CornerRadii()
 
@@ -157,6 +178,7 @@ extension CALayerSnapshot {
             transform: layer.transform,
             absoluteFrame: absoluteFrame,
             sublayers: sublayers,
+            dependencies: dependencies,
             sublayerTransform: layer.sublayerTransform,
             mask: layer.mask.map(CALayerReference.init),
             masksToBounds: layer.masksToBounds,
@@ -206,6 +228,39 @@ extension CALayerSnapshot {
 extension CALayer {
     @MainActor fileprivate var privacyOverrides: SessionReplayPrivacyOverrides? {
         (delegate as? UIView)?.dd._privacyOverrides
+    }
+
+    @MainActor
+    fileprivate func visibleDependencies(rootLayer: CALayer, visibleBounds: CGRect) -> [CALayer] {
+        guard !isHidden, opacity > 0 else {
+            return []
+        }
+
+        let absoluteFrame = convert(bounds, to: rootLayer)
+
+        guard
+            !(absoluteFrame.isEmpty && masksToBounds),
+            absoluteFrame.intersects(visibleBounds)
+        else {
+            return []
+        }
+
+        let childVisibleBounds = masksToBounds
+            ? absoluteFrame.intersection(visibleBounds)
+            : visibleBounds
+
+        let sublayerDependencies = if childVisibleBounds.isEmpty {
+            [CALayer]()
+        } else {
+            sublayers?.flatMap {
+                $0.visibleDependencies(
+                    rootLayer: rootLayer,
+                    visibleBounds: childVisibleBounds
+                )
+            } ?? []
+        }
+
+        return CollectionOfOne(self) + sublayerDependencies
     }
 }
 #endif

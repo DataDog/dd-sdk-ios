@@ -43,6 +43,27 @@
     [DDDatadog stopInstance];
 }
 
+- (void)testDDDatadogInstanceNameAPI {
+    NSString *instanceName = @"test-instance";
+    DDConfiguration *configuration = [[DDConfiguration alloc] initWithClientToken:@"abc" env:@"def"];
+
+    [DDDatadog initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted] instanceName:instanceName];
+
+    XCTAssertTrue([DDDatadog isInitializedWithInstanceName:instanceName]);
+
+    [DDDatadog setUserInfoWithUserId:@"user-id" instanceName:instanceName name:@"name" email:@"email" extraInfo:@{}];
+    [DDDatadog addUserExtraInfo:@{} instanceName:instanceName];
+    [DDDatadog clearUserInfoWithInstanceName:instanceName];
+
+    [DDDatadog setAccountInfoWithAccountId:@"account-id" instanceName:instanceName name:@"name" extraInfo:@{}];
+    [DDDatadog addAccountExtraInfo:@{} instanceName:instanceName];
+    [DDDatadog clearAccountInfoWithInstanceName:instanceName];
+
+    [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted] instanceName:instanceName];
+    [DDDatadog clearAllDataWithInstanceName:instanceName];
+    [DDDatadog stopInstanceWithInstanceName:instanceName];
+}
+
 #pragma clang diagnostic pop
 
 @end

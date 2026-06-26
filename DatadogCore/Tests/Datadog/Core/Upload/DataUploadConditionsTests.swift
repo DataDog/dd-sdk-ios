@@ -40,6 +40,9 @@ class DataUploadConditionsTests: XCTestCase {
 
     func testItSaysToNotUploadOnCertainConditions() {
         `repeat`(times: 100) {
+            #if !os(watchOS)
+            // On watchOS, NWPathMonitor always reports `.unsatisfied` (Apple TN3135), so the
+            // reachability check is skipped in DataUploadConditions and `.no` never blocks uploads.
             assert(
                 canPerformUploadReturns: false,
                 forBattery: BatteryStatus(
@@ -48,6 +51,7 @@ class DataUploadConditionsTests: XCTestCase {
                 isLowPowerModeEnabled: .random(),
                 forNetwork: .mockWith(reachability: .no)
             )
+            #endif
             assert(
                 canPerformUploadReturns: false,
                 forBattery: BatteryStatus(
@@ -64,14 +68,29 @@ class DataUploadConditionsTests: XCTestCase {
                 isLowPowerModeEnabled: .random(),
                 forNetwork: .mockWith(reachability: .mockRandom())
             )
+            #if !os(watchOS)
             assert(
                 canPerformUploadReturns: false,
                 forBattery: nil,
                 isLowPowerModeEnabled: .random(),
                 forNetwork: .mockWith(reachability: .no)
             )
+            #endif
         }
     }
+
+    #if os(watchOS)
+    func testOnWatchOSItAllowsUploadRegardlessOfReachability() {
+        `repeat`(times: 100) {
+            assert(
+                canPerformUploadReturns: true,
+                forBattery: nil,
+                isLowPowerModeEnabled: false,
+                forNetwork: .mockWith(reachability: .no)
+            )
+        }
+    }
+    #endif
 
     func testItSaysToUploadIfTheBatteryStatusIsUnknown() {
         `repeat`(times: 10) {

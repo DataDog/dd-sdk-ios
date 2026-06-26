@@ -107,7 +107,7 @@ struct ImageSnapshotRequestTests {
 
         let request = ImageSnapshotRequest.mockAny(
             layer: layer,
-            hasContentChanges: true,
+            hasChanges: true,
             previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
         )
 
@@ -285,19 +285,23 @@ extension ImageSnapshotRequest {
         layer: CALayer,
         visibleFrame: CGRect? = nil,
         hasContents: Bool = false,
-        hasContentChanges: Bool = false,
+        dependencies: [CALayerReference] = [],
+        hasChanges: Bool = false,
         previousSnapshotData: ImageSnapshotData? = nil
     ) -> ImageSnapshotRequest {
         ImageSnapshotRequest(
             replayID: layer.replayID,
             layer: CALayerReference(layer),
             layerClass: type(of: layer),
+            delegateClass: layer.delegate.map { type(of: $0) },
+            hasLayerSemantics: true,
             bounds: layer.bounds,
             absoluteFrame: layer.frame,
             visibleFrame: visibleFrame ?? layer.frame,
             isOpaque: layer.isOpaque,
             hasContents: hasContents,
-            hasContentChanges: hasContentChanges,
+            dependencies: dependencies,
+            hasChanges: hasChanges,
             textAndInputPrivacyLevel: .maskAll,
             imagePrivacyLevel: .maskAll,
             previousSnapshotData: previousSnapshotData
@@ -305,22 +309,4 @@ extension ImageSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
-    fileprivate static func mockAny(
-        localRect: CGRect,
-        bounds: CGRect
-    ) -> ImageSnapshotData {
-        ImageSnapshotData(
-            snapshot: ImageSnapshot(
-                image: UIImage(),
-                frame: .zero,
-                textAndInputPrivacyLevel: .maskAll,
-                imagePrivacyLevel: .maskAll
-            ),
-            localRect: localRect,
-            bounds: bounds
-        )
-    }
-}
 #endif

@@ -21,6 +21,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
     static var name: String { Feature.networkInstrumentation }
 
+    /// Maximum response body bytes buffered per task in registered-delegate mode.
+    static let maxBufferedBodySize = 512 * 1_024 // 512 KB
+
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
     private let queue = DispatchQueue(
@@ -53,6 +56,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// Maps ObjectIdentifier to the actual class type for isKind(of:) checks.
     @ReadWriteLock
     private var registeredDelegateClasses: [ObjectIdentifier: AnyClass] = [:]
+
+    /// Tasks whose response body was discarded after exceeding `maxBufferedBodySize` in registered-delegate mode.
+    private var truncatedInterceptions: Set<URLSessionTask> = []
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
@@ -531,6 +537,28 @@ extension NetworkInstrumentationFeature {
             guard let self = self, let interception = self.interceptions[task] else {
                 return
             }
+            // In registered-delegate mode, data arrives as incremental chunks — buffering a full
+            // response duplicates it in memory (RUM-16927). In automatic mode, URLSession already
+            // holds the complete Data object, so no duplication occurs.
+            if interception.trackingMode == .registeredDelegate {
+                guard !truncatedInterceptions.contains(task) else {
+                    return
+                }
+
+                let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
+                guard !isMediaMimeType(mimeType) else {
+                    return
+                }
+
+                // When exceeded, discard all accumulated data — partial data is worse than nil
+                // since customers have no way to detect it's incomplete.
+                let buffered = interception.data?.count ?? 0
+                if buffered + data.count > NetworkInstrumentationFeature.maxBufferedBodySize {
+                    interception.resetData()
+                    truncatedInterceptions.insert(task)
+                    return
+                }
+            }
             interception.register(nextData: data)
         }
     }
@@ -574,11 +602,27 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
+    /// Returns `true` for MIME types whose body carries no useful data for the SDK.
+    private func isMediaMimeType(_ mimeType: String) -> Bool {
+        mimeType.hasPrefix("image/") ||
+        mimeType.hasPrefix("video/") ||
+        mimeType.hasPrefix("audio/") ||
+        mimeType == "application/octet-stream"
+    }
+
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?, endMediaTime: CFTimeInterval? = nil) {
         // Register `endDate` if provided.
         // Note: in registered delegate mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
         if let endDate {
             interception.register(endDate: endDate, mediaTime: endMediaTime)
+        }
+
+        if truncatedInterceptions.remove(task) != nil {
+            // Log host+path only — query parameters may contain sensitive tokens.
+            let url = interception.request.url.map { "\($0.host ?? "")\($0.path)" } ?? "(unknown)"
+            DD.logger.warn(
+                "resourceAttributesProvider: response body for \(url) exceeded \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB and was not captured."
+            )
         }
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }

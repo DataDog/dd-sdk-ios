@@ -126,11 +126,8 @@ struct CALayerSnapshotSemanticObservationTests {
     @Test("Records image semantics and ignores sublayers")
     func recordsImageSemanticsAndIgnoresSublayers() {
         // Given
-        let image = UIImage()
-        let highlightedImage = UIImage()
-        let imageView = UIImageView(image: image, highlightedImage: highlightedImage)
+        let imageView = UIImageView(image: UIImage())
         imageView.isHighlighted = true
-        imageView.tintColor = .green
 
         // When
         let observation = CALayerSnapshot.SemanticObservation(layer: imageView.layer, context: .mockAny())
@@ -138,20 +135,15 @@ struct CALayerSnapshotSemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .image(
-                .init(
-                    image: image,
-                    highlightedImage: highlightedImage,
-                    isHighlighted: true,
-                    tintColor: .green
-                )
+                .init(hasContent: true, isContextual: false)
             ),
             ignoreSublayers: true
         ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records progress semantics and ignores sublayers")
-    func recordsProgressSemanticsAndIgnoresSublayers() {
+    @Test("Records progress view as layer semantics ignoring image privacy")
+    func recordsProgressViewAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
         let progressView = UIProgressView()
         progressView.progress = 0.75
@@ -160,7 +152,33 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: progressView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .progress(.init(progress: 0.75)), ignoreSublayers: true))
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records slider as layer semantics ignoring image privacy")
+    func recordsSliderAsLayerSemanticsIgnoringImagePrivacy() {
+        // Given
+        let slider = UISlider()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: slider.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records button as layer semantics ignoring image privacy")
+    func recordsButtonAsLayerSemanticsIgnoringImagePrivacy() {
+        // Given
+        let button = UIButton()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: button.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -174,12 +192,16 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: stepper.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .stepper(.init(value: 7)), ignoreSublayers: true))
+        #expect(observation == .init(
+            semantics: .stepper(.init(value: 7)),
+            ignoreSublayers: true,
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text view semantics and ignores sublayers")
-    func recordsTextViewSemanticsAndIgnoresSublayers() {
+    @Test("Records text view input semantics and records sublayers")
+    func recordsTextViewInputSemanticsAndRecordsSublayers() {
         // Given
         let textView = UITextView()
         textView.text = "Body"
@@ -190,21 +212,57 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(
-            semantics: .text(
-                .init(
-                    text: "Body",
-                    isEditable: false,
-                    isSensitiveText: true
-                )
-            ),
-            ignoreSublayers: true
-        ))
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: true,
+                isEditable: false,
+                isEmpty: false
+            )
+        )))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records text field semantics and keeps sublayers")
-    func recordsTextFieldSemanticsAndKeepsSublayers() {
+    @Test("Records empty text view input semantics")
+    func recordsEmptyTextViewInputSemantics() {
+        // Given
+        let textView = UITextView()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: false,
+                isEditable: true,
+                isEmpty: true
+            )
+        )))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records nil text view input semantics")
+    func recordsNilTextViewInputSemantics() {
+        // Given
+        let textView = UITextView()
+        textView.text = nil
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textView.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .textInput(
+            .init(
+                isSensitiveText: false,
+                isEditable: true,
+                isEmpty: true
+            )
+        )))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records text field input semantics and records sublayers")
+    func recordsTextFieldInputSemanticsAndRecordsSublayers() {
         // Given
         let textField = UITextField()
         textField.text = "Value"
@@ -216,13 +274,37 @@ struct CALayerSnapshotSemanticObservationTests {
 
         // Then
         #expect(observation == .init(
-            semantics: .textField(
+            semantics: .textInput(
                 .init(
-                    text: "Value",
-                    placeholder: "Placeholder",
-                    isSensitiveText: true
+                    isSensitiveText: true,
+                    isEditable: true,
+                    isEmpty: false
                 )
-            )
+            ),
+            ignoresImagePrivacy: true
+        ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records empty text field input semantics")
+    func recordsEmptyTextFieldInputSemantics() {
+        // Given
+        let textField = UITextField()
+        textField.placeholder = "Placeholder"
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: textField.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .textInput(
+                .init(
+                    isSensitiveText: false,
+                    isEditable: true,
+                    isEmpty: true
+                )
+            ),
+            ignoresImagePrivacy: true
         ))
     }
 
@@ -237,7 +319,11 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: switchControl.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .switchControl(.init(isOn: true)), ignoreSublayers: true))
+        #expect(observation == .init(
+            semantics: .switchControl(.init(isOn: true)),
+            ignoreSublayers: true,
+            ignoresImagePrivacy: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -252,7 +338,12 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: webView.layer, context: context)
 
         // Then
-        #expect(observation == .init(semantics: .webView(.init(slotID: webView.hash)), ignoreSublayers: true))
+        #expect(
+            observation == .init(
+                semantics: .webView(.init(slotID: webView.hash, slotFrame: webView.frame)),
+                ignoreSublayers: true
+            )
+        )
         #expect(webViewCache.allObjects.first === webView)
     }
 }

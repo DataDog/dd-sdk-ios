@@ -16,12 +16,15 @@ internal struct ImageSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
     let layerClass: AnyClass
+    let delegateClass: AnyClass?
+    let hasLayerSemantics: Bool
     let bounds: CGRect
     let absoluteFrame: CGRect
     let visibleFrame: CGRect
     let isOpaque: Bool
     let hasContents: Bool
-    let hasContentChanges: Bool
+    let dependencies: [CALayerReference]
+    let hasChanges: Bool
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
     let previousSnapshotData: ImageSnapshotData?
@@ -30,12 +33,15 @@ internal struct ImageSnapshotRequest: Sendable {
         replayID: Int64,
         layer: CALayerReference,
         layerClass: AnyClass,
+        delegateClass: AnyClass?,
+        hasLayerSemantics: Bool,
         bounds: CGRect,
         absoluteFrame: CGRect,
         visibleFrame: CGRect,
         isOpaque: Bool,
         hasContents: Bool,
-        hasContentChanges: Bool,
+        dependencies: [CALayerReference],
+        hasChanges: Bool,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel,
         previousSnapshotData: ImageSnapshotData?
@@ -43,12 +49,15 @@ internal struct ImageSnapshotRequest: Sendable {
         self.replayID = replayID
         self.layer = layer
         self.layerClass = layerClass
+        self.delegateClass = delegateClass
+        self.hasLayerSemantics = hasLayerSemantics
         self.bounds = bounds
         self.absoluteFrame = absoluteFrame
         self.visibleFrame = visibleFrame
         self.isOpaque = isOpaque
         self.hasContents = hasContents
-        self.hasContentChanges = hasContentChanges
+        self.dependencies = dependencies
+        self.hasChanges = hasChanges
         self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
         self.imagePrivacyLevel = imagePrivacyLevel
         self.previousSnapshotData = previousSnapshotData
@@ -85,21 +94,32 @@ extension ImageSnapshotRequest {
             throw ImageSnapshotRequestResolutionError.invalidRect
         }
 
-        let isNew = previousSnapshotData == nil
-        let lastSnapshotWasPartial = previousSnapshotData.map { !$0.bounds.equalTo($0.localRect) } ?? false
-        let snapshotWillBePartial = bounds.sizeExceeds(rootLayer.bounds)
-        let snapshotRectDidChange = (lastSnapshotWasPartial || snapshotWillBePartial) &&
-            !(previousSnapshotData?.localRect.equalTo(visibleLocalRect) ?? false)
+        let isNewSnapshot = previousSnapshotData == nil
+
+        // Oversized layers are rendered only in their visible area
+        let requiresPartialSnapshot = self.requiresPartialSnapshot(relativeTo: rootLayer)
+
+        // Full snapshots can be moved without re-rendering, but partial snapshots depend on the visible slice
+        let partialSnapshotHasChanges = self.hasPartialSnapshotChanges(
+            visibleLocalRect: visibleLocalRect,
+            requiresPartialSnapshot: requiresPartialSnapshot
+        )
+
+        // Bounds changes invalidate the bitmap coordinate space
         let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
 
-        let needsSnapshot = if layerClass == CALayer.self {
-            (hasContents && isNew) || hasContentChanges || snapshotRectDidChange || snapshotBoundsDidChange
-        } else {
-            isNew || hasContentChanges || snapshotRectDidChange || snapshotBoundsDidChange
-        }
+        // Plain layers need contents or collapsed dependencies to produce pixels on first capture
+        let shouldCaptureInitialSnapshot = layerClass != CALayer.self || hasContents || !dependencies.isEmpty
 
-        let localRect = snapshotWillBePartial ? visibleLocalRect : bounds
-        let frame = snapshotWillBePartial ? visibleFrame : absoluteFrame
+        // Render when there is no reusable snapshot or when tracked inputs changed
+        let needsSnapshot = (isNewSnapshot && shouldCaptureInitialSnapshot) ||
+            hasChanges ||
+            partialSnapshotHasChanges ||
+            snapshotBoundsDidChange
+
+        // Full snapshots capture the layer bounds while partial snapshots capture only the visible slice
+        let localRect = requiresPartialSnapshot ? visibleLocalRect : bounds
+        let frame = requiresPartialSnapshot ? visibleFrame : absoluteFrame
 
         return .init(
             layer: layer,
@@ -108,11 +128,31 @@ extension ImageSnapshotRequest {
             needsSnapshot: needsSnapshot
         )
     }
+
+    private func requiresPartialSnapshot(relativeTo rootLayer: CALayer) -> Bool {
+        bounds.width > rootLayer.bounds.width || bounds.height > rootLayer.bounds.height
+    }
+
+    private func hasPartialSnapshotChanges(
+        visibleLocalRect: CGRect,
+        requiresPartialSnapshot: Bool
+    ) -> Bool {
+        guard previousSnapshotData?.isPartial == true || requiresPartialSnapshot else {
+            return false
+        }
+
+        guard let previousSnapshotData else {
+            return true
+        }
+
+        return !previousSnapshotData.localRect.equalTo(visibleLocalRect)
+    }
 }
 
-extension CGRect {
-    fileprivate func sizeExceeds(_ other: CGRect) -> Bool {
-        width > other.width || height > other.height
+@available(iOS 13.0, tvOS 13.0, *)
+extension ImageSnapshotData {
+    fileprivate var isPartial: Bool {
+        !bounds.equalTo(localRect)
     }
 }
 #endif

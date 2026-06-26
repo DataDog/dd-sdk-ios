@@ -40,6 +40,17 @@
     [DDWebViewTracking disableWithWebView:webView];
 }
 
+- (void)testDDWebViewTrackingInstanceNameAPI {
+    WebViewMock *webView = [WebViewMock new];
+    NSString *instanceName = @"webview-test-instance";
+    [DDWebViewTracking enableWithWebView:webView
+                            instanceName:instanceName
+                                   hosts:[NSSet<NSString*> setWithArray:@[@"host1.com"]]
+                          logsSampleRate:100.0
+    ];
+    [DDWebViewTracking disableWithWebView:webView];
+}
+
 #pragma clang diagnostic pop
 
 @end

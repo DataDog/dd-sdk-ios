@@ -2,7 +2,7 @@ import Foundation
 import DatadogInternal
 
 /// Represents information related to an event with a timespan
-public protocol OTSpan {
+public protocol OTSpan: Sendable {
     /// The span context that refers to this span
     var context: OTSpanContext { get }
 
@@ -18,13 +18,13 @@ public protocol OTSpan {
     ///
     /// - parameter key:   Key of the tag to set
     /// - parameter value: Value of the tag to set
-    func setTag(key: String, value: Encodable)
+    func setTag(key: String, value: OTTagValue)
 
     /// Add a new log with the supplied fields and timestamp
     ///
     /// - parameter fields:    Fields to set on the span log
     /// - parameter timestamp: Timestamp to use for the span log
-    func log(fields: [String: Encodable], timestamp: Date)
+    func log(fields: [String: Encodable & Sendable], timestamp: Date)
 
     /// Add a new baggage item or replace an existing baggage item value for the given key
     ///
@@ -66,7 +66,7 @@ public extension OTSpan {
     /// Add a new log with the supplied fields and the current timestamp
     ///
     /// - parameter fields: Fields to set on the span log
-    func log(fields: [String: Encodable]) {
+    func log(fields: [String: Encodable & Sendable]) {
         self.log(fields: fields, timestamp: Date())
     }
 

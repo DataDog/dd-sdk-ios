@@ -18,17 +18,27 @@ internal final class ImageSnapshot: Sendable {
     /// The image frame in the root layer coordinate space.
     let frame: CGRect
 
+    let layerClass: AnyClass
+    let delegateClass: AnyClass?
+    let hasLayerSemantics: Bool
+
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
 
     init(
         image: UIImage,
         frame: CGRect,
+        layerClass: AnyClass,
+        delegateClass: AnyClass?,
+        hasLayerSemantics: Bool,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel
     ) {
         self.image = image
         self.frame = frame
+        self.layerClass = layerClass
+        self.delegateClass = delegateClass
+        self.hasLayerSemantics = hasLayerSemantics
         self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
         self.imagePrivacyLevel = imagePrivacyLevel
     }
@@ -44,6 +54,9 @@ internal struct ImageSnapshotData: Sendable {
 
     /// The source layer bounds captured when the image was rendered.
     let bounds: CGRect
+
+    /// Layer dependencies captured when the image was rendered.
+    let dependencies: [CALayerReference]
 }
 
 /// Failure reason for a layer image snapshot.
