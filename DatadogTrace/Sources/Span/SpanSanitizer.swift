@@ -20,6 +20,12 @@ internal struct SpanSanitizer {
         }
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)
 
+        // The SDK owns `_dd.compute_stats` and must never let attribute-count limiting drop it.
+        // If an opted-out span lost the flag here, it would upload without it while client stats
+        // are also uploaded, so the backend would recompute stats and double-count. Hold it aside,
+        // limit the rest, then restore it so it never competes for the attribute budget.
+        let reservedComputeStats = sanitizedTags.removeValue(forKey: SpanTags.computeStats)
+
         // Limit to max number of attributes.
         // `SpanEventEncoder` flattens `usr`, `account` and tags into dotted `meta.*` keys of a single
         // JSON object, so they are children of the same node and must share one budget.
@@ -37,6 +43,10 @@ internal struct SpanSanitizer {
             attributes: sanitizedTags,
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedAccountExtraInfo.count - sanitizedUserExtraInfo.count
         )
+
+        if let reservedComputeStats = reservedComputeStats {
+            sanitizedTags[SpanTags.computeStats] = reservedComputeStats
+        }
 
         var sanitizedSpan = span
         sanitizedSpan.userInfo.extraInfo = sanitizedUserExtraInfo
