@@ -131,19 +131,27 @@ class TelemetryTests: XCTestCase {
     }
 
     func testMetricIsDroppedWhenCallSiteSampleRateRejectsAll() {
+        // TelemetryMock bypasses sampling by design; use CoreTelemetry to test the real sampling behavior
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
         // When
-        telemetry.metric(name: "metric name", attributes: [:], sampleRate: 0)
+        core.telemetry.metric(name: "metric name", attributes: [:], sampleRate: 0)
 
         // Then
-        XCTAssertNil(telemetry.messages.firstMetric(named: "metric name"))
+        XCTAssertNil(receiver.messages.lastTelemetry?.asMetric)
     }
 
     func testUsageIsDroppedWhenCallSiteSampleRateRejectsAll() {
+        // TelemetryMock bypasses sampling by design; use CoreTelemetry to test the real sampling behavior
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+
         // When
-        telemetry.usage(event: .stopSession, sampleRate: 0)
+        core.telemetry.usage(event: .stopSession, sampleRate: 0)
 
         // Then
-        XCTAssertNil(telemetry.messages.firstUsage())
+        XCTAssertNil(receiver.messages.lastTelemetry?.asUsage)
     }
 
     func testHeadSampleRateInMethodCalledMetric() throws {
@@ -153,16 +161,19 @@ class TelemetryTests: XCTestCase {
 
     func testMethodCalledMetricIsSentWhenCallSiteSampleRateKeepsAll() throws {
         let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), callSiteSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 100)
 
         XCTAssertNotNil(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
     }
 
     func testMethodCalledMetricIsDroppedWhenCallSiteSampleRateRejectsAll() {
-        let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), callSiteSampleRate: 0)
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
 
-        XCTAssertNil(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
+        let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
+        core.telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 0)
+
+        XCTAssertNil(receiver.messages.lastTelemetry?.asMetric)
     }
 
     func testTrackingMethodCallMetricTelemetry() throws {
@@ -173,7 +184,7 @@ class TelemetryTests: XCTestCase {
         // When
         let metricTrace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.05)
-        telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful, callSiteSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful, tailSampleRate: 100)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
@@ -206,7 +217,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, "metric name")
 
         let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        core.telemetry.stopMethodCalled(metricTrace, callSiteSampleRate: 100)
+        core.telemetry.stopMethodCalled(metricTrace, tailSampleRate: 100)
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, MethodCalledMetric.name)
     }
 }

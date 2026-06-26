@@ -36,7 +36,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            callSiteSampleRate: 100
+            tailSampleRate: 100
         )
 
         // Then
@@ -81,7 +81,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            callSiteSampleRate: 100
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -127,7 +127,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            callSiteSampleRate: 100
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -174,7 +174,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.metric(name: "Metric Name", attributes: [:], sampleRate: 100)
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: 100),
-            callSiteSampleRate: 100
+            tailSampleRate: 100
         )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -221,7 +221,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
             core.telemetry.usage(event: .setUser, sampleRate: metricsSampleRate)
             core.telemetry.stopMethodCalled(
                 core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom(), headSampleRate: headSampleRate),
-                callSiteSampleRate: metricsSampleRate
+                tailSampleRate: metricsSampleRate
             )
         }
 

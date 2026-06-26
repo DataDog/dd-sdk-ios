@@ -555,7 +555,7 @@ class TelemetryReceiverTests: XCTestCase {
         let isSuccessful = Bool.random()
         let trace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.001)
-        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, callSiteSampleRate: 100)
+        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, tailSampleRate: 100)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first

@@ -73,7 +73,7 @@ public protocol SampledTelemetry {
     var sampleRate: SampleRate { get }
 }
 
-public struct MetricTelemetry {
+public struct MetricTelemetry: SampledTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: SampleRate = 15
 
@@ -93,7 +93,7 @@ public struct MetricTelemetry {
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
-public struct UsageTelemetry {
+public struct UsageTelemetry: SampledTelemetry {
     /// Supported usage telemetry events.
     public enum Event {
         /// setTrackingConsent API
@@ -187,6 +187,10 @@ public protocol Telemetry: Sendable {
     ///
     /// - Parameter telemetry: The telemtry message
     func send(telemetry: TelemetryMessage)
+    /// Collects a metric value. The default implementation applies call-site sampling before sending.
+    func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate)
+    /// Collects a usage telemetry event. The default implementation applies call-site sampling before sending.
+    func usage(event: UsageTelemetry.Event, sampleRate: SampleRate)
 }
 
 public extension Telemetry {
@@ -230,12 +234,12 @@ public extension Telemetry {
     /// - Parameters:
     ///   - metric: The `MethodCalledTrace` instance.
     ///   - isSuccessful: A flag indicating whether the method call was successful.
-    ///   - callSiteSampleRate: The sample rate applied at the call site before sending the metric, in addition to the telemetry sample rate.
+    ///   - tailSampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate.
     ///     Defaults to `MetricTelemetry.defaultSampleRate` (15%).
     func stopMethodCalled(
         _ metric: MethodCalledTrace?,
         isSuccessful: Bool = true,
-        callSiteSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
+        tailSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
     ) {
         guard let metric = metric else {
             return
@@ -252,7 +256,7 @@ public extension Telemetry {
                 SDKMetricFields.headSampleRate: metric.headSampleRate,
                 SDKMetricFields.typeKey: MethodCalledMetric.typeValue
             ],
-            sampleRate: callSiteSampleRate
+            sampleRate: tailSampleRate
         )
     }
 }
