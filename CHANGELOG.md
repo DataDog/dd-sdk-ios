@@ -4,6 +4,7 @@
 - [IMPROVEMENT] DatadogTrace now leverages Swift 6 compile time checking against data races. Types like `DDSpan` and `OTSpan` are now marked as Sendable and can be used safely across isolation barriers. External dependency `opentelemetry-swift-core` version was updated to 2.5.0. See [#2876][]
 - [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
 - [FIX] Fix several instances where misaligned memory could be loaded without proper checking. See [#2995][]
+- [FIX] Prevent OOM in `URLSessionInstrumentation.enableDurationBreakdown`: media response bodies are no longer buffered; all other bodies are capped at 512 KB. The `data` parameter of `resourceAttributesProvider` reflects these constraints. See [#3019][]
 
 # 3.12.0 / 04-06-2026
 
@@ -1181,6 +1182,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
+[#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

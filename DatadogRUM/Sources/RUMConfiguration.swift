@@ -359,6 +359,11 @@ extension RUM {
             ///
             /// Note: This is not supported for async-await APIs.
             ///
+            /// **Constraints on the `data` parameter in registered-delegate mode**
+            /// (`URLSessionInstrumentation.enableDurationBreakdown(with:)`):
+            /// - Media responses (`image/*`, `video/*`, `audio/*`, `application/octet-stream`) always pass `nil`.
+            /// - All other responses are capped at 512 KB; `data` is `nil` for larger responses.
+            ///
             /// Default: `nil`.
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
 
