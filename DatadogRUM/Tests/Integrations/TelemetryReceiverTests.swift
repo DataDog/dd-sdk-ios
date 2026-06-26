@@ -204,7 +204,7 @@ class TelemetryReceiverTests: XCTestCase {
             oneOf([
                 { telemetry.debug(id: "\(index)", message: .mockAny()) },
                 { telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
-                { telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 100) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -230,7 +230,7 @@ class TelemetryReceiverTests: XCTestCase {
                 { telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
                 { telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
                 { telemetry.configuration(batchSize: .mockAny()) },
-                { telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 100) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -555,7 +555,7 @@ class TelemetryReceiverTests: XCTestCase {
         let isSuccessful = Bool.random()
         let trace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.001)
-        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, tailSampleRate: 100)
+        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, callSiteSampleRate: 100)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
