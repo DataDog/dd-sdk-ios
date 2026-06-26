@@ -692,7 +692,8 @@ extension RUMViewScope {
                 // view's placeholder written when command.time == viewStartTime. Storing that dropped event
                 // as baseline would produce deltas against an event the backend never received.
                 // Subsequent views' 1ns start event is kept by the filter, so it is safe as baseline.
-                if viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
+                if dependencies.featureFlags[.viewUpdates],
+                   viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
                     lastSentViewEvent = event
                 }
             }
