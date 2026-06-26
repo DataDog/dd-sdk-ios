@@ -101,5 +101,4 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.error = error
         self.allocationKey = allocationKey
     }
-
 }
