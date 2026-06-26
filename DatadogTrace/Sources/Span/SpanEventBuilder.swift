@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
-internal struct SpanEventBuilder {
+internal struct SpanEventBuilder: Sendable {
     /// Service name to encode in span.
     let service: String?
     /// Enriches traces with network connection info.
@@ -46,7 +46,7 @@ internal struct SpanEventBuilder {
         // Add baggage items as tags
         tags = baggageItems
 
-        // Add regular tags (prefer regular tags over baggate items)
+        // Add regular tags (prefer regular tags over baggage items)
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags, context: .custom)
         tags.merge(regularTags) { _, regularTag in regularTag }
 

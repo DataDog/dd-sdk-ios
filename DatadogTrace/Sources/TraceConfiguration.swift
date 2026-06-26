@@ -20,8 +20,8 @@ import DatadogInternal
 
 extension Trace {
     /// Trace feature configuration.
-    public struct Configuration: SampledTelemetry {
-        public typealias EventMapper = (SpanEvent) -> SpanEvent
+    public struct Configuration: SampledTelemetry, Sendable {
+        public typealias EventMapper = @Sendable (SpanEvent) -> SpanEvent
 
         /// The sampling rate for spans created with the default tracer.
         ///
@@ -36,7 +36,7 @@ extension Trace {
         public var service: String?
 
         /// Global tags associated with each span created with the default tracer.
-        public var tags: [String: Encodable]?
+        public var tags: [String: OTTagValue]?
 
         /// The configuration for automatic network requests tracing.
         ///
@@ -79,7 +79,7 @@ extension Trace {
         // MARK: - Nested Types
 
         /// Configuration of automatic network requests tracing.
-        public struct URLSessionTracking {
+        public struct URLSessionTracking: Sendable {
             /// Determines distributed tracing configuration for particular first-party hosts.
             ///
             /// Each request is classified as first-party or third-party based on the first-party hosts configured, i.e.:
@@ -95,7 +95,7 @@ extension Trace {
             public var firstPartyHostsTracing: FirstPartyHostsTracing
 
             /// Defines configuration for first-party hosts in distributed tracing.
-            public enum FirstPartyHostsTracing {
+            public enum FirstPartyHostsTracing: Sendable {
                 /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
                 ///
                 /// - Parameters:
@@ -162,7 +162,7 @@ extension Trace {
         public init(
             sampleRate: SampleRate = .maxSampleRate,
             service: String? = nil,
-            tags: [String: Encodable]? = nil,
+            tags: [String: OTTagValue]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,
             bundleWithRumEnabled: Bool = true,
             networkInfoEnabled: Bool = false,

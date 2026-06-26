@@ -10,18 +10,19 @@
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <dlfcn.h>
+#include <algorithm>
 #include <thread>
 #include <chrono>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
-#include <signal.h>
-#include <setjmp.h>
 #include <mach/thread_act.h>
 #include <mach/thread_status.h>
 #include <mach/machine/thread_state.h>
 #include <new>
 #include <utility>
+#include <mach/vm_map.h>
 
 // Address validation constants and macros
 //
@@ -56,47 +57,25 @@ static constexpr uintptr_t FRAME_POINTER_ALIGN = 0x7ULL;            // 8-byte al
 
 static constexpr size_t PTHREAD_THREAD_NAME_MAX = 64;
 
+// Hard upper bound for the stack region read per thread sample.
+// The actual bytes requested are computed dynamically from the thread's SP and FP,
+// so this cap is only hit by threads with unusually large frames or very deep stacks.
+static constexpr size_t STACK_REGION_MAX_READ = 65536; // 64 KB safety cap
+
+// Conservative per-frame size estimate used to compute the dynamic read size.
+// ARM64/x86_64 frames range from 16 bytes (leaf) to ~512 bytes (heavy locals).
+// 128 bytes covers the vast majority of real-world frames without over-reading.
+static constexpr size_t STACK_REGION_FRAME_SIZE_ESTIMATE = 128;
+
+struct frame_pointer_pair_t {
+    void* next_frame_pointer;
+    void* return_address;
+};
+
+static_assert(sizeof(frame_pointer_pair_t) == sizeof(void*) * 2, "Frame pointer pair must stay two pointers.");
+
 // Main thread pthread identifier for comparison
 static pthread_t g_main_pthread = NULL;
-
-// Safe memory read using signal handling
-// Thread-local storage for signal-based safe memory reading
-static thread_local sigjmp_buf g_safe_read_handler;
-static thread_local volatile sig_atomic_t g_is_safe_read = false;
-
-// Previous signal handlers to restore if needed
-static struct sigaction g_prev_sigbus_handler;
-static struct sigaction g_prev_sigsegv_handler;
-
-/**
- * Signal handler for catching memory access errors during stack unwinding.
- * If safe_read is active, longjmp back to the safe point.
- * Otherwise, call the previous handler or use default behavior.
- */
-static void safe_read_signal_handler(int sig, siginfo_t* info, void* context) {
-    // If we're in a safe_read, recover via longjmp
-    if (g_is_safe_read) {
-        siglongjmp(g_safe_read_handler, 1);
-    }
-    
-    // Not in safe_read - forward to previous handler
-    struct sigaction* prev = (sig == SIGBUS) ? &g_prev_sigbus_handler : &g_prev_sigsegv_handler;
-    
-    if (prev->sa_flags & SA_SIGINFO) {
-        if (prev->sa_sigaction) {
-            prev->sa_sigaction(sig, info, context);
-        }
-    } else if (prev->sa_handler == SIG_DFL) {
-        // Restore default handler using sigaction (async-signal-safe)
-        struct sigaction dfl = {};
-        dfl.sa_handler = SIG_DFL;
-        sigemptyset(&dfl.sa_mask);
-        sigaction(sig, &dfl, nullptr);
-        raise(sig);
-    } else if (prev->sa_handler != SIG_IGN) {
-        prev->sa_handler(sig);
-    }
-}
 
 /**
  * Sets the main thread pthread identifier.
@@ -110,24 +89,95 @@ void set_main_thread(pthread_t thread) {
 }
 
 /**
- * Install signal handlers for safe memory reading.
+ * Reads a contiguous region of the calling task's virtual memory.
+ * Uses vm_read_overwrite which returns an error code for unmapped/invalid addresses
+ * instead of raising EXC_BAD_ACCESS, making it safe to call with partially-valid
+ * thread stacks and compatible with Mach exception handlers such as Crashlytics.
+ *
+ * @param addr  Starting address.
+ * @param buf   Caller-supplied output buffer.
+ * @param size  Maximum bytes to read (buf must be at least this large).
+ * @return Bytes actually read, 0 on any failure.
  */
-static void init_safe_read_handlers() {
-    static bool initialized = false;
-    if (initialized) {
-        return;
+static size_t read_memory_region(void* addr, uint8_t* buf, size_t size) {
+    if (addr == nullptr || buf == nullptr || size == 0) {
+        return 0;
     }
-    initialized = true;
 
-    // Manually install the handler defined in this file
-    struct sigaction sa = {};
-    sa.sa_sigaction = safe_read_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_SIGINFO;
+    const uintptr_t address = reinterpret_cast<uintptr_t>(addr);
+    const uintptr_t buffer = reinterpret_cast<uintptr_t>(buf);
+    if (address > UINTPTR_MAX - size || buffer > UINTPTR_MAX - size) {
+        return 0;
+    }
 
-    // Install handlers and save previous ones
-    sigaction(SIGBUS, &sa, &g_prev_sigbus_handler);
-    sigaction(SIGSEGV, &sa, &g_prev_sigsegv_handler);
+    vm_size_t read_size = static_cast<vm_size_t>(size);
+    kern_return_t kr = vm_read_overwrite(
+        mach_task_self(),
+        reinterpret_cast<vm_address_t>(addr),
+        static_cast<vm_size_t>(size),
+        reinterpret_cast<vm_address_t>(buf),
+        &read_size
+    );
+    return (kr == KERN_SUCCESS && read_size == size) ? static_cast<size_t>(read_size) : 0;
+}
+
+/**
+ * Reads as much of a stack region as possible by walking page boundaries.
+ *
+ * This is only used as a fallback when the full-region read fails. Reading from
+ * SP upward preserves a contiguous prefix of the stack and stops at the first
+ * unreadable page, so the frame walker can still salvage frames already copied.
+ */
+static size_t read_stack_region_by_pages(void* sp, uint8_t* buf, size_t size) {
+    if (sp == nullptr || buf == nullptr || size == 0 || vm_page_size == 0) {
+        return 0;
+    }
+
+    uintptr_t current_address = reinterpret_cast<uintptr_t>(sp);
+    size_t total_read = 0;
+    const size_t page_size = static_cast<size_t>(vm_page_size);
+
+    while (total_read < size) {
+        const size_t page_offset = current_address % page_size;
+        const size_t bytes_until_page_end = page_size - page_offset;
+        const size_t bytes_remaining = size - total_read;
+        const size_t chunk_size = std::min(bytes_remaining, bytes_until_page_end);
+
+        const size_t bytes_read = read_memory_region(
+            reinterpret_cast<void*>(current_address),
+            buf + total_read,
+            chunk_size
+        );
+
+        if (bytes_read != chunk_size) {
+            break;
+        }
+
+        total_read += bytes_read;
+        if (total_read == size) {
+            break;
+        }
+
+        current_address += bytes_read;
+    }
+
+    return total_read;
+}
+
+/**
+ * Reads a stack region with a fast full-region read and a page-by-page fallback.
+ *
+ * The common path is one vm_read_overwrite per sampled thread. If that all-or-
+ * nothing read fails because a later page is unmapped, the fallback returns the
+ * contiguous readable prefix from SP so the sample is degraded rather than lost.
+ */
+static size_t read_stack_region(void* sp, uint8_t* buf, size_t size) {
+    const size_t bytes_read = read_memory_region(sp, buf, size);
+    if (bytes_read == size) {
+        return bytes_read;
+    }
+
+    return read_stack_region_by_pages(sp, buf, size);
 }
 
 /**
@@ -186,20 +236,23 @@ void stack_trace_destroy(stack_trace_t* trace) {
 }
 
 /**
- * Gets thread state and extracts frame pointer and program counter.
+ * Gets thread state and extracts stack pointer, frame pointer, and program counter.
+ * sp is needed to anchor the batch stack read; fp and pc seed the frame walk.
  *
- * @param thread The thread to get the state from
+ * @param thread The thread to get the state from (must be suspended)
  * @param fp Output parameter for frame pointer
  * @param pc Output parameter for program counter
+ * @param sp Output parameter for stack pointer
  * @return true if successful, false if thread state could not be retrieved
  */
-bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
+bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc, void** sp) {
 #if defined(__x86_64__)
     x86_thread_state64_t state;
     mach_msg_type_number_t count = x86_THREAD_STATE64_COUNT;
     if (thread_get_state(thread, x86_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
         *fp = (void*)state.__rbp;
         *pc = (void*)state.__rip;
+        *sp = (void*)state.__rsp;
         return true;
     }
 #elif defined(__i386__)
@@ -208,6 +261,7 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
     if (thread_get_state(thread, x86_THREAD_STATE32, (thread_state_t)&state, &count) == KERN_SUCCESS) {
         *fp = (void*)state.__ebp;
         *pc = (void*)state.__eip;
+        *sp = (void*)state.__esp;
         return true;
     }
 #elif defined(__arm64__)
@@ -216,6 +270,7 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
     if (thread_get_state(thread, ARM_THREAD_STATE64, (thread_state_t)&state, &count) == KERN_SUCCESS) {
         *fp = (void*)arm_thread_state64_get_fp(state);
         *pc = (void*)arm_thread_state64_get_pc(state);
+        *sp = (void*)arm_thread_state64_get_sp(state);
         return true;
     }
 #elif defined(__arm__)
@@ -225,6 +280,7 @@ bool thread_get_frame_pointers(thread_t thread, void** fp, void** pc) {
         // https://developer.apple.com/documentation/xcode/writing-armv6-code-for-ios#//apple_ref/doc/uid/TP40009021-SW1
         *fp = (void*)state.__r[7];  // R7 is commonly used as frame pointer on iOS
         *pc = (void*)state.__pc;
+        *sp = (void*)state.__sp;
         return true;
     }
 #endif
@@ -266,65 +322,198 @@ bool stack_trace_get_thread_info(stack_trace_t* trace, thread_t thread) {
 }
 
 /**
- * Safely reads memory from a potentially invalid address.
- *
- * If memory is invalid, SIGBUS/SIGSEGV is caught and we return false.
-*/
-bool safe_read_memory(void* addr, void* buffer, size_t size) {
-    // Set up the JUMP TARGET
-    if (sigsetjmp(g_safe_read_handler, 1) == 0) {
-        g_is_safe_read = true;
-        // try direct memory copy
-        memcpy(buffer, addr, size);
-        g_is_safe_read = false;
-        return true;
+ * Reads a saved frame pointer / program counter pair from a stack snapshot.
+ */
+static bool read_frame_pair_from_snapshot(
+    uintptr_t fp,
+    uintptr_t stack_base,
+    const uint8_t* stack_buf,
+    size_t bytes_read,
+    frame_pointer_pair_t* next_frame
+) {
+    if (stack_base == 0 || stack_buf == nullptr || bytes_read < sizeof(frame_pointer_pair_t) || fp < stack_base) {
+        return false;
     }
 
-    // Memory access failed
-    // We land here if safe_read_signal_handler() called siglongjmp()
-    g_is_safe_read = false;
-    return false;
+    const uintptr_t fp_offset = fp - stack_base;
+    if (fp_offset > bytes_read - sizeof(frame_pointer_pair_t)) {
+        return false;
+    }
+
+    memcpy(static_cast<void*>(next_frame), stack_buf + fp_offset, sizeof(frame_pointer_pair_t));
+    return true;
+}
+
+/**
+ * Reads a saved frame pointer / program counter pair directly from memory.
+ *
+ * This is only used when a valid frame pointer falls outside the initial stack
+ * snapshot. It preserves stack accuracy for large frames without returning to
+ * faulting memory reads; vm_read_overwrite reports failure instead of crashing.
+ */
+static bool read_frame_pair_from_memory(uintptr_t fp, frame_pointer_pair_t* next_frame) {
+    return read_memory_region(
+        reinterpret_cast<void*>(fp),
+        reinterpret_cast<uint8_t*>(next_frame),
+        sizeof(frame_pointer_pair_t)
+    ) == sizeof(frame_pointer_pair_t);
+}
+
+/**
+ * Walks a frame pointer chain from a pre-populated local buffer.
+ *
+ * If allow_memory_fallback is true, a valid frame pointer outside the copied
+ * region is read with vm_read_overwrite so unusually large frames can still be
+ * followed safely. The common path remains local-buffer reads with no syscalls.
+ */
+static void walk_frames(
+    stack_trace_t* trace,
+    void* initial_fp,
+    void* initial_pc,
+    uintptr_t stack_base,
+    const uint8_t* stack_buf,
+    size_t bytes_read,
+    uint32_t max_depth,
+    bool allow_memory_fallback
+) {
+    void* fp = initial_fp;
+    void* pc = initial_pc;
+    trace->frame_count = 0;
+
+    while (trace->frame_count < max_depth && pc != nullptr) {
+        auto& frame = trace->frames[trace->frame_count];
+        frame.instruction_ptr = (uint64_t)pc;
+        frame.image.load_address = 0;
+        memset(frame.image.uuid, 0, sizeof(uuid_t));
+        frame.image.filename = nullptr;
+        trace->frame_count++;
+
+        const uintptr_t fp_addr = reinterpret_cast<uintptr_t>(fp);
+        if (!is_valid_frame_pointer(fp_addr)) break;
+
+        // Frame pointers grow toward higher addresses (stack grows down),
+        // so fp must be at or above sp when a stack snapshot is available.
+        if (stack_base != 0 && fp_addr < stack_base) break;
+
+        frame_pointer_pair_t next_frame;
+        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
+            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
+                break;
+            }
+        }
+
+        fp = next_frame.next_frame_pointer;  // saved x29 / rbp
+        pc = next_frame.return_address;  // saved lr / return address on stack
+
+        if (!is_valid_userspace_addr(reinterpret_cast<uintptr_t>(pc))) break;
+    }
+}
+
+/**
+ * Walks a frame pointer chain entirely from a pre-populated local buffer.
+ *
+ * Resets trace->frame_count to 0, records initial_pc as the first frame, then
+ * follows the frame pointer chain by reading saved (fp, pc) word pairs from
+ * stack_buf with bounds checks. The walk stops on: max_depth reached, invalid
+ * FP/PC, FP outside the captured region, or null PC.
+ *
+ * No syscalls and no memory accesses outside [stack_buf, stack_buf + bytes_read)
+ * are performed, so this function cannot raise EXC_BAD_ACCESS or fault.
+ *
+ * Exposed via safe_read_testing.h so tests can exercise the bounds-check guards
+ * and cycle-termination behavior directly with crafted buffers.
+ *
+ * @param trace        Pre-allocated trace; trace->frames must point to at least
+ *                     max_depth entries.
+ * @param initial_fp   First frame pointer to walk from.
+ * @param initial_pc   First program counter to record.
+ * @param stack_base   Base address that stack_buf was read from.
+ * @param stack_buf    Buffer containing a snapshot of stack memory.
+ * @param bytes_read   Valid bytes in stack_buf.
+ * @param max_depth    Hard cap on frames to record.
+ */
+extern "C" void walk_frames_in_buffer(
+    stack_trace_t* trace,
+    void* initial_fp,
+    void* initial_pc,
+    uintptr_t stack_base,
+    const uint8_t* stack_buf,
+    size_t bytes_read,
+    uint32_t max_depth
+) {
+    walk_frames(trace, initial_fp, initial_pc, stack_base, stack_buf, bytes_read, max_depth, false);
+}
+
+extern "C" void walk_frames_with_safe_read_fallback_for_testing(
+    stack_trace_t* trace,
+    void* initial_fp,
+    void* initial_pc,
+    uintptr_t stack_base,
+    const uint8_t* stack_buf,
+    size_t bytes_read,
+    uint32_t max_depth
+) {
+    walk_frames(trace, initial_fp, initial_pc, stack_base, stack_buf, bytes_read, max_depth, true);
 }
 
 /**
  * Samples a thread's stack to collect stack trace information.
  *
+ * Reads the thread's live stack region with a single vm_read_overwrite call, then
+ * walks frame pointers from the local copy. If a valid frame pointer lands outside
+ * the initial copy (for example because of a large stack allocation), that one
+ * saved FP/PC pair is read with vm_read_overwrite as a safe fallback. This avoids
+ * faulting memory reads while keeping the sampled stack internally consistent.
+ *
+ * Overhead: one vm_read_overwrite per thread sample on the common path, with extra
+ * safe reads only for out-of-window frame pointers.
+ *
  * @param trace Pre-allocated stack trace to fill
- * @param thread The thread to sample
+ * @param thread The thread to sample (must already be suspended)
  * @param max_depth Maximum number of frames to capture
  */
-void stack_trace_sample_thread(stack_trace_t* trace, thread_t thread, uint32_t max_depth) {
-    trace->timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+static void stack_trace_sample_thread(
+    stack_trace_t* trace,
+    thread_t thread,
+    uint32_t max_depth
+) {
     trace->frame_count = 0;
 
-    void *fp = nullptr;
-    void *pc = nullptr;
-    if (!thread_get_frame_pointers(thread, &fp, &pc)) return;
+    void* fp = nullptr;
+    void* pc = nullptr;
+    void* sp = nullptr;
+    if (!thread_get_frame_pointers(thread, &fp, &pc, &sp)) return;
 
-    while (trace->frame_count < max_depth && pc != nullptr) {
-        auto& frame = trace->frames[trace->frame_count];
-        frame.instruction_ptr = (uint64_t)pc;
-        // Keep raw traces safe for callbacks by setting safe defaults
-        frame.image.load_address = 0;
-        memset(frame.image.uuid, 0, sizeof(uuid_t));
-        frame.image.filename = nullptr;
+    // Compute the minimum region that covers all frames we intend to walk.
+    //
+    // The stack grows downward: SP is the lowest live address, FP is above SP
+    // (within the current frame), and each subsequent frame pointer is higher still.
+    // Reading [SP, SP + region_size] therefore covers the entire walk.
+    //
+    //   region_size = (FP - SP)               // current frame
+    //               + max_depth * frame_est   // remaining frames above FP
+    //
+    // This is capped at STACK_REGION_MAX_READ as a safety bound for unusual stacks.
+    // Compared to always reading 64 KB, this typically reads 8-20 KB instead,
+    // reducing data movement by ~4-8x at the default depth of 128.
+    alignas(void*) uint8_t stack_buf[STACK_REGION_MAX_READ];
+    size_t bytes_read = 0;
+    uintptr_t stack_base = 0;
 
-        trace->frame_count++;
-        
-        if (fp == nullptr) break;
-        // Validate frame pointer before dereferencing
-        if (!is_valid_frame_pointer((uintptr_t)fp)) break;
+    if (is_valid_userspace_addr(reinterpret_cast<uintptr_t>(sp))) {
+        stack_base = reinterpret_cast<uintptr_t>(sp);
 
-        // Read the next frame pointer and return address
-        void* next_frame[2];
-        if (!safe_read_memory(fp, static_cast<void*>(next_frame), sizeof(next_frame))) break;
+        const uintptr_t fp_addr = reinterpret_cast<uintptr_t>(fp);
+        const size_t current_frame_size = (fp_addr > stack_base) ? (fp_addr - stack_base) : 0;
+        const size_t region_size = std::min(
+            current_frame_size + (static_cast<size_t>(max_depth) * STACK_REGION_FRAME_SIZE_ESTIMATE),
+            STACK_REGION_MAX_READ
+        );
 
-        fp = next_frame[0];  // Next frame pointer
-        pc = next_frame[1];  // Return address
-
-        // Validate the new PC
-        if (!is_valid_userspace_addr((uintptr_t)pc)) break;
+        bytes_read = read_stack_region(sp, stack_buf, region_size);
     }
+
+    walk_frames(trace, fp, pc, stack_base, stack_buf, bytes_read, max_depth, true);
 }
 
 namespace dd::profiler {
@@ -401,7 +590,6 @@ bool mach_sampling_profiler::start_sampling() {
     }
     sampling_thread_mach.store(MACH_PORT_NULL, std::memory_order_relaxed);
 
-    init_safe_read_handlers();
     if (!worker || !worker->start()) {
         return false;
     }
@@ -498,16 +686,24 @@ void mach_sampling_profiler::sample_thread(thread_t thread, uint64_t interval_na
     // Get thread info
     stack_trace_get_thread_info(&trace, thread);
 
+    trace.timestamp = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+
     if (thread_suspend(thread) == KERN_SUCCESS) {
         // CRITICAL: Thread is suspended - avoid operations that could deadlock
         //
         // The suspended thread may be holding system locks (memory allocator, pthread, etc).
         // If we try to acquire these same locks while the thread is suspended, we'll deadlock.
         //
-        // Specifically avoid:
+        // Specifically avoid nonessential:
         // - Memory allocations (new, malloc) - memory allocator locks
-        // - System calls that acquire locks - they may be held by suspended thread
+        // - System calls - they may acquire locks held by the suspended thread
         // - pthread functions - they share locks with system APIs
+        //
+        // Keep this window to the minimum required call-stack capture. The stack
+        // memory reads below intentionally use vm_read_overwrite while suspended
+        // to keep FP/PC/SP and caller frames from the same execution instant.
+        // Work that is not needed for stack consistency must stay outside this
+        // section.
         stack_trace_sample_thread(&trace, thread, config.max_stack_depth);
         thread_resume(thread);
     }
@@ -584,12 +780,12 @@ void mach_sampling_profiler::main() {
 
 extern "C" {
 
-void safe_read_memory_for_testing(void* addr, void* buffer, size_t size) {
-    safe_read_memory(addr, buffer, size);
-}
-
-void init_safe_read_handlers_for_testing(void) {
-    init_safe_read_handlers();
+/**
+ * Reads a stack region for testing purposes. See read_stack_region for semantics.
+ * Returns the number of bytes actually read, 0 on failure.
+ */
+size_t read_stack_region_for_testing(void* sp, void* buf, size_t buf_size) {
+    return read_stack_region(sp, static_cast<uint8_t*>(buf), buf_size);
 }
 
 } // extern "C"

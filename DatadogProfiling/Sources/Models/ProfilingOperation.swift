@@ -3,7 +3,6 @@
  * This product includes software developed at Datadog (https://www.datadoghq.com/).
  * Copyright 2019-Present Datadog, Inc.
  */
-
 internal enum ProfilingOperation: String, CaseIterable {
     case appLaunch = "launch"
     case continuousProfiling = "continuous"

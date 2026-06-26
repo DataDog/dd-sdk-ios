@@ -113,6 +113,8 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         let request = try #require(requests.first)
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layerClass == CATextLayer.self)
+        #expect(request.delegateClass == nil)
+        #expect(request.hasLayerSemantics)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -139,6 +141,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.hasContents)
+        #expect(!request.hasLayerSemantics)
         #expect(!requests.contains { $0.layer.matches(child) })
     }
 

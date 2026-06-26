@@ -100,7 +100,7 @@ extension String {
 }
 
 /// A `SpanID` generator interface.
-public protocol SpanIDGenerator {
+public protocol SpanIDGenerator: Sendable {
     /// Generates a new and unique `SpanID`.
     ///
     /// - Returns: The generated `SpanID`

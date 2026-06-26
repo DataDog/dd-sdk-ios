@@ -79,10 +79,15 @@ public struct ProfilingContext: AdditionalContext {
     /// The current profiling status.
     public let status: Status
 
+    /// The reason provided by the profiling quota admission API.
+    public let quotaReason: DDProfiling.QuotaReason?
+
     /// Creates a new profiling context with the specified status.
     ///
     /// - Parameter status: The current profiling status to be included in the context.
-    public init(status: Status) {
+    /// - Parameter quotaReason: The reason provided by the profiling quota admission API.
+    public init(status: Status, quotaReason: DDProfiling.QuotaReason? = nil) {
         self.status = status
+        self.quotaReason = quotaReason
     }
 }
