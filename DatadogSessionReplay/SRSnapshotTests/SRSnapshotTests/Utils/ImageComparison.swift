@@ -6,7 +6,6 @@
 
 import UIKit
 import XCTest
-import TestUtilities
 
 internal struct ImageLocation {
     let url: URL
@@ -30,16 +29,39 @@ internal struct ImageLocation {
     }
 }
 
+internal struct SnapshotSimulator {
+    static let viewTree = SnapshotSimulator(
+        modelIdentifier: "iPhone15,4",
+        name: "iPhone 15",
+        osVersion: "17.5"
+    )
+
+    static let layerTree = SnapshotSimulator(
+        modelIdentifier: "iPhone18,3",
+        name: "iPhone 17",
+        osVersion: "26.5"
+    )
+
+    let modelIdentifier: String?
+    let name: String
+    let osVersion: String
+}
+
+private enum SnapshotAssertionError: Error {
+    case expectedFailure(String)
+}
+
 internal extension XCTestCase {
     /// Compares `newImage` against the snapshot saved in `snapshotLocation` OR updates stored snapshot image data (if `record == true`).
     func DDAssertSnapshotTest(
         newImage: UIImage,
         snapshotLocation: ImageLocation,
         record: Bool,
+        simulator: SnapshotSimulator = .viewTree,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        DDAssertSimulatorDevice("iPhone15,4", "iPhone15", "17.5", file: file, line: line)
+        DDAssertSimulatorDevice(simulator, file: file, line: line)
 
         if record {
             DDSaveSnapshotIfDifferent(image: newImage, into: snapshotLocation, file: file, line: line)
@@ -54,17 +76,27 @@ internal extension XCTestCase {
     }
 
     /// Asserts that tests are executed on given iOS Simulator.
-    private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedModelPrettyName: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
-        _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator (\(expectedModelPrettyName)) and iOS \(expectedOSVersion)", file: file, line: line) {
-            guard let actualModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
-                throw DDAssertError.expectedFailure("Not running in Simulator")
+    private func DDAssertSimulatorDevice(_ simulator: SnapshotSimulator, file: StaticString = #filePath, line: UInt = #line) {
+        evaluateSnapshotAssertion(message: "Snapshots must be compared on \(simulator.name) Simulator and iOS \(simulator.osVersion)", file: file, line: line) {
+            if let expectedModelIdentifier = simulator.modelIdentifier {
+                guard let actualModelIdentifier = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
+                    throw SnapshotAssertionError.expectedFailure("Not running in Simulator")
+                }
+                guard actualModelIdentifier == expectedModelIdentifier else {
+                    throw SnapshotAssertionError.expectedFailure("Running in \(actualModelIdentifier) Simulator")
+                }
+            } else {
+                guard let actualDeviceName = ProcessInfo.processInfo.environment["SIMULATOR_DEVICE_NAME"] else {
+                    throw SnapshotAssertionError.expectedFailure("Not running in Simulator")
+                }
+                guard actualDeviceName == simulator.name else {
+                    throw SnapshotAssertionError.expectedFailure("Running in \(actualDeviceName) Simulator")
+                }
             }
-            guard actualModel == expectedModel else {
-                throw DDAssertError.expectedFailure("Running in \(actualModel) Simulator")
-            }
+
             let actualOSVersion = UIDevice.current.systemVersion
-            guard actualOSVersion == expectedOSVersion else {
-                throw DDAssertError.expectedFailure("Running on iOS \(actualOSVersion)")
+            guard actualOSVersion == simulator.osVersion else {
+                throw SnapshotAssertionError.expectedFailure("Running on iOS \(actualOSVersion)")
             }
         }
     }
@@ -73,7 +105,7 @@ internal extension XCTestCase {
     /// - image at `location` doesn't exist;
     /// - the difference between `image` and the image at `location` is higher than threshold.
     private func DDSaveSnapshotIfDifferent(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
-        _DDEvaluateAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
+        evaluateSnapshotAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
             let oldFileExists = FileManager.default.fileExists(atPath: location.url.path)
             guard try !oldFileExists || difference(for: image, againstReference: location) != nil else {
                 print("🎬 ⏩ Skips saving `\(location.url.lastPathComponent)` as it has no significant difference with existing file")
@@ -82,7 +114,7 @@ internal extension XCTestCase {
 
             print("🎬 📸 Saving `\(location.url.lastPathComponent)`")
             guard let data = image.pngData() else {
-                throw DDAssertError.expectedFailure("Failed to create PNG data for `image`")
+                throw SnapshotAssertionError.expectedFailure("Failed to create PNG data for `image`")
             }
             let directoryURL = location.url.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
@@ -93,9 +125,9 @@ internal extension XCTestCase {
     /// Compares image against the snapshot saved in given location.
     private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
         let imageName = snapshotLocation.url.lastPathComponent
-        _DDEvaluateAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
+        evaluateSnapshotAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
             if let differenceExplained = try difference(for: image, againstReference: snapshotLocation) {
-                throw DDAssertError.expectedFailure(differenceExplained)
+                throw SnapshotAssertionError.expectedFailure(differenceExplained)
             }
         }
     }
@@ -107,7 +139,7 @@ internal extension XCTestCase {
         let imageName = snapshotLocation.url.lastPathComponent
         let oldImageData = try Data(contentsOf: snapshotLocation.url)
         guard let oldImage = UIImage(data: oldImageData, scale: image.scale) else {
-            throw DDAssertError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
+            throw SnapshotAssertionError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
         }
 
         // Extract "Actual UI" and "Wireframes" images from new and reference snapshots:
@@ -140,6 +172,22 @@ internal extension XCTestCase {
         // noticeable for the human eye (perceptualPrecision: 0.98).
         // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
         return compare(oldImages.rightImage, newImages.rightImage, precision: 1, perceptualPrecision: 0.98)
+    }
+
+    private func evaluateSnapshotAssertion(
+        message: @autoclosure () -> String,
+        file: StaticString,
+        line: UInt,
+        expression: () throws -> Void
+    ) {
+        do {
+            try expression()
+        } catch SnapshotAssertionError.expectedFailure(let details) {
+            let message = message()
+            XCTFail(message.isEmpty ? details : message + " - " + details, file: file, line: line)
+        } catch {
+            XCTFail(message() + " - threw error \"\(error)\"", file: file, line: line)
+        }
     }
 }
 
