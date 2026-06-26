@@ -157,10 +157,11 @@ public enum WebViewTracking {
             return
         }
 
-        let validPatterns = sanitizeHostPatterns(
-            hostPatterns,
+        let sanitizedPatterns = HostsSanitizer().sanitized(
+            hosts: Set(hostPatterns),
             warningMessage: "The WebView host pattern configured for Datadog SDK is not valid"
         )
+        let validPatterns = sanitizedPatterns.sorted()
         let allowedWebViewHostsString = validPatterns
             .map { "\"\($0)\"" }
             .joined(separator: ",")

@@ -9,7 +9,6 @@ import Foundation
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
     internal var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
-    internal var hostPatternsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]
 
     public var hosts: Set<String> {
         return Set(hostsWithTracingHeaderTypes.keys)
@@ -53,14 +52,8 @@ public struct FirstPartyHosts: Equatable {
         hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         hostsSanitizer: HostsSanitizing = HostsSanitizer()
     ) {
-        let plainEntries = hostsWithTracingHeaderTypes.filter { !$0.key.contains("*") }
-        let wildcardEntries = hostsWithTracingHeaderTypes.filter { $0.key.contains("*") }
         self.hostsWithTracingHeaderTypes = hostsSanitizer.sanitized(
-            hostsWithTracingHeaderTypes: plainEntries,
-            warningMessage: "The first party host configured for Datadog SDK is not valid"
-        )
-        self.hostPatternsWithTracingHeaderTypes = sanitizeHostPatterns(
-            wildcardEntries,
+            hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes,
             warningMessage: "The first party host configured for Datadog SDK is not valid"
         )
     }
@@ -68,30 +61,23 @@ public struct FirstPartyHosts: Equatable {
     /// The function takes a `URL` and returns a `Set<TracingHeaderType>` of matching values.
     /// If one than more match is found it will return union of matching values.
     public func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        let plainMatches = hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
-            let regex = "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: item.key))$"
+        let matches = hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
+            let regex = regexPattern(for: item.key)
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
                 return item.value
             }
             return nil
         }
-
-        let patternMatches = hostPatternsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
-            if let host = url?.host, matchesWildcardPattern(host: host, pattern: item.key) {
-                return item.value
-            }
-            return nil
-        }
-
-        return (plainMatches + patternMatches).reduce(into: Set(), { partialResult, value in
-            partialResult.formUnion(value)
-        })
+        return matches.reduce(into: Set()) { $0.formUnion($1) }
     }
 
-    private func matchesWildcardPattern(host: String, pattern: String) -> Bool {
-        let parts = pattern.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
-        let regex = "^\(NSRegularExpression.escapedPattern(for: parts[0])).+\(NSRegularExpression.escapedPattern(for: parts[1]))$"
-        return host.range(of: regex, options: .regularExpression) != nil
+    private func regexPattern(for hostOrPattern: String) -> String {
+        if hostOrPattern.contains("*") {
+            let parts = hostOrPattern.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+            return "^\(NSRegularExpression.escapedPattern(for: parts[0])).+\(NSRegularExpression.escapedPattern(for: parts[1]))$"
+        } else {
+            return "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: hostOrPattern))$"
+        }
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
@@ -110,13 +96,9 @@ public struct FirstPartyHosts: Equatable {
 }
 
 public func += (left: inout FirstPartyHosts?, right: FirstPartyHosts) {
-    var result = FirstPartyHosts(
-        left?.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { l, r in
-            l.union(r)
-        }) ?? right.hostsWithTracingHeaderTypes
-    )
-    result.hostPatternsWithTracingHeaderTypes = (left?.hostPatternsWithTracingHeaderTypes ?? [:]).merging(
-        right.hostPatternsWithTracingHeaderTypes, uniquingKeysWith: { l, r in l.union(r) }
+    var result = FirstPartyHosts()
+    result.hostsWithTracingHeaderTypes = (left?.hostsWithTracingHeaderTypes ?? [:]).merging(
+        right.hostsWithTracingHeaderTypes, uniquingKeysWith: { $0.union($1) }
     )
     left = result
 }
@@ -125,14 +107,9 @@ public func + (left: FirstPartyHosts, right: FirstPartyHosts?) -> FirstPartyHost
     guard let right = right else {
         return left
     }
-
-    var result = FirstPartyHosts(
-        left.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { l, r in
-            l.union(r)
-        })
-    )
-    result.hostPatternsWithTracingHeaderTypes = left.hostPatternsWithTracingHeaderTypes.merging(
-        right.hostPatternsWithTracingHeaderTypes, uniquingKeysWith: { l, r in l.union(r) }
+    var result = FirstPartyHosts()
+    result.hostsWithTracingHeaderTypes = left.hostsWithTracingHeaderTypes.merging(
+        right.hostsWithTracingHeaderTypes, uniquingKeysWith: { $0.union($1) }
     )
     return result
 }

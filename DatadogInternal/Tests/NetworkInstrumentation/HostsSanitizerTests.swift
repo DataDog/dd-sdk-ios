@@ -74,4 +74,99 @@ class HostsSanitizerTests: XCTestCase {
             printFunction.printedMessages.contains("⚠️ Host is not valid: 'customprotocol://name' is an url and will be sanitized to: 'name'.")
         )
     }
+
+    // MARK: - Wildcard pattern sanitization
+
+    func testWildcardSanitizationAndWarningMessages() throws {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let patterns: [String: Set<TracingHeaderType>] = [
+            "*.example.com": [.datadog],
+            "preview-*.shopist.io": [.tracecontext],
+            "*.UPPER.COM": [.datadog],
+            "*.invalid_pattern.com": [.datadog],
+            "*.foo.*.bar.com": [.datadog],
+            "": [.datadog],
+        ]
+
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(hostsWithTracingHeaderTypes: patterns, warningMessage: "Pattern not valid")
+
+        XCTAssertEqual(sanitized["*.example.com"], [.datadog])
+        XCTAssertEqual(sanitized["preview-*.shopist.io"], [.tracecontext])
+        XCTAssertEqual(sanitized["*.upper.com"], [.datadog])
+        XCTAssertNil(sanitized["*.UPPER.COM"])
+        XCTAssertNil(sanitized["*.invalid_pattern.com"])
+        XCTAssertNil(sanitized["*.foo.*.bar.com"])
+        XCTAssertNil(sanitized[""])
+        XCTAssertEqual(sanitized.count, 3)
+
+        XCTAssertEqual(printFunction.printedMessages.count, 3)
+        XCTAssertTrue(printFunction.printedMessages.contains(
+            "⚠️ Pattern not valid: '*.invalid_pattern.com' is not a valid host pattern and will be dropped."
+        ))
+        XCTAssertTrue(printFunction.printedMessages.contains(
+            "⚠️ Pattern not valid: '*.foo.*.bar.com' is not a valid host pattern and will be dropped."
+        ))
+        XCTAssertTrue(printFunction.printedMessages.contains(
+            "⚠️ Pattern not valid: '' is not a valid host name and will be dropped."
+        ))
+    }
+
+    func testWildcardPlainHostAsPattern_isAccepted() {
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(hostsWithTracingHeaderTypes: ["example.com": [.datadog]], warningMessage: "")
+        XCTAssertEqual(sanitized["example.com"], [.datadog])
+    }
+
+    func testWildcardTrailingDotPattern_isDropped() {
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(hostsWithTracingHeaderTypes: ["*.": [.datadog]], warningMessage: "")
+        XCTAssertNil(sanitized["*."])
+        XCTAssertEqual(sanitized.count, 0)
+    }
+
+    func testWildcardBareWildcard_isDropped() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(hostsWithTracingHeaderTypes: ["*": [.datadog]], warningMessage: "Pattern not valid")
+
+        XCTAssertNil(sanitized["*"])
+        XCTAssertEqual(sanitized.count, 0)
+        XCTAssertEqual(printFunction.printedMessages.count, 1)
+        XCTAssertTrue(printFunction.printedMessages.contains(
+            "⚠️ Pattern not valid: '*' is not a valid host pattern and will be dropped."
+        ))
+    }
+
+    func testWildcardWithoutLabelBoundary_isDropped() {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
+
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(
+            hostsWithTracingHeaderTypes: ["*example.com": [.datadog]],
+            warningMessage: "Pattern not valid"
+        )
+
+        XCTAssertNil(sanitized["*example.com"])
+        XCTAssertEqual(sanitized.count, 0)
+        XCTAssertEqual(printFunction.printedMessages.count, 1)
+        XCTAssertTrue(printFunction.printedMessages.contains(
+            "⚠️ Pattern not valid: '*example.com' is not a valid host pattern and will be dropped."
+        ))
+    }
+
+    func testWildcardHosts_setOverload_isAccepted() {
+        let sanitizer = HostsSanitizer()
+        let sanitized = sanitizer.sanitized(hosts: ["*.example.com", "preview-*.shopist.io"], warningMessage: "")
+        XCTAssertTrue(sanitized.contains("*.example.com"))
+        XCTAssertTrue(sanitized.contains("preview-*.shopist.io"))
+    }
 }
