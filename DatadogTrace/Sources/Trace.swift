@@ -40,15 +40,22 @@ public enum Trace {
             )
         }
 
+        // Register Client-Side Stats feature first if enabled, so the Trace feature (which stamps
+        // `meta._dd.compute_stats=0` on every span) is only registered once the stats pipeline is
+        // known to be installed. If stats registration fails, we return before any span is stamped,
+        // which prevents suppressing the backend's own stats while no client stats are uploaded.
+        var stats: ClientStatsFeature?
+        if configuration.statsComputationEnabled {
+            let statsFeature = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
+            try core.register(feature: statsFeature)
+            stats = statsFeature
+        }
+
         // Register Trace feature:
         let trace = TraceFeature(in: core, configuration: configuration)
         try core.register(feature: trace)
 
-        // Register Client-Side Stats feature if enabled:
-        if configuration.statsComputationEnabled {
-            let stats = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
-            try core.register(feature: stats)
-
+        if let stats {
             trace.tracer.onSpanFinished = { [weak stats] snapshot in
                 stats?.concentrator.add(snapshot)
             }
