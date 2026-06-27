@@ -774,4 +774,112 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
     }
+
+    // MARK: - Client-Side Stats opt-out tag (`_dd.compute_stats`)
+
+    func testWhenStatsComputationIsEnabled_itStampsComputeStatsZero() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "Backend should be told to skip its own stats computation")
+    }
+
+    func testWhenStatsComputationIsDisabled_itOmitsComputeStatsTag() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertNil(json["meta._dd.compute_stats"], "The tag must be omitted so the backend keeps computing stats (backwards-compatible default)")
+    }
+
+    func testWhenStatsComputationIsEnabled_aUserComputeStatsTagCannotOverrideTheOptOut() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: true)
+
+        // When the user tries to set the reserved `_dd.compute_stats` tag to a non-"0" value
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: ["_dd.compute_stats": "1"],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then the SDK-owned opt-out wins; the user value is dropped so the backend cannot
+        // be told to recompute stats (which would reintroduce double counting).
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertEqual(json["meta._dd.compute_stats"] as? String, "0", "The user tag must not override the SDK opt-out")
+    }
+
+    func testWhenStatsComputationIsDisabled_aUserComputeStatsTagIsRemoved() throws {
+        // Given
+        let builder: SpanEventBuilder = .mockWith(statsComputationEnabled: false)
+
+        // When the user tries to set the reserved `_dd.compute_stats` tag while CSS is disabled
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: ["_dd.compute_stats": "0"],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then the SDK removes the user value so the backend keeps computing stats; otherwise a
+        // user-set "0" while the SDK uploads no client stats would under-count.
+        let json = try JSONEncoder().encode(span).toJSONObject()
+        XCTAssertNil(json["meta._dd.compute_stats"], "A user value must not be able to set the SDK-owned opt-out tag")
+    }
 }

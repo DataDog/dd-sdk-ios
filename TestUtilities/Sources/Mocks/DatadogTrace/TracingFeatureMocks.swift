@@ -170,6 +170,7 @@ extension SpanEventBuilder {
         networkInfoEnabled: Bool = false,
         eventsMapper: SpanEventMapper? = nil,
         bundleWithRUM: Bool = false,
+        statsComputationEnabled: Bool = false,
         telemetry: Telemetry = NOPTelemetry()
     ) -> SpanEventBuilder {
         let builder = SpanEventBuilder(
@@ -177,6 +178,7 @@ extension SpanEventBuilder {
             networkInfoEnabled: networkInfoEnabled,
             eventsMapper: eventsMapper,
             bundleWithRUM: bundleWithRUM,
+            statsComputationEnabled: statsComputationEnabled,
             telemetry: telemetry
         )
         builder.attributesEncoder.outputFormatting = [.sortedKeys] // to ensure stable order of JSON keys among OS versions
