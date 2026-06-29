@@ -94,6 +94,9 @@ internal final class LaunchReasonResolver {
     ///
     /// - Returns: A resolved `LaunchReason`, or `nil` if it remains uncertain.
     private func evaluateLaunchReason(command: RUMCommand, context: DatadogContext) -> LaunchReason? {
+        #if os(macOS)
+        return .userLaunch
+        #else
         if context.applicationStateHistory.initialState != .background {
             return .userLaunch
         }
@@ -109,6 +112,7 @@ internal final class LaunchReasonResolver {
         }
 
         return nil
+        #endif
     }
 }
 

@@ -21,9 +21,13 @@ public enum AppState: Codable {
     case active
     /// The app is running in the foreground but is not receiving events.
     /// This might happen as a result of an interruption or because the app is transitioning to or from the background.
+    /// In macOS it means the application is not the foreground application.
     case inactive
+    #if !os(macOS)
     /// The app is running in the background.
+    /// This concept does not exist on macOS so macOS is never in background state.
     case background
+    #endif
     /// The app is terminated.
     case terminated
 
@@ -32,8 +36,13 @@ public enum AppState: Codable {
         switch self {
         case .active, .inactive:
             return true
+        #if !os(macOS)
         case .background, .terminated:
             return false
+        #else
+        case .terminated:
+            return false
+        #endif
         }
     }
 }
@@ -205,7 +214,9 @@ extension AppState {
 
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
-    public let current: AppState = .active
+    public var current: AppState {
+        return DDApplication.shared.isActive ? .active : .inactive
+    }
 }
 
 #endif
