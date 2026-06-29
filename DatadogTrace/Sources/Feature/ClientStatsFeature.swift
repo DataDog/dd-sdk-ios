@@ -39,14 +39,19 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             runtimeID: UUID().uuidString,
             sequenceNumberProvider: StatsSequenceNumberProvider()
         )
-        self.messageReceiver = NOPFeatureMessageReceiver()
         self.performanceOverride = nil
         self.dateProvider = dateProvider
         self.flushInterval = flushInterval
         self.featureScope = core.scope(for: ClientStatsFeature.self)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
-        self.concentrator = StatsConcentrator(now: now)
+        let concentrator = StatsConcentrator(now: now)
+        self.concentrator = concentrator
+
+        // Observe consent changes through the message bus. The core delivers the current context
+        // right after registration, so the concentrator learns the real consent before the first
+        // flush even though it starts in the `.pending` default.
+        self.messageReceiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
 
         startFlushTimer()
     }
@@ -88,5 +93,21 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
 extension ClientStatsFeature: Flushable {
     func flush() {
         flushStats(force: true)
+    }
+}
+
+/// Forwards tracking-consent changes from the message bus to the `StatsConcentrator`.
+///
+/// Holds the concentrator weakly: it is owned by `ClientStatsFeature`, while the bus owns this
+/// receiver, so a weak reference avoids keeping the concentrator alive past the feature.
+internal struct TraceClientStatsConsentReceiver: FeatureMessageReceiver {
+    weak var concentrator: StatsConcentrator?
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case let .context(context) = message else {
+            return false
+        }
+        concentrator?.updateConsent(context.trackingConsent)
+        return false
     }
 }

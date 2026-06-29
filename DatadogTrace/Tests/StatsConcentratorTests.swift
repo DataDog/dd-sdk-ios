@@ -15,14 +15,27 @@ class StatsConcentratorTests: XCTestCase {
 
     private func makeConcentrator(
         now: Nanoseconds = 100_000_000_000,
+        initialConsent: TrackingConsent = .granted,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
     ) -> StatsConcentrator {
         return StatsConcentrator(
             now: now,
+            initialConsent: initialConsent,
             bucketDuration: bucketDuration,
             bufferLen: bufferLen,
             peerTagKeys: peerTagKeys
+        )
+    }
+
+    private func makeEligibleSnapshot(now: Nanoseconds = 0) -> SpanSnapshot {
+        return SpanSnapshot.mockWith(
+            service: "web",
+            operationName: "http.request",
+            resource: "GET /api",
+            startTime: now,
+            duration: 2_000_000_000,
+            isTopLevel: true
         )
     }
 
@@ -771,5 +784,71 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets[0].stats[0].type, "http")
+    }
+
+    // MARK: - Consent
+
+    func testWhenInitialConsentIsNotGranted_itDropsAllSpans() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .notGranted)
+
+        concentrator.add(makeEligibleSnapshot())
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertTrue(buckets.isEmpty)
+    }
+
+    func testWhenInitialConsentIsPending_itAggregatesSpans() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .pending)
+
+        concentrator.add(makeEligibleSnapshot())
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertEqual(buckets.count, 1)
+    }
+
+    func testWhenConsentIsRevoked_itDiscardsBufferedData() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .granted)
+        concentrator.add(makeEligibleSnapshot())
+
+        // Revoke, then re-grant: the buffered span must stay dropped, proving the buffer was
+        // discarded on revocation rather than merely gated while not granted.
+        concentrator.updateConsent(.notGranted)
+        concentrator.updateConsent(.granted)
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertTrue(buckets.isEmpty)
+    }
+
+    func testWhenConsentRevoked_itDropsSpansRecordedAfterRevocation() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .granted)
+
+        concentrator.updateConsent(.notGranted)
+        concentrator.add(makeEligibleSnapshot())
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertTrue(buckets.isEmpty)
+    }
+
+    func testWhenConsentMovesBetweenGrantedAndPending_itKeepsAggregating() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .granted)
+        concentrator.add(makeEligibleSnapshot())
+
+        // Both are recording states, so neither transition should drop the buffered span.
+        concentrator.updateConsent(.pending)
+        concentrator.updateConsent(.granted)
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertEqual(buckets.count, 1)
+        XCTAssertEqual(buckets[0].stats[0].hits, 1)
+    }
+
+    func testWhenConsentIsGrantedAfterNotGranted_itResumesAggregating() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .notGranted)
+
+        concentrator.updateConsent(.granted)
+        concentrator.add(makeEligibleSnapshot())
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+        XCTAssertEqual(buckets.count, 1)
     }
 }
