@@ -72,6 +72,12 @@ DEFAULT_VISIONOS_OS := latest
 DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
 DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
 
+# Test env for running macOS tests in local:
+# macOS runs natively (no simulator), so OS and DEVICE are placeholders ignored by tools/test.sh.
+DEFAULT_MACOS_OS := latest
+DEFAULT_MACOS_PLATFORM := macOS
+DEFAULT_MACOS_DEVICE := macOS
+
 # Test env for running SR snapshot tests in local:
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
 DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
@@ -181,6 +187,18 @@ test-visionos-all:
 	@$(MAKE) test-visionos SCHEME="DatadogFlags"
 	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
 	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
+
+# Run unit tests for specified SCHEME using macOS
+test-macos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all macOS schemes (only DatadogInternal is macOS-ready for now)
+test-macos-all:
+	@$(MAKE) test-macos SCHEME="DatadogInternal"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
