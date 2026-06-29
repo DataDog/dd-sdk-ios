@@ -82,10 +82,17 @@ internal final class AppStateManager: AppStateManaging {
             updateAppState { stateInfo in
                 stateInfo?.isActive = true
             }
+        #if !os(macOS)
         case .inactive, .background:
             updateAppState { stateInfo in
                 stateInfo?.isActive = false
             }
+        #else
+        case .inactive:
+            updateAppState { stateInfo in
+                stateInfo?.isActive = false
+            }
+        #endif
         case .terminated:
             updateAppState { stateInfo in
                 stateInfo?.wasTerminated = true
