@@ -4,21 +4,19 @@
  * Copyright 2019-2020 Datadog, Inc.
  */
 
+#if !os(watchOS)
 import Foundation
 
-#if canImport(UIKit) && !os(watchOS)
-import UIKit
-
-extension DatadogExtension where ExtendedType == UIApplication {
+extension DatadogExtension where ExtendedType == DDApplication {
     /// `UIApplication.shared` does not compile in some environments (e.g. notification service app extension), resulting with:
     /// _"shared' is unavailable in application extensions for iOS: Use view controller based solutions where appropriate instead"_.
     ///
     /// As a workaround, this `managedShared` utility provides a key-path access to the `UIApplication.shared` to make the compiler pass.
-    public static var managedShared: UIApplication? {
-        return UIApplication
-            .value(forKeyPath: #keyPath(UIApplication.shared)) as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
+    public static var managedShared: DDApplication? {
+        return DDApplication
+            .value(forKeyPath: #keyPath(DDApplication.shared)) as? DDApplication // swiftlint:disable:this unsafe_uiapplication_shared
     }
 }
 
-extension UIApplication: DatadogExtended { }
+extension DDApplication: DatadogExtended { }
 #endif

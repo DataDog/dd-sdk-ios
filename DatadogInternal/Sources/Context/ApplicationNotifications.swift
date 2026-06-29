@@ -19,50 +19,44 @@ public enum ApplicationNotifications {
     public static var didFinishLaunching: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidFinishLaunchingNotification
-        #elseif canImport(UIKit)
-        UIApplication.didFinishLaunchingNotification
-        #elseif canImport(AppKit)
-        NSApplication.didFinishLaunchingNotification
+        #else
+        DDApplication.didFinishLaunchingNotification
         #endif
     }
 
     public static var didBecomeActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationDidBecomeActiveNotification
-        #elseif canImport(UIKit)
-        UIApplication.didBecomeActiveNotification
-        #elseif canImport(AppKit)
-        NSApplication.didBecomeActiveNotification
+        #else
+        DDApplication.didBecomeActiveNotification
         #endif
     }
 
     public static var willResignActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationWillResignActiveNotification
-        #elseif canImport(UIKit)
-        UIApplication.willResignActiveNotification
-        #elseif canImport(AppKit)
-        NSApplication.willResignActiveNotification
+        #else
+        DDApplication.willResignActiveNotification
         #endif
     }
 
+    // macOS has no concept of background apps in the same sense
+    // iOS and watchOS do, so these notifications do not exist.
+    #if canImport(WatchKit)
     public static var didEnterBackground: Notification.Name {
-        #if canImport(WatchKit)
         WKExtension.applicationDidEnterBackgroundNotification
-        #elseif canImport(UIKit)
-        UIApplication.didEnterBackgroundNotification
-        #elseif canImport(AppKit)
-        NSApplication.didHideNotification
-        #endif
     }
 
     public static var willEnterForeground: Notification.Name {
-        #if canImport(WatchKit)
         WKExtension.applicationWillEnterForegroundNotification
-        #elseif canImport(UIKit)
-        UIApplication.willEnterForegroundNotification
-        #elseif canImport(AppKit)
-        NSApplication.willUnhideNotification
-        #endif
     }
+    #elseif canImport(UIKit)
+    public static var didEnterBackground: Notification.Name {
+        UIApplication.didEnterBackgroundNotification
+    }
+
+    public static var willEnterForeground: Notification.Name {
+        UIApplication.willEnterForegroundNotification
+    }
+    #endif
 }
