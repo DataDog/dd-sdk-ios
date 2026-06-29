@@ -36,7 +36,7 @@ private struct RUMDebugInfo {
 #if canImport(UIKit)
 internal class RUMDebugging {
     #if !os(watchOS)
-    /// An overlay view renderd on top of the app content. It is created lazily on first draw.
+    /// An overlay view rendered on top of the app content. It is created lazily on first draw.
     private var canvas: DDView? = nil
     #endif
 
@@ -228,6 +228,7 @@ internal class RUMViewOutline: RUMDebugView {
         super.init(frame: .zero)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -238,9 +239,9 @@ internal class RUMDebugView: DDView {
         super.init(frame: frame)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
 #endif
-
