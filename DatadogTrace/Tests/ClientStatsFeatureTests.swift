@@ -68,6 +68,32 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertFalse(defaultConfig.statsComputationEnabled)
     }
 
+    // MARK: - Consent
+
+    func testWhenContextMessageRevokesConsent_itStopsConcentratorFromExporting() {
+        // Given: a concentrator with buffered data and the feature's consent receiver
+        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
+        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        concentrator.add(SpanSnapshot.mockWith(startTime: 0, duration: 2_000_000_000, isTopLevel: true))
+
+        // When: the bus delivers a context carrying revoked consent
+        let handled = receiver.receive(
+            message: .context(.mockWith(trackingConsent: .notGranted)),
+            from: core
+        )
+
+        // Then: the message is observed (not consumed) and the buffered data is dropped
+        XCTAssertFalse(handled)
+        XCTAssertTrue(concentrator.flush(now: 100_000_000_000, force: true).isEmpty)
+    }
+
+    func testWhenMessageIsNotContext_theConsentReceiverIgnoresIt() {
+        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
+        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+
+        XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
+    }
+
     // MARK: - Request Builder
 
     func testWhenStatsComputationEnabled_thenRequestBuilderUsesStatsEndpoint() throws {
