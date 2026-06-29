@@ -37,12 +37,11 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     }
 
     func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand? {
-
         if let view = from as? NSView, let rumAction = createAppKitActionCommand(from: view) {
             return rumAction
         }
 
-        if let menuItem = from as? NSMenuItem,  let rumAction = createAppKitActionCommand(from: menuItem) {
+        if let menuItem = from as? NSMenuItem, let rumAction = createAppKitActionCommand(from: menuItem) {
             return rumAction
         }
 
