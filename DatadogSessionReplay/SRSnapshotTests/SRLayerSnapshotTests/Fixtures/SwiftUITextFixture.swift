@@ -20,7 +20,7 @@ internal struct SwiftUITextFixtureView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Heading")
                 .font(.title)
-            
+
             Text(
                 """
                 **Lorem ipsum dolor** sit amet, consectetur adipiscing elit. \
@@ -37,7 +37,7 @@ internal struct SwiftUITextFixtureView: View {
 
             TextField("Placeholder", text: .constant(""))
                 .textFieldStyle(.roundedBorder)
-            
+
             TextField("Text field placeholder", text: $editableField)
                 .textFieldStyle(.roundedBorder)
 
