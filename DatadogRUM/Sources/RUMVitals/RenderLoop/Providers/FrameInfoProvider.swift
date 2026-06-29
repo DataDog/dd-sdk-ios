@@ -65,25 +65,18 @@ extension CADisplayLink: FrameInfoProvider {
     var nextFrameTimestamp: CFTimeInterval { targetTimestamp }
 }
 #elseif canImport(AppKit)
-class NoopFrameInfoProvider: FrameInfoProvider {
+internal class NoopFrameInfoProvider: FrameInfoProvider {
     var currentFrameTimestamp: CFTimeInterval { 0 }
 
     var nextFrameTimestamp: CFTimeInterval { 1 }
 
     var maximumDeviceFramesPerSecond: Int { 60 }
 
-    required init(target: Any, selector: Selector) {
+    required init(target: Any, selector: Selector) { }
 
-    }
+    func add(to runloop: RunLoop, forMode mode: RunLoop.Mode) { }
 
-    func add(to runloop: RunLoop, forMode mode: RunLoop.Mode) {
-
-    }
-
-    func invalidate() {
-
-    }
-
+    func invalidate() { }
 }
 #endif
 

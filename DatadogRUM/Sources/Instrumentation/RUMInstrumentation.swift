@@ -42,8 +42,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let actionsHandler: RUMActionsHandling
 
-
-
     #if !os(tvOS) && !os(macOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
