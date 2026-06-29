@@ -21,6 +21,7 @@ variables:
   DEFAULT_TVOS_OS: "26.0"
   DEFAULT_WATCHOS_OS: "26.0"
   DEFAULT_VISIONOS_OS: "26.0"
+  DEFAULT_MACOS_OS: "26.0"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -262,6 +263,25 @@ Unit Tests (visionOS):
     paths:
       - "ResultBundles/*.xcresult"
       - "ResultBundles/*.log"
+    when: always
+
+Unit Tests (macOS):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "macOS"
+    DEVICE: "macOS"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult.zip"
     when: always
 
 UI Tests:
