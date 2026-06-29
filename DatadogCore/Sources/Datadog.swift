@@ -424,11 +424,18 @@ extension DatadogCore {
         )
 
         let httpClient = configuration.httpClientFactory(configuration.proxyConfiguration)
-        let remoteConfigurationProvider = configuration.remoteConfigurationID.map {
-            RemoteConfigurationProvider(
-                id: $0,
+        let remoteConfigurationProvider = try configuration.remoteConfigurationID.map { id in
+            // Remote configuration must survive `/Library/Caches` purges, so it is stored under
+            // `/Library/Application Support` instead of the (purgeable) core directory.
+            let persistentDirectory = try CoreDirectory(
+                in: configuration.persistentDirectory(),
+                instanceName: instanceName,
+                site: configuration.site
+            )
+            return RemoteConfigurationProvider(
+                id: id,
                 site: configuration.site,
-                directory: directory.coreDirectory,
+                directory: persistentDirectory.coreDirectory,
                 httpClient: httpClient,
                 notificationCenter: configuration.notificationCenter,
                 dateProvider: configuration.dateProvider
