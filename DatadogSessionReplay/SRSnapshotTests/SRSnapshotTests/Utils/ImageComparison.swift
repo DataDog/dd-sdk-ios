@@ -39,7 +39,7 @@ internal struct SnapshotSimulator {
     static let layerTree = SnapshotSimulator(
         modelIdentifier: "iPhone18,3",
         name: "iPhone 17",
-        osVersion: "26.5"
+        osVersion: "26.0.1"
     )
 
     let modelIdentifier: String?

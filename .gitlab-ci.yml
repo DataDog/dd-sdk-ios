@@ -278,6 +278,28 @@ SR Snapshot Tests:
     - make clean repo-setup ENV=ci
     - make sr-snapshots-pull sr-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
+SR Layer Snapshot Tests:
+  stage: ui-test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  variables:
+    PLATFORM: "iOS Simulator"
+    IOS_OS: "26.0.1"
+    DEVICE: "iPhone 17"
+    ARTIFACTS_PATH: "artifacts"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 1 week
+    when: on_failure
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - make clean repo-setup ENV=ci
+    - make sr-layer-snapshots-pull sr-layer-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+
 Tools Tests:
   stage: test
   rules:
