@@ -8,7 +8,6 @@
 import UIKit
 import DatadogInternal
 
-
 internal protocol RUMActionsHandling: RUMCommandPublisher {
     #if !os(watchOS)
     /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
