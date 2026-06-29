@@ -60,7 +60,7 @@ def parse_frontmatter(path):
 # Discover all *_FEATURE.md files, skipping generated output directories
 docs = []
 for dirpath, dirnames, filenames in os.walk(repo_root):
-    dirnames[:] = [d for d in dirnames if d not in ("build", "artifacts")]
+    dirnames[:] = [d for d in dirnames if d not in ("build", "artifacts", "Carthage")]
     for name in filenames:
         if name.endswith("_FEATURE.md"):
             docs.append(os.path.join(dirpath, name))
