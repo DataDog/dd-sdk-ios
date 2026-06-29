@@ -17,11 +17,13 @@ private extension AppState {
 class AppStateHistoryTests: XCTestCase {
     private let date = Date()
 
+    #if !os(macOS)
     func testItBuildsAppStateFromUIApplicationState() {
         XCTAssertEqual(AppState(.active), .active)
         XCTAssertEqual(AppState(.inactive), .inactive)
         XCTAssertEqual(AppState(.background), .background)
     }
+    #endif
 
     // MARK: - `currentState`
 
@@ -42,8 +44,10 @@ class AppStateHistoryTests: XCTestCase {
         history.append(state: .inactive, at: date + 1)
         XCTAssertEqual(history.currentState, .inactive)
 
+        #if !os(macOS)
         history.append(state: .background, at: date + 2)
         XCTAssertEqual(history.currentState, .background)
+        #endif
 
         history.append(state: .active, at: date + 3)
         XCTAssertEqual(history.currentState, .active)
@@ -53,6 +57,15 @@ class AppStateHistoryTests: XCTestCase {
         // Given
         var history = AppStateHistory(initialState: .active, date: date)
 
+        #if os(macOS)
+        // When / Then
+        history.append(state: .inactive, at: date - 10)
+        XCTAssertEqual(history.currentState, .active, "It should always reflect chronologically latest state")
+
+        history.append(state: .inactive, at: date + 5)
+        history.append(state: .active, at: date + 2)
+        XCTAssertEqual(history.currentState, .inactive, "It should always reflect chronologically latest state")
+        #else
         // When / Then
         history.append(state: .background, at: date - 10)
         XCTAssertEqual(history.currentState, .active, "It should always reflect chronologically latest state")
@@ -60,6 +73,7 @@ class AppStateHistoryTests: XCTestCase {
         history.append(state: .inactive, at: date + 5)
         history.append(state: .background, at: date + 2)
         XCTAssertEqual(history.currentState, .inactive, "It should always reflect chronologically latest state")
+        #endif
     }
 
     // MARK: - `state(at:)`
@@ -81,7 +95,9 @@ class AppStateHistoryTests: XCTestCase {
 
         // When
         history.append(state: .active, at: date + 10)
+        #if !os(macOS)
         history.append(state: .background, at: date + 20)
+        #endif
         history.append(state: .inactive, at: date + 30)
 
         // Then
@@ -89,8 +105,10 @@ class AppStateHistoryTests: XCTestCase {
         XCTAssertEqual(history.state(at: date + 5), .inactive)
         XCTAssertEqual(history.state(at: date + 10), .active)
         XCTAssertEqual(history.state(at: date + 15), .active)
+        #if !os(macOS)
         XCTAssertEqual(history.state(at: date + 20), .background)
         XCTAssertEqual(history.state(at: date + 25), .background)
+        #endif
         XCTAssertEqual(history.state(at: date + 30), .inactive)
         XCTAssertEqual(history.state(at: date + 35), .inactive)
     }
@@ -98,16 +116,21 @@ class AppStateHistoryTests: XCTestCase {
     func testStateAt_whenOutsideRange() {
         // Given
         var history = AppStateHistory(initialState: .inactive, date: date)
+        #if os(macOS)
+        let futureState: AppState = .active
+        #else
+        let futureState: AppState = .background
+        #endif
 
         // When
         history.append(state: .active, at: date + 10)
-        history.append(state: .background, at: date + 20)
+        history.append(state: futureState, at: date + 20)
 
         // Then
         XCTAssertNil(history.state(at: .distantPast))
         XCTAssertNil(history.state(at: date - 5))
-        XCTAssertEqual(history.state(at: date + 25), .background)
-        XCTAssertEqual(history.state(at: .distantFuture), .background)
+        XCTAssertEqual(history.state(at: date + 25), futureState)
+        XCTAssertEqual(history.state(at: .distantFuture), futureState)
     }
 
     func testStateAt_whenTransitionsNotInChronologicalOrder() {
@@ -116,17 +139,26 @@ class AppStateHistoryTests: XCTestCase {
         var history = AppStateHistory(initialState: .inactive, date: date)
 
         // When
+        #if os(macOS)
+        let transitions: [() -> Void] = [
+            { history.append(state: .active, at: date + 10) },
+            { history.append(state: .inactive, at: date + 30) },
+        ]
+        #else
         let transitions: [() -> Void] = [
             { history.append(state: .active, at: date + 10) },
             { history.append(state: .background, at: date + 20) },
             { history.append(state: .inactive, at: date + 30) },
         ]
+        #endif
         transitions.shuffled().forEach { $0() }
 
         // Then
         XCTAssertEqual(history.state(at: date), .inactive)
         XCTAssertEqual(history.state(at: date + 10), .active)
+        #if !os(macOS)
         XCTAssertEqual(history.state(at: date + 20), .background)
+        #endif
         XCTAssertEqual(history.state(at: date + 30), .inactive)
     }
 
@@ -152,6 +184,7 @@ class AppStateHistoryTests: XCTestCase {
         XCTAssertEqual(duration, 10)
     }
 
+    #if !os(macOS)
     func testForegroundDuration_whenAlwaysBackgrounded() {
         // Given
         var history = AppStateHistory(initialState: .background, date: date)
@@ -195,6 +228,7 @@ class AppStateHistoryTests: XCTestCase {
         XCTAssertEqual(history.foregroundDuration(during: (date)...(date + 100)), 95, "It should extrapolate last state to upper range")
         XCTAssertEqual(history.foregroundDuration(during: (date + 10)...(date + 100)), 90)
     }
+    #endif
 
     // MARK: - `containsState(during:where:)`
 
@@ -204,9 +238,10 @@ class AppStateHistoryTests: XCTestCase {
 
         // When / Then
         XCTAssertTrue(history.containsState(during: date...(date + 10), where: { $0 == .active }))
-        XCTAssertFalse(history.containsState(during: date...(date + 10), where: { $0 == .background }))
+        XCTAssertFalse(history.containsState(during: date...(date + 10), where: { $0 == .inactive }))
     }
 
+        #if !os(macOS)
     func testStates_whenMultipleTransitions() {
         // Given
         var history = AppStateHistory(initialState: .active, date: date)
@@ -238,4 +273,5 @@ class AppStateHistoryTests: XCTestCase {
         XCTAssertTrue(history.containsState(during: (date + 20)...(date + 50), where: { $0 == .background }))
         XCTAssertTrue(history.containsState(during: (date - 50)...(date + 1), where: { $0 == .active }))
     }
+    #endif
 }
