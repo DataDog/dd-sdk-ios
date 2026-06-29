@@ -10,10 +10,24 @@ import Vision
 
 extension UIImage {
     func textRectangles() throws -> [CGRect] {
+        let targetImage = if imageRendererFormat.opaque {
+            self
+        } else {
+            // Composite transparent images over a contrasting background so Vision can detect text
+            UIGraphicsImageRenderer(size: size, format: imageRendererFormat).image { context in
+                let foregroundColor = dominantColor ?? .black
+                let backgroundColor = foregroundColor.luminance < 0.5 ? UIColor.white : .black
+
+                backgroundColor.setFill()
+                UIRectFill(CGRect(origin: .zero, size: size))
+                draw(at: .zero)
+            }
+        }
+
         let request = VNDetectTextRectanglesRequest()
         request.reportCharacterBoxes = false
 
-        try performFeatureDetection(with: request)
+        try targetImage.performFeatureDetection(with: request)
 
         guard let results = request.results else {
             return []
@@ -72,6 +86,19 @@ extension CGImagePropertyOrientation {
         default:
             self = .up
         }
+    }
+}
+
+extension UIColor {
+    fileprivate var luminance: CGFloat {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+
+        self.getRed(&r, green: &g, blue: &b, alpha: nil)
+
+        // Approximate perceived brightness to choose a contrasting background
+        return (0.299 * r) + (0.587 * g) + (0.114 * b)
     }
 }
 #endif

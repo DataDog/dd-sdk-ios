@@ -43,7 +43,7 @@ public struct FirstPartyHosts: Equatable {
             self.init(hosts)
         case .traceWithHeaders(let hostsWithHeaders):
             self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
-        default:
+        case .none:
             return nil
         }
     }
@@ -54,23 +54,30 @@ public struct FirstPartyHosts: Equatable {
     ) {
         self.hostsWithTracingHeaderTypes = hostsSanitizer.sanitized(
             hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes,
-            warningMessage: "The first party host with header types configured for Datadog SDK is not valid"
+            warningMessage: "The first party host configured for Datadog SDK is not valid"
         )
     }
 
     /// The function takes a `URL` and returns a `Set<TracingHeaderType>` of matching values.
     /// If one than more match is found it will return union of matching values.
     public func tracingHeaderTypes(for url: URL?) -> Set<TracingHeaderType> {
-        return hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
-            let regex = "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: item.key))$"
+        let matches = hostsWithTracingHeaderTypes.compactMap { item -> Set<TracingHeaderType>? in
+            let regex = regexPattern(for: item.key)
             if url?.host?.range(of: regex, options: .regularExpression) != nil {
                 return item.value
             }
             return nil
         }
-        .reduce(into: Set(), { partialResult, value in
-            partialResult.formUnion(value)
-        })
+        return matches.reduce(into: Set()) { $0.formUnion($1) }
+    }
+
+    private func regexPattern(for hostOrPattern: String) -> String {
+        if hostOrPattern.contains("*") {
+            let parts = hostOrPattern.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+            return "^\(NSRegularExpression.escapedPattern(for: parts[0])).+\(NSRegularExpression.escapedPattern(for: parts[1]))$"
+        } else {
+            return "^(.*\\.)*\(NSRegularExpression.escapedPattern(for: hostOrPattern))$"
+        }
     }
 
     /// Returns `true` if given `URL` matches the first party hosts defined by the user; `false` otherwise.
@@ -100,7 +107,6 @@ public func + (left: FirstPartyHosts, right: FirstPartyHosts?) -> FirstPartyHost
     guard let right = right else {
         return left
     }
-
     return FirstPartyHosts(
         left.hostsWithTracingHeaderTypes.merging(right.hostsWithTracingHeaderTypes, uniquingKeysWith: { left, right in
             left.union(right)

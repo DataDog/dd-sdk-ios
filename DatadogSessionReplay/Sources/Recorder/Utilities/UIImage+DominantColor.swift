@@ -16,64 +16,50 @@ extension UIImage {
             return color
         }
 
-        let color = dominantColors(count: 1, context: .sessionReplay).first?.color
+        let color = dominantColor(context: .sessionReplay)
         objc_setAssociatedObject(self, &dominantColorKey, color, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 
         return color
     }
 
-    private func dominantColors(
-        count: Int,
+    private func dominantColor(
         context: CIContext
-    ) -> [(color: UIColor, weight: CGFloat)] {
-        guard count > 0 else {
-            return []
-        }
-
+    ) -> UIColor? {
         guard
             let inputImage = CIImage(image: self),
             let filter = CIFilter(name: "CIKMeans")
         else {
-            return []
+            return nil
         }
 
         filter.setValue(inputImage, forKey: kCIInputImageKey)
         filter.setValue(CIVector(cgRect: inputImage.extent), forKey: "inputExtent")
-        filter.setValue(count, forKey: "inputCount")
+        filter.setValue(1, forKey: "inputCount")
 
         guard let outputImage = filter.outputImage else {
-            return []
+            return nil
         }
 
-        var pixels = [UInt8](repeating: 0, count: count * 4)
+        var pixels = [UInt8](repeating: 0, count: 4)
 
         context.render(
-            outputImage,
+            outputImage.settingAlphaOne(in: outputImage.extent),
             toBitmap: &pixels,
-            rowBytes: count * 4,
-            bounds: CGRect(x: 0, y: 0, width: count, height: 1),
+            rowBytes: 4,
+            bounds: CGRect(x: 0, y: 0, width: 1, height: 1),
             format: .RGBA8,
             colorSpace: CGColorSpace(name: CGColorSpace.sRGB)
         )
 
-        var dominantColors: [(color: UIColor, weight: CGFloat)] = []
-
-        for index in stride(from: 0, to: pixels.count, by: 4) {
-            dominantColors.append(
-                (
-                    color: UIColor(
-                        red: CGFloat(pixels[index]) / 255,
-                        green: CGFloat(pixels[index + 1]) / 255,
-                        blue: CGFloat(pixels[index + 2]) / 255,
-                        alpha: 1
-                    ),
-                    weight: CGFloat(pixels[index + 3]) / 255
-                )
+        if pixels[0] == pixels[1], pixels[1] == pixels[2] {
+            return UIColor(white: CGFloat(pixels[0]) / 255, alpha: 1)
+        } else {
+            return UIColor(
+                red: CGFloat(pixels[0]) / 255,
+                green: CGFloat(pixels[1]) / 255,
+                blue: CGFloat(pixels[2]) / 255,
+                alpha: 1
             )
-        }
-
-        return dominantColors.sorted { lhs, rhs in
-            lhs.weight > rhs.weight
         }
     }
 }

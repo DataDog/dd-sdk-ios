@@ -243,18 +243,18 @@ public struct OTReference
 public enum OTReferenceType: String
     case childOf = "CHILD_OF"
     case followsFrom = "FOLLOWS_FROM"
-public protocol OTSpan
+public protocol OTSpan: Sendable
     var context: OTSpanContext
     func tracer() -> OTTracer
     func setOperationName(_ operationName: String)
-    func setTag(key: String, value: Encodable)
-    func log(fields: [String: Encodable], timestamp: Date)
+    func setTag(key: String, value: OTTagValue)
+    func log(fields: [String: Encodable & Sendable], timestamp: Date)
     func setBaggageItem(key: String, value: String)
     func baggageItem(withKey key: String) -> String?
     func finish(at time: Date)
     func setActive() -> OTSpan
 public extension OTSpan
-    func log(fields: [String: Encodable])
+    func log(fields: [String: Encodable & Sendable])
     func finish()
 public extension OTSpan
     func setError(_ error: Error,file: StaticString = #fileID,line: UInt = #line)
@@ -262,18 +262,19 @@ public extension OTSpan
 public extension OTSpan
     func keepTrace()
     func dropTrace()
-public protocol OTSpanContext: SpanContext
+public protocol OTSpanContext: SpanContext, Sendable
     func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
-public protocol OTTracer
-    func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?,customSampleRate: SampleRate?) -> OTSpan
+public typealias OTTagValue = Encodable & Sendable
+public protocol OTTracer: Sendable
+    func startSpan(operationName: String,references: [OTReference]?,tags: [String: OTTagValue]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: OTTagValue]?,startTime: Date?,customSampleRate: SampleRate?) -> OTSpan
     func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
     func extract(reader: OTFormatReader) -> OTSpanContext?
     var activeSpan: OTSpan?
 public extension OTTracer
-    func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil,customSampleRate: SampleRate? = nil) -> OTSpan
-public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
+    func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: OTTagValue]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: OTTagValue]? = nil,startTime: Date? = nil,customSampleRate: SampleRate? = nil) -> OTSpan
+public typealias SpanEventMapper = @Sendable (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
     public var operationName: String
     public let serviceName: String
@@ -303,25 +304,25 @@ public struct SpanEvent: Encodable
 public enum Trace
     public static func enable(with configuration: Trace.Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Trace
-    public struct Configuration: SampledTelemetry
-        public typealias EventMapper = (SpanEvent) -> SpanEvent
+    public struct Configuration: SampledTelemetry, Sendable
+        public typealias EventMapper = @Sendable (SpanEvent) -> SpanEvent
         public var sampleRate: SampleRate
         public var service: String?
-        public var tags: [String: Encodable]?
+        public var tags: [String: OTTagValue]?
         public var urlSessionTracking: URLSessionTracking?
         public var bundleWithRumEnabled: Bool
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
-        public struct URLSessionTracking
+        public struct URLSessionTracking: Sendable
             public var firstPartyHostsTracing: FirstPartyHostsTracing
-            public enum FirstPartyHostsTracing
+            public enum FirstPartyHostsTracing: Sendable
                 case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
                 case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
             public static let defaultRedactedStatusCodes: Set<Int> = [404]
             public var redactedStatusCodes: Set<Int>
             public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
-        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
@@ -1543,7 +1544,8 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var variant: String?
     public var reason: String?
     public var error: FlagEvaluationError?
-    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil)
+    public var allocationKey: String?
+    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
 public protocol FlagValue: Encodable
 public enum FlagsError: Error
     case networkError(Error)

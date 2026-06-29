@@ -15,6 +15,64 @@ import DatadogInternal
 
 @MainActor
 class WebViewTrackingTests: XCTestCase {
+    private static var warmUpWebView: WKWebView?
+
+    /// Warms up WebKit before running tests.
+    ///
+    /// WebKit takes a while to load on slow CI servers, and causes tests to be flaky. This setup method
+    /// warms up WebKit (rendering and JS engines) before proceeding. This way, tests like
+    /// `testItChangesBridgeDecisionOnSessionRollover` should not fail randomly.
+    ///
+    /// - Note: This should be a class `setUp` method but can't because it calls `wait(for:timeout:)`
+    /// which is a class method.
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        if Self.warmUpWebView == nil {
+            struct WarmUpError: LocalizedError {
+                var errorDescription: String?
+            }
+
+            // WebKit not warmed up yet, let's do that now.
+            let loaded = XCTestExpectation(description: "WebKit warm-up")
+            let delegate = WarmUpNavigationDelegate {
+                loaded.fulfill()
+            }
+            try withExtendedLifetime(delegate) {
+                let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+                webView.navigationDelegate = delegate
+                Self.warmUpWebView = webView
+
+                webView.loadHTMLString("<html><body>warmup</body></html>", baseURL: nil)
+                let jsExpectation = XCTestExpectation(description: "JS engine warm-up")
+                var warmUpError: WarmUpError?
+                webView.evaluateJavaScript("String(41 + 1)") { result, error in
+                    if error != nil || (result as? String) != "42" {
+                        warmUpError = WarmUpError(errorDescription: "Failed warm-up JS run. Error: \(String(describing: error)); Result: \(String(describing: result))")
+                    }
+                    jsExpectation.fulfill()
+                }
+                wait(for: [loaded, jsExpectation], timeout: 60.0)
+                if let warmUpError {
+                    throw warmUpError
+                }
+            }
+        }
+    }
+
+    /// Fulfills a closure when the warm-up navigation finishes loading.
+    private final class WarmUpNavigationDelegate: NSObject, WKNavigationDelegate {
+        private let onFinish: () -> Void
+
+        init(onFinish: @escaping () -> Void) {
+            self.onFinish = onFinish
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {         // swiftlint:disable:this implicitly_unwrapped_optional
+            onFinish()
+        }
+    }
+
     func testItAddsUserScript() throws {
         let mockSanitizer = HostsSanitizerMock()
         let config = WKWebViewConfiguration()
@@ -197,25 +255,81 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     private func waitForJS(_ js: String, toReturn expectedResult: String, webView: WKWebView, description: String) {
-        let outerExpectation = XCTestExpectation(description: "\(description) should be \(expectedResult)")
+        var runs = 0
+        let maxDuration: TimeInterval = 10
 
-        var isDone = false
+        func runAndWait() -> Bool? {
+            runs += 1
+            print("Attempt \(runs): \(description)")
 
-        while !isDone {
-            let innerExpectation = XCTestExpectation()
+            // Passed means:
+            //   nil: The block didn't execute
+            //   true: The block executed and the expected condition was asserted.
+            //   false: The block executed and the expected condition failed to be asserted.
+            var passed: Bool? = nil // No need for sync since the handler is MainActor
 
             webView.evaluateJavaScript(js) { result, error in
-                if error == nil && (result as? String) == expectedResult {
-                    isDone = true
-                    outerExpectation.fulfill()
-                }
-                innerExpectation.fulfill()
+                passed = (error == nil && (result as? String) == expectedResult)
             }
 
-            wait(for: [innerExpectation], timeout: 5.0)
+            // We can't use an XCTExpectation here since a timeout would cause the test to fail,
+            // which is not necessarily the case. We also can't use a DispatchSemaphore since both
+            // the wait and signal (inside the evaluateJavaScript handler) run on the same thread,
+            // meaning the thread would be blocked by the wait call and the handler would never run.
+            // So we do polling.
+            let timeout = Date(timeIntervalSinceNow: 2)
+            while passed == nil && Date() < timeout {
+                RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+            }
+
+            let endDescription = passed.map { "\($0)" } ?? "timeout"
+            print("  Attempt \(runs) of \(description) ended with \(endDescription)")
+            return passed
         }
 
-        wait(for: [outerExpectation], timeout: 10.0)
+        let startDate = Date()
+        let endDate = startDate + maxDuration
+
+        while Date() < endDate {
+            if runAndWait() == true {
+                return
+            }
+
+            // Throttle: pump the run loop briefly between polls instead of busy-spinning
+            // `evaluateJavaScript`, which otherwise floods the WebContent process with IPC.
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.1))
+        }
+
+        XCTFail("\(description) failed after trying for \(maxDuration) secs.")
+    }
+
+    /// Loads a simulated request on a WebView, and waits for the page to finish loading.
+    @available(iOS 15.0, *)
+    private func loadAndWait(on webView: WKWebView, request: URLRequest, responseHTML: String) {
+        final class NavigationDelegate: NSObject, WKNavigationDelegate {
+            let expectation: XCTestExpectation
+
+            var expectedNavigation: WKNavigation?
+
+            init(expectation: XCTestExpectation) {
+                self.expectation = expectation
+            }
+
+            func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { // swiftlint:disable:this implicitly_unwrapped_optional
+                if navigation == expectedNavigation {
+                    expectation.fulfill()
+                }
+            }
+        }
+
+        let expectation = XCTestExpectation(description: "Load request")
+        let delegate = NavigationDelegate(expectation: expectation)
+        webView.navigationDelegate = delegate
+        withExtendedLifetime(delegate) {
+            delegate.expectedNavigation = webView.loadSimulatedRequest(request, responseHTML: responseHTML)
+            wait(for: [expectation], timeout: 10)
+            webView.navigationDelegate = nil
+        }
     }
 
     @available(iOS 15.0, *)
@@ -249,9 +363,6 @@ class WebViewTrackingTests: XCTestCase {
 
         core.flush()
 
-        // Necessary for RUM to set the session sampler in the feature, since it's an async process.
-//        Thread.sleep(forTimeInterval: 1.0)
-
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -265,11 +376,7 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        Thread.sleep(forTimeInterval: 1.0)
-
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
-
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost")!), responseHTML: "<html><body>Hello world</body></html>")
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "false", webView: webView, description: "sessionUUID1")
 
@@ -288,9 +395,7 @@ class WebViewTrackingTests: XCTestCase {
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2")
 
-        webView.loadSimulatedRequest(URLRequest(url: URL(string: "http://localhost/about.htmk")!), responseHTML: "<html><body>About us</body></html>")
-
-        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.5))
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost/about.html")!), responseHTML: "<html><body>About us</body></html>")
 
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
@@ -339,8 +444,6 @@ class WebViewTrackingTests: XCTestCase {
             in: core
         )
 
-        Thread.sleep(forTimeInterval: 1.0)
-
         // Load a page containing a same-origin iframe with a nested iframe
         let html = """
         <html><body>
@@ -348,10 +451,7 @@ class WebViewTrackingTests: XCTestCase {
             <iframe srcdoc="<html><body>Outer iframe<iframe srcdoc='<html><body>Nested iframe</body></html>'></iframe></body></html>"></iframe>
         </body></html>
         """
-        webView.loadSimulatedRequest(
-            URLRequest(url: URL(string: "http://localhost")!),
-            responseHTML: html
-        )
+        loadAndWait(on: webView, request: URLRequest(url: URL(string: "http://localhost")!), responseHTML: html)
 
         let mainJS = "window.DatadogEventBridge.getIsTraceSampled()"
         let iframeJS = "window.frames[0].DatadogEventBridge.getIsTraceSampled()"
@@ -962,8 +1062,9 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     func testSerializationEdgeCases() throws {
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
@@ -983,13 +1084,15 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
-        XCTAssertTrue(script.source.contains("\"*\""))
-        XCTAssertTrue(script.source.contains("\"\""))
+        XCTAssertFalse(script.source.contains("\"*\""))
+        XCTAssertFalse(script.source.contains("\"\""))
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
+        // "https://foo.com" is sanitized to "foo.com" by HostsSanitizer (parity with traceWithHeaders)
         XCTAssertFalse(script.source.contains("https://foo.com"))
-        XCTAssertEqual(dd.logger.warnLogs.map(\.message), [
-            "WebView host pattern \"https://foo.com\" contains invalid characters and will be ignored."
-        ])
+        XCTAssertTrue(script.source.contains("\"foo.com\""))
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("'*'") && $0.contains("is not a valid host pattern") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("''") && $0.contains("is not a valid host name") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("https://foo.com") })
     }
 }
 

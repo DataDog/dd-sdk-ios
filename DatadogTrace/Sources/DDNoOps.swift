@@ -14,8 +14,8 @@ internal struct DDNoopGlobals {
     static let context = DDNoopSpanContext()
 }
 
-internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
-    var activeSpan: OTSpan? = nil
+internal final class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer, Sendable {
+    var activeSpan: OTSpan? { nil }
 
     private func warn() {
         DD.logger.warn(
@@ -36,17 +36,17 @@ internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
         warn()
     }
 
-    func startSpan(operationName: String, references: [OTReference]?, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+    func startSpan(operationName: String, references: [OTReference]?, tags: [String: OTTagValue]?, startTime: Date?) -> OTSpan {
         warn()
         return DDNoopGlobals.span
     }
 
-    func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
+    func startRootSpan(operationName: String, tags: [String: OTTagValue]?, startTime: Date?) -> OTSpan {
         warn()
         return DDNoopGlobals.span
     }
 
-    func startRootSpan(operationName: String, tags: [String: any Encodable]?, startTime: Date?, customSampleRate: SampleRate?) -> any OTSpan {
+    func startRootSpan(operationName: String, tags: [String: any OTTagValue]?, startTime: Date?, customSampleRate: SampleRate?) -> any OTSpan {
         warn()
         return DDNoopGlobals.span
     }
@@ -64,10 +64,10 @@ internal struct DDNoopSpan: OTSpan {
     func tracer() -> OTTracer { DDNoopGlobals.tracer }
     func setOperationName(_ operationName: String) {}
     func finish(at time: Date) {}
-    func log(fields: [String: Encodable], timestamp: Date) {}
+    func log(fields: [String: Encodable & Sendable], timestamp: Date) {}
     func baggageItem(withKey key: String) -> String? { nil }
     func setBaggageItem(key: String, value: String) {}
-    func setTag(key: String, value: Encodable) {}
+    func setTag(key: String, value: OTTagValue) {}
     @discardableResult
     func setActive() -> OTSpan { self }
 }

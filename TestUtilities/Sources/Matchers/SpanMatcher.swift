@@ -153,6 +153,8 @@ public class SpanMatcher {
 
         public func samplingDecisionMechanism() throws -> String { try matcher.meta(forKeyPath: "meta._dd.p.dm") }
 
+        public func links() throws -> String { try matcher.meta(forKeyPath: "meta._dd.span_links") }
+
         public func custom(keyPath: String) throws -> String { try matcher.meta(forKeyPath: keyPath) }
     }
 

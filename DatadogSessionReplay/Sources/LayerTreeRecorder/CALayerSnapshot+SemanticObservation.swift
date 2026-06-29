@@ -42,6 +42,11 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     @MainActor
     init(layer: CALayer, context: CALayerSnapshot.Context) {
+        self.init(layer: layer, absoluteFrame: layer.frame, context: context)
+    }
+
+    @MainActor
+    init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
             self.init(semantics: .activityIndicator, ignoreSublayers: true)
@@ -60,14 +65,23 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(switchControl: switchControl)
         case let webView as WKWebView:
             context.webViewCache.add(webView)
-            self.init(webView: webView)
+            self.init(webView: webView, absoluteFrame: absoluteFrame)
         default:
             self.init(semantics: .layer)
         }
 
-        if layer.delegate is UIControl || layer.delegate is UIProgressView {
+        // Ignore image privacy for system UI chrome
+        if layer.delegate is UIControl
+            || layer.delegate is UIProgressView
+            || layer.delegate?.isBarBackground == true {
             ignoresImagePrivacy = true
         }
+    }
+}
+
+extension CALayerDelegate {
+    fileprivate var isBarBackground: Bool {
+        "\(type(of: self))" == "_UIBarBackground"
     }
 }
 
@@ -135,20 +149,18 @@ extension NSAttributedString {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct ImageSemantics: Sendable, Equatable {
-        let image: UIImage?
-        let highlightedImage: UIImage?
-        let isHighlighted: Bool
-        let tintColor: UIColor?
+        let hasContent: Bool
+        let isContextual: Bool
     }
 
     fileprivate init(imageView: UIImageView) {
+        let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
+
         self.init(
             semantics: .image(
                 .init(
-                    image: imageView.image,
-                    highlightedImage: imageView.highlightedImage,
-                    isHighlighted: imageView.isHighlighted,
-                    tintColor: imageView.tintColor
+                    hasContent: image != nil,
+                    isContextual: image?.isContextual ?? false
                 )
             ),
             ignoreSublayers: true
@@ -229,11 +241,17 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     struct WebViewSemantics: Sendable, Equatable {
         let slotID: Int
+        let slotFrame: CGRect
     }
 
-    fileprivate init(webView: WKWebView) {
+    fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
         self.init(
-            semantics: .webView(.init(slotID: webView.hash)),
+            semantics: .webView(
+                .init(
+                    slotID: webView.hash,
+                    slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
+                )
+            ),
             ignoreSublayers: true
         )
     }

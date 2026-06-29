@@ -53,7 +53,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     var kind: OpenTelemetryApi.SpanKind
     let ddSpan: DDSpan
     let tracer: DatadogTracer
-    let spanLinks: [OTelSpanLink]
+    @ReadWriteLock
+    var spanLinks: [OTelSpanLink]
 
     /// `isRecording` indicates whether the span is recording or not
     /// and events can be added to it.
@@ -244,6 +245,13 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             for (key, value) in attributes {
                 $0[key] = value
             }
+        }
+    }
+
+    func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) {
+        let link = OTelSpanLink(context: spanContext, attributes: attributes)
+        _spanLinks.mutate {
+            $0.append(link)
         }
     }
 }

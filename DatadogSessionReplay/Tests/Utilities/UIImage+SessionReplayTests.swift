@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+import UIKit
 import XCTest
 
 @testable import DatadogSessionReplay
@@ -23,6 +24,17 @@ class UIImageSessionReplayTests: XCTestCase {
         let imageData = try XCTUnwrap(image.pngData())
         let scaledData = try XCTUnwrap(image.dd.pngData(maxSize: CGSize(width: 25, height: 25)))
         XCTAssertLessThan(scaledData.count, imageData.count)
+    }
+
+    func testDominantColor_ReturnsOpaqueColorForLowWeightPaletteColor() throws {
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 100, height: 100)).image { context in
+            UIColor.white.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 10, height: 10))
+        }
+
+        let color = try XCTUnwrap(image.dominantColor)
+
+        XCTAssertEqual(color, .white)
     }
 }
 
