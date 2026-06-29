@@ -205,8 +205,15 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private var buckets: [UInt64: StatsBucket] = [:]
     private var oldestTs: UInt64
 
+    /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
+    /// `.notGranted` stops aggregation and drops any data buffered in memory. Guarded by its own
+    /// lock so `add()` can cheaply check it off the serial queue without blocking the span hot path.
+    @ReadWriteLock
+    private var currentConsent: TrackingConsent
+
     init(
         now: Nanoseconds,
+        initialConsent: TrackingConsent = .pending,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
@@ -215,6 +222,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
         self.bufferLen = bufferLen
         self.peerTagKeys = peerTagKeys
         self.oldestTs = StatsConcentrator.alignTimestamp(now, bucketDuration: bucketDuration)
+        self.currentConsent = initialConsent
     }
 
     // MARK: - Add
@@ -223,6 +231,11 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Ineligible spans are silently discarded. This method dispatches
     /// asynchronously and returns immediately without blocking the caller.
     func add(_ snapshot: SpanSnapshot) {
+        // Skip aggregation entirely when consent is not granted, so we neither spend work
+        // building the aggregation key nor retain any data we are not allowed to collect.
+        guard currentConsent != .notGranted else {
+            return
+        }
         guard Self.isEligible(snapshot) else {
             return
         }
@@ -233,6 +246,13 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
 
         queue.async { [self] in
+            // Re-check on the serial queue: consent may have been revoked between the check
+            // above and this block running, in which case `updateConsent` has (or will have)
+            // cleared the buffer and this span must not be re-added.
+            guard currentConsent != .notGranted else {
+                return
+            }
+
             let bucketKey = max(
                 Self.alignTimestamp(endTime, bucketDuration: bucketDuration),
                 oldestTs
@@ -257,6 +277,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// - Returns: Array of exported buckets ready for serialization.
     func flush(now: Nanoseconds, force: Bool) -> [ExportedBucket] {
         return queue.sync {
+            // Never export while consent is not granted. The storage writer already drops these
+            // writes, but returning early avoids needlessly serializing the sketches.
+            guard currentConsent != .notGranted else {
+                return []
+            }
+
             let cutoff = force ? Int64.max : Int64(now) - Int64(bufferLen) * Int64(bucketDuration)
             var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
@@ -309,6 +335,25 @@ internal final class StatsConcentrator: @unchecked Sendable {
             }
 
             return flushed
+        }
+    }
+
+    // MARK: - Consent
+
+    /// Updates the tracking consent that gates aggregation.
+    ///
+    /// `.granted` and `.pending` are both recording states, so transitions between them need no
+    /// action: data already written to storage is migrated by the core, and in-memory data keeps
+    /// accumulating. Revoking consent (`→ .notGranted`) discards the in-memory buffer so spans
+    /// aggregated before the revocation are never uploaded, even if consent is later re-granted.
+    func updateConsent(_ consent: TrackingConsent) {
+        currentConsent = consent
+
+        guard consent == .notGranted else {
+            return
+        }
+        queue.async { [self] in
+            buckets.removeAll()
         }
     }
 
