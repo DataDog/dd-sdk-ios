@@ -206,14 +206,18 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private var oldestTs: UInt64
 
     /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
-    /// `.notGranted` stops aggregation and drops any data buffered in memory. Guarded by its own
-    /// lock so `add()` can cheaply check it off the serial queue without blocking the span hot path.
-    @ReadWriteLock
+    /// `.notGranted` stops aggregation and drops any data buffered in memory. Confined to `queue`,
+    /// so consent transitions stay ordered with `add`, `flush`, and the revoke clear and cannot be
+    /// observed out of order across threads.
+    ///
+    /// Starts gated (`.notGranted`) so nothing is aggregated until the first context message
+    /// confirms the real consent. The core delivers that context right after registration, before
+    /// spans realistically start finishing.
     private var currentConsent: TrackingConsent
 
     init(
         now: Nanoseconds,
-        initialConsent: TrackingConsent = .pending,
+        initialConsent: TrackingConsent = .notGranted,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
@@ -231,11 +235,6 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Ineligible spans are silently discarded. This method dispatches
     /// asynchronously and returns immediately without blocking the caller.
     func add(_ snapshot: SpanSnapshot) {
-        // Skip aggregation entirely when consent is not granted, so we neither spend work
-        // building the aggregation key nor retain any data we are not allowed to collect.
-        guard currentConsent != .notGranted else {
-            return
-        }
         guard Self.isEligible(snapshot) else {
             return
         }
@@ -246,9 +245,10 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
 
         queue.async { [self] in
-            // Re-check on the serial queue: consent may have been revoked between the check
-            // above and this block running, in which case `updateConsent` has (or will have)
-            // cleared the buffer and this span must not be re-added.
+            // Drop the span when consent is not granted. Checking on the serial queue (rather than
+            // off-queue) keeps the decision ordered with consent changes and the revoke clear, so a
+            // span recorded around a revocation cannot slip past or be re-added after the buffer is
+            // cleared.
             guard currentConsent != .notGranted else {
                 return
             }
@@ -347,13 +347,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// accumulating. Revoking consent (`→ .notGranted`) discards the in-memory buffer so spans
     /// aggregated before the revocation are never uploaded, even if consent is later re-granted.
     func updateConsent(_ consent: TrackingConsent) {
-        currentConsent = consent
-
-        guard consent == .notGranted else {
-            return
-        }
         queue.async { [self] in
-            buckets.removeAll()
+            currentConsent = consent
+            // Revoking consent discards everything buffered in memory so spans aggregated before
+            // the revocation are never uploaded, even if consent is later granted again. Running on
+            // the queue orders this clear with any in-flight `add` and `flush` work.
+            if consent == .notGranted {
+                buckets.removeAll()
+            }
         }
     }
 
