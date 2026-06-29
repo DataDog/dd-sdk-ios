@@ -17,11 +17,14 @@ public protocol HostsSanitizing {
 public struct HostsSanitizer: HostsSanitizing {
     private let hostRegex = #"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"#
     private let ipRegex = #"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"#
+    private let wildcardAllowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-*")
 
     public init() { }
 
     private func sanitize(host: String, warningMessage: String) -> (String?, String?) {
-        if let sanitizedHost = URL(string: host)?.host {
+        if host.contains("*") {
+            return sanitizeWildcardPattern(host)
+        } else if let sanitizedHost = URL(string: host)?.host {
             // if an URL is given instead of the host, take its `host` part
             let warning = "'\(host)' is an url and will be sanitized to: '\(sanitizedHost)'."
             return (sanitizedHost, warning)
@@ -36,6 +39,24 @@ public struct HostsSanitizer: HostsSanitizing {
             let warning = "'\(host)' is not a valid host name and will be dropped."
             return (nil, warning)
         }
+    }
+
+    private func sanitizeWildcardPattern(_ pattern: String) -> (String?, String?) {
+        let lowercased = pattern.lowercased()
+        guard lowercased.unicodeScalars.allSatisfy({ wildcardAllowedCharacters.contains($0) }) else {
+            return (nil, "'\(pattern)' is not a valid host pattern and will be dropped.")
+        }
+        guard lowercased.filter({ $0 == "*" }).count == 1 else {
+            return (nil, "'\(pattern)' is not a valid host pattern and will be dropped.")
+        }
+        guard lowercased.contains(".") else {
+            return (nil, "'\(pattern)' is not a valid host pattern and will be dropped.")
+        }
+        let parts = lowercased.split(separator: "*", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+        guard parts[1].hasPrefix("."), parts[1].count > 1 else {
+            return (nil, "'\(pattern)' is not a valid host pattern and will be dropped.")
+        }
+        return (lowercased, nil)
     }
 
     private func printWarnings(_ warningMessage: String, _ warnings: [String]) {

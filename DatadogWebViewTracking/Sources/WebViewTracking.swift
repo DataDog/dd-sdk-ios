@@ -157,21 +157,11 @@ public enum WebViewTracking {
             return
         }
 
-        let validPatterns: [String] = hostPatterns.compactMap { pattern in
-            let lowercased = pattern.lowercased()
-            let allowedCharacters = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789.-*")
-            if lowercased.unicodeScalars.contains(where: { !allowedCharacters.contains($0) }) {
-                DD.logger.warn("WebView host pattern \"\(pattern)\" contains invalid characters and will be ignored.")
-                return nil
-            }
-            let wildcardCount = lowercased.filter { $0 == "*" }.count
-            if wildcardCount > 1 {
-                DD.logger.warn("WebView host pattern \"\(pattern)\" contains more than one wildcard and will be ignored.")
-                return nil
-            }
-            return lowercased
-        }
-
+        let sanitizedPatterns = HostsSanitizer().sanitized(
+            hosts: Set(hostPatterns),
+            warningMessage: "The WebView host pattern configured for Datadog SDK is not valid"
+        )
+        let validPatterns = sanitizedPatterns.sorted()
         let allowedWebViewHostsString = validPatterns
             .map { "\"\($0)\"" }
             .joined(separator: ",")
