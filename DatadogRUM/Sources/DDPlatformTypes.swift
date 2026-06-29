@@ -30,9 +30,6 @@ public typealias DDViewController = UIViewController
 public typealias DDNavigationController = UINavigationController
 public typealias DDTabBarController = UITabBarController
 
-// MARK: - Application
-public typealias DDApplication = UIApplication
-
 // MARK: - Events
 public typealias DDEvent = UIEvent
 public typealias DDTouch = UITouch
@@ -71,9 +68,6 @@ public typealias DDViewController = NSViewController
 public typealias DDNavigationController = NSViewController
 /// No direct AppKit equivalent — aliased to `NSViewController` for compilation purposes.
 public typealias DDTabBarController = NSViewController
-
-// MARK: - Application
-public typealias DDApplication = NSApplication
 
 // MARK: - Events
 /// `NSEvent` covers all input events on macOS (mouse, keyboard, scroll, etc.).

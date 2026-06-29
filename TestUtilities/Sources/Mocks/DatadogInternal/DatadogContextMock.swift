@@ -318,12 +318,18 @@ extension AppState: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> AppState {
+        #if os(macOS)
+        return [.active, .inactive].randomElement()!
+        #else
         return [.active, .inactive, .background].randomElement()!
+        #endif
     }
 
+    #if !os(macOS)
     public static func mockRandom(runningInForeground: Bool) -> AppState {
         return runningInForeground ? [.active, .inactive].randomElement()! : .background
     }
+    #endif
 }
 
 extension AppStateHistory: AnyMockable {
@@ -335,12 +341,18 @@ extension AppStateHistory: AnyMockable {
         return .init(initialState: .active, date: date)
     }
 
+    #if !os(macOS)
     public static func mockAppInBackground(since date: Date = Date()) -> Self {
         return .init(initialState: .background, date: date)
     }
+    #endif
 
     public static func mockRandom(since date: Date = Date()) -> Self {
+        #if os(macOS)
+        mockAppInForeground(since: date)
+        #else
         return Bool.random() ? mockAppInForeground(since: date) : mockAppInBackground(since: date)
+        #endif
     }
 
     public static func mockWith(initialState: AppState, date: Date, transitions: [(state: AppState, date: Date)] = []) -> Self {
