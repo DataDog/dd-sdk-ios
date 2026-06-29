@@ -24,13 +24,16 @@ import WebKit
 public enum WebViewTracking {
 #if canImport(WebKit)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
-    /// 
+    ///
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
     ///
+    /// Each entry in `hosts` can be a plain hostname (`"example.com"`) or a wildcard pattern with a
+    /// single `*` (`"*.example.com"`, `"preview-*.shopist.io"`). Invalid entries are dropped with a warning.
+    ///
     /// - Parameters:
     ///   - webView: The web-view to track.
-    ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
+    ///   - hosts: A set of hosts or wildcard patterns instrumented with Browser SDK to capture Datadog events from.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     ///   - core: Datadog SDK core to use for tracking.
@@ -48,41 +51,6 @@ public enum WebViewTracking {
                     tracking: webView,
                     hosts: hosts,
                     hostsSanitizer: HostsSanitizer(),
-                    logsSampleRate: logsSampleRate,
-                    in: core
-                )
-            }
-        } catch let error {
-            consolePrint("\(error)", .error)
-        }
-    }
-
-    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session,
-    /// using wildcard host patterns for matching.
-    ///
-    /// If the content loaded in WebView uses Datadog Browser SDK and its hostname matches one of the
-    /// specified patterns, web events will be correlated with the RUM session from native SDK.
-    ///
-    /// Patterns support a single `*` wildcard: `"*.example.com"`, `"preview-*.shopist.io"`, `"shopist.io"`.
-    /// Patterns with more than one `*` are dropped with a warning.
-    ///
-    /// - Parameters:
-    ///   - webView: The web-view to track.
-    ///   - hostPatterns: Wildcard patterns to match against the WebView page hostname.
-    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
-    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
-    ///   - core: Datadog SDK core to use for tracking.
-    public static func enable(
-        webView: WKWebView,
-        hostPatterns: [String],
-        logsSampleRate: SampleRate = .maxSampleRate,
-        in core: DatadogCoreProtocol = CoreRegistry.default
-    ) {
-        do {
-            try runOnMainThreadSync {
-                try enableOrThrow(
-                    tracking: webView,
-                    hostPatterns: hostPatterns,
                     logsSampleRate: logsSampleRate,
                     in: core
                 )
@@ -133,37 +101,8 @@ public enum WebViewTracking {
             warningMessage: "The allowed WebView host configured for Datadog SDK is not valid"
         )
         let allowedWebViewHostsString = sanitizedHosts
+            .sorted()
             .map { return "\"\($0)\"" }
-            .joined(separator: ",")
-
-        let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
-        let isTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
-
-        try WebViewSessionRolloverHandler.register(webView: webView, in: core, using: elements)
-
-        injectUserScript(on: webView, in: core, using: elements, isTraceSampled: isTraceSampled)
-
-        core.telemetry.usage(event: .trackWebView)
-    }
-
-    @MainActor
-    static func enableOrThrow(
-        tracking webView: WKWebView,
-        hostPatterns: [String],
-        logsSampleRate: Float,
-        in core: DatadogCoreProtocol
-    ) throws {
-        guard try prepareWebView(webView, logsSampleRate: logsSampleRate, callerName: "WebViewTracking.enable(webView:hostPatterns:)", in: core) else {
-            return
-        }
-
-        let sanitizedPatterns = HostsSanitizer().sanitized(
-            hosts: Set(hostPatterns),
-            warningMessage: "The WebView host pattern configured for Datadog SDK is not valid"
-        )
-        let validPatterns = sanitizedPatterns.sorted()
-        let allowedWebViewHostsString = validPatterns
-            .map { "\"\($0)\"" }
             .joined(separator: ",")
 
         let elements = WebViewTrackingElements(allowedWebViewHostsString: allowedWebViewHostsString)
