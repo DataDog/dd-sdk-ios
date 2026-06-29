@@ -430,7 +430,8 @@ extension DatadogCore {
                 site: configuration.site,
                 directory: directory.coreDirectory,
                 httpClient: httpClient,
-                notificationCenter: configuration.notificationCenter
+                notificationCenter: configuration.notificationCenter,
+                dateProvider: configuration.dateProvider
             )
         }
 

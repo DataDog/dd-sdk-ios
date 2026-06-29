@@ -14,6 +14,10 @@ internal final class RemoteConfigurationProvider {
     let directory: Directory
     let httpClient: HTTPClient
     private let notificationCenter: NotificationCenter
+    private let dateProvider: DateProvider
+    @ReadWriteLock
+    private var lastSyncDate: Date? = nil
+    private let minimumSyncInterval: TimeInterval = 300
     @ReadWriteLock
     private var foregroundObserver: NSObjectProtocol?
 
@@ -22,13 +26,15 @@ internal final class RemoteConfigurationProvider {
         site: DatadogSite,
         directory: Directory,
         httpClient: HTTPClient,
-        notificationCenter: NotificationCenter
+        notificationCenter: NotificationCenter,
+        dateProvider: DateProvider = SystemDateProvider()
     ) {
         self.id = id
         self.site = site
         self.directory = directory
         self.httpClient = httpClient
         self.notificationCenter = notificationCenter
+        self.dateProvider = dateProvider
     }
 
     func start(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
@@ -45,7 +51,16 @@ internal final class RemoteConfigurationProvider {
             object: nil,
             queue: nil
         ) { [weak self] _ in
-            self?.sync(completionHandler)
+            guard let self else {
+                return
+            }
+            if let last = self.lastSyncDate {
+                let elapsed = self.dateProvider.now.timeIntervalSince(last)
+                if elapsed >= 0, elapsed < self.minimumSyncInterval {
+                    return
+                }
+            }
+            self.sync(completionHandler)
         }
 #endif
 
@@ -116,6 +131,7 @@ internal final class RemoteConfigurationProvider {
             case .success(let (http, data)):
                 // 1. Not Modified — existing persisted configuration is still valid.
                 if http.statusCode == 304 {
+                    self.lastSyncDate = self.dateProvider.now
                     return
                 }
 
@@ -145,6 +161,7 @@ internal final class RemoteConfigurationProvider {
                 // all-or-nothing: the existing file is never left in a truncated state.
                 do {
                     try File(url: self.directory.url.appendingPathComponent("\(self.id).json")).write(data: data)
+                    self.lastSyncDate = self.dateProvider.now
                     // Store ETag for conditional requests on the next sync.
                     // If the response has no ETag, delete any stale validator so we
                     // never send If-None-Match for a different representation.
