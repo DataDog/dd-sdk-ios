@@ -23,8 +23,7 @@ internal struct LayerSnapshotOutput {
 
 @available(iOS 13.0, *)
 internal class LayerSnapshotTestCase: XCTestCase {
-    @MainActor
-    private var app: AppDelegate { UIApplication.shared.delegate as! AppDelegate }
+    @MainActor private var app: AppDelegate { UIApplication.shared.delegate as! AppDelegate }
 
     // swiftlint:disable function_default_parameter_at_end
     @MainActor
