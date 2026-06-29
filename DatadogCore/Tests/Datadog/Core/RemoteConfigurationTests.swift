@@ -359,8 +359,45 @@ class RemoteConfigurationTests: XCTestCase {
         waitForExpectations(timeout: 2)
 
         let etagFileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.etag")
-        XCTAssertEqual(try? String(data: Data(contentsOf: etagFileURL), encoding: .utf8), "abc123",
-            "ETag must be stored even when the body cannot be decoded — prevents re-fetching a known-bad payload")
+        XCTAssertEqual(try String(data: Data(contentsOf: etagFileURL), encoding: .utf8), "abc123")
+        withExtendedLifetime(rc) {}
+    }
+
+    func testInitSyncStillDeliversConfigurationWhenETagWriteFails() throws {
+        // Given — the ETag path is occupied by a directory, so writing the ETag fails,
+        // while the configuration (.json) write still succeeds.
+        try FileManager.default.createDirectory(
+            at: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
+            withIntermediateDirectories: false
+        )
+        let response = HTTPURLResponse(
+            url: URL(string: "https://sdk-configuration.browser-intake-datadoghq.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: ["ETag": "abc123"]
+        )!
+        let payload = remoteConfigurationData(applicationID: "fetched-application-id")
+        let rc = makeProvider(httpClient: HTTPClientMock(response: response, data: payload), start: false)
+
+        // Then — ETag caching is best-effort: the failure is reported, but the freshly
+        // fetched configuration is still delivered. The handler may fire more than once,
+        // and an ETag error may be reported more than once (the conditional-request read
+        // and the persist write both fail when the path is a directory).
+        let etagFailure = expectation(description: "ETag failure is reported")
+        etagFailure.assertForOverFulfill = false
+        let configDelivered = expectation(description: "configuration is still delivered")
+        rc.start { result in
+            switch result {
+            case .failure(.etagError): etagFailure.fulfill()
+            case .success: configDelivered.fulfill()
+            case .failure: break
+            }
+        }
+        waitForExpectations(timeout: 2)
+
+        // And — the configuration is persisted to disk despite the ETag failure.
+        let configURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
+        XCTAssertEqual(try? Data(contentsOf: configURL), payload, "Configuration must be persisted even when the ETag write fails")
         withExtendedLifetime(rc) {}
     }
 
@@ -389,13 +426,14 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(provider) {}
     }
 
-    func testInitSyncDoesNotSendIfNoneMatchWhenPersistedConfigurationIsMissing() throws {
-        // Given — ETag file exists but JSON configuration is missing.
+    func testInitSyncSendsIfNoneMatchWhenETagStoredEvenWithoutConfiguration() throws {
+        // Given — an ETag exists but the JSON configuration does not. This happens when a
+        // previous fetch returned a payload we could not decode: we keep its ETag on purpose
+        // so we can skip re-downloading the known-bad payload.
         try Data("abc123".utf8).write(
             to: coreDir.coreDirectory.url.appendingPathComponent("test-id.etag"),
             options: .atomic
         )
-        // No .json file means a 304 response would leave the caller with no configuration.
 
         let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
         let provider = makeProvider(httpClient: httpClient)
@@ -405,9 +443,12 @@ class RemoteConfigurationTests: XCTestCase {
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
-        XCTAssertNil(
+        // Then — If-None-Match is still sent: a 304 means the known-bad payload is unchanged
+        // (nothing to gain by re-downloading), and a 200 with a new ETag lets us recover.
+        XCTAssertEqual(
             httpClient.requestsSent().first?.value(forHTTPHeaderField: "If-None-Match"),
-            "Must not send If-None-Match when persisted configuration is missing — a 304 would leave us with no data"
+            "abc123",
+            "If-None-Match must be sent whenever an ETag is stored, so a known-bad payload is not re-fetched"
         )
         withExtendedLifetime(provider) {}
     }
@@ -546,19 +587,17 @@ class RemoteConfigurationTests: XCTestCase {
         // Given — init sync fails, lastSyncDate stays nil
         let notificationCenter = NotificationCenter()
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
-        let requestLock = NSLock()
-        var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
-            requestLock.lock()
-            requestCount += 1
-            let count = requestCount
-            requestLock.unlock()
-            if count == 1 {
-                throw URLError(.networkConnectionLost)
+        var didFailInitialSync = false
+        let httpClient = HTTPClientMock { _ in
+            // Invoked on the mock's serial queue, so this state needs no lock.
+            // Fail the first (init) sync so lastSyncDate stays nil, then succeed.
+            guard didFailInitialSync else {
+                didFailInitialSync = true
+                return .failure(URLError(.networkConnectionLost))
             }
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, foregroundPayload)
+            return .success((.mockResponseWith(statusCode: 200), foregroundPayload))
         }
-        let rc = makeProvider(notificationCenter: notificationCenter)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter)
 
         // When — foreground fires immediately after a failed init sync
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
@@ -574,16 +613,16 @@ class RemoteConfigurationTests: XCTestCase {
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
         let foregroundPayload = remoteConfigurationData(applicationID: "foreground-application-id")
-        let requestLock = NSLock()
-        var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
-            requestLock.lock()
-            requestCount += 1
-            let payload = requestCount == 1 ? initialPayload : foregroundPayload
-            requestLock.unlock()
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, payload)
+        var servedInitial = false
+        let httpClient = HTTPClientMock { _ in
+            // Invoked on the mock's serial queue, so this state needs no lock.
+            guard servedInitial else {
+                servedInitial = true
+                return .success((.mockResponseWith(statusCode: 200), initialPayload))
+            }
+            return .success((.mockResponseWith(statusCode: 200), foregroundPayload))
         }
-        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider)
         waitForPersistedConfiguration(applicationID: "initial-application-id")
 
         // When — TTL elapses and foreground fires
@@ -600,18 +639,13 @@ class RemoteConfigurationTests: XCTestCase {
         let notificationCenter = NotificationCenter()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
         let initialPayload = remoteConfigurationData(applicationID: "initial-application-id")
-        let requestLock = NSLock()
-        var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
-            requestLock.lock()
-            requestCount += 1
-            requestLock.unlock()
-            return (HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, initialPayload)
+        let httpClient = HTTPClientMock { _ in
+            .success((.mockResponseWith(statusCode: 200), initialPayload))
         }
-        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider)
         waitForPersistedConfiguration(applicationID: "initial-application-id")
 
-        let countAfterInit = requestLock.withLock { requestCount }
+        let countAfterInit = httpClient.requestsSent().count
 
         // When — only 1 minute passes and foreground fires
         dateProvider.advance(bySeconds: 60)
@@ -620,7 +654,7 @@ class RemoteConfigurationTests: XCTestCase {
         // Then — no additional sync fires within TTL
         let noSyncExpectation = expectation(description: "no foreground sync within TTL")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            XCTAssertEqual(requestLock.withLock { requestCount }, countAfterInit, "No sync should fire within TTL")
+            XCTAssertEqual(httpClient.requestsSent().count, countAfterInit, "No sync should fire within TTL")
             noSyncExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)
@@ -636,19 +670,14 @@ class RemoteConfigurationTests: XCTestCase {
             to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
             options: .atomic
         )
-        let requestLock = NSLock()
-        var requestCount = 0
-        MockURLProtocol.requestHandler = { request in
-            requestLock.lock()
-            requestCount += 1
-            requestLock.unlock()
-            return (HTTPURLResponse(url: request.url!, statusCode: 304, httpVersion: nil, headerFields: nil)!, nil)
+        let httpClient = HTTPClientMock { _ in
+            .success((.mockResponseWith(statusCode: 304), nil))
         }
-        let rc = makeProvider(notificationCenter: notificationCenter, dateProvider: dateProvider)
+        let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider)
 
         // Wait for init sync (304)
         let initExpectation = expectation(description: "init sync completes")
-        wait(until: { requestLock.withLock { requestCount } == 1 }, andThenFulfill: initExpectation)
+        wait(until: { httpClient.requestsSent().count == 1 }, andThenFulfill: initExpectation)
         waitForExpectations(timeout: 2)
 
         // When — foreground fires within TTL
@@ -658,7 +687,7 @@ class RemoteConfigurationTests: XCTestCase {
         // Then — no additional request fires
         let noSyncExpectation = expectation(description: "no foreground sync after 304 within TTL")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-            XCTAssertEqual(requestLock.withLock { requestCount }, 1, "No sync should fire within TTL after 304")
+            XCTAssertEqual(httpClient.requestsSent().count, 1, "No sync should fire within TTL after 304")
             noSyncExpectation.fulfill()
         }
         waitForExpectations(timeout: 2)

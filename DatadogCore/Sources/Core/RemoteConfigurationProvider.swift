@@ -22,22 +22,23 @@ import DatadogInternal
 ///
 /// ## Threading
 /// - The synchronous cache read in `start` runs on the caller's thread.
-/// - The network completion and all `completionHandler` calls are dispatched on an
+/// - The network completion and all `handler` calls are dispatched on an
 ///   internal URLSession delegate queue (not the main thread).
 ///
 /// ## Lifecycle
 /// Call `stop()` (or let the instance deinit) to unsubscribe from foreground
-/// notifications and prevent further `completionHandler` invocations.
+/// notifications and prevent further `handler` invocations.
 internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
     let directory: Directory
     let httpClient: HTTPClient
+
     private let notificationCenter: NotificationCenter
     private let dateProvider: DateProvider
+    private let minimumSyncInterval: TimeInterval = 300
     @ReadWriteLock
     private var lastSyncDate: Date? = nil
-    private let minimumSyncInterval: TimeInterval = 300
     @ReadWriteLock
     private var foregroundObserver: NSObjectProtocol?
 
@@ -59,22 +60,23 @@ internal final class RemoteConfigurationProvider {
 
     /// Starts the provider.
     ///
-    /// - Immediately calls `completionHandler` with the cached configuration if one exists on disk.
-    /// - Fires an async CDN request; calls `completionHandler` again when it completes (success or failure).
-    /// - On UIKit platforms, re-syncs on every `UIApplication.willEnterForegroundNotification`,
-    ///   calling `completionHandler` each time with the refreshed result.
+    /// `handler` is **not** a one-shot completion — it is invoked every time a configuration
+    /// result becomes available:
+    /// - synchronously with the cached configuration, if one exists on disk;
+    /// - asynchronously when the CDN request completes (success or failure);
+    /// - on UIKit platforms, again on each `UIApplication.willEnterForegroundNotification`
+    ///   that triggers a refresh.
     ///
-    /// `completionHandler` may be called more than once: once synchronously for the cache,
-    /// and once (or more, on foreground transitions) asynchronously for network results.
-    /// It is always called with an up-to-date result — callers should replace, not accumulate.
+    /// Each invocation carries the latest result, so callers should replace the previously
+    /// delivered value rather than accumulate.
     ///
-    /// - Parameter completionHandler: Called with `.success` when configuration is available
+    /// - Parameter handler: Called with `.success` when configuration is available
     ///   (from cache or network), or `.failure` if a read or fetch error occurs.
-    func start(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
+    func start(_ handler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        readCache().map(completionHandler)
+        readCache().map(handler)
 
 #if canImport(UIKit)
         foregroundObserver = notificationCenter.addObserver(
@@ -91,11 +93,11 @@ internal final class RemoteConfigurationProvider {
                     return
                 }
             }
-            self.sync(completionHandler)
+            self.sync(handler)
         }
 #endif
 
-        sync(completionHandler)
+        sync(handler)
     }
 
     deinit {
@@ -139,7 +141,7 @@ internal final class RemoteConfigurationProvider {
     }
 
     /// Fires an async CDN fetch and persists the configuration on success.
-    private func sync(_ completionHandler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
+    private func sync(_ handler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
         let cacheFilename = "\(id).json"
         let etagFilename = "\(id).etag"
 
@@ -151,9 +153,12 @@ internal final class RemoteConfigurationProvider {
                 .appendingPathExtension("json")
         )
 
-        if let data = try? directory.file(named: etagFilename).read() {
-            String(data: data, encoding: .utf8).map {
-                request.setValue($0, forHTTPHeaderField: "If-None-Match")
+        if let file = try? directory.file(named: etagFilename) {
+            do {
+                try String(data: file.read(), encoding: .utf8)
+                    .map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
+            } catch {
+                handler(.failure(.etagError(error)))
             }
         }
 
@@ -176,13 +181,18 @@ internal final class RemoteConfigurationProvider {
                     throw RemoteConfigurationError.httpError(http.statusCode)
                 }
 
-                // Persist ETag before decoding — the ETag belongs to the HTTP response,
-                // not to whether we could parse the body. This prevents re-fetching a
-                // known-bad payload on every sync; we recover when the server updates.
-                if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
-                    try? self.write(Data(etag.utf8), to: etagFilename)
-                } else {
-                    try? self.directory.file(named: etagFilename).delete()
+                do {
+                    // Persist ETag before decoding — the ETag belongs to the HTTP response,
+                    // not to whether we could parse the body. This prevents re-fetching a
+                    // known-bad payload on every sync; we recover when the server updates.
+                    if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
+                        try self.write(Data(etag.utf8), to: etagFilename)
+                    } else if let file = try? directory.file(named: etagFilename) {
+                        // Only delete a validator that actually exists; "nothing to delete" is not an error.
+                        try file.delete()
+                    }
+                } catch {
+                    handler(.failure(.etagError(error)))
                 }
 
                 guard let data, !data.isEmpty else {
@@ -197,13 +207,13 @@ internal final class RemoteConfigurationProvider {
                 try self.write(data, to: cacheFilename)
                 self.lastSyncDate = self.dateProvider.now
 
-                completionHandler(.success(remoteConfiguration))
+                handler(.success(remoteConfiguration))
             } catch let error as RemoteConfigurationError {
-                completionHandler(.failure(error))
+                handler(.failure(error))
             } catch let error as DecodingError {
-                completionHandler(.failure(.decodingError(error)))
+                handler(.failure(.decodingError(error)))
             } catch {
-                completionHandler(.failure(.internalError(error)))
+                handler(.failure(.internalError(error)))
             }
         }
     }
@@ -221,6 +231,7 @@ internal enum RemoteConfigurationError: Error, LocalizedError {
     case httpError(Int)
     case emptyBody
     case decodingError(DecodingError)
+    case etagError(Error)
     case internalError(Error)
 
     var errorDescription: String? {
@@ -229,6 +240,7 @@ internal enum RemoteConfigurationError: Error, LocalizedError {
         case .httpError(let code): return "Non-2xx response: HTTP \(code)"
         case .emptyBody: return "Empty response body"
         case .decodingError(let error): return "Decoding failed: \(error.localizedDescription)"
+        case .etagError(let error): return "Etag storage failed: \(error.localizedDescription)"
         case .internalError(let error): return "Internal error: \(error.localizedDescription)"
         }
     }
