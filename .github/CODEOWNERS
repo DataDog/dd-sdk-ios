@@ -10,4 +10,4 @@
 
 ## Feature Flags
 
-/DatadogFlags/ @DataDog/rum-mobile @DataDog/rum-mobile-ios @DataDog/feature-flags-sdks
+/DatadogFlags/ @DataDog/rum-mobile @DataDog/rum-mobile-ios @DataDog/feature-flagging-and-experimentation-sdk
