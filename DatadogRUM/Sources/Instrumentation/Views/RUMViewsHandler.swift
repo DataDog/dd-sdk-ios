@@ -91,6 +91,7 @@ internal final class RUMViewsHandler {
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
         self.notificationCenter = notificationCenter
 
+        #if !os(macOS)
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
@@ -103,6 +104,7 @@ internal final class RUMViewsHandler {
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
+        #endif
     }
 
     #else
@@ -130,6 +132,7 @@ internal final class RUMViewsHandler {
     }
     #endif
 
+    #if !os(macOS)
     deinit {
         notificationCenter?.removeObserver(
             self,
@@ -142,6 +145,7 @@ internal final class RUMViewsHandler {
             object: nil
         )
     }
+    #endif
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
@@ -227,6 +231,7 @@ internal final class RUMViewsHandler {
         )
     }
 
+#if !os(macOS)
     @objc
     private func applicationDidEnterBackground() {
         if let current = stack.last {
@@ -254,6 +259,7 @@ internal final class RUMViewsHandler {
             )
         )
     }
+#endif
 }
 
 // MARK: - UIViewControllerHandler

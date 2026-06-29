@@ -637,7 +637,9 @@ private extension AppState {
         switch self {
         case .active: return "active"
         case .inactive: return "inactive"
+        #if !os(macOS)
         case .background: return "background"
+        #endif
         case .terminated: return "terminated"
         }
     }
