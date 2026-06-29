@@ -258,4 +258,29 @@ class CoreTelemetryIntegrationTests: XCTestCase {
             Double(config.telemetrySampleRate.composed(with: metricsSampleRate))
         )
     }
+
+    func testGivenRUMEnabled_uploadQualityMetricIsNotForwardedAsDebugEvent() throws {
+        // Given - RUM registers CombinedFeatureMessageReceiver with TelemetryInterceptor before TelemetryReceiver.
+        // TelemetryInterceptor returns true for UploadQualityMetric, stopping propagation via contains(where:),
+        // so TelemetryReceiver never writes a debug event for it.
+        var config = RUM.Configuration(applicationID: .mockAny())
+        config.telemetrySampleRate = .maxSampleRate
+        RUM.enable(with: config, in: core)
+
+        RUMMonitor.shared(in: core).startView(key: "view")
+
+        // When
+        core.telemetry.metric(
+            name: UploadQualityMetric.name,
+            attributes: [UploadQualityMetric.track: "feature"],
+            sampleRate: .maxSampleRate
+        )
+
+        // Then - no TelemetryDebugEvent is produced for upload_quality
+        let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
+        XCTAssertFalse(
+            debugEvents.contains { $0.telemetry.message == "[Mobile Metric] \(UploadQualityMetric.name)" },
+            "upload_quality metric must not produce a TelemetryDebugEvent — it is consumed by TelemetryInterceptor"
+        )
+    }
 }
