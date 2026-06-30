@@ -13,7 +13,7 @@ import TestUtilities
 
 class UIApplicationSwizzlerTests: XCTestCase {
     private let handler = RUMActionsHandlerMock()
-    private lazy var swizzler = try! UIApplicationSwizzler(handler: handler)
+    private lazy var swizzler = try! DDApplicationSwizzler(handler: handler)
 
     override func setUp() {
         super.setUp()
