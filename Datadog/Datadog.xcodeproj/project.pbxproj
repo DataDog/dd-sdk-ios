@@ -77,7 +77,7 @@
 		117E52222D91A61A00A8E930 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; platformFilters = (ios, tvos, watchos, xros, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		1182467A2D90416A00E3D16F /* DirectoriesStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118246772D90416A00E3D16F /* DirectoriesStub.swift */; };
 		118246A12D90674900E3D16F /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
-		118246B62D906C9A00E3D16F /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; platformFilters = (ios, tvos, watchos, xros, ); };
+		118246B62D906C9A00E3D16F /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		118246BE2D906F1500E3D16F /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
 		118246C62D906FFB00E3D16F /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, tvos, ); productRef = 118246C52D906FFB00E3D16F /* DatadogSDKTesting */; };
 		118246C72D9070FA00E3D16F /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
@@ -9433,12 +9433,6 @@
 		};
 		118246B92D906C9A00E3D16F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				ios,
-				tvos,
-				watchos,
-				xros,
-			);
 			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting */;
 			targetProxy = D25EF01A2F45E9AC007E6CEE /* PBXContainerItemProxy */;
 		};
