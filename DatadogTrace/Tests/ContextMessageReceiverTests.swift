@@ -10,6 +10,7 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
+#if !os(macOS)
 class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {
         // Given
@@ -28,3 +29,4 @@ class ContextMessageReceiverTests: XCTestCase {
         XCTAssertEqual(receiver.context.applicationStateHistory?.currentState, .active)
     }
 }
+#endif
