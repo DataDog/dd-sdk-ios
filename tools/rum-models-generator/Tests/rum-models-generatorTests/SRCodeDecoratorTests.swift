@@ -120,6 +120,15 @@ final class SRCodeDecoratorTests: XCTestCase {
         let updates: SwiftStruct.Property = try XCTUnwrap(mutationData.properties.first { $0.name == "updates" })
         XCTAssertEqual("SRCompositionLayerUpdate", ((updates.type as? SwiftArray)?.element as? SwiftTypeReference)?.referencedTypeName)
 
+        let compositionLayer = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayer" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayer.conforms(to: hashableProtocol))
+
+        let compositionLayerChild = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerChild" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayerChild.conforms(to: hashableProtocol))
+
+        let compositionLayerUpdate = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerUpdate" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayerUpdate.conforms(to: hashableProtocol))
+
         let transformedIncrementalSnapshotRecord = try XCTUnwrap(
             actual.swiftTypes.first { $0.typeName == "SRIncrementalSnapshotRecord" } as? SwiftStruct
         )
@@ -132,7 +141,10 @@ final class SRCodeDecoratorTests: XCTestCase {
         let modifier = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerModifier" } as? SwiftAssociatedTypeEnum)
         XCTAssertEqual("type", modifier.discriminatorCodingKey)
         XCTAssertEqual("clip", modifier.cases.first?.discriminatorValue as? String)
+        XCTAssertTrue(modifier.conforms(to: hashableProtocol))
     }
+
+    private let hashableProtocol = SwiftProtocol(name: "Hashable", conformance: [codableProtocol])
 
     private static func property(
         named name: String,
