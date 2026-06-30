@@ -20,9 +20,12 @@ public final class objc_WebViewTracking: NSObject {
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
     ///
+    /// Each entry in `hosts` can be a plain hostname (`"example.com"`) or a wildcard pattern with a
+    /// single `*` (`"*.example.com"`, `"preview-*.shopist.io"`). Invalid entries are dropped with a warning.
+    ///
     /// - Parameters:
     ///   - webView: The web-view to track.
-    ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
+    ///   - hosts: A set of hosts or wildcard patterns instrumented with Browser SDK to capture Datadog events from.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     @objc
@@ -35,6 +38,32 @@ public final class objc_WebViewTracking: NSObject {
             webView: webView,
             hosts: hosts,
             logsSampleRate: logsSampleRate
+        )
+    }
+
+    /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session on a named SDK instance.
+    ///
+    /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
+    /// `hosts`, web events will be correlated with the RUM session from native SDK.
+    ///
+    /// - Parameters:
+    ///   - webView: The web-view to track.
+    ///   - instanceName: The name of the SDK instance to use for tracking.
+    ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
+    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
+    @objc
+    public static func enable(
+        webView: WKWebView,
+        instanceName: String?,
+        hosts: Set<String> = [],
+        logsSampleRate: SampleRate = .maxSampleRate
+    ) {
+        WebViewTracking.enable(
+            webView: webView,
+            hosts: hosts,
+            logsSampleRate: logsSampleRate,
+            in: CoreRegistry.instance(named: instanceName ?? CoreRegistry.defaultInstanceName)
         )
     }
 

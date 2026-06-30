@@ -9,7 +9,7 @@ import os.activity
 
 /// This symbol is only accessible in Activity framework from Objective-C because uses a macro to create it, to use it from Swift
 /// we must recreate whats done in the macro in Swift code.
-internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
+nonisolated(unsafe) internal let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: os_activity_t.self)
 
 /// Used to reference the active span in the current execution context.
 internal class ActivityReference {
@@ -38,7 +38,7 @@ internal class ActivityReference {
 }
 
 /// Helper class to get the current Span
-internal class ActiveSpansPool {
+internal final class ActiveSpansPool: @unchecked Sendable {
     private var contextMap = [os_activity_id_t: DDSpan]()
     private let rlock = NSRecursiveLock()
 

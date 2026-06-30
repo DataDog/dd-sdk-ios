@@ -33,6 +33,22 @@
     [DDLogs removeAttributeForKey:@"keyNotAdded"];
 }
 
+- (void)testDDLogsInstanceNameAPI {
+    NSString *instanceName = @"logs-test-instance";
+    DDLogsConfiguration *config = [[DDLogsConfiguration alloc] init];
+    [DDLogs enableWith:config instanceName:instanceName];
+
+    [DDLogs addAttributeForKey:@"key1" value:@"value" instanceName:instanceName];
+    [DDLogs removeAttributeForKey:@"key1" instanceName:instanceName];
+}
+
+- (void)testDDLoggerInstanceNameAPI {
+    NSString *instanceName = @"logger-test-instance";
+    DDLoggerConfiguration *config = [[DDLoggerConfiguration alloc] init];
+    DDLogger *logger = [DDLogger createWith:config instanceName:instanceName];
+    [logger debug:@"debug"];
+}
+
 - (void)testDDLogsConfigurationAPI {
     DDLogsConfiguration *config = [[DDLogsConfiguration alloc] initWithCustomEndpoint:nil];
 

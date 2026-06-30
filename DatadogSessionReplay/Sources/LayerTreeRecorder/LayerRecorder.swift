@@ -17,17 +17,26 @@ internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let uiApplicationSwizzler: UIApplicationSwizzler
     private let touchSnapshotProducer: any TouchSnapshotProducer
+    private let imageSnapshotter: any ImageSnapshotting
+    private let timeoutInterval: TimeInterval
+    private let timeSource: any TimeSource
 
     private var recordTask: Task<Void, Never>?
 
     init(
         snapshotBuilder: any LayerTreeSnapshotBuilding,
         uiApplicationSwizzler: UIApplicationSwizzler,
-        touchSnapshotProducer: any TouchSnapshotProducer
+        touchSnapshotProducer: any TouchSnapshotProducer,
+        imageSnapshotter: any ImageSnapshotting,
+        timeoutInterval: TimeInterval = 0.09,
+        timeSource: any TimeSource = MediaTimeSource()
     ) {
         self.snapshotBuilder = snapshotBuilder
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.touchSnapshotProducer = touchSnapshotProducer
+        self.imageSnapshotter = imageSnapshotter
+        self.timeoutInterval = timeoutInterval
+        self.timeSource = timeSource
 
         uiApplicationSwizzler.swizzle()
     }
@@ -47,18 +56,28 @@ internal actor LayerRecorder: LayerRecording {
         }
     }
 
-    private func record(_: CALayerChangeset, context: LayerRecordingContext) async {
+    private func record(_ changeset: CALayerChangeset, context: LayerRecordingContext) async {
+        let startTime = timeSource.now
         let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(context: context)
 
         guard
-            let layerTreeSnapshot,
+            var layerTreeSnapshot,
             let root = layerTreeSnapshot.root.removingOccluded()
         else {
             return
         }
 
-        _ = (root, touchSnapshot)
-        // TODO: PANA-7550 Process optimized layer tree and touch snapshots
+        layerTreeSnapshot.root = root
+
+        let remainingTime = max(0, timeoutInterval - (timeSource.now - startTime))
+        let imageSnapshots = await imageSnapshotter.takeImageSnapshots(
+            for: layerTreeSnapshot.root,
+            changeset: changeset,
+            timeout: remainingTime
+        )
+
+        _ = (layerTreeSnapshot, touchSnapshot, imageSnapshots)
+        // TODO: PANA-7784 Process optimized layer tree, image snapshots, and touch snapshots
     }
 
     private func takeSnapshot(context: LayerRecordingContext) async -> (LayerTreeSnapshot?, TouchSnapshot?) {

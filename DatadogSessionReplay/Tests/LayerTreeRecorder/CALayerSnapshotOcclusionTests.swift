@@ -75,6 +75,22 @@ struct CALayerSnapshotOcclusionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Draws content when the layer subclass has unmodeled drawing state")
+    func drawsContentWhenLayerSubclassHasUnmodeledDrawingState() throws {
+        // Given
+        let layer = CAShapeLayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 10, height: 10)
+        layer.path = UIBezierPath(rect: layer.bounds).cgPath
+        layer.fillColor = UIColor.red.cgColor
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+
+        // Then
+        #expect(snapshot.drawsContent)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is an occluder when fully opaque with a solid background")
     func isOccluderWhenFullyOpaqueWithSolidBackground() throws {
         // Given
@@ -309,6 +325,27 @@ struct CALayerSnapshotOcclusionTests {
                 CGRect(x: 0, y: 0, width: 40, height: 40)
             ]
         )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps a layer subclass with unmodeled drawing state")
+    func keepsLayerSubclassWithUnmodeledDrawingState() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let shape = CAShapeLayer()
+        shape.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        shape.path = UIBezierPath(rect: shape.bounds).cgPath
+        shape.fillColor = UIColor.red.cgColor
+        root.addSublayer(shape)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let result = try #require(snapshot.removingOccluded())
+
+        // Then
+        #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 10, y: 10, width: 20, height: 20)])
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

@@ -12,12 +12,15 @@ import WebKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    /// Semantic meaning captured for a layer, plus the traversal decision for its descendants.
+    /// Semantic meaning captured for a layer, plus the traversal decision for its sublayers.
     struct SemanticObservation: Sendable, Equatable {
         var semantics: Semantics
 
-        /// When `true`, the semantic payload owns how this layer is represented and descendants are not captured.
-        var ignoreSubtree: Bool = false
+        /// When `true`, the semantic payload owns how this layer is represented and sublayers are not captured.
+        var ignoreSublayers: Bool = false
+
+        /// When `true`, image privacy does not apply to image snapshots captured from this layer or its sublayers.
+        var ignoresImagePrivacy: Bool = false
     }
 }
 
@@ -28,10 +31,8 @@ extension CALayerSnapshot.SemanticObservation {
         case activityIndicator
         case label(LabelSemantics)
         case image(ImageSemantics)
-        case progress(ProgressSemantics)
         case stepper(StepperSemantics)
-        case text(TextSemantics)
-        case textField(TextFieldSemantics)
+        case textInput(TextInputSemantics)
         case switchControl(SwitchControlSemantics)
         case webView(WebViewSemantics)
     }
@@ -41,16 +42,19 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     @MainActor
     init(layer: CALayer, context: CALayerSnapshot.Context) {
+        self.init(layer: layer, absoluteFrame: layer.frame, context: context)
+    }
+
+    @MainActor
+    init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
-            self.init(semantics: .activityIndicator, ignoreSubtree: true)
+            self.init(semantics: .activityIndicator, ignoreSublayers: true)
         case let label as UILabel where !label.hasAttributedText:
             // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)
-        case let progressView as UIProgressView:
-            self.init(progressView: progressView)
         case let stepper as UIStepper:
             self.init(stepper: stepper)
         case let textView as UITextView:
@@ -61,10 +65,23 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(switchControl: switchControl)
         case let webView as WKWebView:
             context.webViewCache.add(webView)
-            self.init(webView: webView)
+            self.init(webView: webView, absoluteFrame: absoluteFrame)
         default:
             self.init(semantics: .layer)
         }
+
+        // Ignore image privacy for system UI chrome
+        if layer.delegate is UIControl
+            || layer.delegate is UIProgressView
+            || layer.delegate?.isBarBackground == true {
+            ignoresImagePrivacy = true
+        }
+    }
+}
+
+extension CALayerDelegate {
+    fileprivate var isBarBackground: Bool {
+        "\(type(of: self))" == "_UIBarBackground"
     }
 }
 
@@ -93,7 +110,7 @@ extension CALayerSnapshot.SemanticObservation {
                     lineBreakMode: label.lineBreakMode
                 )
             ),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -132,39 +149,21 @@ extension NSAttributedString {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct ImageSemantics: Sendable, Equatable {
-        let image: UIImage?
-        let highlightedImage: UIImage?
-        let isHighlighted: Bool
-        let tintColor: UIColor?
+        let hasContent: Bool
+        let isContextual: Bool
     }
 
     fileprivate init(imageView: UIImageView) {
+        let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
+
         self.init(
             semantics: .image(
                 .init(
-                    image: imageView.image,
-                    highlightedImage: imageView.highlightedImage,
-                    isHighlighted: imageView.isHighlighted,
-                    tintColor: imageView.tintColor
+                    hasContent: image != nil,
+                    isContextual: image?.isContextual ?? false
                 )
             ),
-            ignoreSubtree: true
-        )
-    }
-}
-
-// MARK: - ProgressSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct ProgressSemantics: Sendable, Equatable {
-        let progress: Float
-    }
-
-    fileprivate init(progressView: UIProgressView) {
-        self.init(
-            semantics: .progress(.init(progress: progressView.progress)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -180,52 +179,40 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(stepper: UIStepper) {
         self.init(
             semantics: .stepper(.init(value: stepper.value)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
 
-// MARK: - TextSemantics
+// MARK: - TextInputSemantics
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
-    struct TextSemantics: Sendable, Equatable {
-        let text: String?
+    struct TextInputSemantics: Sendable, Equatable {
+        let isSensitiveText: Bool
         let isEditable: Bool
-        let isSecureTextEntry: Bool
+        let isEmpty: Bool
     }
 
     fileprivate init(textView: UITextView) {
         self.init(
-            semantics: .text(
+            semantics: .textInput(
                 .init(
-                    text: textView.text,
+                    isSensitiveText: textView.dd.isSensitiveText,
                     isEditable: textView.isEditable,
-                    isSecureTextEntry: textView.isSecureTextEntry
+                    isEmpty: textView.text?.isEmpty ?? true
                 )
-            ),
-            ignoreSubtree: true
+            )
         )
-    }
-}
-
-// MARK: - TextFieldSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct TextFieldSemantics: Sendable, Equatable {
-        let text: String?
-        let placeholder: String?
-        let isSecureTextEntry: Bool
     }
 
     fileprivate init(textField: UITextField) {
         self.init(
-            semantics: .textField(
+            semantics: .textInput(
                 .init(
-                    text: textField.text,
-                    placeholder: textField.placeholder,
-                    isSecureTextEntry: textField.isSecureTextEntry
+                    isSensitiveText: textField.dd.isSensitiveText,
+                    isEditable: true,
+                    isEmpty: textField.text?.isEmpty ?? true
                 )
             )
         )
@@ -243,7 +230,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(switchControl: UISwitch) {
         self.init(
             semantics: .switchControl(.init(isOn: switchControl.isOn)),
-            ignoreSubtree: true
+            ignoreSublayers: true
         )
     }
 }
@@ -254,12 +241,18 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     struct WebViewSemantics: Sendable, Equatable {
         let slotID: Int
+        let slotFrame: CGRect
     }
 
-    fileprivate init(webView: WKWebView) {
+    fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
         self.init(
-            semantics: .webView(.init(slotID: webView.hash)),
-            ignoreSubtree: true
+            semantics: .webView(
+                .init(
+                    slotID: webView.hash,
+                    slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
+                )
+            ),
+            ignoreSublayers: true
         )
     }
 }

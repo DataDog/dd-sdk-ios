@@ -252,7 +252,8 @@ extension FlagsClient: FlagsClientProtocol {
             key: key,
             value: value,
             variant: flagAssignment.variationKey,
-            reason: flagAssignment.reason
+            reason: flagAssignment.reason,
+            allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
 
         trackEvaluation(key: key, assignment: flagAssignment, context: context)

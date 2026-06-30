@@ -128,13 +128,13 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
     /// Reads a block type.
     private func readType() throws -> BlockType.RawValue {
         let data = try read(length: MemoryLayout<BlockType.RawValue>.size)
-        return data.withUnsafeBytes { $0.load(as: BlockType.RawValue.self) }
+        return data.withUnsafeBytes { $0.loadUnaligned(as: BlockType.RawValue.self) }
     }
 
     /// Reads block data.
     private func readData() throws -> Data {
         let data = try read(length: MemoryLayout<TLVBlockSize>.size)
-        let size = data.withUnsafeBytes { $0.load(as: TLVBlockSize.self) }
+        let size = data.withUnsafeBytes { $0.loadUnaligned(as: TLVBlockSize.self) }
 
         // even if `Int` is able to represent all `TLVBlockSize` on 64 bit
         // arch, we make sure to avoid overflow and get the exact data

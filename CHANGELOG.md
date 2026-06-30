@@ -1,6 +1,17 @@
 # Unreleased
 
-# 3.12.0 / 04-06-2026
+# 3.13.0 / 30-06-2026
+
+- [FEATURE] Expose `allocationKey` as a top-level property on `FlagDetails` for callers using `getDetails(key:defaultValue:)`. See [#2989][]
+- [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
+- [FIX] Fix `DatadogFlags` exposure deduplication so assignment changes for the same subject and flag emit new exposure events. See [#2987][]
+- [IMPROVEMENT] DatadogTrace now leverages Swift 6 compile time checking against data races. Types like `DDSpan` and `OTSpan` are now marked as Sendable and can be used safely across isolation barriers. External dependency `opentelemetry-swift-core` version was updated to 2.5.0. See [#2876][]
+- [FIX] Fix watchOS uploads blocked by NWPathMonitor always reporting no reachability. See [#2975][]
+- [FIX] Fix several instances where misaligned memory could be loaded without proper checking. See [#2995][]
+- [FIX] Prevent OOM in `URLSessionInstrumentation.enableDurationBreakdown`: media response bodies are no longer buffered; all other bodies are capped at 512 KB. The `data` parameter of `resourceAttributesProvider` reflects these constraints. See [#3019][]
+- [FEATURE] Add wildcard host pattern matching to first-party hosts tracing. See [#2981][]
+
+# 3.12.0 / 05-06-2026
 
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
@@ -9,6 +20,7 @@
 - [FIX] Prevent crash misattribution when an inactive RUM view emits a terminal event after `stopResource()`. See [#2948][]
 - [FIX] Fix wrong types in the `objc_LogEventDevice` properties definition. See [#2966][]
 - [FIX] Expose RUM operation options to Objective-C from `DatadogRUM`. See [#2969][]
+- [IMPROVEMENT] Add Objective-C API support for custom SDK instance names across all modules. See [#2955][]
 
 # 3.11.1 / 28-05-2026
 
@@ -1159,6 +1171,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2855]: https://github.com/DataDog/dd-sdk-ios/pull/2855
 [#2856]: https://github.com/DataDog/dd-sdk-ios/pull/2856
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
+[#2876]: https://github.com/DataDog/dd-sdk-ios/pull/2876
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
 [#2941]: https://github.com/DataDog/dd-sdk-ios/pull/2941
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
@@ -1170,6 +1183,13 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
+[#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
+[#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
+[#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
+[#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
+[#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
+[#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
+[#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
