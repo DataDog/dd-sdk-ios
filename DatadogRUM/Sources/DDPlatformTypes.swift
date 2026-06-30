@@ -45,7 +45,7 @@ public typealias DDCollectionViewCell = UICollectionViewCell
 // MARK: - Accessibility
 public typealias DDAccessibility = UIAccessibility
 
-public typealias FrameworkKitRUMActionsPredicate = UIKitRUMActionsPredicate
+public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
 
 #elseif canImport(AppKit)
 import AppKit
@@ -99,6 +99,6 @@ extension NSApplication {
 }
 
 // MARK: - SDK specific
-public typealias FrameworkKitRUMActionsPredicate = AppKitRUMActionsPredicate
+public typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
 
 #endif
