@@ -108,6 +108,6 @@ internal struct TraceClientStatsConsentReceiver: FeatureMessageReceiver {
             return false
         }
         concentrator?.updateConsent(context.trackingConsent)
-        return false
+        return true
     }
 }
