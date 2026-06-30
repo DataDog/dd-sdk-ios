@@ -318,7 +318,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             let foregroundDuration = history.foregroundDuration(during: fetchDuration)
             span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd.toNanoseconds)
 
-            #if !os(macOS)
+            #if os(macOS)
+            span.setTag(key: SpanTags.isBackground, value: false)
+            #else
             let didStartInBackground = history.state(at: startTime) == .background
             let doesEndInBackground = history.state(at: safeEndTime) == .background
             span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
