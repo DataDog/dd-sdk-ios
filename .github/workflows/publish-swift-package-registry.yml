@@ -1,0 +1,28 @@
+name: Publish to Swift Package Registry
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Publish to Swift Package Registry
+        env:
+          SWIFT_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          swift package-registry login https://swift.pkg.github.com/DataDog \
+            --token "$SWIFT_REGISTRY_TOKEN"
+
+          swift package-registry publish datadog.dd-sdk-ios@"${VERSION}" \
+            --registry-url https://swift.pkg.github.com/DataDog
