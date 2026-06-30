@@ -336,6 +336,26 @@ public class Tracer
 # API surface for DatadogRUM:
 # ----------------------------------
 
+public typealias DDView = UIView
+public typealias DDControl = UIControl
+public typealias DDLabel = UILabel
+public typealias DDButton = UIButton
+public typealias DDScrollView = UIScrollView
+public typealias DDStackView = UIStackView
+public typealias DDSegmentedControl = UISegmentedControl
+public typealias DDWindow = UIWindow
+public typealias DDScreen = UIScreen
+public typealias DDViewController = UIViewController
+public typealias DDNavigationController = UINavigationController
+public typealias DDTabBarController = UITabBarController
+public typealias DDEvent = UIEvent
+public typealias DDTouch = UITouch
+public typealias DDColor = UIColor
+public typealias DDFont = UIFont
+public typealias DDTableViewCell = UITableViewCell
+public typealias DDCollectionViewCell = UICollectionViewCell
+public typealias DDAccessibility = UIAccessibility
+public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
 public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]
@@ -350,15 +370,15 @@ public struct DefaultSwiftUIRUMActionsPredicate
     public func rumAction(with componentName: String) -> RUMAction?
 public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
 public protocol UITouchRUMActionsPredicate
-    func rumAction(targetView: UIView) -> RUMAction?
+    func rumAction(targetView: DDView) -> RUMAction?
 public protocol UIPressRUMActionsPredicate
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+    func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction?
 public struct DefaultUIKitRUMActionsPredicate
     public init ()
 [?] extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate
-    public func rumAction(targetView: UIView) -> RUMAction?
+    public func rumAction(targetView: DDView) -> RUMAction?
 [?] extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate
-    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+    public func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction?
 public struct RUMView
     public var name: String
     public var path: String?
@@ -373,10 +393,10 @@ public struct DefaultSwiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate
 public extension SwiftUI.View
     func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
 public protocol UIKitRUMViewsPredicate
-    func rumView(for viewController: UIViewController) -> RUMView?
+    func rumView(for viewController: DDViewController) -> RUMView?
 public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
     public init ()
-    public func rumView(for viewController: UIViewController) -> RUMView?
+    public func rumView(for viewController: DDViewController) -> RUMView?
 [?] extension InternalExtension where ExtendedType == RUM
     public static func isEnabled(in core: DatadogCoreProtocol = CoreRegistry.default) -> Bool
     public static func enableURLSessionTracking(with configuration: RUM.Configuration.URLSessionTracking,in core: DatadogCoreProtocol = CoreRegistry.default) throws
@@ -397,7 +417,7 @@ public enum RUM
         public let applicationID: String
         public var sessionSampleRate: Float
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
-        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        public var uiKitActionsPredicate: DDKitRUMActionsPredicate?
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
         public var swiftUIActionsPredicate: SwiftUIRUMActionsPredicate?
         public var urlSessionTracking: URLSessionTracking?
@@ -443,7 +463,7 @@ public enum RUM
         case matchHeaders([String])
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: DDKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
@@ -478,8 +498,8 @@ public struct TimeBasedINVActionPredicate: NextViewActionPredicate
 public class RUMMonitor
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> RUMMonitorProtocol
 public extension RUMMonitorProtocol
-    func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
-    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
+    func startView(viewController: DDViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopView(viewController: DDViewController,attributes: [AttributeKey: AttributeValue] = [:])
     func startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
     func addError(message: String,type: String? = nil,stack: String? = nil,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #fileID,line: UInt? = #line)
@@ -559,8 +579,8 @@ public protocol RUMMonitorViewProtocol: AnyObject
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue])
     func removeViewAttribute(forKey key: AttributeKey)
     func removeViewAttributes(forKeys keys: [AttributeKey])
-    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
-    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+    func startView(viewController: DDViewController,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(viewController: DDViewController,attributes: [AttributeKey: AttributeValue])
     func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue])
     func addTiming(name: String)

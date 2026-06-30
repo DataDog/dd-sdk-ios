@@ -11,7 +11,7 @@ let package = Package(
     platforms: [
         .iOS(.v12),
         .tvOS(.v12),
-        .macOS("12.6"),
+        .macOS("12.0"),
         .watchOS(.v7),
         .visionOS(.v1)
     ],
