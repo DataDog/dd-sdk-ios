@@ -7,7 +7,6 @@
 import Foundation
 import DatadogInternal
 
-#if !os(macOS)
 @testable import DatadogLogs
 @testable import DatadogRUM
 @testable import DatadogCrashReporting
@@ -201,4 +200,3 @@ extension CrashContext {
 
     public var data: Data { try! JSONEncoder.dd.default().encode(self) }
 }
-#endif
