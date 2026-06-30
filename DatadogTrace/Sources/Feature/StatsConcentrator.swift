@@ -210,14 +210,17 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// so consent transitions stay ordered with `add`, `flush`, and the revoke clear and cannot be
     /// observed out of order across threads.
     ///
-    /// Starts gated (`.notGranted`) so nothing is aggregated until the first context message
-    /// confirms the real consent. The core delivers that context right after registration, before
-    /// spans realistically start finishing.
+    /// Starts at `.pending`, the SDK's default until consent is known. This is a record-but-hold
+    /// state: spans in the startup window are aggregated, yet nothing is uploaded until the first
+    /// context message confirms consent, because the flush writer is consent-gated and the buffer
+    /// is cleared if consent turns out to be `.notGranted`. Defaulting to a recording state (rather
+    /// than `.notGranted`) avoids dropping spans that are stamped `_dd.compute_stats=0`, which would
+    /// otherwise leave the backend with no stats and no client bucket for that window.
     private var currentConsent: TrackingConsent
 
     init(
         now: Nanoseconds,
-        initialConsent: TrackingConsent = .notGranted,
+        initialConsent: TrackingConsent = .pending,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
