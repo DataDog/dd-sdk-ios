@@ -507,11 +507,16 @@ extension Telemetry {
     ///
     ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
     ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
+    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate) {
         guard Sampler(samplingRate: sampleRate).sample() else {
             return
         }
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
+    }
+
+    /// Collects a metric value using the default sample rate.
+    public func metric(name: String, attributes: [String: Encodable]) {
+        metric(name: name, attributes: attributes, sampleRate: MetricTelemetry.defaultSampleRate)
     }
 
     /// Collects a usage telemetry event.
@@ -523,11 +528,16 @@ extension Telemetry {
     ///
     ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
     ///     and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
-    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate = UsageTelemetry.defaultSampleRate) {
+    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate) {
         guard Sampler(samplingRate: sampleRate).sample() else {
             return
         }
         send(telemetry: .usage(UsageTelemetry(event: event, sampleRate: sampleRate)))
+    }
+
+    /// Collects a usage telemetry event using the default sample rate.
+    public func usage(event: UsageTelemetry.Event) {
+        usage(event: event, sampleRate: UsageTelemetry.defaultSampleRate)
     }
 }
 
