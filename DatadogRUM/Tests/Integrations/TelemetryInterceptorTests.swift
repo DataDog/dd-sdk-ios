@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-@testable import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 @testable import DatadogRUM
 
 class TelemetryInterceptorTests: XCTestCase {

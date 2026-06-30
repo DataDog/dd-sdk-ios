@@ -5,7 +5,8 @@
  */
 
 import Foundation
-@testable import DatadogInternal
+@_spi(Internal)
+import DatadogInternal
 
 public class CoreLoggerMock: CoreLogger {
     @ReadWriteLock
