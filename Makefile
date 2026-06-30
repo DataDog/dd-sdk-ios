@@ -203,6 +203,9 @@ test-macos:
 # Run unit tests for all macOS schemes (only DatadogInternal is macOS-ready for now)
 test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogInternal"
+	@$(MAKE) test-macos SCHEME="DatadogLogs"
+	@$(MAKE) test-macos SCHEME="DatadogTrace"
+	@$(MAKE) test-macos SCHEME="DatadogFlags"
 
 # Run UI tests for specified TEST_PLAN
 ui-test:
