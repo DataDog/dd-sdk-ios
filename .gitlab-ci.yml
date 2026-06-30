@@ -344,25 +344,6 @@ SPM Build (Swift 6.2):
     - make spm-build-macos
     - make spm-build-watchos
 
-SPM Build (Swift 6.0):
-  stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
-  tags:
-    - macos:sonoma
-    - specific:true
-  variables:
-    XCODE: "16.2.0"
-  script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --visionOS --watchOS
-    - make clean repo-setup ENV=ci
-    - make spm-build-ios
-    - make spm-build-tvos
-    - make spm-build-visionos
-    - make spm-build-macos
-    - make spm-build-watchos
-
 SPI Docs Build:
   stage: lint
   rules: 
@@ -451,13 +432,8 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
-  tags:
-    - macos:sonoma
-    - specific:true
   rules:
     - !reference [.release-pipeline-job, rules]
-  variables:
-    XCODE: "16.2.0"
   id_tokens:
     <<: *dd-octo-sts-id-token
   artifacts:
@@ -467,7 +443,7 @@ Build Artifacts:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$XCODE" --ssh
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE" --ssh
     - make env-check
     - make clean
     - make release-build release-validate
