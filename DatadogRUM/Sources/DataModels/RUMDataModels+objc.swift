@@ -1413,6 +1413,11 @@ public class objc_RUMErrorEventDD: NSObject {
         root.swiftModel.dd.configuration != nil ? objc_RUMErrorEventDDConfiguration(root: root) : nil
     }
 
+    public var debugIds: [objc_RUMErrorEventDDDebugIds]? {
+        set { root.swiftModel.dd.debugIds = newValue?.map { $0.swiftModel } }
+        get { root.swiftModel.dd.debugIds?.map { objc_RUMErrorEventDDDebugIds(swiftModel: $0) } }
+    }
+
     public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
@@ -1473,6 +1478,23 @@ public class objc_RUMErrorEventDDConfiguration: NSObject {
     }
 }
 
+@objc(DDRUMErrorEventDDDebugIds)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventDDDebugIds: NSObject {
+    internal var swiftModel: RUMErrorEvent.DD.DebugIds
+    internal var root: objc_RUMErrorEventDDDebugIds { self }
+
+    internal init(swiftModel: RUMErrorEvent.DD.DebugIds) {
+        self.swiftModel = swiftModel
+    }
+
+    public var debugIdsInfo: [String: String] {
+        set { root.swiftModel.debugIdsInfo = newValue }
+        get { root.swiftModel.debugIdsInfo }
+    }
+}
+
 @objc(DDRUMErrorEventDDProfiling)
 @objcMembers
 @_spi(objc)
@@ -1485,6 +1507,10 @@ public class objc_RUMErrorEventDDProfiling: NSObject {
 
     public var errorReason: objc_RUMErrorEventDDProfilingErrorReason {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
     }
 
     public var status: objc_RUMErrorEventDDProfilingStatus {
@@ -1520,6 +1546,45 @@ public enum objc_RUMErrorEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMErrorEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMErrorEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMErrorEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMErrorEventDDProfilingStatus)
@@ -3283,6 +3348,11 @@ public class objc_RUMLongTaskEventDD: NSObject {
         root.swiftModel.dd.configuration != nil ? objc_RUMLongTaskEventDDConfiguration(root: root) : nil
     }
 
+    public var debugIds: [objc_RUMLongTaskEventDDDebugIds]? {
+        set { root.swiftModel.dd.debugIds = newValue?.map { $0.swiftModel } }
+        get { root.swiftModel.dd.debugIds?.map { objc_RUMLongTaskEventDDDebugIds(swiftModel: $0) } }
+    }
+
     public var discarded: NSNumber? {
         root.swiftModel.dd.discarded as NSNumber?
     }
@@ -3331,6 +3401,23 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
     }
 }
 
+@objc(DDRUMLongTaskEventDDDebugIds)
+@objcMembers
+@_spi(objc)
+public class objc_RUMLongTaskEventDDDebugIds: NSObject {
+    internal var swiftModel: RUMLongTaskEvent.DD.DebugIds
+    internal var root: objc_RUMLongTaskEventDDDebugIds { self }
+
+    internal init(swiftModel: RUMLongTaskEvent.DD.DebugIds) {
+        self.swiftModel = swiftModel
+    }
+
+    public var debugIdsInfo: [String: String] {
+        set { root.swiftModel.debugIdsInfo = newValue }
+        get { root.swiftModel.debugIdsInfo }
+    }
+}
+
 @objc(DDRUMLongTaskEventDDProfiling)
 @objcMembers
 @_spi(objc)
@@ -3343,6 +3430,10 @@ public class objc_RUMLongTaskEventDDProfiling: NSObject {
 
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
     }
 
     public var status: objc_RUMLongTaskEventDDProfilingStatus {
@@ -3378,6 +3469,45 @@ public enum objc_RUMLongTaskEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMLongTaskEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMLongTaskEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMLongTaskEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMLongTaskEventDDProfilingStatus)
@@ -6340,6 +6470,10 @@ public class objc_RUMViewEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMViewEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMViewEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -6373,6 +6507,45 @@ public enum objc_RUMViewEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMViewEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMViewEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMViewEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMViewEventDDProfilingStatus)
@@ -8303,6 +8476,10 @@ public class objc_RUMViewUpdateEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    public var cls: objc_RUMViewUpdateEventDDCLS? {
+        root.swiftModel.dd.cls != nil ? objc_RUMViewUpdateEventDDCLS(root: root) : nil
+    }
+
     public var configuration: objc_RUMViewUpdateEventDDConfiguration? {
         root.swiftModel.dd.configuration != nil ? objc_RUMViewUpdateEventDDConfiguration(root: root) : nil
     }
@@ -8315,12 +8492,39 @@ public class objc_RUMViewUpdateEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    public var pageStates: [objc_RUMViewUpdateEventDDPageStates]? {
+        root.swiftModel.dd.pageStates?.map { objc_RUMViewUpdateEventDDPageStates(swiftModel: $0) }
+    }
+
+    public var profiling: objc_RUMViewUpdateEventDDProfiling? {
+        root.swiftModel.dd.profiling != nil ? objc_RUMViewUpdateEventDDProfiling(root: root) : nil
+    }
+
+    public var replayStats: objc_RUMViewUpdateEventDDReplayStats? {
+        root.swiftModel.dd.replayStats != nil ? objc_RUMViewUpdateEventDDReplayStats(root: root) : nil
+    }
+
     public var sdkName: String? {
         root.swiftModel.dd.sdkName
     }
 
     public var session: objc_RUMViewUpdateEventDDSession? {
         root.swiftModel.dd.session != nil ? objc_RUMViewUpdateEventDDSession(root: root) : nil
+    }
+}
+
+@objc(DDRUMViewUpdateEventDDCLS)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventDDCLS: NSObject {
+    internal let root: objc_RUMViewUpdateEvent
+
+    internal init(root: objc_RUMViewUpdateEvent) {
+        self.root = root
+    }
+
+    public var devicePixelRatio: NSNumber? {
+        root.swiftModel.dd.cls!.devicePixelRatio as NSNumber?
     }
 }
 
@@ -8346,8 +8550,207 @@ public class objc_RUMViewUpdateEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 
+    public var startSessionReplayRecordingManually: NSNumber? {
+        root.swiftModel.dd.configuration!.startSessionReplayRecordingManually as NSNumber?
+    }
+
     public var traceSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
+}
+
+@objc(DDRUMViewUpdateEventDDPageStates)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventDDPageStates: NSObject {
+    internal var swiftModel: RUMViewUpdateEvent.DD.PageStates
+    internal var root: objc_RUMViewUpdateEventDDPageStates { self }
+
+    internal init(swiftModel: RUMViewUpdateEvent.DD.PageStates) {
+        self.swiftModel = swiftModel
+    }
+
+    public var start: NSNumber {
+        root.swiftModel.start as NSNumber
+    }
+
+    public var state: objc_RUMViewUpdateEventDDPageStatesState {
+        .init(swift: root.swiftModel.state)
+    }
+}
+
+@objc(DDRUMViewUpdateEventDDPageStatesState)
+@_spi(objc)
+public enum objc_RUMViewUpdateEventDDPageStatesState: Int {
+    internal init(swift: RUMViewUpdateEvent.DD.PageStates.State) {
+        switch swift {
+        case .active: self = .active
+        case .passive: self = .passive
+        case .hidden: self = .hidden
+        case .frozen: self = .frozen
+        case .terminated: self = .terminated
+        }
+    }
+
+    internal var toSwift: RUMViewUpdateEvent.DD.PageStates.State {
+        switch self {
+        case .active: return .active
+        case .passive: return .passive
+        case .hidden: return .hidden
+        case .frozen: return .frozen
+        case .terminated: return .terminated
+        }
+    }
+
+    case active
+    case passive
+    case hidden
+    case frozen
+    case terminated
+}
+
+@objc(DDRUMViewUpdateEventDDProfiling)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventDDProfiling: NSObject {
+    internal let root: objc_RUMViewUpdateEvent
+
+    internal init(root: objc_RUMViewUpdateEvent) {
+        self.root = root
+    }
+
+    public var errorReason: objc_RUMViewUpdateEventDDProfilingErrorReason {
+        .init(swift: root.swiftModel.dd.profiling!.errorReason)
+    }
+
+    public var quotaReason: objc_RUMViewUpdateEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
+    public var status: objc_RUMViewUpdateEventDDProfilingStatus {
+        .init(swift: root.swiftModel.dd.profiling!.status)
+    }
+}
+
+@objc(DDRUMViewUpdateEventDDProfilingErrorReason)
+@_spi(objc)
+public enum objc_RUMViewUpdateEventDDProfilingErrorReason: Int {
+    internal init(swift: RUMViewUpdateEvent.DD.Profiling.ErrorReason?) {
+        switch swift {
+        case nil: self = .none
+        case .notSupportedByBrowser?: self = .notSupportedByBrowser
+        case .failedToLazyLoad?: self = .failedToLazyLoad
+        case .missingDocumentPolicyHeader?: self = .missingDocumentPolicyHeader
+        case .unexpectedException?: self = .unexpectedException
+        }
+    }
+
+    internal var toSwift: RUMViewUpdateEvent.DD.Profiling.ErrorReason? {
+        switch self {
+        case .none: return nil
+        case .notSupportedByBrowser: return .notSupportedByBrowser
+        case .failedToLazyLoad: return .failedToLazyLoad
+        case .missingDocumentPolicyHeader: return .missingDocumentPolicyHeader
+        case .unexpectedException: return .unexpectedException
+        }
+    }
+
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+}
+
+@objc(DDRUMViewUpdateEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMViewUpdateEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMViewUpdateEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMViewUpdateEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+}
+
+@objc(DDRUMViewUpdateEventDDProfilingStatus)
+@_spi(objc)
+public enum objc_RUMViewUpdateEventDDProfilingStatus: Int {
+    internal init(swift: RUMViewUpdateEvent.DD.Profiling.Status?) {
+        switch swift {
+        case nil: self = .none
+        case .starting?: self = .starting
+        case .running?: self = .running
+        case .stopped?: self = .stopped
+        case .error?: self = .error
+        }
+    }
+
+    internal var toSwift: RUMViewUpdateEvent.DD.Profiling.Status? {
+        switch self {
+        case .none: return nil
+        case .starting: return .starting
+        case .running: return .running
+        case .stopped: return .stopped
+        case .error: return .error
+        }
+    }
+
+    case none
+    case starting
+    case running
+    case stopped
+    case error
+}
+
+@objc(DDRUMViewUpdateEventDDReplayStats)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventDDReplayStats: NSObject {
+    internal let root: objc_RUMViewUpdateEvent
+
+    internal init(root: objc_RUMViewUpdateEvent) {
+        self.root = root
+    }
+
+    public var recordsCount: NSNumber? {
+        root.swiftModel.dd.replayStats!.recordsCount as NSNumber?
+    }
+
+    public var segmentsCount: NSNumber? {
+        root.swiftModel.dd.replayStats!.segmentsCount as NSNumber?
+    }
+
+    public var segmentsTotalRawSize: NSNumber? {
+        root.swiftModel.dd.replayStats!.segmentsTotalRawSize as NSNumber?
     }
 }
 
@@ -10284,6 +10687,10 @@ public class objc_RUMVitalAppLaunchEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalAppLaunchEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalAppLaunchEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -10317,6 +10724,45 @@ public enum objc_RUMVitalAppLaunchEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalAppLaunchEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalAppLaunchEventDDProfilingStatus)
@@ -11397,6 +11843,10 @@ public class objc_RUMVitalDurationEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalDurationEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalDurationEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -11430,6 +11880,45 @@ public enum objc_RUMVitalDurationEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalDurationEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalDurationEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalDurationEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalDurationEventDDProfilingStatus)
@@ -12449,6 +12938,10 @@ public class objc_RUMVitalOperationStepEventDDProfiling: NSObject {
         .init(swift: root.swiftModel.dd.profiling!.errorReason)
     }
 
+    public var quotaReason: objc_RUMVitalOperationStepEventDDProfilingQuotaReason {
+        .init(swift: root.swiftModel.dd.profiling!.quotaReason)
+    }
+
     public var status: objc_RUMVitalOperationStepEventDDProfilingStatus {
         .init(swift: root.swiftModel.dd.profiling!.status)
     }
@@ -12482,6 +12975,45 @@ public enum objc_RUMVitalOperationStepEventDDProfilingErrorReason: Int {
     case failedToLazyLoad
     case missingDocumentPolicyHeader
     case unexpectedException
+}
+
+@objc(DDRUMVitalOperationStepEventDDProfilingQuotaReason)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventDDProfilingQuotaReason: Int {
+    internal init(swift: RUMVitalOperationStepEvent.DD.Profiling.QuotaReason?) {
+        switch swift {
+        case nil: self = .none
+        case .quotaOk?: self = .quotaOk
+        case .quotaExceeded?: self = .quotaExceeded
+        case .orgDisabled?: self = .orgDisabled
+        case .backendUnavailable?: self = .backendUnavailable
+        case .undefined?: self = .undefined
+        case .timeout?: self = .timeout
+        case .apiError?: self = .apiError
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.DD.Profiling.QuotaReason? {
+        switch self {
+        case .none: return nil
+        case .quotaOk: return .quotaOk
+        case .quotaExceeded: return .quotaExceeded
+        case .orgDisabled: return .orgDisabled
+        case .backendUnavailable: return .backendUnavailable
+        case .undefined: return .undefined
+        case .timeout: return .timeout
+        case .apiError: return .apiError
+        }
+    }
+
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
 }
 
 @objc(DDRUMVitalOperationStepEventDDProfilingStatus)
@@ -15015,4 +15547,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/dacedf0e5a6034a47967c142cfb9f4fe3c10464a
+// Generated from https://github.com/DataDog/rum-events-format/tree/fb4598e35bffee32ea3f29e070004ae0c745bbb3

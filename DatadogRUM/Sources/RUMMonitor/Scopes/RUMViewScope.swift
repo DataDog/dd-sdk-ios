@@ -106,6 +106,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
 
+    /// The last full view event sent through the mapper, stored for `viewUpdates` projection.
+    /// `nil` until the first event is written; non-`nil` after that.
+    private var lastSentViewEvent: RUMViewEvent?
+
     /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
     private var needsViewUpdate = false
@@ -673,11 +677,26 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(
-                value: event,
-                metadata: event.metadata(viewIndexInSession: viewIndexInSession),
-                completion: completionHandler
-            )
+            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent {
+                let update = previousEvent.update(from: event)
+                lastSentViewEvent = event
+                writer.write(value: update, completion: completionHandler)
+            } else {
+                writer.write(
+                    value: event,
+                    metadata: event.metadata(viewIndexInSession: viewIndexInSession),
+                    completion: completionHandler
+                )
+                // Only promote to baseline if the event will not be dropped by RUMViewEventsFilter.
+                // The filter discards events where indexInSession == 0 AND duration == 1ns — the initial
+                // view's placeholder written when command.time == viewStartTime. Storing that dropped event
+                // as baseline would produce deltas against an event the backend never received.
+                // Subsequent views' 1ns start event is kept by the filter, so it is safe as baseline.
+                if dependencies.featureFlags[.viewUpdates],
+                   viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
+                    lastSentViewEvent = event
+                }
+            }
 
             // Only update fatal error context when this event describes the still-active view,
             // an inactive view's terminal event must not clobber the active view's pointer.

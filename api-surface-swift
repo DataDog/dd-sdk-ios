@@ -451,6 +451,7 @@ public enum RUM
     public enum FeatureFlag: String
         case none
         case trackScrollAndSwipeActions
+        case viewUpdates
 [?] extension RUM.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
