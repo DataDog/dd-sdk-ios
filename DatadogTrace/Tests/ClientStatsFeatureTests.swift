@@ -82,8 +82,8 @@ class ClientStatsFeatureTests: XCTestCase {
             from: core
         )
 
-        // Then: the message is observed (not consumed) and the buffered data is dropped
-        XCTAssertFalse(handled)
+        // Then: the message is processed and the buffered data is dropped
+        XCTAssertTrue(handled)
         XCTAssertTrue(concentrator.flush(now: 100_000_000_000, force: true).isEmpty)
     }
 
