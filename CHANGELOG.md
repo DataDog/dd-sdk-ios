@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.13.0 / 30-06-2026
+
 - [FEATURE] Expose `allocationKey` as a top-level property on `FlagDetails` for callers using `getDetails(key:defaultValue:)`. See [#2989][]
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
 - [FIX] Fix `DatadogFlags` exposure deduplication so assignment changes for the same subject and flag emit new exposure events. See [#2987][]
@@ -9,7 +11,7 @@
 - [FIX] Prevent OOM in `URLSessionInstrumentation.enableDurationBreakdown`: media response bodies are no longer buffered; all other bodies are capped at 512 KB. The `data` parameter of `resourceAttributesProvider` reflects these constraints. See [#3019][]
 - [FEATURE] Add wildcard host pattern matching to first-party hosts tracing. See [#2981][]
 
-# 3.12.0 / 04-06-2026
+# 3.12.0 / 05-06-2026
 
 - [FEATURE] Instrumented Web Views now have their tracing decision consistent with the native SDK. See [#2859][]
 - [IMPROVEMENT] Align public RUM session IDs with event formatting. See [#2956][]
