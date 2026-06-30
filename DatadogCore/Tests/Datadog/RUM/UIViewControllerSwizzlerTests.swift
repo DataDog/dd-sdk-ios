@@ -27,7 +27,7 @@ private class ViewControllerMock: UIViewController {
 
 class UIViewControllerSwizzlerTests: XCTestCase {
     private let handler = UIKitRUMViewsHandlerMock()
-    private lazy var swizzler = try! UIViewControllerSwizzler(handler: handler)
+    private lazy var swizzler = try! DDViewControllerSwizzler(handler: handler)
 
     override func setUp() {
         super.setUp()

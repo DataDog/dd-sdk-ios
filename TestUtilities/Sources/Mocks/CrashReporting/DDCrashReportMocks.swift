@@ -7,7 +7,6 @@
 import Foundation
 import DatadogInternal
 
-#if !os(macOS)
 @testable import DatadogCrashReporting
 
 extension DDCrashReport: AnyMockable, RandomMockable {
@@ -109,4 +108,3 @@ extension DDCrashReport.Meta: AnyMockable, RandomMockable {
         )
     }
 }
-#endif
