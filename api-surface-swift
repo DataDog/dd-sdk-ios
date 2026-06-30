@@ -601,7 +601,7 @@ public enum WebViewTracking
 
 [?] extension SRTextPosition.Alignment
     public init(systemTextAlignment: NSTextAlignment,vertical: SRTextPosition.Alignment.Vertical = .center)
-public struct SRCompositionLayer: Codable
+public struct SRCompositionLayer: Codable, Hashable
     public let children: [SRCompositionLayerChild]
     public let compositeOperation: CompositeOperation?
     public let height: Int64
@@ -624,7 +624,7 @@ public struct SRCompositionLayer: Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
         case plusDarker = "plusDarker"
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable
+public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable
     public let kind: Kind
     public let type: String = "backgroundMaterial"
     public enum CodingKeys: String, CodingKey
@@ -633,14 +633,14 @@ public struct SRCompositionLayerBackgroundMaterialModifier: Codable
     public init(kind: Kind)
     public enum Kind: String, Codable
         case glass = "glass"
-public struct SRCompositionLayerBrightnessBiasModifier: Codable
+public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable
     public let type: String = "brightnessBias"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerChild: Codable
+public struct SRCompositionLayerChild: Codable, Hashable
     public let id: Int64
     public let type: SRCompositionLayerChildType
     public enum CodingKeys: String, CodingKey
@@ -650,7 +650,7 @@ public struct SRCompositionLayerChild: Codable
 public enum SRCompositionLayerChildType: String, Codable
     case wireframe = "wireframe"
     case layer = "layer"
-public struct SRCompositionLayerClipModifier: Codable
+public struct SRCompositionLayerClipModifier: Codable, Hashable
     public let fillRule: FillRule?
     public let path: String
     public let type: String = "clip"
@@ -662,21 +662,21 @@ public struct SRCompositionLayerClipModifier: Codable
     public enum FillRule: String, Codable
         case nonzero = "nonzero"
         case evenodd = "evenodd"
-public struct SRCompositionLayerColorMatrixModifier: Codable
+public struct SRCompositionLayerColorMatrixModifier: Codable, Hashable
     public let matrix: [Double]
     public let type: String = "colorMatrix"
     public enum CodingKeys: String, CodingKey
         case matrix = "matrix"
         case type = "type"
     public init(matrix: [Double])
-public struct SRCompositionLayerGaussianBlurModifier: Codable
+public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable
     public let radius: Double
     public let type: String = "gaussianBlur"
     public enum CodingKeys: String, CodingKey
         case radius = "radius"
         case type = "type"
     public init(radius: Double)
-public enum SRCompositionLayerModifier: Codable
+public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerClipModifier(value: SRCompositionLayerClipModifier)
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
@@ -686,21 +686,21 @@ public enum SRCompositionLayerModifier: Codable
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
-public struct SRCompositionLayerOpacityModifier: Codable
+public struct SRCompositionLayerOpacityModifier: Codable, Hashable
     public let type: String = "opacity"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerSaturateModifier: Codable
+public struct SRCompositionLayerSaturateModifier: Codable, Hashable
     public let type: String = "saturate"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerUpdate: Codable
+public struct SRCompositionLayerUpdate: Codable, Hashable
     public let children: [SRCompositionLayerChild]?
     public let compositeOperation: CompositeOperation?
     public let height: Int64?
