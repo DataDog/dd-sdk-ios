@@ -205,8 +205,22 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private var buckets: [UInt64: StatsBucket] = [:]
     private var oldestTs: UInt64
 
+    /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
+    /// `.notGranted` stops aggregation and drops any data buffered in memory. Confined to `queue`,
+    /// so consent transitions stay ordered with `add`, `flush`, and the revoke clear and cannot be
+    /// observed out of order across threads.
+    ///
+    /// Starts at `.pending`, the SDK's default until consent is known. This is a record-but-hold
+    /// state: spans in the startup window are aggregated, yet nothing is uploaded until the first
+    /// context message confirms consent, because the flush writer is consent-gated and the buffer
+    /// is cleared if consent turns out to be `.notGranted`. Defaulting to a recording state (rather
+    /// than `.notGranted`) avoids dropping spans that are stamped `_dd.compute_stats=0`, which would
+    /// otherwise leave the backend with no stats and no client bucket for that window.
+    private var currentConsent: TrackingConsent
+
     init(
         now: Nanoseconds,
+        initialConsent: TrackingConsent = .pending,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
@@ -215,6 +229,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
         self.bufferLen = bufferLen
         self.peerTagKeys = peerTagKeys
         self.oldestTs = StatsConcentrator.alignTimestamp(now, bucketDuration: bucketDuration)
+        self.currentConsent = initialConsent
     }
 
     // MARK: - Add
@@ -233,6 +248,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
 
         queue.async { [self] in
+            // Drop the span when consent is not granted. Checking on the serial queue (rather than
+            // off-queue) keeps the decision ordered with consent changes and the revoke clear, so a
+            // span recorded around a revocation cannot slip past or be re-added after the buffer is
+            // cleared.
+            guard currentConsent != .notGranted else {
+                return
+            }
+
             let bucketKey = max(
                 Self.alignTimestamp(endTime, bucketDuration: bucketDuration),
                 oldestTs
@@ -257,6 +280,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// - Returns: Array of exported buckets ready for serialization.
     func flush(now: Nanoseconds, force: Bool) -> [ExportedBucket] {
         return queue.sync {
+            // Never export while consent is not granted. The storage writer already drops these
+            // writes, but returning early avoids needlessly serializing the sketches.
+            guard currentConsent != .notGranted else {
+                return []
+            }
+
             let cutoff = force ? Int64.max : Int64(now) - Int64(bufferLen) * Int64(bucketDuration)
             var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
@@ -309,6 +338,26 @@ internal final class StatsConcentrator: @unchecked Sendable {
             }
 
             return flushed
+        }
+    }
+
+    // MARK: - Consent
+
+    /// Updates the tracking consent that gates aggregation.
+    ///
+    /// `.granted` and `.pending` are both recording states, so transitions between them need no
+    /// action: data already written to storage is migrated by the core, and in-memory data keeps
+    /// accumulating. Revoking consent (`→ .notGranted`) discards the in-memory buffer so spans
+    /// aggregated before the revocation are never uploaded, even if consent is later re-granted.
+    func updateConsent(_ consent: TrackingConsent) {
+        queue.async { [self] in
+            currentConsent = consent
+            // Revoking consent discards everything buffered in memory so spans aggregated before
+            // the revocation are never uploaded, even if consent is later granted again. Running on
+            // the queue orders this clear with any in-flight `add` and `flush` work.
+            if consent == .notGranted {
+                buckets.removeAll()
+            }
         }
     }
 
