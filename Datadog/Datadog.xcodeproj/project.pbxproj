@@ -1271,6 +1271,7 @@
 		E7CSS01129C4D5A800000011 /* SpanSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS01429C4D5A800000014 /* SpanSnapshot.swift */; };
 		E7CSS01329C4D5A800000013 /* SpanSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS01629C4D5A800000016 /* SpanSnapshotTests.swift */; };
 		E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */; };
+		E7CSS08129C4D5A800000081 /* TraceClientStatsMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS08429C4D5A800000084 /* TraceClientStatsMetric.swift */; };
 		E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */; };
 		E7CSS00329C4D5A800000003 /* ClientStatsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */; };
 		E7CSS02129C4D5A800000021 /* StatsConcentrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CSS02429C4D5A800000024 /* StatsConcentrator.swift */; };
@@ -3046,6 +3047,7 @@
 		E7CSS01429C4D5A800000014 /* SpanSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSnapshot.swift; sourceTree = "<group>"; };
 		E7CSS01629C4D5A800000016 /* SpanSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanSnapshotTests.swift; sourceTree = "<group>"; };
 		E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeature.swift; sourceTree = "<group>"; };
+		E7CSS08429C4D5A800000084 /* TraceClientStatsMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceClientStatsMetric.swift; sourceTree = "<group>"; };
 		E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsRequestBuilder.swift; sourceTree = "<group>"; };
 		E7CSS00629C4D5A800000006 /* ClientStatsFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientStatsFeatureTests.swift; sourceTree = "<group>"; };
 		E7CSS02429C4D5A800000024 /* StatsConcentrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsConcentrator.swift; sourceTree = "<group>"; };
@@ -6638,6 +6640,7 @@
 				D2546C0729AF55E90054E00B /* RequestBuilder.swift */,
 				D2546C0A29AF56270054E00B /* MessageReceivers.swift */,
 				E7CSS00429C4D5A800000004 /* ClientStatsFeature.swift */,
+				E7CSS08429C4D5A800000084 /* TraceClientStatsMetric.swift */,
 				E7CSS00529C4D5A800000005 /* StatsRequestBuilder.swift */,
 				E7CSS02429C4D5A800000024 /* StatsConcentrator.swift */,
 			);
@@ -9293,6 +9296,7 @@
 				D2C1A4FA29C4C4CB00946C31 /* SpanSanitizer.swift in Sources */,
 				D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */,
 				E7CSS00129C4D5A800000001 /* ClientStatsFeature.swift in Sources */,
+				E7CSS08129C4D5A800000081 /* TraceClientStatsMetric.swift in Sources */,
 				E7CSS00229C4D5A800000002 /* StatsRequestBuilder.swift in Sources */,
 				E7CSS02129C4D5A800000021 /* StatsConcentrator.swift in Sources */,
 				E7CSS03129C4D5A800000031 /* MsgPackEncoder.swift in Sources */,
