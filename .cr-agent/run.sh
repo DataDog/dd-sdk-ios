@@ -14,6 +14,8 @@ set -eo pipefail
 
 # TODO: switch toolkit ref to `main` before merging to develop.
 TOOLKIT_REF="ncreated/feat/cr-agent"
+# TODO: remove before merging — force re-review for e2e testing.
+export CR_AGENT_FORCE_REVIEW=1
 TOOLKIT_DIR="$CI_PROJECT_DIR/.rum-ai-toolkit"
 
 echo "▸ Minting rum-ai-toolkit clone token via dd-octo-sts..."
