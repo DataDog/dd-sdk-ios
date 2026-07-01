@@ -110,7 +110,7 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
 /// been evaluated through ``FlagsClientProtocol/getValue(key:defaultValue:)`` or
 /// ``FlagsClientProtocol/getDetails(key:defaultValue:)``.
 @available(*, message: "This API is in preview and may change in future releases")
-public struct FlagsSnapshot: Equatable, Codable {
+public struct FlagsSnapshot: Equatable, Encodable {
     /// The cached precomputed assignments, keyed by feature flag key.
     public let assignments: [String: FlagSnapshot]
 
@@ -127,7 +127,7 @@ public struct FlagsSnapshot: Equatable, Codable {
 /// `FlagSnapshot` contains the value and metadata cached for a single feature flag. Reading a snapshot does not
 /// record evaluations, exposures, or RUM feature flag evaluations.
 @available(*, message: "This API is in preview and may change in future releases")
-public struct FlagSnapshot: Equatable, Codable {
+public struct FlagSnapshot: Equatable, Encodable {
     /// The assigned flag value.
     public let value: AnyValue
 
