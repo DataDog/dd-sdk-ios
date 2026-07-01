@@ -90,12 +90,6 @@ public struct MetricTelemetry: SampledTelemetry {
     /// Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
     /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
     public let sampleRate: SampleRate
-
-    public init(name: String, attributes: [String: Encodable], sampleRate: SampleRate = Self.defaultSampleRate) {
-        self.name = name
-        self.attributes = attributes
-        self.sampleRate = sampleRate
-    }
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
