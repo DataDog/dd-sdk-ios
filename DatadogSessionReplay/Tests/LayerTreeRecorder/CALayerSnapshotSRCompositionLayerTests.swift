@@ -25,6 +25,10 @@ struct CALayerSnapshotSRCompositionLayerTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
         layer.masksToBounds = true
         layer.filters = [filter]
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 1)
+        layer.shadowOpacity = 0.25
+        layer.shadowRadius = 5
         layer.opacity = 0.5
 
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
@@ -34,7 +38,7 @@ struct CALayerSnapshotSRCompositionLayerTests {
 
         // Then
         #expect(snapshot.requiresCompositionLayer)
-        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity"])
+        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "shadow", "opacity"])
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -83,6 +87,8 @@ struct CALayerSnapshotSRCompositionLayerTests {
                 "colorMatrix"
             case .compositionLayerGaussianBlurModifier:
                 "gaussianBlur"
+            case .compositionLayerShadowModifier:
+                "shadow"
             case .compositionLayerBrightnessBiasModifier:
                 "brightnessBias"
             case .compositionLayerSaturateModifier:
