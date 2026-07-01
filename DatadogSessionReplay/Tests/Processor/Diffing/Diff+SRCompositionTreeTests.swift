@@ -5,10 +5,16 @@
  */
 
 #if os(iOS)
+#if canImport(DatadogSDKTesting)
+import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import Testing
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct DiffSRCompositionTreeTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation is nil when unchanged")

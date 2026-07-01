@@ -5,7 +5,11 @@
  */
 
 #if !os(watchOS)
+#if canImport(DatadogSDKTesting)
 import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import Testing
 import DatadogInternal
 import UIKit

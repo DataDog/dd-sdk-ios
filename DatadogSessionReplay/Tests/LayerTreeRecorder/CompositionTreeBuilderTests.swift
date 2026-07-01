@@ -5,6 +5,11 @@
  */
 
 #if os(iOS)
+#if canImport(DatadogSDKTesting)
+import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import QuartzCore
 import Testing
 import UIKit
@@ -14,6 +19,7 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CompositionTreeBuilderTests {
     private final class SafeAreaWebView: WKWebView {

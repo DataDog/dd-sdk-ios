@@ -5,6 +5,11 @@
  */
 
 #if os(iOS)
+#if canImport(DatadogSDKTesting)
+import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import QuartzCore
 import Testing
 import UIKit
@@ -12,6 +17,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotSRCompositionLayerTests {
     @available(iOS 13.0, tvOS 13.0, *)

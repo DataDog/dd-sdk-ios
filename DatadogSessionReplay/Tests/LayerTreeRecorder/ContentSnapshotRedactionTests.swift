@@ -8,7 +8,11 @@
 import ObjectiveC
 import QuartzCore
 import TestUtilities
+#if canImport(DatadogSDKTesting)
 import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import Testing
 import UIKit
 

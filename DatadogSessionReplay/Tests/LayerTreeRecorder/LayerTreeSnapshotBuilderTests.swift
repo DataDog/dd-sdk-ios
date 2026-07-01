@@ -7,7 +7,11 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+#if canImport(DatadogSDKTesting)
 import DatadogSDKTesting
+#else
+import DatadogSDKTestingStub
+#endif
 import Testing
 import WebKit
 
