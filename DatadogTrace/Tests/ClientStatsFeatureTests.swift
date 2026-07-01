@@ -165,6 +165,92 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
 
+    // MARK: - Flush Telemetry
+
+    func testWhenFlushProducesBuckets_itSendsFlushMetric() throws {
+        // Given
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        config.statsComputationEnabled = true
+        config.dateProvider = dateProvider
+
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+
+        // Two spans landing in the same aggregation group, one of them an error.
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
+        stats.concentrator.add(.mockWith(isError: true, startTime: 0, duration: 2_000_000_000, isTopLevel: true))
+
+        // When: advancing past the buffer window makes the bucket flushable.
+        dateProvider.advance(bySeconds: 60)
+        stats.flushStats(force: false)
+
+        // Then
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+        XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, TraceClientStatsFlushedMetric.typeValue)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.bucketsCountKey] as? Int, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.groupsCountKey] as? Int, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.spansCountKey] as? UInt64, 2)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.errorsCountKey] as? UInt64, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.forcedKey] as? Bool, false)
+    }
+
+    func testWhenForcedFlushProducesBuckets_itMarksMetricAsForced() throws {
+        // Given
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        config.statsComputationEnabled = true
+        config.dateProvider = dateProvider
+
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
+
+        // When: a forced flush (teardown) exports the still-recent bucket.
+        stats.flushStats(force: true)
+
+        // Then
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.forcedKey] as? Bool, true)
+        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.spansCountKey] as? UInt64, 1)
+    }
+
+    func testWhenFlushProducesNoBuckets_itDoesNotSendFlushMetric() throws {
+        // Given
+        let core = FeatureRegistrationPassthroughCoreMock()
+        config.statsComputationEnabled = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+
+        // When: nothing was aggregated, so the flush is empty.
+        stats.flushStats(force: true)
+
+        // Then
+        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+    }
+
+    func testWhenConsentIsNotGranted_itDoesNotSendFlushMetric() throws {
+        // Given
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        config.statsComputationEnabled = true
+        config.dateProvider = dateProvider
+
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+
+        // When: consent is revoked, aggregation and flush are gated off.
+        stats.concentrator.updateConsent(.notGranted)
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
+        dateProvider.advance(bySeconds: 60)
+        stats.flushStats(force: true)
+
+        // Then: no buckets are exported, so no metric is emitted.
+        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+    }
+
     // MARK: - Request Builder - Encoding
 
     func testWhenBuildingRequest_itTargetsStatsIntakeWithMsgPackContentType() throws {
@@ -479,7 +565,8 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     }
 
     var dataStore: DataStore { NOPDataStore() }
-    var telemetry: Telemetry { NOPTelemetry() }
+    let telemetryMock = TelemetryMock()
+    var telemetry: Telemetry { telemetryMock }
 
     func set(anonymousId: String?) { }
 
