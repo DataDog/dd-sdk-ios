@@ -91,7 +91,6 @@ public struct MetricTelemetry: SampledTelemetry {
     /// and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
     public let sampleRate: SampleRate
 
-    @_spi(Internal)
     public init(name: String, attributes: [String: Encodable], sampleRate: SampleRate = Self.defaultSampleRate) {
         self.name = name
         self.attributes = attributes
@@ -194,10 +193,6 @@ public protocol Telemetry: Sendable {
     ///
     /// - Parameter telemetry: The telemtry message
     func send(telemetry: TelemetryMessage)
-    /// Collects a metric value. The default implementation applies call-site sampling before sending.
-    func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate)
-    /// Collects a usage telemetry event. The default implementation applies call-site sampling before sending.
-    func usage(event: UsageTelemetry.Event, sampleRate: SampleRate)
 }
 
 public extension Telemetry {
@@ -241,12 +236,12 @@ public extension Telemetry {
     /// - Parameters:
     ///   - metric: The `MethodCalledTrace` instance.
     ///   - isSuccessful: A flag indicating whether the method call was successful.
-    ///   - tailSampleRate: The sample rate for this metric, applied in addition to the telemetry sample rate.
+    ///   - headSampleRate: The sample rate for this metric, applied at the call site before entering the message bus.
     ///     Defaults to `MetricTelemetry.defaultSampleRate` (15%).
     func stopMethodCalled(
         _ metric: MethodCalledTrace?,
         isSuccessful: Bool = true,
-        tailSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
+        headSampleRate: SampleRate = MetricTelemetry.defaultSampleRate
     ) {
         guard let metric = metric else {
             return
@@ -263,7 +258,7 @@ public extension Telemetry {
                 SDKMetricFields.headSampleRate: metric.headSampleRate,
                 SDKMetricFields.typeKey: MethodCalledMetric.typeValue
             ],
-            sampleRate: tailSampleRate
+            sampleRate: headSampleRate
         )
     }
 }
@@ -507,16 +502,8 @@ extension Telemetry {
     ///
     ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
     ///     and this metric's sample rate is 15%, the effective sample rate for this metric will be 3%.
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate) {
-        guard Sampler(samplingRate: sampleRate).sample() else {
-            return
-        }
+    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
         send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
-    }
-
-    /// Collects a metric value using the default sample rate.
-    public func metric(name: String, attributes: [String: Encodable]) {
-        metric(name: name, attributes: attributes, sampleRate: MetricTelemetry.defaultSampleRate)
     }
 
     /// Collects a usage telemetry event.
@@ -528,16 +515,8 @@ extension Telemetry {
     ///
     ///     Note: This sample rate is compounded with the telemetry sample rate. For example, if the telemetry sample rate is 20% (default)
     ///     and this event's sample rate is 15%, the effective sample rate for this event will be 3%.
-    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate) {
-        guard Sampler(samplingRate: sampleRate).sample() else {
-            return
-        }
+    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate = UsageTelemetry.defaultSampleRate) {
         send(telemetry: .usage(UsageTelemetry(event: event, sampleRate: sampleRate)))
-    }
-
-    /// Collects a usage telemetry event using the default sample rate.
-    public func usage(event: UsageTelemetry.Event) {
-        usage(event: event, sampleRate: UsageTelemetry.defaultSampleRate)
     }
 }
 
@@ -545,8 +524,6 @@ public struct NOPTelemetry: Telemetry {
     public init() { }
     /// no-op
     public func send(telemetry: TelemetryMessage) { }
-    public func startMethodCalled(operationName: String, callerClass: String, samplingRate: Float) -> MethodCalledTrace? { return nil }
-    public func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool) { }
 }
 
 internal struct CoreTelemetry: Telemetry {
@@ -566,10 +543,24 @@ internal struct CoreTelemetry: Telemetry {
     /// Sends a Telemetry message.
     ///
     /// The Telemetry message will be transmitted on the message-bus
-    /// of the core.
+    /// of the core. For `.metric` and `.usage` messages, call-site sampling
+    /// is applied before forwarding — events that don't pass their sample rate
+    /// are dropped here without entering the bus.
     ///
     /// - Parameter telemetry: The telemtry message.
     func send(telemetry: TelemetryMessage) {
+        switch telemetry {
+        case .metric(let metric):
+            guard Sampler(samplingRate: metric.sampleRate).sample() else {
+                return
+            }
+        case .usage(let usage):
+            guard Sampler(samplingRate: usage.sampleRate).sample() else {
+                return
+            }
+        default:
+            break
+        }
         core?.send(message: .telemetry(telemetry))
     }
 }

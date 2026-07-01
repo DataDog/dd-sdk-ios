@@ -5,7 +5,6 @@
  */
 
 import Foundation
-@_spi(Internal)
 import DatadogInternal
 
 public class CoreLoggerMock: CoreLogger {
@@ -60,16 +59,6 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
     public private(set) var description: String = "Telemetry logs:"
 
     public init() {}
-
-    /// Bypasses call-site sampling; TelemetryMock is a spy that captures all metrics regardless of sampleRate.
-    public func metric(name: String, attributes: [String: Encodable], sampleRate: SampleRate = MetricTelemetry.defaultSampleRate) {
-        send(telemetry: .metric(MetricTelemetry(name: name, attributes: attributes, sampleRate: sampleRate)))
-    }
-
-    /// Bypasses call-site sampling; TelemetryMock is a spy that captures all usage events regardless of sampleRate.
-    public func usage(event: UsageTelemetry.Event, sampleRate: SampleRate = UsageTelemetry.defaultSampleRate) {
-        send(telemetry: .usage(UsageTelemetry(event: event, sampleRate: sampleRate)))
-    }
 
     public func send(telemetry: DatadogInternal.TelemetryMessage) {
         messages.append(telemetry)

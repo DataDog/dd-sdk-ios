@@ -161,7 +161,7 @@ class TelemetryTests: XCTestCase {
 
     func testMethodCalledMetricIsSentWhenCallSiteSampleRateKeepsAll() throws {
         let metricTrace = telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), headSampleRate: 100)
 
         XCTAssertNotNil(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
     }
@@ -171,7 +171,7 @@ class TelemetryTests: XCTestCase {
         let core = PassthroughCoreMock(messageReceiver: receiver)
 
         let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        core.telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), tailSampleRate: 0)
+        core.telemetry.stopMethodCalled(metricTrace, isSuccessful: .mockAny(), headSampleRate: 0)
 
         XCTAssertNil(receiver.messages.lastTelemetry?.asMetric)
     }
@@ -184,7 +184,7 @@ class TelemetryTests: XCTestCase {
         // When
         let metricTrace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.05)
-        telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful, tailSampleRate: 100)
+        telemetry.stopMethodCalled(metricTrace, isSuccessful: isSuccessful, headSampleRate: 100)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: MethodCalledMetric.name))
@@ -217,7 +217,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, "metric name")
 
         let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
-        core.telemetry.stopMethodCalled(metricTrace, tailSampleRate: 100)
+        core.telemetry.stopMethodCalled(metricTrace, headSampleRate: 100)
         XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, MethodCalledMetric.name)
     }
 }
