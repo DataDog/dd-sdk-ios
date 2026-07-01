@@ -73,11 +73,41 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
+        sendFlushMetric(for: exportedBuckets, force: force)
+
         featureScope.eventWriteContext { _, writer in
             for bucket in exportedBuckets {
                 writer.write(value: bucket)
             }
         }
+    }
+
+    /// Emits the "Trace Client Stats Flushed" telemetry summarizing what a non-empty flush
+    /// produced, so we can watch on the Mobile Metrics dashboard that stats are flowing and the
+    /// aggregated volumes look sane during dogfooding.
+    private func sendFlushMetric(for buckets: [ExportedBucket], force: Bool) {
+        var groupsCount = 0
+        var spansCount: UInt64 = 0
+        var errorsCount: UInt64 = 0
+        for bucket in buckets {
+            groupsCount += bucket.stats.count
+            for group in bucket.stats {
+                spansCount += group.hits
+                errorsCount += group.errors
+            }
+        }
+
+        featureScope.telemetry.metric(
+            name: TraceClientStatsFlushedMetric.name,
+            attributes: [
+                SDKMetricFields.typeKey: TraceClientStatsFlushedMetric.typeValue,
+                TraceClientStatsFlushedMetric.bucketsCountKey: buckets.count,
+                TraceClientStatsFlushedMetric.groupsCountKey: groupsCount,
+                TraceClientStatsFlushedMetric.spansCountKey: spansCount,
+                TraceClientStatsFlushedMetric.errorsCountKey: errorsCount,
+                TraceClientStatsFlushedMetric.forcedKey: force
+            ]
+        )
     }
 
     private func startFlushTimer() {
