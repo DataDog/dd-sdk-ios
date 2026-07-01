@@ -165,7 +165,16 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: slider.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
+        var expected = CALayerSnapshot.SemanticObservation(
+            semantics: .layer,
+            ignoresImagePrivacy: true
+        )
+
+        if #available(iOS 26.0, *) {
+            expected.usesAutomaticCornerRadius = true
+        }
+
+        #expect(observation == expected)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

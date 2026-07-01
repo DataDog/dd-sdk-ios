@@ -408,6 +408,31 @@ struct CALayerSnapshotTests {
             #expect(layerSnapshot.cornerRadii == .zero)
         }
     }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Resolves automatic corner radius in slider sublayers")
+    func resolvesAutomaticCornerRadiusInSliderSublayers() throws {
+        // Given
+        let slider = UISlider(frame: CGRect(x: 0, y: 0, width: 280, height: 31))
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 37, height: 24)
+        layer.position = CGPoint(x: 18.5, y: 12)
+        layer.backgroundColor = UIColor.white.cgColor
+        layer.cornerRadius = .nan
+        slider.layer.addSublayer(layer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: slider.layer, in: .mockAny()))
+
+        // Then
+        let layerSnapshot = try #require(snapshot.sublayers.first { $0.layer.matches(layer) })
+
+        if #available(iOS 26.0, *) {
+            #expect(layerSnapshot.cornerRadii.uniformCornerRadius == 12)
+        } else {
+            #expect(layerSnapshot.cornerRadii == .zero)
+        }
+    }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)

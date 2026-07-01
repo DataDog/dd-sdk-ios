@@ -63,9 +63,9 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(textView: textView)
         case let textField as UITextField:
             self.init(textField: textField)
-        case let switchControl as UISwitch:
+        case _ as UISwitch, _ as UISlider:
             if #available(iOS 26.0, *) {
-                // iOS 26 toggle controls use a non-finite corner radius for their rounded thumb shape.
+                // iOS 26 toggle and slider thumbs use a non-finite corner radius for their rounded thumb shape.
                 self.init(semantics: .layer, usesAutomaticCornerRadius: true)
             } else {
                 self.init(semantics: .layer)
