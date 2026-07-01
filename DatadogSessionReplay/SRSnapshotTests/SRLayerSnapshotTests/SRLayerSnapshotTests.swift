@@ -17,9 +17,20 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     @MainActor
     func testSwiftUIText() async throws {
         try await takeLayerSnapshotFor(
-            SwiftUITextFixtureView(),
+            TextFixtureView(),
             with: TextAndInputPrivacyLevel.allCases,
             shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    @available(iOS 16.0, *)
+    @MainActor
+    func testToggles() async throws {
+        try await takeLayerSnapshotFor(
+            ToggleFixtureView(),
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: true/*shouldRecord*/,
             folderPath: snapshotsFolderPath
         )
     }
