@@ -27,7 +27,7 @@ internal protocol SnapshotProcessing {
 ///
 /// VTSs processing is following:
 /// - the VTS is broke apart into individual view snapshots, mapped into array of SR wireframes (see `WireframesBuilder`);
-/// - the array of wireframes is attached to SR record (see `RecordsBuidler`);
+/// - the array of wireframes is attached to SR record (see `RecordsBuilder`);
 /// - succeeding records are enriched with their RUM context and written to `DatadogCore`;
 /// - when `DatadogCore` triggers an upload, batched records are deserialized, grouped into SR segments and then uploaded.
 internal class SnapshotProcessor: SnapshotProcessing {

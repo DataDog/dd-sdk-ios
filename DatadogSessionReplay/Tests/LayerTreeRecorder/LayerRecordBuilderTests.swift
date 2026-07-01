@@ -8,7 +8,7 @@
 import CoreGraphics
 @_spi(Internal)
 import DatadogInternal
-import QuartzCore
+import Foundation
 import Testing
 @_spi(Internal)
 import TestUtilities
@@ -283,76 +283,6 @@ struct LayerRecordBuilderTests {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-private extension LayerTreeSnapshot {
-    static func mockWith(
-        date: Date = Date(timeIntervalSince1970: 42),
-        viewportSize: CGSize = CGSize(width: 320, height: 640)
-    ) -> LayerTreeSnapshot {
-        return LayerTreeSnapshot(
-            date: date,
-            context: LayerRecordingContext(
-                textAndInputPrivacy: .maskSensitiveInputs,
-                imagePrivacy: .maskNone,
-                touchPrivacy: .show,
-                applicationID: "app-id",
-                sessionID: "session-id",
-                viewID: "view-id",
-                viewServerTimeOffset: 2,
-                viewPath: "/view",
-                date: date,
-                telemetry: NOPTelemetry()
-            ),
-            viewportSize: viewportSize,
-            root: .mockWith(),
-            webViewSlotIDs: []
-        )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-private extension CALayerSnapshot {
-    static func mockWith(replayID: Int64 = 1) -> CALayerSnapshot {
-        let layer = CALayer()
-        return CALayerSnapshot(
-            layer: CALayerReference(layer),
-            replayID: replayID,
-            observation: .init(semantics: .layer),
-            layerClass: CALayer.self,
-            delegateClass: nil,
-            contentsClass: nil,
-            textAndInputPrivacyLevel: .maskSensitiveInputs,
-            imagePrivacyLevel: .maskNone,
-            isPrivate: false,
-            bounds: .zero,
-            position: .zero,
-            zPosition: 0,
-            transform: CATransform3DIdentity,
-            absoluteFrame: .zero,
-            sublayers: [],
-            dependencies: [],
-            sublayerTransform: CATransform3DIdentity,
-            mask: nil,
-            masksToBounds: false,
-            isOpaque: false,
-            backgroundColor: nil,
-            cornerRadii: .zero,
-            cornerCurve: .circular,
-            borderWidth: 0,
-            borderColor: nil,
-            opacity: 1,
-            allowsGroupOpacity: true,
-            compositingFilter: nil,
-            filters: [],
-            shadowColor: nil,
-            shadowOpacity: 0,
-            shadowOffset: .zero,
-            shadowRadius: 0,
-            shadowPath: nil
-        )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
 private extension SRCompositionLayer {
     static func mockWith(
         id: Int64,
@@ -401,7 +331,4 @@ private extension SRIncrementalSnapshotRecord {
     }
 }
 
-private struct NOPTelemetry: Telemetry {
-    func send(telemetry: TelemetryMessage) {}
-}
 #endif
