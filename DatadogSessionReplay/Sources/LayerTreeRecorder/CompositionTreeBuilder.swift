@@ -132,8 +132,7 @@ internal class CompositionTreeBuilder {
         case (.layer, .some(let result)),
             (.activityIndicator, .some(let result)),
             (.image, .some(let result)),
-            (.stepper, .some(let result)),
-            (.switchControl, .some(let result)):
+            (.stepper, .some(let result)):
             makeImageSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
         case (.layer, .none):
             SRWireframe(layerSnapshot: snapshot)

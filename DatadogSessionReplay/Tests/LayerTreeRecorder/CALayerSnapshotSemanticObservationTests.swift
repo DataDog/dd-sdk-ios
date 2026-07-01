@@ -38,7 +38,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: activityIndicator.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .activityIndicator, ignoreSublayers: true))
+        #expect(observation == .init(semantics: .activityIndicator, ignoresSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -69,7 +69,7 @@ struct CALayerSnapshotSemanticObservationTests {
                     lineBreakMode: .byTruncatingMiddle
                 )
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         ))
     }
 
@@ -101,7 +101,7 @@ struct CALayerSnapshotSemanticObservationTests {
                     lineBreakMode: label.lineBreakMode
                 )
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         ))
     }
 
@@ -137,7 +137,7 @@ struct CALayerSnapshotSemanticObservationTests {
             semantics: .image(
                 .init(hasContent: true, isContextual: false)
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         ))
     }
 
@@ -194,7 +194,7 @@ struct CALayerSnapshotSemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .stepper(.init(value: 7)),
-            ignoreSublayers: true,
+            ignoresSublayers: true,
             ignoresImagePrivacy: true
         ))
     }
@@ -309,21 +309,25 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records switch semantics and ignores sublayers")
-    func recordsSwitchSemanticsAndIgnoresSublayers() {
+    @Test("Records switch as layer semantics")
+    func recordsSwitchAsLayerSemantics() {
         // Given
         let switchControl = UISwitch()
-        switchControl.isOn = true
 
         // When
         let observation = CALayerSnapshot.SemanticObservation(layer: switchControl.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(
-            semantics: .switchControl(.init(isOn: true)),
-            ignoreSublayers: true,
+        var expected = CALayerSnapshot.SemanticObservation(
+            semantics: .layer,
             ignoresImagePrivacy: true
-        ))
+        )
+
+        if #available(iOS 26.0, *) {
+            expected.usesAutomaticCornerRadius = true
+        }
+
+        #expect(observation == expected)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -341,7 +345,7 @@ struct CALayerSnapshotSemanticObservationTests {
         #expect(
             observation == .init(
                 semantics: .webView(.init(slotID: webView.hash, slotFrame: webView.frame)),
-                ignoreSublayers: true
+                ignoresSublayers: true
             )
         )
         #expect(webViewCache.allObjects.first === webView)

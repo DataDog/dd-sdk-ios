@@ -48,7 +48,7 @@ extension CALayerSnapshot {
             previousSnapshotData: previousSnapshotData
         )
 
-        if let request, observation.ignoreSublayers || sublayers.isEmpty {
+        if let request, observation.ignoresSublayers || sublayers.isEmpty {
             requests.append(request)
         } else {
             for sublayer in sublayers {
@@ -121,7 +121,7 @@ extension CALayerSnapshot.SemanticObservation {
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
-        case .layer, .activityIndicator, .stepper, .switchControl:
+        case .layer, .activityIndicator, .stepper:
             return true
         default:
             return false

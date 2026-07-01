@@ -30,7 +30,7 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             ToggleFixtureView(),
             imagePrivacyLevel: .maskAll,
-            shouldRecord: true/*shouldRecord*/,
+            shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
         )
     }
