@@ -163,6 +163,31 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for semantic image layer with dependencies")
+    func createsRequestForSemanticImageLayerWithDependencies() throws {
+        // Given
+        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+
+        let dependency = CALayer()
+        dependency.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        dependency.contents = NSObject()
+        imageView.layer.addSublayer(dependency)
+
+        let snapshot = try #require(CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first)
+        #expect(request.layer.matches(imageView.layer))
+        #expect(!request.hasContents)
+        #expect(request.dependencies.contains { $0.matches(dependency) })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips semantic image layer when image privacy masks all")
     func skipsSemanticImageLayerWhenImagePrivacyMasksAll() throws {
         // Given

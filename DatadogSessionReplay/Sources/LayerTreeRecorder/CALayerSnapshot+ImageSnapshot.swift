@@ -67,7 +67,18 @@ extension CALayerSnapshot {
             return false
         }
 
-        return observation.allowsImageSnapshot(imagePrivacyLevel: imagePrivacyLevel)
+        switch observation.semantics {
+        case .image(let image) where !image.hasContent && dependencies.isEmpty:
+            return false
+        case .image where imagePrivacyLevel == .maskNone:
+            return true
+        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
+            return true
+        case .layer, .activityIndicator, .stepper:
+            return true
+        default:
+            return false
+        }
     }
 }
 
@@ -108,24 +119,6 @@ extension ImageSnapshotRequest {
             imagePrivacyLevel: layerSnapshot.imagePrivacyLevel,
             previousSnapshotData: previousSnapshotData
         )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
-        switch semantics {
-        case .image(let image) where !image.hasContent:
-            return false
-        case .image where imagePrivacyLevel == .maskNone:
-            return true
-        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
-            return true
-        case .layer, .activityIndicator, .stepper:
-            return true
-        default:
-            return false
-        }
     }
 }
 #endif
