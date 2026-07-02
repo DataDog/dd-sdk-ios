@@ -24,19 +24,9 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     }
 
     @MainActor
-    func testToggles() async throws {
+    func testBasicControlsAndIndicators() async throws {
         try await takeLayerSnapshotFor(
-            ToggleFixtureView(),
-            imagePrivacyLevel: .maskAll,
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
-        )
-    }
-
-    @MainActor
-    func testSliders() async throws {
-        try await takeLayerSnapshotFor(
-            SliderFixtureView(),
+            BasicControlsAndIndicatorsFixtureView(),
             imagePrivacyLevel: .maskAll,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath

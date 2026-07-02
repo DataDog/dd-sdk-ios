@@ -34,9 +34,8 @@
 		96363B2C2CD26AF3006FEC9D /* PrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */; };
 		9D32AEBF1E6647438AE1FA2A /* UIImage+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067A2E49F698000148DB /* UIImage+SVG.swift */; };
 		AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B62995512A006B66A6 /* ImageComparison.swift */; };
+		B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */; };
 		BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */; };
-		C13D29AF5974486F9FDFAB43 /* ToggleFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E46F90A9E7C451AB7048996 /* ToggleFixtureView.swift */; };
-		D4B325CC789344118F4FA451 /* SliderFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A38F8D7C4B2542E69B8A1240 /* SliderFixtureView.swift */; };
 		CD65E35AAD9F4369911A5903 /* _snapshots_ in Resources */ = {isa = PBXBuildFile; fileRef = 99A974B3215D420797736C48 /* _snapshots_ */; };
 		D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D2F37BFA2A40A2CF004A28A4 /* TestUtilities */; };
 		DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A7A0B7E6C246DE9938296A /* SRLayerSnapshotTests.swift */; };
@@ -94,8 +93,7 @@
 		61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		96363B2B2CD26AF3006FEC9D /* PrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyOverrides.swift; sourceTree = "<group>"; };
 		99A974B3215D420797736C48 /* _snapshots_ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _snapshots_; sourceTree = "<group>"; };
-		9E46F90A9E7C451AB7048996 /* ToggleFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleFixtureView.swift; sourceTree = "<group>"; };
-		A38F8D7C4B2542E69B8A1240 /* SliderFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SliderFixtureView.swift; sourceTree = "<group>"; };
+		B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicControlsAndIndicatorsFixtureView.swift; sourceTree = "<group>"; };
 		B7BB74178C964F7494FD694D /* CompositionTreeRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionTreeRendering.swift; sourceTree = "<group>"; };
 		B80409B91FE546F988283D66 /* SRLayerSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SRLayerSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9A7A0B7E6C246DE9938296A /* SRLayerSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRLayerSnapshotTests.swift; sourceTree = "<group>"; };
@@ -239,8 +237,7 @@
 			isa = PBXGroup;
 			children = (
 				157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */,
-				9E46F90A9E7C451AB7048996 /* ToggleFixtureView.swift */,
-				A38F8D7C4B2542E69B8A1240 /* SliderFixtureView.swift */,
+				B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -439,8 +436,7 @@
 				AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */,
 				DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */,
 				BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */,
-				C13D29AF5974486F9FDFAB43 /* ToggleFixtureView.swift in Sources */,
-				D4B325CC789344118F4FA451 /* SliderFixtureView.swift in Sources */,
+				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

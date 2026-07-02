@@ -8,14 +8,34 @@ import SwiftUI
 import UIKit
 
 @available(iOS 16.0, *)
-internal struct SliderFixtureView: View {
+internal struct BasicControlsAndIndicatorsFixtureView: View {
     var body: some View {
-        VStack(spacing: 28) {
-            Slider(value: .constant(0.35))
+        VStack(alignment: .leading) {
+            toggles
+            sliders
+            progressIndicators
+        }
+        .padding()
+    }
 
+    private var toggles: some View {
+        VStack(alignment: .leading) {
+            Toggle("On", isOn: .constant(true))
+            Toggle("Off", isOn: .constant(false))
+            Toggle("Disabled", isOn: .constant(true))
+                .disabled(true)
+            Toggle("Tinted", isOn: .constant(true))
+                .tint(.purple)
+            Toggle("Button style", isOn: .constant(true))
+                .toggleStyle(.button)
+        }
+    }
+
+    private var sliders: some View {
+        VStack {
+            Slider(value: .constant(0.35))
             Slider(value: .constant(0.7))
                 .tint(.purple)
-
             Slider(value: .constant(0.45))
                 .disabled(true)
 
@@ -30,8 +50,15 @@ internal struct SliderFixtureView: View {
             CustomSlider(value: 0.75)
                 .frame(height: 44)
         }
-        .frame(maxWidth: 280)
-        .padding()
+    }
+
+    private var progressIndicators: some View {
+        VStack(spacing: 16) {
+            StaticActivityIndicator(style: .large)
+            ProgressView(value: 0.35)
+            ProgressView(value: 0.6)
+                .progressViewStyle(CapsuleProgressViewStyle())
+        }
     }
 }
 
@@ -52,6 +79,40 @@ private struct CustomSlider: UIViewRepresentable {
 
     func updateUIView(_ slider: UISlider, context _: Context) {
         slider.value = value
+    }
+}
+
+@available(iOS 16.0, *)
+private struct CapsuleProgressViewStyle: ProgressViewStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        GeometryReader { proxy in
+            let progress = CGFloat(configuration.fractionCompleted ?? 0)
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.gray.opacity(0.2))
+                Capsule()
+                    .fill(.teal)
+                    .frame(width: proxy.size.width * progress)
+            }
+        }
+        .frame(height: 12)
+    }
+}
+
+@available(iOS 16.0, *)
+private struct StaticActivityIndicator: UIViewRepresentable {
+    let style: UIActivityIndicatorView.Style
+
+    func makeUIView(context _: Context) -> UIActivityIndicatorView {
+        let view = UIActivityIndicatorView(style: style)
+        view.hidesWhenStopped = false
+        view.stopAnimating()
+        return view
+    }
+
+    func updateUIView(_ view: UIActivityIndicatorView, context _: Context) {
+        view.hidesWhenStopped = false
+        view.stopAnimating()
     }
 }
 
