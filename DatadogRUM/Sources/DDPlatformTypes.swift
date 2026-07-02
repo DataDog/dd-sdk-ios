@@ -13,6 +13,7 @@
 
 #if canImport(UIKit)
 import UIKit
+#if !os(watchOS)
 
 // MARK: - Views
 public typealias DDView = UIView
@@ -23,7 +24,9 @@ public typealias DDScrollView = UIScrollView
 public typealias DDStackView = UIStackView
 public typealias DDSegmentedControl = UISegmentedControl
 public typealias DDWindow = UIWindow
+#if !os(visionOS)
 public typealias DDScreen = UIScreen
+#endif
 
 // MARK: - View Controllers
 public typealias DDViewController = UIViewController
@@ -34,10 +37,6 @@ public typealias DDTabBarController = UITabBarController
 public typealias DDEvent = UIEvent
 public typealias DDTouch = UITouch
 
-// MARK: - Appearance
-public typealias DDColor = UIColor
-public typealias DDFont = UIFont
-
 // MARK: - Collection / Table Cells
 public typealias DDTableViewCell = UITableViewCell
 public typealias DDCollectionViewCell = UICollectionViewCell
@@ -46,6 +45,11 @@ public typealias DDCollectionViewCell = UICollectionViewCell
 public typealias DDAccessibility = UIAccessibility
 
 public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
+#endif
+
+// MARK: - Appearance
+public typealias DDColor = UIColor
+public typealias DDFont = UIFont
 
 #elseif canImport(AppKit)
 import AppKit

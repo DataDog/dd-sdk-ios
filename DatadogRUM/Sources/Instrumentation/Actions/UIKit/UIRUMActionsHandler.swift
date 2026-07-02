@@ -4,8 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit) && !os(watchOS)
+#if canImport(UIKit)
+#if !os(watchOS)
 import UIKit
+#endif
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
