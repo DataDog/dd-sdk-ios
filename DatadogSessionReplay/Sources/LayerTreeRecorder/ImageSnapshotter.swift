@@ -19,7 +19,17 @@ internal protocol ImageSnapshotting: AnyObject {
         for root: CALayerSnapshot,
         changeset: CALayerChangeset,
         timeout: TimeInterval
-    ) async -> [Int64: ImageSnapshotResult]
+    ) async -> ImageSnapshotBatch
+}
+
+/// Rendered snapshots produced by `ImageSnapshotter`.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ImageSnapshotBatch: Sendable {
+    let contentSnapshots: [Int64: ContentSnapshotResult]
+
+    init(contentSnapshots: [Int64: ContentSnapshotResult] = [:]) {
+        self.contentSnapshots = contentSnapshots
+    }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -53,24 +63,24 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         for root: CALayerSnapshot,
         changeset: CALayerChangeset,
         timeout: TimeInterval
-    ) async -> [Int64: ImageSnapshotResult] {
+    ) async -> ImageSnapshotBatch {
         // Invalidate changed layers before request extraction. Occlusion pruning can
         // remove changed layers from the snapshot tree, but their cached images must not
         // be reused if they become visible again later.
-        cache.removeSnapshotDataForChanges(in: changeset)
+        cache.removeContentSnapshotDataForChanges(in: changeset)
 
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
-        cache.updateFrameNumber(for: requests.map(\.replayID))
+        cache.updateFrameNumber(for: requests)
 
         guard let rootLayer = root.layer.resolve(), !requests.isEmpty else {
-            return [:]
+            return .init()
         }
 
         let startTime = timeSource.now
         var lastYieldTime = startTime
-        var results: [Int64: ImageSnapshotResult] = [:]
+        var contentSnapshots: [Int64: ContentSnapshotResult] = [:]
 
-        results.reserveCapacity(requests.count)
+        contentSnapshots.reserveCapacity(requests.count)
 
         var firstUnprocessedIndex = requests.endIndex
 
@@ -83,7 +93,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             }
 
             let request = requests[index]
-            results[request.replayID] = takeImageSnapshot(for: request, rootLayer: rootLayer)
+
+            switch request {
+            case .content(let request):
+                contentSnapshots[request.replayID] = takeContentSnapshot(for: request, rootLayer: rootLayer)
+            }
 
             if now - lastYieldTime >= Constants.yieldThreshold {
                 await Task.yield()
@@ -94,25 +108,29 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         if firstUnprocessedIndex < requests.endIndex {
             for request in requests[firstUnprocessedIndex...] {
                 if request.hasChanges {
-                    cache.removeSnapshotData(forReplayID: request.replayID)
+                    cache.removeContentSnapshotData(forReplayID: request.replayID)
                 }
-                results[request.replayID] = .failure(.timedOut)
+
+                switch request {
+                case .content:
+                    contentSnapshots[request.replayID] = .failure(.timedOut)
+                }
             }
         }
 
-        return results
+        return .init(contentSnapshots: contentSnapshots)
     }
 
-    private func takeImageSnapshot(
-        for request: ImageSnapshotRequest,
+    private func takeContentSnapshot(
+        for request: ContentSnapshotRequest,
         rootLayer: CALayer
-    ) -> ImageSnapshotResult {
+    ) -> ContentSnapshotResult {
         do {
             let resolvedRequest = try request.resolved(relativeTo: rootLayer)
-            let snapshot: ImageSnapshot
+            let snapshot: ContentSnapshot
 
             if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
-                snapshot = ImageSnapshot(
+                snapshot = ContentSnapshot(
                     image: cachedSnapshot.image,
                     frame: resolvedRequest.frame,
                     layerClass: request.layerClass,
@@ -122,7 +140,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                     imagePrivacyLevel: request.imagePrivacyLevel
                 )
             } else {
-                snapshot = ImageSnapshot(
+                snapshot = ContentSnapshot(
                     image: try renderImage(
                         for: resolvedRequest.layer,
                         in: resolvedRequest.localRect,
@@ -137,7 +155,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 )
             }
 
-            cache.setSnapshotData(
+            cache.setContentSnapshotData(
                 .init(
                     snapshot: snapshot,
                     localRect: resolvedRequest.localRect,
@@ -148,14 +166,14 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             )
             return .success(snapshot)
         } catch ImageSnapshotRequestResolutionError.missingLayer {
-            cache.removeSnapshotData(forReplayID: request.replayID)
+            cache.removeContentSnapshotData(forReplayID: request.replayID)
             return .failure(.discarded)
         } catch let objc as ObjcException {
             telemetry.error(
                 "[SR] Failed to capture layer image snapshot due to Objective-C runtime exception",
                 error: objc.error
             )
-            cache.removeSnapshotData(forReplayID: request.replayID)
+            cache.removeContentSnapshotData(forReplayID: request.replayID)
             return .failure(.discarded)
         } catch {
             return .failure(.discarded)

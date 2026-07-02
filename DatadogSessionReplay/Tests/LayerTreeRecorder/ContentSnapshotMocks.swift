@@ -6,12 +6,13 @@
 
 #if os(iOS)
 import DatadogInternal
+import QuartzCore
 import UIKit
 
 @testable import DatadogSessionReplay
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshot {
+extension ContentSnapshot {
     static func mockAny(
         image: UIImage = UIImage(),
         frame: CGRect = .zero,
@@ -20,8 +21,8 @@ extension ImageSnapshot {
         hasLayerSemantics: Bool = true,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
         imagePrivacyLevel: ImagePrivacyLevel = .maskAll
-    ) -> ImageSnapshot {
-        ImageSnapshot(
+    ) -> ContentSnapshot {
+        ContentSnapshot(
             image: image,
             frame: frame,
             layerClass: layerClass,
@@ -34,14 +35,14 @@ extension ImageSnapshot {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
+extension ContentSnapshotData {
     static func mockAny(
-        snapshot: ImageSnapshot = .mockAny(),
+        snapshot: ContentSnapshot = .mockAny(),
         localRect: CGRect = .zero,
         bounds: CGRect = .zero,
         dependencies: [CALayerReference] = []
-    ) -> ImageSnapshotData {
-        ImageSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
+    ) -> ContentSnapshotData {
+        ContentSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
     }
 }
 

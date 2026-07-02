@@ -26,7 +26,7 @@ struct LayerSnapshotProcessorTests {
             absoluteFrame: CGRect(x: 10, y: 20, width: 30, height: 40)
         )
         let snapshot = LayerTreeSnapshot.mockWith(root: .mockRoot(sublayers: [leaf]))
-        let imageSnapshot = ImageSnapshot.mockAny(
+        let imageSnapshot = ContentSnapshot.mockAny(
             image: .mockWith(color: .red),
             frame: leaf.absoluteFrame,
             hasLayerSemantics: false,
@@ -36,7 +36,7 @@ struct LayerSnapshotProcessorTests {
         // When
         fixture.processor.process(
             layerTreeSnapshot: snapshot,
-            imageSnapshotResults: [2: .success(imageSnapshot)],
+            imageSnapshots: .init(contentSnapshots: [2: .success(imageSnapshot)]),
             touchSnapshot: nil
         )
 
@@ -95,8 +95,16 @@ struct LayerSnapshotProcessorTests {
         )
 
         // When
-        fixture.processor.process(layerTreeSnapshot: firstSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
-        fixture.processor.process(layerTreeSnapshot: secondSnapshot, imageSnapshotResults: [:], touchSnapshot: touchSnapshot)
+        fixture.processor.process(
+            layerTreeSnapshot: firstSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+        fixture.processor.process(
+            layerTreeSnapshot: secondSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: touchSnapshot
+        )
 
         // Then
         let enrichedRecord = try #require(fixture.recordWriter.records.last)
@@ -123,8 +131,16 @@ struct LayerSnapshotProcessorTests {
         let secondSnapshot = LayerTreeSnapshot.mockWith(viewID: "view-2")
 
         // When
-        fixture.processor.process(layerTreeSnapshot: firstSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
-        fixture.processor.process(layerTreeSnapshot: secondSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
+        fixture.processor.process(
+            layerTreeSnapshot: firstSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+        fixture.processor.process(
+            layerTreeSnapshot: secondSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
 
         // Then
         let enrichedRecord = try #require(fixture.recordWriter.records.last)
@@ -155,9 +171,21 @@ struct LayerSnapshotProcessorTests {
         ]))
 
         // When
-        fixture.processor.process(layerTreeSnapshot: shapeSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
-        fixture.processor.process(layerTreeSnapshot: privateSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
-        fixture.processor.process(layerTreeSnapshot: privateSnapshot, imageSnapshotResults: [:], touchSnapshot: nil)
+        fixture.processor.process(
+            layerTreeSnapshot: shapeSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+        fixture.processor.process(
+            layerTreeSnapshot: privateSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+        fixture.processor.process(
+            layerTreeSnapshot: privateSnapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
 
         // Then
         #expect(fixture.recordWriter.records.count == 2)

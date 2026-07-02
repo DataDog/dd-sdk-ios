@@ -17,16 +17,16 @@ struct ImageSnapshotCacheTests {
     func returnsStoredSnapshotData() throws {
         // Given
         let cache = ImageSnapshotCache()
-        let snapshot = ImageSnapshot.mockAny()
-        let snapshotData = ImageSnapshotData.mockAny(
+        let snapshot = ContentSnapshot.mockAny()
+        let snapshotData = ContentSnapshotData.mockAny(
             snapshot: snapshot,
             localRect: CGRect(x: 1, y: 2, width: 3, height: 4),
             bounds: CGRect(x: 5, y: 6, width: 7, height: 8)
         )
 
         // When
-        cache.setSnapshotData(snapshotData, forReplayID: 1)
-        let cachedSnapshotData = try #require(cache.snapshotData(forReplayID: 1))
+        cache.setContentSnapshotData(snapshotData, forReplayID: 1)
+        let cachedSnapshotData = try #require(cache.contentSnapshotData(forReplayID: 1))
 
         // Then
         #expect(cachedSnapshotData.snapshot === snapshot)
@@ -40,28 +40,28 @@ struct ImageSnapshotCacheTests {
     func removesStoredSnapshotData() {
         // Given
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(.mockAny(), forReplayID: 1)
+        cache.setContentSnapshotData(.mockAny(), forReplayID: 1)
 
         // When
-        cache.removeSnapshotData(forReplayID: 1)
+        cache.removeContentSnapshotData(forReplayID: 1)
 
         // Then
-        #expect(cache.snapshotData(forReplayID: 1) == nil)
+        #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Drops snapshot data when cached image is evicted")
     func dropsSnapshotDataWhenCachedImageIsEvicted() {
         // Given
-        let imageSnapshots = NSCache<NSNumber, ImageSnapshot>()
-        let cache = ImageSnapshotCache(imageSnapshots: imageSnapshots)
-        cache.setSnapshotData(.mockAny(), forReplayID: 1)
+        let imageSnapshots = NSCache<NSNumber, ContentSnapshot>()
+        let cache = ImageSnapshotCache(contentSnapshots: imageSnapshots)
+        cache.setContentSnapshotData(.mockAny(), forReplayID: 1)
 
         // When
         imageSnapshots.removeAllObjects()
 
         // Then
-        #expect(cache.snapshotData(forReplayID: 1) == nil)
+        #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -70,14 +70,14 @@ struct ImageSnapshotCacheTests {
         // Given
         let layer = CALayer()
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(.mockAny(), forReplayID: layer.replayID)
+        cache.setContentSnapshotData(.mockAny(), forReplayID: layer.replayID)
         let changeset = CALayerChangeset.mockChange(for: layer, aspects: .display)
 
         // When
-        cache.removeSnapshotDataForChanges(in: changeset)
+        cache.removeContentSnapshotDataForChanges(in: changeset)
 
         // Then
-        #expect(cache.snapshotData(forReplayID: layer.replayID) == nil)
+        #expect(cache.contentSnapshotData(forReplayID: layer.replayID) == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -87,17 +87,17 @@ struct ImageSnapshotCacheTests {
         let owner = CALayer()
         let dependency = CALayer()
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(
+        cache.setContentSnapshotData(
             .mockAny(dependencies: [.init(dependency)]),
             forReplayID: owner.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: dependency, aspects: .layout)
 
         // When
-        cache.removeSnapshotDataForChanges(in: changeset)
+        cache.removeContentSnapshotDataForChanges(in: changeset)
 
         // Then
-        #expect(cache.snapshotData(forReplayID: owner.replayID) == nil)
+        #expect(cache.contentSnapshotData(forReplayID: owner.replayID) == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -107,17 +107,17 @@ struct ImageSnapshotCacheTests {
         let owner = CALayer()
         let dependency = CALayer()
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(
+        cache.setContentSnapshotData(
             .mockAny(dependencies: [.init(dependency)]),
             forReplayID: owner.replayID
         )
         let changeset = CALayerChangeset.mockChange(for: owner, aspects: .layout)
 
         // When
-        cache.removeSnapshotDataForChanges(in: changeset)
+        cache.removeContentSnapshotDataForChanges(in: changeset)
 
         // Then
-        #expect(cache.snapshotData(forReplayID: owner.replayID) != nil)
+        #expect(cache.contentSnapshotData(forReplayID: owner.replayID) != nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -130,22 +130,42 @@ struct ImageSnapshotCacheTests {
             maximumRemovals: 1
         )
         let cache = ImageSnapshotCache(policy: policy)
-        let snapshot = ImageSnapshot.mockAny()
-        cache.setSnapshotData(.mockAny(snapshot: snapshot), forReplayID: 1)
+        let layer = CALayer()
+        let snapshot = ContentSnapshot.mockAny()
+        cache.setContentSnapshotData(.mockAny(snapshot: snapshot), forReplayID: layer.replayID)
+        let request = ImageSnapshotRequest.content(
+            ContentSnapshotRequest(
+                replayID: layer.replayID,
+                layer: CALayerReference(layer),
+                layerClass: type(of: layer),
+                delegateClass: nil,
+                hasLayerSemantics: true,
+                bounds: layer.bounds,
+                absoluteFrame: layer.frame,
+                visibleFrame: layer.frame,
+                isOpaque: layer.isOpaque,
+                hasContents: false,
+                dependencies: [],
+                hasChanges: false,
+                textAndInputPrivacyLevel: .maskAll,
+                imagePrivacyLevel: .maskAll,
+                previousSnapshotData: nil
+            )
+        )
 
         // When
-        cache.updateFrameNumber(for: [1])
+        cache.updateFrameNumber(for: [request])
         cache.updateFrameNumber(for: [])
 
         // Then
-        let cachedSnapshot = try #require(cache.snapshotData(forReplayID: 1)?.snapshot)
+        let cachedSnapshot = try #require(cache.contentSnapshotData(forReplayID: layer.replayID)?.snapshot)
         #expect(cachedSnapshot === snapshot)
 
         // When
         cache.updateFrameNumber(for: [])
 
         // Then
-        #expect(cache.snapshotData(forReplayID: 1) == nil)
+        #expect(cache.contentSnapshotData(forReplayID: layer.replayID) == nil)
     }
 }
 

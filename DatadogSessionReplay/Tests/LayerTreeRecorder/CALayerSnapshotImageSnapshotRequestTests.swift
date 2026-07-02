@@ -30,7 +30,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layer == snapshot.layer)
         #expect(request.visibleFrame == snapshot.absoluteFrame)
@@ -52,7 +52,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer == snapshot.layer)
         #expect(request.hasChanges)
     }
@@ -65,17 +65,17 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
-        let imageSnapshot = ImageSnapshot.mockAny()
-        let snapshotData = ImageSnapshotData.mockAny(snapshot: imageSnapshot)
+        let imageSnapshot = ContentSnapshot.mockAny()
+        let snapshotData = ContentSnapshotData.mockAny(snapshot: imageSnapshot)
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(snapshotData, forReplayID: snapshot.replayID)
+        cache.setContentSnapshotData(snapshotData, forReplayID: snapshot.replayID)
 
         // When
         let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer == snapshot.layer)
         #expect(request.previousSnapshotData?.snapshot === imageSnapshot)
     }
@@ -110,7 +110,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layerClass == CATextLayer.self)
         #expect(request.delegateClass == nil)
@@ -137,12 +137,12 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.hasContents)
         #expect(!request.hasLayerSemantics)
-        #expect(!requests.contains { $0.layer.matches(child) })
+        #expect(!requests.contains { $0.content?.layer.matches(child) == true })
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -181,7 +181,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(!request.hasContents)
         #expect(request.dependencies.contains { $0.matches(dependency) })
@@ -223,7 +223,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.imagePrivacyLevel == .maskNone)
     }
@@ -246,7 +246,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.imagePrivacyLevel == .maskNone)
     }
@@ -269,7 +269,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.imagePrivacyLevel == .maskNone)
     }
@@ -331,7 +331,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
     }
 
@@ -352,7 +352,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
     }
 
@@ -379,7 +379,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(snapshot.sublayers.isEmpty)
         #expect(snapshot.dependencies.contains { $0.matches(ignoredSublayer) })
         #expect(request.layer.matches(imageView.layer))
@@ -408,7 +408,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.hasChanges)
     }
@@ -437,7 +437,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
             CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(
+        cache.setContentSnapshotData(
             .mockAny(dependencies: previousSnapshot.dependencies),
             forReplayID: snapshot.replayID
         )
@@ -448,7 +448,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(request.dependencies.contains { $0.matches(currentIgnoredSublayer) })
         #expect(request.hasChanges)
@@ -466,7 +466,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
             CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let cache = ImageSnapshotCache()
-        cache.setSnapshotData(
+        cache.setContentSnapshotData(
             .mockAny(dependencies: snapshot.dependencies),
             forReplayID: snapshot.replayID
         )
@@ -477,7 +477,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(imageView.layer))
         #expect(!request.hasChanges)
     }
@@ -539,7 +539,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(child))
         #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 20, height: 20))
     }
@@ -568,7 +568,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(child))
         #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 70, height: 70))
     }
@@ -597,7 +597,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.count == 1)
-        let request = try #require(requests.first)
+        let request = try #require(requests.first?.content)
         #expect(request.layer.matches(child))
     }
 
@@ -627,15 +627,26 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
 
         // Then
-        #expect(requests.contains { $0.layer.matches(child) })
-        #expect(!requests.contains { $0.layer.matches(parent) })
-        #expect(!requests.contains { $0.layer.matches(webView.layer) })
+        #expect(requests.contains { $0.content?.layer.matches(child) == true })
+        #expect(!requests.contains { $0.content?.layer.matches(parent) == true })
+        #expect(!requests.contains { $0.content?.layer.matches(webView.layer) == true })
     }
 
     private final class BundledImageMock: UIImage, @unchecked Sendable {
         override var description: String {
             "named(mock-bundled-image)"
         }
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+private extension ImageSnapshotRequest {
+    var content: ContentSnapshotRequest? {
+        guard case .content(let request) = self else {
+            return nil
+        }
+
+        return request
     }
 }
 

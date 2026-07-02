@@ -36,12 +36,12 @@ extension CALayerSnapshot {
             return
         }
 
-        let previousSnapshotData = cache.snapshotData(forReplayID: replayID)
+        let previousSnapshotData = cache.contentSnapshotData(forReplayID: replayID)
         let hasChanges = changeset.hasContentChanges(for: layer)
             || changeset.hasChanges(for: dependencies)
             || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
 
-        let request = ImageSnapshotRequest(
+        let request = ContentSnapshotRequest(
             layerSnapshot: self,
             visibleFrame: visibleFrame,
             hasChanges: hasChanges,
@@ -49,7 +49,7 @@ extension CALayerSnapshot {
         )
 
         if let request, observation.ignoresSublayers || sublayers.isEmpty {
-            requests.append(request)
+            requests.append(.content(request))
         } else {
             for sublayer in sublayers {
                 sublayer.collectImageSnapshotRequests(
@@ -83,12 +83,12 @@ extension CALayerSnapshot {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotRequest {
+extension ContentSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
         visibleFrame: CGRect,
         hasChanges: Bool,
-        previousSnapshotData: ImageSnapshotData?
+        previousSnapshotData: ContentSnapshotData?
     ) {
         guard layerSnapshot.allowsImageSnapshot else {
             return nil

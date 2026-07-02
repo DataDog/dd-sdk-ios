@@ -10,9 +10,9 @@ import UIKit
 
 @preconcurrency import DatadogInternal
 
-/// Rendered image for one layer snapshot.
+/// Rendered content for one layer snapshot.
 @available(iOS 13.0, tvOS 13.0, *)
-internal final class ImageSnapshot: Sendable {
+internal final class ContentSnapshot: Sendable {
     let image: UIImage
 
     /// The image frame in the root layer coordinate space.
@@ -44,10 +44,10 @@ internal final class ImageSnapshot: Sendable {
     }
 }
 
-/// An image snapshot and the geometry used to render it.
+/// A content snapshot and the geometry used to render it.
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ImageSnapshotData: Sendable {
-    let snapshot: ImageSnapshot
+internal struct ContentSnapshotData: Sendable {
+    let snapshot: ContentSnapshot
 
     /// The rendered rect in the source layer coordinate space.
     let localRect: CGRect
@@ -71,5 +71,5 @@ internal enum ImageSnapshotError: Error, Equatable {
 
 /// Result of rendering one layer image snapshot.
 @available(iOS 13.0, tvOS 13.0, *)
-internal typealias ImageSnapshotResult = Result<ImageSnapshot, ImageSnapshotError>
+internal typealias ContentSnapshotResult = Result<ContentSnapshot, ImageSnapshotError>
 #endif

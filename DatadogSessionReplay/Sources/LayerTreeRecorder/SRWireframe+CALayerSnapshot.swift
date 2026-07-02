@@ -90,7 +90,7 @@ extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
     init(
         id: Int64,
-        imageSnapshot: ImageSnapshot,
+        imageSnapshot: ContentSnapshot,
         resource: Resource
     ) {
         self = .imageWireframe(

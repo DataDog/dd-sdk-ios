@@ -85,7 +85,7 @@ internal actor LayerRecorder: LayerRecording {
 
         snapshotProcessor.process(
             layerTreeSnapshot: layerTreeSnapshot,
-            imageSnapshotResults: imageSnapshots,
+            imageSnapshots: imageSnapshots,
             touchSnapshot: touchSnapshot
         )
     }

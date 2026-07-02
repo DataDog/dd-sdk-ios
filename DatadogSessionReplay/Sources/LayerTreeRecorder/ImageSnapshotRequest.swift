@@ -10,9 +10,29 @@ import QuartzCore
 
 @preconcurrency import DatadogInternal
 
-/// Request to render one `CALayerSnapshot` as an image.
+/// Request to render one layer bitmap.
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ImageSnapshotRequest: Sendable {
+internal enum ImageSnapshotRequest: Sendable {
+    case content(ContentSnapshotRequest)
+
+    var replayID: Int64 {
+        switch self {
+        case .content(let request):
+            return request.replayID
+        }
+    }
+
+    var hasChanges: Bool {
+        switch self {
+        case .content(let request):
+            return request.hasChanges
+        }
+    }
+}
+
+/// Request to render one `CALayerSnapshot` as a content image.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ContentSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
     let layerClass: AnyClass
@@ -27,7 +47,7 @@ internal struct ImageSnapshotRequest: Sendable {
     let hasChanges: Bool
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
-    let previousSnapshotData: ImageSnapshotData?
+    let previousSnapshotData: ContentSnapshotData?
 
     init(
         replayID: Int64,
@@ -44,7 +64,7 @@ internal struct ImageSnapshotRequest: Sendable {
         hasChanges: Bool,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel,
-        previousSnapshotData: ImageSnapshotData?
+        previousSnapshotData: ContentSnapshotData?
     ) {
         self.replayID = replayID
         self.layer = layer
@@ -66,7 +86,7 @@ internal struct ImageSnapshotRequest: Sendable {
 
 /// An image snapshot request resolved against the current layer tree.
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ResolvedImageSnapshotRequest {
+internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
     let localRect: CGRect
     let frame: CGRect
@@ -81,9 +101,9 @@ internal enum ImageSnapshotRequestResolutionError: Error {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotRequest {
+extension ContentSnapshotRequest {
     @MainActor
-    func resolved(relativeTo rootLayer: CALayer) throws -> ResolvedImageSnapshotRequest {
+    func resolved(relativeTo rootLayer: CALayer) throws -> ResolvedContentSnapshotRequest {
         guard let layer = layer.resolve() else {
             throw ImageSnapshotRequestResolutionError.missingLayer
         }
@@ -150,7 +170,7 @@ extension ImageSnapshotRequest {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
+extension ContentSnapshotData {
     fileprivate var isPartial: Bool {
         !bounds.equalTo(localRect)
     }

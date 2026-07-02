@@ -19,7 +19,7 @@ internal class CompositionTreeBuilder {
     }
 
     private let root: CALayerSnapshot
-    private let imageSnapshotResults: [Int64: ImageSnapshotResult]
+    private let imageSnapshots: ImageSnapshotBatch
     private let webViewSlotIDs: Set<Int>
 
     private var layers: [SRCompositionLayer] = []
@@ -30,11 +30,11 @@ internal class CompositionTreeBuilder {
     init(
         root: CALayerSnapshot,
         webViewSlotIDs: Set<Int>,
-        imageSnapshotResults: [Int64: ImageSnapshotResult]
+        imageSnapshots: ImageSnapshotBatch
     ) {
         self.root = root
         self.webViewSlotIDs = webViewSlotIDs
-        self.imageSnapshotResults = imageSnapshotResults
+        self.imageSnapshots = imageSnapshots
     }
 
     func build() -> Output {
@@ -127,12 +127,12 @@ internal class CompositionTreeBuilder {
 
         let wireframe: SRWireframe? = switch (
             snapshot.observation.semantics,
-            imageSnapshotResults[snapshot.replayID]
+            imageSnapshots.contentSnapshots[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
             (.image, .some(let result)),
             (.stepper, .some(let result)):
-            makeImageSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
+            makeContentSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
         case (.layer, .none):
             SRWireframe(layerSnapshot: snapshot)
         case (.label(let label), _):
@@ -164,9 +164,9 @@ internal class CompositionTreeBuilder {
         return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
     }
 
-    private func makeImageSnapshotWireframe(
+    private func makeContentSnapshotWireframe(
         for layerSnapshot: CALayerSnapshot,
-        result: ImageSnapshotResult,
+        result: ContentSnapshotResult,
         parentTextInput textInput: TextInputSemantics?
     ) -> SRWireframe? {
         switch result {
