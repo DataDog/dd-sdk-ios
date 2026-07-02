@@ -73,7 +73,7 @@ public protocol SampledTelemetry {
     var sampleRate: SampleRate { get }
 }
 
-public struct MetricTelemetry: SampledTelemetry {
+public struct MetricTelemetry {
     /// The default sample rate for metric events (15%), applied in addition to the telemetry sample rate (20% by default).
     public static let defaultSampleRate: SampleRate = 15
 
@@ -93,7 +93,7 @@ public struct MetricTelemetry: SampledTelemetry {
 }
 
 /// Describes the type of the usage telemetry events supported by the SDK.
-public struct UsageTelemetry: SampledTelemetry {
+public struct UsageTelemetry {
     /// Supported usage telemetry events.
     public enum Event {
         /// setTrackingConsent API
