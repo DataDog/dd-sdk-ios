@@ -5,11 +5,7 @@
  */
 
 #if os(iOS)
-#if canImport(DatadogSDKTesting)
-import DatadogSDKTesting
-#else
-import DatadogSDKTestingStub
-#endif
+import TestUtilities
 import Testing
 import UIKit
 

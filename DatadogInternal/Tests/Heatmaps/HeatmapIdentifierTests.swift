@@ -4,11 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(DatadogSDKTesting)
-import DatadogSDKTesting
-#else
-import DatadogSDKTestingStub
-#endif
+import TestUtilities
 import Testing
 import DatadogInternal
 

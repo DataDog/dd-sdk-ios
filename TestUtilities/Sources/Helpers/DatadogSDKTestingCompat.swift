@@ -4,6 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(DatadogSDKTesting)
+@_exported import DatadogSDKTesting
+#else
 import Testing
 
 /// No-op stand-in for `DatadogSDKTesting`'s `.datadogTesting` trait.
@@ -36,3 +39,4 @@ extension Tag {
         }
     }
 }
+#endif

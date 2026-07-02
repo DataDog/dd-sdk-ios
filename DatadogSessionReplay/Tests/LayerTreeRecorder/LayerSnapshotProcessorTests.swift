@@ -6,11 +6,6 @@
 
 #if os(iOS)
 import CoreGraphics
-#if canImport(DatadogSDKTesting)
-import DatadogSDKTesting
-#else
-import DatadogSDKTestingStub
-#endif
 @_spi(Internal)
 import DatadogInternal
 import Testing

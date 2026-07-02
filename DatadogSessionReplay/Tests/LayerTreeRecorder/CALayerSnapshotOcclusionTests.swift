@@ -7,11 +7,7 @@
 #if os(iOS)
 import CoreGraphics
 import QuartzCore
-#if canImport(DatadogSDKTesting)
-import DatadogSDKTesting
-#else
-import DatadogSDKTestingStub
-#endif
+import TestUtilities
 import Testing
 import UIKit
 

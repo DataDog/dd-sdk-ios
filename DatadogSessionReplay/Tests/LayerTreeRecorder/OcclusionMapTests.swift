@@ -6,11 +6,7 @@
 
 #if os(iOS)
 import CoreGraphics
-#if canImport(DatadogSDKTesting)
-import DatadogSDKTesting
-#else
-import DatadogSDKTestingStub
-#endif
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay

@@ -170,6 +170,7 @@
 		1182FA592DA2F827007FE71A /* Mockable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182FA172DA2F827007FE71A /* Mockable.swift */; };
 		1182FA5A2DA2F827007FE71A /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9DB2DA2F827007FE71A /* HTTPClientMock.swift */; };
 		1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */; };
+		A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */ = {isa = PBXBuildFile; fileRef = C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */; };
 		1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9BE2DA2F827007FE71A /* Decompression.swift */; };
 		1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9F92DA2F827007FE71A /* RUMFeatureMocks.swift */; };
 		1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D92DA2F827007FE71A /* DatadogContextProviderMock.swift */; };
@@ -1929,6 +1930,7 @@
 		1182F9C02DA2F827007FE71A /* FuzzyHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyHelpers.swift; sourceTree = "<group>"; };
 		1182F9C12DA2F827007FE71A /* ModuleName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleName.swift; sourceTree = "<group>"; };
 		1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
+		C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSDKTestingCompat.swift; sourceTree = "<group>"; };
 		1182F9C32DA2F827007FE71A /* TestsDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		1182F9C42DA2F827007FE71A /* UIKitHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitHelpers.swift; sourceTree = "<group>"; };
 		1182F9C52DA2F827007FE71A /* XCTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestCase.swift; sourceTree = "<group>"; };
@@ -3471,6 +3473,7 @@
 				6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */,
 				862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */,
 				1182F9BD2DA2F827007FE71A /* DDAssert.swift */,
+				C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */,
 				1182F9BE2DA2F827007FE71A /* Decompression.swift */,
 				1182F9BF2DA2F827007FE71A /* Encoding.swift */,
 				1182F9C02DA2F827007FE71A /* FuzzyHelpers.swift */,
@@ -9055,6 +9058,7 @@
 				1182FA592DA2F827007FE71A /* Mockable.swift in Sources */,
 				1182FA5A2DA2F827007FE71A /* HTTPClientMock.swift in Sources */,
 				1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
+				A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */,
 				1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */,
 				1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
 				1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
