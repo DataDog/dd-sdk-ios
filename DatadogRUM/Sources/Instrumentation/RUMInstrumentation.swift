@@ -26,21 +26,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
     let viewsHandler: RUMViewsHandler
 
+    /// Receives interceptions of both automatic and manual instrumentations.
+    /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
+    let actionsHandler: RUMActionsHandling
+
     #if !os(watchOS)
     /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
     /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
     let viewControllerSwizzler: DDViewControllerSwizzler?
-    #endif
 
-    #if !os(watchOS)
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
     /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
     let uiApplicationSwizzler: DDApplicationSwizzler?
-    #endif
-
-    /// Receives interceptions of both automatic and manual instrumentations.
-    /// It is non-optional as we can't know if SwiftUI manual instrumentation will be used or not.
-    let actionsHandler: RUMActionsHandling
 
     #if !os(tvOS) && !os(macOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
@@ -48,6 +45,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     let scrollViewSwizzler: UIScrollViewSwizzler?
     /// Receives scroll lifecycle events and generates RUM commands.
     let scrollHandler: RUMScrollHandler?
+    #endif
     #endif
 
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.

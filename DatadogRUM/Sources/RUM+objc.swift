@@ -165,6 +165,7 @@ public protocol objc_UIPressRUMActionsPredicate: AnyObject {
     func rumAction(press type: UIPress.PressType, targetView: DDView) -> objc_RUMAction?
 }
 #endif
+#endif
 
 // MARK: - NetworkSettledResourcePredicate
 
@@ -1114,4 +1115,3 @@ extension objc_RUMMonitor {
         _ = semaphore.wait(timeout: .now() + .seconds(2))
     }
 }
-#endif
