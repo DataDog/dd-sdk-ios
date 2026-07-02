@@ -8,12 +8,11 @@ import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, *)
+@available(iOS 16.0, *)
 final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     private let snapshotsFolderPath = "_snapshots_/png"
     private var shouldRecord = false
 
-    @available(iOS 16.0, *)
     @MainActor
     func testSwiftUIText() async throws {
         try await takeLayerSnapshotFor(
@@ -24,11 +23,20 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
-    @available(iOS 16.0, *)
     @MainActor
     func testToggles() async throws {
         try await takeLayerSnapshotFor(
             ToggleFixtureView(),
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    @MainActor
+    func testSliders() async throws {
+        try await takeLayerSnapshotFor(
+            SliderFixtureView(),
             imagePrivacyLevel: .maskAll,
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
