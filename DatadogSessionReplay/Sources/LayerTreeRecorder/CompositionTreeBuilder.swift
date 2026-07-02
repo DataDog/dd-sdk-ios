@@ -130,7 +130,6 @@ internal class CompositionTreeBuilder {
             imageSnapshotResults[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
-            (.activityIndicator, .some(let result)),
             (.image, .some(let result)),
             (.stepper, .some(let result)):
             makeImageSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)

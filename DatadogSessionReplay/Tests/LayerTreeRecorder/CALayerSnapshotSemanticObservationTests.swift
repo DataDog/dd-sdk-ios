@@ -29,8 +29,8 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records activity indicator semantics and ignores sublayers")
-    func recordsActivityIndicatorSemanticsAndIgnoresSublayers() {
+    @Test("Records activity indicators as plain layers and ignores sublayers")
+    func recordsActivityIndicatorsAsPlainLayersAndIgnoresSublayers() {
         // Given
         let activityIndicator = UIActivityIndicatorView(style: .medium)
 
@@ -38,7 +38,7 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: activityIndicator.layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .activityIndicator, ignoresSublayers: true))
+        #expect(observation == .init(semantics: .layer, ignoresSublayers: true))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

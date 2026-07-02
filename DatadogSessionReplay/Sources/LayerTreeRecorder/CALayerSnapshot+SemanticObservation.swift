@@ -31,7 +31,6 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
-        case activityIndicator
         case label(LabelSemantics)
         case image(ImageSemantics)
         case stepper(StepperSemantics)
@@ -51,7 +50,7 @@ extension CALayerSnapshot.SemanticObservation {
     init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
-            self.init(semantics: .activityIndicator, ignoresSublayers: true)
+            self.init(semantics: .layer, ignoresSublayers: true)
         case let label as UILabel where !label.hasAttributedText:
             // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
