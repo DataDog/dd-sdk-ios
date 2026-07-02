@@ -7,7 +7,7 @@
 import Foundation
 #if canImport(UIKit)
 import UIKit
-#elseif canImport(AppKit)
+#elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #endif
 import DatadogInternal
@@ -217,7 +217,7 @@ internal class RUMDebugView: DDView {
 }
 #endif
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 internal class RUMDebugging {
     init() {}
     func debug(applicationScope: RUMApplicationScope) {}
