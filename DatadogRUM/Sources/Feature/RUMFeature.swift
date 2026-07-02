@@ -123,17 +123,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
         }
 
-        let displayLinker: DisplayLinker?
-
-        #if canImport(UIKit)
-        displayLinker = DisplayLinker(
-            notificationCenter: configuration.notificationCenter,
-            frameInfoProviderFactory: configuration.frameInfoProviderFactory
-        )
-        #elseif canImport(AppKit)
-        displayLinker = nil
-        #endif
-
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -157,7 +146,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                     return nil
                 }
             }(),
-            renderLoopObserver: displayLinker,
+            renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
                 configuration.trackSlowFrames

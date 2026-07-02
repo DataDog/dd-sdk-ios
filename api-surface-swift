@@ -350,12 +350,12 @@ public typealias DDNavigationController = UINavigationController
 public typealias DDTabBarController = UITabBarController
 public typealias DDEvent = UIEvent
 public typealias DDTouch = UITouch
-public typealias DDColor = UIColor
-public typealias DDFont = UIFont
 public typealias DDTableViewCell = UITableViewCell
 public typealias DDCollectionViewCell = UICollectionViewCell
 public typealias DDAccessibility = UIAccessibility
 public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
+public typealias DDColor = UIColor
+public typealias DDFont = UIFont
 public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]
