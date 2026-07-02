@@ -58,6 +58,7 @@ extension CALayerSnapshot {
 
     private var shadowModifier: SRCompositionLayerModifier? {
         guard
+            !masksToBounds,
             hasShadow,
             let shadowColor,
             let effectiveColor = shadowColor.copy(alpha: shadowColor.alpha * CGFloat(shadowOpacity)),
