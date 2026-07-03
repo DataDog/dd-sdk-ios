@@ -689,13 +689,16 @@ final class RUMAttributesIntegration_Tests: XCTestCase {
         }
         XCTAssertEqual(startViewEvent.attribute(forKey: "additionalKey"), "additionalValue")
 
-        // stopView delta adds anotherAdditionalKey (attrs changed from 3 to 4)
-        XCTAssertEqual(customView.viewUpdateEvents.last?.numberOfAttributes, 4)
+        // Session 1's `MyView` is the first view in a new session (viewIndexInSession == 0), so its
+        // stopView is emitted as a full `view` event — the delta baseline is never promoted for the
+        // session's first view — and the final attributes live in `viewEvents.last`, not a `view_update`.
+        let stopViewEvent = try XCTUnwrap(customView.viewEvents.last)
+        XCTAssertEqual(stopViewEvent.numberOfAttributes, 4)
         initialAttributes.forEach {
-            XCTAssertEqual(customView.viewUpdateEvents.last?.attribute(forKey: $0.key), $0.value as? String)
+            XCTAssertEqual(stopViewEvent.attribute(forKey: $0.key), $0.value as? String)
         }
-        XCTAssertEqual(customView.viewUpdateEvents.last?.attribute(forKey: "additionalKey"), "additionalValue")
-        XCTAssertEqual(customView.viewUpdateEvents.last?.attribute(forKey: "anotherAdditionalKey"), "anotherAdditionalValue")
+        XCTAssertEqual(stopViewEvent.attribute(forKey: "additionalKey"), "additionalValue")
+        XCTAssertEqual(stopViewEvent.attribute(forKey: "anotherAdditionalKey"), "anotherAdditionalValue")
     }
 
     func testWhenAttributesChange_onStoppedViews_withActiveResources() throws {

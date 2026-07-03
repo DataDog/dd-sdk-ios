@@ -843,7 +843,12 @@ class RUMSessionStartInForeground_Tests: RUMSessionTestsBase {
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                 DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
-                XCTAssertEqual(session.views[0].latestUpdateValue(\.view.longTask?.count), 2)
+                // The app-launch view is the session's first view (viewIndexInSession == 0); in the
+                // before-first-frame flow it emits its final long-task count in a full `view` event rather
+                // than a `view_update` delta, so fall back to `viewEvents.last` when no delta carries it.
+                let longTaskCount = session.views[0].latestUpdateValue(\.view.longTask?.count)
+                    ?? session.views[0].viewEvents.last?.view.longTask?.count
+                XCTAssertEqual(longTaskCount, 2)
             }
         }
 
@@ -1216,7 +1221,12 @@ class RUMSessionStartInForeground_Tests: RUMSessionTestsBase {
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                 DDAssertEqual(session.views[0].duration, dt2, accuracy: accuracy)
-                XCTAssertEqual(session.views[0].latestUpdateValue(\.view.longTask?.count), 2)
+                // The app-launch view is the session's first view (viewIndexInSession == 0); in the
+                // before-first-frame flow it emits its final long-task count in a full `view` event rather
+                // than a `view_update` delta, so fall back to `viewEvents.last` when no delta carries it.
+                let longTaskCount = session.views[0].latestUpdateValue(\.view.longTask?.count)
+                    ?? session.views[0].viewEvents.last?.view.longTask?.count
+                XCTAssertEqual(longTaskCount, 2)
             }
         }
 
