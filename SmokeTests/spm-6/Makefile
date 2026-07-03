@@ -7,19 +7,30 @@ ifeq ($(PLATFORM), iOS Simulator)
 SCHEME := App iOS
 else ifeq ($(PLATFORM), tvOS Simulator)
 SCHEME := App tvOS
+else ifeq ($(PLATFORM), macOS)
+SCHEME := App macOS
+endif
+
+# macOS runs natively (no simulator), so the destination omits `name` and `OS`.
+ifeq ($(PLATFORM), macOS)
+DESTINATION := platform=macOS
+else
+DESTINATION := platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)
 endif
 
 clean:
 	@$(ECHO_SUBTITLE2) "make clean"
-	rm -rf SPMProject.xcodeproj App AppTests AppUITests Shared
+	rm -rf SPMProject.xcodeproj App App-macOS AppTests AppUITests Shared TestPlan.xctestplan
 
 install:
 	@$(ECHO_SUBTITLE2) "make install"
 	@$(ECHO_INFO) "Copying source files"
 	cp -r ../spm/App App
+	cp -r ../spm/App-macOS App-macOS
 	cp -r ../spm/AppTests AppTests
 	cp -r ../spm/AppUITests AppUITests
 	cp -r ../spm/Shared Shared
+	cp ../spm/TestPlan.xctestplan TestPlan.xctestplan
 	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}' and SWIFT_VERSION = 6.0"
 	cp -r ../spm/SPMProject.xcodeproj.src SPMProject.xcodeproj
 	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" ../spm/SPMProject.xcodeproj.src/project.pbxproj | \
@@ -38,5 +49,5 @@ endif
 	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -project "SPMProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify
+	xcodebuild -project "SPMProject.xcodeproj" -destination "$(DESTINATION)" -scheme "$(SCHEME)" test | xcbeautify
 

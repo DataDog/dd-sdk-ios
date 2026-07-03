@@ -282,9 +282,10 @@ smoke-test-macos:
 	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
 	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run all smoke tests using macOS (only SmokeTests/spm has a macOS target for now)
+# Run all smoke tests using macOS (SmokeTests/spm + spm-6 have macOS targets)
 smoke-test-macos-all:
 	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm-6"
 
 # Builds SPM package SCHEME for specified DESTINATION
 spm-build:
