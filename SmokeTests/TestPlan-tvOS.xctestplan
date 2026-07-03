@@ -1,29 +1,29 @@
 {
   "configurations" : [
     {
-      "id" : "CC75A12C-1263-4520-A9E0-37CD93546A97",
-      "name" : "Test Scheme Action",
+      "id" : "597872E1-B9FE-4C8A-AECE-93A2056AF810",
+      "name" : "Configuration 1",
       "options" : {
 
       }
     }
   ],
   "defaultOptions" : {
-    "performanceAntipatternCheckerEnabled" : true
+
   },
   "testTargets" : [
     {
       "target" : {
         "containerPath" : "container:SPMProject.xcodeproj",
-        "identifier" : "61C363EB24374D6100C4D4E6",
-        "name" : "App iOS Tests"
+        "identifier" : "D23BF60C27CCCD5700BB4CCD",
+        "name" : "App tvOS Tests"
       }
     },
     {
       "target" : {
         "containerPath" : "container:SPMProject.xcodeproj",
-        "identifier" : "61C363F624374D6100C4D4E6",
-        "name" : "App iOS UITests"
+        "identifier" : "D23BF60027CCCCF800BB4CCD",
+        "name" : "App tvOS UITests"
       }
     }
   ],
