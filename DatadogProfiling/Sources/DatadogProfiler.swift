@@ -351,11 +351,13 @@ private extension DatadogProfiler {
     func updateProfilerState(canProfile: Bool) {
         switch ProfilingContext.Status.current {
         case .stopped, .unknown: // When `.unknown` status, mostly profiler NOT_CREATED, it will try to start the profiler
-            if canProfile {
+            if canProfile && !isCustomProfiling {
                 dd_profiler_start()
                 previousCustomProfilingStartDate = dateProvider.now
                 updateProfilingContext()
                 startTimer()
+            } else if isCustomProfiling {
+                currentRUMVitals.removeAll()
             }
         case .running:
             if canProfile {
