@@ -1,5 +1,6 @@
 SPMProject.xcodeproj/
 App/
+App-macOS/
 AppTests/
 AppUITests/
 Shared/
