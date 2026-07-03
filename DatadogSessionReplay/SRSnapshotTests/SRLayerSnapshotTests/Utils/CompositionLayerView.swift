@@ -34,7 +34,7 @@ internal final class CompositionLayerView: UIView {
             addSubview(childView)
         }
 
-        applyModifiers(layer.modifiers ?? [])
+        applyModifiers(layer.modifiers ?? [], identifiedResources: identifiedResources)
         applyCompositeOperation(layer.compositeOperation)
     }
 
@@ -74,7 +74,10 @@ internal final class CompositionLayerView: UIView {
         }
     }
 
-    private func applyModifiers(_ modifiers: [SRCompositionLayerModifier]) {
+    private func applyModifiers(
+        _ modifiers: [SRCompositionLayerModifier],
+        identifiedResources: [String: Resource]
+    ) {
         for modifier in modifiers {
             switch modifier {
             case .compositionLayerClipModifier(let modifier):
@@ -93,6 +96,8 @@ internal final class CompositionLayerView: UIView {
                 applyBrightnessBiasModifier(modifier)
             case .compositionLayerSaturateModifier(let modifier):
                 applySaturateModifier(modifier)
+            case .compositionLayerMaskImageModifier(let modifier):
+                applyMaskImageModifier(modifier, identifiedResources: identifiedResources)
             }
         }
     }
@@ -204,6 +209,31 @@ internal final class CompositionLayerView: UIView {
         layer.shadowPath = modifier.path.flatMap(CGPath.parse)
         layer.shadowRadius = CGFloat(modifier.radius)
         layer.shadowOpacity = 1
+    }
+
+    private func applyMaskImageModifier(
+        _ modifier: SRCompositionLayerMaskImageModifier,
+        identifiedResources: [String: Resource]
+    ) {
+        guard
+            let resource = identifiedResources[modifier.resourceId],
+            let image = UIImage(data: resource.calculateData(), scale: UIScreen.main.scale)?.cgImage
+        else {
+            return
+        }
+
+        let mask = CALayer()
+        mask.frame = bounds
+        mask.contents = image
+        mask.contentsGravity = .resize
+
+        // `CALayer` only supports one mask. Since mask image modifiers are applied last,
+        // preserve any previous mask (for example, clipping) by applying it to the image mask.
+        if let previousMask = layer.mask {
+            mask.mask = previousMask
+        }
+
+        layer.mask = mask
     }
 
     private func appendFilter(_ filter: NSObject) {

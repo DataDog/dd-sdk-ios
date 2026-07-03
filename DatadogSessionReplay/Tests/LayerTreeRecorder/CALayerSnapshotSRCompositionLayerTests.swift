@@ -31,14 +31,28 @@ struct CALayerSnapshotSRCompositionLayerTests {
         layer.shadowRadius = 5
         layer.opacity = 0.5
 
+        let maskLayer = CALayer()
+        maskLayer.bounds = layer.bounds
+        maskLayer.backgroundColor = UIColor.black.cgColor
+        layer.mask = maskLayer
+
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let resourceID = "mask-resource-id"
 
         // When
-        let modifiers = snapshot.modifiers()
+        let modifiers = snapshot.modifiers(maskImageResourceID: resourceID)
 
         // Then
         #expect(snapshot.requiresCompositionLayer)
-        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity"])
+        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity", "maskImage"])
+
+        let modifier = try #require(modifiers.last)
+        guard case .compositionLayerMaskImageModifier(let maskImageModifier) = modifier else {
+            Issue.record("Expected a mask image modifier")
+            return
+        }
+
+        #expect(maskImageModifier.resourceId == resourceID)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -127,6 +141,8 @@ struct CALayerSnapshotSRCompositionLayerTests {
                 "saturate"
             case .compositionLayerBackgroundMaterialModifier:
                 "backgroundMaterial"
+            case .compositionLayerMaskImageModifier:
+                "maskImage"
             }
         }
     }

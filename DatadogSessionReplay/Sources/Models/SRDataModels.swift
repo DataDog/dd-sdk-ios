@@ -271,6 +271,31 @@ public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable {
     }
 }
 
+/// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+@_spi(Internal)
+public struct SRCompositionLayerMaskImageModifier: Codable, Hashable {
+    /// Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public let resourceId: String
+
+    /// The type of the modifier.
+    public let type: String = "maskImage"
+
+    public enum CodingKeys: String, CodingKey {
+        case resourceId = "resourceId"
+        case type = "type"
+    }
+
+    /// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+    ///
+    /// - Parameters:
+    ///   - resourceId: Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public init(
+        resourceId: String
+    ) {
+        self.resourceId = resourceId
+    }
+}
+
 /// A rendering modifier applied to the composed layer output.
 @_spi(Internal)
 public enum SRCompositionLayerModifier: Codable, Hashable {
@@ -282,6 +307,7 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
+    case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
 
     private enum DiscriminatorCodingKeys: String, CodingKey {
         case discriminator = "type"
@@ -309,6 +335,8 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
         case .compositionLayerSaturateModifier(let value):
             try container.encode(value)
         case .compositionLayerBackgroundMaterialModifier(let value):
+            try container.encode(value)
+        case .compositionLayerMaskImageModifier(let value):
             try container.encode(value)
         }
     }
@@ -342,6 +370,9 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
             return
         case "backgroundMaterial":
             self = .compositionLayerBackgroundMaterialModifier(value: try container.decode(SRCompositionLayerBackgroundMaterialModifier.self))
+            return
+        case "maskImage":
+            self = .compositionLayerMaskImageModifier(value: try container.decode(SRCompositionLayerMaskImageModifier.self))
             return
         default:
             let error = DecodingError.Context(
@@ -2780,4 +2811,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/8fa7ba92c0d604ca7af422c8ffd8995a3fe0a05d
+// Generated from https://github.com/DataDog/rum-events-format/tree/740734dfd21f4d83fb2dacbc1cde09a16f326175

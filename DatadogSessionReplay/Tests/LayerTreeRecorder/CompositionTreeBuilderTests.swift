@@ -322,6 +322,60 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates mask image resource for container mask snapshot")
+    func buildCreatesMaskImageResourceForContainerMaskSnapshot() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 100)
+
+        let containerLayer = CALayer()
+        containerLayer.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+
+        let leafLayer = CALayer()
+        leafLayer.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        leafLayer.backgroundColor = UIColor.red.cgColor
+        containerLayer.addSublayer(leafLayer)
+
+        let maskLayer = CALayer()
+        maskLayer.bounds = containerLayer.bounds
+        maskLayer.backgroundColor = UIColor.black.cgColor
+        containerLayer.mask = maskLayer
+
+        rootLayer.addSublayer(containerLayer)
+
+        let root = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let containerSnapshot = try #require(root.sublayers.first)
+        let mask = try #require(containerSnapshot.mask)
+        let maskSnapshot = MaskSnapshot.mockAny(image: UIImage.mockWith(color: .black))
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init(maskSnapshots: [mask.replayID: .success(maskSnapshot)])
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == containerSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .layer)
+
+        let container = try #require(output.compositionTree.layers?.first { $0.id == containerSnapshot.replayID })
+        let modifier = try #require(container.modifiers?.first)
+        let resource = try #require(output.resources.first)
+
+        guard case .compositionLayerMaskImageModifier(let maskImageModifier) = modifier else {
+            Issue.record("Expected a mask image modifier")
+            return
+        }
+
+        #expect(output.resources.count == 1)
+        #expect(maskImageModifier.resourceId == resource.calculateIdentifier())
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for text input appearance")
     func buildCreatesShapeWireframeForTextInputAppearance() throws {
         // Given

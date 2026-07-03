@@ -59,13 +59,21 @@ internal class CompositionTreeBuilder {
         from snapshot: CALayerSnapshot,
         parentTextInput: TextInputSemantics?
     ) -> SRCompositionLayer {
-        SRCompositionLayer(
+        var maskImage: (any SessionReplayResource)?
+
+        if let mask = snapshot.mask, case .success(let maskSnapshot) = imageSnapshots.maskSnapshots[mask.replayID] {
+            let resource = ImageSnapshotResource(image: maskSnapshot.image)
+            resources.append(resource)
+            maskImage = resource
+        }
+
+        return SRCompositionLayer(
             children: children(for: snapshot, parentTextInput: parentTextInput),
             compositeOperation: snapshot.compositingFilter
                 .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
             height: Int64.ddWithNoOverflow(snapshot.absoluteFrame.height),
             id: snapshot.replayID,
-            modifiers: snapshot.modifiers(),
+            modifiers: snapshot.modifiers(maskImageResourceID: maskImage?.calculateIdentifier()),
             width: Int64.ddWithNoOverflow(snapshot.absoluteFrame.width),
             x: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minX),
             y: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minY)
