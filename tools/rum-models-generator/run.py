@@ -23,7 +23,7 @@ SR_SCHEMA_PATH = '/rum-events-format/schemas/session-replay-mobile-schema.json'
 
 # RC schema lives in the private dd-go repo; cloned sparsely using GITHUB_TOKEN
 DD_GO_REPO = 'https://github.com/DataDog/dd-go.git'
-RC_SCHEMA_REPO_PATH = 'remote-config/apps/rc-schema-validation/schemas/rum-sdk-config.json'
+RC_SCHEMA_REPO_PATH = 'remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/STAGING/ios.json'
 RC_SCHEMA_SPARSE_DIR = 'remote-config/apps/rc-schema-validation/schemas'
 RC_SCHEMA_LOCAL_PATH = f'dd-go/{RC_SCHEMA_REPO_PATH}'  # relative to cwd (script_dir)
 

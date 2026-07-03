@@ -135,9 +135,11 @@ internal final class DatadogCore {
 
         self.remoteConfigurationProvider?.start { [weak self] result in
             switch result {
-            case .success(let remoteConfiguration):
+            case let .success(remoteConfiguration):
                 self?.remoteConfiguration = remoteConfiguration
-            case .failure(let error):
+            case let .failure(.etagError(error)):
+                self?.telemetry.error("[RemoteConfig] ETag caching failed", error: error)
+            case let .failure(error):
                 self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
             }
         }

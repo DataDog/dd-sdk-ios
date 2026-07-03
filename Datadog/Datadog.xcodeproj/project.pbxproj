@@ -4464,9 +4464,9 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */,
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				D214DAA429E072D7004D0AE8 /* MessageBus.swift */,
+				10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
 				61133BA62423979B00786299 /* Storage */,
 				6128F56C2BA223A100D35B08 /* DataStore */,
