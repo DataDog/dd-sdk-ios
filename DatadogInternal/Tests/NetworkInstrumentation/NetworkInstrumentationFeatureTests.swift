@@ -2146,9 +2146,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testRegisteredDelegate_detectsFirstPartyHosts() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)))
-        scopeHandler(to: server)
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -2171,7 +2169,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 5, handler: nil)
+        wait(for: [notifyInterceptionDidStart, notifyInterceptionDidComplete], timeout: 5, enforceOrder: true)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
