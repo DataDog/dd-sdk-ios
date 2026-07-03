@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09075B2D2FF7C16A005F79DF /* StrictConcurrencyChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */; };
 		09A2F3292FF7B92600E99710 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 09A2F3252FF7B92600E99710 /* MainMenu.xib */; };
 		09A2F32A2FF7B92600E99710 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A2F3222FF7B92600E99710 /* AppDelegate.swift */; };
 		09A2F32B2FF7B92600E99710 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A2F3262FF7B92600E99710 /* ViewController.swift */; };
@@ -128,6 +129,7 @@
 		09A2F3262FF7B92600E99710 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		09A2F33B2FF7BB9900E99710 /* App macOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App macOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		09A2F3482FF7BBA800E99710 /* App macOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App macOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		09B43B4F2FF7C9D700B8C802 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		09FA792B2F6C4C33001BCA9C /* StrictConcurrencyChecks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrictConcurrencyChecks.swift; sourceTree = "<group>"; };
 		61C363D624374D5F00C4D4E6 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C363D924374D5F00C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -251,6 +253,7 @@
 		61C363CD24374D5F00C4D4E6 = {
 			isa = PBXGroup;
 			children = (
+				09B43B4F2FF7C9D700B8C802 /* TestPlan.xctestplan */,
 				61CE5FD42461D3C2005EA621 /* xcconfigs */,
 				A787CA7D2BD277190053CEBE /* Shared */,
 				61C363D824374D5F00C4D4E6 /* App */,
@@ -717,6 +720,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				09A2F32A2FF7B92600E99710 /* AppDelegate.swift in Sources */,
+				09075B2D2FF7C16A005F79DF /* StrictConcurrencyChecks.swift in Sources */,
 				09A2F32B2FF7B92600E99710 /* ViewController.swift in Sources */,
 				09A2F32C2FF7B97800E99710 /* DatadogSetup.swift in Sources */,
 			);
@@ -865,7 +869,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.SPMProject;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
@@ -907,7 +911,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.SPMProject;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
@@ -936,7 +940,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadogqh.SPMProject.App-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -963,7 +967,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadogqh.SPMProject.App-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -988,7 +992,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadogqh.SPMProject.App-macOS-UITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1014,7 +1018,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.datadogqh.SPMProject.App-macOS-UITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1212,7 +1216,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
 			};
 			name = Debug;
 		};
@@ -1236,7 +1240,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
 			};
 			name = Release;
 		};
@@ -1258,7 +1262,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SPMProject;
+				TEST_TARGET_NAME = "App iOS";
 			};
 			name = Debug;
 		};
@@ -1280,7 +1284,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SPMProject;
+				TEST_TARGET_NAME = "App iOS";
 			};
 			name = Release;
 		};
@@ -1390,7 +1394,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
 			};
 			name = Debug;
 		};
@@ -1414,7 +1418,7 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
 				SDKROOT = appletvos;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/App";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/App";
 			};
 			name = Release;
 		};
