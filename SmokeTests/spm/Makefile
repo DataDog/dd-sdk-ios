@@ -7,6 +7,15 @@ ifeq ($(PLATFORM), iOS Simulator)
 SCHEME := App iOS
 else ifeq ($(PLATFORM), tvOS Simulator)
 SCHEME := App tvOS
+else ifeq ($(PLATFORM), macOS)
+SCHEME := App macOS
+endif
+
+# macOS runs natively (no simulator), so the destination omits `name` and `OS`.
+ifeq ($(PLATFORM), macOS)
+DESTINATION := platform=macOS
+else
+DESTINATION := platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)
 endif
 
 clean:
@@ -32,7 +41,7 @@ endif
 	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -project "SPMProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify
+	xcodebuild -project "SPMProject.xcodeproj" -destination "$(DESTINATION)" -scheme "$(SCHEME)" test | xcbeautify
 
 # Helper to apply any changes made to 'SPMProject.xcodeproj' back to 'SPMProject.xcodeproj.src'
 create-src-from-xcodeproj:
