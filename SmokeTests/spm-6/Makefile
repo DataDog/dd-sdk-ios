@@ -20,7 +20,7 @@ endif
 
 clean:
 	@$(ECHO_SUBTITLE2) "make clean"
-	rm -rf SPMProject.xcodeproj App App-macOS AppTests AppUITests Shared TestPlan.xctestplan
+	rm -rf SPMProject.xcodeproj App App-macOS AppTests AppUITests Shared TestPlan.xctestplan TestPlan-macos.xctestplan
 
 install:
 	@$(ECHO_SUBTITLE2) "make install"
@@ -31,6 +31,7 @@ install:
 	cp -r ../spm/AppUITests AppUITests
 	cp -r ../spm/Shared Shared
 	cp ../spm/TestPlan.xctestplan TestPlan.xctestplan
+	cp ../spm/TestPlan-macos.xctestplan TestPlan-macos.xctestplan
 	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}' and SWIFT_VERSION = 6.0"
 	cp -r ../spm/SPMProject.xcodeproj.src SPMProject.xcodeproj
 	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" ../spm/SPMProject.xcodeproj.src/project.pbxproj | \
