@@ -15,7 +15,7 @@ internal protocol SRDataModel: Codable {}
 
 /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
 @_spi(Internal)
-public struct SRCompositionLayer: Codable {
+public struct SRCompositionLayer: Codable, Hashable {
     /// Ordered back-to-front references to child wireframes or child layers.
     public let children: [SRCompositionLayerChild]
 
@@ -93,7 +93,7 @@ public struct SRCompositionLayer: Codable {
 
 /// Represents a platform background material effect captured as layer rendering state.
 @_spi(Internal)
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable {
+public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable {
     /// Material kind.
     public let kind: Kind
 
@@ -124,7 +124,7 @@ public struct SRCompositionLayerBackgroundMaterialModifier: Codable {
 
 /// Adds a signed brightness bias to the rendered layer contents.
 @_spi(Internal)
-public struct SRCompositionLayerBrightnessBiasModifier: Codable {
+public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "brightnessBias"
 
@@ -149,7 +149,7 @@ public struct SRCompositionLayerBrightnessBiasModifier: Codable {
 
 /// A reference to a child wireframe or child layer in a composition layer.
 @_spi(Internal)
-public struct SRCompositionLayerChild: Codable {
+public struct SRCompositionLayerChild: Codable, Hashable {
     /// The id of the referenced wireframe or layer.
     public let id: Int64
 
@@ -184,7 +184,7 @@ public enum SRCompositionLayerChildType: String, Codable {
 
 /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
 @_spi(Internal)
-public struct SRCompositionLayerClipModifier: Codable {
+public struct SRCompositionLayerClipModifier: Codable, Hashable {
     /// Path fill rule. Defaults to 'nonzero'.
     public let fillRule: FillRule?
 
@@ -223,7 +223,7 @@ public struct SRCompositionLayerClipModifier: Codable {
 
 /// Color transformation using a 4x5 matrix applied to the composed layer output.
 @_spi(Internal)
-public struct SRCompositionLayerColorMatrixModifier: Codable {
+public struct SRCompositionLayerColorMatrixModifier: Codable, Hashable {
     /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
     public let matrix: [Double]
 
@@ -248,7 +248,7 @@ public struct SRCompositionLayerColorMatrixModifier: Codable {
 
 /// Gaussian blur applied to the composed layer output.
 @_spi(Internal)
-public struct SRCompositionLayerGaussianBlurModifier: Codable {
+public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable {
     /// Gaussian blur radius.
     public let radius: Double
 
@@ -273,7 +273,7 @@ public struct SRCompositionLayerGaussianBlurModifier: Codable {
 
 /// A rendering modifier applied to the composed layer output.
 @_spi(Internal)
-public enum SRCompositionLayerModifier: Codable {
+public enum SRCompositionLayerModifier: Codable, Hashable {
     case compositionLayerClipModifier(value: SRCompositionLayerClipModifier)
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
@@ -352,7 +352,7 @@ public enum SRCompositionLayerModifier: Codable {
 
 /// Opacity applied to the composed layer output at this point in the modifier order.
 @_spi(Internal)
-public struct SRCompositionLayerOpacityModifier: Codable {
+public struct SRCompositionLayerOpacityModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "opacity"
 
@@ -377,7 +377,7 @@ public struct SRCompositionLayerOpacityModifier: Codable {
 
 /// Applies a saturation adjustment to the rendered layer contents.
 @_spi(Internal)
-public struct SRCompositionLayerSaturateModifier: Codable {
+public struct SRCompositionLayerSaturateModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "saturate"
 
@@ -402,7 +402,7 @@ public struct SRCompositionLayerSaturateModifier: Codable {
 
 /// Sparse update for a composition layer. Omitted fields are unchanged.
 @_spi(Internal)
-public struct SRCompositionLayerUpdate: Codable {
+public struct SRCompositionLayerUpdate: Codable, Hashable {
     /// When present, replaces the full child list for this layer.
     public let children: [SRCompositionLayerChild]?
 

@@ -3643,8 +3643,6 @@ public class objc_RUMMonitor: NSObject
 
 public final class objc_WebViewTracking: NSObject
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
-    public static func enable(webView: WKWebView,hostPatterns: [String],logsSampleRate: SampleRate = .maxSampleRate)
-    public static func enable(webView: WKWebView,hostPatterns: [String],instanceName: String?,logsSampleRate: SampleRate = .maxSampleRate)
     public static func enable(webView: WKWebView,instanceName: String?,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
     public static func disable(webView: WKWebView)
 
