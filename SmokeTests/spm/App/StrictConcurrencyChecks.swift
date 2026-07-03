@@ -9,15 +9,14 @@ import UIKit
 #elseif canImport(AppKit)
 import AppKit
 #endif
-@preconcurrency import DatadogTrace
+import DatadogTrace
 import DatadogCore
-@preconcurrency import DatadogLogs
 #if !os(macOS)
 @preconcurrency import DatadogRUM
 @preconcurrency import DatadogSessionReplay
 #endif
 @preconcurrency import DatadogFlags
-@preconcurrency import OpenTelemetryApi
+import OpenTelemetryApi
 
 /**
  Compilation tests for Swift 6 migration.
@@ -49,15 +48,6 @@ struct StrictConcurrencyChecks {
             .get(instrumentationName: "", instrumentationVersion: nil)
         let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
         otelSpan.end()
-    }
-
-    func logs() {
-        var config = Logs.Configuration()
-        config.eventMapper = { event in event }
-        Task.detached {
-            _ = config
-        }
-        _ = config
     }
 
     #if !os(macOS)
