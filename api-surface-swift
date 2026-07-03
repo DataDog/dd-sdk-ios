@@ -681,6 +681,7 @@ public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
     case compositionLayerGaussianBlurModifier(value: SRCompositionLayerGaussianBlurModifier)
+    case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
@@ -700,6 +701,21 @@ public struct SRCompositionLayerSaturateModifier: Codable, Hashable
         case type = "type"
         case value = "value"
     public init(value: Double)
+public struct SRCompositionLayerShadowModifier: Codable, Hashable
+    public let color: String
+    public let offsetX: Double
+    public let offsetY: Double
+    public let path: String?
+    public let radius: Double
+    public let type: String = "shadow"
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case offsetX = "offsetX"
+        case offsetY = "offsetY"
+        case path = "path"
+        case radius = "radius"
+        case type = "type"
+    public init(color: String,offsetX: Double,offsetY: Double,path: String? = nil,radius: Double)
 public struct SRCompositionLayerUpdate: Codable, Hashable
     public let children: [SRCompositionLayerChild]?
     public let compositeOperation: CompositeOperation?

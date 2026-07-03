@@ -12,15 +12,18 @@ import WebKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    /// Semantic meaning captured for a layer, plus the traversal decision for its sublayers.
+    /// Semantic meaning captured for a layer, plus capture hints for its sublayers.
     struct SemanticObservation: Sendable, Equatable {
         var semantics: Semantics
 
         /// When `true`, the semantic payload owns how this layer is represented and sublayers are not captured.
-        var ignoreSublayers: Bool = false
+        var ignoresSublayers: Bool = false
 
         /// When `true`, image privacy does not apply to image snapshots captured from this layer or its sublayers.
         var ignoresImagePrivacy: Bool = false
+
+        /// When `true`, non-finite layer corner radii are resolved from the layer bounds.
+        var usesAutomaticCornerRadius: Bool = false
     }
 }
 
@@ -28,12 +31,10 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
-        case activityIndicator
         case label(LabelSemantics)
         case image(ImageSemantics)
         case stepper(StepperSemantics)
         case textInput(TextInputSemantics)
-        case switchControl(SwitchControlSemantics)
         case webView(WebViewSemantics)
     }
 }
@@ -49,7 +50,7 @@ extension CALayerSnapshot.SemanticObservation {
     init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
         switch layer.delegate {
         case _ as UIActivityIndicatorView:
-            self.init(semantics: .activityIndicator, ignoreSublayers: true)
+            self.init(semantics: .layer, ignoresSublayers: true)
         case let label as UILabel where !label.hasAttributedText:
             // Attributed text falls through to layer semantics and will be rendered from the layer image.
             self.init(label: label)
@@ -61,8 +62,13 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(textView: textView)
         case let textField as UITextField:
             self.init(textField: textField)
-        case let switchControl as UISwitch:
-            self.init(switchControl: switchControl)
+        case _ as UISwitch, _ as UISlider:
+            if #available(iOS 26.0, *) {
+                // iOS 26 toggle and slider thumbs use a non-finite corner radius for their rounded thumb shape.
+                self.init(semantics: .layer, usesAutomaticCornerRadius: true)
+            } else {
+                self.init(semantics: .layer)
+            }
         case let webView as WKWebView:
             context.webViewCache.add(webView)
             self.init(webView: webView, absoluteFrame: absoluteFrame)
@@ -110,7 +116,7 @@ extension CALayerSnapshot.SemanticObservation {
                     lineBreakMode: label.lineBreakMode
                 )
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         )
     }
 }
@@ -163,7 +169,7 @@ extension CALayerSnapshot.SemanticObservation {
                     isContextual: image?.isContextual ?? false
                 )
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         )
     }
 }
@@ -179,7 +185,7 @@ extension CALayerSnapshot.SemanticObservation {
     fileprivate init(stepper: UIStepper) {
         self.init(
             semantics: .stepper(.init(value: stepper.value)),
-            ignoreSublayers: true
+            ignoresSublayers: true
         )
     }
 }
@@ -219,22 +225,6 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
-// MARK: - SwitchControlSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct SwitchControlSemantics: Sendable, Equatable {
-        let isOn: Bool
-    }
-
-    fileprivate init(switchControl: UISwitch) {
-        self.init(
-            semantics: .switchControl(.init(isOn: switchControl.isOn)),
-            ignoreSublayers: true
-        )
-    }
-}
-
 // MARK: - WebViewSemantics
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -252,7 +242,7 @@ extension CALayerSnapshot.SemanticObservation {
                     slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
                 )
             ),
-            ignoreSublayers: true
+            ignoresSublayers: true
         )
     }
 }

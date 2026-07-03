@@ -87,6 +87,8 @@ internal final class CompositionLayerView: UIView {
                 applyBackgroundMaterialModifier(modifier)
             case .compositionLayerGaussianBlurModifier(let modifier):
                 applyGaussianBlurModifier(modifier)
+            case .compositionLayerShadowModifier(let modifier):
+                applyShadowModifier(modifier)
             case .compositionLayerBrightnessBiasModifier(let modifier):
                 applyBrightnessBiasModifier(modifier)
             case .compositionLayerSaturateModifier(let modifier):
@@ -194,6 +196,14 @@ internal final class CompositionLayerView: UIView {
 
         filter.setValue(CGFloat(modifier.value), forKey: "inputAmount")
         appendFilter(filter)
+    }
+
+    private func applyShadowModifier(_ modifier: SRCompositionLayerShadowModifier) {
+        layer.shadowColor = UIColor(hexString: modifier.color).cgColor
+        layer.shadowOffset = CGSize(width: modifier.offsetX, height: modifier.offsetY)
+        layer.shadowPath = modifier.path.flatMap(CGPath.parse)
+        layer.shadowRadius = CGFloat(modifier.radius)
+        layer.shadowOpacity = 1
     }
 
     private func appendFilter(_ filter: NSObject) {

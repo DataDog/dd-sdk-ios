@@ -13,6 +13,7 @@ extension CALayerSnapshot {
     var requiresCompositionLayer: Bool {
         masksToBounds
             || opacity < 1
+            || hasShadow
             || filters.contains(where: { SRCompositionLayerModifier(filter: $0) != nil })
             || compositingFilter.flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)) != nil
     }
@@ -42,7 +43,10 @@ extension CALayerSnapshot {
             contentsOf: filters.compactMap(SRCompositionLayerModifier.init(filter:))
         )
 
-        // Shadow should go here when we add support for it
+        // Shadow
+        if let shadowModifier {
+            result.append(shadowModifier)
+        }
 
         // Opacity
         if opacity < 1 {
@@ -50,6 +54,34 @@ extension CALayerSnapshot {
         }
 
         return result
+    }
+
+    private var shadowModifier: SRCompositionLayerModifier? {
+        guard
+            !masksToBounds,
+            hasShadow,
+            let shadowColor,
+            let effectiveColor = shadowColor.copy(alpha: shadowColor.alpha * CGFloat(shadowOpacity)),
+            let color = hexString(from: effectiveColor)
+        else {
+            return nil
+        }
+
+        let path = shadowPath.map {
+            SwiftUI.Path($0)
+                .applying(.init(translationX: -bounds.minX, y: -bounds.minY))
+                .dd.svgString
+        }
+
+        return .compositionLayerShadowModifier(
+            value: .init(
+                color: color,
+                offsetX: Double(shadowOffset.width),
+                offsetY: Double(shadowOffset.height),
+                path: path,
+                radius: Double(shadowRadius)
+            )
+        )
     }
 }
 

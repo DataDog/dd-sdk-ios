@@ -122,7 +122,7 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(
             webViewSnapshot.observation == .init(
                 semantics: .webView(.init(slotID: webView.hash, slotFrame: webViewSnapshot.absoluteFrame)),
-                ignoreSublayers: true
+                ignoresSublayers: true
             )
         )
     }

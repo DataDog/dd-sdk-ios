@@ -8,7 +8,7 @@ import SwiftUI
 import UIKit
 
 @available(iOS 16.0, *)
-internal struct SwiftUITextFixtureView: View {
+internal struct TextFixtureView: View {
     @State private var editableField = "Lorem ipsum dolor sit amet"
     @State private var editableText = """
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. \
