@@ -149,6 +149,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
             trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
 
             recordWriter.write(nextRecord: enrichedRecord)
+            NSLog("[DD-SR-N] writing \(records.count) native record(s) for viewID=\(enrichedRecord.viewID)")
         }
 
         // Track state:

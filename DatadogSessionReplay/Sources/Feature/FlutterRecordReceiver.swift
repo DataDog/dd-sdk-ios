@@ -26,10 +26,9 @@ internal struct FlutterRecordReceiver: FeatureMessageReceiver {
     let scope: FeatureScope
 
     func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
-        guard case let .flutterView(.record(records, viewID)) = message else {
+        guard case let .flutterView(.record(event, viewID)) = message else {
             return false
         }
-        NSLog("[DD-SR-N] receive(): \(records.count) record(s) for viewID=\(viewID)")
         scope.eventWriteContext { context, writer in
             guard
                 let rumContext = context.additionalContext(ofType: RUMCoreContext.self),
@@ -42,11 +41,11 @@ internal struct FlutterRecordReceiver: FeatureMessageReceiver {
                 applicationID: rumContext.applicationID,
                 sessionID: rumContext.sessionID,
                 viewID: viewID,
-                records: records.map { AnyEncodable($0) }
+                records: [AnyEncodable(event)]
             )
 
             writer.write(value: record)
-            NSLog("[DD-SR-N] received \(records.count) record(s) for viewID=\(viewID)")
+            NSLog("[DD-SR-N] received record for viewID=\(viewID), slotId=\(event["slotId"] ?? "nil")")
         }
 
         return true

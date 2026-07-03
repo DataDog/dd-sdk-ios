@@ -12,13 +12,11 @@ import Foundation
 /// Such message carries session-replay records captured by the Flutter engine and
 /// is handled by `FlutterRecordReceiver` inside `SessionReplayFeature`.
 public enum FlutterMessage {
-    /// Raw record dictionary — one entry per SR record (meta, focus, snapshot, …).
-    public typealias Records = [[String: Any]]
+    public typealias Event = [String: Any]
 
-    /// A set of Flutter session-replay records for the given RUM view.
-    ///
-    /// - Parameters:
-    ///   - records: The SR records captured by the Flutter engine.
-    ///   - viewID: The RUM view ID reported by the Flutter RUM module.
-    case record(Records, String)
+    /// A single Flutter SR record for the given view
+    case record(Event, String)
+
+    /// A Flutter RUM event to be indexed under the native session
+    case rum(Event)
 }

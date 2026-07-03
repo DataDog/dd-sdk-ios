@@ -287,6 +287,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache
             ),
+            FlutterRUMEventReceiver(scope: featureScope),
             CrashReportReceiver(
                 featureScope: featureScope,
                 applicationID: configuration.applicationID,
