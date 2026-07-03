@@ -4,3 +4,4 @@ App-macOS/
 AppTests/
 AppUITests/
 Shared/
+*.xctestplan

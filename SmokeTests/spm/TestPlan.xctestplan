@@ -13,22 +13,6 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:SPMProject.xcodeproj",
-        "identifier" : "09A2F33A2FF7BB9900E99710",
-        "name" : "App macOS Tests"
-      }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:SPMProject.xcodeproj",
-        "identifier" : "09A2F3472FF7BBA800E99710",
-        "name" : "App macOS UITests"
-      }
-    },
-    {
       "target" : {
         "containerPath" : "container:SPMProject.xcodeproj",
         "identifier" : "61C363EB24374D6100C4D4E6",
