@@ -108,6 +108,7 @@ internal struct MaskSnapshotRequest: Sendable {
     /// Some masks draw through sublayers even when the mask root has empty bounds.
     let bounds: CGRect
 
+    let frame: CGRect
     let dependencies: [CALayerReference]
     let hasChanges: Bool
     let previousSnapshotData: MaskSnapshotData?
@@ -116,6 +117,7 @@ internal struct MaskSnapshotRequest: Sendable {
         replayID: Int64,
         layer: CALayerReference,
         bounds: CGRect,
+        frame: CGRect,
         dependencies: [CALayerReference],
         hasChanges: Bool,
         previousSnapshotData: MaskSnapshotData?
@@ -123,6 +125,7 @@ internal struct MaskSnapshotRequest: Sendable {
         self.replayID = replayID
         self.layer = layer
         self.bounds = bounds
+        self.frame = frame
         self.dependencies = dependencies
         self.hasChanges = hasChanges
         self.previousSnapshotData = previousSnapshotData
@@ -134,6 +137,7 @@ internal struct MaskSnapshotRequest: Sendable {
 internal struct ResolvedMaskSnapshotRequest {
     let layer: CALayer
     let bounds: CGRect
+    let frame: CGRect
     let needsSnapshot: Bool
 }
 
@@ -226,11 +230,13 @@ extension MaskSnapshotRequest {
         }
 
         let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
-        let needsSnapshot = previousSnapshotData == nil || hasChanges || snapshotBoundsDidChange
+        let snapshotFrameDidChange = previousSnapshotData.map { !$0.frame.equalTo(frame) } ?? false
+        let needsSnapshot = previousSnapshotData == nil || hasChanges || snapshotBoundsDidChange || snapshotFrameDidChange
 
         return .init(
             layer: layer,
             bounds: bounds,
+            frame: frame,
             needsSnapshot: needsSnapshot
         )
     }

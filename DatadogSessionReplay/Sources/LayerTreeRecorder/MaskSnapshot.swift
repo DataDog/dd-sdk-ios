@@ -26,6 +26,9 @@ internal struct MaskSnapshotData: Sendable {
     /// The source layer bounds captured when the mask was rendered.
     let bounds: CGRect
 
+    /// The mask layer frame captured when the mask was rendered.
+    let frame: CGRect
+
     /// Mask layers captured when the image was rendered.
     let dependencies: [CALayerReference]
 }

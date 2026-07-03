@@ -25,9 +25,16 @@ internal final class ImageSnapshotCache {
         )
     }
 
-    private struct Metadata {
+    private struct ContentMetadata {
         let localRect: CGRect
         let bounds: CGRect
+        let dependencies: [CALayerReference]
+        var lastFrameNumber: UInt64
+    }
+
+    private struct MaskMetadata {
+        let bounds: CGRect
+        let frame: CGRect
         let dependencies: [CALayerReference]
         var lastFrameNumber: UInt64
     }
@@ -36,8 +43,8 @@ internal final class ImageSnapshotCache {
     private let contentSnapshots: NSCache<NSNumber, ContentSnapshot>
     private let maskSnapshots: NSCache<NSNumber, MaskSnapshot>
     private var frameNumber: UInt64 = 0
-    private var contentMetadata: [Int64: Metadata] = [:]
-    private var maskMetadata: [Int64: Metadata] = [:]
+    private var contentMetadata: [Int64: ContentMetadata] = [:]
+    private var maskMetadata: [Int64: MaskMetadata] = [:]
 
     init(
         policy: Policy = .default,
@@ -114,6 +121,7 @@ internal final class ImageSnapshotCache {
         return .init(
             snapshot: snapshot,
             bounds: metadata.bounds,
+            frame: metadata.frame,
             dependencies: metadata.dependencies
         )
     }
@@ -124,8 +132,8 @@ internal final class ImageSnapshotCache {
     ) {
         maskSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
         maskMetadata[replayID] = .init(
-            localRect: .zero,
             bounds: snapshotData.bounds,
+            frame: snapshotData.frame,
             dependencies: snapshotData.dependencies,
             lastFrameNumber: frameNumber
         )

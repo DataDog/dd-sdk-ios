@@ -58,9 +58,10 @@ extension MaskSnapshotData {
     static func mockAny(
         snapshot: MaskSnapshot = .mockAny(),
         bounds: CGRect = .zero,
+        frame: CGRect = .zero,
         dependencies: [CALayerReference] = []
     ) -> MaskSnapshotData {
-        MaskSnapshotData(snapshot: snapshot, bounds: bounds, dependencies: dependencies)
+        MaskSnapshotData(snapshot: snapshot, bounds: bounds, frame: frame, dependencies: dependencies)
     }
 }
 

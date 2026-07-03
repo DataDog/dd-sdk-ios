@@ -13,12 +13,14 @@ extension CALayerSnapshot {
     struct Mask: Sendable, Equatable {
         let replayID: Int64
         let layer: CALayerReference
+        let frame: CGRect
         let dependencies: [CALayerReference]
 
         @MainActor
         init(_ layer: CALayer) {
             self.replayID = layer.replayID
             self.layer = .init(layer)
+            self.frame = layer.frame
             self.dependencies = layer.maskDependencies()
         }
     }

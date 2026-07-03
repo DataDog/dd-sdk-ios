@@ -57,7 +57,8 @@ struct ImageSnapshotCacheTests {
         let snapshot = MaskSnapshot.mockAny()
         let snapshotData = MaskSnapshotData.mockAny(
             snapshot: snapshot,
-            bounds: CGRect(x: 1, y: 2, width: 3, height: 4)
+            bounds: CGRect(x: 1, y: 2, width: 3, height: 4),
+            frame: CGRect(x: 5, y: 6, width: 7, height: 8)
         )
 
         // When
@@ -67,6 +68,7 @@ struct ImageSnapshotCacheTests {
         // Then
         #expect(cachedSnapshotData.snapshot === snapshot)
         #expect(cachedSnapshotData.bounds == snapshotData.bounds)
+        #expect(cachedSnapshotData.frame == snapshotData.frame)
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 

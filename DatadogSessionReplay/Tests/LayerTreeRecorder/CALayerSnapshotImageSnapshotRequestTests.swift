@@ -92,6 +92,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         layer.addSublayer(child)
 
         let mask = CALayer()
+        mask.frame = CGRect(x: 4, y: 5, width: 20, height: 10)
         let maskChild = CALayer()
         maskChild.frame = layer.bounds
         maskChild.backgroundColor = UIColor.black.cgColor
@@ -109,6 +110,7 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.replayID == mask.replayID)
         #expect(request.layer.matches(mask))
         #expect(request.bounds == layer.bounds)
+        #expect(request.frame == mask.frame)
         #expect(request.dependencies.contains { $0.matches(mask) })
         #expect(request.dependencies.contains { $0.matches(maskChild) })
         #expect(!request.hasChanges)

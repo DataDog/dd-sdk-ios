@@ -206,10 +206,10 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 snapshot = cachedSnapshot
             } else {
                 snapshot = MaskSnapshot(
-                    image: try renderImage(
+                    image: try renderMaskImage(
                         for: resolvedRequest.layer,
                         in: resolvedRequest.bounds,
-                        opaque: false
+                        frame: resolvedRequest.frame
                     )
                 )
             }
@@ -218,6 +218,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 .init(
                     snapshot: snapshot,
                     bounds: resolvedRequest.bounds,
+                    frame: resolvedRequest.frame,
                     dependencies: request.dependencies
                 ),
                 forReplayID: request.replayID
@@ -248,6 +249,27 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             try objc_rethrow {
                 renderer.image { context in
                     context.cgContext.translateBy(x: -rect.origin.x, y: -rect.origin.y)
+                    layer.render(in: context.cgContext)
+                }
+            }
+        }
+    }
+
+    private func renderMaskImage(for layer: CALayer, in bounds: CGRect, frame: CGRect) throws -> UIImage {
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = scale ?? layer.contentsScale
+        format.opaque = false
+
+        let renderer = UIGraphicsImageRenderer(size: bounds.size, format: format)
+        return try screenChangeFilter.ignoringChanges {
+            try objc_rethrow {
+                renderer.image { context in
+                    // Render in owner coordinates.
+                    // Offset masks are supported, but transformed masks are out of scope.
+                    context.cgContext.translateBy(
+                        x: frame.minX - bounds.minX,
+                        y: frame.minY - bounds.minY
+                    )
                     layer.render(in: context.cgContext)
                 }
             }

@@ -102,6 +102,7 @@ extension MaskSnapshotRequest {
             replayID: mask.replayID,
             layer: mask.layer,
             bounds: layerSnapshot.bounds,
+            frame: mask.frame,
             dependencies: mask.dependencies,
             hasChanges: hasChanges,
             previousSnapshotData: previousSnapshotData
