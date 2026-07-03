@@ -4,13 +4,19 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 @preconcurrency import DatadogTrace
 import DatadogCore
 @preconcurrency import DatadogLogs
+#if !os(macOS)
 @preconcurrency import DatadogRUM
-@preconcurrency import DatadogFlags
 @preconcurrency import DatadogSessionReplay
+#endif
+@preconcurrency import DatadogFlags
 @preconcurrency import OpenTelemetryApi
 
 /**
@@ -54,6 +60,7 @@ struct StrictConcurrencyChecks {
         _ = config
     }
 
+    #if !os(macOS)
     func rum() {
         let monitor = RUMMonitor.shared()
         Task.detached {
@@ -61,6 +68,7 @@ struct StrictConcurrencyChecks {
         }
         monitor.stopSession()
     }
+    #endif
 
     func flags() {
         let client = FlagsClient.shared()
