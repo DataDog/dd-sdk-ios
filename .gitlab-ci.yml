@@ -132,10 +132,27 @@ Lint:
 API Surface Verify:
   stage: lint
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
   script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS
     - make clean repo-setup ENV=ci
     - make api-surface-verify
+
+Feature Docs Verify:
+  stage: lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(release|hotfix)\/.*/'
+  # tools/feature-docs-verify.sh runs `git diff <verified_against_commit>..HEAD`,
+  # which requires that commit to be reachable in the local history. GitLab CI
+  # shallow-clones at depth 20 by default, which would silently bury baselines
+  # for any feature doc that hasn't been touched in a few releases (e.g. Logs).
+  # The job only runs on release/hotfix branches (a handful of times per cycle),
+  # so the cost of a full clone is negligible.
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - make feature-docs-verify
 
 Unit Tests (iOS):
   stage: test
@@ -234,6 +251,10 @@ UI Tests:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult.zip"
+    when: always
 
 SR Snapshot Tests:
   stage: ui-test
@@ -256,6 +277,28 @@ SR Snapshot Tests:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
     - make sr-snapshots-pull sr-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+
+SR Layer Snapshot Tests:
+  stage: ui-test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  variables:
+    PLATFORM: "iOS Simulator"
+    IOS_OS: "26.0.1"
+    DEVICE: "iPhone 17"
+    ARTIFACTS_PATH: "artifacts"
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: 1 week
+    when: on_failure
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - make clean repo-setup ENV=ci
+    - make sr-layer-snapshots-pull sr-layer-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 Tools Tests:
   stage: test
@@ -316,25 +359,6 @@ SPM Build (Swift 6.2):
     - !reference [.release-pipeline-job, rules]
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --iOS --tvOS --visionOS --watchOS
-    - make clean repo-setup ENV=ci
-    - make spm-build-ios
-    - make spm-build-tvos
-    - make spm-build-visionos
-    - make spm-build-macos
-    - make spm-build-watchos
-
-SPM Build (Swift 6.0):
-  stage: smoke-test
-  rules: 
-    - !reference [.test-pipeline-job, rules]
-    - !reference [.release-pipeline-job, rules]
-  tags:
-    - macos:sonoma
-    - specific:true
-  variables:
-    XCODE: "16.2.0"
-  script:
-    - ./tools/runner-setup.sh --xcode "$XCODE" --iOS --tvOS --visionOS --watchOS
     - make clean repo-setup ENV=ci
     - make spm-build-ios
     - make spm-build-tvos
@@ -430,13 +454,8 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
-  tags:
-    - macos:sonoma
-    - specific:true
   rules:
     - !reference [.release-pipeline-job, rules]
-  variables:
-    XCODE: "16.2.0"
   id_tokens:
     <<: *dd-octo-sts-id-token
   artifacts:
@@ -446,7 +465,7 @@ Build Artifacts:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --datadog-ci --xcode "$XCODE" --ssh
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE" --ssh
     - make env-check
     - make clean
     - make release-build release-validate
@@ -467,7 +486,8 @@ Publish GH Asset:
 
 Publish CP podspecs (internal):
   stage: release-publish
-  rules: 
+  retry: 2
+  rules:
     - !reference [.release-pipeline-job, rules]
   before_script:
     - *export_MAKE_release_params
@@ -479,6 +499,7 @@ Publish CP podspecs (internal):
 
 .publish-dependent-podspec:
   stage: release-publish
+  retry: 2
   rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
   before_script:

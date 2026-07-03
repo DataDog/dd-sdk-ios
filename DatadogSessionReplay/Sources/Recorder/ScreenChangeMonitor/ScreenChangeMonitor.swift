@@ -4,30 +4,33 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Coordinates observation of `CALayer` activity for screen updates. Swizzles
-// `CALayer` to observe changes and aggregates them into time-windowed snapshots
-// delivered via the provided handler.
-//
-// Call `start()` to begin observing and receiving snapshots; call
-// `stop()` to end observation and clear pending state.
-
 #if os(iOS)
 import Foundation
 
+/// Observes screen changes from `CALayer` activity.
+///
+/// `start()` begins layer observation and delivers batched changesets through
+/// `handler`. `stop()` ends observation and clears pending changes.
 internal final class ScreenChangeMonitor {
+    var handler: ((CALayerChangeset) -> Void)? {
+        get { layerChangeAggregator.handler }
+        set { layerChangeAggregator.handler = newValue }
+    }
+
     private let layerChangeAggregator: CALayerChangeAggregator
     private let layerSwizzler: CALayerSwizzler
+    private var isRunning = false
 
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler = .dispatchSource,
-        handler: @escaping (CALayerChangeSnapshot) -> Void
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
+        handler: ((CALayerChangeset) -> Void)? = nil
     ) throws {
         self.layerChangeAggregator = CALayerChangeAggregator(
             minimumDeliveryInterval: minimumDeliveryInterval,
             timerScheduler: timerScheduler,
+            screenChangeFilter: screenChangeFilter,
             handler: handler
         )
         self.layerSwizzler = try CALayerSwizzler(observer: layerChangeAggregator)
@@ -38,13 +41,23 @@ internal final class ScreenChangeMonitor {
     }
 
     func start() {
+        guard !isRunning else {
+            return
+        }
+
         layerChangeAggregator.start()
         layerSwizzler.swizzle()
+        isRunning = true
     }
 
     func stop() {
+        guard isRunning else {
+            return
+        }
+
         layerSwizzler.unswizzle()
         layerChangeAggregator.stop()
+        isRunning = false
     }
 }
 #endif

@@ -17,12 +17,13 @@ internal struct RecordingComponents {
         configuration: SessionReplay.Configuration
     ) throws {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
-            // TODO: PANA-6884 Implement layer tree recording pipeline
-            struct LayerTreeRecordingNotImplemented: Error {}
-            throw LayerTreeRecordingNotImplemented()
+            // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
+            self = try runOnMainThreadSync {
+                try .layerTreeRecordingComponents(core: core, configuration: configuration)
+            }
+        } else {
+            self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
         }
-
-        self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
     }
 
     private init(
@@ -39,7 +40,11 @@ internal struct RecordingComponents {
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
-        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background, target: processorsQueue)
+        let telemetryQueue = BackgroundAsyncQueue(
+            label: "com.datadoghq.session-replay.telemetry",
+            qos: .background,
+            target: processorsQueue
+        )
 
         let telemetry = SessionReplayTelemetry(
             telemetry: core.telemetry,
@@ -84,6 +89,70 @@ internal struct RecordingComponents {
         return .init(
             recordingCoordinator: recordingCoordinator,
             messageReceiver: contextReceiver
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @MainActor
+    private static func layerTreeRecordingComponents(
+        core: DatadogCoreProtocol,
+        configuration: SessionReplay.Configuration
+    ) throws -> Self {
+        let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
+        // The telemetry queue targets the processors queue with a lower qos.
+        let telemetryQueue = BackgroundAsyncQueue(
+            label: "com.datadoghq.session-replay.telemetry",
+            qos: .background,
+            target: processorsQueue
+        )
+        let telemetry = SessionReplayTelemetry(
+            telemetry: core.telemetry,
+            queue: telemetryQueue
+        )
+        let resourceProcessor = ResourceProcessor(
+            queue: processorsQueue,
+            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+        )
+        let snapshotProcessor = LayerSnapshotProcessor(
+            queue: processorsQueue,
+            recordWriter: RecordWriter(core: core),
+            resourceProcessor: resourceProcessor,
+            replayContextPublisher: SRContextPublisher(core: core),
+            telemetry: telemetry
+        )
+
+        let keyWindowObserver = KeyWindowObserver()
+        let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
+        let screenChangeFilter = ScreenChangeFilter()
+        let layerRecorder = LayerRecorder(
+            snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
+            uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
+            touchSnapshotProducer: touchSnapshotProducer,
+            imageSnapshotter: ImageSnapshotter(
+                screenChangeFilter: screenChangeFilter,
+                telemetry: telemetry
+            ),
+            snapshotProcessor: snapshotProcessor
+        )
+        let screenChangeMonitor = try ScreenChangeMonitor(
+            minimumDeliveryInterval: 0.1,
+            screenChangeFilter: screenChangeFilter
+        )
+        let recordingCoordinator = LayerTreeRecordingCoordinator(
+            screenChangeMonitor: screenChangeMonitor,
+            textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
+            imagePrivacy: configuration.imagePrivacyLevel,
+            touchPrivacy: configuration.touchPrivacyLevel,
+            srContextPublisher: SRContextPublisher(core: core),
+            layerRecording: layerRecorder,
+            replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
+            telemetry: telemetry,
+            startRecordingImmediately: configuration.startRecordingImmediately
+        )
+
+        return .init(
+            recordingCoordinator: recordingCoordinator,
+            messageReceiver: recordingCoordinator
         )
     }
 }

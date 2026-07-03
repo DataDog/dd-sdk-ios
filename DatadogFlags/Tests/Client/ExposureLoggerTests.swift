@@ -148,6 +148,48 @@ final class ExposureLoggerTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten.count, 2, "Same flag with different allocation should be not deduplicated")
     }
 
+    func testLogExposureAssignmentCycle() {
+        // Given
+        let logger = ExposureLogger(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let evaluationContext = FlagsEvaluationContext(
+            targetingKey: "target-1",
+            attributes: .mockAny()
+        )
+        var assignmentA = FlagAssignment.mockAnyBoolean()
+        assignmentA.allocationKey = "allocation-a"
+        assignmentA.variationKey = "variation-a"
+        var assignmentB = assignmentA
+        assignmentB.allocationKey = "allocation-b"
+        assignmentB.variationKey = "variation-b"
+
+        // When
+        logger.logExposure(
+            for: "flag-1",
+            assignment: assignmentA,
+            evaluationContext: evaluationContext
+        )
+        logger.logExposure(
+            for: "flag-1",
+            assignment: assignmentB,
+            evaluationContext: evaluationContext
+        )
+        logger.logExposure(
+            for: "flag-1",
+            assignment: assignmentA,
+            evaluationContext: evaluationContext
+        )
+
+        // Then
+        XCTAssertEqual(
+            featureScope.eventsWritten.count,
+            3,
+            "Assignment changes should emit exposures, including cycles back to a previous assignment"
+        )
+    }
+
     func testLogExposureDifferentFlag() {
         // Given
         let logger = ExposureLogger(

@@ -19,7 +19,10 @@ import Foundation
 /// Registering multiple handlers will aggregate instrumentation.
 internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "network-instrumentation".
-    static let name = "network-instrumentation"
+    static var name: String { Feature.networkInstrumentation }
+
+    /// Maximum response body bytes buffered per task in registered-delegate mode.
+    static let maxBufferedBodySize = 512 * 1_024 // 512 KB
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
@@ -32,6 +35,11 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     let messageReceiver: FeatureMessageReceiver
 
     let networkContextProvider: NetworkContextProvider
+
+    /// The media uptime provider to calculate the deltas between request start and completion.
+    /// Captured alongside `Date()` at start and end; the delta is used to build `endDate` so
+    /// that `endDate >= startDate` always holds.
+    let mediaTimeProvider: CACurrentMediaTimeProvider
 
     /// The list of registered handlers.
     ///
@@ -49,6 +57,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     @ReadWriteLock
     private var registeredDelegateClasses: [ObjectIdentifier: AnyClass] = [:]
 
+    /// Tasks whose response body was discarded after exceeding `maxBufferedBodySize` in registered-delegate mode.
+    private var truncatedInterceptions: Set<URLSessionTask> = []
+
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
     /// The interceptions **must** be accessed using the `queue`.
@@ -56,10 +67,12 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     init(
         networkContextProvider: NetworkContextProvider,
-        messageReceiver: FeatureMessageReceiver
+        messageReceiver: FeatureMessageReceiver,
+        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
     ) {
         self.networkContextProvider = networkContextProvider
         self.messageReceiver = messageReceiver
+        self.mediaTimeProvider = mediaTimeProvider
     }
 
     /// Configures network instrumentation for the specified tracking mode.
@@ -425,7 +438,11 @@ extension NetworkInstrumentationFeature {
         let request = ImmutableRequest(request: currentRequest)
 
         // Capture start time before entering the queue for more accurate timing.
+        // `startMediaTime` is captured from a monotonic clock so the duration computed at
+        // completion is immune to wall-clock corrections that
+        // could otherwise produce `endDate < startDate` and crash range-based consumers.
         let startTime = Date()
+        let startMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self else {
@@ -456,7 +473,7 @@ extension NetworkInstrumentationFeature {
             // Capture approximate start time for all modes
             // This enables Trace to work in automatic mode (where `URLSessionTaskMetrics` are unavailable)
             if interception.startDate == nil {
-                interception.register(startDate: startTime)
+                interception.register(startDate: startTime, mediaTime: startMediaTime)
             }
 
             if let traceContext = instrumentationContexts.compactMap({ $0.traceContext }).first {
@@ -520,6 +537,28 @@ extension NetworkInstrumentationFeature {
             guard let self = self, let interception = self.interceptions[task] else {
                 return
             }
+            // In registered-delegate mode, data arrives as incremental chunks — buffering a full
+            // response duplicates it in memory (RUM-16927). In automatic mode, URLSession already
+            // holds the complete Data object, so no duplication occurs.
+            if interception.trackingMode == .registeredDelegate {
+                guard !truncatedInterceptions.contains(task) else {
+                    return
+                }
+
+                let mimeType = (task.response as? HTTPURLResponse)?.mimeType?.lowercased() ?? ""
+                guard !isMediaMimeType(mimeType) else {
+                    return
+                }
+
+                // When exceeded, discard all accumulated data — partial data is worse than nil
+                // since customers have no way to detect it's incomplete.
+                let buffered = interception.data?.count ?? 0
+                if buffered + data.count > NetworkInstrumentationFeature.maxBufferedBodySize {
+                    interception.resetData()
+                    truncatedInterceptions.insert(task)
+                    return
+                }
+            }
             interception.register(nextData: data)
         }
     }
@@ -531,7 +570,10 @@ extension NetworkInstrumentationFeature {
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         // Capture end time before entering the queue for more accurate timing.
+        // `endMediaTime` is from the same monotonic clock as `startMediaTime` so the derived
+        // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
+        let endMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
@@ -551,7 +593,7 @@ extension NetworkInstrumentationFeature {
             }
 
             if interception.isDone {
-                self.finish(task: task, interception: interception, endDate: endTime)
+                self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
     }
@@ -560,11 +602,27 @@ extension NetworkInstrumentationFeature {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
-    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?) {
+    /// Returns `true` for MIME types whose body carries no useful data for the SDK.
+    private func isMediaMimeType(_ mimeType: String) -> Bool {
+        mimeType.hasPrefix("image/") ||
+        mimeType.hasPrefix("video/") ||
+        mimeType.hasPrefix("audio/") ||
+        mimeType == "application/octet-stream"
+    }
+
+    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception, endDate: Date?, endMediaTime: CFTimeInterval? = nil) {
         // Register `endDate` if provided.
         // Note: in registered delegate mode, `endDate` is `nil` because `URLSessionTaskMetrics` provides accurate timing.
         if let endDate {
-            interception.register(endDate: endDate)
+            interception.register(endDate: endDate, mediaTime: endMediaTime)
+        }
+
+        if truncatedInterceptions.remove(task) != nil {
+            // Log host+path only — query parameters may contain sensitive tokens.
+            let url = interception.request.url.map { "\($0.host ?? "")\($0.path)" } ?? "(unknown)"
+            DD.logger.warn(
+                "resourceAttributesProvider: response body for \(url) exceeded \(NetworkInstrumentationFeature.maxBufferedBodySize / 1_024) KB and was not captured."
+            )
         }
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
@@ -578,7 +636,10 @@ extension NetworkInstrumentationFeature {
     ///   - state: The new state of the task (maps to URLSessionTask.State: 0=running, 1=suspended, 2=canceling, 3=completed).
     func task(_ task: URLSessionTask, didChangeToState state: Int) {
         // Capture end time before entering the queue for more accurate timing.
+        // `endMediaTime` is from the same monotonic clock as `startMediaTime` so the derived
+        // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
+        let endMediaTime = mediaTimeProvider.current
 
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
@@ -610,7 +671,7 @@ extension NetworkInstrumentationFeature {
             // This ensures we capture the response data through completion handler swizzling before finishing.
             // The completion handler will call finish() after capturing the data.
             if interception.isDone && !task.dd.hasCompletion {
-                self.finish(task: task, interception: interception, endDate: endTime)
+                self.finish(task: task, interception: interception, endDate: endTime, endMediaTime: endMediaTime)
             }
         }
     }

@@ -23,6 +23,15 @@ description: Use when committing changes in dd-sdk-ios. Use when writing commit 
 
 Third-party contributions skip the prefix.
 
+## Before Committing
+
+Always show the user what will be committed and get explicit approval before running `git commit`.
+
+1. Run `git diff --staged` and show the output
+2. Propose the commit message following the format below
+3. Ask: "Shall I commit with this message?"
+4. Only run `git commit -S -m "..."` after the user confirms
+
 ## Commit Command
 
 ```bash

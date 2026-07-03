@@ -457,6 +457,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackNativeLongTasks: configuration.trackNativeLongTasks,
             trackNativeViews: configuration.trackNativeViews,
             trackNetworkRequests: configuration.trackNetworkRequests,
+            trackResourceHeaders: configuration.trackResourceHeaders.flatMap { .init(rawValue: $0) },
             trackResources: nil,
             trackSessionAcrossSubdomains: nil,
             trackUserInteractions: configuration.trackUserInteractions,

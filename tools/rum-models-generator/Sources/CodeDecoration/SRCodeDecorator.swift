@@ -11,7 +11,7 @@ import CodeGeneration
 public class SRCodeDecorator: SwiftCodeDecorator {
     /// `SRDataModel` protocol, implemented by all Session Replay models.
     private let srDataModelProtocol = SwiftProtocol(name: "SRDataModel", conformance: [codableProtocol])
-    /// `Hashable` protocol, implemented by wireframes which need to be compared in diff (for incremental records).
+    /// `Hashable` protocol, implemented by models which need to be compared in diff (for incremental records).
     private let hashableProtocol = SwiftProtocol(name: "Hashable", conformance: [codableProtocol])
 
     public init() {
@@ -41,6 +41,22 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeStyle",
                 "SRTextPosition",
                 "SRTextStyle",
+                // Detach composition tree types to shared, root-level definitions:
+                "SRCompositionTree",
+                "SRCompositionLayer",
+                "SRCompositionLayerChild",
+                "SRCompositionLayerChildType",
+                "SRCompositionLayerModifier",
+                "SRCompositionLayerClipModifier",
+                "SRCompositionLayerOpacityModifier",
+                "SRCompositionLayerColorMatrixModifier",
+                "SRCompositionLayerGaussianBlurModifier",
+                "SRCompositionLayerShadowModifier",
+                "SRCompositionLayerBrightnessBiasModifier",
+                "SRCompositionLayerSaturateModifier",
+                "SRCompositionLayerBackgroundMaterialModifier",
+                "SRCompositionLayerUpdate",
+                "SRCompositionTreeMutationData",
             ]
         )
     }
@@ -64,13 +80,32 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         let isWireframe = `struct`.name.lowercased().contains("wireframe")
         let isNestedInWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") }) != nil
+        let isCompositionLayer = `struct`.name.lowercased().contains("compositionlayer")
         let notWireframeUpdate = !`struct`.name.hasSuffix("WireframeUpdate") // to exclude `TextWireframeUpdate`, `ShapeWireframeUpdate`, ...
 
-        if (isWireframe || isNestedInWireframe) && notWireframeUpdate {
+        if ((isWireframe || isNestedInWireframe) && notWireframeUpdate) || isCompositionLayer {
             `struct`.conformance.append(hashableProtocol)
         }
 
         return `struct`
+    }
+
+    override public func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) throws -> SwiftAssociatedTypeEnum {
+        var transformed = try super.transform(associatedTypeEnum: associatedTypeEnum)
+
+        if transformed.name == "SRCompositionLayerModifier" {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+            transformed.conformance.append(hashableProtocol)
+        }
+
+        let parentIncrementalSnapshotRecord = context.predecessorStruct(
+            matching: { $0.name.lowercased() == "mobileincrementalsnapshotrecord" }
+        )
+        if associatedTypeEnum.name.lowercased() == "data" && parentIncrementalSnapshotRecord != nil {
+            transformed = addDiscriminator("source", to: transformed, basedOn: associatedTypeEnum)
+        }
+
+        return transformed
     }
 
     override public func format(structName: String) -> String {
@@ -125,6 +160,32 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             fixedName = "SRTextStyle"
         }
 
+        // Detach composition tree types to shared, root-level definitions.
+        let parentCompositionTree = context.predecessorStruct(matching: { $0.name.lowercased() == "compositiontree" })
+        let parentCompositionTreeMutationData = context.predecessorStruct(
+            matching: { $0.name.lowercased() == "compositiontreemutationdata" }
+        )
+        let isNestedInCompositionTree = parentCompositionTree != nil || parentCompositionTreeMutationData != nil
+
+        if parentCompositionTree != nil && (fixedName == "Layers" || fixedName == "Root") {
+            fixedName = "SRCompositionLayer"
+        }
+        if parentCompositionTreeMutationData != nil && (fixedName == "Adds" || fixedName == "Root") {
+            fixedName = "SRCompositionLayer"
+        }
+        if parentCompositionTreeMutationData != nil && fixedName == "Updates" {
+            fixedName = "SRCompositionLayerUpdate"
+        }
+        if isNestedInCompositionTree && fixedName == "Children" {
+            fixedName = "SRCompositionLayerChild"
+        }
+        if isNestedInCompositionTree && fixedName == "ChildrenType" {
+            fixedName = "SRCompositionLayerChildType"
+        }
+        if isNestedInCompositionTree && fixedName == "Modifiers" {
+            fixedName = "SRCompositionLayerModifier"
+        }
+
         // Ensure all root types have `SR` prefix:
         let isRootType = context.parent == nil
         if isRootType && fixedName.uppercased().hasPrefix("SR") == false {
@@ -137,6 +198,38 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
 
         return fixedName
+    }
+
+    private func addDiscriminator(
+        _ codingKey: String,
+        to associatedTypeEnum: SwiftAssociatedTypeEnum,
+        basedOn originalAssociatedTypeEnum: SwiftAssociatedTypeEnum
+    ) -> SwiftAssociatedTypeEnum {
+        var associatedTypeEnum = associatedTypeEnum
+        associatedTypeEnum.discriminatorCodingKey = codingKey
+        // `super.transform` keeps case order while renaming cases and associated types.
+        // Keep this in mind if the base transformer starts reordering cases.
+        associatedTypeEnum.cases = zip(originalAssociatedTypeEnum.cases, associatedTypeEnum.cases).map { originalCase, transformedCase in
+            var transformedCase = transformedCase
+            transformedCase.discriminatorValue = discriminatorValue(for: codingKey, in: originalCase.associatedType)
+            if codingKey == "source", let value = transformedCase.discriminatorValue as? Int {
+                transformedCase.discriminatorValue = Int64(value)
+            }
+            return transformedCase
+        }
+        return associatedTypeEnum
+    }
+
+    private func discriminatorValue(for codingKey: String, in swiftType: SwiftType) -> SwiftPropertyDefaultValue? {
+        guard let `struct` = swiftType as? SwiftStruct else {
+            return nil
+        }
+        return `struct`.properties.first {
+            guard case .static(let value) = $0.codingKey else {
+                return false
+            }
+            return value == codingKey
+        }?.defaultValue
     }
 }
 

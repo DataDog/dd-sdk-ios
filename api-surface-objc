@@ -8,18 +8,29 @@ public final class objc_TrackingConsent: NSObject
     public static func pending() -> objc_TrackingConsent
 public final class objc_Datadog: NSObject
     public static func initialize(configuration: objc_Configuration,trackingConsent: objc_TrackingConsent)
+    public static func initialize(configuration: objc_Configuration,trackingConsent: objc_TrackingConsent,instanceName: String)
     public static func setVerbosityLevel(_ verbosityLevel: objc_CoreLoggerLevel)
     public static func verbosityLevel() -> objc_CoreLoggerLevel
     public static func setUserInfo(userId: String, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
+    public static func setUserInfo(userId: String, instanceName: String?, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func clearUserInfo()
+    public static func clearUserInfo(instanceName: String?)
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
+    public static func addUserExtraInfo(_ extraInfo: [String: Any], instanceName: String?)
     public static func setAccountInfo(accountId: String, name: String? = nil, extraInfo: [String: Any] = [:])
+    public static func setAccountInfo(accountId: String, instanceName: String?, name: String? = nil, extraInfo: [String: Any] = [:])
     public static func addAccountExtraInfo(_ extraInfo: [String: Any])
+    public static func addAccountExtraInfo(_ extraInfo: [String: Any], instanceName: String?)
     public static func clearAccountInfo()
+    public static func clearAccountInfo(instanceName: String?)
     public static func setTrackingConsent(consent: objc_TrackingConsent)
+    public static func setTrackingConsent(consent: objc_TrackingConsent, instanceName: String?)
     public static func isInitialized() -> Bool
+    public static func isInitialized(instanceName: String?) -> Bool
     public static func stopInstance()
+    public static func stopInstance(instanceName: String?)
     public static func clearAllData()
+    public static func clearAllData(instanceName: String?)
 public final class objc_DatadogSite: NSObject
     public static func us1() -> objc_DatadogSite
     public static func us3() -> objc_DatadogSite
@@ -72,8 +83,11 @@ public final class objc_URLSessionInstrumentationFirstPartyHostsTracing: NSObjec
     public init(hosts: Set<String>)
 public final class objc_URLSessionInstrumentation: NSObject
     public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration)
+    public static func enableDurationBreakdown(with configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String?)
     public static func enable(configuration: objc_URLSessionInstrumentationConfiguration)
+    public static func enable(configuration: objc_URLSessionInstrumentationConfiguration, instanceName: String?)
     public static func disable(delegateClass: URLSessionDataDelegate.Type)
+    public static func disable(delegateClass: URLSessionDataDelegate.Type, instanceName: String?)
 
 # ----------------------------------
 # API surface for DatadogLogs:
@@ -93,8 +107,11 @@ public final class objc_LogsConfiguration: NSObject
     public func setEventMapper(_ mapper: @escaping (objc_LogEvent) -> objc_LogEvent?)
 public final class objc_Logs: NSObject
     public static func enable(with configuration: objc_LogsConfiguration = .init())
+    public static func enable(with configuration: objc_LogsConfiguration, instanceName: String?)
     public static func addAttribute(forKey key: String, value: Any)
+    public static func addAttribute(forKey key: String, value: Any, instanceName: String?)
     public static func removeAttribute(forKey key: String)
+    public static func removeAttribute(forKey key: String, instanceName: String?)
 public final class objc_LoggerConfiguration: NSObject
     public var service: String?
     public var name: String?
@@ -132,6 +149,7 @@ public final class objc_Logger: NSObject
     public func add(tag: String)
     public func remove(tag: String)
     public static func create(with configuration: objc_LoggerConfiguration = .init()) -> objc_Logger
+    public static func create(with configuration: objc_LoggerConfiguration, instanceName: String?) -> objc_Logger
 [?] extension objc_Logger
     public func _internal_sync_critical(message: String,error: Error?,attributes: [String: Any])
 public class objc_LogEvent: NSObject
@@ -202,18 +220,18 @@ public class objc_LogEventDDDevice: NSObject
     public var architecture: String
 public class objc_LogEventDevice: NSObject
     public var architecture: String?
-    public var batteryLevel: Double?
+    public var batteryLevel: NSNumber?
     public var brand: String?
-    public var brightnessLevel: Double?
-    public var isLowRam: Bool?
+    public var brightnessLevel: NSNumber?
+    public var isLowRam: NSNumber?
     public var locale: String?
     public var locales: [String]?
-    public var logicalCpuCount: Double?
+    public var logicalCpuCount: NSNumber?
     public var model: String?
     public var name: String?
-    public var powerSavingMode: Bool?
+    public var powerSavingMode: NSNumber?
     public var timeZone: String?
-    public var totalRam: Double?
+    public var totalRam: NSNumber?
     public var type: objc_LogEventDeviceDeviceType
 public enum objc_LogEventDeviceDeviceType: Int
     case none
@@ -337,8 +355,10 @@ public final class objc_TraceURLSessionTracking: NSObject
     public func setRedactedStatusCodes(_ codes: [NSNumber])
 public final class objc_Trace: NSObject
     public static func enable(with configuration: objc_TraceConfiguration)
+    public static func enable(with configuration: objc_TraceConfiguration, instanceName: String?)
 public final class objc_Tracer: NSObject, objc_OTTracer
     public static func shared() -> objc_OTTracer
+    public static func shared(instanceName: String?) -> objc_OTTracer
     public func startSpan(_ operationName: String) -> objc_OTSpan
     public func startSpan(_ operationName: String, tags: NSDictionary?) -> objc_OTSpan
     public func startSpan(_ operationName: String, childOf parent: objc_OTSpanContext?) -> objc_OTSpan
@@ -3359,6 +3379,7 @@ public enum objc_RUMErrorSource: Int
     case webview
     case console
     case custom
+    case logger
 public enum objc_RUMActionType: Int
     case tap
     case scroll
@@ -3396,6 +3417,9 @@ public enum objc_RUMFeatureOperationFailureReason: Int
     case error
     case abandoned
     case other
+public class objc_OperationOptions: NSObject
+public final class objc_ProfilingOptions: objc_OperationOptions
+    public init(sampleRate: Float)
 public class objc_FirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
@@ -3443,8 +3467,10 @@ public class objc_RUMConfiguration: NSObject
     public var trackAnonymousUser: Bool
 public class objc_RUM: NSObject
     public static func enable(with configuration: objc_RUMConfiguration)
+    public static func enable(with configuration: objc_RUMConfiguration, instanceName: String?)
 public class objc_RUMMonitor: NSObject
     public static func shared() -> objc_RUMMonitor
+    public static func shared(instanceName: String?) -> objc_RUMMonitor
     public func currentSessionID(completion: @escaping (String?) -> Void)
     public func stopSession()
     public func reportAppFullyDisplayed()
@@ -3498,6 +3524,7 @@ public class objc_RUMMonitor: NSObject
 
 public final class objc_WebViewTracking: NSObject
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
+    public static func enable(webView: WKWebView,instanceName: String?,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate)
     public static func disable(webView: WKWebView)
 
 # ----------------------------------
@@ -3506,8 +3533,11 @@ public final class objc_WebViewTracking: NSObject
 
 public final class objc_SessionReplay: NSObject
     public static func enable(with configuration: objc_SessionReplayConfiguration)
+    public static func enable(with configuration: objc_SessionReplayConfiguration, instanceName: String?)
     public static func startRecording()
+    public static func startRecording(instanceName: String?)
     public static func stopRecording()
+    public static func stopRecording(instanceName: String?)
 public final class objc_SessionReplayConfiguration: NSObject
     @objc public var replaySampleRate: Float
     @objc public var textAndInputPrivacyLevel: objc_TextAndInputPrivacyLevel

@@ -3,7 +3,7 @@ all: env-check repo-setup dependencies templates
 		lint license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-podinstall \
-		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-snapshot-tests-open \
+		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
@@ -76,6 +76,11 @@ DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
 DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
 DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
+
+# Test env for running SR layer snapshot tests in local:
+DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS := 26.0.1
+DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
+DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE := iPhone 17
 
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
@@ -366,6 +371,16 @@ sr-snapshots-pull:
 	@$(ECHO_TITLE) "make sr-snapshots-pull"
 	./tools/sr-snapshot-test.sh --pull
 
+# Pushes current SR layer snapshots to snapshots repo
+sr-layer-snapshots-push:
+	@$(ECHO_TITLE) "make sr-layer-snapshots-push"
+	./tools/sr-snapshot-test.sh --suite layer-tree --push
+
+# Pulls SR layer snapshots from snapshots repo
+sr-layer-snapshots-pull:
+	@$(ECHO_TITLE) "make sr-layer-snapshots-pull"
+	./tools/sr-snapshot-test.sh --suite layer-tree --pull
+
 # Run Session Replay snapshot tests
 sr-snapshot-test:
 	@:$(eval OS ?= $(DEFAULT_SR_SNAPSHOT_TESTS_OS))
@@ -375,6 +390,16 @@ sr-snapshot-test:
 	@$(ECHO_TITLE) "make sr-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
 	./tools/sr-snapshot-test.sh \
 		--test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
+
+# Run Session Replay layer snapshot tests
+sr-layer-snapshot-test:
+	@:$(eval OS ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE))
+	@:$(eval ARTIFACTS_PATH ?= $(DEFAULT_ARTIFACTS_PATH))
+	@$(ECHO_TITLE) "make sr-layer-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	./tools/sr-snapshot-test.sh \
+		--suite layer-tree --test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
 
 # Opens `SRSnapshotTests` project with passing required ENV variables
 sr-snapshot-tests-open:
@@ -394,45 +419,33 @@ endif
 # Define the list of Datadog modules for API surface generation
 DATADOG_MODULES := DatadogCore DatadogLogs DatadogTrace DatadogRUM DatadogCrashReporting DatadogWebViewTracking DatadogSessionReplay DatadogFlags DatadogProfiling
 
-# Generate api-surface files for Datadog APIs
+# Generate api-surface files for Datadog APIs.
+# Builds and parses each module once, emitting both the Swift and ObjC surfaces in a single run.
 api-surface:
 	@$(ECHO_TITLE) "make api-surface"
-	@echo "Generating api-surface-swift"
+	@echo "Generating api-surface (swift + objc)"
 	@cd tools/api-surface && \
 		swift run api-surface generate \
 		--path ../../ \
-		--language swift \
 		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file ../../$(SWIFT_OUTPUT_PATH)
+		--language swift --output-file ../../$(SWIFT_OUTPUT_PATH) \
+		--language objc --output-file ../../$(OBJC_OUTPUT_PATH)
 
-	@echo "Generating api-surface-objc"
-	@cd tools/api-surface && \
-		swift run api-surface generate \
-		--path ../../ \
-		--language objc \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file ../../$(OBJC_OUTPUT_PATH)
-
-# Verify API surface files for Datadog APIs
+# Verify API surface files for Datadog APIs (Swift + ObjC) in a single run.
 api-surface-verify:
 	@$(ECHO_TITLE) "make api-surface-verify"
-	@echo "Verifying api-surface-swift"
+	@echo "Verifying api-surface (swift + objc)"
 	@cd tools/api-surface && \
 		swift run api-surface verify \
 		--path ../../ \
-		--language swift \
 		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file /tmp/api-surface-swift-generated \
-		../../api-surface-swift
+		--language swift --output-file /tmp/api-surface-swift-generated --reference-file ../../api-surface-swift \
+		--language objc --output-file /tmp/api-surface-objc-generated --reference-file ../../api-surface-objc
 
-	@echo "Verifying api-surface-objc"
-	@cd tools/api-surface && \
-		swift run api-surface verify \
-		--path ../../ \
-		--language objc \
-		$(foreach module,$(DATADOG_MODULES),--library-name $(module)) \
-		--output-file /tmp/api-surface-objc-generated \
-		../../api-surface-objc
+# Verify feature doc files are up to date
+feature-docs-verify:
+	@$(ECHO_TITLE) "make feature-docs-verify"
+	@./tools/feature-docs-verify.sh
 
 # Builds API documentation using the same process as Swift Package Index.
 spi-docs-build:

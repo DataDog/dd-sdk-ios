@@ -68,7 +68,7 @@ public class TouchSnapshotProducerMock: TouchSnapshotProducer {
     }
 
     @_spi(Internal)
-    public func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
+    public func takeSnapshot(context: TouchSnapshotContext) -> TouchSnapshot? {
         return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
     }
 }

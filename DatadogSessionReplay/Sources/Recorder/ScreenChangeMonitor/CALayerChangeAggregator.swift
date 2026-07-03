@@ -4,19 +4,19 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-// MARK: - Overview
-//
-// Aggregates observed `CALayer` changes over time and delivers snapshots at a
-// minimum interval. Records which aspects changed per layer and invokes a
-// handler with a `CALayerChangeSnapshot` for batching, correlation, and reporting.
-
 #if os(iOS)
 import QuartzCore
 
+/// Collects layer changes and delivers them in throttled batches.
+///
+/// The aggregator merges changes for the same layer inside one delivery window.
+/// It ignores changes triggered while a batch is being delivered.
 internal final class CALayerChangeAggregator {
+    var handler: ((CALayerChangeset) -> Void)?
+
     private let minimumDeliveryInterval: TimeInterval
     private let timerScheduler: any TimerScheduler
-    private let handler: (CALayerChangeSnapshot) -> Void
+    private let screenChangeFilter: ScreenChangeFilter
 
     private var isRunning = false
     private var isDeliveringChanges = false
@@ -27,10 +27,12 @@ internal final class CALayerChangeAggregator {
     init(
         minimumDeliveryInterval: TimeInterval,
         timerScheduler: any TimerScheduler,
-        handler: @escaping (CALayerChangeSnapshot) -> Void
+        screenChangeFilter: ScreenChangeFilter = ScreenChangeFilter(),
+        handler: ((CALayerChangeset) -> Void)? = nil
     ) {
         self.minimumDeliveryInterval = minimumDeliveryInterval
         self.timerScheduler = timerScheduler
+        self.screenChangeFilter = screenChangeFilter
         self.handler = handler
     }
 
@@ -59,8 +61,12 @@ internal final class CALayerChangeAggregator {
     }
 
     private func record(_ layer: CALayer, aspect: CALayerChange.Aspect.Set) {
-        // Only record on the main thread and ignore changes triggered in the delivery handler
-        guard Thread.isMainThread, isRunning, !isDeliveringChanges else {
+        // Only record on the main thread and ignore changes triggered by SDK work.
+        guard Thread.isMainThread else {
+            return
+        }
+
+        guard isRunning, !isDeliveringChanges, screenChangeFilter.acceptsChanges else {
             return
         }
 
@@ -71,7 +77,7 @@ internal final class CALayerChangeAggregator {
             layerChange.aspects.insert(aspect)
             pendingChanges[id] = layerChange
         } else {
-            pendingChanges[id] = CALayerChange(layer: layer, aspects: aspect)
+            pendingChanges[id] = CALayerChange(layer: .init(layer), aspects: aspect)
         }
 
         scheduleDeliveryIfNeeded()
@@ -91,7 +97,7 @@ internal final class CALayerChangeAggregator {
         // Always defer delivery off the layer callback stack. If the throttle window
         // already elapsed, schedule a zero-delay one-shot delivery. Otherwise schedule
         // for the remaining time. Keep at most one pending delivery so subsequent
-        // changes are coalesced into the same snapshot
+        // changes are coalesced into the same changeset.
 
         guard scheduledDelivery == nil else {
             return
@@ -114,18 +120,17 @@ internal final class CALayerChangeAggregator {
     }
 
     private func deliverPendingChanges(_ now: TimeInterval) {
-        let snapshot = CALayerChangeSnapshot(pendingChanges)
-            .removingDeallocatedLayers()
+        let changeset = CALayerChangeset(pendingChanges)
 
         pendingChanges.removeAll()
         lastDeliveryTime = now
 
-        if !snapshot.isEmpty {
+        if !changeset.isEmpty, let handler {
             isDeliveringChanges = true
             defer {
                 isDeliveringChanges = false
             }
-            handler(snapshot)
+            handler(changeset)
         }
     }
 }

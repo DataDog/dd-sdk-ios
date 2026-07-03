@@ -24,6 +24,14 @@
     [DDTrace enableWith:config];
 }
 
+- (void)testDDTraceInstanceNameAPI {
+    DDTraceConfiguration *config = [[DDTraceConfiguration alloc] init];
+    NSString *instanceName = @"trace-test-instance";
+    [DDTrace enableWith:config instanceName:instanceName];
+    id<OTTracer> tracer = [DDTracer sharedWithInstanceName:instanceName];
+    (void)tracer;
+}
+
 - (void)testDDTraceConfigurationAPI {
     DDTraceConfiguration *config = [[DDTraceConfiguration alloc] init];
 

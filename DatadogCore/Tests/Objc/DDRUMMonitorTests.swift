@@ -228,6 +228,7 @@ class DDRUMMonitorTests: XCTestCase {
         waitForExpectations(timeout: 0.5)
         let sessionID = try XCTUnwrap(currentSessionID)
         XCTAssertTrue(sessionID.matches(regex: .uuidRegex))
+        XCTAssertEqual(sessionID, sessionID.lowercased())
     }
 
     func testStoppingSession() throws {

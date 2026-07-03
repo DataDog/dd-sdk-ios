@@ -13,7 +13,7 @@ public enum TrackingMode {
     case automatic
 
     /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
-    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.) as well as the data via the delegate callback.
+    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.).
     case registeredDelegate
 }
 
@@ -31,14 +31,16 @@ public class URLSessionTaskInterception {
     public private(set) var metrics: ResourceMetrics?
     /// Task data received during this interception.
     ///
-    /// Data is collected in:
-    /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
-    /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
+    /// Collected via:
+    /// - Registered delegate mode: incremental `URLSessionDataDelegate` chunks
+    /// - Automatic mode: completion handler swizzling (tasks with completion handlers only)
     ///
-    /// Can be `nil` if:
-    /// - Task completed with error
-    /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
-    /// - Task is a download task (data is saved to file instead of captured in memory)
+    /// `nil` when:
+    /// - No completion handler in automatic mode (e.g., async/await tasks)
+    /// - Download tasks (data is written to file, not memory)
+    /// - Media responses in registered-delegate mode (`image/*`, `video/*`, `audio/*`, `application/octet-stream`)
+    /// - Response body exceeds 512 KB in registered-delegate mode
+    /// - Task completed with an error before any data was received
     public private(set) var data: Data?
     /// Response size in bytes received during this interception.
     ///
@@ -68,7 +70,13 @@ public class URLSessionTaskInterception {
     public private(set) var startDate: Date?
 
     /// Approximate end time captured in Automatic mode when interception completes.
+    /// Guaranteed to be `>= startDate` once registered via `register(endDate:mediaTime:)`.
     internal var endDate: Date?
+
+    /// Monotonic uptime captured alongside `startDate` / `endDate`. Used to derive `endDate`
+    /// immune to wall-clock corrections (NTP, DST, manual changes).
+    internal var startMediaTime: CFTimeInterval?
+    internal var endMediaTime: CFTimeInterval?
 
     /// Returns the most accurate start time available.
     /// Prefers `URLSessionTaskMetrics` timing (registered delegate mode) over approximate timing (automatic mode).
@@ -109,6 +117,10 @@ public class URLSessionTaskInterception {
         }
     }
 
+    func resetData() {
+        data = nil
+    }
+
     func register(request: ImmutableRequest) {
         self.request = request
     }
@@ -145,12 +157,28 @@ public class URLSessionTaskInterception {
         self.responseSize = responseSize
     }
 
-    func register(startDate: Date) {
+    func register(startDate: Date, mediaTime: CFTimeInterval? = nil) {
         self.startDate = startDate
+        self.startMediaTime = mediaTime
     }
 
-    func register(endDate: Date) {
-        self.endDate = endDate
+    /// Registers the end date and guarantees `endDate >= startDate`.
+    /// When both media times are available, derives `endDate` from the monotonic delta;
+    /// otherwise clamps to `max(endDate, startDate)`.
+    func register(endDate: Date, mediaTime: CFTimeInterval? = nil) {
+        self.endMediaTime = mediaTime
+
+        guard let startDate else {
+            self.endDate = endDate
+            return
+        }
+
+        if let startMediaTime, let endMediaTime = mediaTime {
+            let monotonicDuration = max(0, endMediaTime - startMediaTime)
+            self.endDate = startDate.addingTimeInterval(monotonicDuration)
+        } else {
+            self.endDate = max(endDate, startDate)
+        }
     }
 
     /// Tells if the interception is done.

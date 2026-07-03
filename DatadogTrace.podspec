@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogTrace"
-  s.version      = "3.10.0"
+  s.version      = "3.13.0"
   s.summary      = "Datadog Trace Module."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version = '5.9'
+  s.swift_version = '6.0'
   s.ios.deployment_target = '12.0'
   s.tvos.deployment_target = '12.0'
   s.watchos.deployment_target = '7.0'
@@ -25,5 +25,5 @@ Pod::Spec.new do |s|
   s.source_files = ["DatadogTrace/Sources/**/*.swift"]
 
   s.dependency 'DatadogInternal', s.version.to_s
-  s.dependency 'OpenTelemetry-Swift-Api', '~> 2.3.0'
+  s.dependency 'OpenTelemetry-Swift-Api', '~> 2.5.0'
 end

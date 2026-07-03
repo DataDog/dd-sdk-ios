@@ -14,39 +14,72 @@ internal final class ExposureTracker {
         let variationKey: String
     }
 
-    private class ExposureBox: NSObject {
-        let value: Exposure
+    private final class ExposureKey: NSObject {
+        let targetingKey: String
+        let flagKey: String
 
-        init(_ value: Exposure) {
-            self.value = value
+        init(_ exposure: Exposure) {
+            self.targetingKey = exposure.targetingKey
+            self.flagKey = exposure.flagKey
         }
 
         override var hash: Int {
-            value.hashValue
+            var hasher = Hasher()
+            hasher.combine(targetingKey)
+            hasher.combine(flagKey)
+            return hasher.finalize()
         }
 
         override func isEqual(_ object: Any?) -> Bool {
-            guard let other = object as? ExposureBox else {
+            guard let other = object as? ExposureKey else {
                 return false
             }
-            return value == other.value
+
+            return targetingKey == other.targetingKey && flagKey == other.flagKey
         }
     }
 
-    static let defaultCountLimit: Int = 1_000
+    private final class Assignment {
+        let allocationKey: String
+        let variationKey: String
 
-    private let cache = NSCache<ExposureBox, NSNumber>()
-    private let sentinel = NSNumber(value: true)
+        init(_ exposure: Exposure) {
+            self.allocationKey = exposure.allocationKey
+            self.variationKey = exposure.variationKey
+        }
 
-    init(countLimit: Int = defaultCountLimit) {
-        self.cache.countLimit = countLimit
+        func isEqual(to other: Assignment) -> Bool {
+            allocationKey == other.allocationKey && variationKey == other.variationKey
+        }
     }
 
-    func contains(_ exposure: Exposure) -> Bool {
-        cache.object(forKey: .init(exposure)) != nil
+    // Keep enough latest assignments for the expected mobile case of 2 subjects x 2,500 flags.
+    // Normal flag keys are typically tens of characters, so entry count is easier to reason about
+    // than object-size estimates.
+    static let defaultCountLimit: Int = 5_000
+
+    private let assignmentsByExposureKey = NSCache<ExposureKey, Assignment>()
+    private let lock: NSLocking
+
+    init(
+        countLimit: Int = defaultCountLimit,
+        lock: NSLocking = NSLock()
+    ) {
+        self.lock = lock
+        self.assignmentsByExposureKey.countLimit = countLimit
     }
 
-    func insert(_ exposure: Exposure) {
-        cache.setObject(sentinel, forKey: .init(exposure))
+    func track(_ exposure: Exposure) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let key = ExposureKey(exposure)
+        let assignment = Assignment(exposure)
+        guard assignmentsByExposureKey.object(forKey: key)?.isEqual(to: assignment) != true else {
+            return false
+        }
+
+        assignmentsByExposureKey.setObject(assignment, forKey: key)
+        return true
     }
 }

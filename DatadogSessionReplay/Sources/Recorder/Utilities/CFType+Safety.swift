@@ -12,7 +12,8 @@ import CoreGraphics
 /// Verifies if the given `value` is of the expected type specified by `expectedTypeID`.
 /// Returns the value if the type matches; otherwise, returns `nil`.
 ///
-/// This method is used to sanitize attributes that can be set dynamically, leveraging the Objective-C runtime. For example:
+/// This method is used to sanitize attributes that can be set dynamically,
+/// leveraging the Objective-C runtime. For example:
 ///
 /// ```
 /// // If an invalid value is set dynamically (e.g., with User Defined Runtime Attributes in Storyboard):
@@ -39,5 +40,14 @@ internal extension CGColor {
     /// Casts receiver to valid `CGColor` object.
     /// Returns value only if this underlying `CFTypeRef` is of `CGColor.typeID` type.
     var safeCast: CGColor? { sanitize(value: self, expectedTypeID: CGColor.typeID) }
+
+    /// Casts dynamically read values, such as KVC values from Core Animation filters, to a valid `CGColor`.
+    static func safeCast(_ value: Any?) -> CGColor? {
+        guard let value, CFGetTypeID(value as CFTypeRef) == typeID else {
+            return nil
+        }
+        // swiftlint:disable:next force_cast
+        return (value as! CGColor)
+    }
 }
 #endif
