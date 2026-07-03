@@ -5,7 +5,7 @@ all: env-check repo-setup dependencies templates
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
-		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-upload \
 		benchmark-build benchmark-upload \
@@ -269,6 +269,18 @@ smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/carthage"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
+
+# Run smoke tests for specified TEST_DIRECTORY using macOS (runs natively on the host)
+smoke-test-macos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using macOS (only SmokeTests/spm has a macOS target for now)
+smoke-test-macos-all:
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm"
 
 # Builds SPM package SCHEME for specified DESTINATION
 spm-build:
