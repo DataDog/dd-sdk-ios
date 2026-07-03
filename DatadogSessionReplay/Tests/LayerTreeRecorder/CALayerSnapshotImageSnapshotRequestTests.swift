@@ -147,6 +147,34 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates mask request for transparent container mask")
+    func createsMaskRequestForTransparentContainerMask() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+
+        let child = CATextLayer()
+        child.frame = layer.bounds
+        layer.addSublayer(child)
+
+        let mask = CALayer()
+        mask.bounds = layer.bounds
+        mask.opacity = 0
+        layer.mask = mask
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        let request = try #require(requests.first { $0.mask != nil }?.mask)
+        #expect(request.layer.matches(mask))
+        #expect(request.dependencies.contains { $0.matches(mask) })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips mask request for leaf layer")
     func skipsMaskRequestForLeafLayer() throws {
         // Given

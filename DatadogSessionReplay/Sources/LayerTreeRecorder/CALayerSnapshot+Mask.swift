@@ -31,7 +31,7 @@ extension CALayer {
     @MainActor
     fileprivate func maskDependencies() -> [CALayerReference] {
         guard !isHidden, opacity > 0 else {
-            return []
+            return [CALayerReference(self)]
         }
 
         let sublayerDependencies = sublayers?.flatMap {
