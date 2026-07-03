@@ -5,7 +5,7 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
-      buildArchitectures = "Automatic">
+      buildArchitectures = "All">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -16,8 +16,36 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "09A2F3132FF7B92200E99710"
-               BuildableName = "App macOS.app"
+               BuildableName = "App.app"
                BlueprintName = "App macOS"
+               ReferencedContainer = "container:SPMProject.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "09A2F33A2FF7BB9900E99710"
+               BuildableName = "App macOS Tests.xctest"
+               BlueprintName = "App macOS Tests"
+               ReferencedContainer = "container:SPMProject.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "09A2F3472FF7BBA800E99710"
+               BuildableName = "App macOS UITests.xctest"
+               BlueprintName = "App macOS UITests"
                ReferencedContainer = "container:SPMProject.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,8 +55,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:TestPlan.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
@@ -70,7 +103,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "09A2F3132FF7B92200E99710"
-            BuildableName = "App macOS.app"
+            BuildableName = "App.app"
             BlueprintName = "App macOS"
             ReferencedContainer = "container:SPMProject.xcodeproj">
          </BuildableReference>
@@ -87,7 +120,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "09A2F3132FF7B92200E99710"
-            BuildableName = "App macOS.app"
+            BuildableName = "App.app"
             BlueprintName = "App macOS"
             ReferencedContainer = "container:SPMProject.xcodeproj">
          </BuildableReference>
