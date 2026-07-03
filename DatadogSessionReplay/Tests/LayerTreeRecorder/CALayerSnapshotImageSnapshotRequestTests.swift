@@ -81,6 +81,91 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates mask request for container with mask")
+    func createsMaskRequestForContainerWithMask() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        layer.addSublayer(child)
+
+        let mask = CALayer()
+        let maskChild = CALayer()
+        maskChild.frame = layer.bounds
+        maskChild.backgroundColor = UIColor.black.cgColor
+        mask.addSublayer(maskChild)
+        layer.mask = mask
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        let request = try #require(requests.first { $0.mask != nil }?.mask)
+        #expect(request.replayID == mask.replayID)
+        #expect(request.layer.matches(mask))
+        #expect(request.bounds == layer.bounds)
+        #expect(request.dependencies.contains { $0.matches(mask) })
+        #expect(request.dependencies.contains { $0.matches(maskChild) })
+        #expect(!request.hasChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Marks mask request changed when mask dependency changes")
+    func marksMaskRequestChangedWhenMaskDependencyChanges() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        layer.addSublayer(child)
+
+        let mask = CALayer()
+        let maskChild = CALayer()
+        maskChild.frame = layer.bounds
+        mask.addSublayer(maskChild)
+        layer.mask = mask
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let changeset = CALayerChangeset.mockChange(for: maskChild, aspects: .layout)
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        let request = try #require(requests.first { $0.mask != nil }?.mask)
+        #expect(request.layer.matches(mask))
+        #expect(request.hasChanges)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips mask request for leaf layer")
+    func skipsMaskRequestForLeafLayer() throws {
+        // Given
+        let layer = CATextLayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+
+        let mask = CALayer()
+        mask.bounds = layer.bounds
+        layer.mask = mask
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(!requests.contains { $0.mask != nil })
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips plain layer without contents, content changes, or cache")
     func skipsPlainLayerWithoutContentsChangesOrCachedSnapshotData() throws {
         // Given
@@ -643,6 +728,14 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 private extension ImageSnapshotRequest {
     var content: ContentSnapshotRequest? {
         guard case .content(let request) = self else {
+            return nil
+        }
+
+        return request
+    }
+
+    var mask: MaskSnapshotRequest? {
+        guard case .mask(let request) = self else {
             return nil
         }
 

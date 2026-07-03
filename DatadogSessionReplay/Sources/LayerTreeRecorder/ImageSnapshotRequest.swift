@@ -14,10 +14,13 @@ import QuartzCore
 @available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotRequest: Sendable {
     case content(ContentSnapshotRequest)
+    case mask(MaskSnapshotRequest)
 
     var replayID: Int64 {
         switch self {
         case .content(let request):
+            return request.replayID
+        case .mask(let request):
             return request.replayID
         }
     }
@@ -25,6 +28,8 @@ internal enum ImageSnapshotRequest: Sendable {
     var hasChanges: Bool {
         switch self {
         case .content(let request):
+            return request.hasChanges
+        case .mask(let request):
             return request.hasChanges
         }
     }
@@ -90,6 +95,45 @@ internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
     let localRect: CGRect
     let frame: CGRect
+    let needsSnapshot: Bool
+}
+
+/// Request to render one layer mask as an image.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct MaskSnapshotRequest: Sendable {
+    let replayID: Int64
+    let layer: CALayerReference
+
+    /// The owner layer bounds used to render the mask, not the mask layer bounds.
+    /// Some masks draw through sublayers even when the mask root has empty bounds.
+    let bounds: CGRect
+
+    let dependencies: [CALayerReference]
+    let hasChanges: Bool
+    let previousSnapshotData: MaskSnapshotData?
+
+    init(
+        replayID: Int64,
+        layer: CALayerReference,
+        bounds: CGRect,
+        dependencies: [CALayerReference],
+        hasChanges: Bool,
+        previousSnapshotData: MaskSnapshotData?
+    ) {
+        self.replayID = replayID
+        self.layer = layer
+        self.bounds = bounds
+        self.dependencies = dependencies
+        self.hasChanges = hasChanges
+        self.previousSnapshotData = previousSnapshotData
+    }
+}
+
+/// A mask snapshot request resolved against the current layer tree.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ResolvedMaskSnapshotRequest {
+    let layer: CALayer
+    let bounds: CGRect
     let needsSnapshot: Bool
 }
 
@@ -166,6 +210,29 @@ extension ContentSnapshotRequest {
         }
 
         return !previousSnapshotData.localRect.equalTo(visibleLocalRect)
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension MaskSnapshotRequest {
+    @MainActor
+    func resolved() throws -> ResolvedMaskSnapshotRequest {
+        guard let layer = layer.resolve() else {
+            throw ImageSnapshotRequestResolutionError.missingLayer
+        }
+
+        guard !bounds.isNull, !bounds.isEmpty else {
+            throw ImageSnapshotRequestResolutionError.invalidRect
+        }
+
+        let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
+        let needsSnapshot = previousSnapshotData == nil || hasChanges || snapshotBoundsDidChange
+
+        return .init(
+            layer: layer,
+            bounds: bounds,
+            needsSnapshot: needsSnapshot
+        )
     }
 }
 

@@ -38,6 +38,41 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Renders and caches mask snapshot for container mask")
+    func rendersAndCachesMaskSnapshotForContainerMask() async throws {
+        // Given
+        let fixture = MaskFixture()
+        let snapshotter = ImageSnapshotter()
+
+        let firstRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults.maskSnapshots[fixture.mask.replayID])
+        let firstMaskSnapshot = try firstResult.get()
+
+        // When
+        let secondRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: .init(), timeout: 1)
+
+        // Then
+        let secondResult = try #require(secondResults.maskSnapshots[fixture.mask.replayID])
+        let secondMaskSnapshot = try secondResult.get()
+        #expect(firstMaskSnapshot === secondMaskSnapshot)
+        #expect(secondMaskSnapshot.image.size == fixture.maskedLayer.bounds.size)
+
+        // When
+        fixture.maskChild.backgroundColor = UIColor.white.cgColor
+        let changedRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let changeset = CALayerChangeset.mockChange(for: fixture.maskChild, aspects: .display)
+        let changedResults = await snapshotter.takeImageSnapshots(for: changedRoot, changeset: changeset, timeout: 1)
+
+        // Then
+        let changedResult = try #require(changedResults.maskSnapshots[fixture.mask.replayID])
+        let changedMaskSnapshot = try changedResult.get()
+        #expect(changedMaskSnapshot !== firstMaskSnapshot)
+        #expect(changedMaskSnapshot.image.size == fixture.maskedLayer.bounds.size)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Times out unprocessed image requests")
     func timesOutUnprocessedImageRequests() async throws {
         // Given
@@ -364,6 +399,51 @@ struct ImageSnapshotterTests {
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == CGRect(x: 0, y: 0, width: 100, height: 100))
         #expect(imageSnapshot.image.size == CGSize(width: 100, height: 100))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    private struct MaskFixture {
+        let rootLayer: CALayer
+        let maskedLayer: CALayer
+        let mask: CALayer
+        let maskChild: CALayer
+
+        init() {
+            let rootLayer = CALayer()
+            rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+            let maskedLayer = CALayer()
+            maskedLayer.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+            rootLayer.addSublayer(maskedLayer)
+
+            let child = CATextLayer()
+            child.frame = maskedLayer.bounds
+            child.backgroundColor = UIColor.red.cgColor
+            child.contentsScale = 1
+            maskedLayer.addSublayer(child)
+
+            let mask = CALayer()
+            mask.bounds = maskedLayer.bounds
+            let maskChild = CALayer()
+            maskChild.frame = maskedLayer.bounds
+            maskChild.backgroundColor = UIColor.black.cgColor
+            mask.addSublayer(maskChild)
+            maskedLayer.mask = mask
+
+            self.init(
+                rootLayer: rootLayer,
+                maskedLayer: maskedLayer,
+                mask: mask,
+                maskChild: maskChild
+            )
+        }
+
+        init(rootLayer: CALayer, maskedLayer: CALayer, mask: CALayer, maskChild: CALayer) {
+            self.rootLayer = rootLayer
+            self.maskedLayer = maskedLayer
+            self.mask = mask
+            self.maskChild = maskChild
+        }
     }
 }
 #endif

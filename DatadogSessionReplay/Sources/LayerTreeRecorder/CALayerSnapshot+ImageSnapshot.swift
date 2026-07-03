@@ -36,16 +36,15 @@ extension CALayerSnapshot {
             return
         }
 
-        let previousSnapshotData = cache.contentSnapshotData(forReplayID: replayID)
-        let hasChanges = changeset.hasContentChanges(for: layer)
-            || changeset.hasChanges(for: dependencies)
-            || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
+        if let request = MaskSnapshotRequest(layerSnapshot: self, cache: cache, changeset: changeset) {
+            requests.append(.mask(request))
+        }
 
         let request = ContentSnapshotRequest(
             layerSnapshot: self,
             visibleFrame: visibleFrame,
-            hasChanges: hasChanges,
-            previousSnapshotData: previousSnapshotData
+            cache: cache,
+            changeset: changeset
         )
 
         if let request, observation.ignoresSublayers || sublayers.isEmpty {
@@ -83,16 +82,49 @@ extension CALayerSnapshot {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
+extension MaskSnapshotRequest {
+    fileprivate init?(
+        layerSnapshot: CALayerSnapshot,
+        cache: ImageSnapshotCache,
+        changeset: CALayerChangeset
+    ) {
+        // Container masks clip the generated composition layer. Leaf masks are captured
+        // by the leaf content snapshot, so they do not need a separate mask request.
+        guard !layerSnapshot.sublayers.isEmpty, let mask = layerSnapshot.mask, !mask.dependencies.isEmpty else {
+            return nil
+        }
+
+        let previousSnapshotData = cache.maskSnapshotData(forReplayID: mask.replayID)
+        let hasChanges = changeset.hasChanges(for: mask.dependencies)
+            || (previousSnapshotData.map { $0.dependencies != mask.dependencies } ?? false)
+
+        self.init(
+            replayID: mask.replayID,
+            layer: mask.layer,
+            bounds: layerSnapshot.bounds,
+            dependencies: mask.dependencies,
+            hasChanges: hasChanges,
+            previousSnapshotData: previousSnapshotData
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
         visibleFrame: CGRect,
-        hasChanges: Bool,
-        previousSnapshotData: ContentSnapshotData?
+        cache: ImageSnapshotCache,
+        changeset: CALayerChangeset
     ) {
         guard layerSnapshot.allowsImageSnapshot else {
             return nil
         }
+
+        let previousSnapshotData = cache.contentSnapshotData(forReplayID: layerSnapshot.replayID)
+        let hasChanges = changeset.hasContentChanges(for: layerSnapshot.layer)
+            || changeset.hasChanges(for: layerSnapshot.dependencies)
+            || (previousSnapshotData.map { $0.dependencies != layerSnapshot.dependencies } ?? false)
 
         if layerSnapshot.layerClass == CALayer.self,
            layerSnapshot.contentsClass == nil,

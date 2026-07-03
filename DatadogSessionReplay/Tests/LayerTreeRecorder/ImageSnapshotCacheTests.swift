@@ -50,6 +50,41 @@ struct ImageSnapshotCacheTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Returns stored mask snapshot data")
+    func returnsStoredMaskSnapshotData() throws {
+        // Given
+        let cache = ImageSnapshotCache()
+        let snapshot = MaskSnapshot.mockAny()
+        let snapshotData = MaskSnapshotData.mockAny(
+            snapshot: snapshot,
+            bounds: CGRect(x: 1, y: 2, width: 3, height: 4)
+        )
+
+        // When
+        cache.setMaskSnapshotData(snapshotData, forReplayID: 1)
+        let cachedSnapshotData = try #require(cache.maskSnapshotData(forReplayID: 1))
+
+        // Then
+        #expect(cachedSnapshotData.snapshot === snapshot)
+        #expect(cachedSnapshotData.bounds == snapshotData.bounds)
+        #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes stored mask snapshot data")
+    func removesStoredMaskSnapshotData() {
+        // Given
+        let cache = ImageSnapshotCache()
+        cache.setMaskSnapshotData(.mockAny(), forReplayID: 1)
+
+        // When
+        cache.removeMaskSnapshotData(forReplayID: 1)
+
+        // Then
+        #expect(cache.maskSnapshotData(forReplayID: 1) == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Drops snapshot data when cached image is evicted")
     func dropsSnapshotDataWhenCachedImageIsEvicted() {
         // Given
@@ -121,6 +156,26 @@ struct ImageSnapshotCacheTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes stored mask snapshot data when dependency changes")
+    func removesStoredMaskSnapshotDataWhenDependencyChanges() {
+        // Given
+        let mask = CALayer()
+        let dependency = CALayer()
+        let cache = ImageSnapshotCache()
+        cache.setMaskSnapshotData(
+            .mockAny(dependencies: [.init(mask), .init(dependency)]),
+            forReplayID: mask.replayID
+        )
+        let changeset = CALayerChangeset.mockChange(for: dependency, aspects: .layout)
+
+        // When
+        cache.removeMaskSnapshotDataForChanges(in: changeset)
+
+        // Then
+        #expect(cache.maskSnapshotData(forReplayID: mask.replayID) == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Expires snapshot data after unobserved frames")
     func expiresSnapshotDataAfterUnobservedFrames() throws {
         // Given
@@ -168,5 +223,4 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: layer.replayID) == nil)
     }
 }
-
 #endif

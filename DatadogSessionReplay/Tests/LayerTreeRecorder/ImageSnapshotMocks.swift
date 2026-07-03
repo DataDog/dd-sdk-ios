@@ -46,6 +46,24 @@ extension ContentSnapshotData {
     }
 }
 
+@available(iOS 13.0, tvOS 13.0, *)
+extension MaskSnapshot {
+    static func mockAny(image: UIImage = UIImage()) -> MaskSnapshot {
+        MaskSnapshot(image: image)
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension MaskSnapshotData {
+    static func mockAny(
+        snapshot: MaskSnapshot = .mockAny(),
+        bounds: CGRect = .zero,
+        dependencies: [CALayerReference] = []
+    ) -> MaskSnapshotData {
+        MaskSnapshotData(snapshot: snapshot, bounds: bounds, dependencies: dependencies)
+    }
+}
+
 extension UIImage {
     static func mockWith(color: UIColor) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 10, height: 10))
