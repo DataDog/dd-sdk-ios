@@ -124,6 +124,7 @@
 
 /* Begin PBXFileReference section */
 		0914233F2FF7F28900213BF3 /* TestPlan-macos.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "TestPlan-macos.xctestplan"; sourceTree = "<group>"; };
+		091423402FF7F40800213BF3 /* TestPlan-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "TestPlan-tvOS.xctestplan"; path = "../TestPlan-tvOS.xctestplan"; sourceTree = "<group>"; };
 		09A2F3142FF7B92200E99710 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		09A2F3222FF7B92600E99710 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		09A2F3242FF7B92600E99710 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -255,6 +256,7 @@
 			isa = PBXGroup;
 			children = (
 				09B43B4F2FF7C9D700B8C802 /* TestPlan.xctestplan */,
+				091423402FF7F40800213BF3 /* TestPlan-tvOS.xctestplan */,
 				0914233F2FF7F28900213BF3 /* TestPlan-macos.xctestplan */,
 				61CE5FD42461D3C2005EA621 /* xcconfigs */,
 				A787CA7D2BD277190053CEBE /* Shared */,
