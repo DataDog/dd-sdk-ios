@@ -372,6 +372,21 @@ Smoke Tests (tvOS):
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
+Smoke Tests (macOS):
+  stage: smoke-test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  variables:
+    PLATFORM: "macOS"
+    DEVICE: "macOS"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - make clean repo-setup ENV=ci
+    - make smoke-test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+
 SPM Build (Swift 6.2):
   stage: smoke-test
   rules: 
