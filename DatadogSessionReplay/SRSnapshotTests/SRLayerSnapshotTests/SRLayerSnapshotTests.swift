@@ -32,4 +32,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
             folderPath: snapshotsFolderPath
         )
     }
+
+    @MainActor
+    func testSteppers() async throws {
+        try await takeLayerSnapshotFor(
+            StepperFixtureView(),
+            imagePrivacyLevel: .maskAll,
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
 }

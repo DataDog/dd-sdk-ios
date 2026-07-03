@@ -138,8 +138,7 @@ internal class CompositionTreeBuilder {
             imageSnapshots.contentSnapshots[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
-            (.image, .some(let result)),
-            (.stepper, .some(let result)):
+            (.image, .some(let result)):
             makeContentSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
         case (.layer, .none):
             SRWireframe(layerSnapshot: snapshot)

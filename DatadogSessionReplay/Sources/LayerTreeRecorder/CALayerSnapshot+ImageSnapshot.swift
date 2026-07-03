@@ -73,7 +73,7 @@ extension CALayerSnapshot {
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
-        case .layer, .stepper:
+        case .layer:
             return true
         default:
             return false

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */; };
+		5B8D57B12FF7F8A80082404D /* StepperFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */; };
 		5BA0067B2E49F6A3000148DB /* UIImage+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067A2E49F698000148DB /* UIImage+SVG.swift */; };
 		5BA0067D2E49F8BF000148DB /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */; };
 		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
@@ -64,6 +65,7 @@
 		12214F9A2906409FA7979ACC /* WireframeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframeView.swift; sourceTree = "<group>"; };
 		157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFixtureView.swift; sourceTree = "<group>"; };
 		26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionLayerView.swift; sourceTree = "<group>"; };
+		5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperFixtureView.swift; sourceTree = "<group>"; };
 		5BA0067A2E49F698000148DB /* UIImage+SVG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+SVG.swift"; sourceTree = "<group>"; };
 		5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
 		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 		CAA2278120844F79815CBA60 /* Fixtures */ = {
 			isa = PBXGroup;
 			children = (
+				5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */,
 				157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */,
 				B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */,
 			);
@@ -427,6 +430,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B8D57B12FF7F8A80082404D /* StepperFixtureView.swift in Sources */,
 				71178A2E51724DE08237F169 /* UIColor+Hex.swift in Sources */,
 				9D32AEBF1E6647438AE1FA2A /* UIImage+SVG.swift in Sources */,
 				6B9225BBC49B4ED5A8DF83B8 /* CompositionTreeRendering.swift in Sources */,

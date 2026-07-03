@@ -33,7 +33,6 @@ extension CALayerSnapshot.SemanticObservation {
         case layer
         case label(LabelSemantics)
         case image(ImageSemantics)
-        case stepper(StepperSemantics)
         case textInput(TextInputSemantics)
         case webView(WebViewSemantics)
     }
@@ -56,8 +55,6 @@ extension CALayerSnapshot.SemanticObservation {
             self.init(label: label)
         case let imageView as UIImageView:
             self.init(imageView: imageView)
-        case let stepper as UIStepper:
-            self.init(stepper: stepper)
         case let textView as UITextView:
             self.init(textView: textView)
         case let textField as UITextField:
@@ -169,22 +166,6 @@ extension CALayerSnapshot.SemanticObservation {
                     isContextual: image?.isContextual ?? false
                 )
             ),
-            ignoresSublayers: true
-        )
-    }
-}
-
-// MARK: - StepperSemantics
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    struct StepperSemantics: Sendable, Equatable {
-        let value: Double
-    }
-
-    fileprivate init(stepper: UIStepper) {
-        self.init(
-            semantics: .stepper(.init(value: stepper.value)),
             ignoresSublayers: true
         )
     }

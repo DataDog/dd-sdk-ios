@@ -191,19 +191,17 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Records stepper semantics and ignores sublayers")
-    func recordsStepperSemanticsAndIgnoresSublayers() {
+    @Test("Records stepper as layer semantics ignoring image privacy")
+    func recordsStepperAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
         let stepper = UIStepper()
-        stepper.value = 7
 
         // When
         let observation = CALayerSnapshot.SemanticObservation(layer: stepper.layer, context: .mockAny())
 
         // Then
         #expect(observation == .init(
-            semantics: .stepper(.init(value: 7)),
-            ignoresSublayers: true,
+            semantics: .layer,
             ignoresImagePrivacy: true
         ))
     }
