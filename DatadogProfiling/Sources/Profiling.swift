@@ -32,6 +32,31 @@ public enum Profiling {
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
     @available(*, message: "This API is experimental and may change in future releases")
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    internal static func enableOrThrow(with configuration: Configuration, in core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `Profiling.enable(with:)`."
+            )
+        }
+
+        guard core.get(feature: ProfilerFeature.self) == nil else {
+            throw ProgrammerError(
+                description: "Profiling is already enabled and does not support multiple instances. " +
+                "The existing instance will continue to be used."
+            )
+        }
+
         let telemetryController = ProfilingTelemetryController(
             sampleRate: configuration.debugSDK ? 100 : ProfilingTelemetryController.defaultSampleRate,
             telemetry: core.telemetry

@@ -20,7 +20,6 @@ internal import DatadogMachProfiler
 internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
     var currentServerTimeOffset: TimeInterval { get }
-    var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
     var telemetryController: ProfilingTelemetryController { get }
@@ -29,8 +28,11 @@ internal protocol ProfilingHandler {
 
 extension ProfilingHandler {
     @discardableResult
-    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: .current, quotaReason: quotaReason)
+    func updateProfilingContext(
+        status: ProfilingContext.Status = .current,
+        quotaReason: DDProfiling.QuotaReason? = nil
+    ) -> ProfilingContext {
+        let profilingContext = ProfilingContext(status: status, quotaReason: quotaReason)
         self.featureScope.set(context: profilingContext)
 
         return profilingContext
@@ -38,6 +40,7 @@ extension ProfilingHandler {
 
     func write(
         profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil
@@ -63,6 +66,7 @@ extension ProfilingHandler {
 
         self.writeProfilingEvent(
             with: profile,
+            operation: operation,
             rumEvents: rumEvents,
             attributes: attributes
         )
@@ -70,6 +74,7 @@ extension ProfilingHandler {
 
     private func writeProfilingEvent(
         with profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -89,8 +94,6 @@ extension ProfilingHandler {
 
         let pprof = Data(bytes: data, count: Int(clamping: size))
         dd_pprof_free_serialized_data(data)
-
-        let operation = self.operation
 
         featureScope.eventWriteContext { context, writer in
             let event = ProfileEvent(

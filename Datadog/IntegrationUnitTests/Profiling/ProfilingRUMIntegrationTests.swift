@@ -32,6 +32,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_start()
 
@@ -50,6 +51,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
+        DatadogProfiler.resetActiveInstance()
 
         super.tearDown()
     }
@@ -88,6 +90,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         // Then
         waitAndAssertRUMViewEvents()
         waitAndAssertRUMAppLaunchVitalEvents(count: 1)
+        triggerProfileFlush()
         try waitAndAssertProfileOutput(count: 1)
 
         XCTAssertTrue(dd_is_profiling_enabled())
@@ -360,10 +363,12 @@ private extension ProfilingRUMIntegrationTests {
     }
 
     func waitAndAssertProfileOutput(count expectedCount: Int) throws {
-        let attachments = try XCTUnwrap(core.waitAndReturnEventsMetadata(
-            ofFeature: ProfilerFeature.name,
-            ofType: ProfileAttachments.self
-        ))
+        let attachments = try XCTUnwrap(expectedCount > 0
+            ? waitForProfileAttachments()
+            : core.waitAndReturnEventsMetadata(
+                ofFeature: ProfilerFeature.name,
+                ofType: ProfileAttachments.self
+            ))
 
         XCTAssertEqual(attachments.count, expectedCount)
 
@@ -374,7 +379,8 @@ private extension ProfilingRUMIntegrationTests {
 
         let profilingEvents = try XCTUnwrap(core.waitAndReturnEvents(
             ofFeature: ProfilerFeature.name,
-            ofType: ProfileEvent.self
+            ofType: ProfileEvent.self,
+            timeout: expectedCount > 0 ? timeout(after: 1.0) : .distantFuture
         ))
         XCTAssertEqual(profilingEvents.count, expectedCount)
 
