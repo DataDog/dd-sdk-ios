@@ -20,7 +20,6 @@ internal import DatadogMachProfiler
 internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
     var currentServerTimeOffset: TimeInterval { get }
-    var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
     var telemetryController: ProfilingTelemetryController { get }
@@ -29,8 +28,11 @@ internal protocol ProfilingHandler {
 
 extension ProfilingHandler {
     @discardableResult
-    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: .current, quotaReason: quotaReason)
+    func updateProfilingContext(
+        status: ProfilingContext.Status = .current,
+        quotaReason: DDProfiling.QuotaReason? = nil
+    ) -> ProfilingContext {
+        let profilingContext = ProfilingContext(status: status, quotaReason: quotaReason)
         self.featureScope.set(context: profilingContext)
 
         return profilingContext
@@ -38,6 +40,7 @@ extension ProfilingHandler {
 
     func write(
         profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil
@@ -63,6 +66,7 @@ extension ProfilingHandler {
 
         self.writeProfilingEvent(
             with: profile,
+            operation: operation,
             rumEvents: rumEvents,
             attributes: attributes
         )
@@ -70,6 +74,7 @@ extension ProfilingHandler {
 
     private func writeProfilingEvent(
         with profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -81,7 +86,6 @@ extension ProfilingHandler {
         let end = dd_pprof_get_end_timestamp_s(profile)
         let durationNs = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
-        let operation = self.operation
 
         guard let data else {
             telemetryController.sendNoData(durationNs: durationNs, for: operation)
