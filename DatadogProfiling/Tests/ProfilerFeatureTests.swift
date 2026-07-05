@@ -155,7 +155,7 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
     }
 
-    func testMessageReceiver_checksQuotaForAppLaunchProfiler_whenDatadogProfilerIsNotCreated() {
+    func testMessageReceiver_registersObserver_whenDatadogProfilerCoordinatorAlreadyExists() {
         // Given
         let firstFeature = ProfilerFeature(
             core: PassthroughCoreMock(),
@@ -168,7 +168,7 @@ final class ProfilerFeatureTests: XCTestCase {
         let secondCore = PassthroughCoreMock()
         let secondFeature = ProfilerFeature(
             core: secondCore,
-            configuration: .init(),
+            configuration: .init(applicationLaunchSampleRate: 1),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             quotaChecker: quotaChecker,
@@ -184,8 +184,25 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, 1)
         withExtendedLifetime(firstFeature) {}
         withExtendedLifetime(secondFeature) {}
+    }
+
+    func testEnable_doesNotReplaceExistingFeature() {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        Profiling.enable(with: .init(continuousSampleRate: .maxSampleRate), in: core)
+        let firstFeature = core.get(feature: ProfilerFeature.self)
+
+        Profiling.enable(with: .init(continuousSampleRate: .maxSampleRate), in: core)
+        let secondFeature = core.get(feature: ProfilerFeature.self)
+
+        // Then
+        XCTAssertEqual(core.registeredFeatures.count, 1)
+        XCTAssertTrue(firstFeature === secondFeature)
     }
 
     func testProfilingSamplerProvider_isDeterministicForSameSessionID() {

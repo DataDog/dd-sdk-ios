@@ -25,7 +25,6 @@ final class ProfilingHandlerTests: XCTestCase {
         handler = ProfilingHandlerMock(
             attributes: [:],
             currentServerTimeOffset: .zero,
-            operation: .appLaunch,
             featureScope: core.scope(for: ProfilerFeature.self),
             telemetryController: .init(),
             encoder: JSONEncoder()
@@ -92,7 +91,7 @@ final class ProfilingHandlerTests: XCTestCase {
         let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
 
         // When
-        handler.write(profile: profile, rumVitals: [])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -110,7 +109,7 @@ final class ProfilingHandlerTests: XCTestCase {
         ]
 
         // When
-        handler.write(profile: profile, rumVitals: vitals)
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: vitals)
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -127,7 +126,7 @@ final class ProfilingHandlerTests: XCTestCase {
         handler.attributes = ["session.id": "session1", "view.id": ["view1"]]
 
         // When
-        handler.write(profile: profile, rumVitals: [])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -141,7 +140,7 @@ final class ProfilingHandlerTests: XCTestCase {
         let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
 
         // When
-        handler.write(profile: profile, rumVitals: [])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -164,7 +163,7 @@ final class ProfilingHandlerTests: XCTestCase {
         let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
 
         // When
-        handler.write(profile: profile, rumVitals: [])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
@@ -181,7 +180,7 @@ final class ProfilingHandlerTests: XCTestCase {
         ]
 
         // When
-        handler.write(profile: profile, rumVitals: vitals)
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: vitals)
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
@@ -202,7 +201,7 @@ final class ProfilingHandlerTests: XCTestCase {
         let hang = DurationEvent(id: "hang-id", type: .error, start: 40, duration: 50)
 
         // When
-        handler.write(profile: profile, rumVitals: [vital], hangs: [hang], longTasks: [longTask])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [vital], hangs: [hang], longTasks: [longTask])
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
@@ -249,7 +248,7 @@ final class ProfilingHandlerTests: XCTestCase {
         let originalEnd = dd_pprof_get_end_timestamp_s(profile)
 
         // When
-        handler.write(profile: profile, rumVitals: [vital])
+        handler.write(profile: profile, operation: .appLaunch, rumVitals: [vital])
 
         // Then
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
@@ -271,15 +270,13 @@ final class ProfilingHandlerTests: XCTestCase {
         let handler = ProfilingHandlerMock(
             attributes: [:],
             currentServerTimeOffset: .zero,
-            operation: .customProfiling,
             featureScope: featureScope,
             telemetryController: .init(telemetry: telemetry),
             encoder: JSONEncoder()
         )
 
         // When
-        handler.write(profile: profile, rumVitals: [])
-        handler.operation = .continuousProfiling
+        handler.write(profile: profile, operation: .customProfiling, rumVitals: [])
         featureScope.flushDeferredEventWriteContexts()
 
         // Then
@@ -302,7 +299,6 @@ final class ProfilingHandlerTests: XCTestCase {
 private final class ProfilingHandlerMock: ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue]
     var currentServerTimeOffset: TimeInterval
-    var operation: ProfilingOperation
     var featureScope: FeatureScope
     var telemetryController: ProfilingTelemetryController
     var encoder: JSONEncoder
@@ -310,14 +306,12 @@ private final class ProfilingHandlerMock: ProfilingHandler {
     init(
         attributes: [AttributeKey: AttributeValue],
         currentServerTimeOffset: TimeInterval,
-        operation: ProfilingOperation,
         featureScope: FeatureScope,
         telemetryController: ProfilingTelemetryController,
         encoder: JSONEncoder
     ) {
         self.attributes = attributes
         self.currentServerTimeOffset = currentServerTimeOffset
-        self.operation = operation
         self.featureScope = featureScope
         self.telemetryController = telemetryController
         self.encoder = encoder
