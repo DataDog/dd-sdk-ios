@@ -186,13 +186,13 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: false)
 
         // Then
-        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
-        XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, TraceClientStatsFlushedMetric.typeValue)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.bucketsCountKey] as? Int, 1)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.groupsCountKey] as? Int, 1)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.spansCountKey] as? UInt64, 2)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.errorsCountKey] as? UInt64, 1)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.forcedKey] as? Bool, false)
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
+        XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, TraceClientStatsMetric.typeValue)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.bucketsCountKey] as? Int, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.groupsCountKey] as? Int, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 2)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.errorsCountKey] as? UInt64, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
     }
 
     func testWhenForcedFlushProducesBuckets_itMarksMetricAsForced() throws {
@@ -210,9 +210,9 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: true)
 
         // Then
-        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.forcedKey] as? Bool, true)
-        XCTAssertEqual(metric.attributes[TraceClientStatsFlushedMetric.spansCountKey] as? UInt64, 1)
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, true)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 1)
     }
 
     func testWhenFlushProducesNoBuckets_itDoesNotSendFlushMetric() throws {
@@ -228,7 +228,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: true)
 
         // Then
-        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
     }
 
     func testWhenConsentIsNotGranted_itDoesNotSendFlushMetric() throws {
@@ -248,7 +248,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: true)
 
         // Then: no buckets are exported, so no metric is emitted.
-        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsFlushedMetric.name))
+        XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
     }
 
     // MARK: - Request Builder - Encoding
