@@ -32,6 +32,7 @@ install:
 	cp -r ../spm/Shared Shared
 	cp ../spm/TestPlan.xctestplan TestPlan.xctestplan
 	cp ../spm/TestPlan-macos.xctestplan TestPlan-macos.xctestplan
+	cp ../spm/TestPlan-tvOS.xctestplan TestPlan-tvOS.xctestplan
 	@$(ECHO_INFO) "Preparing for CURRENT_GIT_REF='${CURRENT_GIT_REF}' and SWIFT_VERSION = 6.0"
 	cp -r ../spm/SPMProject.xcodeproj.src SPMProject.xcodeproj
 	sed "s|GIT_REFERENCE|${CURRENT_GIT_REF}|g" ../spm/SPMProject.xcodeproj.src/project.pbxproj | \
