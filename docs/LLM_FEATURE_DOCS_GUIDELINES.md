@@ -22,6 +22,7 @@ Each feature module contains a `*_FEATURE.md` file at its root:
 DatadogRUM/RUM_FEATURE.md
 DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 DatadogTrace/TRACE_FEATURE.md
+DatadogProfiling/PROFILING_FEATURE.md
 DatadogLogs/LOGS_FEATURE.md            # (future)
 DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
