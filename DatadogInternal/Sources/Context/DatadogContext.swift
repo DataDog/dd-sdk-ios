@@ -57,6 +57,9 @@ public struct DatadogContext {
     /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
     public let ciAppOrigin: String?
 
+    /// The identifier of the remote configuration applied to the SDK.
+    public let remoteConfigurationId: String?
+
     /// Interval between device and server time.
     ///
     /// The value can change as the device continue to sync with the server.
@@ -165,6 +168,7 @@ public struct DatadogContext {
         batteryStatus: BatteryStatus? = nil,
         brightnessLevel: BrightnessLevel? = nil,
         isLowPowerModeEnabled: Bool = false,
+        remoteConfigurationId: String? = nil,
         additionalContext: [String: AdditionalContext] = [:]
     ) {
         self.site = site
@@ -197,6 +201,7 @@ public struct DatadogContext {
         self.batteryStatus = batteryStatus
         self.brightnessLevel = brightnessLevel
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
+        self.remoteConfigurationId = remoteConfigurationId
         self.additionalContext = additionalContext
         self.ddTags = buildDDTags()
     }

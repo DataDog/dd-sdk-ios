@@ -468,7 +468,8 @@ extension DatadogCore {
                 serverDateProvider: configuration.serverDateProvider,
                 notificationCenter: configuration.notificationCenter,
                 appLaunchHandler: configuration.appLaunchHandler,
-                appStateProvider: configuration.appStateProvider
+                appStateProvider: configuration.appStateProvider,
+                remoteConfigurationId: configuration.remoteConfigurationID
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,

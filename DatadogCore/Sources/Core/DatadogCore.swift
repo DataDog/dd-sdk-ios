@@ -530,7 +530,8 @@ extension DatadogContextProvider {
         serverDateProvider: ServerDateProvider,
         notificationCenter: NotificationCenter,
         appLaunchHandler: AppLaunchHandling,
-        appStateProvider: AppStateProvider
+        appStateProvider: AppStateProvider,
+        remoteConfigurationId: String?
     ) {
         // `ContextProvider` must be initialized on the main thread for two key reasons:
         // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
@@ -563,7 +564,8 @@ extension DatadogContextProvider {
             localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchInfo: launchInfo,
-            applicationStateHistory: appStateHistory
+            applicationStateHistory: appStateHistory,
+            remoteConfigurationId: remoteConfigurationId
         )
 
         self.init(context: context)
