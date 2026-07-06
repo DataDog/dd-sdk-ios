@@ -122,6 +122,58 @@ internal struct KSCrashBacktrace: BacktraceReporting {
         )
     }
 
+    func binaryImages() -> [BinaryImage]? {
+        let images = enumerateBinaryImages()
+        return images.isEmpty ? nil : images
+    }
+
+    private func enumerateBinaryImages() -> [BinaryImage] {
+        (0..<_dyld_image_count()).compactMap { imageIndex in
+            guard
+                let header = _dyld_get_image_header(imageIndex),
+                let imageName = _dyld_get_image_name(imageIndex)
+            else {
+                return nil
+            }
+
+            var binaryImage = KSBinaryImage()
+            guard ksdl_binaryImageForHeader(UnsafeRawPointer(header), imageName, &binaryImage) else {
+                return nil
+            }
+
+            return makeBinaryImage(from: binaryImage, fallbackName: imageName)
+        }
+    }
+
+    private func makeBinaryImage(from binaryImage: KSBinaryImage, fallbackName: UnsafePointer<CChar>) -> BinaryImage? {
+        let imageName = binaryImage.name ?? fallbackName
+
+        guard
+            let path = NSString(utf8String: imageName),
+            !path.lastPathComponent.isEmpty,
+            let imageUUID = binaryImage.uuid,
+            !imageUUID.isZeroUUID,
+            binaryImage.size > 0
+        else {
+            return nil
+        }
+
+        let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+        let architecture = String(cString: kscpu_archForCPU(
+            cpu_type_t(binaryImage.cpuType),
+            cpu_subtype_t(binaryImage.cpuSubType)
+        ))
+
+        return BinaryImage(
+            libraryName: path.lastPathComponent,
+            uuid: uuid.uuidString,
+            architecture: architecture,
+            path: path,
+            loadAddress: binaryImage.address,
+            maxAddress: binaryImage.address + binaryImage.size
+        )
+    }
+
     /// Get the name of a pthread
     private func getThreadName(pthread: pthread_t) -> String? {
         var buffer = [CChar](repeating: 0, count: 256)
@@ -167,4 +219,10 @@ private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
     }
 
     return binaryImage
+}
+
+private extension UnsafePointer where Pointee == UInt8 {
+    var isZeroUUID: Bool {
+        UnsafeBufferPointer(start: self, count: 16).allSatisfy { $0 == 0 }
+    }
 }

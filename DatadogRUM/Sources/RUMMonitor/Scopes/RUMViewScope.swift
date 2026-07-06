@@ -727,8 +727,7 @@ extension RUMViewScope {
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {
             // Don't try to get binary images if we already have them.
             if binaryImages == nil {
-                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? dependencies.backtraceReporter?.generateBacktrace()?.binaryImages.compactMap { $0.toRUMDataFormat }
+                binaryImages = dependencies.backtraceReporter?.binaryImages()?.compactMap { $0.toRUMDataFormat }
             }
         }
 

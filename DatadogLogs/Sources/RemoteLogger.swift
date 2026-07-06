@@ -152,8 +152,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             // When binary images are requested, add them
             var binaryImages: [BinaryImage]?
             if addBinaryImages {
-                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? self.backtraceReporter?.generateBacktrace()?.binaryImages
+                binaryImages = self.backtraceReporter?.binaryImages()
             }
 
             let builder = LogEventBuilder(
