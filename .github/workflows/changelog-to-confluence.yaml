@@ -8,6 +8,7 @@ on:
             - 'DatadogRUM/RUM_FEATURE.md'
             - 'DatadogSessionReplay/SESSION_REPLAY_FEATURE.md'
             - 'DatadogTrace/TRACE_FEATURE.md'
+            - 'DatadogProfiling/PROFILING_FEATURE.md'
 permissions:
     contents: read
 jobs:
@@ -31,6 +32,9 @@ jobs:
 
                   cp DatadogTrace/TRACE_FEATURE.md publish_folder/dd-sdk-ios-trace-feature.md
                   echo "Publishing TRACE_FEATURE.md"
+
+                  cp DatadogProfiling/PROFILING_FEATURE.md publish_folder/dd-sdk-ios-profiling-feature.md
+                  echo "Publishing PROFILING_FEATURE.md"
 
             - name: Publish Markdown to Confluence
               uses: markdown-confluence/publish-action@7767a0a7f438bb1497ee7ffd7d3d685b81dfe700 # v5
