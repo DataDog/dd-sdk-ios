@@ -22,6 +22,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     let concentrator: StatsConcentrator
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
+    private let metricController: TraceClientStatsMetricController
     private var flushTimer: Timer?
 
     /// Interval between periodic flushes (default: 30 seconds).
@@ -43,6 +44,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.dateProvider = dateProvider
         self.flushInterval = flushInterval
         self.featureScope = core.scope(for: ClientStatsFeature.self)
+        self.metricController = TraceClientStatsMetricController(telemetry: featureScope.telemetry)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let concentrator = StatsConcentrator(now: now)
@@ -73,41 +75,14 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
-        sendFlushMetric(for: exportedBuckets, force: force)
-
-        featureScope.eventWriteContext { _, writer in
+        featureScope.eventWriteContext { [metricController] _, writer in
             for bucket in exportedBuckets {
                 writer.write(value: bucket)
             }
+            // Report only after the write: in some cases the event write context is not
+            // available, and we do not want to signal a flush that never reached storage.
+            metricController.send(for: exportedBuckets, force: force)
         }
-    }
-
-    /// Emits the "Trace Client Stats Flushed" telemetry summarizing what a non-empty flush
-    /// produced, so we can watch on the Mobile Metrics dashboard that stats are flowing and the
-    /// aggregated volumes look sane during dogfooding.
-    private func sendFlushMetric(for buckets: [ExportedBucket], force: Bool) {
-        var groupsCount = 0
-        var spansCount: UInt64 = 0
-        var errorsCount: UInt64 = 0
-        for bucket in buckets {
-            groupsCount += bucket.stats.count
-            for group in bucket.stats {
-                spansCount += group.hits
-                errorsCount += group.errors
-            }
-        }
-
-        featureScope.telemetry.metric(
-            name: TraceClientStatsFlushedMetric.name,
-            attributes: [
-                SDKMetricFields.typeKey: TraceClientStatsFlushedMetric.typeValue,
-                TraceClientStatsFlushedMetric.bucketsCountKey: buckets.count,
-                TraceClientStatsFlushedMetric.groupsCountKey: groupsCount,
-                TraceClientStatsFlushedMetric.spansCountKey: spansCount,
-                TraceClientStatsFlushedMetric.errorsCountKey: errorsCount,
-                TraceClientStatsFlushedMetric.forcedKey: force
-            ]
-        )
     }
 
     private func startFlushTimer() {
