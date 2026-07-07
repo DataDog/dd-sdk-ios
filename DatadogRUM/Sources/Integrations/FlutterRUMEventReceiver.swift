@@ -33,6 +33,14 @@ internal struct FlutterRUMEventReceiver: FeatureMessageReceiver {
             // Tag source as "flutter" so the metadata API includes it
             enrichedEvent["source"] = "flutter"
 
+            if enrichedEvent["_dd"] == nil {
+                enrichedEvent["_dd"] = [
+                    "format_version": 2,
+                    "document_version": 1,
+                    "session": ["plan": 2]
+                ]
+            }
+
             NSLog("[DD-RUM-F] writing Flutter RUM view event for viewID=\(enrichedEvent["view"].flatMap { ($0 as? [String: Any])?["id"] } ?? "unknown")")
             writer.write(value: AnyEncodable(enrichedEvent))
         }
