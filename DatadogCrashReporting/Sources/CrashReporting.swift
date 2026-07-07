@@ -62,6 +62,9 @@ public final class CrashReporting {
 
         try core.register(feature: reporter)
 
+        // Subscribe typed-bus receivers for crash context updates:
+        contextProvider.subscribe(to: core.messageBus)
+
         if let backtraceReporter = plugin.backtraceReporter {
             try core.register(backtraceReporter: backtraceReporter)
         }

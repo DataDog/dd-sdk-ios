@@ -60,6 +60,8 @@ public final class FeatureRegistrationCoreMock: DatadogCoreProtocol, Sendable {
         // not supported - use different type of core mock if you need this
     }
 
+    public var messageBus: MessageBus { NOPMessageBus() }
+
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
         return nil
     }

@@ -15,6 +15,18 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let messageReceiver: FeatureMessageReceiver
 
+    let crashReportReceiver: CrashReportReceiver
+
+    let errorMessageReceiver: ErrorMessageReceiver
+
+    let flagEvaluationReceiver: FlagEvaluationReceiver
+
+    let telemetryReceiver: TelemetryReceiver
+
+    let webViewEventReceiver: WebViewEventReceiver
+
+    let watchdogTerminationMonitor: WatchdogTerminationMonitor?
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -158,7 +170,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
-            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: core.messageBus),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
                 let viewEndedController = ViewEndedController(
@@ -269,49 +281,48 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
-        var messageReceivers: [FeatureMessageReceiver] = [
-            TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
-            TelemetryReceiver(
-                featureScope: featureScope,
-                dateProvider: configuration.dateProvider,
-                sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
-                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
-            ),
-            ErrorMessageReceiver(
-                featureScope: featureScope,
-                monitor: monitor
-            ),
-            FlagEvaluationReceiver(monitor: monitor),
-            WebViewEventReceiver(
-                featureScope: featureScope,
-                dateProvider: configuration.dateProvider,
-                commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
-            ),
-            CrashReportReceiver(
-                featureScope: featureScope,
-                applicationID: configuration.applicationID,
-                dateProvider: configuration.dateProvider,
-                sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                trackBackgroundEvents: configuration.trackBackgroundEvents,
-                uuidGenerator: configuration.uuidGenerator,
-                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-                syntheticsTest: {
-                    if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
-                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                    } else {
-                        return nil
-                    }
-                }(),
-                eventsMapper: eventsMapper
-            )
-        ]
+        self.crashReportReceiver = CrashReportReceiver(
+            featureScope: featureScope,
+            applicationID: configuration.applicationID,
+            dateProvider: configuration.dateProvider,
+            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            uuidGenerator: configuration.uuidGenerator,
+            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+            syntheticsTest: {
+                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+                } else {
+                    return nil
+                }
+            }(),
+            eventsMapper: eventsMapper
+        )
 
-        if let watchdogTermination = watchdogTermination {
-            messageReceivers.append(watchdogTermination)
-        }
+        self.errorMessageReceiver = ErrorMessageReceiver(
+            featureScope: featureScope,
+            monitor: monitor
+        )
 
-        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
+        self.flagEvaluationReceiver = FlagEvaluationReceiver(monitor: monitor)
+
+        self.telemetryReceiver = TelemetryReceiver(
+            featureScope: featureScope,
+            dateProvider: configuration.dateProvider,
+            sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
+            configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate),
+            sessionEndedMetric: sessionEndedMetric
+        )
+
+        self.webViewEventReceiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: configuration.dateProvider,
+            commandSubscriber: monitor,
+            viewCache: dependencies.viewCache
+        )
+
+        self.watchdogTerminationMonitor = watchdogTermination
+        self.messageReceiver = NOPFeatureMessageReceiver()
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)

@@ -12,9 +12,19 @@ public enum RUMPayloadMessages {
     public static let viewReset = "rum-view-reset"
 }
 
+/// Signals that the active RUM view was stopped with no new view starting.
+///
+/// Sent by RUM to crash-context consumers so they can clear any cached view event.
+public struct RUMViewReset: BusMessage {
+    public static let key = "rum-view-reset"
+    public init() {}
+}
+
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
 /// It gets serialized into fatal error context for computing the rule upon app process restart.
-public struct RUMSessionState: Codable, Equatable {
+public struct RUMSessionState: Codable, Equatable, BusMessage {
+    public static let key = "rum-session-state"
+
     /// The session ID.
     public let sessionUUID: UUID
     /// `true` is the session is sampled.
@@ -61,7 +71,9 @@ public struct RUMSessionState: Codable, Equatable {
 }
 
 /// Error message consumed by RUM on the message-bus.
-public struct RUMErrorMessage {
+public struct RUMErrorMessage: BusMessage {
+    public static let key = "rum-error"
+
     /// The time of the error
     public let time: Date
     /// The RUM error message
@@ -107,7 +119,9 @@ public struct RUMErrorMessage {
 }
 
 /// Flag evaluation message consumed by RUM on the message-bus.
-public struct RUMFlagEvaluationMessage {
+public struct RUMFlagEvaluationMessage: BusMessage {
+    public static let key = "rum-flag-evaluation"
+
     /// The flag key
     public let flagKey: String
     /// The evaluated value

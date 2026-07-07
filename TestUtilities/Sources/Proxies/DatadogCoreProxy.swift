@@ -129,6 +129,8 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         core.send(message: message, else: fallback)
     }
 
+    public var messageBus: MessageBus { core.messageBus }
+
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
         return try core.mostRecentModifiedFileAt(before: before)
     }

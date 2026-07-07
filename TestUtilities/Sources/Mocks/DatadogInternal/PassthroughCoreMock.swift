@@ -34,13 +34,17 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
     public var context: DatadogContext {
-        didSet { send(message: .context(context)) }
+        didSet { _messageBus.send(message: context) }
     }
 
     let writer = FileWriterMock()
 
-    /// The message receiver.
+    /// The legacy `FeatureMessage` receiver.
     public var messageReceiver: FeatureMessageReceiver
+
+    /// The typed message bus. Owns its own dispatcher table and holds a weak reference
+    /// to this core so that feature objects storing the bus do not create retain cycles.
+    private lazy var _messageBus = PassthroughMessageBusMock(core: self)
 
     /// Callback called when `eventWriteContext` closure is executed.
     public var onEventWriteContext: ((Bool) -> Void)?
@@ -59,8 +63,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         self.dataStore = dataStore
         self.messageReceiver = messageReceiver
 
-        messageReceiver.receive(message: .context(context), from: self)
-
         PassthroughCoreMock.referenceCount += 1
     }
 
@@ -68,14 +70,36 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         PassthroughCoreMock.referenceCount -= 1
     }
 
+    /// The typed message bus — delegates to `_messageBus`.
+    public var messageBus: MessageBus { _messageBus }
+
+    /// Subscribes `receiver` to the typed bus and, for `DatadogContext` receivers,
+    /// delivers the current context immediately (mirrors `DatadogCore.add(messageReceiver:forKey:)`).
+    public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        _messageBus.subscribe(receiver: receiver)
+        if let currentContext = context as? Receiver.Message {
+            receiver.receive(message: currentContext, from: self)
+        }
+    }
+
+    /// Removes `receiver` from the typed bus.
+    public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        _messageBus.unsubscribe(receiver: receiver)
+    }
+
+    /// Delivers `message` to the typed bus.
+    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
+        _messageBus.send(message: message, else: fallback)
+    }
+
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
     public func feature<T>(named name: String, type: T.Type) -> T? { nil }
 
-    /// Always returns a feature-scope.
+    /// Returns a feature-scope backed by a weak reference to avoid retain cycles.
     public func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
-        self
+        PassthroughScopeMock(core: self)
     }
 
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
@@ -135,5 +159,86 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
 
     public func mostRecentModifiedFileAt(before: Date) throws -> Date? {
         return nil
+    }
+}
+
+/// A `FeatureScope` backed by a **weak** reference to a `PassthroughCoreMock`.
+///
+/// Returned by `PassthroughCoreMock.scope(for:)` so that receivers holding the scope
+/// do not retain the mock core, preventing retain cycles in tests.
+public final class PassthroughScopeMock: FeatureScope, @unchecked Sendable {
+    private weak var core: PassthroughCoreMock?
+
+    public init(core: PassthroughCoreMock) {
+        self.core = core
+    }
+
+    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        core?.eventWriteContext(bypassConsent: bypassConsent, block)
+    }
+
+    public func context(_ block: @escaping (DatadogContext) -> Void) {
+        core?.context(block)
+    }
+
+    public var dataStore: DataStore { core?.dataStore ?? NOPDataStore() }
+
+    public var telemetry: Telemetry { core?.telemetry ?? NOPTelemetry() }
+
+    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        if let core = core { core.send(message: message, else: fallback) } else { fallback() }
+    }
+
+    public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+        core?.set(context: context)
+    }
+
+    public func set(anonymousId: String?) {
+        core?.set(anonymousId: anonymousId)
+    }
+}
+
+/// A standalone `MessageBus` returned by `PassthroughCoreMock.messageBus`.
+///
+/// Owns its own dispatcher table and holds the core **weakly** so that feature objects
+/// (e.g. `FatalErrorContextNotifier`) that store the bus do not create retain cycles
+/// back to the mock core.
+public final class PassthroughMessageBusMock: MessageBus, @unchecked Sendable {
+    private typealias Dispatch = (any BusMessage, DatadogCoreProtocol) -> Void
+
+    private weak var core: (any DatadogCoreProtocol)?
+
+    /// Per-message-key dispatchers, keyed by receiver identity.
+    private var dispatchers: [String: [ObjectIdentifier: Dispatch]] = [:]
+
+    public init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
+
+    public func subscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        let id = ObjectIdentifier(receiver)
+        dispatchers[Receiver.Message.key, default: [:]][id] = { message, core in
+            guard let typed = message as? Receiver.Message else {
+                return
+            }
+            receiver.receive(message: typed, from: core)
+        }
+    }
+
+    public func unsubscribe<Receiver>(receiver: Receiver) where Receiver: BusMessageReceiver {
+        let id = ObjectIdentifier(receiver)
+        dispatchers[Receiver.Message.key]?.removeValue(forKey: id)
+    }
+
+    public func send<Message>(message: Message, else fallback: @escaping () -> Void) where Message: BusMessage {
+        guard let core = core else {
+            fallback()
+            return
+        }
+        guard let bucket = dispatchers[Message.key], !bucket.isEmpty else {
+            fallback()
+            return
+        }
+        bucket.values.forEach { $0(message, core) }
     }
 }

@@ -41,10 +41,8 @@ internal struct MessageBusSender: CrashReportSender {
             return
         }
 
-        core.send(
-            message: .payload(
-                Crash(report: report, context: context)
-            ),
+        core.messageBus.send(
+            message: Crash(report: report, context: context),
             else: {
                 DD.logger.warn(
                     """

@@ -24,7 +24,7 @@ private class WatchdogThreadMock: AppHangsObservingThread {
 class AppHangsMonitorTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
     private let watchdogThread = WatchdogThreadMock()
-    private let fatalErrorContext = FatalErrorContextNotifier(messageBus: NOPFeatureScope())
+    private let fatalErrorContext = FatalErrorContextNotifier(messageBus: NOPMessageBus())
     private let currentProcessID = UUID()
     private let dateProvider = DateProviderMock()
     private let uuidGenerator = RUMUUIDGeneratorMock()

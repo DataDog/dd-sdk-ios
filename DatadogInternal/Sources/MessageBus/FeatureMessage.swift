@@ -7,6 +7,7 @@
 import Foundation
 
 /// The set of messages that can be transmitted on the Features message bus.
+@available(*, deprecated, message: "Use `BusMessage` and `MessageBus` for typed feature-to-feature messaging.")
 public enum FeatureMessage {
     /// A custom payload message.
     case payload(Any)

@@ -187,23 +187,24 @@ class TelemetryTests: XCTestCase {
     // MARK: - Integration with Core
 
     func testWhenUsingCoreTelemetry_itSendsTelemetryToMessageReceiver() throws {
-        let receiver = FeatureMessageReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let receiver = TelemetryReceiverMock()
+        let core = PassthroughCoreMock()
+        core.subscribe(receiver: receiver)
 
         core.telemetry.debug("debug message")
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asDebug?.message, "debug message")
+        XCTAssertEqual(receiver.messages.firstDebug()?.message, "debug message")
 
         core.telemetry.error("error message")
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asError?.message, "error message")
+        XCTAssertEqual(receiver.messages.firstError()?.message, "error message")
 
         core.telemetry.configuration(batchSize: 123)
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asConfiguration?.batchSize, 123)
+        XCTAssertEqual(receiver.messages.firstConfiguration()?.batchSize, 123)
 
         core.telemetry.metric(name: "metric name", attributes: [:], sampleRate: 15)
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, "metric name")
+        XCTAssertEqual(receiver.messages.firstMetric(named: "metric name")?.name, "metric name")
 
         let metricTrace = core.telemetry.startMethodCalled(operationName: .mockAny(), callerClass: .mockAny(), headSampleRate: 100)
         core.telemetry.stopMethodCalled(metricTrace)
-        XCTAssertEqual(receiver.messages.lastTelemetry?.asMetric?.name, MethodCalledMetric.name)
+        XCTAssertEqual(receiver.messages.lastMetric(named: MethodCalledMetric.name)?.name, MethodCalledMetric.name)
     }
 }
