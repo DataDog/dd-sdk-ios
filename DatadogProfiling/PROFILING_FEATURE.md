@@ -6,26 +6,6 @@ tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
   - DatadogInternal/Sources/Models/Profiling/ProfilingOptions.swift
-  - DatadogRUM/Sources/RUMMonitorProtocol.swift
-  - DatadogRUM/Sources/RUM+objc.swift
-  - DatadogProfiling/Sources/ProfilerFeature.swift
-  - DatadogProfiling/Sources/AppLaunchProfiler.swift
-  - DatadogProfiling/Sources/DatadogProfiler.swift
-  - DatadogProfiling/Sources/ProfilingSamplerProvider.swift
-  - DatadogProfiling/Sources/ProfilingQuotaChecker.swift
-  - DatadogProfiling/Sources/ProfilingHandler.swift
-  - DatadogProfiling/Sources/RequestBuilder.swift
-  - DatadogProfiling/Sources/ProfileEvent.swift
-  - DatadogProfiling/Sources/Models/ProfileAttachments.swift
-  - DatadogProfiling/Sources/Models/ProfilingConditions.swift
-  - DatadogProfiling/Mach/dd_profiler.cpp
-  - DatadogProfiling/Mach/mach_sampling_profiler.cpp
-  - DatadogProfiling/Mach/aggregation_worker.cpp
-  - DatadogProfiling/Mach/profile.cpp
-  - DatadogProfiling/Mach/dd_pprof.cpp
-  - DatadogProfiling/Mach/profile_pprof_packer.cpp
-  - DatadogProfiling/Mach/include/dd_profiler.h
-  - DatadogProfiling/Mach/include/dd_pprof.h
 ---
 
 # Profiling Feature
@@ -123,7 +103,7 @@ monitor.succeedOperation(
 
 Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, app-launch profiler, and the main `DatadogProfiler` message receiver.
 
-The low-level sampler lives in `DatadogProfiling/Mach`. It uses Mach APIs to sample application threads, aggregates stack traces into a pprof profile, and exposes C functions such as `dd_profiler_start()`, `dd_profiler_stop()`, and `dd_profiler_flush_and_get_profile()` to Swift. Default native sampling is about 101 Hz, with up to 100 threads and 128 frames per trace.
+The low-level sampler lives in `DatadogProfiling/Mach`. It samples application threads with Mach APIs, aggregates stack traces into a pprof profile, and exposes the native profiler to Swift through a C interface.
 
 `ProfilerFeature` writes UserDefaults keys consumed by the native auto-start path for app-launch profiling. The Swift side then decides when to keep the native profiler running, when to flush profiles, and whether to write or drop a profile.
 
@@ -165,7 +145,7 @@ flowchart TD
 - **`DatadogProfiling/Sources/ProfilingHandler.swift`** - Shared write path for app-launch, continuous, and custom profiles. Serializes pprof data and RUM events into a profile event.
 - **`DatadogProfiling/Sources/RequestBuilder.swift`** - Builds the multipart upload to `/api/v2/profile`.
 - **`DatadogProfiling/Sources/ProfileEvent.swift`** - JSON event metadata for a profile.
-- **`DatadogProfiling/Sources/Models/ProfileAttachments.swift`** - pprof and RUM event attachments (`wall.pprof`, `rum-mobile-events.json`).
+- **`DatadogProfiling/Sources/Models/ProfileAttachments.swift`** - pprof and RUM event attachments.
 
 ### Native Profiler
 - **`DatadogProfiling/Mach/`** - Native Mach sampler and pprof aggregation layer exposed to Swift through `dd_profiler.h` and `dd_pprof.h`.
@@ -186,26 +166,13 @@ Profiling is suspended when `ProfilingConditions` sees any blocker:
 - Low Power Mode is enabled.
 - The app is in the background.
 
-Continuous profiles are also flushed when the app backgrounds after foreground activity. Custom profiling keeps the native profiler alive only while sampled operations are ongoing, with a 60 second cutoff.
+Continuous profiles are also flushed when the app backgrounds after foreground activity. Custom profiling keeps the native profiler alive while sampled operations are ongoing.
 
 ### Quota
-`ProfilingQuotaChecker` asks `quota.<site>/api/v2/profiling/quota?session_id=<rum_session_id>` after observing a sampled-in RUM session with granted consent. Quota is session-scoped:
-- Pending, timeout, backend unavailable, and client API errors fail open.
-- Explicit `quota_exceeded`, `org_disabled`, or undefined rejected responses stop profiling and drop pending profile data for that session.
-- A new RUM session clears the prior quota result before the next check completes.
-
-### Native Sampling
-The native profiler samples wall time and aggregates stack traces into pprof:
-- Sampling frequency: about 101 Hz.
-- Max buffered samples: 10,000.
-- Max stack depth: 128 frames.
-- Max sampled threads per cycle: 100.
+`ProfilingQuotaChecker` checks whether the active RUM session is allowed to write profiles after Profiling has RUM session context and granted consent. Temporary quota lookup failures do not block profiling, while explicit quota rejection stops profiling for that session. A new RUM session triggers a fresh quota decision.
 
 ### Upload Format
-Profiling writes one profile per stored event because the profiling intake accepts one profile per request. Uploads are multipart/form-data with:
-- `event` / `event.json`: profile metadata.
-- `wall.pprof`: serialized pprof bytes.
-- `rum-mobile-events.json`: correlated RUM vitals, app hangs, and long tasks when present.
+Profile uploads are multipart/form-data requests that include profile metadata, serialized pprof data, and correlated RUM events when present.
 
 ## Common Troubleshooting Patterns
 
@@ -224,7 +191,7 @@ Profiling writes one profile per stored event because the profiling intake accep
 ### "Custom operation profiles are missing"
 1. Use `startOperation(name:operationKey:attributes:options:)` with `ProfilingOptions(sampleRate:)`. Deprecated `startFeatureOperation` does not accept profiling options.
 2. Use matching `name` and `operationKey` in `succeedOperation` or `failOperation`.
-3. Keep the operation active long enough for the native profiler to collect useful samples; Profiling enforces a 5 second minimum profile duration before flushing custom profiles.
+3. Keep the operation active long enough for the native profiler to collect useful samples.
 4. Remember that the operation sample rate is composed with the RUM session sampler.
 5. Operation-based custom profiling takes over only when Continuous Profiling is disabled or sampled out. If Continuous Profiling is sampled in, sampled operation steps are attached to the continuous profile instead of creating a separate custom profile.
 
@@ -245,6 +212,5 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 ## Additional Context
 
 - Only one `DatadogProfiler` instance can be active in a process. The initializer returns `nil` if another instance is already active.
-- Native profiling can restart from `DD_PROFILER_STATUS_STOPPED` when profiling conditions become valid again, such as after the app returns to foreground. Preserve this stop/start lifecycle when changing condition handling.
-- The profile event tags include service, version, SDK version, runtime version, env, source, language `swift`, format `pprof`, remote symbols `yes`, and operation (`launch`, `continuous`, or `custom`).
-- The profiling intake accepts one profile per request, so `ProfilerFeature.performanceOverride` limits stored batches to one object per file.
+- Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, such as after the app returns to foreground.
+- Profile uploads include pprof data, correlated RUM events, and profile metadata.
