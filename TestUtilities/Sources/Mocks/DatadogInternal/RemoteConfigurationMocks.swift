@@ -15,7 +15,7 @@ extension RemoteConfiguration: AnyMockable, RandomMockable {
     public static func mockRandom() -> RemoteConfiguration {
         .init(
             profiling: .mockRandom(),
-            rum: nil,
+            rum: .mockRandom(),
             sessionReplay: nil,
             trace: nil
         )
@@ -60,5 +60,77 @@ extension RemoteConfiguration.Profiling: AnyMockable, RandomMockable {
             applicationLaunchSampleRate: applicationLaunchSampleRate,
             continuousSampleRate: continuousSampleRate
         )
+    }
+}
+
+extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.RUM {
+        mockWith()
+    }
+
+    /// Builds a `rum` namespace with **every** field populated with a random, non-`nil` value.
+    ///
+    /// Keeping all fields populated is what lets the exhaustiveness guard in
+    /// `RUMConfiguration_RemoteConfigurationTests` detect any newly generated schema field.
+    public static func mockRandom() -> RemoteConfiguration.RUM {
+        .init(
+            appHangThresholdMs: .mockRandom(min: 100, max: 5_000),
+            applicationId: .mockRandom(),
+            env: .mockRandom(),
+            longTaskThresholdMs: .mockRandom(min: 100, max: 5_000),
+            service: .mockRandom(),
+            telemetrySampleRate: .mockRandom(min: 0, max: 100),
+            trackAnonymousUser: .mockRandom(),
+            trackBackgroundEvents: .mockRandom(),
+            trackFrustrations: .mockRandom(),
+            trackMemoryWarnings: .mockRandom(),
+            trackResources: .mockRandom(),
+            trackSlowFrames: .mockRandom(),
+            trackUserInteractions: .mockRandom(),
+            trackWatchdogTerminations: .mockRandom(),
+            vitalsUpdateFrequency: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        appHangThresholdMs: Double? = nil,
+        applicationId: String = .mockAny(),
+        env: String? = nil,
+        longTaskThresholdMs: Double? = nil,
+        service: String? = nil,
+        telemetrySampleRate: Double? = nil,
+        trackAnonymousUser: Bool? = nil,
+        trackBackgroundEvents: Bool? = nil,
+        trackFrustrations: Bool? = nil,
+        trackMemoryWarnings: Bool? = nil,
+        trackResources: Bool? = nil,
+        trackSlowFrames: Bool? = nil,
+        trackUserInteractions: Bool? = nil,
+        trackWatchdogTerminations: Bool? = nil,
+        vitalsUpdateFrequency: RemoteConfiguration.RUM.VitalsUpdateFrequency? = nil
+    ) -> RemoteConfiguration.RUM {
+        .init(
+            appHangThresholdMs: appHangThresholdMs,
+            applicationId: applicationId,
+            env: env,
+            longTaskThresholdMs: longTaskThresholdMs,
+            service: service,
+            telemetrySampleRate: telemetrySampleRate,
+            trackAnonymousUser: trackAnonymousUser,
+            trackBackgroundEvents: trackBackgroundEvents,
+            trackFrustrations: trackFrustrations,
+            trackMemoryWarnings: trackMemoryWarnings,
+            trackResources: trackResources,
+            trackSlowFrames: trackSlowFrames,
+            trackUserInteractions: trackUserInteractions,
+            trackWatchdogTerminations: trackWatchdogTerminations,
+            vitalsUpdateFrequency: vitalsUpdateFrequency
+        )
+    }
+}
+
+extension RemoteConfiguration.RUM.VitalsUpdateFrequency: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.RUM.VitalsUpdateFrequency {
+        [.frequent, .average, .rare, .never].randomElement()!
     }
 }
