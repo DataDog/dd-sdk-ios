@@ -565,6 +565,7 @@ extension RUMViewScope {
 
         // Retrieve Session Replay config if any
         let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -578,6 +579,7 @@ extension RUMViewScope {
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,
+                profiling: profiling,
                 replayStats: .init(
                     recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
                     segmentsCount: nil,
