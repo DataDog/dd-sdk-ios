@@ -103,16 +103,11 @@ if [ "$CI" = "true" ]; then
     mkdir -p ResultBundles
     RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}.xcresult"
     rm -rf "$RESULT_BUNDLE_PATH"
-    # Because of "set -eo pipefail" we need the xcodebuild line to return 0, and cache the real result.
-    # Otherwise, the script ends before zipping the result bundle, and it's not uploaded. Thay would
-    # be against the point since the bundle that fails is usually the one we want to look at.
-    # After doing that, the cached result is returned.
-    XCODEBUILD_EXIT=0
     # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
-    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test.
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify || XCODEBUILD_EXIT=$?
-    zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
-    exit $XCODEBUILD_EXIT
+    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
+    # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
+    # uploader already archives whatever paths match, zip or not.
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify
 else
     xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
 fi
