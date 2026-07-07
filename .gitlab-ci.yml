@@ -177,6 +177,8 @@ Unit Tests (iOS):
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (tvOS):
@@ -200,6 +202,8 @@ Unit Tests (tvOS):
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (watchOS):
@@ -223,6 +227,8 @@ Unit Tests (watchOS):
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (visionOS):
@@ -246,6 +252,8 @@ Unit Tests (visionOS):
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 UI Tests:
@@ -276,6 +284,8 @@ UI Tests:
   artifacts:
     paths:
       - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 SR Snapshot Tests:

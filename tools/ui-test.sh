@@ -58,7 +58,9 @@ if [ "$CI" = "true" ]; then
     RESULT_BUNDLE_PATH="ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult"
     rm -rf "$RESULT_BUNDLE_PATH"
     XCODEBUILD_EXIT=0
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test.
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -testPlan "$TEST_PLAN" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}-${TEST_PLAN}.log" | xcbeautify || XCODEBUILD_EXIT=$?
     zip -r -q "ResultBundles/${SCHEME}-${TEST_PLAN}.xcresult.zip" "$RESULT_BUNDLE_PATH"
     exit $XCODEBUILD_EXIT
 else

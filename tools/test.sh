@@ -108,7 +108,9 @@ if [ "$CI" = "true" ]; then
     # be against the point since the bundle that fails is usually the one we want to look at.
     # After doing that, the cached result is returned.
     XCODEBUILD_EXIT=0
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | xcbeautify || XCODEBUILD_EXIT=$?
+    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test.
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify || XCODEBUILD_EXIT=$?
     zip -r -q "ResultBundles/${SCHEME}.xcresult.zip" "$RESULT_BUNDLE_PATH"
     exit $XCODEBUILD_EXIT
 else
