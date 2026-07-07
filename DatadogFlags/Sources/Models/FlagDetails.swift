@@ -102,3 +102,85 @@ public struct FlagDetails<T>: Equatable where T: Equatable {
         self.allocationKey = allocationKey
     }
 }
+
+/// A side-effect-free snapshot of cached precomputed feature flag assignments.
+///
+/// `FlagsSnapshot` is intended for diagnostics and export use cases. Reading a snapshot does not record
+/// evaluations, exposures, or RUM feature flag evaluations. A snapshot may include assignments that have not
+/// been evaluated through ``FlagsClientProtocol/getValue(key:defaultValue:)`` or
+/// ``FlagsClientProtocol/getDetails(key:defaultValue:)``.
+@available(*, message: "This API is in preview and may change in future releases")
+public struct FlagsSnapshot: Equatable, Encodable {
+    /// The cached precomputed assignments, keyed by feature flag key.
+    public let assignments: [String: FlagSnapshot]
+
+    /// Creates a feature flag snapshot.
+    ///
+    /// - Parameter assignments: The cached precomputed assignments, keyed by feature flag key.
+    public init(assignments: [String: FlagSnapshot]) {
+        self.assignments = assignments
+    }
+}
+
+/// A side-effect-free snapshot of a cached precomputed feature flag assignment.
+///
+/// `FlagSnapshot` contains the value and metadata cached for a single feature flag. Reading a snapshot does not
+/// record evaluations, exposures, or RUM feature flag evaluations.
+@available(*, message: "This API is in preview and may change in future releases")
+public struct FlagSnapshot: Equatable, Encodable {
+    /// The assigned flag value.
+    public let value: AnyValue
+
+    /// The variant key for the assigned flag.
+    public let variant: String
+
+    /// The reason why this assignment was returned.
+    public let reason: String
+
+    /// Creates a feature flag assignment snapshot.
+    ///
+    /// - Parameters:
+    ///   - value: The assigned flag value.
+    ///   - variant: The variant key for the assigned flag.
+    ///   - reason: The reason why this assignment was returned.
+    public init(
+        value: AnyValue,
+        variant: String,
+        reason: String
+    ) {
+        self.value = value
+        self.variant = variant
+        self.reason = reason
+    }
+
+    internal init?(_ assignment: FlagAssignment) {
+        guard let value = assignment.variation.snapshotValue else {
+            return nil
+        }
+
+        self.init(
+            value: value,
+            variant: assignment.variationKey,
+            reason: assignment.reason
+        )
+    }
+}
+
+private extension FlagAssignment.Variation {
+    var snapshotValue: AnyValue? {
+        switch self {
+        case .boolean(let value):
+            return .bool(value)
+        case .string(let value):
+            return .string(value)
+        case .integer(let value):
+            return .int(value)
+        case .double(let value):
+            return .double(value)
+        case .object(let value):
+            return value
+        case .unknown:
+            return nil
+        }
+    }
+}
