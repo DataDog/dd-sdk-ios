@@ -128,10 +128,16 @@ internal struct KSCrashBacktrace: BacktraceReporting {
     }
 
     private func enumerateBinaryImages() -> [BinaryImage] {
-        (0..<_dyld_image_count()).compactMap { imageIndex in
+        ksbic_init()
+        var count: UInt32 = 0
+        guard let images = ksbic_getImages(&count) else {
+            return []
+        }
+        return (0..<Int(count)).compactMap { i in
+            let info = images[i]
             guard
-                let header = _dyld_get_image_header(imageIndex),
-                let imageName = _dyld_get_image_name(imageIndex)
+                let header = info.imageLoadAddress,
+                let imageName = info.imageFilePath
             else {
                 return nil
             }

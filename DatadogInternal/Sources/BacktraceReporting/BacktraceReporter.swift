@@ -45,7 +45,7 @@ public extension BacktraceReporting {
         return try generateBacktrace(threadID: callerThreadID)
     }
 
-    func binaryImages() -> [BinaryImage]? { nil }
+    func binaryImages() -> [BinaryImage]? { try? generateBacktrace()?.binaryImages }
 }
 
 internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
