@@ -200,7 +200,7 @@ test-macos:
 	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
 	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
 
-# Run unit tests for all macOS schemes (only DatadogInternal is macOS-ready for now)
+# Run unit tests for all schemes ready for macOS so far
 test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogInternal"
 	@$(MAKE) test-macos SCHEME="DatadogLogs"
