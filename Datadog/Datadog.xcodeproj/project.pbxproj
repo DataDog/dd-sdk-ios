@@ -869,6 +869,8 @@
 		D2023AA02FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2023A9F2FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift */; };
 		D2023A872FFBE06800A80981 /* RUMConfiguration+RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2023A862FFBE06800A80981 /* RUMConfiguration+RemoteConfiguration.swift */; };
 		D2023A892FFBE09C00A80981 /* RUMConfiguration+RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2023A882FFBE09C00A80981 /* RUMConfiguration+RemoteConfigurationTests.swift */; };
+		D2023A8D2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2023A8C2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift */; };
+		D2023A942FFE59C500A80981 /* SessionReplayConfiguration+RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2023A932FFE59C500A80981 /* SessionReplayConfiguration+RemoteConfigurationTests.swift */; };
 		D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A5287476230047275C /* ServerOffsetPublisher.swift */; };
@@ -2804,6 +2806,8 @@
 		D2023A9F2FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingConfiguration+RemoteConfigurationTests.swift"; sourceTree = "<group>"; };
 		D2023A862FFBE06800A80981 /* RUMConfiguration+RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMConfiguration+RemoteConfiguration.swift"; sourceTree = "<group>"; };
 		D2023A882FFBE09C00A80981 /* RUMConfiguration+RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMConfiguration+RemoteConfigurationTests.swift"; sourceTree = "<group>"; };
+		D2023A8C2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionReplayConfiguration+RemoteConfiguration.swift"; sourceTree = "<group>"; };
+		D2023A932FFE59C500A80981 /* SessionReplayConfiguration+RemoteConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionReplayConfiguration+RemoteConfigurationTests.swift"; sourceTree = "<group>"; };
 		D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframesBuilderTests.swift; sourceTree = "<group>"; };
 		D20605A2287464F40047275C /* ContextValuePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValuePublisher.swift; sourceTree = "<group>"; };
 		D20605A5287476230047275C /* ServerOffsetPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerOffsetPublisher.swift; sourceTree = "<group>"; };
@@ -4039,6 +4043,8 @@
 				61054E132A6EE10A00AAA894 /* Utilities */,
 				A7B932F62B1F6A0A00AE6477 /* Models */,
 				61054E032A6EE10A00AAA894 /* Writers */,
+				D2023A8C2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift */,
+				D2023A902FFE598200A80981 /* Tests */,
 			);
 			name = DatadogSessionReplay;
 			path = ../DatadogSessionReplay/Sources;
@@ -4061,6 +4067,7 @@
 				61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */,
 				D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */,
 				96E863752C9C7E800023BF78 /* DDSessionReplayOverridesTests.swift */,
+				D2023A932FFE59C500A80981 /* SessionReplayConfiguration+RemoteConfigurationTests.swift */,
 			);
 			name = DatadogSessionReplayTests;
 			path = ../DatadogSessionReplay/Tests;
@@ -6100,6 +6107,13 @@
 				5BB771B72FEA7A2800C95960 /* SRWireframe+CALayerSnapshot.swift */,
 			);
 			path = LayerTreeRecorder;
+			sourceTree = "<group>";
+		};
+		D2023A902FFE598200A80981 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		D207317D29A5226A00ECBF94 /* DatadogLogs */ = {
@@ -8396,6 +8410,7 @@
 				61054E802A6EE10A00AAA894 /* UIPickerViewRecorder.swift in Sources */,
 				61054E612A6EE10A00AAA894 /* SRCompression.swift in Sources */,
 				B73450212F9F200100000001 /* LayerRecording.swift in Sources */,
+				D2023A8D2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift in Sources */,
 				5BB771B42FE9848900C95960 /* WKWebView+SessionReplay.swift in Sources */,
 				5BF2BC772FC4D8E0000E999C /* LayerProvider.swift in Sources */,
 				5B1877CB2FDC4737005AC2CE /* UIImage+Redaction.swift in Sources */,
@@ -8582,6 +8597,7 @@
 				5B69166F2F3B89060074A909 /* TestTimerScheduler.swift in Sources */,
 				61054FAF2A6EE1BA00AAA894 /* ViewTreeRecordingContextTests.swift in Sources */,
 				61054FB92A6EE1BA00AAA894 /* UINavigationBarRecorderTests.swift in Sources */,
+				D2023A942FFE59C500A80981 /* SessionReplayConfiguration+RemoteConfigurationTests.swift in Sources */,
 				61054FA62A6EE1BA00AAA894 /* SnapshotProcessorTests.swift in Sources */,
 				61054FB72A6EE1BA00AAA894 /* UISegmentRecorderTests.swift in Sources */,
 				5B74483C2EFAEFC3003E622C /* CALayerObserverMock.swift in Sources */,

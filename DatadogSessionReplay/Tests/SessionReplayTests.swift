@@ -39,6 +39,53 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNotNil(core.get(feature: ResourcesFeature.self))
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabledWithRemoteSampleRate_itOverridesInCodeSampleRateAtEnableTime() {
+        // Given — in-code sample rate is 0 (would not record), remote enables it
+        config = SessionReplay.Configuration(replaySampleRate: 0)
+        core.remoteConfiguration = .mockWith(sessionReplay: .mockWith(sampleRate: 100))
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Remote `sampleRate` must override the in-code value at enable time, enabling recording"
+        )
+    }
+
+    func testWhenEnabledWithRemoteSampleRateZero_itDisablesRecordingAtEnableTime() {
+        // Given — in-code sample rate records, remote disables it
+        config = SessionReplay.Configuration(replaySampleRate: 100)
+        core.remoteConfiguration = .mockWith(sessionReplay: .mockWith(sampleRate: 0))
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Remote `sampleRate` of 0 must override the in-code value at enable time, disabling recording"
+        )
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 100)
+        core.remoteConfiguration = nil
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Without remote configuration, Session Replay must behave exactly as configured in-code"
+        )
+    }
+
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print
