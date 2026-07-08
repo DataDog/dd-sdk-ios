@@ -951,6 +951,41 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
+    func testGivenCrashWithNoActiveViewAndRemoteConfigurationId_whenSendingRUMViewEvent_itIncludesRemoteConfigurationId() throws {
+        // Given
+        let randomRemoteConfigurationId: String = .mockRandom()
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: nil, // means there was no active RUM view (view is synthesized from crash context)
+            lastRUMSessionState: .mockWith(isSampled: true, isInitialSession: true, hasTrackedAnyView: false),
+            lastIsAppInForeground: true,
+            remoteConfigurationId: randomRemoteConfigurationId
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            trackBackgroundEvents: true
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(
+            sentRUMView.dd.configuration?.remoteConfigurationId,
+            randomRemoteConfigurationId,
+            "The synthesized crash view event must carry the configured remote configuration id"
+        )
+    }
+
     func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverriddenSourceType() throws {
         func test(
             lastRUMSessionState: RUMSessionState,

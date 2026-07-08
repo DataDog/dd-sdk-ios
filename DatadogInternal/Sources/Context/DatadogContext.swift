@@ -57,7 +57,7 @@ public struct DatadogContext {
     /// It is only set if the SDK is running with a context passed from [Swift Tests](https://docs.datadoghq.com/continuous_integration/setup_tests/swift/?tab=swiftpackagemanager) library.
     public let ciAppOrigin: String?
 
-    /// The identifier of the remote configuration applied to the SDK.
+    /// The identifier of the remote configuration the SDK was configured with, if any.
     public let remoteConfigurationId: String?
 
     /// Interval between device and server time.
