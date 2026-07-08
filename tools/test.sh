@@ -46,7 +46,7 @@ setup_test_visibility() {
     export DD_DISABLE_NETWORK_INSTRUMENTATION=1
     export DD_DISABLE_RUM_INTEGRATION=1
     export DD_DISABLE_SOURCE_LOCATION=0
-    export DD_DISABLE_CRASH_HANDLER=0
+    export DD_DISABLE_CRASH_HANDLER=1
 
     # Debugging:
     # - If `DD_TRACE_DEBUG` is enabled, the `dd-sdk-swift-testing` will print extra debug logs.
