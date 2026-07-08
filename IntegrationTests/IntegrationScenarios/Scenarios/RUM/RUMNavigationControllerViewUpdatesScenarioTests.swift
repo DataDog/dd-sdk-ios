@@ -31,8 +31,9 @@ private extension ExampleApplication {
 }
 
 /// Mirrors `RUMNavigationControllerScenarioTests` with the `.viewUpdates` feature flag enabled.
-/// `assertViewWasEventuallyInactive` and `hasEnded()` transparently check `viewUpdateEvents` for `isActive`,
-/// so the assertions here are structurally identical to the baseline test.
+/// Inactive transitions are asserted directly against `viewUpdateEvents` so the test actually exercises
+/// the delta-projection pipeline, rather than through `assertViewWasEventuallyInactive` whose
+/// `?? viewEvents.last` fallback would pass even with no `view_update` deltas.
 class RUMNavigationControllerViewUpdatesScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMNavigationControllerScenario() throws {
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -71,31 +72,38 @@ class RUMNavigationControllerViewUpdatesScenarioTests: IntegrationTests, RUMComm
 
         XCTAssertEqual(session.views[1].name, "Screen1")
         XCTAssertEqual(session.views[1].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1]) // go to "Screen2"
+        XCTAssertFalse(session.views[1].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[1].latestUpdateValue(\.view.isActive), false) // go to "Screen2"
 
         XCTAssertEqual(session.views[2].name, "Screen2")
         XCTAssertEqual(session.views[2].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[2]) // go to "Screen3"
+        XCTAssertFalse(session.views[2].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[2].latestUpdateValue(\.view.isActive), false) // go to "Screen3"
 
         XCTAssertEqual(session.views[3].name, "Screen3")
         XCTAssertEqual(session.views[3].path, "Runner.RUMNCSScreen3ViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[3]) // go to "Screen4"
+        XCTAssertFalse(session.views[3].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[3].latestUpdateValue(\.view.isActive), false) // go to "Screen4"
 
         XCTAssertEqual(session.views[4].name, "Screen4")
         XCTAssertEqual(session.views[4].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[4]) // go to "Screen3"
+        XCTAssertFalse(session.views[4].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[4].latestUpdateValue(\.view.isActive), false) // go to "Screen3"
 
         XCTAssertEqual(session.views[5].name, "Screen3")
         XCTAssertEqual(session.views[5].path, "Runner.RUMNCSScreen3ViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[5]) // go to "Screen1"
+        XCTAssertFalse(session.views[5].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[5].latestUpdateValue(\.view.isActive), false) // go to "Screen1"
 
         XCTAssertEqual(session.views[6].name, "Screen1")
         XCTAssertEqual(session.views[6].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[6]) // go to "Screen2"
+        XCTAssertFalse(session.views[6].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[6].latestUpdateValue(\.view.isActive), false) // go to "Screen2"
 
         XCTAssertEqual(session.views[7].name, "Screen2")
         XCTAssertEqual(session.views[7].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[7]) // swipe back to "Screen1"
+        XCTAssertFalse(session.views[7].viewUpdateEvents.isEmpty)
+        XCTAssertEqual(session.views[7].latestUpdateValue(\.view.isActive), false) // swipe back to "Screen1"
 
         XCTAssertEqual(session.views[8].name, "Screen1")
         XCTAssertEqual(session.views[8].path, "UIViewController")
