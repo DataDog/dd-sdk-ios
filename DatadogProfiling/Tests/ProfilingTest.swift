@@ -34,6 +34,26 @@ class ProfilingTest: XCTestCase {
         let context = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(context.status, .running)
     }
+
+    // MARK: - Remote Configuration
+
+    func testWhenEnabledWithRemoteConfiguration_itRegistersProfilerFeature() throws {
+        // Given a remote `profiling` namespace overriding the in-code sample rate
+        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5)
+        let core = SingleFeatureCoreMock<ProfilerFeature>()
+        core.remoteConfiguration = .mockWith(profiling: .mockWith(applicationLaunchSampleRate: 100))
+        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
+        defer { ctor_profiler_destroy() }
+
+        // When
+        Profiling.enable(with: configuration, in: core)
+
+        // Then — the merge is applied at enable time and the feature is registered without error.
+        // `applicationLaunchSampleRate` override correctness is verified at the configuration level in
+        // `ProfilingConfiguration_RemoteConfigurationTests` (the feature persists the sample rate to a
+        // shared UserDefaults suite, which makes enable-level assertions on it flaky).
+        XCTAssertNotNil(core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self))
+    }
 }
 
 #endif
