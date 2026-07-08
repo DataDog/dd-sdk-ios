@@ -59,19 +59,17 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             return nil
         }
 
-        var binaryImages: [UInt64: BinaryImage] = [:]
+        var binaryImages: [String: BinaryImage] = [:]
         let stack = (0..<count).compactMap { index in
             let address = addresses[index]
 
             guard
                 let rawBinaryImage = symbolicate(address: address),
-                let imageName = rawBinaryImage.name,
-                let path = NSString(utf8String: imageName)
+                let binaryImage = BinaryImage(rawBinaryImage)
             else {
                 return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, address) // no binary image info
             }
 
-            let libraryName = path.lastPathComponent
             let loadAddress = rawBinaryImage.address
 
             let offset: UInt64
@@ -82,12 +80,12 @@ internal struct KSCrashBacktrace: BacktraceReporting {
                 telemetry.error("Invalid image load address, symbolication will fail")
             }
 
-            if binaryImages[loadAddress] == nil, let binaryImage = BinaryImage(rawBinaryImage) {
-                binaryImages[loadAddress] = binaryImage
+            if binaryImages[binaryImage.loadAddress] == nil {
+                binaryImages[binaryImage.loadAddress] = binaryImage
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
-            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, offset)
+            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, binaryImage.libraryName, address, loadAddress, offset)
         }
         .joined(separator: "\n")
 
@@ -132,7 +130,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
                 return nil
             }
 
-            return BinaryImage(binaryImage, fallbackName: imageName)
+            return BinaryImage(binaryImage)
         }
     }
 
@@ -183,25 +181,15 @@ private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
     return binaryImage
 }
 
-private extension UnsafePointer where Pointee == UInt8 {
-    var isZeroUUID: Bool {
-        UnsafeBufferPointer(start: self, count: 16).allSatisfy { $0 == 0 }
-    }
-}
-
 private extension BinaryImage {
     /// Creates a `BinaryImage` from a KSCrash `KSBinaryImage`.
     ///
-    /// - Parameter fallbackName: Used when `image.name` is unavailable.
     /// - Returns: `nil` when the image lacks the fields required for symbolication.
-    init?(_ image: KSBinaryImage, fallbackName: UnsafePointer<CChar>? = nil) {
+    init?(_ image: KSBinaryImage) {
         guard
-            let imageName = image.name ?? fallbackName,
+            let imageName = image.name,
             let path = NSString(utf8String: imageName),
-            !path.lastPathComponent.isEmpty,
-            let imageUUID = image.uuid,
-            !imageUUID.isZeroUUID,
-            image.size > 0
+            let imageUUID = image.uuid
         else {
             return nil
         }
