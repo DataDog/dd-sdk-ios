@@ -9,11 +9,11 @@ import XCTest
 @testable import DatadogSessionReplay
 
 @available(iOS 16.0, *)
+@MainActor
 final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     private let snapshotsFolderPath = "_snapshots_/png"
     private var shouldRecord = false
 
-    @MainActor
     func testSwiftUIText() async throws {
         try await takeLayerSnapshotFor(
             TextFixtureView(),
@@ -23,7 +23,6 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
-    @MainActor
     func testBasicControlsAndIndicators() async throws {
         try await takeLayerSnapshotFor(
             BasicControlsAndIndicatorsFixtureView(),
@@ -33,7 +32,6 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
-    @MainActor
     func testSteppers() async throws {
         try await takeLayerSnapshotFor(
             StepperFixtureView(),
