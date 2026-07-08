@@ -56,6 +56,43 @@ class TraceTests: XCTestCase {
         XCTAssertTrue(Tracer.shared(in: core) is DatadogTracer)
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabledWithRemoteTrace_itEnablesDistributedTracingAtEnableTime() throws {
+        // Given no in-code URLSession tracking, but a remote `trace` namespace with hosts
+        config = Trace.Configuration(urlSessionTracking: nil)
+        core.remoteConfiguration = .mockWith(trace: .mockWith(tracedHosts: ["example.com"]))
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let networkInstrumentation = try XCTUnwrap(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trace` hosts must enable `NetworkInstrumentationFeature` at enable time"
+        )
+        XCTAssertNotNil(
+            networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
+            "It should register `TracingURLSessionHandler` from the remote `trace` namespace"
+        )
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() {
+        // Given
+        config = Trace.Configuration(urlSessionTracking: nil)
+        core.remoteConfiguration = nil
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: TraceFeature.self))
+        XCTAssertNil(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Without remote configuration, Trace must behave exactly as configured in-code"
+        )
+    }
+
     // MARK: - Configuration Tests
 
     func testWhenEnabledWithDefaultConfiguration() throws {
