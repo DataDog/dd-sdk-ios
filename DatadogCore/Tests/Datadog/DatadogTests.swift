@@ -549,6 +549,33 @@ class DatadogTests: XCTestCase {
         XCTAssertNotNil(core.remoteConfigurationProvider)
     }
 
+    func testGivenRemoteConfigurationID_itIsStoredInPersistentDirectoryNotCaches() throws {
+        // Given — distinct injected locations for purgeable caches vs. persistent storage
+        let cachesDirectory = Directory(url: obtainUniqueTemporaryDirectory())
+        let persistentDirectory = Directory(url: obtainUniqueTemporaryDirectory())
+        var config = defaultConfig
+        config.remoteConfigurationID = "test-id"
+        config.systemDirectory = { cachesDirectory }
+        config.persistentDirectory = { persistentDirectory }
+        config.httpClientFactory = { _ in HTTPClientMock() }
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then — remote configuration must live under Application Support, never the purgeable caches
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let rcPath = try XCTUnwrap(core.remoteConfigurationProvider?.directory.url.path)
+        XCTAssertTrue(
+            rcPath.hasPrefix(persistentDirectory.url.path),
+            "Remote configuration must be stored under the persistent (Application Support) directory"
+        )
+        XCTAssertFalse(
+            rcPath.hasPrefix(cachesDirectory.url.path),
+            "Remote configuration must not be stored under the purgeable caches directory"
+        )
+    }
+
     func testCustomSDKInstance() throws {
         // When
         Datadog.initialize(

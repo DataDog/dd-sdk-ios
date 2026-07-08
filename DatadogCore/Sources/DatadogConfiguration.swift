@@ -224,6 +224,10 @@ extension Datadog {
         /// All instances of the SDK use the same root folder, but each creates its own subdirectory.
         internal var systemDirectory: () throws -> Directory = { try Directory.cache() }
 
+        /// Obtains OS directory where the SDK stores data that must survive `/Library/Caches` purges
+        /// (e.g. remote configuration). Backed by `/Library/Application Support`.
+        internal var persistentDirectory: () throws -> Directory = { try Directory.applicationSupport() }
+
         /// Default process information.
         internal var processInfo: ProcessInfo = .processInfo
 
