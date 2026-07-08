@@ -33,7 +33,10 @@ internal struct HeaderProcessor {
         "expires",
         "vary",
         "server-timing",
-        "x-cache"
+        "x-cache",
+        "cf-cache-status",
+        "x-vercel-cache",
+        "x-served-by"
     ]
 
     /// iOS-managed headers that are always omitted from request capture.
