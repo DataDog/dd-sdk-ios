@@ -77,6 +77,7 @@ commit_repo() {
     local repo_path="$1"
     echo_subtitle "Commit '$REPO_NAME' repo"
     cd "$repo_path"
+    BASE_SHA=$(git rev-parse HEAD)
     git checkout -b "$DOGFOODING_BRANCH_NAME"
     git add .
     git commit -m "Dogfooding dd-sdk-ios commit: $DOGFOODED_COMMIT"
@@ -89,9 +90,13 @@ push_repo() {
     echo_subtitle "Push '$DOGFOODING_BRANCH_NAME' to '$REPO_NAME' repo"
     cd "$repo_path"
     if [ "$DRY_RUN" = "1" ] || [ "$DRY_RUN" = "true" ]; then
-        echo_warn "Running in DRY RUN mode. Skipping 'git push'."
+        echo_warn "Running in DRY RUN mode. Skipping push."
     else
-        git push -u origin "$DOGFOODING_BRANCH_NAME" --force
+        HEADLESS_TOKEN="$GITHUB_TOKEN" commit-headless push \
+            -T "DataDog/$REPO_NAME" \
+            --branch "$DOGFOODING_BRANCH_NAME" \
+            --head-sha "$BASE_SHA" \
+            --create-branch
     fi
     cd -
 }
