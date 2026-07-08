@@ -70,14 +70,13 @@ class HeaderProcessorTests: XCTestCase {
                 "x-cache": "HIT",
                 "cf-cache-status": "HIT",
                 "x-vercel-cache": "HIT",
-                "x-served-by": "cache-cdg-1234",
                 "x-custom-header": "should-not-appear",
                 "set-cookie": "session=abc"
             ]
         )
 
         // Then
-        XCTAssertEqual(result.response.count, 13)
+        XCTAssertEqual(result.response.count, 12)
         XCTAssertEqual(result.response["cache-control"], "max-age=3600")
         XCTAssertEqual(result.response["etag"], "\"abc123\"")
         XCTAssertEqual(result.response["age"], "120")
@@ -90,7 +89,6 @@ class HeaderProcessorTests: XCTestCase {
         XCTAssertEqual(result.response["x-cache"], "HIT")
         XCTAssertEqual(result.response["cf-cache-status"], "HIT")
         XCTAssertEqual(result.response["x-vercel-cache"], "HIT")
-        XCTAssertEqual(result.response["x-served-by"], "cache-cdg-1234")
         XCTAssertNil(result.response["x-custom-header"])
         XCTAssertNil(result.response["set-cookie"])
     }
