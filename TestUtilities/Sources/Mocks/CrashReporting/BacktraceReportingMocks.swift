@@ -34,13 +34,18 @@ public struct BacktraceReporterMock: BacktraceReporting, @unchecked Sendable {
     }
 
     public func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
-        if let error = backtraceGenerationError {
-            throw error
-        }
+        try throwIfNeeded()
         return backtrace
     }
 
-    public func binaryImages() -> [BinaryImage]? {
-        binaryImagesList ?? backtrace?.binaryImages
+    public func binaryImages() throws -> [BinaryImage]? {
+        try throwIfNeeded()
+        return binaryImagesList ?? backtrace?.binaryImages
+    }
+
+    private func throwIfNeeded() throws {
+        if let error = backtraceGenerationError {
+            throw error
+        }
     }
 }

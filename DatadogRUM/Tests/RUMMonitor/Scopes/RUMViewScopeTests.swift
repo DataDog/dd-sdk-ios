@@ -2356,6 +2356,62 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
     }
 
+    func testGivenStartedView_whenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages() throws {
+        // Given
+        let generationError = ErrorMock("binary images generation failed")
+        let featureScope = FeatureScopeMock()
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                backtraceReporter: BacktraceReporterMock(backtraceGenerationError: generationError)
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        CrossPlatformAttributes.includeBinaryImages: true
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertNil(error.error.binaryImages, "Binary images should be omitted when generation fails")
+        XCTAssertNotNil(featureScope.telemetryMock.messages.firstError(), "The generation error should be reported to telemetry")
+    }
+
     func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() throws {
         // Given
         let mockBacktrace: BacktraceReport = .mockRandom()

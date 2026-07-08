@@ -30,7 +30,7 @@ public protocol BacktraceReporting: Sendable {
     /// Returns binary images loaded in the current process.
     ///
     /// Returns `nil` if binary images cannot be obtained.
-    func binaryImages() -> [BinaryImage]?
+    func binaryImages() throws -> [BinaryImage]?
 }
 
 public extension BacktraceReporting {
@@ -45,7 +45,7 @@ public extension BacktraceReporting {
         return try generateBacktrace(threadID: callerThreadID)
     }
 
-    func binaryImages() -> [BinaryImage]? { try? generateBacktrace()?.binaryImages }
+    func binaryImages() throws -> [BinaryImage]? { try generateBacktrace()?.binaryImages }
 }
 
 internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
@@ -78,8 +78,8 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
         return try backtraceFeature.reporter.generateBacktrace(threadID: threadID)
     }
 
-    func binaryImages() -> [BinaryImage]? {
-        core?.get(feature: BacktraceReportingFeature.self)?.reporter.binaryImages()
+    func binaryImages() throws -> [BinaryImage]? {
+        try core?.get(feature: BacktraceReportingFeature.self)?.reporter.binaryImages()
     }
 }
 

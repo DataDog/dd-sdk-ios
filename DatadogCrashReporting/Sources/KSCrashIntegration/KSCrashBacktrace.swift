@@ -64,17 +64,15 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             let address = addresses[index]
 
             guard
-                let binaryImage = symbolicate(address: address),
-                let imageName = binaryImage.name,
-                let path = NSString(utf8String: imageName),
-                let imageUUID = binaryImage.uuid
+                let rawBinaryImage = symbolicate(address: address),
+                let imageName = rawBinaryImage.name,
+                let path = NSString(utf8String: imageName)
             else {
                 return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, address) // no binary image info
             }
 
             let libraryName = path.lastPathComponent
-            let loadAddress = binaryImage.address
-            let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+            let loadAddress = rawBinaryImage.address
 
             let offset: UInt64
             if address >= loadAddress {
@@ -84,21 +82,8 @@ internal struct KSCrashBacktrace: BacktraceReporting {
                 telemetry.error("Invalid image load address, symbolication will fail")
             }
 
-            // Get architecture from binary image's CPU type
-            let architecture = String(cString: kscpu_archForCPU(
-                cpu_type_t(binaryImage.cpuType),
-                cpu_subtype_t(binaryImage.cpuSubType)
-            ))
-
-            if binaryImages[loadAddress] == nil {
-                binaryImages[loadAddress] = BinaryImage(
-                    libraryName: libraryName,
-                    uuid: uuid.uuidString,
-                    architecture: architecture,
-                    path: path,
-                    loadAddress: loadAddress,
-                    maxAddress: loadAddress + binaryImage.size
-                )
+            if binaryImages[loadAddress] == nil, let binaryImage = BinaryImage(rawBinaryImage) {
+                binaryImages[loadAddress] = binaryImage
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
@@ -122,7 +107,7 @@ internal struct KSCrashBacktrace: BacktraceReporting {
         )
     }
 
-    func binaryImages() -> [BinaryImage]? {
+    func binaryImages() throws -> [BinaryImage]? {
         let images = enumerateBinaryImages()
         return images.isEmpty ? nil : images
     }
@@ -147,37 +132,8 @@ internal struct KSCrashBacktrace: BacktraceReporting {
                 return nil
             }
 
-            return makeBinaryImage(from: binaryImage, fallbackName: imageName)
+            return BinaryImage(binaryImage, fallbackName: imageName)
         }
-    }
-
-    private func makeBinaryImage(from binaryImage: KSBinaryImage, fallbackName: UnsafePointer<CChar>) -> BinaryImage? {
-        let imageName = binaryImage.name ?? fallbackName
-
-        guard
-            let path = NSString(utf8String: imageName),
-            !path.lastPathComponent.isEmpty,
-            let imageUUID = binaryImage.uuid,
-            !imageUUID.isZeroUUID,
-            binaryImage.size > 0
-        else {
-            return nil
-        }
-
-        let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
-        let architecture = String(cString: kscpu_archForCPU(
-            cpu_type_t(binaryImage.cpuType),
-            cpu_subtype_t(binaryImage.cpuSubType)
-        ))
-
-        return BinaryImage(
-            libraryName: path.lastPathComponent,
-            uuid: uuid.uuidString,
-            architecture: architecture,
-            path: path,
-            loadAddress: binaryImage.address,
-            maxAddress: binaryImage.address + binaryImage.size
-        )
     }
 
     /// Get the name of a pthread
@@ -230,5 +186,39 @@ private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
 private extension UnsafePointer where Pointee == UInt8 {
     var isZeroUUID: Bool {
         UnsafeBufferPointer(start: self, count: 16).allSatisfy { $0 == 0 }
+    }
+}
+
+private extension BinaryImage {
+    /// Creates a `BinaryImage` from a KSCrash `KSBinaryImage`.
+    ///
+    /// - Parameter fallbackName: Used when `image.name` is unavailable.
+    /// - Returns: `nil` when the image lacks the fields required for symbolication.
+    init?(_ image: KSBinaryImage, fallbackName: UnsafePointer<CChar>? = nil) {
+        guard
+            let imageName = image.name ?? fallbackName,
+            let path = NSString(utf8String: imageName),
+            !path.lastPathComponent.isEmpty,
+            let imageUUID = image.uuid,
+            !imageUUID.isZeroUUID,
+            image.size > 0
+        else {
+            return nil
+        }
+
+        let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+        let architecture = String(cString: kscpu_archForCPU(
+            cpu_type_t(image.cpuType),
+            cpu_subtype_t(image.cpuSubType)
+        ))
+
+        self.init(
+            libraryName: path.lastPathComponent,
+            uuid: uuid.uuidString,
+            architecture: architecture,
+            path: path,
+            loadAddress: image.address,
+            maxAddress: image.address + image.size
+        )
     }
 }
