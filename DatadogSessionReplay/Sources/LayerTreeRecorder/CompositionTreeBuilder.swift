@@ -19,7 +19,7 @@ internal class CompositionTreeBuilder {
     }
 
     private let root: CALayerSnapshot
-    private let imageSnapshotResults: [Int64: ImageSnapshotResult]
+    private let imageSnapshots: ImageSnapshotBatch
     private let webViewSlotIDs: Set<Int>
 
     private var layers: [SRCompositionLayer] = []
@@ -30,11 +30,11 @@ internal class CompositionTreeBuilder {
     init(
         root: CALayerSnapshot,
         webViewSlotIDs: Set<Int>,
-        imageSnapshotResults: [Int64: ImageSnapshotResult]
+        imageSnapshots: ImageSnapshotBatch
     ) {
         self.root = root
         self.webViewSlotIDs = webViewSlotIDs
-        self.imageSnapshotResults = imageSnapshotResults
+        self.imageSnapshots = imageSnapshots
     }
 
     func build() -> Output {
@@ -59,13 +59,21 @@ internal class CompositionTreeBuilder {
         from snapshot: CALayerSnapshot,
         parentTextInput: TextInputSemantics?
     ) -> SRCompositionLayer {
-        SRCompositionLayer(
+        var maskImage: (any SessionReplayResource)?
+
+        if let mask = snapshot.mask, case .success(let maskSnapshot) = imageSnapshots.maskSnapshots[mask.replayID] {
+            let resource = ImageSnapshotResource(image: maskSnapshot.image)
+            resources.append(resource)
+            maskImage = resource
+        }
+
+        return SRCompositionLayer(
             children: children(for: snapshot, parentTextInput: parentTextInput),
             compositeOperation: snapshot.compositingFilter
                 .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
             height: Int64.ddWithNoOverflow(snapshot.absoluteFrame.height),
             id: snapshot.replayID,
-            modifiers: snapshot.modifiers(),
+            modifiers: snapshot.modifiers(maskImageResourceID: maskImage?.calculateIdentifier()),
             width: Int64.ddWithNoOverflow(snapshot.absoluteFrame.width),
             x: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minX),
             y: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minY)
@@ -127,12 +135,11 @@ internal class CompositionTreeBuilder {
 
         let wireframe: SRWireframe? = switch (
             snapshot.observation.semantics,
-            imageSnapshotResults[snapshot.replayID]
+            imageSnapshots.contentSnapshots[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
-            (.image, .some(let result)),
-            (.stepper, .some(let result)):
-            makeImageSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
+            (.image, .some(let result)):
+            makeContentSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
         case (.layer, .none):
             SRWireframe(layerSnapshot: snapshot)
         case (.label(let label), _):
@@ -164,9 +171,9 @@ internal class CompositionTreeBuilder {
         return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
     }
 
-    private func makeImageSnapshotWireframe(
+    private func makeContentSnapshotWireframe(
         for layerSnapshot: CALayerSnapshot,
-        result: ImageSnapshotResult,
+        result: ContentSnapshotResult,
         parentTextInput textInput: TextInputSemantics?
     ) -> SRWireframe? {
         switch result {

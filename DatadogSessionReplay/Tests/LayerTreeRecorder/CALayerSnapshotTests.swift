@@ -61,7 +61,7 @@ struct CALayerSnapshotTests {
             #expect(snapshot.transform.m11 == 2)
             #expect(snapshot.transform.m22 == 3)
             #expect(snapshot.sublayerTransform.m34 == CGFloat(-1) / 500)
-            #expect(snapshot.mask?.matches(mask) == true)
+            #expect(snapshot.mask?.layer.matches(mask) == true)
             #expect(snapshot.masksToBounds)
             #expect(snapshot.isOpaque)
             #expect(snapshot.backgroundColor == UIColor.red.cgColor)

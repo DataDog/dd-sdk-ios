@@ -211,7 +211,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         layerTreeSnapshot.root = optimizedRoot
 
         let imageSnapshotter = ImageSnapshotter()
-        let imageSnapshotResults = await imageSnapshotter.takeImageSnapshots(
+        let imageSnapshots = await imageSnapshotter.takeImageSnapshots(
             for: layerTreeSnapshot.root,
             changeset: CALayerChangeset(),
             timeout: timeout
@@ -220,7 +220,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
-            imageSnapshotResults: imageSnapshotResults
+            imageSnapshots: imageSnapshots
         ).build()
 
         return LayerSnapshotOutput(

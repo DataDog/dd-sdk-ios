@@ -25,35 +25,51 @@ internal final class ImageSnapshotCache {
         )
     }
 
-    private struct Metadata {
+    private struct ContentMetadata {
         let localRect: CGRect
         let bounds: CGRect
         let dependencies: [CALayerReference]
         var lastFrameNumber: UInt64
     }
 
+    private struct MaskMetadata {
+        let bounds: CGRect
+        let frame: CGRect
+        let dependencies: [CALayerReference]
+        var lastFrameNumber: UInt64
+    }
+
     private let policy: Policy
-    private let imageSnapshots: NSCache<NSNumber, ImageSnapshot>
+    private let contentSnapshots: NSCache<NSNumber, ContentSnapshot>
+    private let maskSnapshots: NSCache<NSNumber, MaskSnapshot>
     private var frameNumber: UInt64 = 0
-    private var metadata: [Int64: Metadata] = [:]
+    private var contentMetadata: [Int64: ContentMetadata] = [:]
+    private var maskMetadata: [Int64: MaskMetadata] = [:]
 
     init(
         policy: Policy = .default,
-        imageSnapshots: NSCache<NSNumber, ImageSnapshot> = NSCache()
+        contentSnapshots: NSCache<NSNumber, ContentSnapshot> = NSCache(),
+        maskSnapshots: NSCache<NSNumber, MaskSnapshot> = NSCache()
     ) {
         self.policy = .init(
             expirationFrameCount: policy.expirationFrameCount,
             removalIntervalFrameCount: max(1, policy.removalIntervalFrameCount),
             maximumRemovals: max(1, policy.maximumRemovals)
         )
-        self.imageSnapshots = imageSnapshots
+        self.contentSnapshots = contentSnapshots
+        self.maskSnapshots = maskSnapshots
     }
 
-    func updateFrameNumber(for replayIDs: [Int64]) {
+    func updateFrameNumber(for requests: [ImageSnapshotRequest]) {
         frameNumber &+= 1
 
-        for replayID in replayIDs {
-            metadata[replayID]?.lastFrameNumber = frameNumber
+        for request in requests {
+            switch request {
+            case .content:
+                contentMetadata[request.replayID]?.lastFrameNumber = frameNumber
+            case .mask:
+                maskMetadata[request.replayID]?.lastFrameNumber = frameNumber
+            }
         }
 
         if frameNumber.isMultiple(of: policy.removalIntervalFrameCount) {
@@ -61,13 +77,13 @@ internal final class ImageSnapshotCache {
         }
     }
 
-    func snapshotData(forReplayID replayID: Int64) -> ImageSnapshotData? {
-        guard let metadata = metadata[replayID] else {
+    func contentSnapshotData(forReplayID replayID: Int64) -> ContentSnapshotData? {
+        guard let metadata = contentMetadata[replayID] else {
             return nil
         }
 
-        guard let snapshot = imageSnapshots.object(forKey: replayID as NSNumber) else {
-            self.metadata.removeValue(forKey: replayID)
+        guard let snapshot = contentSnapshots.object(forKey: replayID as NSNumber) else {
+            contentMetadata.removeValue(forKey: replayID)
             return nil
         }
 
@@ -79,12 +95,12 @@ internal final class ImageSnapshotCache {
         )
     }
 
-    func setSnapshotData(
-        _ snapshotData: ImageSnapshotData,
+    func setContentSnapshotData(
+        _ snapshotData: ContentSnapshotData,
         forReplayID replayID: Int64
     ) {
-        imageSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
-        metadata[replayID] = .init(
+        contentSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
+        contentMetadata[replayID] = .init(
             localRect: snapshotData.localRect,
             bounds: snapshotData.bounds,
             dependencies: snapshotData.dependencies,
@@ -92,8 +108,39 @@ internal final class ImageSnapshotCache {
         )
     }
 
+    func maskSnapshotData(forReplayID replayID: Int64) -> MaskSnapshotData? {
+        guard let metadata = maskMetadata[replayID] else {
+            return nil
+        }
+
+        guard let snapshot = maskSnapshots.object(forKey: replayID as NSNumber) else {
+            maskMetadata.removeValue(forKey: replayID)
+            return nil
+        }
+
+        return .init(
+            snapshot: snapshot,
+            bounds: metadata.bounds,
+            frame: metadata.frame,
+            dependencies: metadata.dependencies
+        )
+    }
+
+    func setMaskSnapshotData(
+        _ snapshotData: MaskSnapshotData,
+        forReplayID replayID: Int64
+    ) {
+        maskSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
+        maskMetadata[replayID] = .init(
+            bounds: snapshotData.bounds,
+            frame: snapshotData.frame,
+            dependencies: snapshotData.dependencies,
+            lastFrameNumber: frameNumber
+        )
+    }
+
     @MainActor
-    func removeSnapshotDataForChanges(in changeset: CALayerChangeset) {
+    func removeContentSnapshotDataForChanges(in changeset: CALayerChangeset) {
         var replayIDs = Set<Int64>()
 
         for change in changeset.contentChanges {
@@ -102,31 +149,57 @@ internal final class ImageSnapshotCache {
             }
         }
 
-        for (replayID, metadata) in metadata where changeset.hasChanges(for: metadata.dependencies) {
+        for (replayID, metadata) in contentMetadata where changeset.hasChanges(for: metadata.dependencies) {
             replayIDs.insert(replayID)
         }
 
-        removeSnapshotData(forReplayIDs: replayIDs)
+        removeContentSnapshotData(forReplayIDs: replayIDs)
     }
 
-    func removeSnapshotData(forReplayID replayID: Int64) {
-        metadata.removeValue(forKey: replayID)
-        imageSnapshots.removeObject(forKey: replayID as NSNumber)
+    func removeMaskSnapshotDataForChanges(in changeset: CALayerChangeset) {
+        let replayIDs = maskMetadata.compactMap { replayID, metadata in
+            changeset.hasChanges(for: metadata.dependencies) ? replayID : nil
+        }
+
+        removeMaskSnapshotData(forReplayIDs: replayIDs)
     }
 
-    func removeSnapshotData<ReplayIDs: Sequence>(forReplayIDs replayIDs: ReplayIDs) where ReplayIDs.Element == Int64 {
+    func removeContentSnapshotData(forReplayID replayID: Int64) {
+        contentMetadata.removeValue(forKey: replayID)
+        contentSnapshots.removeObject(forKey: replayID as NSNumber)
+    }
+
+    func removeContentSnapshotData<ReplayIDs: Sequence>(forReplayIDs replayIDs: ReplayIDs) where ReplayIDs.Element == Int64 {
         for replayID in replayIDs {
-            removeSnapshotData(forReplayID: replayID)
+            removeContentSnapshotData(forReplayID: replayID)
+        }
+    }
+
+    func removeMaskSnapshotData(forReplayID replayID: Int64) {
+        maskMetadata.removeValue(forKey: replayID)
+        maskSnapshots.removeObject(forKey: replayID as NSNumber)
+    }
+
+    func removeMaskSnapshotData<ReplayIDs: Sequence>(forReplayIDs replayIDs: ReplayIDs) where ReplayIDs.Element == Int64 {
+        for replayID in replayIDs {
+            removeMaskSnapshotData(forReplayID: replayID)
         }
     }
 
     private func removeExpiredSnapshots() {
-        let expiredReplayIDs = metadata.compactMap { replayID, entry in
+        let expiredContentReplayIDs = contentMetadata.compactMap { replayID, entry in
             frameNumber - entry.lastFrameNumber > policy.expirationFrameCount ? replayID : nil
         }
         .prefix(policy.maximumRemovals)
 
-        removeSnapshotData(forReplayIDs: expiredReplayIDs)
+        removeContentSnapshotData(forReplayIDs: expiredContentReplayIDs)
+
+        let expiredMaskReplayIDs = maskMetadata.compactMap { replayID, entry in
+            frameNumber - entry.lastFrameNumber > policy.expirationFrameCount ? replayID : nil
+        }
+        .prefix(policy.maximumRemovals)
+
+        removeMaskSnapshotData(forReplayIDs: expiredMaskReplayIDs)
     }
 }
 #endif

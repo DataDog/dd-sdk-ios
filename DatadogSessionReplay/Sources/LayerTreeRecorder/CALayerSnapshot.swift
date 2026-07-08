@@ -45,7 +45,7 @@ internal struct CALayerSnapshot: Sendable {
     let dependencies: [CALayerReference]
     let sublayerTransform: CATransform3D
 
-    let mask: CALayerReference?
+    let mask: Mask?
     let masksToBounds: Bool
 
     let isOpaque: Bool
@@ -194,7 +194,7 @@ extension CALayerSnapshot {
             sublayers: sublayers,
             dependencies: dependencies,
             sublayerTransform: layer.sublayerTransform,
-            mask: layer.mask.map(CALayerReference.init),
+            mask: layer.mask.map(Mask.init),
             masksToBounds: layer.masksToBounds,
             isOpaque: layer.isOpaque,
             backgroundColor: layer.backgroundColor?.safeCast,
