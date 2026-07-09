@@ -134,3 +134,48 @@ extension RemoteConfiguration.RUM.VitalsUpdateFrequency: RandomMockable {
         [.frequent, .average, .rare, .never].randomElement()!
     }
 }
+
+extension RemoteConfiguration.Trace: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.Trace {
+        mockWith()
+    }
+
+    /// Builds a `trace` namespace with **every** field populated with a random, non-`nil` value.
+    ///
+    /// Keeping all fields populated is what lets the exhaustiveness guard in
+    /// `TraceConfiguration_RemoteConfigurationTests` detect any newly generated schema field.
+    public static func mockRandom() -> RemoteConfiguration.Trace {
+        .init(
+            sampleRate: .mockRandom(min: 0, max: 100),
+            traceContextInjection: .mockRandom(),
+            tracedHosts: ["api.example.com", "example.com"],
+            tracingHeaderTypes: [.mockRandom()]
+        )
+    }
+
+    public static func mockWith(
+        sampleRate: Double? = nil,
+        traceContextInjection: RemoteConfiguration.Trace.TraceContextInjection? = nil,
+        tracedHosts: [String]? = nil,
+        tracingHeaderTypes: [RemoteConfiguration.Trace.TracingHeaderTypes]? = nil
+    ) -> RemoteConfiguration.Trace {
+        .init(
+            sampleRate: sampleRate,
+            traceContextInjection: traceContextInjection,
+            tracedHosts: tracedHosts,
+            tracingHeaderTypes: tracingHeaderTypes
+        )
+    }
+}
+
+extension RemoteConfiguration.Trace.TraceContextInjection: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.Trace.TraceContextInjection {
+        [.all, .sampled].randomElement()!
+    }
+}
+
+extension RemoteConfiguration.Trace.TracingHeaderTypes: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.Trace.TracingHeaderTypes {
+        [.datadog, .b3, .b3multi, .tracecontext].randomElement()!
+    }
+}

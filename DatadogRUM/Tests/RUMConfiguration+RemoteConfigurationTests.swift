@@ -175,6 +175,44 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.urlSessionTracking)
     }
 
+    /// When remote hosts are provided but the sample rate / injection strategy are omitted, the merge
+    /// must keep the in-code values for those fields rather than falling back to the module defaults.
+    func testWhenRemoteTraceProvidesHostsWithoutSampleRateOrInjection_itPreservesInCodeValues() {
+        var configuration: RUM.Configuration = .mockWith {
+            $0.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(hosts: ["in-code.example.com"], sampleRate: 30, traceControlInjection: .all)
+            )
+        }
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["remote.example.com"])))
+
+        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        }
+        XCTAssertEqual(hosts, ["remote.example.com"])
+        XCTAssertEqual(sampleRate, 30)
+        XCTAssertEqual(injection, .all)
+    }
+
+    /// When the remote omits hosts but provides a sample rate, the existing first-party hosts tracing
+    /// must have its propagation sample rate updated (its hosts and injection strategy are preserved).
+    func testWhenRemoteTraceProvidesOnlySampleRate_itUpdatesExistingTracingSampleRate() {
+        var configuration: RUM.Configuration = .mockWith {
+            $0.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(hosts: ["in-code.example.com"], sampleRate: 20, traceControlInjection: .all)
+            )
+        }
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .mockWith(sampleRate: 0, tracedHosts: nil)))
+
+        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        }
+        XCTAssertEqual(hosts, ["in-code.example.com"])
+        XCTAssertEqual(sampleRate, 0)
+        XCTAssertEqual(injection, .all)
+    }
+
     /// An explicit `rum.trackResources == false` disables resource tracking regardless, so it must
     /// suppress trace instrumentation even when the `trace` namespace provides hosts.
     func testWhenRemoteTrackResourcesIsFalse_itSuppressesTraceInstrumentation() {

@@ -69,35 +69,61 @@ extension RUM.Configuration {
     /// Trace propagation is carried by RUM's URLSession instrumentation, so configuring tracing also
     /// enables that instrumentation: when the developer provided no `urlSessionTracking`, a default one
     /// is created to hold the tracing configuration. An existing `urlSessionTracking` keeps its other
-    /// settings (e.g. resource attributes, header capture) — only its first-party hosts tracing is
-    /// replaced.
+    /// settings (e.g. resource attributes, header capture), and its first-party hosts tracing is merged
+    /// field by field — the remote hosts, sample rate, and injection strategy each replace the in-code
+    /// value only when present.
     ///
-    /// The host list drives the outcome: a non-empty list configures (or replaces) trace propagation,
+    /// The host list drives whether propagation exists: a non-empty list configures (or replaces) it,
     /// while an explicit empty list clears it — stopping header injection on an in-code
-    /// `urlSessionTracking` while leaving its other settings intact. When `tracedHosts` is omitted
-    /// (or the whole `trace` namespace is `nil`), nothing is described and the configuration is left
-    /// unchanged; likewise, an empty list is a no-op when no `urlSessionTracking` was configured in
-    /// code (there is nothing to clear).
+    /// `urlSessionTracking` while leaving its other settings intact. When `tracedHosts` is omitted, a
+    /// present sample rate / injection still updates existing propagation; an empty list is a no-op when
+    /// no `urlSessionTracking` was configured in code (there is nothing to clear).
     ///
     /// - Parameter trace: The `trace` namespace, or `nil` to leave the configuration unchanged.
     private mutating func apply(trace: RemoteConfiguration.Trace?) {
-        guard let trace, let tracedHosts = trace.tracedHosts else {
+        guard let trace else {
             return
         }
 
-        // A non-empty list configures propagation; an explicit empty list clears it.
-        let firstPartyHostsTracing = tracedHosts.isEmpty
-            ? nil
-            : URLSessionTracking.FirstPartyHostsTracing(trace)
+        // Resolve the tracing sample rate and injection strategy: a present remote value wins,
+        // otherwise the in-code value is kept, falling back to the module defaults when neither exists.
+        let existing = urlSessionTracking?.firstPartyHostsTracing
+        let sampleRate = trace.sampleRate.map { SampleRate($0) } ?? existing?.sampleRate ?? .maxSampleRate
+        let traceControlInjection = trace.traceContextInjection
+            .map { TraceContextInjection($0) } ?? existing?.traceControlInjection ?? .sampled
 
-        // An empty list has nothing to clear when no instrumentation was configured in code.
-        guard urlSessionTracking != nil || firstPartyHostsTracing != nil else {
-            return
+        switch trace.tracedHosts {
+        case .some(let tracedHosts) where !tracedHosts.isEmpty:
+            // A non-empty list configures (or replaces) propagation for the remote hosts.
+            var tracking = urlSessionTracking ?? URLSessionTracking()
+            tracking.firstPartyHostsTracing = URLSessionTracking.FirstPartyHostsTracing(
+                trace,
+                sampleRate: sampleRate,
+                traceControlInjection: traceControlInjection
+            )
+            urlSessionTracking = tracking
+
+        case .some:
+            // An explicit empty list clears propagation, keeping any other instrumentation settings;
+            // there is nothing to clear when no instrumentation was configured in code.
+            if var tracking = urlSessionTracking {
+                tracking.firstPartyHostsTracing = nil
+                urlSessionTracking = tracking
+            }
+
+        case .none:
+            // Hosts omitted: a present sample rate or injection strategy still updates existing
+            // propagation; without existing propagation there are no hosts to configure.
+            guard trace.sampleRate != nil || trace.traceContextInjection != nil,
+                  var tracking = urlSessionTracking,
+                  let firstPartyHostsTracing = tracking.firstPartyHostsTracing else {
+                return
+            }
+
+            tracking.firstPartyHostsTracing = firstPartyHostsTracing
+                .overriding(sampleRate: sampleRate, traceControlInjection: traceControlInjection)
+            urlSessionTracking = tracking
         }
-
-        var tracking = urlSessionTracking ?? URLSessionTracking()
-        tracking.firstPartyHostsTracing = firstPartyHostsTracing
-        urlSessionTracking = tracking
     }
 
     /// Overrides the value at `keyPath` with `remoteValue` when it is present.
@@ -190,22 +216,39 @@ private extension RUM.Configuration.VitalsFrequency {
 }
 
 private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
-    /// Builds first-party hosts tracing configuration from a remote `trace` namespace.
+    /// The trace propagation sample rate carried by this configuration.
+    var sampleRate: SampleRate {
+        switch self {
+        case let .trace(_, sampleRate, _), let .traceWithHeaders(_, sampleRate, _):
+            return sampleRate
+        }
+    }
+
+    /// The trace context injection strategy carried by this configuration.
+    var traceControlInjection: TraceContextInjection {
+        switch self {
+        case let .trace(_, _, injection), let .traceWithHeaders(_, _, injection):
+            return injection
+        }
+    }
+
+    /// Builds first-party hosts tracing configuration for a remote `trace` namespace's hosts.
     ///
     /// When header formats are provided they apply to every traced host (`.traceWithHeaders`);
-    /// otherwise the default trace headers are used (`.trace`). A missing sample rate defaults to
-    /// `.maxSampleRate` and a missing injection strategy to `.sampled`.
+    /// otherwise the default trace headers are used (`.trace`). The sample rate and injection strategy
+    /// are resolved by the caller (remote value, else in-code value, else module default).
     ///
-    /// - Parameter trace: The remote `trace` namespace.
+    /// - Parameters:
+    ///   - trace: The remote `trace` namespace.
+    ///   - sampleRate: The resolved trace propagation sample rate.
+    ///   - traceControlInjection: The resolved trace context injection strategy.
     /// - Returns: The tracing configuration, or `nil` when no hosts are provided (nothing to instrument).
-    init?(_ trace: RemoteConfiguration.Trace) {
+    init?(_ trace: RemoteConfiguration.Trace, sampleRate: SampleRate, traceControlInjection: TraceContextInjection) {
         guard let tracedHosts = trace.tracedHosts, !tracedHosts.isEmpty else {
             return nil
         }
 
         let hosts = Set(tracedHosts)
-        let sampleRate = trace.sampleRate.map { SampleRate($0) } ?? .maxSampleRate
-        let traceControlInjection = trace.traceContextInjection.map { TraceContextInjection($0) } ?? .sampled
 
         if let tracingHeaderTypes = trace.tracingHeaderTypes, !tracingHeaderTypes.isEmpty {
             let headerTypes = Set(tracingHeaderTypes.map { TracingHeaderType($0) })
@@ -217,6 +260,27 @@ private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
         } else {
             self = .trace(
                 hosts: hosts,
+                sampleRate: sampleRate,
+                traceControlInjection: traceControlInjection
+            )
+        }
+    }
+
+    /// Returns a copy overriding the sample rate and injection strategy while preserving the hosts and
+    /// any header formats.
+    ///
+    /// - Parameters:
+    ///   - sampleRate: The trace propagation sample rate to apply.
+    ///   - traceControlInjection: The trace context injection strategy to apply.
+    /// - Returns: A configuration with the same hosts (and header formats) but the given sample rate
+    ///   and injection strategy.
+    func overriding(sampleRate: SampleRate, traceControlInjection: TraceContextInjection) -> Self {
+        switch self {
+        case let .trace(hosts, _, _):
+            return .trace(hosts: hosts, sampleRate: sampleRate, traceControlInjection: traceControlInjection)
+        case let .traceWithHeaders(hostsWithHeaders, _, _):
+            return .traceWithHeaders(
+                hostsWithHeaders: hostsWithHeaders,
                 sampleRate: sampleRate,
                 traceControlInjection: traceControlInjection
             )
