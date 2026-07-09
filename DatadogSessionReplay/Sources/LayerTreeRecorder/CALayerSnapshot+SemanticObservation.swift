@@ -28,6 +28,7 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
+        case visualEffect(VisualEffect)
         case label(LabelSemantics)
         case image(ImageSemantics)
         case textInput(TextInputSemantics)
@@ -48,6 +49,15 @@ extension CALayerSnapshot.SemanticObservation {
             .lazy
             .compactMap { $0.observe(layer, absoluteFrame, context) }
             .first ?? .init(semantics: .layer)
+    }
+}
+
+// MARK: - VisualEffect
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    enum VisualEffect: Sendable, Equatable {
+        case liquidLens
     }
 }
 
@@ -224,7 +234,9 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .webView,
         .control,
         .progressView,
-        .barBackground
+        .barBackground,
+        // visual effects
+        .liquidLens,
     ]
 }
 
@@ -313,9 +325,26 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 }
 
+// MARK: - VisualEffect mappings
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservationMapping {
+    static let liquidLens = Self { layer, _, _ in
+        guard layer.delegate?.isLiquidLens == true else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.liquidLens))
+    }
+}
+
 extension CALayerDelegate {
     fileprivate var isBarBackground: Bool {
-        "\(type(of: self))" == "_UIBarBackground"
+        NSStringFromClass(type(of: self)) == "_UIBarBackground"
+    }
+
+    fileprivate var isLiquidLens: Bool {
+        NSStringFromClass(type(of: self)) == "_UILiquidLensView"
     }
 }
 #endif

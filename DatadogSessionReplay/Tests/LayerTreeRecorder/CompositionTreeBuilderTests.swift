@@ -281,6 +281,43 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build uses capsule corner radius for layer appearance inside liquid lens")
+    func buildUsesCapsuleCornerRadiusForLayerAppearanceInsideLiquidLens() throws {
+        // Given
+        let contentSnapshot = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 37, height: 24),
+            backgroundColor: UIColor.white.cgColor
+        )
+        let liquidLensSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 37, height: 24),
+            observation: .init(semantics: .visualEffect(.liquidLens)),
+            sublayers: [contentSnapshot]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [liquidLensSnapshot])
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let wireframe = try #require(output.wireframes.compactMap { wireframe -> SRShapeWireframe? in
+            guard case .shapeWireframe(let shapeWireframe) = wireframe else {
+                return nil
+            }
+            return shapeWireframe
+        }.first { $0.id == contentSnapshot.replayID })
+
+        #expect(wireframe.shapeStyle?.cornerRadius == 12)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates hidden placeholder for private layer")
     func buildCreatesHiddenPlaceholderForPrivateLayer() throws {
         // Given

@@ -26,7 +26,10 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    init?(layerSnapshot: CALayerSnapshot) {
+    init?(
+        layerSnapshot: CALayerSnapshot,
+        cornerRadiusOverride: CGFloat? = nil
+    ) {
         guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder else {
             return nil
         }
@@ -36,7 +39,7 @@ extension SRWireframe {
                 border: .init(layerSnapshot: layerSnapshot),
                 height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadiusOverride: cornerRadiusOverride),
                 width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
@@ -45,12 +48,20 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    init(layerSnapshot: CALayerSnapshot, placeholderColor: UIColor) {
+    init(
+        layerSnapshot: CALayerSnapshot,
+        placeholderColor: UIColor,
+        cornerRadiusOverride: CGFloat? = nil
+    ) {
         self = .shapeWireframe(
             value: .init(
                 height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(backgroundColor: hexString(from: placeholderColor.cgColor) ?? .fallbackColor),
+                shapeStyle: .init(
+                    backgroundColor: hexString(from: placeholderColor.cgColor) ?? .fallbackColor,
+                    cornerRadius: (cornerRadiusOverride ?? layerSnapshot.cornerRadii.uniformCornerRadius)
+                        .map(Double.init)
+                ),
                 width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
@@ -61,7 +72,8 @@ extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
-        label: CALayerSnapshot.SemanticObservation.LabelSemantics
+        label: CALayerSnapshot.SemanticObservation.LabelSemantics,
+        cornerRadiusOverride: CGFloat? = nil
     ) {
         let text = layerSnapshot.textAndInputPrivacyLevel.staticTextObfuscator.mask(text: label.text ?? "")
         let hasVisibleText = !text.isEmpty
@@ -76,7 +88,7 @@ extension SRWireframe {
                 border: .init(layerSnapshot: layerSnapshot),
                 height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadiusOverride: cornerRadiusOverride),
                 text: text,
                 textPosition: .init(label: label),
                 textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
@@ -197,13 +209,17 @@ extension SRShapeBorder {
 
 extension SRShapeStyle {
     @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(layerSnapshot: CALayerSnapshot) {
+    fileprivate init?(
+        layerSnapshot: CALayerSnapshot,
+        cornerRadiusOverride: CGFloat? = nil
+    ) {
         guard let backgroundColor = layerSnapshot.backgroundColor else {
             return nil
         }
         self.init(
             backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
-            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init)
+            cornerRadius: (cornerRadiusOverride ?? layerSnapshot.cornerRadii.uniformCornerRadius)
+                .map(Double.init)
         )
     }
 }

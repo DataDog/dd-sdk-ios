@@ -5,12 +5,40 @@
  */
 
 #if os(iOS)
+import CoreGraphics
 import DatadogInternal
 
 /// Builds the composition tree produced by the layer recording pipeline.
 @available(iOS 13.0, tvOS 13.0, *)
 internal class CompositionTreeBuilder {
     private typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
+    private typealias VisualEffect = CALayerSnapshot.SemanticObservation.VisualEffect
+
+    private struct Context {
+        var textInput: TextInputSemantics?
+        var visualEffects: [VisualEffect] = []
+
+        mutating func merge(_ observation: CALayerSnapshot.SemanticObservation) {
+            if let textInput = observation.textInputSemantics {
+                self.textInput = textInput
+            }
+
+            if let visualEffect = observation.visualEffect {
+                visualEffects.append(visualEffect)
+            }
+        }
+
+        func cornerRadiusOverride(for snapshot: CALayerSnapshot) -> CGFloat? {
+            guard
+                snapshot.cornerRadii == .zero,
+                visualEffects.contains(.liquidLens)
+            else {
+                return nil
+            }
+
+            return min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2
+        }
+    }
 
     struct Output {
         let compositionTree: SRCompositionTree
@@ -43,7 +71,7 @@ internal class CompositionTreeBuilder {
         resources.removeAll(keepingCapacity: true)
         pendingWebViewSlotIDs = webViewSlotIDs
 
-        let rootLayer = makeCompositionLayer(from: root, parentTextInput: nil)
+        let rootLayer = makeCompositionLayer(from: root, context: Context())
 
         return Output(
             compositionTree: SRCompositionTree(
@@ -57,7 +85,7 @@ internal class CompositionTreeBuilder {
 
     private func makeCompositionLayer(
         from snapshot: CALayerSnapshot,
-        parentTextInput: TextInputSemantics?
+        context: Context
     ) -> SRCompositionLayer {
         var maskImage: (any SessionReplayResource)?
 
@@ -68,7 +96,7 @@ internal class CompositionTreeBuilder {
         }
 
         return SRCompositionLayer(
-            children: children(for: snapshot, parentTextInput: parentTextInput),
+            children: children(for: snapshot, context: context),
             compositeOperation: snapshot.compositingFilter
                 .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
             height: Int64.ddWithNoOverflow(snapshot.absoluteFrame.height),
@@ -82,12 +110,13 @@ internal class CompositionTreeBuilder {
 
     private func children(
         for snapshot: CALayerSnapshot,
-        parentTextInput: TextInputSemantics?
+        context: Context
     ) -> [SRCompositionLayerChild] {
-        let parentTextInput = snapshot.observation.textInputSemantics ?? parentTextInput
+        var context = context
+        context.merge(snapshot.observation)
 
         guard !snapshot.sublayers.isEmpty else {
-            return makeWireframeReference(for: snapshot, parentTextInput: parentTextInput)
+            return makeWireframeReference(for: snapshot, context: context)
                 .map { [$0] } ?? []
         }
 
@@ -97,13 +126,13 @@ internal class CompositionTreeBuilder {
         // We don't support containers with image or custom content because `CALayer.render(in:)`
         // renders both the layer and its sublayers
         if snapshot.hasBackgroundColor || snapshot.hasBorder,
-           let backgroundWireframe = makeWireframeReference(for: snapshot, parentTextInput: parentTextInput) {
+           let backgroundWireframe = makeWireframeReference(for: snapshot, context: context) {
             children.append(backgroundWireframe)
         }
 
         children.append(
             contentsOf: snapshot.sublayers.compactMap { sublayer in
-                childReference(for: sublayer, parentTextInput: parentTextInput)
+                childReference(for: sublayer, context: context)
             }
         )
 
@@ -112,13 +141,13 @@ internal class CompositionTreeBuilder {
 
     private func childReference(
         for snapshot: CALayerSnapshot,
-        parentTextInput: TextInputSemantics?
+        context: Context
     ) -> SRCompositionLayerChild? {
         guard !snapshot.sublayers.isEmpty || snapshot.requiresCompositionLayer else {
-            return makeWireframeReference(for: snapshot, parentTextInput: parentTextInput)
+            return makeWireframeReference(for: snapshot, context: context)
         }
 
-        let layer = makeCompositionLayer(from: snapshot, parentTextInput: parentTextInput)
+        let layer = makeCompositionLayer(from: snapshot, context: context)
         layers.append(layer)
 
         return .init(id: layer.id, type: .layer)
@@ -126,12 +155,14 @@ internal class CompositionTreeBuilder {
 
     private func makeWireframeReference(
         for snapshot: CALayerSnapshot,
-        parentTextInput textInput: TextInputSemantics?
+        context: Context
     ) -> SRCompositionLayerChild? {
         guard !snapshot.isPrivate else {
             wireframes.append(SRWireframe(placeholderFor: snapshot, label: .hiddenPlaceholder))
             return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
         }
+
+        let cornerRadiusOverride = context.cornerRadiusOverride(for: snapshot)
 
         let wireframe: SRWireframe? = switch (
             snapshot.observation.semantics,
@@ -139,13 +170,13 @@ internal class CompositionTreeBuilder {
         ) {
         case (.layer, .some(let result)),
             (.image, .some(let result)):
-            makeContentSnapshotWireframe(for: snapshot, result: result, parentTextInput: textInput)
+            makeContentSnapshotWireframe(for: snapshot, result: result, context: context)
         case (.layer, .none):
-            SRWireframe(layerSnapshot: snapshot)
+            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
         case (.label(let label), _):
-            SRWireframe(layerSnapshot: snapshot, label: label)
+            SRWireframe(layerSnapshot: snapshot, label: label, cornerRadiusOverride: cornerRadiusOverride)
         case (.textInput, .none):
-            SRWireframe(layerSnapshot: snapshot)
+            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
         case (.image(let image), .none) where image.hasContent:
             // Private image
             SRWireframe(
@@ -156,7 +187,7 @@ internal class CompositionTreeBuilder {
             )
         case (.image, .none):
             // Empty image
-            SRWireframe(layerSnapshot: snapshot)
+            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
         case (.webView(let webView), _):
             makeVisibleWebViewWireframe(for: snapshot, webView: webView)
         default:
@@ -174,12 +205,12 @@ internal class CompositionTreeBuilder {
     private func makeContentSnapshotWireframe(
         for layerSnapshot: CALayerSnapshot,
         result: ContentSnapshotResult,
-        parentTextInput textInput: TextInputSemantics?
+        context: Context
     ) -> SRWireframe? {
         switch result {
         case .success(let imageSnapshot):
             do {
-                switch try imageSnapshot.redacted(parentTextInput: textInput) {
+                switch try imageSnapshot.redacted(parentTextInput: context.textInput) {
                 case .image(let image):
                     let resource = ImageSnapshotResource(image: image)
                     resources.append(resource)
@@ -192,7 +223,8 @@ internal class CompositionTreeBuilder {
                 case .placeholder(let color):
                     return SRWireframe(
                         layerSnapshot: layerSnapshot,
-                        placeholderColor: color
+                        placeholderColor: color,
+                        cornerRadiusOverride: context.cornerRadiusOverride(for: layerSnapshot)
                     )
                 }
             } catch {
@@ -254,6 +286,13 @@ private extension CALayerSnapshot.SemanticObservation {
             return nil
         }
         return textInput
+    }
+
+    var visualEffect: CALayerSnapshot.SemanticObservation.VisualEffect? {
+        guard case .visualEffect(let visualEffect) = semantics else {
+            return nil
+        }
+        return visualEffect
     }
 }
 #endif
