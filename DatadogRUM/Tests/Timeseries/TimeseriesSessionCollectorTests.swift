@@ -19,14 +19,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
         // Given
-        memoryReader.vitalData = 1_000_000
+        memoryReader.vitalData = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            compressionSampler: { false },
             totalRAM: 4_000_000_000
         )
 
@@ -49,9 +48,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.timeseries.name, "memory")
-        XCTAssertEqual(event.timeseries.data.count, 2)
-        XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryFootprint, 1_000_000)
-        XCTAssertEqual(event.timeseries.data[0].dataPoint.memoryPercent, 0.025, accuracy: 0.001)
+        XCTAssertEqual(event.timeseries.schema, "object-v2")
+        XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
+        XCTAssertEqual(event.timeseries.data.values.memoryFootprint[0], 1_000)
+        XCTAssertEqual(event.timeseries.data.values.memoryPercent[0], 0.0256, accuracy: 0.0001)
     }
 
     func testWhenBatchSizeIsReached_itWritesCpuEvent() {
@@ -62,8 +62,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 42.5 },
-            compressionSampler: { false }
+            cpuUsageProvider: { 42.5 }
         )
 
         // When
@@ -85,20 +84,20 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.timeseries.name, "cpu")
-        XCTAssertEqual(event.timeseries.data.count, 2)
-        XCTAssertEqual(event.timeseries.data[0].dataPoint.cpuUsage, 42.5)
+        XCTAssertEqual(event.timeseries.schema, "object-v2")
+        XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
+        XCTAssertEqual(event.timeseries.data.values.cpuUsage[0], 42.5)
     }
 
     func testWhenBothReadersProvideData_itWritesBothMemoryAndCpuEvents() {
         // Given
-        memoryReader.vitalData = 2_000_000
+        memoryReader.vitalData = 2_048_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { 75.0 },
-            compressionSampler: { false },
             totalRAM: 4_000_000_000
         )
 
@@ -114,8 +113,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events")
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events")
-        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data[0].dataPoint.memoryFootprint, 2_000_000)
-        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0].timeseries.data[0].dataPoint.cpuUsage, 75.0)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data.values.memoryFootprint[0], 2_000)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0].timeseries.data.values.cpuUsage[0], 75.0)
     }
 
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
@@ -128,7 +127,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            compressionSampler: { false },
             totalRAM: 4_000_000_000
         )
 
@@ -148,7 +146,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // timeseries.start is offset-adjusted ns; date is offset-adjusted ms
         let expectedDateMs = event.timeseries.start / 1_000_000
         XCTAssertEqual(event.date, expectedDateMs, accuracy: 100)
-        XCTAssertEqual(event.timeseries.data[0].timestamp, event.timeseries.start)
+        XCTAssertEqual(event.timeseries.data.timestamps[0], event.timeseries.start)
     }
 
     func testWhenContextSourceIsReactNative_itUsesContextSource() {
@@ -161,7 +159,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            compressionSampler: { false },
             totalRAM: 4_000_000_000
         )
 
@@ -189,7 +186,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 100, // won't auto-flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
-            compressionSampler: { false },
             totalRAM: 4_000_000_000
         )
 
@@ -223,8 +219,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100, // large batch — won't auto-flush
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         // When — let a few samples accumulate then stop
@@ -256,8 +251,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100,
             samplingInterval: 0.05,
-            cpuUsageProvider: { 10.0 },
-            compressionSampler: { false }
+            cpuUsageProvider: { 10.0 }
         )
 
         let expectation = self.expectation(description: "samples collected")
@@ -314,8 +308,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 100,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         // First session
@@ -344,164 +337,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(lastEvent.session.id, "session-2")
     }
 
-    // MARK: - Schema coin flip
-
-    func testWhenDeltaCompressionSampled_itWritesDeltaEventForMemory() throws {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 3,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { true }
-        )
-
-        let expectation = self.expectation(description: "memory batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-delta", applicationID: "app-delta", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop()
-
-        // Then — AnyEncodable delta-object event written, no typed object event
-        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertTrue(typedEvents.isEmpty, "Object-schema typed event must not be written when delta is sampled")
-
-        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
-        XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
-
-        let jsonData = try JSONEncoder().encode(anyEncodableEvents[0])
-        let dict = try XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
-        let tsDict = try XCTUnwrap(dict["timeseries"] as? [String: Any])
-        XCTAssertEqual(tsDict["schema"] as? String, "delta-object")
-        let dataDict = try XCTUnwrap(tsDict["data"] as? [String: Any])
-        XCTAssertEqual(dataDict["resolution"] as? String, "ns")
-        XCTAssertNotNil(dataDict["ts"])
-        XCTAssertNotNil(dataDict["memory_footprint"])
-        XCTAssertNotNil(dataDict["memory_percent"])
-    }
-
-    func testWhenObjectSchemaSampled_itWritesObjectEventForMemory() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 3,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
-        )
-
-        let expectation = self.expectation(description: "memory batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-object", applicationID: "app-object", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop()
-
-        // Then — typed object event written, no AnyEncodable delta event
-        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema typed memory event")
-        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
-        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
-    }
-
-    func testWhenDeltaCompressionSampled_itWritesDeltaEventForCPU() throws {
-        // Given
-        memoryReader.vitalData = nil
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 3,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { 50.0 },
-            compressionSampler: { true }
-        )
-
-        let expectation = self.expectation(description: "cpu batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-delta-cpu", applicationID: "app-delta", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop()
-
-        // Then — AnyEncodable delta-scalar event written, no typed object event
-        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
-        XCTAssertTrue(typedEvents.isEmpty, "Object-schema typed event must not be written when delta is sampled")
-
-        let anyEncodableEvents = featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }
-        XCTAssertFalse(anyEncodableEvents.isEmpty, "Expected delta-schema AnyEncodable event")
-
-        let jsonData = try JSONEncoder().encode(anyEncodableEvents[0])
-        let dict = try XCTUnwrap(try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
-        let tsDict = try XCTUnwrap(dict["timeseries"] as? [String: Any])
-        XCTAssertEqual(tsDict["schema"] as? String, "delta-scalar")
-        let dataDict = try XCTUnwrap(tsDict["data"] as? [String: Any])
-        XCTAssertEqual(dataDict["resolution"] as? String, "ns")
-        XCTAssertNotNil(dataDict["ts"])
-        XCTAssertNotNil(dataDict["value"])
-    }
-
-    func testWhenObjectSchemaSampled_itWritesObjectEventForCPU() {
-        // Given
-        memoryReader.vitalData = nil
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 3,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { 50.0 },
-            compressionSampler: { false }
-        )
-
-        let expectation = self.expectation(description: "cpu batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-object-cpu", applicationID: "app-object", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop()
-
-        // Then — typed object event written, no AnyEncodable delta event
-        let typedEvents = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
-        XCTAssertFalse(typedEvents.isEmpty, "Expected object-schema typed CPU event")
-        XCTAssertEqual(typedEvents[0].timeseries.schema, .object)
-        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
-    }
-
-    func testWhenDeltaCompressionSampledWithSingleSample_itDropsTheEvent() {
-        // Given — delta sampled but only 1 sample: DeltaEncoder returns nil, event is dropped
-        memoryReader.vitalData = 1_000_000
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: featureScope,
-            batchSize: 100,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { true }
-        )
-
-        let expectation = self.expectation(description: "one sample collected")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { expectation.fulfill() }
-        collector.start(sessionID: "session-drop", applicationID: "app-drop", sessionType: .user)
-        waitForExpectations(timeout: 2)
-
-        let stopExpectation = self.expectation(description: "stop completed")
-        collector.stop()
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
-
-        // Then — event is dropped entirely, nothing written
-        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
-        XCTAssertTrue(featureScope.eventsWritten.compactMap { $0 as? AnyEncodable }.isEmpty)
-    }
-
     // MARK: - Pause / resume
 
     func testWhenPaused_itStopsCollectingSamples() {
@@ -512,8 +347,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         let samplingExpectation = self.expectation(description: "initial samples collected")
@@ -549,8 +383,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         collector.start(sessionID: "session-resume", applicationID: "app-1", sessionType: .user)
@@ -584,8 +417,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             batchSize: 2,
             samplingInterval: 0.05,
             collectInBackground: true,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         let startExpectation = self.expectation(description: "initial samples")
@@ -642,8 +474,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 3,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            compressionSampler: { false }
+            cpuUsageProvider: { nil }
         )
 
         let expectation = self.expectation(description: "first batch written")
@@ -660,7 +491,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             XCTFail("Expected at least one memory event")
             return
         }
-        let timestamps = event.timeseries.data.map { $0.timestamp }
+        let timestamps = event.timeseries.data.timestamps
         XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should be monotonically increasing")
         XCTAssertEqual(event.timeseries.start, timestamps.first)
         XCTAssertEqual(event.timeseries.end, timestamps.last)

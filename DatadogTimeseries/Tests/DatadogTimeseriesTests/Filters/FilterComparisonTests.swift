@@ -73,9 +73,9 @@ final class FilterComparisonTests: XCTestCase {
         let firstBatch = try XCTUnwrap(results.first)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: firstBatch) as? [String: Any])
         let timeseries = try XCTUnwrap(json["timeseries"] as? [String: Any])
-        let data = try XCTUnwrap(timeseries["data"] as? [[String: Any]])
-        let firstPoint = try XCTUnwrap(data.first)
-        let firstTimestamp = try XCTUnwrap(firstPoint["timestamp"] as? Int64)
+        let data = try XCTUnwrap(timeseries["data"] as? [String: Any])
+        let timestamps = try XCTUnwrap(data["timestamps"] as? [Int64])
+        let firstTimestamp = try XCTUnwrap(timestamps.first)
 
         // First window starts at the first sample timestamp (nanoseconds)
         XCTAssertEqual(firstTimestamp, 1_700_000_001_000_000_000)
@@ -111,8 +111,9 @@ final class FilterComparisonTests: XCTestCase {
                 XCTAssertEqual(json["type"] as? String, "timeseries")
                 XCTAssertNotNil(json["_dd"])
                 let timeseries = try XCTUnwrap(json["timeseries"] as? [String: Any])
-                let points = try XCTUnwrap(timeseries["data"] as? [[String: Any]])
-                XCTAssertFalse(points.isEmpty)
+                let data = try XCTUnwrap(timeseries["data"] as? [String: Any])
+                let timestamps = try XCTUnwrap(data["timestamps"] as? [Int64])
+                XCTAssertFalse(timestamps.isEmpty)
             }
         }
     }
@@ -163,8 +164,9 @@ final class FilterComparisonTests: XCTestCase {
         for data in results {
             let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
             let timeseries = try XCTUnwrap(json["timeseries"] as? [String: Any])
-            let points = try XCTUnwrap(timeseries["data"] as? [[String: Any]])
-            total += points.count
+            let data = try XCTUnwrap(timeseries["data"] as? [String: Any])
+            let timestamps = try XCTUnwrap(data["timestamps"] as? [Int64])
+            total += timestamps.count
         }
         return total
     }
