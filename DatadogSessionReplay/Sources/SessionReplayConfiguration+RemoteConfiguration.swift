@@ -69,6 +69,7 @@ private extension TextAndInputPrivacyLevel {
         case .maskSensitiveInputs: self = .maskSensitiveInputs
         case .maskAllInputs: self = .maskAllInputs
         case .maskAll: self = .maskAll
+        @unknown default: self = .maskAll
         }
     }
 }
@@ -82,6 +83,7 @@ private extension ImagePrivacyLevel {
         case .maskNone: self = .maskNone
         case .maskNonBundledOnly: self = .maskNonBundledOnly
         case .maskAll: self = .maskAll
+        @unknown default: self = .maskAll
         }
     }
 }
@@ -94,6 +96,7 @@ private extension TouchPrivacyLevel {
         switch remote {
         case .show: self = .show
         case .hide: self = .hide
+        @unknown default: self = .hide
         }
     }
 }
