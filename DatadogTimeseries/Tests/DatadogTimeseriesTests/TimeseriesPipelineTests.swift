@@ -65,8 +65,7 @@ final class TimeseriesPipelineTests: XCTestCase {
     }
 
     func testEmptyProviderProducesNoOutput() throws {
-        let csv = "timestamp,metric,value
-"
+        let csv = "timestamp,metric,value\n"
         let provider = CSVDataProvider(csvContent: csv, metric: .memoryUsage)
         let pipeline = TimeseriesPipeline(
             provider: provider,
