@@ -38,6 +38,27 @@ extension Profiling {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
         }
+
+        /// Merges the remote configuration on top of this in-code configuration.
+        ///
+        /// Remote values take precedence for the supported behavioral parameters; any parameter the
+        /// remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration was
+        /// fetched) therefore leaves the configuration entirely unchanged.
+        ///
+        /// The merge happens once, at `Profiling.enable(with:)` time; live updates after initialization
+        /// are out of scope.
+        ///
+        /// - Parameter remoteConfiguration: The remote configuration to merge, or `nil` when none is
+        ///   available (leaving this configuration unchanged).
+        mutating func apply(remoteConfiguration: RemoteConfiguration?) {
+            if let applicationLaunchSampleRate = remoteConfiguration?.profiling?.applicationLaunchSampleRate {
+                self.applicationLaunchSampleRate = SampleRate(applicationLaunchSampleRate)
+            }
+
+            // `continuousSampleRate` has no in-code equivalent in `Profiling.Configuration` yet, so the
+            // remote value is intentionally not consumed. Wire it once continuous profiling becomes
+            // configurable in-code.
+        }
     }
 }
 
