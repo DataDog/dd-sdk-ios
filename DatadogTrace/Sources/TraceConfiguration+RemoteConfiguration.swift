@@ -22,8 +22,13 @@ extension Trace.Configuration {
     /// Trace propagation is carried by the module's URLSession instrumentation, so configuring tracing
     /// also enables it: when the developer provided no `urlSessionTracking`, a default one is created to
     /// hold the tracing configuration. An existing `urlSessionTracking` keeps its other settings (e.g.
-    /// redacted status codes) — only its first-party hosts tracing is replaced. A `trace` namespace
-    /// without hosts describes nothing to instrument, so it only affects the span sample rate.
+    /// redacted status codes) — only its first-party hosts tracing is replaced.
+    ///
+    /// The host list drives the outcome: a non-empty list configures (or replaces) trace propagation,
+    /// while an explicit empty list clears it — no host is treated as first-party, so no headers are
+    /// injected, while an in-code `urlSessionTracking` keeps its other settings. When `tracedHosts` is
+    /// omitted, nothing is described and only the span sample rate above is affected; likewise, an empty
+    /// list is a no-op when no `urlSessionTracking` was configured in code (there is nothing to clear).
     ///
     /// The merge happens once, at `Trace.enable(with:)` time; live updates after initialization are out
     /// of scope.
@@ -37,6 +42,20 @@ extension Trace.Configuration {
 
         if let sampleRate = trace.sampleRate {
             self.sampleRate = SampleRate(sampleRate)
+        }
+
+        guard let tracedHosts = trace.tracedHosts else {
+            return // Hosts omitted: nothing to instrument, only the span sample rate is affected.
+        }
+
+        if tracedHosts.isEmpty {
+            // An explicit empty list clears trace propagation, keeping any other instrumentation
+            // settings; there is nothing to clear when no instrumentation was configured in code.
+            if var tracking = urlSessionTracking {
+                tracking.firstPartyHostsTracing = .trace(hosts: [])
+                urlSessionTracking = tracking
+            }
+            return
         }
 
         guard let firstPartyHostsTracing = URLSessionTracking.FirstPartyHostsTracing(trace) else {

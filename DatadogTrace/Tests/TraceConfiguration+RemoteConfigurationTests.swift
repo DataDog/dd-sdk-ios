@@ -97,6 +97,36 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.urlSessionTracking, "No hosts means nothing to instrument")
     }
 
+    /// An explicit empty host list means "stop propagating traces": it must clear the in-code
+    /// first-party hosts tracing (no host stays first-party) while keeping the rest of the network
+    /// instrumentation (e.g. redacted status codes).
+    func testWhenRemoteTraceHasEmptyHosts_itClearsInCodeTracing() {
+        var configuration = Trace.Configuration(
+            urlSessionTracking: .init(
+                firstPartyHostsTracing: .trace(hosts: ["in-code.example.com"]),
+                redactedStatusCodes: [401, 403]
+            )
+        )
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [])))
+
+        guard case let .trace(hosts, _, _) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        }
+        XCTAssertEqual(hosts, [])
+        XCTAssertEqual(configuration.urlSessionTracking?.redactedStatusCodes, [401, 403])
+    }
+
+    /// An explicit empty host list has nothing to clear when no network instrumentation was configured
+    /// in-code, so the configuration must stay untouched (no default instrumentation is installed).
+    func testWhenRemoteTraceHasEmptyHostsAndNoInCodeInstrumentation_itLeavesConfigurationUnchanged() {
+        var configuration = Trace.Configuration(urlSessionTracking: nil)
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [])))
+
+        XCTAssertNil(configuration.urlSessionTracking)
+    }
+
     /// When the developer already configured `urlSessionTracking`, applying remote hosts must replace
     /// only its first-party hosts tracing while preserving its other settings (e.g. redacted status
     /// codes).
