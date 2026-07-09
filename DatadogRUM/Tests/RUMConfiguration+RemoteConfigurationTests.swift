@@ -152,6 +152,29 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.urlSessionTracking)
     }
 
+    /// An explicit empty host list means "stop propagating traces": it must clear the in-code
+    /// first-party hosts tracing while keeping the rest of the network instrumentation.
+    func testWhenRemoteTraceHasEmptyHosts_itClearsInCodeTracing() {
+        var configuration: RUM.Configuration = .mockWith {
+            $0.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: ["custom.example.com"]))
+        }
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [])))
+
+        XCTAssertNotNil(configuration.urlSessionTracking)
+        XCTAssertNil(configuration.urlSessionTracking?.firstPartyHostsTracing)
+    }
+
+    /// An explicit empty host list has nothing to clear when no network instrumentation was configured
+    /// in-code, so the configuration must stay untouched (no default instrumentation is installed).
+    func testWhenRemoteTraceHasEmptyHostsAndNoInCodeInstrumentation_itLeavesConfigurationUnchanged() {
+        var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [])))
+
+        XCTAssertNil(configuration.urlSessionTracking)
+    }
+
     /// An explicit `rum.trackResources == false` disables resource tracking regardless, so it must
     /// suppress trace instrumentation even when the `trace` namespace provides hosts.
     func testWhenRemoteTrackResourcesIsFalse_itSuppressesTraceInstrumentation() {

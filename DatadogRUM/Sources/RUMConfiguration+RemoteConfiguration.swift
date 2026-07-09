@@ -70,11 +70,28 @@ extension RUM.Configuration {
     /// enables that instrumentation: when the developer provided no `urlSessionTracking`, a default one
     /// is created to hold the tracing configuration. An existing `urlSessionTracking` keeps its other
     /// settings (e.g. resource attributes, header capture) — only its first-party hosts tracing is
-    /// replaced. A `trace` namespace without hosts describes nothing to instrument and is ignored.
+    /// replaced.
+    ///
+    /// The host list drives the outcome: a non-empty list configures (or replaces) trace propagation,
+    /// while an explicit empty list clears it — stopping header injection on an in-code
+    /// `urlSessionTracking` while leaving its other settings intact. When `tracedHosts` is omitted
+    /// (or the whole `trace` namespace is `nil`), nothing is described and the configuration is left
+    /// unchanged; likewise, an empty list is a no-op when no `urlSessionTracking` was configured in
+    /// code (there is nothing to clear).
     ///
     /// - Parameter trace: The `trace` namespace, or `nil` to leave the configuration unchanged.
     private mutating func apply(trace: RemoteConfiguration.Trace?) {
-        guard let firstPartyHostsTracing = trace.flatMap({ URLSessionTracking.FirstPartyHostsTracing($0) }) else {
+        guard let trace, let tracedHosts = trace.tracedHosts else {
+            return
+        }
+
+        // A non-empty list configures propagation; an explicit empty list clears it.
+        let firstPartyHostsTracing = tracedHosts.isEmpty
+            ? nil
+            : URLSessionTracking.FirstPartyHostsTracing(trace)
+
+        // An empty list has nothing to clear when no instrumentation was configured in code.
+        guard urlSessionTracking != nil || firstPartyHostsTracing != nil else {
             return
         }
 
