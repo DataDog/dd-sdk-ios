@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */; };
-		A0A0A0A0A0A0A0A0A0A00006 /* DeltaEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00005 /* DeltaEncoder.swift */; };
 		A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */; };
-		A0A0A0A0A0A0A0A0A0A0000A /* DeltaEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00009 /* DeltaEncoderTests.swift */; };
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
@@ -1886,9 +1884,7 @@
 
 /* Begin PBXFileReference section */
 		A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollector.swift; sourceTree = "<group>"; };
-		A0A0A0A0A0A0A0A0A0A00005 /* DeltaEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaEncoder.swift; sourceTree = "<group>"; };
 		A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
-		A0A0A0A0A0A0A0A0A0A00009 /* DeltaEncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaEncoderTests.swift; sourceTree = "<group>"; };
 		048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierTests.swift; sourceTree = "<group>"; };
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
@@ -3459,7 +3455,6 @@
 			isa = PBXGroup;
 			children = (
 				A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */,
-				A0A0A0A0A0A0A0A0A0A00005 /* DeltaEncoder.swift */,
 			);
 			path = Timeseries;
 			sourceTree = "<group>";
@@ -3468,7 +3463,6 @@
 			isa = PBXGroup;
 			children = (
 				A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */,
-				A0A0A0A0A0A0A0A0A0A00009 /* DeltaEncoderTests.swift */,
 			);
 			path = Timeseries;
 			sourceTree = "<group>";
@@ -9298,7 +9292,6 @@
 			files = (
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
 				A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */,
-				A0A0A0A0A0A0A0A0A0A00006 /* DeltaEncoder.swift in Sources */,
 				615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
@@ -9434,7 +9427,6 @@
 			files = (
 				6188697C2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */,
 				A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */,
-				A0A0A0A0A0A0A0A0A0A0000A /* DeltaEncoderTests.swift in Sources */,
 				61DCC8472C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
 				D29A9FA629DDB483005C54A4 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
 				61C4534A2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,
