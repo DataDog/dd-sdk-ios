@@ -48,18 +48,23 @@ public struct TimeseriesEvent: Codable {
     public struct Timeseries: Codable {
         public let id: String
         public let name: TimeseriesName
+        public let schema: String = "object-v2"
         public let start: Int64
         public let end: Int64
-        public let data: [DataPoint]
-    }
-
-    public struct DataPoint: Codable {
-        public let timestamp: Int64
-        public let dataPoint: [String: Double]
+        public let data: Data
 
         enum CodingKeys: String, CodingKey {
-            case timestamp
-            case dataPoint = "data_point"
+            case id
+            case name
+            case schema
+            case start
+            case end
+            case data
         }
+    }
+
+    public struct Data: Codable {
+        public let timestamps: [Int64]
+        public let values: [String: [Double]]
     }
 }
