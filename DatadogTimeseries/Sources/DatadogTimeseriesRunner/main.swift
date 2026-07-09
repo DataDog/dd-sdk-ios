@@ -59,7 +59,7 @@ struct PipelineResult {
         let decoder = JSONDecoder()
         return events.compactMap { data -> Int? in
             let event = try? decoder.decode(TimeseriesEvent.self, from: data)
-            return event?.timeseries.data.count
+            return event?.timeseries.data.timestamps.count
         }.reduce(0, +)
     }
 }

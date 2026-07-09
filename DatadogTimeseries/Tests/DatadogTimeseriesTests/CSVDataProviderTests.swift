@@ -57,8 +57,7 @@ final class CSVDataProviderTests: XCTestCase {
     }
 
     func testReturnsNilForEmptyCSV() {
-        let csv = "timestamp,metric,value
-"
+        let csv = "timestamp,metric,value\n"
         let provider = CSVDataProvider(csvContent: csv, metric: .memoryUsage)
         XCTAssertNil(provider.read())
     }

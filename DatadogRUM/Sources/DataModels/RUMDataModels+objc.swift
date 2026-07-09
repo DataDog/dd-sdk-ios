@@ -7048,7 +7048,7 @@ public class objc_RUMTimeseriesCpuEventTimeseries: NSObject {
 public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject {
     internal let root: objc_RUMTimeseriesCpuEvent
 
-    internal init(root: objc_RUMTimeseriesCpuEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
         self.root = root
     }
 
@@ -7969,7 +7969,7 @@ public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject {
 public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject {
     internal let root: objc_RUMTimeseriesMemoryEvent
 
-    internal init(root: objc_RUMTimeseriesMemoryEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
         self.root = root
     }
 
