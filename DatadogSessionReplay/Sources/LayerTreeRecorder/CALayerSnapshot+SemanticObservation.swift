@@ -21,9 +21,6 @@ extension CALayerSnapshot {
 
         /// When `true`, image privacy does not apply to image snapshots captured from this layer or its sublayers.
         var ignoresImagePrivacy: Bool = false
-
-        /// When `true`, non-finite layer corner radii are resolved from the layer bounds.
-        var usesAutomaticCornerRadius: Bool = false
     }
 }
 
@@ -47,44 +44,10 @@ extension CALayerSnapshot.SemanticObservation {
 
     @MainActor
     init(layer: CALayer, absoluteFrame: CGRect, context: CALayerSnapshot.Context) {
-        switch layer.delegate {
-        case _ as UIActivityIndicatorView:
-            self.init(semantics: .layer, ignoresSublayers: true)
-        case let label as UILabel where !label.hasAttributedText:
-            // Attributed text falls through to layer semantics and will be rendered from the layer image.
-            self.init(label: label)
-        case let imageView as UIImageView:
-            self.init(imageView: imageView)
-        case let textView as UITextView:
-            self.init(textView: textView)
-        case let textField as UITextField:
-            self.init(textField: textField)
-        case _ as UISwitch, _ as UISlider:
-            if #available(iOS 26.0, *) {
-                // iOS 26 toggle and slider thumbs use a non-finite corner radius for their rounded thumb shape.
-                self.init(semantics: .layer, usesAutomaticCornerRadius: true)
-            } else {
-                self.init(semantics: .layer)
-            }
-        case let webView as WKWebView:
-            context.webViewCache.add(webView)
-            self.init(webView: webView, absoluteFrame: absoluteFrame)
-        default:
-            self.init(semantics: .layer)
-        }
-
-        // Ignore image privacy for system UI chrome
-        if layer.delegate is UIControl
-            || layer.delegate is UIProgressView
-            || layer.delegate?.isBarBackground == true {
-            ignoresImagePrivacy = true
-        }
-    }
-}
-
-extension CALayerDelegate {
-    fileprivate var isBarBackground: Bool {
-        "\(type(of: self))" == "_UIBarBackground"
+        self = CALayerSnapshot.SemanticObservationMapping.allCases
+            .lazy
+            .compactMap { $0.observe(layer, absoluteFrame, context) }
+            .first ?? .init(semantics: .layer)
     }
 }
 
@@ -99,22 +62,33 @@ extension CALayerSnapshot.SemanticObservation {
         let font: UIFont?
         let adjustsFontSizeToFitWidth: Bool
         let lineBreakMode: NSLineBreakMode
-    }
 
-    fileprivate init(label: UILabel) {
-        self.init(
-            semantics: .label(
-                .init(
-                    text: label.text,
-                    textColor: label.textColor,
-                    textAlignment: label.textAlignment,
-                    font: label.font,
-                    adjustsFontSizeToFitWidth: label.adjustsFontSizeToFitWidth,
-                    lineBreakMode: label.lineBreakMode
-                )
-            ),
-            ignoresSublayers: true
-        )
+        init(
+            text: String?,
+            textColor: UIColor?,
+            textAlignment: NSTextAlignment,
+            font: UIFont?,
+            adjustsFontSizeToFitWidth: Bool,
+            lineBreakMode: NSLineBreakMode
+        ) {
+            self.text = text
+            self.textColor = textColor
+            self.textAlignment = textAlignment
+            self.font = font
+            self.adjustsFontSizeToFitWidth = adjustsFontSizeToFitWidth
+            self.lineBreakMode = lineBreakMode
+        }
+
+        fileprivate init(label: UILabel) {
+            self.init(
+                text: label.text,
+                textColor: label.textColor,
+                textAlignment: label.textAlignment,
+                font: label.font,
+                adjustsFontSizeToFitWidth: label.adjustsFontSizeToFitWidth,
+                lineBreakMode: label.lineBreakMode
+            )
+        }
     }
 }
 
@@ -154,20 +128,20 @@ extension CALayerSnapshot.SemanticObservation {
     struct ImageSemantics: Sendable, Equatable {
         let hasContent: Bool
         let isContextual: Bool
-    }
 
-    fileprivate init(imageView: UIImageView) {
-        let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
+        init(hasContent: Bool, isContextual: Bool) {
+            self.hasContent = hasContent
+            self.isContextual = isContextual
+        }
 
-        self.init(
-            semantics: .image(
-                .init(
-                    hasContent: image != nil,
-                    isContextual: image?.isContextual ?? false
-                )
-            ),
-            ignoresSublayers: true
-        )
+        fileprivate init(imageView: UIImageView) {
+            let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
+
+            self.init(
+                hasContent: image != nil,
+                isContextual: image?.isContextual ?? false
+            )
+        }
     }
 }
 
@@ -179,30 +153,28 @@ extension CALayerSnapshot.SemanticObservation {
         let isSensitiveText: Bool
         let isEditable: Bool
         let isEmpty: Bool
-    }
 
-    fileprivate init(textView: UITextView) {
-        self.init(
-            semantics: .textInput(
-                .init(
-                    isSensitiveText: textView.dd.isSensitiveText,
-                    isEditable: textView.isEditable,
-                    isEmpty: textView.text?.isEmpty ?? true
-                )
-            )
-        )
-    }
+        init(isSensitiveText: Bool, isEditable: Bool, isEmpty: Bool) {
+            self.isSensitiveText = isSensitiveText
+            self.isEditable = isEditable
+            self.isEmpty = isEmpty
+        }
 
-    fileprivate init(textField: UITextField) {
-        self.init(
-            semantics: .textInput(
-                .init(
-                    isSensitiveText: textField.dd.isSensitiveText,
-                    isEditable: true,
-                    isEmpty: textField.text?.isEmpty ?? true
-                )
+        fileprivate init(textView: UITextView) {
+            self.init(
+                isSensitiveText: textView.dd.isSensitiveText,
+                isEditable: textView.isEditable,
+                isEmpty: textView.text?.isEmpty ?? true
             )
-        )
+        }
+
+        fileprivate init(textField: UITextField) {
+            self.init(
+                isSensitiveText: textField.dd.isSensitiveText,
+                isEditable: true,
+                isEmpty: textField.text?.isEmpty ?? true
+            )
+        }
     }
 }
 
@@ -213,18 +185,137 @@ extension CALayerSnapshot.SemanticObservation {
     struct WebViewSemantics: Sendable, Equatable {
         let slotID: Int
         let slotFrame: CGRect
+
+        init(slotID: Int, slotFrame: CGRect) {
+            self.slotID = slotID
+            self.slotFrame = slotFrame
+        }
+
+        fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
+            self.init(
+                slotID: webView.hash,
+                slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
+            )
+        }
+    }
+}
+
+// MARK: - SemanticObservationMapping
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot {
+    fileprivate struct SemanticObservationMapping {
+        let observe: @MainActor (
+            _ layer: CALayer,
+            _ absoluteFrame: CGRect,
+            _ context: CALayerSnapshot.Context
+        ) -> SemanticObservation?
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
+    static let allCases: [Self] = [
+        .activityIndicator,
+        .label,
+        .imageView,
+        .textView,
+        .textField,
+        .webView,
+        .control,
+        .progressView,
+        .barBackground
+    ]
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservationMapping {
+    static let activityIndicator = Self { layer, _, _ in
+        guard layer.delegate is UIActivityIndicatorView else {
+            return nil
+        }
+
+        return .init(semantics: .layer, ignoresSublayers: true)
     }
 
-    fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
-        self.init(
-            semantics: .webView(
-                .init(
-                    slotID: webView.hash,
-                    slotFrame: webView.sessionReplayContentFrame(from: absoluteFrame)
-                )
-            ),
+    static let label = Self { layer, _, _ in
+        guard let label = layer.delegate as? UILabel, !label.hasAttributedText else {
+            // Labels with attributed text that has multiple attribute runs fall through to layer semantics
+            // and will be rendered from the layer image.
+            return nil
+        }
+
+        return .init(semantics: .label(.init(label: label)), ignoresSublayers: true)
+    }
+
+    static let imageView = Self { layer, _, _ in
+        guard let imageView = layer.delegate as? UIImageView else {
+            return nil
+        }
+
+        return .init(semantics: .image(.init(imageView: imageView)), ignoresSublayers: true)
+    }
+
+    static let textView = Self { layer, _, _ in
+        guard let textView = layer.delegate as? UITextView else {
+            return nil
+        }
+
+        return .init(semantics: .textInput(.init(textView: textView)))
+    }
+
+    static let textField = Self { layer, _, _ in
+        guard let textField = layer.delegate as? UITextField else {
+            return nil
+        }
+
+        return .init(
+            semantics: .textInput(.init(textField: textField)),
+            ignoresImagePrivacy: true
+        )
+    }
+
+    static let webView = Self { layer, absoluteFrame, context in
+        guard let webView = layer.delegate as? WKWebView else {
+            return nil
+        }
+
+        context.webViewCache.add(webView)
+
+        return .init(
+            semantics: .webView(.init(webView: webView, absoluteFrame: absoluteFrame)),
             ignoresSublayers: true
         )
+    }
+
+    static let control = Self { layer, _, _ in
+        guard layer.delegate is UIControl else {
+            return nil
+        }
+
+        return .init(semantics: .layer, ignoresImagePrivacy: true)
+    }
+
+    static let progressView = Self { layer, _, _ in
+        guard layer.delegate is UIProgressView else {
+            return nil
+        }
+
+        return .init(semantics: .layer, ignoresImagePrivacy: true)
+    }
+
+    static let barBackground = Self { layer, _, _ in
+        guard layer.delegate?.isBarBackground == true else {
+            return nil
+        }
+
+        return .init(semantics: .layer, ignoresImagePrivacy: true)
+    }
+}
+
+extension CALayerDelegate {
+    fileprivate var isBarBackground: Bool {
+        "\(type(of: self))" == "_UIBarBackground"
     }
 }
 #endif
