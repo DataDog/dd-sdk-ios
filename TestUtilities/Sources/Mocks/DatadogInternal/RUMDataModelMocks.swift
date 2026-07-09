@@ -891,3 +891,17 @@ extension RUMVitalOperationStepEvent.Vital.StepType: AnyMockable, RandomMockable
         return RUMVitalOperationStepEvent.Vital.StepType.allCases.randomElement()!
     }
 }
+
+extension DDProfiling.QuotaReason: RandomMockable {
+    public static func mockRandom() -> Self {
+        return [
+            .quotaOk,
+            .quotaExceeded,
+            .orgDisabled,
+            .backendUnavailable,
+            .undefined,
+            .timeout,
+            .apiError
+        ].randomElement()!
+    }
+}

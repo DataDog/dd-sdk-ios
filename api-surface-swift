@@ -1599,4 +1599,5 @@ public enum Profiling
     public struct Configuration
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)
+        public var continuousSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5)

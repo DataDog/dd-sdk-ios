@@ -565,6 +565,7 @@ extension RUMViewScope {
 
         // Retrieve Session Replay config if any
         let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -578,6 +579,7 @@ extension RUMViewScope {
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,
+                profiling: profiling,
                 replayStats: .init(
                     recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
                     segmentsCount: nil,
@@ -712,8 +714,20 @@ extension RUMViewScope {
     }
 
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
+        let errorId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         errorsCount += 1
         totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
+
+        if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
+            let appHang = DurationEvent(
+                id: errorId,
+                type: .error,
+                start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                duration: appHangCommand.hangDuration.dd.toInt64Nanoseconds
+            )
+
+            dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
+        }
 
         // Error event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
@@ -735,10 +749,13 @@ extension RUMViewScope {
             }
         }
 
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
+                profiling: profiling,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -767,7 +784,7 @@ extension RUMViewScope {
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                id: errorId,
                 isCrash: command.isCrash ?? false,
                 message: command.message,
                 meta: nil,
@@ -817,8 +834,18 @@ extension RUMViewScope {
     }
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
+        let longTaskId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
+        let start = (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970
         let taskDurationInNs = command.duration.dd.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
+
+        let longTask = DurationEvent(
+            id: longTaskId,
+            type: .longTask,
+            start: start.dd.toInt64Nanoseconds,
+            duration: taskDurationInNs
+        )
+        dependencies.featureScope.send(message: .payload(LongTaskMessage(attributes: rumContextAttributes, longTask: longTask)))
 
         // Long task event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
@@ -826,11 +853,14 @@ extension RUMViewScope {
             .merging(attributes) { $1 }
             .merging(command.attributes) { $1 }
 
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.samplingRate)),
                 discarded: nil,
+                profiling: profiling,
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
@@ -847,7 +877,7 @@ extension RUMViewScope {
             connectivity: .init(context: context),
             container: nil,
             context: .init(contextInfo: commandAttributes),
-            date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
+            date: start.dd.toInt64Milliseconds,
             ddtags: context.ddTags,
             device: context.normalizedDevice(),
             display: nil,
@@ -856,7 +886,7 @@ extension RUMViewScope {
                 duration: taskDurationInNs,
                 entryType: nil,
                 firstUiEventTimestamp: nil,
-                id: dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat,
+                id: longTaskId,
                 isFrozenFrame: isFrozenFrame,
                 renderStart: nil,
                 scripts: nil,
