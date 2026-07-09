@@ -58,10 +58,17 @@ class TraceTests: XCTestCase {
 
     // MARK: - Remote Configuration
 
-    func testWhenEnabledWithRemoteTrace_itEnablesDistributedTracingAtEnableTime() throws {
-        // Given no in-code URLSession tracking, but a remote `trace` namespace with hosts
+    func testWhenEnabledWithRemoteTrace_itInjectsDistributedTracingConfigurationAtEnableTime() throws {
+        // Given no in-code URLSession tracking, but a remote `trace` namespace with a full configuration
         config = Trace.Configuration(urlSessionTracking: nil)
-        core.remoteConfiguration = .mockWith(trace: .mockWith(tracedHosts: ["example.com"]))
+        core.remoteConfiguration = .mockWith(
+            trace: .init(
+                sampleRate: 55,
+                traceContextInjection: .all,
+                tracedHosts: ["api.example.com", "example.com"],
+                tracingHeaderTypes: [.datadog, .b3]
+            )
+        )
 
         // When
         Trace.enable(with: config, in: core)
@@ -71,9 +78,16 @@ class TraceTests: XCTestCase {
             core.get(feature: NetworkInstrumentationFeature.self),
             "Remote `trace` hosts must enable `NetworkInstrumentationFeature` at enable time"
         )
-        XCTAssertNotNil(
+        let tracingHandler = try XCTUnwrap(
             networkInstrumentation.handlers.firstElement(of: TracingURLSessionHandler.self),
             "It should register `TracingURLSessionHandler` from the remote `trace` namespace"
+        )
+        XCTAssertEqual(tracingHandler.samplingRate, 55)
+        XCTAssertEqual(tracingHandler.traceContextInjection, .all)
+        XCTAssertEqual(tracingHandler.firstPartyHosts.hosts, ["api.example.com", "example.com"])
+        XCTAssertEqual(
+            tracingHandler.firstPartyHosts.tracingHeaderTypes(for: URL(string: "https://api.example.com")),
+            [.datadog, .b3]
         )
     }
 
