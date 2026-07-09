@@ -95,6 +95,7 @@ private extension TraceContextInjection {
         switch remote {
         case .all: self = .all
         case .sampled: self = .sampled
+        @unknown default: self = .sampled
         }
     }
 }
@@ -109,6 +110,7 @@ private extension TracingHeaderType {
         case .b3: self = .b3
         case .b3multi: self = .b3multi
         case .tracecontext: self = .tracecontext
+        @unknown default: self = .datadog
         }
     }
 }
