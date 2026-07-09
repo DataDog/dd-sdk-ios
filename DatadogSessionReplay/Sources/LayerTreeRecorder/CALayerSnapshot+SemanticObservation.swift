@@ -26,6 +26,13 @@ extension CALayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
+    enum VisualEffect: Sendable, Equatable {
+        case liquidLens
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
         case visualEffect(VisualEffect)
@@ -49,15 +56,6 @@ extension CALayerSnapshot.SemanticObservation {
             .lazy
             .compactMap { $0.observe(layer, absoluteFrame, context) }
             .first ?? .init(semantics: .layer)
-    }
-}
-
-// MARK: - VisualEffect
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    enum VisualEffect: Sendable, Equatable {
-        case liquidLens
     }
 }
 
@@ -99,35 +97,6 @@ extension CALayerSnapshot.SemanticObservation {
                 lineBreakMode: label.lineBreakMode
             )
         }
-    }
-}
-
-extension UILabel {
-    fileprivate var hasAttributedText: Bool {
-        guard let attributedText else {
-            return false
-        }
-        return attributedText.hasMultipleRuns
-    }
-}
-
-extension NSAttributedString {
-    fileprivate var hasMultipleRuns: Bool {
-        guard length > 0 else {
-            return false
-        }
-
-        var runCount = 0
-
-        enumerateAttributes(in: NSRange(location: 0, length: length), options: []) { _, _, stop in
-            runCount += 1
-
-            if runCount > 1 {
-                stop.pointee = true
-            }
-        }
-
-        return runCount > 1
     }
 }
 
@@ -236,7 +205,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .progressView,
         .barBackground,
         // visual effects
-        .liquidLens,
+        .liquidLens
     ]
 }
 
@@ -251,9 +220,8 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 
     static let label = Self { layer, _, _ in
-        guard let label = layer.delegate as? UILabel, !label.hasAttributedText else {
-            // Labels with attributed text that has multiple attribute runs fall through to layer semantics
-            // and will be rendered from the layer image.
+        guard let label = layer.delegate as? UILabel, label.isTextWireframeRepresentable() else {
+            // Labels that cannot be represented as a text wireframe fall through to layer semantics.
             return nil
         }
 

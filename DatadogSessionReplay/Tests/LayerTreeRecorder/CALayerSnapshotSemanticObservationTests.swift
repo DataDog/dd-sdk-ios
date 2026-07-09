@@ -45,7 +45,7 @@ struct CALayerSnapshotSemanticObservationTests {
     @Test("Records label semantics and ignores sublayers")
     func recordsLabelSemanticsAndIgnoresSublayers() {
         // Given
-        let font = UIFont.boldSystemFont(ofSize: 14)
+        let font = UIFont.systemFont(ofSize: 14)
         let label = UILabel()
         label.text = "Hello"
         label.textColor = .red
@@ -81,7 +81,7 @@ struct CALayerSnapshotSemanticObservationTests {
         label.attributedText = NSAttributedString(
             string: "Hello",
             attributes: [
-                .font: UIFont.boldSystemFont(ofSize: 14),
+                .font: UIFont.systemFont(ofSize: 14),
                 .foregroundColor: UIColor.red
             ]
         )
@@ -103,6 +103,86 @@ struct CALayerSnapshotSemanticObservationTests {
             ),
             ignoresSublayers: true
         ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records bold labels as layer semantics")
+    func recordsBoldLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .boldSystemFont(ofSize: 14)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records non-regular system font labels as layer semantics")
+    func recordsNonRegularSystemFontLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .systemFont(ofSize: 14, weight: .medium)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records italic labels as layer semantics")
+    func recordsItalicLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .italicSystemFont(ofSize: 14)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records non-system font labels as layer semantics")
+    func recordsNonSystemFontLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records underlined single run attributed labels as layer semantics")
+    func recordsUnderlinedSingleRunAttributedLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.attributedText = NSAttributedString(
+            string: "Hello",
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 14),
+                .underlineStyle: NSUnderlineStyle.single.rawValue
+            ]
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
