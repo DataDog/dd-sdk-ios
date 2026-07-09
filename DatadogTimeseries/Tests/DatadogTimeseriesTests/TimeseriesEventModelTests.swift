@@ -22,10 +22,10 @@ final class TimeseriesEventModelTests: XCTestCase {
                 name: .memoryUsage,
                 start: 1773055068831000000,
                 end: 1773055082916000000,
-                data: [
-                    TimeseriesEvent.DataPoint(timestamp: 1773055068831000000, dataPoint: ["memory_usage": 38052032]),
-                    TimeseriesEvent.DataPoint(timestamp: 1773055069917000000, dataPoint: ["memory_usage": 37970112]),
-                ]
+                data: TimeseriesEvent.Data(
+                    timestamps: [1773055068831000000, 1773055069917000000],
+                    values: ["memory_usage": [38052032, 37970112]]
+                )
             )
         )
 
@@ -56,14 +56,16 @@ final class TimeseriesEventModelTests: XCTestCase {
         let ts = try XCTUnwrap(json["timeseries"] as? [String: Any])
         XCTAssertEqual(ts["id"] as? String, "ts-id-789")
         XCTAssertEqual(ts["name"] as? String, "memory_usage")
+        XCTAssertEqual(ts["schema"] as? String, "object-v2")
         XCTAssertEqual(ts["start"] as? Int64, 1773055068831000000)
         XCTAssertEqual(ts["end"] as? Int64, 1773055082916000000)
 
-        let dataPoints = try XCTUnwrap(ts["data"] as? [[String: Any]])
-        XCTAssertEqual(dataPoints.count, 2)
-        XCTAssertEqual(dataPoints[0]["timestamp"] as? Int64, 1773055068831000000)
-        let dp0 = try XCTUnwrap(dataPoints[0]["data_point"] as? [String: Any])
-        XCTAssertEqual(dp0["memory_usage"] as? Double, 38052032)
+        let tsData = try XCTUnwrap(ts["data"] as? [String: Any])
+        let timestamps = try XCTUnwrap(tsData["timestamps"] as? [Int64])
+        XCTAssertEqual(timestamps, [1773055068831000000, 1773055069917000000])
+        let values = try XCTUnwrap(tsData["values"] as? [String: Any])
+        let memoryUsage = try XCTUnwrap(values["memory_usage"] as? [Double])
+        XCTAssertEqual(memoryUsage, [38052032, 37970112])
     }
 
     func testTimeseriesEventOmitsNilServiceAndVersion() throws {
@@ -81,9 +83,10 @@ final class TimeseriesEventModelTests: XCTestCase {
                 name: .cpuUsage,
                 start: 1000000000,
                 end: 2000000000,
-                data: [
-                    TimeseriesEvent.DataPoint(timestamp: 1000000000, dataPoint: ["cpu_usage": 55.3]),
-                ]
+                data: TimeseriesEvent.Data(
+                    timestamps: [1000000000],
+                    values: ["cpu_usage": [55.3]]
+                )
             )
         )
 

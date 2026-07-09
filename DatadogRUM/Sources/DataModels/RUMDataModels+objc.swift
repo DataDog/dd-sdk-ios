@@ -6325,8 +6325,8 @@ public class objc_RUMTimeseriesCpuEventTimeseries: NSObject {
         self.root = root
     }
 
-    public var data: [objc_RUMTimeseriesCpuEventTimeseriesData] {
-        root.swiftModel.timeseries.data.map { objc_RUMTimeseriesCpuEventTimeseriesData(swiftModel: $0) }
+    public var data: objc_RUMTimeseriesCpuEventTimeseriesData {
+        objc_RUMTimeseriesCpuEventTimeseriesData(root: root)
     }
 
     public var end: NSNumber {
@@ -6341,8 +6341,8 @@ public class objc_RUMTimeseriesCpuEventTimeseries: NSObject {
         root.swiftModel.timeseries.name
     }
 
-    public var schema: objc_RUMTimeseriesCpuEventTimeseriesSchema {
-        .init(swift: root.swiftModel.timeseries.schema)
+    public var schema: String {
+        root.swiftModel.timeseries.schema
     }
 
     public var start: NSNumber {
@@ -6354,56 +6354,34 @@ public class objc_RUMTimeseriesCpuEventTimeseries: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject {
-    internal var swiftModel: RUMTimeseriesCpuEvent.Timeseries.Data
-    internal var root: objc_RUMTimeseriesCpuEventTimeseriesData { self }
+    internal let root: objc_RUMTimeseriesCpuEvent
 
-    internal init(swiftModel: RUMTimeseriesCpuEvent.Timeseries.Data) {
-        self.swiftModel = swiftModel
-    }
-
-    public var dataPoint: objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint {
-        objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint(root: root)
-    }
-
-    public var timestamp: NSNumber {
-        root.swiftModel.timestamp as NSNumber
-    }
-}
-
-@objc(DDRUMTimeseriesCpuEventTimeseriesDataDataPoint)
-@objcMembers
-@_spi(objc)
-public class objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint: NSObject {
-    internal let root: objc_RUMTimeseriesCpuEventTimeseriesData
-
-    internal init(root: objc_RUMTimeseriesCpuEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
         self.root = root
     }
 
-    public var cpuUsage: NSNumber {
-        root.swiftModel.dataPoint.cpuUsage as NSNumber
+    public var timestamps: [NSNumber] {
+        root.swiftModel.timeseries.data.timestamps as [NSNumber]
+    }
+
+    public var values: objc_RUMTimeseriesCpuEventTimeseriesDataValues {
+        objc_RUMTimeseriesCpuEventTimeseriesDataValues(root: root)
     }
 }
 
-@objc(DDRUMTimeseriesCpuEventTimeseriesSchema)
+@objc(DDRUMTimeseriesCpuEventTimeseriesDataValues)
+@objcMembers
 @_spi(objc)
-public enum objc_RUMTimeseriesCpuEventTimeseriesSchema: Int {
-    internal init(swift: RUMTimeseriesCpuEvent.Timeseries.Schema) {
-        switch swift {
-        case .object: self = .object
-        case .deltaScalar: self = .deltaScalar
-        }
+public class objc_RUMTimeseriesCpuEventTimeseriesDataValues: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
     }
 
-    internal var toSwift: RUMTimeseriesCpuEvent.Timeseries.Schema {
-        switch self {
-        case .object: return .object
-        case .deltaScalar: return .deltaScalar
-        }
+    public var cpuUsage: [NSNumber] {
+        root.swiftModel.timeseries.data.values.cpuUsage as [NSNumber]
     }
-
-    case object
-    case deltaScalar
 }
 
 @objc(DDRUMTimeseriesMemoryEvent)
@@ -6582,8 +6560,8 @@ public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject {
         self.root = root
     }
 
-    public var data: [objc_RUMTimeseriesMemoryEventTimeseriesData] {
-        root.swiftModel.timeseries.data.map { objc_RUMTimeseriesMemoryEventTimeseriesData(swiftModel: $0) }
+    public var data: objc_RUMTimeseriesMemoryEventTimeseriesData {
+        objc_RUMTimeseriesMemoryEventTimeseriesData(root: root)
     }
 
     public var end: NSNumber {
@@ -6598,8 +6576,8 @@ public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject {
         root.swiftModel.timeseries.name
     }
 
-    public var schema: objc_RUMTimeseriesMemoryEventTimeseriesSchema {
-        .init(swift: root.swiftModel.timeseries.schema)
+    public var schema: String {
+        root.swiftModel.timeseries.schema
     }
 
     public var start: NSNumber {
@@ -6611,60 +6589,38 @@ public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject {
 @objcMembers
 @_spi(objc)
 public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject {
-    internal var swiftModel: RUMTimeseriesMemoryEvent.Timeseries.Data
-    internal var root: objc_RUMTimeseriesMemoryEventTimeseriesData { self }
+    internal let root: objc_RUMTimeseriesMemoryEvent
 
-    internal init(swiftModel: RUMTimeseriesMemoryEvent.Timeseries.Data) {
-        self.swiftModel = swiftModel
-    }
-
-    public var dataPoint: objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint {
-        objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint(root: root)
-    }
-
-    public var timestamp: NSNumber {
-        root.swiftModel.timestamp as NSNumber
-    }
-}
-
-@objc(DDRUMTimeseriesMemoryEventTimeseriesDataDataPoint)
-@objcMembers
-@_spi(objc)
-public class objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint: NSObject {
-    internal let root: objc_RUMTimeseriesMemoryEventTimeseriesData
-
-    internal init(root: objc_RUMTimeseriesMemoryEventTimeseriesData) {
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
         self.root = root
     }
 
-    public var memoryFootprint: NSNumber {
-        root.swiftModel.dataPoint.memoryFootprint as NSNumber
+    public var timestamps: [NSNumber] {
+        root.swiftModel.timeseries.data.timestamps as [NSNumber]
     }
 
-    public var memoryPercent: NSNumber {
-        root.swiftModel.dataPoint.memoryPercent as NSNumber
+    public var values: objc_RUMTimeseriesMemoryEventTimeseriesDataValues {
+        objc_RUMTimeseriesMemoryEventTimeseriesDataValues(root: root)
     }
 }
 
-@objc(DDRUMTimeseriesMemoryEventTimeseriesSchema)
+@objc(DDRUMTimeseriesMemoryEventTimeseriesDataValues)
+@objcMembers
 @_spi(objc)
-public enum objc_RUMTimeseriesMemoryEventTimeseriesSchema: Int {
-    internal init(swift: RUMTimeseriesMemoryEvent.Timeseries.Schema) {
-        switch swift {
-        case .object: self = .object
-        case .deltaObject: self = .deltaObject
-        }
+public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
     }
 
-    internal var toSwift: RUMTimeseriesMemoryEvent.Timeseries.Schema {
-        switch self {
-        case .object: return .object
-        case .deltaObject: return .deltaObject
-        }
+    public var memoryFootprint: [NSNumber] {
+        root.swiftModel.timeseries.data.values.memoryFootprint as [NSNumber]
     }
 
-    case object
-    case deltaObject
+    public var memoryPercent: [NSNumber] {
+        root.swiftModel.timeseries.data.values.memoryPercent as [NSNumber]
+    }
 }
 
 @objc(DDRUMViewEvent)

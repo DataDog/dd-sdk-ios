@@ -49,7 +49,7 @@ final class TimeseriesEventBuilderTests: XCTestCase {
         XCTAssertEqual(event.timeseries.name, .cpuUsage)
         XCTAssertEqual(event.timeseries.start, 5_000_000_000)
         XCTAssertEqual(event.timeseries.end, 7_000_000_000)
-        XCTAssertEqual(event.timeseries.data.count, 3)
+        XCTAssertEqual(event.timeseries.data.timestamps.count, 3)
     }
 
     func testDateIsStartTimestampConvertedToMilliseconds() {
@@ -73,10 +73,8 @@ final class TimeseriesEventBuilderTests: XCTestCase {
 
         let event = builder.build(samples: samples, name: .memoryUsage, eventId: "id")
 
-        XCTAssertEqual(event.timeseries.data[0].timestamp, 1000)
-        XCTAssertEqual(event.timeseries.data[0].dataPoint["memory_usage"], 42.5)
-        XCTAssertEqual(event.timeseries.data[1].timestamp, 2000)
-        XCTAssertEqual(event.timeseries.data[1].dataPoint["memory_usage"], 99.9)
+        XCTAssertEqual(event.timeseries.data.timestamps, [1000, 2000])
+        XCTAssertEqual(event.timeseries.data.values["memory_usage"], [42.5, 99.9])
     }
 
     func testNilServiceAndVersion() {
