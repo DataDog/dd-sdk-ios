@@ -17,12 +17,10 @@ struct TimeseriesEventBuilder {
         let end = samples.last?.timestamp ?? 0
         let dateMs = start / 1_000_000
 
-        let dataPoints = samples.map { sample in
-            TimeseriesEvent.DataPoint(
-                timestamp: sample.timestamp,
-                dataPoint: [name.rawValue: sample.value]
-            )
-        }
+        let data = TimeseriesEvent.Data(
+            timestamps: samples.map { $0.timestamp },
+            values: [name.rawValue: samples.map { $0.value }]
+        )
 
         return TimeseriesEvent(
             dd: TimeseriesEvent.DD(formatVersion: 2),
@@ -38,7 +36,7 @@ struct TimeseriesEventBuilder {
                 name: name,
                 start: start,
                 end: end,
-                data: dataPoints
+                data: data
             )
         )
     }

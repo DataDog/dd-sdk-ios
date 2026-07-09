@@ -5224,8 +5224,8 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
 
     /// CPU timeseries properties
     public struct Timeseries: Codable {
-        /// Array of CPU data points
-        public let data: [Data]
+        /// Flattened CPU data points
+        public let data: Data
 
         /// Timestamp of the last sample in nanoseconds from epoch
         public let end: Int64
@@ -5234,10 +5234,10 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         public let id: String
 
         /// Name identifying the timeseries metric
-        public let name: String
+        public let name: String = "cpu"
 
         /// Wire-shape discriminator for the data field
-        public let schema: Schema
+        public let schema: String = "object-v2"
 
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
@@ -5254,79 +5254,67 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         /// CPU timeseries properties
         ///
         /// - Parameters:
-        ///   - data: Array of CPU data points
+        ///   - data: Flattened CPU data points
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
-        ///   - name: Name identifying the timeseries metric
-        ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
-            data: [Data],
+            data: Data,
             end: Int64,
             id: String,
-            name: String,
-            schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
-            self.name = name
-            self.schema = schema
             self.start = start
         }
 
-        /// A single CPU data point
+        /// Flattened CPU data points
         public struct Data: Codable {
-            /// CPU measurements for this sample
-            public let dataPoint: DataPoint
+            /// Sample timestamps in nanoseconds from epoch
+            public let timestamps: [Int64]
 
-            /// Sample timestamp in nanoseconds from epoch
-            public let timestamp: Int64
+            /// CPU measurements, aligned index-for-index with timestamps
+            public let values: Values
 
             public enum CodingKeys: String, CodingKey {
-                case dataPoint = "data_point"
-                case timestamp = "timestamp"
+                case timestamps = "timestamps"
+                case values = "values"
             }
 
-            /// A single CPU data point
+            /// Flattened CPU data points
             ///
             /// - Parameters:
-            ///   - dataPoint: CPU measurements for this sample
-            ///   - timestamp: Sample timestamp in nanoseconds from epoch
+            ///   - timestamps: Sample timestamps in nanoseconds from epoch
+            ///   - values: CPU measurements, aligned index-for-index with timestamps
             public init(
-                dataPoint: DataPoint,
-                timestamp: Int64
+                timestamps: [Int64],
+                values: Values
             ) {
-                self.dataPoint = dataPoint
-                self.timestamp = timestamp
+                self.timestamps = timestamps
+                self.values = values
             }
 
-            /// CPU measurements for this sample
-            public struct DataPoint: Codable {
+            /// CPU measurements, aligned index-for-index with timestamps
+            public struct Values: Codable {
                 /// CPU usage as a percentage (0.0 to 100.0)
-                public let cpuUsage: Double
+                public let cpuUsage: [Double]
 
                 public enum CodingKeys: String, CodingKey {
                     case cpuUsage = "cpu_usage"
                 }
 
-                /// CPU measurements for this sample
+                /// CPU measurements, aligned index-for-index with timestamps
                 ///
                 /// - Parameters:
                 ///   - cpuUsage: CPU usage as a percentage (0.0 to 100.0)
                 public init(
-                    cpuUsage: Double
+                    cpuUsage: [Double]
                 ) {
                     self.cpuUsage = cpuUsage
                 }
             }
-        }
-
-        /// Wire-shape discriminator for the data field
-        public enum Schema: String, Codable {
-            case object = "object"
-            case deltaScalar = "delta-scalar"
         }
     }
 }
@@ -5479,8 +5467,8 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
 
     /// Memory timeseries properties
     public struct Timeseries: Codable {
-        /// Array of memory data points
-        public let data: [Data]
+        /// Flattened memory data points
+        public let data: Data
 
         /// Timestamp of the last sample in nanoseconds from epoch
         public let end: Int64
@@ -5489,10 +5477,10 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         public let id: String
 
         /// Name identifying the timeseries metric
-        public let name: String
+        public let name: String = "memory"
 
         /// Wire-shape discriminator for the data field
-        public let schema: Schema
+        public let schema: String = "object-v2"
 
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
@@ -5509,86 +5497,74 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         /// Memory timeseries properties
         ///
         /// - Parameters:
-        ///   - data: Array of memory data points
+        ///   - data: Flattened memory data points
         ///   - end: Timestamp of the last sample in nanoseconds from epoch
         ///   - id: UUID of the timeseries batch
-        ///   - name: Name identifying the timeseries metric
-        ///   - schema: Wire-shape discriminator for the data field
         ///   - start: Timestamp of the first sample in nanoseconds from epoch
         public init(
-            data: [Data],
+            data: Data,
             end: Int64,
             id: String,
-            name: String,
-            schema: Schema,
             start: Int64
         ) {
             self.data = data
             self.end = end
             self.id = id
-            self.name = name
-            self.schema = schema
             self.start = start
         }
 
-        /// A single memory data point
+        /// Flattened memory data points
         public struct Data: Codable {
-            /// Memory measurements for this sample
-            public let dataPoint: DataPoint
+            /// Sample timestamps in nanoseconds from epoch
+            public let timestamps: [Int64]
 
-            /// Sample timestamp in nanoseconds from epoch
-            public let timestamp: Int64
+            /// Memory measurements, aligned index-for-index with timestamps
+            public let values: Values
 
             public enum CodingKeys: String, CodingKey {
-                case dataPoint = "data_point"
-                case timestamp = "timestamp"
+                case timestamps = "timestamps"
+                case values = "values"
             }
 
-            /// A single memory data point
+            /// Flattened memory data points
             ///
             /// - Parameters:
-            ///   - dataPoint: Memory measurements for this sample
-            ///   - timestamp: Sample timestamp in nanoseconds from epoch
+            ///   - timestamps: Sample timestamps in nanoseconds from epoch
+            ///   - values: Memory measurements, aligned index-for-index with timestamps
             public init(
-                dataPoint: DataPoint,
-                timestamp: Int64
+                timestamps: [Int64],
+                values: Values
             ) {
-                self.dataPoint = dataPoint
-                self.timestamp = timestamp
+                self.timestamps = timestamps
+                self.values = values
             }
 
-            /// Memory measurements for this sample
-            public struct DataPoint: Codable {
-                /// Physical memory footprint of the process in bytes
-                public let memoryFootprint: Double
+            /// Memory measurements, aligned index-for-index with timestamps
+            public struct Values: Codable {
+                /// Physical memory footprint of the process in kilobytes
+                public let memoryFootprint: [Double]
 
                 /// Memory footprint as a percentage of total device RAM
-                public let memoryPercent: Double
+                public let memoryPercent: [Double]
 
                 public enum CodingKeys: String, CodingKey {
                     case memoryFootprint = "memory_footprint"
                     case memoryPercent = "memory_percent"
                 }
 
-                /// Memory measurements for this sample
+                /// Memory measurements, aligned index-for-index with timestamps
                 ///
                 /// - Parameters:
-                ///   - memoryFootprint: Physical memory footprint of the process in bytes
+                ///   - memoryFootprint: Physical memory footprint of the process in kilobytes
                 ///   - memoryPercent: Memory footprint as a percentage of total device RAM
                 public init(
-                    memoryFootprint: Double,
-                    memoryPercent: Double
+                    memoryFootprint: [Double],
+                    memoryPercent: [Double]
                 ) {
                     self.memoryFootprint = memoryFootprint
                     self.memoryPercent = memoryPercent
                 }
             }
-        }
-
-        /// Wire-shape discriminator for the data field
-        public enum Schema: String, Codable {
-            case object = "object"
-            case deltaObject = "delta-object"
         }
     }
 }

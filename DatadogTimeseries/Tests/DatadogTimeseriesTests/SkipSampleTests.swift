@@ -40,12 +40,13 @@ final class SkipSampleTests: XCTestCase {
 
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: results[0]) as? [String: Any])
         let ts = try XCTUnwrap(json["timeseries"] as? [String: Any])
-        let data = try XCTUnwrap(ts["data"] as? [[String: Any]])
+        let data = try XCTUnwrap(ts["data"] as? [String: Any])
+        let timestamps = try XCTUnwrap(data["timestamps"] as? [Int64])
 
-        XCTAssertEqual(data.count, 3, "Only 3 memory_usage samples, gap reflected")
-        XCTAssertEqual(data[0]["timestamp"] as? Int64, 1000000000)
-        XCTAssertEqual(data[1]["timestamp"] as? Int64, 3000000000) // gap: 2s jumped
-        XCTAssertEqual(data[2]["timestamp"] as? Int64, 5000000000)
+        XCTAssertEqual(timestamps.count, 3, "Only 3 memory_usage samples, gap reflected")
+        XCTAssertEqual(timestamps[0], 1000000000)
+        XCTAssertEqual(timestamps[1], 3000000000) // gap: 2s jumped
+        XCTAssertEqual(timestamps[2], 5000000000)
     }
 
     func testMalformedRowsSkipped() throws {
@@ -69,9 +70,10 @@ final class SkipSampleTests: XCTestCase {
 
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: results[0]) as? [String: Any])
         let ts = try XCTUnwrap(json["timeseries"] as? [String: Any])
-        let data = try XCTUnwrap(ts["data"] as? [[String: Any]])
+        let data = try XCTUnwrap(ts["data"] as? [String: Any])
+        let timestamps = try XCTUnwrap(data["timestamps"] as? [Int64])
 
-        XCTAssertEqual(data.count, 2, "Malformed row skipped")
+        XCTAssertEqual(timestamps.count, 2, "Malformed row skipped")
     }
 
     func testTimestampsReflectGap() throws {
