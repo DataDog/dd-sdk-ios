@@ -120,6 +120,71 @@ class KSCrashBacktraceTests: XCTestCase {
         XCTAssertNil(report, "Should return nil for invalid thread ID")
     }
 
+    // MARK: - Binary Images Tests
+
+    func testBinaryImagesReturnsNonEmptyList() throws {
+        // Given
+        let backtrace = KSCrashBacktrace()
+
+        // When
+        let images = try XCTUnwrap(backtrace.binaryImages())
+
+        // Then
+        XCTAssertGreaterThan(images.count, 0, "Binary images should not be empty")
+    }
+
+    func testBinaryImagesContainValidFields() throws {
+        // Given
+        let backtrace = KSCrashBacktrace()
+
+        // When
+        let images = try XCTUnwrap(backtrace.binaryImages())
+
+        // Then
+        for image in images {
+            XCTAssertFalse(image.libraryName.isEmpty, "Library name should not be empty")
+            XCTAssertNotNil(UUID(uuidString: image.uuid), "UUID should be valid: \(image.uuid)")
+            XCTAssertFalse(image.architecture.isEmpty, "Architecture should not be empty")
+
+            let loadAddress = UInt64(image.loadAddress.dropFirst(2), radix: 16)
+            let maxAddress = UInt64(image.maxAddress.dropFirst(2), radix: 16)
+            XCTAssertNotNil(loadAddress, "Load address should be valid hex: \(image.loadAddress)")
+            XCTAssertNotNil(maxAddress, "Max address should be valid hex: \(image.maxAddress)")
+            if let load = loadAddress, let max = maxAddress {
+                XCTAssertGreaterThan(max, load, "Max address should be greater than load address")
+            }
+        }
+    }
+
+    func testBinaryImagesContainTestTarget() throws {
+        // Given
+        let backtrace = KSCrashBacktrace()
+
+        // When
+        let images = try XCTUnwrap(backtrace.binaryImages())
+
+        // Then
+        let testImage = try XCTUnwrap(
+            images.first { $0.libraryName.contains("DatadogCrashReportingTests") },
+            "Binary images should include the test target"
+        )
+        XCTAssertFalse(testImage.isSystemLibrary, "Test target should not be a system library")
+    }
+
+    func testBinaryImagesSystemLibraryFlag() throws {
+        // Given
+        let backtrace = KSCrashBacktrace()
+
+        // When
+        let images = try XCTUnwrap(backtrace.binaryImages())
+
+        // Then
+        XCTAssertTrue(
+            images.contains { $0.isSystemLibrary },
+            "Binary images should include at least one system library"
+        )
+    }
+
     // MARK: - watchOS Tests
 
     /// On watchOS, `thread_get_state` is not available, so KSCrash cannot capture machine context
