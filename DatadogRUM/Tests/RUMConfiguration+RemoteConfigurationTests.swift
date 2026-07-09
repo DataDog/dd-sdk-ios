@@ -252,6 +252,16 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.longTaskThreshold)
     }
 
+    /// A remote `vitalsUpdateFrequency == .never` disables vitals collection: `VitalsFrequency.init?`
+    /// maps `.never` to `nil`, which clears the in-code value even when vitals were enabled in code.
+    func testWhenRemoteVitalsUpdateFrequencyIsNever_itDisablesVitalsCollection() {
+        var configuration: RUM.Configuration = .mockWith { $0.vitalsUpdateFrequency = .average }
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(vitalsUpdateFrequency: .never)))
+
+        XCTAssertNil(configuration.vitalsUpdateFrequency)
+    }
+
     // MARK: - Helpers
 
     /// The independent oracle for the `vitalsUpdateFrequency` mapping (`.never` disables vitals).
