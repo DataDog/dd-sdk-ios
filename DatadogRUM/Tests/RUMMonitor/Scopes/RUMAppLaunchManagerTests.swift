@@ -51,12 +51,13 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTIDCommand_createsAppLaunchVitalEvent() throws {
         // Given
         let ttid = 2.0
+        let activeView: RUMViewScope = .mockWith(path: "ViewPath", name: "ViewName")
         let command: RUMTimeToInitialDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(ttid)
         )
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter)
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: activeView)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
@@ -65,6 +66,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let event = try XCTUnwrap(vitalEvents.first)
         XCTAssertNotNil(event.view)
 
+        XCTAssertEqual(event.view.name, "ViewName")
+        XCTAssertEqual(event.view.url, "ViewPath")
         XCTAssertEqual(event.vital.type, "app_launch")
         XCTAssertEqual(event.vital.appLaunchMetric, .ttid)
         XCTAssertEqual(event.vital.name, "time_to_initial_display")
@@ -245,6 +248,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
     func testTTFDCommand_createsAppLaunchVitalEvents() throws {
         // Given
         let ttfd = 2.0
+        let activeView: RUMViewScope = .mockWith(path: "ViewPath", name: "ViewName")
         // The TTFD is only reported if the TTID is available
         let ttidCommand: RUMTimeToInitialDisplayCommand = .mockWith(
             time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(0.1)
@@ -254,8 +258,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         )
 
         // When
-        manager.process(ttidCommand, context: mockContext, writer: mockWriter)
-        manager.process(ttfdCommand, context: mockContext, writer: mockWriter)
+        manager.process(ttidCommand, context: mockContext, writer: mockWriter, activeView: activeView)
+        manager.process(ttfdCommand, context: mockContext, writer: mockWriter, activeView: activeView)
 
         // Then
         let vitalEvents = mockWriter.events(ofType: RUMVitalAppLaunchEvent.self)
@@ -264,6 +268,8 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         let event = try XCTUnwrap(vitalEvents.last)
         XCTAssertNotNil(event.view)
 
+        XCTAssertEqual(event.view.name, "ViewName")
+        XCTAssertEqual(event.view.url, "ViewPath")
         XCTAssertEqual(event.vital.type, "app_launch")
         XCTAssertEqual(event.vital.appLaunchMetric, .ttfd)
         XCTAssertEqual(event.vital.name, "time_to_full_display")
