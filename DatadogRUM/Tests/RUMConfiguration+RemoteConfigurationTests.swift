@@ -228,6 +228,30 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.urlSessionTracking)
     }
 
+    /// `appHangThresholdMs` follows "omit to disable" semantics: within a present `rum` namespace, an
+    /// omitted value clears the in-code `appHangThreshold`, disabling app-hang monitoring — even though
+    /// it was enabled in code.
+    func testWhenRemoteRUMOmitsAppHangThreshold_itDisablesAppHangMonitoring() {
+        var configuration: RUM.Configuration = .mockWith { $0.appHangThreshold = 0.25 }
+
+        // A present `rum` namespace that does not carry `appHangThresholdMs`.
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(appHangThresholdMs: nil)))
+
+        XCTAssertNil(configuration.appHangThreshold)
+    }
+
+    /// `longTaskThresholdMs` follows "omit to disable" semantics: within a present `rum` namespace, an
+    /// omitted value clears the in-code `longTaskThreshold`, disabling long-task tracking — even though
+    /// it was enabled in code.
+    func testWhenRemoteRUMOmitsLongTaskThreshold_itDisablesLongTaskTracking() {
+        var configuration: RUM.Configuration = .mockWith { $0.longTaskThreshold = 0.5 }
+
+        // A present `rum` namespace that does not carry `longTaskThresholdMs`.
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(longTaskThresholdMs: nil)))
+
+        XCTAssertNil(configuration.longTaskThreshold)
+    }
+
     // MARK: - Helpers
 
     /// The independent oracle for the `vitalsUpdateFrequency` mapping (`.never` disables vitals).

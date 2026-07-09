@@ -12,8 +12,10 @@ extension RUM.Configuration {
     ///
     /// Two namespaces are consumed: `rum` overrides the supported behavioral parameters, and `trace`
     /// configures distributed tracing on RUM's network instrumentation. Remote values take precedence,
-    /// while any parameter the remote configuration omits keeps its in-code value; passing `nil` (no
-    /// remote configuration was fetched) therefore leaves the configuration entirely unchanged.
+    /// while most parameters the remote configuration omits keep their in-code value — the exceptions are
+    /// the `longTaskThreshold` and `appHangThreshold`, whose absence disables the corresponding feature
+    /// (see `apply(rum:)`). Passing `nil` (no remote configuration was fetched) leaves the configuration
+    /// entirely unchanged.
     ///
     /// The two namespaces interact through RUM's URLSession instrumentation, which carries both
     /// resource collection and trace propagation: an explicit `rum.trackResources == false` disables
@@ -35,11 +37,16 @@ extension RUM.Configuration {
     /// Applies the `rum` namespace, overriding the supported behavioral parameters with their remote
     /// values.
     ///
-    /// Scalar and enum settings (sample rates, thresholds, tracking flags, vitals frequency) are
-    /// overridden directly. `trackResources` and `trackUserInteractions` have no direct in-code
-    /// equivalent — they are modeled as the presence of a tracking configuration / action predicate —
-    /// so they are toggled through the `override(_:with:)` overloads instead. Thresholds arrive in
-    /// milliseconds and are converted to seconds.
+    /// Scalar and enum settings (sample rates, tracking flags, vitals frequency) are overridden
+    /// directly. `trackResources` and `trackUserInteractions` have no direct in-code equivalent — they
+    /// are modeled as the presence of a tracking configuration / action predicate — so they are toggled
+    /// through the `override(_:with:)` overloads instead.
+    ///
+    /// `longTaskThreshold` and `appHangThreshold` are overridden through `override(_:withMilliseconds:)`,
+    /// which follows "omit to disable" semantics: it converts milliseconds to seconds and, within a
+    /// present `rum` namespace, lets the remote value always drive the property — so an omitted threshold
+    /// clears the in-code value (disabling the feature) rather than keeping it. This mirrors the in-code
+    /// configuration, where a `nil` threshold disables the feature.
     ///
     /// - Parameter rum: The `rum` namespace, or `nil` to leave the configuration unchanged.
     private mutating func apply(rum: RemoteConfiguration.RUM?) {
@@ -51,8 +58,8 @@ extension RUM.Configuration {
         override(\.trackAnonymousUser, with: rum.trackAnonymousUser)
         override(\.trackBackgroundEvents, with: rum.trackBackgroundEvents)
         override(\.trackFrustrations, with: rum.trackFrustrations)
-        override(\.longTaskThreshold, with: rum.longTaskThresholdMs.map { .ddFromMilliseconds(.ddWithNoOverflow($0)) })
-        override(\.appHangThreshold, with: rum.appHangThresholdMs.map { .ddFromMilliseconds(.ddWithNoOverflow($0)) })
+        override(\.longTaskThreshold, withMilliseconds: rum.longTaskThresholdMs)
+        override(\.appHangThreshold, withMilliseconds: rum.appHangThresholdMs)
         override(\.trackSlowFrames, with: rum.trackSlowFrames)
         override(\.trackWatchdogTerminations, with: rum.trackWatchdogTerminations)
         override(\.vitalsUpdateFrequency, with: rum.vitalsUpdateFrequency.map { VitalsFrequency($0) })
@@ -138,6 +145,19 @@ extension RUM.Configuration {
         if let remoteValue {
             self[keyPath: keyPath] = remoteValue
         }
+    }
+
+    /// Overrides a threshold property (stored in seconds) with a remote value in milliseconds.
+    ///
+    /// Unlike `override(_:with:)`, the remote value always drives the property: within a present `rum`
+    /// namespace an omitted (`nil`) threshold disables the feature — matching the in-code configuration,
+    /// where a `nil` threshold disables it. Milliseconds are converted to seconds.
+    ///
+    /// - Parameters:
+    ///   - keyPath: The threshold property to override.
+    ///   - milliseconds: The remote threshold in milliseconds, or `nil` to disable the feature.
+    private mutating func override(_ keyPath: WritableKeyPath<Self, TimeInterval?>, withMilliseconds milliseconds: Double?) {
+        self[keyPath: keyPath] = milliseconds.map { .ddFromMilliseconds(.ddWithNoOverflow($0)) }
     }
 
     /// Toggles resource tracking, which is modeled in-code as the presence of `urlSessionTracking`.
