@@ -146,4 +146,45 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(hosts, ["remote.example.com"], "First-party hosts tracing is replaced by the remote hosts")
         XCTAssertEqual(configuration.urlSessionTracking?.redactedStatusCodes, [401, 403], "Other settings are preserved")
     }
+
+    /// When remote hosts are provided but the sample rate / injection strategy are omitted, the merge
+    /// must keep the in-code values for those fields rather than falling back to the module defaults.
+    func testWhenRemoteProvidesHostsWithoutSampleRateOrInjection_itPreservesInCodeValues() {
+        var configuration = Trace.Configuration(
+            urlSessionTracking: .init(
+                firstPartyHostsTracing: .trace(hosts: ["in-code.example.com"], sampleRate: 30, traceControlInjection: .all)
+            )
+        )
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["remote.example.com"])))
+
+        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        }
+        XCTAssertEqual(hosts, ["remote.example.com"])
+        XCTAssertEqual(sampleRate, 30)
+        XCTAssertEqual(injection, .all)
+    }
+
+    /// A remote `sampleRate` drives both knobs: when the remote omits hosts but the app already
+    /// configured `urlSessionTracking`, the propagation sample rate must be updated too (its hosts and
+    /// injection strategy are preserved).
+    func testWhenRemoteProvidesOnlySampleRate_itUpdatesExistingTracingSampleRate() {
+        var configuration = Trace.Configuration(
+            sampleRate: 10,
+            urlSessionTracking: .init(
+                firstPartyHostsTracing: .trace(hosts: ["in-code.example.com"], sampleRate: 20, traceControlInjection: .all)
+            )
+        )
+
+        configuration.apply(remoteConfiguration: .mockWith(trace: .mockWith(sampleRate: 0, tracedHosts: nil)))
+
+        XCTAssertEqual(configuration.sampleRate, 0)
+        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        }
+        XCTAssertEqual(hosts, ["in-code.example.com"])
+        XCTAssertEqual(sampleRate, 0)
+        XCTAssertEqual(injection, .all)
+    }
 }
