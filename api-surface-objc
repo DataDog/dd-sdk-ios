@@ -2010,7 +2010,6 @@ public class objc_RUMViewEventDDCLS: NSObject
 public class objc_RUMViewEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var remoteConfigurationId: String?
-    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
@@ -2438,7 +2437,6 @@ public class objc_RUMViewUpdateEventDDCLS: NSObject
 public class objc_RUMViewUpdateEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var remoteConfigurationId: String?
-    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?

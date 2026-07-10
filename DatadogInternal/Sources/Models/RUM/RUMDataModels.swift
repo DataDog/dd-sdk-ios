@@ -6823,9 +6823,6 @@ public struct RUMViewEvent: RUMDataModel {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
-            /// Session Replay experimental features enabled in the SDK configuration
-            public let sessionReplayExperimentalFeatures: [String]?
-
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -6841,7 +6838,6 @@ public struct RUMViewEvent: RUMDataModel {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
-                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -6853,7 +6849,6 @@ public struct RUMViewEvent: RUMDataModel {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
-            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -6861,7 +6856,6 @@ public struct RUMViewEvent: RUMDataModel {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
-                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -6869,7 +6863,6 @@ public struct RUMViewEvent: RUMDataModel {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
-                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -9011,9 +9004,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
-            /// Session Replay experimental features enabled in the SDK configuration
-            public let sessionReplayExperimentalFeatures: [String]?
-
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -9029,7 +9019,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
-                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -9041,7 +9030,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
-            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -9049,7 +9037,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
-                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -9057,7 +9044,6 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
-                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
