@@ -28,7 +28,7 @@ internal class CompositionTreeBuilder {
             }
         }
 
-        func cornerRadiusOverride(for snapshot: CALayerSnapshot) -> CGFloat? {
+        func cornerRadius(for snapshot: CALayerSnapshot) -> CGFloat? {
             guard
                 snapshot.cornerRadii == .zero,
                 visualEffects.contains(.liquidLens)
@@ -162,7 +162,7 @@ internal class CompositionTreeBuilder {
             return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
         }
 
-        let cornerRadiusOverride = context.cornerRadiusOverride(for: snapshot)
+        let cornerRadius = context.cornerRadius(for: snapshot)
 
         let wireframe: SRWireframe? = switch (
             snapshot.observation.semantics,
@@ -172,11 +172,11 @@ internal class CompositionTreeBuilder {
             (.image, .some(let result)):
             makeContentSnapshotWireframe(for: snapshot, result: result, context: context)
         case (.layer, .none):
-            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
+            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
         case (.label(let label), _):
-            SRWireframe(layerSnapshot: snapshot, label: label, cornerRadiusOverride: cornerRadiusOverride)
+            SRWireframe(layerSnapshot: snapshot, label: label, cornerRadius: cornerRadius)
         case (.textInput, .none):
-            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
+            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
         case (.image(let image), .none) where image.hasContent:
             // Private image
             SRWireframe(
@@ -187,9 +187,13 @@ internal class CompositionTreeBuilder {
             )
         case (.image, .none):
             // Empty image
-            SRWireframe(layerSnapshot: snapshot, cornerRadiusOverride: cornerRadiusOverride)
+            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
         case (.webView(let webView), _):
             makeVisibleWebViewWireframe(for: snapshot, webView: webView)
+        case (.visualEffect(.glassGroup), _):
+            SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
+        case (.visualEffect(.background(let color)), _):
+            SRWireframe(layerSnapshot: snapshot, backgroundColor: color ?? .secondarySystemFill)
         default:
             nil
         }
@@ -223,8 +227,8 @@ internal class CompositionTreeBuilder {
                 case .placeholder(let color):
                     return SRWireframe(
                         layerSnapshot: layerSnapshot,
-                        placeholderColor: color,
-                        cornerRadiusOverride: context.cornerRadiusOverride(for: layerSnapshot)
+                        backgroundColor: color,
+                        cornerRadius: context.cornerRadius(for: layerSnapshot)
                     )
                 }
             } catch {

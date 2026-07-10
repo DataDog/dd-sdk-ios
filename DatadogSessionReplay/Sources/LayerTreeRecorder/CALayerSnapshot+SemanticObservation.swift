@@ -27,7 +27,9 @@ extension CALayerSnapshot {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     enum VisualEffect: Sendable, Equatable {
+        case glassGroup
         case liquidLens
+        case background(UIColor?)
     }
 }
 
@@ -205,6 +207,8 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .progressView,
         .barBackground,
         // visual effects
+        .glassGroup,
+        .visualEffectBackground,
         .liquidLens
     ]
 }
@@ -297,12 +301,45 @@ extension CALayerSnapshot.SemanticObservationMapping {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let glassGroup = Self { layer, _, _ in
+        guard layer.delegate?.isGlassGroup == true else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.glassGroup), ignoresSublayers: true)
+    }
+
     static let liquidLens = Self { layer, _, _ in
         guard layer.delegate?.isLiquidLens == true else {
             return nil
         }
 
         return .init(semantics: .visualEffect(.liquidLens))
+    }
+
+    static let visualEffectBackground = Self { layer, _, _ in
+        guard layer.delegate?.isVisualEffectBackground == true else {
+            return nil
+        }
+
+        // Visual effect containers may store their fallback background on the owning view
+        let color: UIColor? = layer.superlayer
+            .flatMap { superlayer in
+                guard
+                    let superview = superlayer.delegate as? UIView,
+                    superview.bounds.size == layer.bounds.size,
+                    let backgroundColor = superview.backgroundColor,
+                    backgroundColor.cgColor.alpha > 0
+                else {
+                    return nil
+                }
+                return backgroundColor
+            }
+
+        return .init(
+            semantics: .visualEffect(.background(color)),
+            ignoresSublayers: true
+        )
     }
 }
 
@@ -311,8 +348,16 @@ extension CALayerDelegate {
         NSStringFromClass(type(of: self)) == "_UIBarBackground"
     }
 
+    fileprivate var isGlassGroup: Bool {
+        NSStringFromClass(type(of: self)) == "UIKit._GlassGroupView"
+    }
+
     fileprivate var isLiquidLens: Bool {
         NSStringFromClass(type(of: self)) == "_UILiquidLensView"
+    }
+
+    fileprivate var isVisualEffectBackground: Bool {
+        NSStringFromClass(type(of: self)) == "_UIVisualEffectBackgroundView"
     }
 }
 #endif

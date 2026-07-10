@@ -307,14 +307,113 @@ struct CompositionTreeBuilderTests {
         let output = builder.build()
 
         // Then
-        let wireframe = try #require(output.wireframes.compactMap { wireframe -> SRShapeWireframe? in
-            guard case .shapeWireframe(let shapeWireframe) = wireframe else {
-                return nil
+        let shapeWireframes = output.wireframes
+            .compactMap { wireframe -> SRShapeWireframe? in
+                guard case .shapeWireframe(let shapeWireframe) = wireframe else {
+                    return nil
+                }
+                return shapeWireframe
             }
-            return shapeWireframe
-        }.first { $0.id == contentSnapshot.replayID })
+        let wireframe = try #require(
+            shapeWireframes.first { $0.id == contentSnapshot.replayID }
+        )
 
         #expect(wireframe.shapeStyle?.cornerRadius == 12)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates system background wireframe for glass group")
+    func buildCreatesSystemBackgroundWireframeForGlassGroup() throws {
+        // Given
+        let visualEffectSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.glassGroup))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(output.wireframes.count == 1)
+        #expect(wireframe.id == visualEffectSnapshot.replayID)
+        #expect(wireframe.shapeStyle?.backgroundColor == hexString(from: UIColor.systemBackground.cgColor))
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates shape wireframe using visual effect background color")
+    func buildCreatesShapeWireframeUsingVisualEffectBackgroundColor() throws {
+        // Given
+        let visualEffectSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.background(.red)))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(output.wireframes.count == 1)
+        #expect(wireframe.id == visualEffectSnapshot.replayID)
+        #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build uses fallback color for visual effect background without color")
+    func buildUsesFallbackColorForVisualEffectBackgroundWithoutColor() throws {
+        // Given
+        let visualEffectSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.background(nil)))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(output.wireframes.count == 1)
+        #expect(wireframe.id == visualEffectSnapshot.replayID)
+        #expect(
+            wireframe.shapeStyle?.backgroundColor == hexString(from: UIColor.secondarySystemFill.cgColor)
+        )
+        #expect(output.resources.isEmpty)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
