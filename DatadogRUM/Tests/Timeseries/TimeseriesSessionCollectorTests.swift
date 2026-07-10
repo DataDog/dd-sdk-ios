@@ -50,6 +50,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.name, "memory")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
+        XCTAssertEqual(event.timeseries.data.values.memoryFootprint.count, event.timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
+        XCTAssertEqual(event.timeseries.data.values.memoryPercent.count, event.timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
         XCTAssertEqual(event.timeseries.data.values.memoryFootprint[0], 1_000)
         XCTAssertEqual(event.timeseries.data.values.memoryPercent[0], 0.0256, accuracy: 0.0001)
     }
@@ -86,6 +88,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.name, "cpu")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
+        XCTAssertEqual(event.timeseries.data.values.cpuUsage.count, event.timeseries.data.timestamps.count, "Number of cpuUsage data points must match timestamps")
         XCTAssertEqual(event.timeseries.data.values.cpuUsage[0], 42.5)
     }
 
@@ -113,8 +116,13 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events")
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events")
-        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0].timeseries.data.values.memoryFootprint[0], 2_000)
-        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0].timeseries.data.values.cpuUsage[0], 75.0)
+        let memoryEvent = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)[0]
+        let cpuEvent = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)[0]
+        XCTAssertEqual(memoryEvent.timeseries.data.values.memoryFootprint.count, memoryEvent.timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
+        XCTAssertEqual(memoryEvent.timeseries.data.values.memoryPercent.count, memoryEvent.timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
+        XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage.count, cpuEvent.timeseries.data.timestamps.count, "Number of cpuUsage data points must match timestamps")
+        XCTAssertEqual(memoryEvent.timeseries.data.values.memoryFootprint[0], 2_000)
+        XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage[0], 75.0)
     }
 
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
@@ -241,6 +249,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].session.id, "session-xyz")
         XCTAssertEqual(events[0].application.id, "app-456")
         XCTAssertEqual(events[0].session.type, .synthetics)
+        XCTAssertEqual(events[0].timeseries.data.values.memoryFootprint.count, events[0].timeseries.data.timestamps.count, "Number of memoryFootprint data points must match timestamps")
+        XCTAssertEqual(events[0].timeseries.data.values.memoryPercent.count, events[0].timeseries.data.timestamps.count, "Number of memoryPercent data points must match timestamps")
     }
 
     func testWhenStopIsCalled_itFlushesPartialCpuBuffer() {
@@ -270,6 +280,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
         XCTAssertFalse(events.isEmpty, "Expected partial CPU buffer to be flushed on stop")
         XCTAssertEqual(events[0].session.type, .ciTest)
+        XCTAssertEqual(events[0].timeseries.data.values.cpuUsage.count, events[0].timeseries.data.timestamps.count, "Number of cpuUsage data points must match timestamps")
     }
 
     // MARK: - No-data readers
