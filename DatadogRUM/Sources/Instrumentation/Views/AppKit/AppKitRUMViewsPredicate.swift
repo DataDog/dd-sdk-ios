@@ -16,7 +16,7 @@ import DatadogInternal
 ///
 /// Implement this protocol to customize which view controllers are tracked and how they
 /// appear in the RUM Explorer.
-public protocol UIKitRUMViewsPredicate {
+public protocol AppKitRUMViewsPredicate {
     /// Converts a `UIViewController` into RUM view parameters, or filters it out.
     ///
     /// - Parameter viewController: The view controller that has appeared in the UI.
@@ -28,7 +28,7 @@ public protocol UIKitRUMViewsPredicate {
 ///
 /// This implementation tracks view controllers with their class names as view names.
 /// System container controllers from UIKit are automatically filtered out.
-public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate {
+public struct DefaultAppKitRUMViewsPredicate: AppKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: DDViewController) -> RUMView? {

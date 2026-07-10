@@ -9,7 +9,7 @@ import AppKit
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
-    /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
+    /// Tracks RUM actions manually with AppKit view modifiers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 
     func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?)

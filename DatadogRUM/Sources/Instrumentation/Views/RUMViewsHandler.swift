@@ -41,7 +41,7 @@ internal final class RUMViewsHandler {
     #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
-    private let uiKitPredicate: UIKitRUMViewsPredicate?
+    private let uiKitPredicate: DDKitRUMViewsPredicate?
 
     /// `SwiftUI` view predicate. `nil` if `SwiftUI` auto-instrumentations is
     /// disabled.
@@ -80,7 +80,7 @@ internal final class RUMViewsHandler {
     ///    a set of `DDApplication` notifications.
     init(
         dateProvider: DateProvider,
-        uiKitPredicate: UIKitRUMViewsPredicate?,
+        uiKitPredicate: DDKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
         notificationCenter: NotificationCenter
