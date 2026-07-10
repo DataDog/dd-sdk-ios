@@ -154,8 +154,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
-        uiKitViewsPredicate: UIKitRUMViewsPredicate? = DefaultUIKitRUMViewsPredicate(),
-        uiKitActionsPredicate: AppKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
+        uiKitViewsPredicate: DDKitRUMViewsPredicate? = DefaultAppKitRUMViewsPredicate(),
+        uiKitActionsPredicate: DDKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = .mockAny(),
@@ -1533,7 +1533,7 @@ public class RUMCommandSubscriberMock: RUMCommandSubscriber {
 }
 
 #if !os(watchOS)
-public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
+public class UIKitRUMViewsPredicateMock: DDKitRUMViewsPredicate {
     public var resultByViewController: [DDViewController: RUMView] = [:]
     public var result: RUMView?
 
@@ -2008,7 +2008,7 @@ extension RUMResourceScope {
 // MARK: - Auto Instrumentation Mocks
 
 #if !os(watchOS)
-public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
+public class UIKitPredicateWithTrackingMock: DDKitRUMViewsPredicate {
     public var numberOfCalls: Int
 
     public init(numberOfCalls: Int = 0) {
@@ -2021,7 +2021,7 @@ public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
     }
 }
 
-public class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate {
+public class UIKitPredicateWithModalMock: DDKitRUMViewsPredicate {
     let untrackedModal: DDViewController
 
     public init(untrackedModal: DDViewController) {
