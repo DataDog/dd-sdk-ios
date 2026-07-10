@@ -12,14 +12,27 @@ import DatadogInternal
 public final class AppStateManagerMock: AppStateManaging {
     public var previousAppStateInfo: AppStateInfo?
     public var currentAppStateInfo: AppStateInfo = .mockAny()
+    public var shouldDeferPreviousAppStateInfoCallback: Bool = false
+
+    private var previousAppStateInfoCompletion: ((AppStateInfo?) -> Void)?
 
     public func deleteAppState() {}
     public func updateAppState(state: AppState) {}
     public func previousAppStateInfo(completion: @escaping (DatadogRUM.AppStateInfo?) -> Void) {
-        completion(previousAppStateInfo)
+        if shouldDeferPreviousAppStateInfoCallback {
+            previousAppStateInfoCompletion = completion
+        } else {
+            completion(previousAppStateInfo)
+        }
     }
     public func currentAppStateInfo(completion: @escaping (AppStateInfo) -> Void) {
         completion(currentAppStateInfo)
     }
     public func storeCurrentAppState() {}
+
+    public func completePreviousAppStateInfo() {
+        let completion = previousAppStateInfoCompletion
+        previousAppStateInfoCompletion = nil
+        completion?(previousAppStateInfo)
+    }
 }

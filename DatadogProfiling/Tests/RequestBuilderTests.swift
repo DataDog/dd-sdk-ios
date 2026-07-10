@@ -25,13 +25,17 @@ class RequestBuilderTests: XCTestCase {
         additionalAttributes: mockRandomAttributes()
     )
 
-    let profileData: Data = .mockRandom()
+    let rumEvents: [RUMEvent] = [.vital(.mockWith(operationKey: nil, stepType: nil))]
+    let pprof: Data = .mockRandom()
 
     private func mockEvent() throws -> Event {
         let encoder = JSONEncoder.dd.default()
+
+        let rumEventsData = try encoder.encode(rumEvents)
+        let attachments: ProfileAttachments = .init(pprof: pprof, rumEvents: rumEventsData)
         return try Event(
-            data: encoder.encode(profileData),
-            metadata: encoder.encode(profileEvent)
+            data: encoder.encode(profileEvent),
+            metadata: encoder.encode(attachments)
         )
     }
 
@@ -142,7 +146,6 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-API-KEY"], randomClientToken)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomSource)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
-        XCTAssertNil(request.allHTTPHeaderFields?["Content-Encoding"], "It must us no compression, because multipart file is compressed separately")
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
     }
 
@@ -158,17 +161,41 @@ class RequestBuilderTests: XCTestCase {
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
         XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary)"))
-        XCTAssertEqual(multipartSpy.formFiles.count, 2)
+        XCTAssertEqual(multipartSpy.formFiles.count, 3)
 
         let eventFile = multipartSpy.formFiles[0]
         XCTAssertEqual(eventFile.filename, "event.json")
         XCTAssertEqual(eventFile.mimeType, "application/json")
-        XCTAssertEqual(eventFile.data, event.metadata)
+        XCTAssertEqual(eventFile.data, event.data)
 
         let pprofFile = multipartSpy.formFiles[1]
         XCTAssertEqual(pprofFile.filename, "wall.pprof")
         XCTAssertEqual(pprofFile.mimeType, "application/octet-stream")
-        XCTAssertEqual(pprofFile.data, profileData)
+        XCTAssertEqual(pprofFile.data, pprof)
+
+        let rumEventsFile = multipartSpy.formFiles[2]
+        XCTAssertEqual(rumEventsFile.filename, "rum-mobile-events.json")
+        XCTAssertEqual(rumEventsFile.mimeType, "application/json")
+
+        let encodedRUMEvents = try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsFile.data) as? [[String: Any]])
+        let vitals = encodedRUMEvents.filter { $0["type"] as? String == "vital" }
+        let vitalIDs = vitals.compactMap { $0["id"] as? String }
+        let vitalNames = vitals.compactMap { $0["name"] as? String }
+        let expectedVitalIDs = rumEvents.compactMap { event -> String? in
+            guard case .vital(let vital) = event else {
+                return nil
+            }
+            return vital.id
+        }
+        let expectedVitalNames = rumEvents.compactMap { event -> String? in
+            guard case .vital(let vital) = event else {
+                return nil
+            }
+            return vital.name
+        }
+
+        XCTAssertEqual(vitalIDs, expectedVitalIDs)
+        XCTAssertEqual(vitalNames, expectedVitalNames)
     }
 
     func testWhenBatchDataHasMoreThanOneProfile() {
