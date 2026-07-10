@@ -37,11 +37,39 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
+        case gradient(GradientSemantics)
         case visualEffect(VisualEffect)
         case label(LabelSemantics)
         case image(ImageSemantics)
         case textInput(TextInputSemantics)
         case webView(WebViewSemantics)
+    }
+}
+
+// MARK: - GradientSemantics
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    struct GradientSemantics: Sendable, Equatable {
+        let type: CAGradientLayerType
+        let colors: [CGColor]
+        let locations: [CGFloat]?
+        let startPoint: CGPoint
+        let endPoint: CGPoint
+
+        init(
+            type: CAGradientLayerType,
+            colors: [CGColor],
+            locations: [CGFloat]?,
+            startPoint: CGPoint,
+            endPoint: CGPoint
+        ) {
+            self.type = type
+            self.colors = colors
+            self.locations = locations
+            self.startPoint = startPoint
+            self.endPoint = endPoint
+        }
     }
 }
 
@@ -197,6 +225,7 @@ extension CALayerSnapshot {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
     static let allCases: [Self] = [
+        .gradient,
         .activityIndicator,
         .label,
         .imageView,
@@ -215,6 +244,18 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let gradient = Self { layer, _, _ in
+        guard
+            let gradientLayer = layer as? CAGradientLayer,
+            gradientLayer.type == .axial,
+            let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(gradientLayer: gradientLayer)
+        else {
+            return nil
+        }
+
+        return .init(semantics: .gradient(gradient))
+    }
+
     static let activityIndicator = Self { layer, _, _ in
         guard layer.delegate is UIActivityIndicatorView else {
             return nil
@@ -358,6 +399,36 @@ extension CALayerDelegate {
 
     fileprivate var isVisualEffectBackground: Bool {
         NSStringFromClass(type(of: self)) == "_UIVisualEffectBackgroundView"
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation.GradientSemantics {
+    fileprivate init?(gradientLayer: CAGradientLayer) {
+        guard
+            let colorValues = gradientLayer.colors,
+            colorValues.count >= 2
+        else {
+            return nil
+        }
+
+        let colors = colorValues.compactMap(CGColor.safeCast)
+        guard colors.count == colorValues.count else {
+            return nil
+        }
+
+        let locations = gradientLayer.locations?.map { CGFloat(truncating: $0) }
+        guard locations == nil || locations?.count == colors.count else {
+            return nil
+        }
+
+        self.init(
+            type: gradientLayer.type,
+            colors: colors,
+            locations: locations,
+            startPoint: gradientLayer.startPoint,
+            endPoint: gradientLayer.endPoint
+        )
     }
 }
 #endif

@@ -29,6 +29,46 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records linear gradient semantics")
+    func recordsLinearGradientSemantics() {
+        // Given
+        let colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+        let locations = [CGFloat(0.25), CGFloat(0.75)]
+        let layer = CAGradientLayer()
+        layer.colors = colors
+        layer.locations = locations.map { NSNumber(value: Double($0)) }
+        layer.startPoint = CGPoint(x: 0, y: 0.5)
+        layer.endPoint = CGPoint(x: 1, y: 0.5)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .gradient(.init(
+            type: .axial,
+            colors: colors,
+            locations: locations,
+            startPoint: layer.startPoint,
+            endPoint: layer.endPoint
+        ))))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records unsupported gradient as plain layer semantics")
+    func recordsUnsupportedGradientAsPlainLayerSemantics() {
+        // Given
+        let layer = CAGradientLayer()
+        layer.type = .radial
+        layer.colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records activity indicators as plain layers and ignores sublayers")
     func recordsActivityIndicatorsAsPlainLayersAndIgnoresSublayers() {
         // Given
