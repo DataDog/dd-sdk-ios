@@ -14,7 +14,7 @@ import AppKit
 import DatadogInternal
 
 #if !os(watchOS)
-internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
+internal struct UIKitRUMViewsPredicateBridge: DDKitRUMViewsPredicate {
     let objcPredicate: objc_UIKitRUMViewsPredicate
 
     func rumView(for viewController: DDViewController) -> RUMView? {
@@ -56,7 +56,11 @@ public protocol objc_UIKitRUMViewsPredicate: AnyObject {
 @objcMembers
 @_spi(objc)
 public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate {
+    #if os(macOS)
+    private let swiftPredicate = DefaultAppKitRUMViewsPredicate()
+    #else
     private let swiftPredicate = DefaultUIKitRUMViewsPredicate()
+    #endif
 
     public func rumView(for viewController: DDViewController) -> objc_RUMView? {
         return swiftPredicate.rumView(for: viewController).map {

@@ -31,8 +31,8 @@ internal class DDViewControllerSwizzler {
 
     /// Swizzles the `DDViewController.viewDidAppear()`
     class ViewDidAppear: MethodSwizzler <
-        @convention(c) (DDViewController, Selector, Bool) -> Void,
-        @convention(block) (DDViewController, Bool) -> Void
+        @convention(c) (DDViewController, Selector) -> Void,
+        @convention(block) (DDViewController) -> Void
     > {
         private static let selector = #selector(DDViewController.viewDidAppear)
         private let method: Method
@@ -44,11 +44,11 @@ internal class DDViewControllerSwizzler {
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (DDViewController, Bool) -> Void
+            typealias Signature = @convention(block) (DDViewController) -> Void
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewDidAppear(viewController: vc, animated: animated)
-                    previousImplementation(vc, Self.selector, animated)
+                return { [weak handler = self.handler] vc in
+                    handler?.notify_viewDidAppear(viewController: vc, animated: false)
+                    previousImplementation(vc, Self.selector)
                 }
             }
         }
@@ -56,8 +56,8 @@ internal class DDViewControllerSwizzler {
 
     /// Swizzles the `DDViewController.viewDidDisappear()`
     class ViewDidDisappear: MethodSwizzler <
-        @convention(c) (DDViewController, Selector, Bool) -> Void,
-        @convention(block) (DDViewController, Bool) -> Void
+        @convention(c) (DDViewController, Selector) -> Void,
+        @convention(block) (DDViewController) -> Void
     > {
         private static let selector = #selector(DDViewController.viewDidDisappear)
         private let method: Method
@@ -69,11 +69,11 @@ internal class DDViewControllerSwizzler {
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (DDViewController, Bool) -> Void
+            typealias Signature = @convention(block) (DDViewController) -> Void
             swizzle(method) { previousImplementation -> Signature in
-                return { [weak handler = self.handler] vc, animated  in
-                    handler?.notify_viewDidDisappear(viewController: vc, animated: animated)
-                    previousImplementation(vc, Self.selector, animated)
+                return { [weak handler = self.handler] vc  in
+                    handler?.notify_viewDidDisappear(viewController: vc, animated: false)
+                    previousImplementation(vc, Self.selector)
                 }
             }
         }

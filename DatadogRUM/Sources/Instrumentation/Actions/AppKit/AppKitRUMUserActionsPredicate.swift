@@ -8,8 +8,6 @@
 import AppKit
 import DatadogInternal
 
-public typealias UIKitRUMActionsPredicate = AppKitRUMActionsPredicate
-
 /// The predicate for macOS interactions deciding if a given RUM Action should be recorded.
 ///
 /// When the app is running, the SDK will ask the implementation of `UITouchRUMActionsPredicate` if any noticed user action on the target view should
@@ -49,7 +47,7 @@ public struct DefaultAppKitRUMActionsPredicate {
     }
 }
 
-// MARK: iOS DefaultUIKitRUMActionsPredicate
+// MARK: DefaultAppKitRUMActionsPredicate
 extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
     public func rumAction(targetView: DDView) -> RUMAction? {
         return RUMAction(
