@@ -336,6 +336,9 @@ extension RUM {
         /// Default: `false`.
         public var enableTimeseries: Bool
 
+        /// The default number of samples collected before a timeseries batch is flushed.
+        public static let defaultTimeseriesBatchSize = 120
+
         /// The number of samples collected before a timeseries batch is flushed.
         ///
         /// Default: `120`.
@@ -605,7 +608,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = 120,
+        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -664,7 +667,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = 120,
+        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
