@@ -1162,15 +1162,46 @@ public struct SRShapeBorder: Codable, Hashable
         case color = "color"
         case width = "width"
     public init(color: String,width: Int64)
+public enum SRShapeGradient: Codable, Hashable
+    case linear(value: SRShapeLinearGradient)
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct SRShapeGradientPoint: Codable, Hashable
+    public let x: Double
+    public let y: Double
+    public enum CodingKeys: String, CodingKey
+        case x = "x"
+        case y = "y"
+    public init(x: Double,y: Double)
+public struct SRShapeGradientStop: Codable, Hashable
+    public let color: String
+    public let position: Double
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case position = "position"
+    public init(color: String,position: Double)
+public struct SRShapeLinearGradient: Codable, Hashable
+    public let endPoint: SRShapeGradientPoint
+    public let startPoint: SRShapeGradientPoint
+    public let stops: [SRShapeGradientStop]
+    public let type: String = "linear"
+    public enum CodingKeys: String, CodingKey
+        case endPoint = "endPoint"
+        case startPoint = "startPoint"
+        case stops = "stops"
+        case type = "type"
+    public init(endPoint: SRShapeGradientPoint,startPoint: SRShapeGradientPoint,stops: [SRShapeGradientStop])
 public struct SRShapeStyle: Codable, Hashable
     public let backgroundColor: String?
+    public let backgroundGradient: SRShapeGradient?
     public let cornerRadius: Double?
     public let opacity: Double?
     public enum CodingKeys: String, CodingKey
         case backgroundColor = "backgroundColor"
+        case backgroundGradient = "backgroundGradient"
         case cornerRadius = "cornerRadius"
         case opacity = "opacity"
-    public init(backgroundColor: String? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
+    public init(backgroundColor: String? = nil,backgroundGradient: SRShapeGradient? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
 public struct SRShapeWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
