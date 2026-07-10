@@ -170,6 +170,7 @@ extension SpanEventBuilder {
         networkInfoEnabled: Bool = false,
         eventsMapper: SpanEventMapper? = nil,
         bundleWithRUM: Bool = false,
+        statsComputationEnabled: Bool = false,
         telemetry: Telemetry = NOPTelemetry()
     ) -> SpanEventBuilder {
         let builder = SpanEventBuilder(
@@ -177,6 +178,7 @@ extension SpanEventBuilder {
             networkInfoEnabled: networkInfoEnabled,
             eventsMapper: eventsMapper,
             bundleWithRUM: bundleWithRUM,
+            statsComputationEnabled: statsComputationEnabled,
             telemetry: telemetry
         )
         builder.attributesEncoder.outputFormatting = [.sortedKeys] // to ensure stable order of JSON keys among OS versions
@@ -416,5 +418,51 @@ public struct TracerSamplerProviderMock: TracerSamplerProvider {
 
     public static func mockRejectAll() -> TracerSamplerProvider {
         return TracerSamplerProviderMock(sampler: Sampler(samplingRate: 0))
+    }
+}
+
+// MARK: - SpanSnapshot Mocks
+
+extension SpanSnapshot {
+    public static func mockAny() -> SpanSnapshot {
+        return mockWith()
+    }
+
+    public static func mockWith(
+        traceID: TraceID = .mockAny(),
+        spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = nil,
+        service: String = "test-service",
+        operationName: String = "test.operation",
+        resource: String = "test-resource",
+        type: String = "custom",
+        spanKind: String? = nil,
+        httpStatusCode: UInt32 = 200,
+        isError: Bool = false,
+        startTime: Nanoseconds = 1_000_000_000,
+        duration: Nanoseconds = 500_000_000,
+        isTopLevel: Bool = true,
+        isMeasured: Bool = false,
+        peerTags: [String: String] = [:],
+        serviceSource: String = ""
+    ) -> SpanSnapshot {
+        return SpanSnapshot(
+            traceID: traceID,
+            spanID: spanID,
+            parentSpanID: parentSpanID,
+            service: service,
+            operationName: operationName,
+            resource: resource,
+            type: type,
+            spanKind: spanKind,
+            httpStatusCode: httpStatusCode,
+            isError: isError,
+            startTime: startTime,
+            duration: duration,
+            isTopLevel: isTopLevel,
+            isMeasured: isMeasured,
+            peerTags: peerTags,
+            serviceSource: serviceSource
+        )
     }
 }

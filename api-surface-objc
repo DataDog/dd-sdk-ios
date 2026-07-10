@@ -343,6 +343,8 @@ public final class objc_TraceConfiguration: NSObject
     public var bundleWithRumEnabled: Bool
     public var networkInfoEnabled: Bool
     public var customEndpoint: URL?
+    public var customStatsEndpoint: URL?
+    public var statsComputationEnabled: Bool
 public final class objc_TraceFirstPartyHostsTracing: NSObject
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>])
     public init(hostsWithHeaderTypes: [String: Set<objc_TracingHeaderType>], sampleRate: Float)
