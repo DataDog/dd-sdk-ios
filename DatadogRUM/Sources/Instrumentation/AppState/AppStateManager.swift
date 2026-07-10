@@ -71,6 +71,7 @@ internal final class AppStateManager: AppStateManaging {
     /// 2. whether the application was in the foreground or background when it was terminated.
     ///
     /// - Parameter state: The application state.
+    #if !os(macOS)
     func updateAppState(state: AppState) {
         // this method can be called multiple times for the same state,
         // so we need to make sure we don't update the state multiple times
@@ -82,17 +83,10 @@ internal final class AppStateManager: AppStateManaging {
             updateAppState { stateInfo in
                 stateInfo?.isActive = true
             }
-        #if !os(macOS)
         case .inactive, .background:
             updateAppState { stateInfo in
                 stateInfo?.isActive = false
             }
-        #else
-        case .inactive:
-            updateAppState { stateInfo in
-                stateInfo?.isActive = false
-            }
-        #endif
         case .terminated:
             updateAppState { stateInfo in
                 stateInfo?.wasTerminated = true
@@ -100,6 +94,33 @@ internal final class AppStateManager: AppStateManaging {
         }
         lastAppState = state
     }
+    #else
+    func updateAppState(state: AppState) {
+        // this method can be called multiple times for the same state,
+        // so we need to make sure we don't update the state multiple times
+        guard state != lastAppState else {
+            return
+        }
+        switch state {
+        case .active:
+            updateAppState { stateInfo in
+                stateInfo?.isActive = true
+            }
+        case .inactive, .lockScreen, .sleeping, .hidden:
+            // Note: It's debatable if .lockScreen and .sleeping should be here.
+            // The app may be in the foreground when the user comes back and logs
+            // in. 
+            updateAppState { stateInfo in
+                stateInfo?.isActive = false
+            }
+        case .terminating:
+            updateAppState { stateInfo in
+                stateInfo?.wasTerminated = true
+            }
+        }
+        lastAppState = state
+    }
+    #endif
 
     /// Updates the app state in the data store with the given block.
     /// - Parameter block: The block to update the app state.

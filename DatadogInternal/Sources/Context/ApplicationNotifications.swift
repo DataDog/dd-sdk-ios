@@ -60,4 +60,18 @@ public enum ApplicationNotifications {
         UIApplication.willEnterForegroundNotification
     }
     #endif
+
+    #if os(macOS)
+    public static var didHide: Notification.Name {
+        NSApplication.didHideNotification
+    }
+
+    public static var didUnhide: Notification.Name {
+        NSApplication.didUnhideNotification
+    }
+
+    public static var willTerminate: Notification.Name {
+        NSApplication.willTerminateNotification
+    }
+    #endif
 }
