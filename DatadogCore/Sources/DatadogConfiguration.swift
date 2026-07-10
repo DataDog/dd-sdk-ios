@@ -221,7 +221,7 @@ extension Datadog {
         }
 
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
-        internal var notificationCenter: NotificationCenter = .default
+        internal var notificationCenters: NotificationCenters = .default
 
         /// The default app launch handler for tracking application startup time.
         internal var appLaunchHandler: AppLaunchHandling = AppLaunchHandler.shared

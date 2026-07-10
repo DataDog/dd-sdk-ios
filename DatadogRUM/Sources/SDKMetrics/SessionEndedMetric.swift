@@ -619,14 +619,25 @@ extension InstrumentationType: Encodable {
 }
 
 private extension AppState {
+    #if !os(macOS)
     var toString: String {
         switch self {
         case .active: return "active"
         case .inactive: return "inactive"
-        #if !os(macOS)
         case .background: return "background"
-        #endif
         case .terminated: return "terminated"
         }
     }
+    #else
+    var toString: String {
+        switch self {
+        case .active: return "active"
+        case .inactive: return "inactive"
+        case .hidden: return "hidden"
+        case .lockScreen: return "lock screen"
+        case .sleeping: return "sleeping"
+        case .terminating: return "terminating"
+        }
+    }
+    #endif
 }
