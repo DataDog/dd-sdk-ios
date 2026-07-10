@@ -45,6 +45,7 @@ public typealias DDCollectionViewCell = UICollectionViewCell
 public typealias DDAccessibility = UIAccessibility
 
 public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
+public typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
 #endif
 
 // MARK: - Appearance
@@ -104,5 +105,6 @@ extension NSApplication {
 
 // MARK: - SDK specific
 public typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
+public typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
 
 #endif
