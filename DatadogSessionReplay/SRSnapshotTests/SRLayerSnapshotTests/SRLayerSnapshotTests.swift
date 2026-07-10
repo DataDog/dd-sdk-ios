@@ -40,4 +40,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
             folderPath: snapshotsFolderPath
         )
     }
+
+    @available(iOS 26.0, *)
+    func testAlert() async throws {
+        try await takeLayerSnapshotFor(
+            AlertFixtureView(),
+            with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
 }
