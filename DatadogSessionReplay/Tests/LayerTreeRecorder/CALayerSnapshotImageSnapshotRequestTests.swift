@@ -34,16 +34,19 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips content snapshot request for gradient")
-    func skipsContentSnapshotRequestForGradient() {
+    func skipsContentSnapshotRequestForGradient() throws {
         // Given
-        let snapshot = CALayerSnapshot.mockWith(
-            observation: .init(semantics: .gradient(.init(
+        let gradient = try #require(
+            CALayerSnapshot.SemanticObservation.GradientSemantics(
                 type: .axial,
                 colors: [UIColor.red.cgColor, UIColor.blue.cgColor],
                 locations: nil,
                 startPoint: CGPoint(x: 0.5, y: 0),
                 endPoint: CGPoint(x: 0.5, y: 1)
-            )))
+            )
+        )
+        let snapshot = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .gradient(gradient))
         )
         let cache = ImageSnapshotCache()
         cache.setContentSnapshotData(.mockAny(), forReplayID: snapshot.replayID)

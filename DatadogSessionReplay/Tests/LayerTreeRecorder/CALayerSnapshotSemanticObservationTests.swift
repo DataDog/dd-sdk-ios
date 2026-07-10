@@ -30,7 +30,7 @@ struct CALayerSnapshotSemanticObservationTests {
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records linear gradient semantics")
-    func recordsLinearGradientSemantics() {
+    func recordsLinearGradientSemantics() throws {
         // Given
         let colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
         let locations = [CGFloat(0.25), CGFloat(0.75)]
@@ -44,13 +44,16 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
 
         // Then
-        #expect(observation == .init(semantics: .gradient(.init(
-            type: .axial,
-            colors: colors,
-            locations: locations,
-            startPoint: layer.startPoint,
-            endPoint: layer.endPoint
-        ))))
+        let gradient = try #require(
+            CALayerSnapshot.SemanticObservation.GradientSemantics(
+                type: .axial,
+                colors: colors,
+                locations: locations,
+                startPoint: layer.startPoint,
+                endPoint: layer.endPoint
+            )
+        )
+        #expect(observation == .init(semantics: .gradient(gradient)))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -66,6 +69,44 @@ struct CALayerSnapshotSemanticObservationTests {
 
         // Then
         #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Rejects gradient semantics with fewer than two colors")
+    func rejectsGradientSemanticsWithFewerThanTwoColors() {
+        // Given
+        let colors = [UIColor.red.cgColor]
+
+        // When
+        let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(
+            type: .axial,
+            colors: colors,
+            locations: nil,
+            startPoint: CGPoint(x: 0.5, y: 0),
+            endPoint: CGPoint(x: 0.5, y: 1)
+        )
+
+        // Then
+        #expect(gradient == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Rejects gradient semantics with mismatched locations")
+    func rejectsGradientSemanticsWithMismatchedLocations() {
+        // Given
+        let colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+
+        // When
+        let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(
+            type: .axial,
+            colors: colors,
+            locations: [0],
+            startPoint: CGPoint(x: 0.5, y: 0),
+            endPoint: CGPoint(x: 0.5, y: 1)
+        )
+
+        // Then
+        #expect(gradient == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

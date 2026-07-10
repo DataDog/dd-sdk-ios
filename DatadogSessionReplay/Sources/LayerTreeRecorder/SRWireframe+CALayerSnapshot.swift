@@ -28,9 +28,11 @@ extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
+        gradient: CALayerSnapshot.SemanticObservation.GradientSemantics? = nil,
         cornerRadius: CGFloat? = nil
     ) {
-        guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder else {
+        let backgroundGradient = gradient.flatMap(SRShapeGradient.init(gradient:))
+        guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder || backgroundGradient != nil else {
             return nil
         }
 
@@ -39,7 +41,11 @@ extension SRWireframe {
                 border: .init(layerSnapshot: layerSnapshot),
                 height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadius: cornerRadius),
+                shapeStyle: .init(
+                    layerSnapshot: layerSnapshot,
+                    backgroundGradient: backgroundGradient,
+                    cornerRadius: cornerRadius
+                ),
                 width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
@@ -211,15 +217,54 @@ extension SRShapeStyle {
     @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
+        backgroundGradient: SRShapeGradient? = nil,
         cornerRadius: CGFloat? = nil
     ) {
-        guard let backgroundColor = layerSnapshot.backgroundColor else {
+        guard layerSnapshot.backgroundColor != nil || backgroundGradient != nil else {
             return nil
         }
         self.init(
-            backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
+            backgroundColor: layerSnapshot.backgroundColor.map {
+                hexString(from: $0) ?? .fallbackColor
+            },
+            backgroundGradient: backgroundGradient,
             cornerRadius: (cornerRadius ?? layerSnapshot.cornerRadii.uniformCornerRadius)
                 .map(Double.init)
+        )
+    }
+}
+
+extension SRShapeGradient {
+    @available(iOS 13.0, tvOS 13.0, *)
+    fileprivate init?(
+        gradient: CALayerSnapshot.SemanticObservation.GradientSemantics
+    ) {
+        guard gradient.type == .axial else {
+            return nil
+        }
+
+        let locations = gradient.locations ?? gradient.colors.indices.map {
+            CGFloat($0) / CGFloat(gradient.colors.count - 1)
+        }
+        let stops = zip(gradient.colors, locations).map { color, location in
+            SRShapeGradientStop(
+                color: hexString(from: color) ?? .fallbackColor,
+                position: Double(location)
+            )
+        }
+
+        self = .linear(
+            value: .init(
+                endPoint: .init(
+                    x: Double(gradient.endPoint.x),
+                    y: Double(gradient.endPoint.y)
+                ),
+                startPoint: .init(
+                    x: Double(gradient.startPoint.x),
+                    y: Double(gradient.startPoint.y)
+                ),
+                stops: stops
+            )
         )
     }
 }

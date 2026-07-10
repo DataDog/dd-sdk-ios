@@ -57,13 +57,20 @@ extension CALayerSnapshot.SemanticObservation {
         let startPoint: CGPoint
         let endPoint: CGPoint
 
-        init(
+        init?(
             type: CAGradientLayerType,
             colors: [CGColor],
             locations: [CGFloat]?,
             startPoint: CGPoint,
             endPoint: CGPoint
         ) {
+            guard
+                colors.count >= 2,
+                locations == nil || locations?.count == colors.count
+            else {
+                return nil
+            }
+
             self.type = type
             self.colors = colors
             self.locations = locations
@@ -405,10 +412,7 @@ extension CALayerDelegate {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.GradientSemantics {
     fileprivate init?(gradientLayer: CAGradientLayer) {
-        guard
-            let colorValues = gradientLayer.colors,
-            colorValues.count >= 2
-        else {
+        guard let colorValues = gradientLayer.colors else {
             return nil
         }
 
@@ -418,10 +422,6 @@ extension CALayerSnapshot.SemanticObservation.GradientSemantics {
         }
 
         let locations = gradientLayer.locations?.map { CGFloat(truncating: $0) }
-        guard locations == nil || locations?.count == colors.count else {
-            return nil
-        }
-
         self.init(
             type: gradientLayer.type,
             colors: colors,

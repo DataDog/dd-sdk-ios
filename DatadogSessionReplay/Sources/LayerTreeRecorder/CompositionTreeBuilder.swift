@@ -122,10 +122,10 @@ internal class CompositionTreeBuilder {
 
         var children: [SRCompositionLayerChild] = []
 
-        // Append a wireframe for the layer background color
+        // Append a wireframe for the layer background, gradient, or border
         // We don't support containers with image or custom content because `CALayer.render(in:)`
         // renders both the layer and its sublayers
-        if snapshot.hasBackgroundColor || snapshot.hasBorder,
+        if snapshot.hasBackgroundColor || snapshot.hasBorder || snapshot.observation.gradient != nil,
            let backgroundWireframe = makeWireframeReference(for: snapshot, context: context) {
             children.append(backgroundWireframe)
         }
@@ -173,6 +173,12 @@ internal class CompositionTreeBuilder {
             makeContentSnapshotWireframe(for: snapshot, result: result, context: context)
         case (.layer, .none):
             SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
+        case (.gradient(let gradient), _):
+            SRWireframe(
+                layerSnapshot: snapshot,
+                gradient: gradient,
+                cornerRadius: cornerRadius
+            )
         case (.label(let label), _):
             SRWireframe(layerSnapshot: snapshot, label: label, cornerRadius: cornerRadius)
         case (.textInput, .none):
@@ -285,6 +291,13 @@ private extension CALayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.SemanticObservation {
+    var gradient: GradientSemantics? {
+        guard case .gradient(let gradient) = semantics else {
+            return nil
+        }
+        return gradient
+    }
+
     var textInputSemantics: TextInputSemantics? {
         guard case .textInput(let textInput) = semantics else {
             return nil
