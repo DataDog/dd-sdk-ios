@@ -657,7 +657,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         }
 
         let identity = AssociatedTypeEnumPropertyIdentity(
-            rootSwiftTypeName: owner.objcRootClass.bridgedSwiftStruct.name,
+            rootSwiftTypeName: owner.objcRootClass.swiftTypeName,
             ownerObjcTypeName: owner.objcTypeName,
             propertyName: propertyWrapper.bridgedSwiftProperty.name,
             associatedTypeEnumName: nestedObjcAssociatedTypeEnum.bridgedSwiftAssociatedTypeEnum.name
