@@ -116,7 +116,16 @@ class RUMViewScopeTests: XCTestCase {
         let hasReplay: Bool = .mockRandom()
         let sessionReplaySampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let startRecordingManually: Bool = .random()
-        var context = self.context
+        let remoteConfigurationId: String = .mockRandom()
+        var context = DatadogContext.mockWith(
+            service: self.context.service,
+            version: self.context.version,
+            buildNumber: self.context.buildNumber,
+            buildId: self.context.buildId,
+            device: self.context.device,
+            os: self.context.os,
+            remoteConfigurationId: remoteConfigurationId
+        )
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
         context.set(additionalContext: SessionReplayCoreContext.Configuration(
@@ -151,6 +160,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.configuration?.traceSampleRate, Double(traceSampleRate))
         XCTAssertEqual(event.dd.configuration?.sessionReplaySampleRate, Double(sessionReplaySampleRate))
         XCTAssertEqual(event.dd.configuration?.startSessionReplayRecordingManually, startRecordingManually)
+        XCTAssertEqual(event.dd.configuration?.remoteConfigurationId, remoteConfigurationId)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")

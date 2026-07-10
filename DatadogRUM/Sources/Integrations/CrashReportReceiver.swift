@@ -321,6 +321,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 browserSdkVersion: nil,
                 cls: nil,
                 configuration: .init(
+                    remoteConfigurationId: context.remoteConfigurationId,
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: Double(self.sessionSampler.samplingRate),
                     startSessionReplayRecordingManually: nil

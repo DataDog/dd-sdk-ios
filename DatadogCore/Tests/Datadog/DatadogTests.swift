@@ -546,7 +546,9 @@ class DatadogTests: XCTestCase {
 
         // Then
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
         XCTAssertNotNil(core.remoteConfigurationProvider)
+        XCTAssertEqual(context.remoteConfigurationId, "test-id")
     }
 
     func testGivenRemoteConfigurationID_itIsStoredInPersistentDirectoryNotCaches() throws {
