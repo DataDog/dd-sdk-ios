@@ -1621,20 +1621,17 @@ public enum objc_RUMTimeseriesCpuEventSource: Int
     case electron
     case rumCpp
 public class objc_RUMTimeseriesCpuEventTimeseries: NSObject
-    public var data: [objc_RUMTimeseriesCpuEventTimeseriesData]
+    public var data: objc_RUMTimeseriesCpuEventTimeseriesData
     public var end: NSNumber
     public var id: String
     public var name: String
-    public var schema: objc_RUMTimeseriesCpuEventTimeseriesSchema
+    public var schema: String
     public var start: NSNumber
 public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject
-    public var dataPoint: objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint
-    public var timestamp: NSNumber
-public class objc_RUMTimeseriesCpuEventTimeseriesDataDataPoint: NSObject
-    public var cpuUsage: NSNumber
-public enum objc_RUMTimeseriesCpuEventTimeseriesSchema: Int
-    case object
-    case deltaScalar
+    public var timestamps: [NSNumber]
+    public var values: objc_RUMTimeseriesCpuEventTimeseriesDataValues
+public class objc_RUMTimeseriesCpuEventTimeseriesDataValues: NSObject
+    public var cpuUsage: [NSNumber]
 public class objc_RUMTimeseriesMemoryEvent: NSObject
     public internal(set) var swiftModel: RUMTimeseriesMemoryEvent
     public init(swiftModel: RUMTimeseriesMemoryEvent)
@@ -1670,21 +1667,18 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int
     case electron
     case rumCpp
 public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject
-    public var data: [objc_RUMTimeseriesMemoryEventTimeseriesData]
+    public var data: objc_RUMTimeseriesMemoryEventTimeseriesData
     public var end: NSNumber
     public var id: String
     public var name: String
-    public var schema: objc_RUMTimeseriesMemoryEventTimeseriesSchema
+    public var schema: String
     public var start: NSNumber
 public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject
-    public var dataPoint: objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint
-    public var timestamp: NSNumber
-public class objc_RUMTimeseriesMemoryEventTimeseriesDataDataPoint: NSObject
-    public var memoryFootprint: NSNumber
-    public var memoryPercent: NSNumber
-public enum objc_RUMTimeseriesMemoryEventTimeseriesSchema: Int
-    case object
-    case deltaObject
+    public var timestamps: [NSNumber]
+    public var values: objc_RUMTimeseriesMemoryEventTimeseriesDataValues
+public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject
+    public var memoryFootprint: [NSNumber]
+    public var memoryPercent: [NSNumber]
 public class objc_RUMViewEvent: NSObject
     public internal(set) var swiftModel: RUMViewEvent
     public init(swiftModel: RUMViewEvent)
