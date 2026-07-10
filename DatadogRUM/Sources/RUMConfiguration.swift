@@ -79,7 +79,7 @@ extension RUM {
         /// Default: `nil` - which means automatic RUM view tracking for UIKit is not enabled by default.
         ///
         /// - Important: This feature is unavailable on watchOS. Use manual view tracking with `startView(key:name:attributes:)` instead.
-        public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
+        public var uiKitViewsPredicate: DDKitRUMViewsPredicate?
         #endif
 
         #if !os(watchOS)
@@ -578,7 +578,7 @@ extension RUM.Configuration {
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
-        uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
+        uiKitViewsPredicate: DDKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: DDKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
