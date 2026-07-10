@@ -8263,10 +8263,6 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.remoteConfigurationId
     }
 
-    public var sessionReplayExperimentalFeatures: [String]? {
-        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
-    }
-
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -10422,10 +10418,6 @@ public class objc_RUMViewUpdateEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
-    }
-
-    public var sessionReplayExperimentalFeatures: [String]? {
-        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
