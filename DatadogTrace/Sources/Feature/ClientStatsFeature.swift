@@ -22,6 +22,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     let concentrator: StatsConcentrator
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
+    private let metricController: TraceClientStatsMetricController
     private var flushTimer: Timer?
 
     /// Interval between periodic flushes (default: 30 seconds).
@@ -43,6 +44,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.dateProvider = dateProvider
         self.flushInterval = flushInterval
         self.featureScope = core.scope(for: ClientStatsFeature.self)
+        self.metricController = TraceClientStatsMetricController(telemetry: featureScope.telemetry)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let concentrator = StatsConcentrator(now: now)
@@ -73,10 +75,13 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
-        featureScope.eventWriteContext { _, writer in
+        featureScope.eventWriteContext { [metricController] _, writer in
             for bucket in exportedBuckets {
                 writer.write(value: bucket)
             }
+            // Report only after the write: in some cases the event write context is not
+            // available, and we do not want to signal a flush that never reached storage.
+            metricController.send(for: exportedBuckets, force: force)
         }
     }
 
