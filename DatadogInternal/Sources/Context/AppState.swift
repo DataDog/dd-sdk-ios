@@ -15,19 +15,54 @@ public protocol AppStateProvider: Sendable {
     var current: AppState { get }
 }
 
+#if os(macOS)
+/// Application state.
+public enum AppState: Codable {
+    /// The app is running in the foreground and currently receiving events.
+    case active
+    /// The app is in the background, or in the foreground but blocked by an interruption like a system dialog (for example, the shutdown confirmation dialog).
+    case inactive
+    /// The app is hidden (using the Hide command in Finder).
+    case hidden
+    /// The lock screen is active, and the Mac is **not** sleeping.
+    /// This happens in multiple situations, like displays sleeping, lock screen, or screen saver turned on. We also consider to be in the `lockScreen`
+    /// state if the Mac is switched to a different account.
+    /// Note the lock screen being active does not mean a password will be asked. That depends on the system configuration.
+    case lockScreen
+    /// The system is entering the sleep state, or sleeping.
+    /// After receiving a `NSWorkspace.willSleepNotification`, processes can delay sleeping for 30 seconds. We have no way of
+    /// knowing exactly when the process enters sleep by definition, as the CPU powers off and processes aren't running, so we assume sleep
+    /// as soon as we get the notification.
+    case sleeping
+    /// The app is going through its shutdown sequence.
+    case terminating
+
+    public var mayBeSuspended: Bool {
+        switch self {
+        case .sleeping: true
+        case .active, .inactive, .hidden, .lockScreen, .terminating: false
+        }
+    }
+
+    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    public var isRunningInForeground: Bool {
+        switch self {
+        // TODO: RUM-17303 This is not finished yet.
+        case .active: true
+        default: false
+        }
+    }
+}
+#else
 /// Application state.
 public enum AppState: Codable {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
     /// This might happen as a result of an interruption or because the app is transitioning to or from the background.
-    /// In macOS it means the application is not the foreground application.
     case inactive
-    #if !os(macOS)
     /// The app is running in the background.
-    /// This concept does not exist on macOS so macOS is never in background state.
     case background
-    #endif
     /// The app is terminated.
     case terminated
 
@@ -36,16 +71,12 @@ public enum AppState: Codable {
         switch self {
         case .active, .inactive:
             return true
-        #if !os(macOS)
         case .background, .terminated:
             return false
-        #else
-        case .terminated:
-            return false
-        #endif
         }
     }
 }
+#endif
 
 /// Records app state transitions over time.
 public struct AppStateHistory: Codable, Equatable {

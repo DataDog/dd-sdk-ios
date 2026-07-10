@@ -482,7 +482,13 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope wher
 }
 
 extension DatadogContextProvider {
-    /// Creates a core context provider with the given configuration,
+    /// Creates a core context provider with the given configuration.
+    ///
+    /// - Remark: `ContextProvider` must be initialized on the main thread for two key reasons:
+    ///   - It interacts with UIKit/AppKit APIs to read the initial app state, which is only safe on the main thread.
+    ///   - It subscribes to app state change notifications, and we need this subscription to occur
+    ///   before any Feature subscriptions. This ensures that Core always processes state changes first.
+    @MainActor
     convenience init(
         site: DatadogSite,
         clientToken: String,
@@ -507,16 +513,10 @@ extension DatadogContextProvider {
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
-        notificationCenter: NotificationCenter,
+        notificationCenters: NotificationCenters,
         appLaunchHandler: AppLaunchHandling,
         appStateProvider: AppStateProvider
     ) {
-        // `ContextProvider` must be initialized on the main thread for two key reasons:
-        // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
-        // - It subscribes to app state change notifications, and we need this subscription to occur
-        //   before any Feature subscriptions. This ensures that Core always processes state changes first.
-        dd_assert(Thread.isMainThread, "Must be called on main thread")
-
         let initialAppState = appStateProvider.current
         let appStateHistory = AppStateHistory(initialState: initialAppState, date: dateProvider.now)
         let launchInfo = appLaunchHandler.resolveLaunchInfo(using: processInfo)
@@ -560,20 +560,40 @@ extension DatadogContextProvider {
         #endif
 
         #if (os(iOS) || os(visionOS)) && !targetEnvironment(simulator)
-        subscribe(\.batteryStatus, to: BatteryStatusPublisher(notificationCenter: notificationCenter, device: .current))
-        subscribe(\.isLowPowerModeEnabled, to: LowPowerModePublisher(notificationCenter: notificationCenter, processInfo: processInfo))
+        subscribe(
+            \.batteryStatus,
+             to: BatteryStatusPublisher(
+                notificationCenter: notificationCenters.applicationCenter,
+                device: .current
+             )
+        )
+        subscribe(
+            \.isLowPowerModeEnabled,
+             to: LowPowerModePublisher(
+                notificationCenter: notificationCenters.applicationCenter,
+                processInfo: processInfo
+             )
+        )
         #endif
 
         #if os(iOS)
-        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenter))
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenters.applicationCenter))
         #endif
 
-        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenter))
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenters.applicationCenter))
 
         #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         let applicationStatePublisher = ApplicationStatePublisher(
             appStateHistory: appStateHistory,
-            notificationCenter: notificationCenter,
+            notificationCenter: notificationCenters.applicationCenter,
+            dateProvider: dateProvider
+        )
+        self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
+        #elseif os(macOS)
+        let applicationStatePublisher = ApplicationStatePublisher(
+            appStateHistory: appStateHistory,
+            applicationNotificationCenter: notificationCenters.applicationCenter,
+            workspaceNotificationCenter: notificationCenters.workspaceCenter,
             dateProvider: dateProvider
         )
         self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
