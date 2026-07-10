@@ -8,6 +8,7 @@ tracked_files:
   - DatadogLogs/Sources/LoggerProtocol.swift
   - DatadogLogs/Sources/Logs+objc.swift
   - DatadogLogs/Sources/Log/LogEventEncoder.swift
+  - DatadogLogs/Sources/Scrubbing/LogEventMapper.swift
 ---
 
 # Logs Feature
@@ -66,7 +67,7 @@ let logger = Logger.create(
         service: "my-ios-app",
 
         // Logger name, reported as `logger.name` on log events
-        // Default: nil
+        // Default: nil (falls back to the app bundle identifier in the log payload)
         name: "MyViewController",
 
         // Attach network connectivity info (reachability, interface, carrier)
@@ -108,8 +109,8 @@ logger.critical("Unrecoverable state", error: someError)
 logger.addAttribute(forKey: "screen", value: "ProductList")
 logger.removeAttribute(forKey: "screen")
 
-logger.addTag(withKey: "env", value: "staging")
-logger.removeTag(withKey: "env")
+logger.addTag(withKey: "feature", value: "checkout")
+logger.removeTag(withKey: "feature")
 logger.add(tag: "beta")
 logger.remove(tag: "beta")
 
