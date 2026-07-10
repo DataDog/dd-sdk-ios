@@ -65,8 +65,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     //swiftlint:disable function_default_parameter_at_end
     init(
         featureScope: FeatureScope,
-        uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
-        uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
+        uiKitRUMViewsPredicate rumViewsPredicate: DDKitRUMViewsPredicate?,
+        uiKitRUMActionsPredicate rumActionsPredicate: DDKitRUMActionsPredicate?,
         swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
         trackScrollAndSwipeActions: Bool = true,
@@ -88,7 +88,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
         let viewsHandler = RUMViewsHandler(
             dateProvider: dateProvider,
-            uiKitPredicate: uiKitRUMViewsPredicate,
+            uiKitPredicate: rumViewsPredicate,
             swiftUIPredicate: swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
             notificationCenter: notificationCenter
@@ -96,7 +96,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic view tracking is enabled
-                if uiKitRUMViewsPredicate != nil || swiftUIRUMViewsPredicate != nil {
+                if rumViewsPredicate != nil || swiftUIRUMViewsPredicate != nil {
                     return try DDViewControllerSwizzler(handler: viewsHandler)
                 }
             } catch {
@@ -114,12 +114,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #if os(tvOS)
             return RUMActionsHandler(
                 dateProvider: dateProvider,
-                uiKitPredicate: uiKitRUMActionsPredicate
+                uiKitPredicate: rumActionsPredicate
             )
             #elseif os(macOS)
             return RUMActionsHandler(
                 dateProvider: dateProvider,
-                appKitPredicate: uiKitRUMActionsPredicate,
+                appKitPredicate: rumActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
                 swiftUIDetector: SwiftUIComponentFactory.createDetector()
             )
@@ -127,7 +127,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return RUMActionsHandler(
                 dateProvider: dateProvider,
                 heatmapIdentifierRegistry: heatmapIdentifierRegistry,
-                uiKitPredicate: uiKitRUMActionsPredicate,
+                uiKitPredicate: rumActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
                 swiftUIDetector: SwiftUIComponentFactory.createDetector()
             )
@@ -137,7 +137,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         let uiApplicationSwizzler: DDApplicationSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
-                if uiKitRUMActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
+                if rumActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
                     return try DDApplicationSwizzler(handler: actionsHandler)
                 }
             } catch {
@@ -154,7 +154,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // AND the `trackScrollAndSwipeActions` feature flag is set:
         let scrollHandler: RUMScrollHandler?
         let scrollViewSwizzler: UIScrollViewSwizzler?
-        if let uiKitRUMActionsPredicate = uiKitRUMActionsPredicate, trackScrollAndSwipeActions {
+        if let uiKitRUMActionsPredicate = rumActionsPredicate, trackScrollAndSwipeActions {
             let handler = RUMScrollHandler(
                 dateProvider: dateProvider,
                 predicate: uiKitRUMActionsPredicate

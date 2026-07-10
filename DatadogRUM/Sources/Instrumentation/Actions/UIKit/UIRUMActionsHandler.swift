@@ -15,7 +15,7 @@ internal protocol RUMActionsHandling: RUMCommandPublisher {
     /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
     func notify_sendEvent(application: UIApplication, event: DDEvent)
     #endif
-    /// Tracks RUM actions manually with SwiftUI view modifers by being notified from `RUMTapActionModifier`.
+    /// Tracks RUM actions manually with SwiftUI view modifiers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
 }
 
