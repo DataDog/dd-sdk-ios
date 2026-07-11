@@ -99,10 +99,10 @@ internal class CompositionTreeBuilder {
             children: children(for: snapshot, context: context),
             compositeOperation: snapshot.compositingFilter
                 .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
-            height: Int64.ddWithNoOverflow(snapshot.absoluteFrame.height),
+            height: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.height),
             id: snapshot.replayID,
             modifiers: snapshot.modifiers(maskImageResourceID: maskImage?.calculateIdentifier()),
-            width: Int64.ddWithNoOverflow(snapshot.absoluteFrame.width),
+            width: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.width),
             x: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minX),
             y: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minY)
         )
@@ -196,7 +196,7 @@ internal class CompositionTreeBuilder {
             SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
         case (.webView(let webView), _):
             makeVisibleWebViewWireframe(for: snapshot, webView: webView)
-        case (.visualEffect(.glassGroup), _):
+        case (.visualEffect(.glassGroup), _), (.visualEffect(.backdrop), _):
             SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
         case (.visualEffect(.background(let color)), _):
             SRWireframe(layerSnapshot: snapshot, backgroundColor: color ?? .secondarySystemFill)

@@ -281,6 +281,43 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build preserves positive subpoint dimensions")
+    func buildPreservesPositiveSubpointDimensions() throws {
+        // Given
+        let frame = CGRect(x: 10, y: 20, width: 100, height: CGFloat(1) / 3)
+        let contentSnapshot = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: frame,
+            backgroundColor: UIColor.white.cgColor
+        )
+        let containerSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            sublayers: [contentSnapshot]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [containerSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let layers = try #require(output.compositionTree.layers)
+        let compositionLayer = try #require(layers.first)
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(compositionLayer.height == 1)
+        #expect(wireframe.height == 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for linear gradient")
     func buildCreatesShapeWireframeForLinearGradient() throws {
         // Given
@@ -437,6 +474,37 @@ struct CompositionTreeBuilderTests {
             replayID: 2,
             absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
             observation: .init(semantics: .visualEffect(.glassGroup))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(output.wireframes.count == 1)
+        #expect(wireframe.id == visualEffectSnapshot.replayID)
+        #expect(wireframe.shapeStyle?.backgroundColor == hexString(from: UIColor.systemBackground.cgColor))
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates system background wireframe for backdrop")
+    func buildCreatesSystemBackgroundWireframeForBackdrop() throws {
+        // Given
+        let visualEffectSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.backdrop))
         )
         let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
         let builder = CompositionTreeBuilder(

@@ -72,6 +72,27 @@ struct CALayerSnapshotSemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records visual effect backdrop semantics and ignores sublayers")
+    func recordsVisualEffectBackdropSemanticsAndIgnoresSublayers() throws {
+        // Given
+        let visualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
+        let backdropLayer = try #require(
+            visualEffectView.layer.sublayers?.first {
+                NSStringFromClass(type(of: $0)) == "UICABackdropLayer"
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: backdropLayer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .visualEffect(.backdrop),
+            ignoresSublayers: true
+        ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with fewer than two colors")
     func rejectsGradientSemanticsWithFewerThanTwoColors() {
         // Given

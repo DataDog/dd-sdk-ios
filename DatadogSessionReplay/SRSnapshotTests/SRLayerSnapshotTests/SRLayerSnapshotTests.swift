@@ -41,7 +41,6 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
-    @available(iOS 26.0, *)
     func testAlert() async throws {
         try await takeLayerSnapshotFor(
             AlertFixtureView(),

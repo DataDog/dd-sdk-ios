@@ -28,6 +28,7 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservation {
     enum VisualEffect: Sendable, Equatable {
         case glassGroup
+        case backdrop
         case liquidLens
         case background(UIColor?)
     }
@@ -244,6 +245,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .barBackground,
         // visual effects
         .glassGroup,
+        .visualEffectBackdrop,
         .visualEffectBackground,
         .liquidLens
     ]
@@ -363,6 +365,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         }
 
         return .init(semantics: .visualEffect(.liquidLens))
+    }
+
+    static let visualEffectBackdrop = Self { layer, _, _ in
+        guard NSStringFromClass(type(of: layer)) == "UICABackdropLayer" else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.backdrop),
+            ignoresSublayers: true
+        )
     }
 
     static let visualEffectBackground = Self { layer, _, _ in

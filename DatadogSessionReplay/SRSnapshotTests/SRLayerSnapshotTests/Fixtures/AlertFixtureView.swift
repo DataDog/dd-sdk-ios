@@ -6,13 +6,13 @@
 
 import SwiftUI
 
-@available(iOS 26.0, *)
+@available(iOS 15.0, *)
 internal struct AlertFixtureView: View {
     var body: some View {
         Text("Showing alert")
             .alert("Important message", isPresented: .constant(true)) {
-                Button(role: .destructive, action: {})
-                Button(role: .cancel, action: {})
+                Button("Delete", role: .destructive, action: {})
+                Button("Cancel", role: .cancel, action: {})
             } message: {
                 Text("This is a simple alert message.")
             }
