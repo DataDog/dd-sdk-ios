@@ -38,6 +38,40 @@ struct ImageSnapshotterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Renders ignored sublayer content outside its semantic owner bounds")
+    func rendersIgnoredSublayerContentOutsideSemanticOwnerBounds() async throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 40, y: 40, width: 20, height: 20)
+        imageView.layer.contentsScale = 1
+        rootLayer.addSublayer(imageView.layer)
+
+        let dependency = CALayer()
+        dependency.frame = CGRect(x: -5, y: -5, width: 30, height: 30)
+        dependency.backgroundColor = UIColor.red.cgColor
+        imageView.layer.addSublayer(dependency)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
+        )
+        let snapshotter = ImageSnapshotter()
+
+        // When
+        let results = await snapshotter.takeImageSnapshots(for: root, changeset: .init(), timeout: 1)
+
+        // Then
+        let result = try #require(results.contentSnapshots[imageView.layer.replayID])
+        let imageSnapshot = try result.get()
+        #expect(imageSnapshot.frame == CGRect(x: 35, y: 35, width: 30, height: 30))
+        #expect(imageSnapshot.image.size == CGSize(width: 30, height: 30))
+        let cornerImage = imageSnapshot.image.cgImage?.cropping(to: CGRect(x: 0, y: 0, width: 1, height: 1))
+        #expect(cornerImage.map { UIImage(cgImage: $0) }?.dominantColor == .red)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders and caches mask snapshot for container mask")
     func rendersAndCachesMaskSnapshotForContainerMask() async throws {
         // Given
