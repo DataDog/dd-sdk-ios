@@ -13,8 +13,16 @@ import WebKit
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
     static let gradient = Self { layer, _, _ in
+        guard let gradientLayer = layer as? CAGradientLayer else {
+            return nil
+        }
+
+        // Leaf masks are preserved by falling back to a content snapshot.
+        guard gradientLayer.mask == nil || gradientLayer.sublayers?.isEmpty == false else {
+            return nil
+        }
+
         guard
-            let gradientLayer = layer as? CAGradientLayer,
             gradientLayer.type == .axial,
             let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(gradientLayer: gradientLayer)
         else {

@@ -72,6 +72,21 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records masked leaf gradient as plain layer semantics")
+    func recordsMaskedLeafGradientAsPlainLayerSemantics() {
+        // Given
+        let layer = CAGradientLayer()
+        layer.colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+        layer.mask = CALayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records visual effect backdrop semantics and ignores sublayers")
     func recordsVisualEffectBackdropSemanticsAndIgnoresSublayers() throws {
         // Given
