@@ -48,5 +48,4 @@ extension NSAttributedString {
         return runCount < 2 && unsupportedAttributeCount == 0
     }
 }
-
 #endif

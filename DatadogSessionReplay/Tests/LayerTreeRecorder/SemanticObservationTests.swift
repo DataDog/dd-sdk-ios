@@ -14,7 +14,7 @@ import WebKit
 @testable import DatadogSessionReplay
 
 @MainActor
-struct CALayerSnapshotSemanticObservationTests {
+struct SemanticObservationTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
