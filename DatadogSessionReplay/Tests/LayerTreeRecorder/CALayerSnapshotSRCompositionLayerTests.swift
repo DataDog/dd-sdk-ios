@@ -122,6 +122,27 @@ struct CALayerSnapshotSRCompositionLayerTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps Gaussian blur only for regular layers")
+    func mapsGaussianBlurOnlyForRegularLayers() {
+        // Given
+        let regularLayer = CALayerSnapshot.mockWith(filters: [.gaussianBlur(12)])
+        let backdropLayer = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .visualEffect(.backdrop)),
+            filters: [.gaussianBlur(12)]
+        )
+
+        // When
+        let regularLayerModifiers = regularLayer.modifiers()
+        let backdropLayerModifiers = backdropLayer.modifiers()
+
+        // Then
+        #expect(regularLayer.requiresCompositionLayer)
+        #expect(modifierTypes(regularLayerModifiers) == ["gaussianBlur"])
+        #expect(!backdropLayer.requiresCompositionLayer)
+        #expect(backdropLayerModifiers.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     private func modifierTypes(_ modifiers: [SRCompositionLayerModifier]) -> [String] {
         modifiers.map { modifier in
             switch modifier {

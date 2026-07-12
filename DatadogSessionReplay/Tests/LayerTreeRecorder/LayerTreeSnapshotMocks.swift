@@ -67,6 +67,7 @@ extension CALayerSnapshot {
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
         backgroundColor: CGColor? = nil,
         cornerRadii: CALayerSnapshot.CornerRadii = .zero,
+        filters: [CALayerSnapshot.Filter] = [],
         isPrivate: Bool = false,
         isOpaque: Bool = false,
         sublayers: [CALayerSnapshot] = []
@@ -101,7 +102,7 @@ extension CALayerSnapshot {
             opacity: 1,
             allowsGroupOpacity: true,
             compositingFilter: nil,
-            filters: [],
+            filters: filters,
             shadowColor: nil,
             shadowOpacity: 0,
             shadowOffset: .zero,

@@ -14,7 +14,9 @@ extension CALayerSnapshot {
         masksToBounds
             || opacity < 1
             || hasShadow
-            || filters.contains(where: { SRCompositionLayerModifier(filter: $0) != nil })
+            || filters.contains {
+                SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil
+            }
             || compositingFilter.flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)) != nil
     }
 
@@ -40,7 +42,9 @@ extension CALayerSnapshot {
 
         // Filters
         result.append(
-            contentsOf: filters.compactMap(SRCompositionLayerModifier.init(filter:))
+            contentsOf: filters.compactMap {
+                SRCompositionLayerModifier(filter: $0, semantics: observation.semantics)
+            }
         )
 
         // Shadow
@@ -106,10 +110,16 @@ extension SRCompositionLayer.CompositeOperation {
 
 extension SRCompositionLayerModifier {
     @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(filter: CALayerSnapshot.Filter) {
+    fileprivate init?(
+        filter: CALayerSnapshot.Filter,
+        semantics: CALayerSnapshot.SemanticObservation.Semantics
+    ) {
+        if case .visualEffect(.backdrop) = semantics,
+           case .gaussianBlur = filter {
+            return nil
+        }
+
         switch filter {
-        case .glassBackground:
-            self = .compositionLayerBackgroundMaterialModifier(value: .init(kind: .glass))
         case .gaussianBlur(let radius):
             self = .compositionLayerGaussianBlurModifier(value: .init(radius: Double(radius)))
         case .colorMatrix(let colorMatrix):

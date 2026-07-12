@@ -12,7 +12,6 @@ import QuartzCore
 extension CALayerSnapshot {
     /// Captured subset of Core Animation filters that affect layer rendering.
     enum Filter: Sendable, Equatable {
-        case glassBackground
         case gaussianBlur(CGFloat)
         case colorMatrix(ColorMatrix)
         case saturate(CGFloat)
@@ -38,8 +37,6 @@ extension CALayerSnapshot.Filter {
         }
 
         switch name {
-        case "glassBackground":
-            self = .glassBackground
         case "gaussianBlur", "variableBlur":
             guard let radius = filter.value(forKey: "inputRadius") as? CGFloat else {
                 return nil

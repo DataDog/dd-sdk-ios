@@ -40,19 +40,6 @@ struct CALayerSnapshotFilterTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Captures glass background filter")
-    func capturesGlassBackgroundFilter() throws {
-        // Given
-        let filter = try NSObject.makeCAFilter(type: "glassBackground")
-
-        // When
-        let snapshotFilter = CALayerSnapshot.Filter(filter)
-
-        // Then
-        #expect(snapshotFilter == .glassBackground)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures gaussian blur filter", arguments: ["gaussianBlur", "variableBlur"])
     func capturesGaussianBlurFilter(type: String) throws {
         // Given
