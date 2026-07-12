@@ -196,7 +196,9 @@ internal class CompositionTreeBuilder {
             SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
         case (.webView(let webView), _):
             makeVisibleWebViewWireframe(for: snapshot, webView: webView)
-        case (.visualEffect(.glassGroup), _), (.visualEffect(.backdrop), _):
+        case (.visualEffect(.glassGroup), _) where snapshot.cornerRadii != .zero:
+            SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
+        case (.visualEffect(.backdrop), _):
             SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
         case (.visualEffect(.background(let color)), _):
             SRWireframe(layerSnapshot: snapshot, backgroundColor: color ?? .secondarySystemFill)

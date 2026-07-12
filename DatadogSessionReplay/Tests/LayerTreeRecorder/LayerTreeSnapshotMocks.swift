@@ -64,6 +64,7 @@ extension CALayerSnapshot {
         absoluteFrame: CGRect = .zero,
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
         backgroundColor: CGColor? = nil,
+        cornerRadii: CALayerSnapshot.CornerRadii = .zero,
         isPrivate: Bool = false,
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
@@ -90,7 +91,7 @@ extension CALayerSnapshot {
             masksToBounds: false,
             isOpaque: false,
             backgroundColor: backgroundColor,
-            cornerRadii: .zero,
+            cornerRadii: cornerRadii,
             cornerCurve: .circular,
             borderWidth: 0,
             borderColor: nil,

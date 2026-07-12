@@ -467,13 +467,22 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Build creates system background wireframe for glass group")
-    func buildCreatesSystemBackgroundWireframeForGlassGroup() throws {
+    @Test("Build creates system background wireframe for glass group with corners")
+    func buildCreatesSystemBackgroundWireframeForGlassGroupWithCorners() throws {
         // Given
         let visualEffectSnapshot = CALayerSnapshot.mockWith(
             replayID: 2,
             absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
-            observation: .init(semantics: .visualEffect(.glassGroup))
+            observation: .init(semantics: .visualEffect(.glassGroup)),
+            cornerRadii: .init(
+                cornerRadius: 12,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
         )
         let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
         let builder = CompositionTreeBuilder(
@@ -494,6 +503,31 @@ struct CompositionTreeBuilderTests {
         #expect(output.wireframes.count == 1)
         #expect(wireframe.id == visualEffectSnapshot.replayID)
         #expect(wireframe.shapeStyle?.backgroundColor == hexString(from: UIColor.systemBackground.cgColor))
+        #expect(wireframe.shapeStyle?.cornerRadius == 12)
+        #expect(output.resources.isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build does not create a wireframe for a glass group without corners")
+    func buildDoesNotCreateWireframeForGlassGroupWithoutCorners() {
+        // Given
+        let visualEffectSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.glassGroup))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [visualEffectSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.wireframes.isEmpty)
         #expect(output.resources.isEmpty)
     }
 
