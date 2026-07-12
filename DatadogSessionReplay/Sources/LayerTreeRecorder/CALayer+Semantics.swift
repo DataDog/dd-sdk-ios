@@ -22,6 +22,10 @@ extension CALayer {
         delegate?.isKind(of: Classes.liquidLensView) == true
     }
 
+    var isPortal: Bool {
+        isKind(of: Classes.portalLayer)
+    }
+
     var isTabBarPlatter: Bool {
         delegate?.isKind(of: Classes.tabBarPlatterView) == true
     }
@@ -39,6 +43,7 @@ private enum Classes {
     static let barBackground: AnyClass? = NSClassFromString("_UIBarBackground")
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
+    static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
     static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
     static let backdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")

@@ -13,12 +13,15 @@ import WebKit
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// State shared by all layers captured in one snapshot.
-    struct Context {
+    final class Context {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         let imagePrivacyLevel: ImagePrivacyLevel
 
         /// Weak references to web views found while capturing the layer tree.
         let webViewCache: NSHashTable<WKWebView>
+
+        /// Replay IDs of source layers hidden by portal layers during capture.
+        var hiddenPortalSourceReplayIDs: Set<Int64> = []
 
         init(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,

@@ -144,6 +144,47 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
     }
 
+    @available(iOS 26.0, *)
+    @Test("Records portals as compositor support and collects hidden source replay IDs")
+    func recordsPortalsAsCompositorSupportAndCollectsHiddenSourceReplayIDs() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let portalLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CAPortalLayer"
+                    && ($0.value(forKey: "hidesSourceLayer") as? Bool) == true
+            }
+        )
+        let sourceLayer = try #require(portalLayer.value(forKey: "sourceLayer") as? CALayer)
+        let context = CALayerSnapshot.Context.mockAny()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: portalLayer, context: context)
+
+        // Then
+        #expect(observation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
+        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with fewer than two colors")
     func rejectsGradientSemanticsWithFewerThanTwoColors() {
@@ -593,6 +634,21 @@ private extension UIView {
                 return subview
             }
             if let match = subview.firstDescendant(where: predicate) {
+                return match
+            }
+        }
+        return nil
+    }
+}
+
+@available(iOS 26.0, *)
+private extension CALayer {
+    func firstDescendant(where predicate: (CALayer) -> Bool) -> CALayer? {
+        for sublayer in sublayers ?? [] {
+            if predicate(sublayer) {
+                return sublayer
+            }
+            if let match = sublayer.firstDescendant(where: predicate) {
                 return match
             }
         }

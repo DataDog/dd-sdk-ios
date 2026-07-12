@@ -30,6 +30,7 @@ extension CALayerSnapshot.SemanticObservation {
         case backdrop
         case liquidLens
         case background(UIColor?)
+        case compositorSupport
     }
 }
 

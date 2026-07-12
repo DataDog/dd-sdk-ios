@@ -10,6 +10,22 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let portal = Self { layer, _, context in
+        guard layer.isPortal else {
+            return nil
+        }
+
+        if (layer.value(forKey: "hidesSourceLayer") as? Bool) == true,
+           let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer {
+            context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
+    }
+
     static let tabBarPlatter = Self { layer, _, _ in
         guard layer.isTabBarPlatter else {
             return nil
