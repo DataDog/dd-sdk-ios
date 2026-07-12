@@ -13,6 +13,28 @@ import UIKit
 @testable import DatadogSessionReplay
 
 @MainActor
+struct CALayerSnapshotFilteringTests {
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Removes layer subtrees with matching replay IDs")
+    func removesLayerSubtreesWithMatchingReplayIDs() throws {
+        // Given
+        let removedSublayer = CALayerSnapshot.mockWith(replayID: 3)
+        let removedLayer = CALayerSnapshot.mockWith(
+            replayID: 2,
+            sublayers: [removedSublayer]
+        )
+        let retainedLayer = CALayerSnapshot.mockWith(replayID: 4)
+        let root = CALayerSnapshot.mockRoot(sublayers: [removedLayer, retainedLayer])
+
+        // When
+        let result = try #require(root.removingLayers(withReplayIDs: [removedLayer.replayID]))
+
+        // Then
+        #expect(result.sublayers.map(\.replayID) == [retainedLayer.replayID])
+    }
+}
+
+@MainActor
 struct CALayerSnapshotOcclusionTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the contents property is set")
