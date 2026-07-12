@@ -145,8 +145,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records portals as compositor support and collects hidden source replay IDs")
-    func recordsPortalsAsCompositorSupportAndCollectsHiddenSourceReplayIDs() throws {
+    @Test("Records portal semantics and collects hidden source replay IDs")
+    func recordsPortalSemanticsAndCollectsHiddenSourceReplayIDs() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
@@ -178,11 +178,90 @@ struct SemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: portalLayer, context: context)
 
         // Then
-        #expect(observation == .init(
+        guard case .visualEffect(.portal(let portal)) = observation.semantics else {
+            Issue.record("Expected portal semantics")
+            return
+        }
+
+        #expect(portal.sourceLayer.matches(sourceLayer))
+        #expect(portal.sourceRect == sourceLayer.convert(portalLayer.bounds, from: portalLayer))
+        #expect(portal.isOpaque == sourceLayer.isOpaque)
+        #expect(observation.ignoresSublayers)
+        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records tab bar compositor infrastructure as compositor support")
+    func recordsTabBarCompositorInfrastructureAsCompositorSupport() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let sdfLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CASDFLayer"
+            }
+        )
+        let sdfElementLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CASDFElementLayer"
+            }
+        )
+        let destinationOutLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                guard let delegate = $0.delegate else {
+                    return false
+                }
+                return NSStringFromClass(type(of: delegate)).hasSuffix("DestOutView")
+            }
+        )
+        let nonHidingPortalLayer = try #require(
+            window.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CAPortalLayer"
+                    && ($0.value(forKey: "hidesSourceLayer") as? Bool) != true
+            }
+        )
+
+        // When
+        let sdfObservation = CALayerSnapshot.SemanticObservation(layer: sdfLayer, context: .mockAny())
+        let sdfElementObservation = CALayerSnapshot.SemanticObservation(layer: sdfElementLayer, context: .mockAny())
+        let destinationOutObservation = CALayerSnapshot.SemanticObservation(
+            layer: destinationOutLayer,
+            context: .mockAny()
+        )
+        let nonHidingPortalObservation = CALayerSnapshot.SemanticObservation(
+            layer: nonHidingPortalLayer,
+            context: .mockAny()
+        )
+
+        // Then
+        let expectedSDFObservation = CALayerSnapshot.SemanticObservation(
+            semantics: .visualEffect(.compositorSupport)
+        )
+        #expect(sdfObservation == expectedSDFObservation)
+        #expect(sdfElementObservation == expectedSDFObservation)
+        #expect(destinationOutObservation == .init(
             semantics: .visualEffect(.compositorSupport),
             ignoresSublayers: true
         ))
-        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
+        #expect(nonHidingPortalObservation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

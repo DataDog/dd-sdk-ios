@@ -26,6 +26,14 @@ extension CALayer {
         isKind(of: Classes.portalLayer)
     }
 
+    var isSignedDistanceField: Bool {
+        isKind(of: Classes.sdfLayer) || isKind(of: Classes.sdfElementLayer)
+    }
+
+    var isDestinationOutView: Bool {
+        delegate.map { NSStringFromClass(type(of: $0)).hasSuffix("DestOutView") } == true
+    }
+
     var isTabBarPlatter: Bool {
         delegate?.isKind(of: Classes.tabBarPlatterView) == true
     }
@@ -44,6 +52,8 @@ private enum Classes {
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
     static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
+    static let sdfLayer: AnyClass? = NSClassFromString("CASDFLayer")
+    static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
     static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
     static let backdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")

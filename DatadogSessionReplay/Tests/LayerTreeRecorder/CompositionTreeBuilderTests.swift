@@ -563,6 +563,49 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates image wireframe for portal snapshot")
+    func buildCreatesImageWireframeForPortalSnapshot() throws {
+        // Given
+        let sourceLayer = CALayer()
+        let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        let portalSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.portal(.init(
+                sourceLayer: CALayerReference(sourceLayer),
+                sourceRect: sourceLayer.bounds,
+                isOpaque: sourceLayer.isOpaque
+            ))))
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [portalSnapshot])
+        let renderedImage = ContentSnapshot.mockAny(
+            image: UIImage.mockWith(color: .red),
+            frame: frame,
+            hasLayerSemantics: false,
+            textAndInputPrivacyLevel: .maskSensitiveInputs,
+            imagePrivacyLevel: .maskNone
+        )
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init(contentSnapshots: [portalSnapshot.replayID: .success(renderedImage)])
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.wireframes.count == 1)
+        guard case .imageWireframe(let wireframe) = try #require(output.wireframes.first) else {
+            Issue.record("Expected an image wireframe")
+            return
+        }
+
+        #expect(wireframe.id == portalSnapshot.replayID)
+        #expect(output.resources.count == 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe using visual effect background color")
     func buildCreatesShapeWireframeUsingVisualEffectBackgroundColor() throws {
         // Given

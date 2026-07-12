@@ -33,6 +33,8 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .progressView,
         .barBackground,
         // visual effects
+        .signedDistanceField,
+        .destinationOutView,
         .portal,
         .tabBarPlatter,
         .glassGroup,

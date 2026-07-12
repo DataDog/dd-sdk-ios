@@ -222,6 +222,10 @@ extension ContentSnapshotRequest {
         }
 
         return dependencies.reduce(into: bounds) { renderBounds, dependency in
+            guard !dependency.matches(layer) else {
+                return
+            }
+
             guard let dependencyLayer = dependency.resolve() else {
                 return
             }

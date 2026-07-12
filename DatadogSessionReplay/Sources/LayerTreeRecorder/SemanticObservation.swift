@@ -29,8 +29,18 @@ extension CALayerSnapshot.SemanticObservation {
         case glassGroup
         case backdrop
         case liquidLens
+        case portal(PortalSemantics)
         case background(UIColor?)
         case compositorSupport
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    struct PortalSemantics: Sendable, Equatable {
+        let sourceLayer: CALayerReference
+        let sourceRect: CGRect
+        let isOpaque: Bool
     }
 }
 

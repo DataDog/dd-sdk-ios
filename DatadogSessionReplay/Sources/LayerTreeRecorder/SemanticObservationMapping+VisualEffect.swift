@@ -10,18 +10,56 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let signedDistanceField = Self { layer, _, _ in
+        guard layer.isSignedDistanceField else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.compositorSupport))
+    }
+
+    static let destinationOutView = Self { layer, _, _ in
+        guard layer.isDestinationOutView else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
+    }
+
     static let portal = Self { layer, _, context in
         guard layer.isPortal else {
             return nil
         }
 
-        if (layer.value(forKey: "hidesSourceLayer") as? Bool) == true,
-           let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer {
-            context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
+        guard (layer.value(forKey: "hidesSourceLayer") as? Bool) == true else {
+            return .init(
+                semantics: .visualEffect(.compositorSupport),
+                ignoresSublayers: true
+            )
         }
 
+        guard let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer else {
+            return .init(
+                semantics: .visualEffect(.compositorSupport),
+                ignoresSublayers: true
+            )
+        }
+
+        context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
+
         return .init(
-            semantics: .visualEffect(.compositorSupport),
+            semantics: .visualEffect(
+                .portal(
+                    .init(
+                        sourceLayer: CALayerReference(sourceLayer),
+                        sourceRect: sourceLayer.convert(layer.bounds, from: layer),
+                        isOpaque: sourceLayer.isOpaque
+                    )
+                )
+            ),
             ignoresSublayers: true
         )
     }

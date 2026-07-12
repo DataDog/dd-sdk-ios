@@ -68,6 +68,7 @@ extension CALayerSnapshot {
         backgroundColor: CGColor? = nil,
         cornerRadii: CALayerSnapshot.CornerRadii = .zero,
         isPrivate: Bool = false,
+        isOpaque: Bool = false,
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
         let layer = CALayer()
@@ -91,7 +92,7 @@ extension CALayerSnapshot {
             sublayerTransform: CATransform3DIdentity,
             mask: nil,
             masksToBounds: false,
-            isOpaque: false,
+            isOpaque: isOpaque,
             backgroundColor: backgroundColor,
             cornerRadii: cornerRadii,
             cornerCurve: .circular,
