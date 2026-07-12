@@ -107,6 +107,43 @@ struct SemanticObservationTests {
         ))
     }
 
+    @available(iOS 26.0, *)
+    @Test("Records tab bar platter as an automatic capsule and records sublayers")
+    func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let platterView = try #require(
+            tabBarController.tabBar.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "UIKit._UITabBarPlatterView"
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(
+            layer: platterView.layer,
+            context: .mockAny()
+        )
+
+        // Then
+        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with fewer than two colors")
     func rejectsGradientSemanticsWithFewerThanTwoColors() {
@@ -545,6 +582,21 @@ struct SemanticObservationTests {
             )
         )
         #expect(webViewCache.allObjects.first === webView)
+    }
+}
+
+@available(iOS 26.0, *)
+private extension UIView {
+    func firstDescendant(where predicate: (UIView) -> Bool) -> UIView? {
+        for subview in subviews {
+            if predicate(subview) {
+                return subview
+            }
+            if let match = subview.firstDescendant(where: predicate) {
+                return match
+            }
+        }
+        return nil
     }
 }
 

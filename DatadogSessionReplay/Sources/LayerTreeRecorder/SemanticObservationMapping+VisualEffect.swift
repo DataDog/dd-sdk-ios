@@ -10,6 +10,14 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let tabBarPlatter = Self { layer, _, _ in
+        guard layer.isTabBarPlatter else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.automaticCapsule))
+    }
+
     static let glassGroup = Self { layer, _, _ in
         guard layer.isGlassGroup else {
             return nil

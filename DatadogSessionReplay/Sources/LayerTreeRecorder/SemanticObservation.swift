@@ -25,6 +25,7 @@ extension CALayerSnapshot {
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     enum VisualEffect: Sendable, Equatable {
+        case automaticCapsule
         case glassGroup
         case backdrop
         case liquidLens
