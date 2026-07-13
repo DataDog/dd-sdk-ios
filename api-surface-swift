@@ -422,6 +422,7 @@ public enum RUM
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
         public var enableTimeseries: Bool
+        public static let defaultTimeseriesBatchSize = 120
         public var timeseriesBatchSize: Int
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
@@ -445,7 +446,7 @@ public enum RUM
         case matchHeaders([String])
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,enableTimeseries: Bool = false,timeseriesBatchSize: Int = 30,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,enableTimeseries: Bool = false,timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
@@ -591,7 +592,6 @@ public protocol CrashReportingPlugin: AnyObject
 
 public enum WebViewTracking
     public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func enable(webView: WKWebView,hostPatterns: [String],logsSampleRate: SampleRate = .maxSampleRate,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
 [?] extension InternalExtension where ExtendedType == WebViewTracking
     public class AbstractMessageEmitter
@@ -604,7 +604,7 @@ public enum WebViewTracking
 
 [?] extension SRTextPosition.Alignment
     public init(systemTextAlignment: NSTextAlignment,vertical: SRTextPosition.Alignment.Vertical = .center)
-public struct SRCompositionLayer: Codable
+public struct SRCompositionLayer: Codable, Hashable
     public let children: [SRCompositionLayerChild]
     public let compositeOperation: CompositeOperation?
     public let height: Int64
@@ -627,7 +627,7 @@ public struct SRCompositionLayer: Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
         case plusDarker = "plusDarker"
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable
+public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable
     public let kind: Kind
     public let type: String = "backgroundMaterial"
     public enum CodingKeys: String, CodingKey
@@ -636,14 +636,14 @@ public struct SRCompositionLayerBackgroundMaterialModifier: Codable
     public init(kind: Kind)
     public enum Kind: String, Codable
         case glass = "glass"
-public struct SRCompositionLayerBrightnessBiasModifier: Codable
+public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable
     public let type: String = "brightnessBias"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerChild: Codable
+public struct SRCompositionLayerChild: Codable, Hashable
     public let id: Int64
     public let type: SRCompositionLayerChildType
     public enum CodingKeys: String, CodingKey
@@ -653,7 +653,7 @@ public struct SRCompositionLayerChild: Codable
 public enum SRCompositionLayerChildType: String, Codable
     case wireframe = "wireframe"
     case layer = "layer"
-public struct SRCompositionLayerClipModifier: Codable
+public struct SRCompositionLayerClipModifier: Codable, Hashable
     public let fillRule: FillRule?
     public let path: String
     public let type: String = "clip"
@@ -665,45 +665,69 @@ public struct SRCompositionLayerClipModifier: Codable
     public enum FillRule: String, Codable
         case nonzero = "nonzero"
         case evenodd = "evenodd"
-public struct SRCompositionLayerColorMatrixModifier: Codable
+public struct SRCompositionLayerColorMatrixModifier: Codable, Hashable
     public let matrix: [Double]
     public let type: String = "colorMatrix"
     public enum CodingKeys: String, CodingKey
         case matrix = "matrix"
         case type = "type"
     public init(matrix: [Double])
-public struct SRCompositionLayerGaussianBlurModifier: Codable
+public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable
     public let radius: Double
     public let type: String = "gaussianBlur"
     public enum CodingKeys: String, CodingKey
         case radius = "radius"
         case type = "type"
     public init(radius: Double)
-public enum SRCompositionLayerModifier: Codable
+public struct SRCompositionLayerMaskImageModifier: Codable, Hashable
+    public let resourceId: String
+    public let type: String = "maskImage"
+    public enum CodingKeys: String, CodingKey
+        case resourceId = "resourceId"
+        case type = "type"
+    public init(resourceId: String)
+public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerClipModifier(value: SRCompositionLayerClipModifier)
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
     case compositionLayerGaussianBlurModifier(value: SRCompositionLayerGaussianBlurModifier)
+    case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
+    case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
-public struct SRCompositionLayerOpacityModifier: Codable
+public struct SRCompositionLayerOpacityModifier: Codable, Hashable
     public let type: String = "opacity"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerSaturateModifier: Codable
+public struct SRCompositionLayerSaturateModifier: Codable, Hashable
     public let type: String = "saturate"
     public let value: Double
     public enum CodingKeys: String, CodingKey
         case type = "type"
         case value = "value"
     public init(value: Double)
-public struct SRCompositionLayerUpdate: Codable
+public struct SRCompositionLayerShadowModifier: Codable, Hashable
+    public let color: String
+    public let offsetX: Double
+    public let offsetY: Double
+    public let path: String?
+    public let radius: Double
+    public let type: String = "shadow"
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case offsetX = "offsetX"
+        case offsetY = "offsetY"
+        case path = "path"
+        case radius = "radius"
+        case type = "type"
+    public init(color: String,offsetX: Double,offsetY: Double,path: String? = nil,radius: Double)
+public struct SRCompositionLayerUpdate: Codable, Hashable
     public let children: [SRCompositionLayerChild]?
     public let compositeOperation: CompositeOperation?
     public let height: Int64?
@@ -1470,6 +1494,7 @@ public protocol FlagsClientProtocol: AnyObject
     public func setEvaluationContext(_ context: FlagsEvaluationContext)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
 [?] extension FlagsClientProtocol
+    public func snapshot() -> FlagsSnapshot?
     public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool
     public func getStringValue(key: String, defaultValue: String) -> String
@@ -1546,7 +1571,16 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var variant: String?
     public var reason: String?
     public var error: FlagEvaluationError?
-    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil)
+    public var allocationKey: String?
+    public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
+public struct FlagsSnapshot: Equatable, Encodable
+    public let assignments: [String: FlagSnapshot]
+    public init(assignments: [String: FlagSnapshot])
+public struct FlagSnapshot: Equatable, Encodable
+    public let value: AnyValue
+    public let variant: String
+    public let reason: String
+    public init(value: AnyValue,variant: String,reason: String)
 public protocol FlagValue: Encodable
 public enum FlagsError: Error
     case networkError(Error)

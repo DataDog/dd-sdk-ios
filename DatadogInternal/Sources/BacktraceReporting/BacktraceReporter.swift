@@ -26,6 +26,11 @@ public protocol BacktraceReporting: Sendable {
     /// - Returns: A `BacktraceReport` starting on the given thread and containing information about all other threads
     ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
     func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport?
+
+    /// Returns binary images loaded in the current process.
+    ///
+    /// Returns `nil` if binary images cannot be obtained.
+    func binaryImages() throws -> [BinaryImage]?
 }
 
 public extension BacktraceReporting {
@@ -39,6 +44,8 @@ public extension BacktraceReporting {
         let callerThreadID = Thread.currentThreadID
         return try generateBacktrace(threadID: callerThreadID)
     }
+
+    func binaryImages() throws -> [BinaryImage]? { try generateBacktrace()?.binaryImages }
 }
 
 internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
@@ -69,6 +76,10 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
             return nil
         }
         return try backtraceFeature.reporter.generateBacktrace(threadID: threadID)
+    }
+
+    func binaryImages() throws -> [BinaryImage]? {
+        try core?.get(feature: BacktraceReportingFeature.self)?.reporter.binaryImages()
     }
 }
 

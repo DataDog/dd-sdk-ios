@@ -209,7 +209,7 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         assertNoProfileOutput(timeout: timeout(after: 0.1))
     }
 
-    func testContinuousProfilingSamplesOut_customVitalStillSendsProfileEvent() throws {
+    func testContinuousProfilingSamplesOut_customVitalDoesNotSendProfileEvent() throws {
         // Given
         let sessionUUID = Fixtures.deterministicSessionUUID
         let vitalName = "vital-name"
@@ -231,19 +231,18 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         waitAndAssertRUMViewEvents()
         waitUntilContinuousProfilingSampled(false)
 
+        // Stop the setup-started profiler so this verifies only the custom vital start behavior.
+        dd_profiler_stop()
+        waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "profiler is stopped before the custom vital")
+
         startVital(name: vitalName, operationKey: operationKey)
-        waitUntilProfilerStatus(DD_PROFILER_STATUS_RUNNING, description: "profiler is running for the custom vital")
-        wait(during: Fixtures.minProfileDuration) {}
+        core.flush()
+        waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "custom vital does not start the profiler")
 
         finishVital(name: vitalName, operationKey: operationKey)
-        waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "profiler is stopped after the custom vital")
-
-        let profileAttachments = waitForProfileAttachments()
-        XCTAssertEqual(profileAttachments.count, 1)
-        let attachments = try XCTUnwrap(profileAttachments.last)
-        let rumVitals = try rumVitals(from: attachments)
-        XCTAssertEqual(rumVitals.count, 1)
-        XCTAssertEqual(rumVitals.first?["name"] as? String, vitalName)
+        core.flush()
+        waitUntilProfilerStatus(DD_PROFILER_STATUS_STOPPED, description: "profiler is still stopped after the custom vital")
+        assertNoProfileOutput(timeout: timeout(after: Fixtures.minProfileDuration + 0.1))
     }
 }
 

@@ -144,6 +144,26 @@ extension FlagsClientProtocol {
 // MARK: - Convenience flag evaluation methods
 
 extension FlagsClientProtocol {
+    /// Returns a side-effect-free snapshot of cached precomputed feature flag assignments.
+    ///
+    /// Use this method for diagnostics and export use cases, such as attaching the cached
+    /// assignment set to support logs. The snapshot may include assignments that have not
+    /// been evaluated through ``getValue(key:defaultValue:)`` or ``getDetails(key:defaultValue:)``.
+    /// Calling this method does not record evaluations,
+    /// exposures, or RUM feature flag evaluations. Use ``getValue(key:defaultValue:)`` or
+    /// ``getDetails(key:defaultValue:)`` for application logic that should be tracked.
+    ///
+    /// - Returns: A ``FlagsSnapshot`` if precomputed assignments are cached for the client,
+    ///   or `nil` if the client does not have cached assignments.
+    @available(*, message: "This API is in preview and may change in future releases")
+    public func snapshot() -> FlagsSnapshot? {
+        guard let assignments = (self as? FlagsClientInternal)?.getFlagAssignments() else {
+            return nil
+        }
+
+        return FlagsSnapshot(assignments: assignments.compactMapValues(FlagSnapshot.init))
+    }
+
     /// Evaluates a feature flag and returns only its value.
     ///
     /// This is a convenience method that evaluates a flag and returns only the value,

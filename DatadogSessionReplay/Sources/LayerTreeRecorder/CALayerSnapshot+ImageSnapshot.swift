@@ -7,7 +7,6 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
-import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
@@ -37,20 +36,19 @@ extension CALayerSnapshot {
             return
         }
 
-        let previousSnapshotData = cache.snapshotData(forReplayID: replayID)
-        let hasChanges = changeset.hasContentChanges(for: layer)
-            || changeset.hasChanges(for: dependencies)
-            || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
+        if let request = MaskSnapshotRequest(layerSnapshot: self, cache: cache, changeset: changeset) {
+            requests.append(.mask(request))
+        }
 
-        let request = ImageSnapshotRequest(
+        let request = ContentSnapshotRequest(
             layerSnapshot: self,
             visibleFrame: visibleFrame,
-            hasChanges: hasChanges,
-            previousSnapshotData: previousSnapshotData
+            cache: cache,
+            changeset: changeset
         )
 
-        if let request, observation.ignoreSublayers || sublayers.isEmpty {
-            requests.append(request)
+        if let request, observation.ignoresSublayers || sublayers.isEmpty {
+            requests.append(.content(request))
         } else {
             for sublayer in sublayers {
                 sublayer.collectImageSnapshotRequests(
@@ -68,21 +66,66 @@ extension CALayerSnapshot {
             return false
         }
 
-        return observation.allowsImageSnapshot(imagePrivacyLevel: imagePrivacyLevel)
+        switch observation.semantics {
+        case .image(let image) where !image.hasContent && dependencies.isEmpty:
+            return false
+        case .image where imagePrivacyLevel == .maskNone:
+            return true
+        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
+            return true
+        case .layer:
+            return true
+        default:
+            return false
+        }
     }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotRequest {
+extension MaskSnapshotRequest {
+    fileprivate init?(
+        layerSnapshot: CALayerSnapshot,
+        cache: ImageSnapshotCache,
+        changeset: CALayerChangeset
+    ) {
+        // Container masks clip the generated composition layer. Leaf masks are captured
+        // by the leaf content snapshot, so they do not need a separate mask request.
+        guard !layerSnapshot.sublayers.isEmpty, let mask = layerSnapshot.mask, !mask.dependencies.isEmpty else {
+            return nil
+        }
+
+        let previousSnapshotData = cache.maskSnapshotData(forReplayID: mask.replayID)
+        let hasChanges = changeset.hasChanges(for: mask.dependencies)
+            || (previousSnapshotData.map { $0.dependencies != mask.dependencies } ?? false)
+
+        self.init(
+            replayID: mask.replayID,
+            layer: mask.layer,
+            bounds: layerSnapshot.bounds,
+            frame: mask.frame,
+            dependencies: mask.dependencies,
+            hasChanges: hasChanges,
+            previousSnapshotData: previousSnapshotData
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension ContentSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
         visibleFrame: CGRect,
-        hasChanges: Bool,
-        previousSnapshotData: ImageSnapshotData?
+        cache: ImageSnapshotCache,
+        changeset: CALayerChangeset
     ) {
         guard layerSnapshot.allowsImageSnapshot else {
             return nil
         }
+
+        let previousSnapshotData = cache.contentSnapshotData(forReplayID: layerSnapshot.replayID)
+        let hasChanges = changeset.hasContentChanges(for: layerSnapshot.layer)
+            || changeset.hasChanges(for: layerSnapshot.dependencies)
+            || (previousSnapshotData.map { $0.dependencies != layerSnapshot.dependencies } ?? false)
 
         if layerSnapshot.layerClass == CALayer.self,
            layerSnapshot.contentsClass == nil,
@@ -109,36 +152,6 @@ extension ImageSnapshotRequest {
             imagePrivacyLevel: layerSnapshot.imagePrivacyLevel,
             previousSnapshotData: previousSnapshotData
         )
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation {
-    fileprivate func allowsImageSnapshot(imagePrivacyLevel: ImagePrivacyLevel) -> Bool {
-        switch semantics {
-        case .image where imagePrivacyLevel == .maskNone:
-            return true
-        case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
-            return true
-        case .layer, .activityIndicator, .stepper, .switchControl:
-            return true
-        default:
-            return false
-        }
-    }
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-extension CALayerSnapshot.SemanticObservation.ImageSemantics {
-    fileprivate var isContextual: Bool {
-        guard let resolvedImage else {
-            return false
-        }
-        return resolvedImage.isContextual
-    }
-
-    private var resolvedImage: UIImage? {
-        isHighlighted ? highlightedImage ?? image : image
     }
 }
 #endif

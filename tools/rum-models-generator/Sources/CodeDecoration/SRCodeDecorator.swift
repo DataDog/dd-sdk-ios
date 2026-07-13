@@ -11,7 +11,7 @@ import CodeGeneration
 public class SRCodeDecorator: SwiftCodeDecorator {
     /// `SRDataModel` protocol, implemented by all Session Replay models.
     private let srDataModelProtocol = SwiftProtocol(name: "SRDataModel", conformance: [codableProtocol])
-    /// `Hashable` protocol, implemented by wireframes which need to be compared in diff (for incremental records).
+    /// `Hashable` protocol, implemented by models which need to be compared in diff (for incremental records).
     private let hashableProtocol = SwiftProtocol(name: "Hashable", conformance: [codableProtocol])
 
     public init() {
@@ -51,9 +51,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRCompositionLayerOpacityModifier",
                 "SRCompositionLayerColorMatrixModifier",
                 "SRCompositionLayerGaussianBlurModifier",
+                "SRCompositionLayerShadowModifier",
                 "SRCompositionLayerBrightnessBiasModifier",
                 "SRCompositionLayerSaturateModifier",
                 "SRCompositionLayerBackgroundMaterialModifier",
+                "SRCompositionLayerMaskImageModifier",
                 "SRCompositionLayerUpdate",
                 "SRCompositionTreeMutationData",
             ]
@@ -79,9 +81,10 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         let isWireframe = `struct`.name.lowercased().contains("wireframe")
         let isNestedInWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") }) != nil
+        let isCompositionLayer = `struct`.name.lowercased().contains("compositionlayer")
         let notWireframeUpdate = !`struct`.name.hasSuffix("WireframeUpdate") // to exclude `TextWireframeUpdate`, `ShapeWireframeUpdate`, ...
 
-        if (isWireframe || isNestedInWireframe) && notWireframeUpdate {
+        if ((isWireframe || isNestedInWireframe) && notWireframeUpdate) || isCompositionLayer {
             `struct`.conformance.append(hashableProtocol)
         }
 
@@ -93,6 +96,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         if transformed.name == "SRCompositionLayerModifier" {
             transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+            transformed.conformance.append(hashableProtocol)
         }
 
         let parentIncrementalSnapshotRecord = context.predecessorStruct(

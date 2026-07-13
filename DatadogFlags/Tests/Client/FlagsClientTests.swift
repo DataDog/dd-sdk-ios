@@ -232,7 +232,8 @@ final class FlagsClientTests: XCTestCase {
                 key: "boolean-flag",
                 value: true,
                 variant: "variation-124",
-                reason: "TARGETING_MATCH"
+                reason: "TARGETING_MATCH",
+                allocationKey: "allocation-124"
             )
         )
         XCTAssertEqual(
@@ -358,6 +359,122 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertEqual(messageReceiver.messages.filter(\.isRUMMessage).count, 0, "No RUM messages should be sent")
     }
 
+    func testSnapshot() {
+        // Given
+        let exposureLogger = ExposureLoggerMock()
+        let evaluationLogger = EvaluationLoggerMock()
+        let rumFlagEvaluationReporter = RUMFlagEvaluationReporterMock()
+        let client: FlagsClientProtocol = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "boolean-flag": .init(
+                            allocationKey: "allocation-124",
+                            variationKey: "variation-124",
+                            variation: .boolean(true),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "integer-flag": .init(
+                            allocationKey: "allocation-125",
+                            variationKey: "variation-125",
+                            variation: .integer(42),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "numeric-flag": .init(
+                            allocationKey: "allocation-126",
+                            variationKey: "variation-126",
+                            variation: .double(3.14),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                        "json-flag": .init(
+                            allocationKey: "allocation-127",
+                            variationKey: "variation-127",
+                            variation: .object(
+                                .dictionary(["key": .string("value"), "prop": .int(123)])
+                            ),
+                            reason: "TARGETING_MATCH",
+                            doLog: true
+                        ),
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: exposureLogger,
+            evaluationLogger: evaluationLogger,
+            rumFlagEvaluationReporter: rumFlagEvaluationReporter
+        )
+
+        // When
+        guard let snapshot = client.snapshot() else {
+            XCTFail("Failed to get snapshot")
+            return
+        }
+
+        // Then
+        XCTAssertEqual(
+            snapshot,
+            FlagsSnapshot(
+                assignments: [
+                    "string-flag": FlagSnapshot(
+                        value: .string("red"),
+                        variant: "variation-123",
+                        reason: "TARGETING_MATCH"
+                    ),
+                    "boolean-flag": FlagSnapshot(
+                        value: .bool(true),
+                        variant: "variation-124",
+                        reason: "TARGETING_MATCH"
+                    ),
+                    "integer-flag": FlagSnapshot(
+                        value: .int(42),
+                        variant: "variation-125",
+                        reason: "TARGETING_MATCH"
+                    ),
+                    "numeric-flag": FlagSnapshot(
+                        value: .double(3.14),
+                        variant: "variation-126",
+                        reason: "TARGETING_MATCH"
+                    ),
+                    "json-flag": FlagSnapshot(
+                        value: .dictionary(["key": .string("value"), "prop": .int(123)]),
+                        variant: "variation-127",
+                        reason: "TARGETING_MATCH"
+                    ),
+                ]
+            )
+        )
+        XCTAssertEqual(exposureLogger.logExposureCalls.count, 0)
+        XCTAssertEqual(evaluationLogger.logEvaluationCalls.count, 0)
+        XCTAssertEqual(rumFlagEvaluationReporter.sendFlagEvaluationCalls.count, 0)
+    }
+
+    func testSnapshotWhenNoCachedAssignments() {
+        // Given
+        let client: FlagsClientProtocol = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let snapshot = client.snapshot()
+
+        // Then
+        XCTAssertNil(snapshot)
+    }
+
     // MARK: - Internal methods consumed by the React Native SDK
 
     func testGetFlagAssignments() {
@@ -477,6 +594,52 @@ final class FlagsClientTests: XCTestCase {
             )
         )
         XCTAssertNil(flagAssignments["missing-flag"])
+    }
+
+    func testGetDetails_errorPathsHaveEmptyAllocationKey() {
+        // Given — a client with no context (providerNotReady) and one string flag (for typeMismatch)
+        let providerNotReadyClient = FlagsClient(
+            repository: FlagsRepositoryMock(),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        let clientWithFlags = FlagsClient(
+            repository: FlagsRepositoryMock(
+                flagsData: .init(
+                    flags: [
+                        "string-flag": .init(
+                            allocationKey: "allocation-123",
+                            variationKey: "variation-123",
+                            variation: .string("red"),
+                            reason: "TARGETING_MATCH",
+                            doLog: false
+                        )
+                    ],
+                    context: .mockAny(),
+                    date: .mockAny()
+                )
+            ),
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        let providerNotReadyDetails = providerNotReadyClient.getDetails(key: "any-flag", defaultValue: false)
+        let flagNotFoundDetails = clientWithFlags.getDetails(key: "missing-flag", defaultValue: false)
+        let typeMismatchDetails = clientWithFlags.getDetails(key: "string-flag", defaultValue: false)
+
+        // Then — all error paths return nil allocationKey
+        XCTAssertEqual(providerNotReadyDetails.error, .providerNotReady)
+        XCTAssertNil(providerNotReadyDetails.allocationKey)
+
+        XCTAssertEqual(flagNotFoundDetails.error, .flagNotFound)
+        XCTAssertNil(flagNotFoundDetails.allocationKey)
+
+        XCTAssertEqual(typeMismatchDetails.error, .typeMismatch)
+        XCTAssertNil(typeMismatchDetails.allocationKey)
     }
 
     func testSendFlagEvaluation() {
