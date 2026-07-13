@@ -108,6 +108,22 @@ class CrashContextCoreProviderTests: XCTestCase {
         XCTAssertEqual(provider.currentCrashContext?.lastRUMSessionState?.sessionUUID, sessionState.sessionUUID)
     }
 
+    // MARK: - Log Attributes Tests
+
+    func testItStoresLogEventAttributesFromLegacyBus() {
+        // Given
+        let logAttributes: LogEventAttributes = .mockRandom()
+        core.messageBus.send(message: DatadogContext.mockAny())
+        provider.flush()
+
+        // When — DatadogLogs still publishes log attributes on the legacy bus
+        _ = provider.receive(message: .payload(logAttributes), from: core)
+        provider.flush()
+
+        // Then
+        DDAssertJSONEqual(provider.currentCrashContext?.lastLogAttributes, logAttributes)
+    }
+
     // MARK: - Callback Tests
 
     func testItInvokesCallbackOnContextChange() {

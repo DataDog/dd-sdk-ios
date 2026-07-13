@@ -64,7 +64,15 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        return false
+        // `LogEventAttributes` stays on the legacy bus until DatadogLogs migrates its
+        // sender (`Logs.addAttribute`/`removeAttribute`) to the typed bus. The remaining
+        // crash-context messages are published on the typed bus by already-migrated
+        // senders and handled via `subscribe(to:)`.
+        guard case let .payload(logAttributes as LogEventAttributes) = message else {
+            return false
+        }
+        queue.async { self.logAttributes = logAttributes }
+        return true
     }
 
     /// Updates crash context.
@@ -114,9 +122,6 @@ extension CrashContextCoreProvider {
             },
             bus.subscribe { [weak self] (message: RUMEventAttributes, _) in
                 self?.queue.async { self?.rumAttributes = message }
-            },
-            bus.subscribe { [weak self] (message: LogEventAttributes, _) in
-                self?.queue.async { self?.logAttributes = message }
             },
         ]
     }
