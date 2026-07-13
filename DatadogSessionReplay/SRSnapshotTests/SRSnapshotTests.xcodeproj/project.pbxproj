@@ -12,6 +12,7 @@
 		5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */; };
 		5BA0067B2E49F6A3000148DB /* UIImage+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067A2E49F698000148DB /* UIImage+SVG.swift */; };
 		5BA0067D2E49F8BF000148DB /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */; };
+		5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA07FD03002E97700322F5D /* TabFixtureView.swift */; };
 		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
 		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
@@ -70,6 +71,7 @@
 		5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertFixtureView.swift; sourceTree = "<group>"; };
 		5BA0067A2E49F698000148DB /* UIImage+SVG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+SVG.swift"; sourceTree = "<group>"; };
 		5BA0067C2E49F8B3000148DB /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
+		5BA07FD03002E97700322F5D /* TabFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabFixtureView.swift; sourceTree = "<group>"; };
 		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
 		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
@@ -241,9 +243,10 @@
 			isa = PBXGroup;
 			children = (
 				5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */,
+				B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */,
 				5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */,
 				157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */,
-				B32BB65FFF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift */,
+				5BA07FD03002E97700322F5D /* TabFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 				AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */,
 				DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */,
 				BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */,
+				5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */,
 				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,
 			);
