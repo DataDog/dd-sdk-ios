@@ -16,7 +16,7 @@ extension RemoteConfiguration: AnyMockable, RandomMockable {
         .init(
             profiling: .mockRandom(),
             rum: .mockRandom(),
-            sessionReplay: nil,
+            sessionReplay: .mockRandom(),
             trace: nil
         )
     }
@@ -177,5 +177,59 @@ extension RemoteConfiguration.Trace.TraceContextInjection: RandomMockable {
 extension RemoteConfiguration.Trace.TracingHeaderTypes: RandomMockable {
     public static func mockRandom() -> RemoteConfiguration.Trace.TracingHeaderTypes {
         [.datadog, .b3, .b3multi, .tracecontext].randomElement()!
+    }
+}
+
+extension RemoteConfiguration.SessionReplay: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.SessionReplay {
+        mockWith()
+    }
+
+    /// Builds a `sessionReplay` namespace with **every** field populated with a random, non-`nil` value.
+    ///
+    /// Keeping all fields populated is what lets the exhaustiveness guard in
+    /// `SessionReplayConfiguration_RemoteConfigurationTests` detect any newly generated schema field.
+    public static func mockRandom() -> RemoteConfiguration.SessionReplay {
+        .init(
+            imagePrivacy: .mockRandom(),
+            sampleRate: .mockRandom(min: 0, max: 100),
+            startRecordingImmediately: .mockRandom(),
+            textAndInputPrivacy: .mockRandom(),
+            touchPrivacy: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        imagePrivacy: RemoteConfiguration.SessionReplay.ImagePrivacy? = nil,
+        sampleRate: Double? = nil,
+        startRecordingImmediately: Bool? = nil,
+        textAndInputPrivacy: RemoteConfiguration.SessionReplay.TextAndInputPrivacy? = nil,
+        touchPrivacy: RemoteConfiguration.SessionReplay.TouchPrivacy? = nil
+    ) -> RemoteConfiguration.SessionReplay {
+        .init(
+            imagePrivacy: imagePrivacy,
+            sampleRate: sampleRate,
+            startRecordingImmediately: startRecordingImmediately,
+            textAndInputPrivacy: textAndInputPrivacy,
+            touchPrivacy: touchPrivacy
+        )
+    }
+}
+
+extension RemoteConfiguration.SessionReplay.ImagePrivacy: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.SessionReplay.ImagePrivacy {
+        [.maskNone, .maskNonBundledOnly, .maskAll].randomElement()!
+    }
+}
+
+extension RemoteConfiguration.SessionReplay.TextAndInputPrivacy: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.SessionReplay.TextAndInputPrivacy {
+        [.maskSensitiveInputs, .maskAllInputs, .maskAll].randomElement()!
+    }
+}
+
+extension RemoteConfiguration.SessionReplay.TouchPrivacy: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.SessionReplay.TouchPrivacy {
+        [.show, .hide].randomElement()!
     }
 }
