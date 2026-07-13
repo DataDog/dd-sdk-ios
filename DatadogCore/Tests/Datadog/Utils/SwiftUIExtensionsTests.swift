@@ -13,7 +13,7 @@ import SwiftUI
 @testable import DatadogCore
 @testable import DatadogInternal
 
-class CustomViewController: UIViewController {}
+class CustomViewController: DDViewController {}
 
 @available(iOS 13, tvOS 13, *)
 final class TestView: View {
@@ -37,12 +37,12 @@ class SwiftUIExtensionsTests: XCTestCase {
 
         // Given
         let someSwiftUITypes: [AnyClass] = [
-            UIHostingController<AnyView>.self // The only class in SwiftUI
+            DDHostingController<AnyView>.self // The only class in SwiftUI
         ]
 
         let someNonSwiftUITypes: [AnyClass] = [
             TestView.self,
-            UIViewController.self,
+            DDViewController.self,
             OperationQueue.self,
             CustomViewController.self
         ]

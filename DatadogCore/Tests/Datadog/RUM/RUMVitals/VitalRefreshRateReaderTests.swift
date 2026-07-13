@@ -5,7 +5,11 @@
  */
 
 import TestUtilities
+#if canImport(AppKit)
+import AppKit
+#else
 import UIKit
+#endif
 import XCTest
 
 @testable import DatadogRUM

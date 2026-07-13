@@ -8,7 +8,7 @@ import XCTest
 import DatadogRUM
 import TestUtilities
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 #if canImport(SwiftUI)
 import SwiftUI

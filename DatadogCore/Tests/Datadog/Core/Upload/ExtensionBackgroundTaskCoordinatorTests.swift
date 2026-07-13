@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import XCTest
 import DatadogInternal
 @testable import DatadogCore
@@ -64,3 +65,4 @@ class ProcessInfoSpy: ProcessInfoActivityCoordinator {
         endBackgroundTaskCalled = true
     }
 }
+#endif
