@@ -5173,6 +5173,499 @@ public struct RUMTelemetryOperatingSystem: Codable, Equatable {
     }
 }
 
+/// Schema for a CPU timeseries event.
+public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source
+
+    /// CPU timeseries properties
+    public let timeseries: Timeseries
+
+    /// RUM event type
+    public let type: String = "timeseries"
+
+    /// The version for this application
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case timeseries = "timeseries"
+        case type = "type"
+        case version = "version"
+    }
+
+    /// Schema for a CPU timeseries event.
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - timeseries: CPU timeseries properties
+    ///   - version: The version for this application
+    public init(
+        dd: DD,
+        application: Application,
+        date: Int64,
+        service: String? = nil,
+        session: Session,
+        source: Source,
+        timeseries: Timeseries,
+        version: String? = nil
+    ) {
+        self.dd = dd
+        self.application = application
+        self.date = date
+        self.service = service
+        self.session = session
+        self.source = source
+        self.timeseries = timeseries
+        self.version = version
+    }
+
+    /// Internal properties
+    public struct DD: Codable, Equatable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Application properties
+    public struct Application: Codable, Equatable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable, Equatable {
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
+        case rumCpp = "rum-cpp"
+    }
+
+    /// CPU timeseries properties
+    public struct Timeseries: Codable, Equatable {
+        /// Flattened CPU data points
+        public let data: Data
+
+        /// Timestamp of the last sample in nanoseconds from epoch
+        public let end: Int64
+
+        /// UUID of the timeseries batch
+        public let id: String
+
+        /// Name identifying the timeseries metric
+        public let name: String = "cpu"
+
+        /// Wire-shape discriminator for the data field
+        public let schema: String = "object-v2"
+
+        /// Timestamp of the first sample in nanoseconds from epoch
+        public let start: Int64
+
+        public enum CodingKeys: String, CodingKey {
+            case data = "data"
+            case end = "end"
+            case id = "id"
+            case name = "name"
+            case schema = "schema"
+            case start = "start"
+        }
+
+        /// CPU timeseries properties
+        ///
+        /// - Parameters:
+        ///   - data: Flattened CPU data points
+        ///   - end: Timestamp of the last sample in nanoseconds from epoch
+        ///   - id: UUID of the timeseries batch
+        ///   - start: Timestamp of the first sample in nanoseconds from epoch
+        public init(
+            data: Data,
+            end: Int64,
+            id: String,
+            start: Int64
+        ) {
+            self.data = data
+            self.end = end
+            self.id = id
+            self.start = start
+        }
+
+        /// Flattened CPU data points
+        public struct Data: Codable, Equatable {
+            /// Sample timestamps in nanoseconds from epoch
+            public let timestamps: [Int64]
+
+            /// CPU measurements, aligned index-for-index with timestamps
+            public let values: Values
+
+            public enum CodingKeys: String, CodingKey {
+                case timestamps = "timestamps"
+                case values = "values"
+            }
+
+            /// Flattened CPU data points
+            ///
+            /// - Parameters:
+            ///   - timestamps: Sample timestamps in nanoseconds from epoch
+            ///   - values: CPU measurements, aligned index-for-index with timestamps
+            public init(
+                timestamps: [Int64],
+                values: Values
+            ) {
+                self.timestamps = timestamps
+                self.values = values
+            }
+
+            /// CPU measurements, aligned index-for-index with timestamps
+            public struct Values: Codable, Equatable {
+                /// CPU usage as a percentage (0.0 to 100.0)
+                public let cpuUsage: [Double]
+
+                public enum CodingKeys: String, CodingKey {
+                    case cpuUsage = "cpu_usage"
+                }
+
+                /// CPU measurements, aligned index-for-index with timestamps
+                ///
+                /// - Parameters:
+                ///   - cpuUsage: CPU usage as a percentage (0.0 to 100.0)
+                public init(
+                    cpuUsage: [Double]
+                ) {
+                    self.cpuUsage = cpuUsage
+                }
+            }
+        }
+    }
+}
+
+/// Schema for a memory timeseries event.
+public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source
+
+    /// Memory timeseries properties
+    public let timeseries: Timeseries
+
+    /// RUM event type
+    public let type: String = "timeseries"
+
+    /// The version for this application
+    public let version: String?
+
+    public enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case date = "date"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case timeseries = "timeseries"
+        case type = "type"
+        case version = "version"
+    }
+
+    /// Schema for a memory timeseries event.
+    ///
+    /// - Parameters:
+    ///   - dd: Internal properties
+    ///   - application: Application properties
+    ///   - date: Start of the event in ms from epoch
+    ///   - service: The service name for this application
+    ///   - session: Session properties
+    ///   - source: The source of this event
+    ///   - timeseries: Memory timeseries properties
+    ///   - version: The version for this application
+    public init(
+        dd: DD,
+        application: Application,
+        date: Int64,
+        service: String? = nil,
+        session: Session,
+        source: Source,
+        timeseries: Timeseries,
+        version: String? = nil
+    ) {
+        self.dd = dd
+        self.application = application
+        self.date = date
+        self.service = service
+        self.session = session
+        self.source = source
+        self.timeseries = timeseries
+        self.version = version
+    }
+
+    /// Internal properties
+    public struct DD: Codable, Equatable {
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        public enum CodingKeys: String, CodingKey {
+            case formatVersion = "format_version"
+        }
+
+        /// Internal properties
+        public init() { }
+    }
+
+    /// Application properties
+    public struct Application: Codable, Equatable {
+        /// UUID of the application
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Application properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the application
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable, Equatable {
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case type = "type"
+        }
+
+        /// Session properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the session
+        ///   - type: Type of the session
+        public init(
+            id: String,
+            type: RUMSessionType
+        ) {
+            self.id = id
+            self.type = type
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+        case kotlinMultiplatform = "kotlin-multiplatform"
+        case electron = "electron"
+        case rumCpp = "rum-cpp"
+    }
+
+    /// Memory timeseries properties
+    public struct Timeseries: Codable, Equatable {
+        /// Flattened memory data points
+        public let data: Data
+
+        /// Timestamp of the last sample in nanoseconds from epoch
+        public let end: Int64
+
+        /// UUID of the timeseries batch
+        public let id: String
+
+        /// Name identifying the timeseries metric
+        public let name: String = "memory"
+
+        /// Wire-shape discriminator for the data field
+        public let schema: String = "object-v2"
+
+        /// Timestamp of the first sample in nanoseconds from epoch
+        public let start: Int64
+
+        public enum CodingKeys: String, CodingKey {
+            case data = "data"
+            case end = "end"
+            case id = "id"
+            case name = "name"
+            case schema = "schema"
+            case start = "start"
+        }
+
+        /// Memory timeseries properties
+        ///
+        /// - Parameters:
+        ///   - data: Flattened memory data points
+        ///   - end: Timestamp of the last sample in nanoseconds from epoch
+        ///   - id: UUID of the timeseries batch
+        ///   - start: Timestamp of the first sample in nanoseconds from epoch
+        public init(
+            data: Data,
+            end: Int64,
+            id: String,
+            start: Int64
+        ) {
+            self.data = data
+            self.end = end
+            self.id = id
+            self.start = start
+        }
+
+        /// Flattened memory data points
+        public struct Data: Codable, Equatable {
+            /// Sample timestamps in nanoseconds from epoch
+            public let timestamps: [Int64]
+
+            /// Memory measurements, aligned index-for-index with timestamps
+            public let values: Values
+
+            public enum CodingKeys: String, CodingKey {
+                case timestamps = "timestamps"
+                case values = "values"
+            }
+
+            /// Flattened memory data points
+            ///
+            /// - Parameters:
+            ///   - timestamps: Sample timestamps in nanoseconds from epoch
+            ///   - values: Memory measurements, aligned index-for-index with timestamps
+            public init(
+                timestamps: [Int64],
+                values: Values
+            ) {
+                self.timestamps = timestamps
+                self.values = values
+            }
+
+            /// Memory measurements, aligned index-for-index with timestamps
+            public struct Values: Codable, Equatable {
+                /// Physical memory footprint of the process in kilobytes
+                public let memoryFootprint: [Double]
+
+                /// Memory footprint as a percentage of total device RAM
+                public let memoryPercent: [Double]
+
+                public enum CodingKeys: String, CodingKey {
+                    case memoryFootprint = "memory_footprint"
+                    case memoryPercent = "memory_percent"
+                }
+
+                /// Memory measurements, aligned index-for-index with timestamps
+                ///
+                /// - Parameters:
+                ///   - memoryFootprint: Physical memory footprint of the process in kilobytes
+                ///   - memoryPercent: Memory footprint as a percentage of total device RAM
+                public init(
+                    memoryFootprint: [Double],
+                    memoryPercent: [Double]
+                ) {
+                    self.memoryFootprint = memoryFootprint
+                    self.memoryPercent = memoryPercent
+                }
+            }
+        }
+    }
+}
+
 /// User properties
 public struct RUMUser: Codable, Equatable {
     /// Identifier of the user across sessions
@@ -14364,4 +14857,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4ed60cbe47c30afcef051481a035adf88161d4b7
+// Generated from https://github.com/DataDog/rum-events-format/tree/ede4fb476a8293af22e57324ddb32644e040dff3
