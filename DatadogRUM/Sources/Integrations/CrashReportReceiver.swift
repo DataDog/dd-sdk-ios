@@ -8,7 +8,8 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume crash reports as RUM events.
-internal struct CrashReportReceiver: FeatureMessageReceiver {
+internal final class CrashReportReceiver: BusMessageReceiver, FeatureMessageReceiver {
+    typealias Message = Crash
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -55,6 +56,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.eventsMapper = eventsMapper
+    }
+
+    func receive(message: Crash, from core: DatadogCoreProtocol) {
+        _ = send(report: message.report, with: message.context)
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -128,7 +133,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-                let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
+                let builder = self.createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
                 if let mappedError = self.eventsMapper.map(event: rumError) {
@@ -269,7 +274,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
         featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-            let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
+            let builder = self.createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
             let updatedRUMView = builder.updateRUMViewWithError(rumView)
             let rumError = builder.createRUMError(with: updatedRUMView)
 

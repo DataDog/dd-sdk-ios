@@ -47,6 +47,9 @@ internal class CrashContextCoreProvider: CrashContextProvider {
         didSet { _context?.lastRUMAttributes = rumAttributes }
     }
 
+    /// Typed-bus subscription handles. Retaining these keeps the closures alive.
+    private var subscriptions: [MessageBusSubscription] = []
+
     // MARK: - CrashContextProviderType
 
     var currentCrashContext: CrashContext? {
@@ -61,30 +64,21 @@ internal class CrashContextCoreProvider: CrashContextProvider {
 
 extension CrashContextCoreProvider: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            update(context: context)
-        case let .payload(viewEvent as RUMViewEvent):
-            queue.async { self.viewEvent = viewEvent }
-        case let .payload(message as String) where message == RUMPayloadMessages.viewReset:
-            queue.async { self.viewEvent = nil }
-        case let .payload(sessionState as RUMSessionState):
-            queue.async { self.sessionState = sessionState }
-        case let .payload(rumAttributes as RUMEventAttributes):
-            queue.async { self.rumAttributes = rumAttributes }
-        case let .payload(logAttributes as LogEventAttributes):
-            queue.async { self.logAttributes = logAttributes }
-        default:
+        // `LogEventAttributes` stays on the legacy bus until DatadogLogs migrates its
+        // sender (`Logs.addAttribute`/`removeAttribute`) to the typed bus. The remaining
+        // crash-context messages are published on the typed bus by already-migrated
+        // senders and handled via `subscribe(to:)`.
+        guard case let .payload(logAttributes as LogEventAttributes) = message else {
             return false
         }
-
+        queue.async { self.logAttributes = logAttributes }
         return true
     }
 
     /// Updates crash context.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext) {
+    func update(context: DatadogContext) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
@@ -102,6 +96,34 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                 self._context = crashContext
             }
         }
+    }
+}
+
+// MARK: - Typed-bus subscriptions
+
+extension CrashContextCoreProvider {
+    /// Subscribes to all crash-context update messages on the typed bus.
+    ///
+    /// Call once from `CrashReporting.enableOrThrow`. The returned subscriptions are retained
+    /// by the provider and cancelled when it is deallocated.
+    func subscribe(to bus: MessageBus) {
+        subscriptions = [
+            bus.subscribe { [weak self] (context: DatadogContext, _) in
+                self?.update(context: context)
+            },
+            bus.subscribe { [weak self] (message: RUMViewEvent, _) in
+                self?.queue.async { self?.viewEvent = message }
+            },
+            bus.subscribe { [weak self] (_: RUMViewResetMessage, _) in
+                self?.queue.async { self?.viewEvent = nil }
+            },
+            bus.subscribe { [weak self] (message: RUMSessionState, _) in
+                self?.queue.async { self?.sessionState = message }
+            },
+            bus.subscribe { [weak self] (message: RUMEventAttributes, _) in
+                self?.queue.async { self?.rumAttributes = message }
+            },
+        ]
     }
 }
 

@@ -62,6 +62,14 @@ public final class CrashReporting {
 
         try core.register(feature: reporter)
 
+        // Subscribe typed-bus receivers for crash context updates:
+        contextProvider.subscribe(to: core.messageBus)
+
+        // Seed the initial crash context without relying on the bus to replay it:
+        core.scope(for: CrashReportingFeature.self).context { context in
+            contextProvider.update(context: context)
+        }
+
         if let backtraceReporter = plugin.backtraceReporter {
             try core.register(backtraceReporter: backtraceReporter)
         }
