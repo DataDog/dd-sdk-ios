@@ -259,7 +259,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         core.messageBus.send(message: sdkContext) // receive initial SDK context
-        core.messageBus.send(message: logAttributes)
+        _ = provider.receive(message: .payload(logAttributes), from: core) // log attributes stay on the legacy bus
 
         // Then
         provider.flush()
@@ -279,7 +279,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // When
         core.messageBus.send(message: DatadogContext.mockRandom()) // receive initial SDK context
-        core.messageBus.send(message: logAttributes)
+        _ = provider.receive(message: .payload(logAttributes), from: core) // log attributes stay on the legacy bus
         core.messageBus.send(message: nextSDKContext)
 
         // Then
