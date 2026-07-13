@@ -102,7 +102,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID.map { .string(value: $0) })
+        XCTAssertEqual(event?.action?.id.stringValue, rumContext.userActionID)
         XCTAssertEqual(event?.telemetry.telemetryInfo["foo"] as? Int, 42)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
@@ -122,7 +122,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID.map { .string(value: $0) })
+        XCTAssertEqual(event?.action?.id.stringValue, rumContext.userActionID)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
@@ -508,7 +508,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID.map { .string(value: $0) })
+        XCTAssertEqual(event?.action?.id.stringValue, rumContext.userActionID)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
         let device = try XCTUnwrap(event?.telemetry.device)
         XCTAssertEqual(device.model, deviceMock.model)
@@ -537,7 +537,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.application?.id, rumContext.applicationID)
         XCTAssertEqual(event?.session?.id, sessionIDOverride)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
-        XCTAssertEqual(event?.action?.id, rumContext.userActionID.map { .string(value: $0) })
+        XCTAssertEqual(event?.action?.id.stringValue, rumContext.userActionID)
         XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
     }
 

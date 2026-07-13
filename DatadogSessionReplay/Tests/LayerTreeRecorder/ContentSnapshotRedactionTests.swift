@@ -13,13 +13,13 @@ import UIKit
 
 @testable import DatadogSessionReplay
 
-struct ImageSnapshotRedactionTests {
+struct ContentSnapshotRedactionTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns the original image when no redaction is needed")
     func returnsOriginalImageWhenNoRedactionIsNeeded() throws {
         // Given
         let image = UIImage()
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             image: image,
             layerClass: CALayer.self
         )
@@ -37,7 +37,7 @@ struct ImageSnapshotRedactionTests {
     func returnsPlaceholderWithBackgroundColorWhenImageShouldNotBeSent() throws {
         // Given
         let image = UIImage.mockWith(color: .red)
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
             imagePrivacyLevel: .maskAll
@@ -55,7 +55,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact generic layer snapshots")
     func doesNotRedactGenericLayerSnapshots() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: CALayer.self,
             textAndInputPrivacyLevel: .maskAll,
             imagePrivacyLevel: .maskAll
@@ -72,7 +72,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact non-layer semantic snapshots")
     func doesNotRedactNonLayerSemanticSnapshots() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: UIImageView.self,
             hasLayerSemantics: false,
             textAndInputPrivacyLevel: .maskAll,
@@ -90,7 +90,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts sensitive non-empty text input layout fragments when masking sensitive inputs")
     func redactsSensitiveNonEmptyTextInputLayoutFragmentsWhenMaskingSensitiveInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textLayoutFragmentClass(),
             textAndInputPrivacyLevel: .maskSensitiveInputs
         )
@@ -111,7 +111,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact non-sensitive text input layout fragments when masking sensitive inputs")
     func doesNotRedactNonSensitiveTextInputLayoutFragmentsWhenMaskingSensitiveInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textLayoutFragmentClass(),
             textAndInputPrivacyLevel: .maskSensitiveInputs
         )
@@ -132,7 +132,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts non-empty text input layout fragments when masking all inputs")
     func redactsNonEmptyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textLayoutFragmentClass(),
             textAndInputPrivacyLevel: .maskAllInputs
         )
@@ -153,7 +153,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts text field canvas views when masking all inputs")
     func redactsTextFieldCanvasViewsWhenMaskingAllInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textFieldCanvasClass(),
             textAndInputPrivacyLevel: .maskAllInputs
         )
@@ -174,7 +174,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact read-only text input layout fragments when masking all inputs")
     func doesNotRedactReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textLayoutFragmentClass(),
             textAndInputPrivacyLevel: .maskAllInputs
         )
@@ -195,7 +195,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts sensitive read-only text input layout fragments when masking all inputs")
     func redactsSensitiveReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: try textLayoutFragmentClass(),
             textAndInputPrivacyLevel: .maskAllInputs
         )
@@ -216,7 +216,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact empty text input descendants")
     func doesNotRedactEmptyTextInputDescendants() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(textAndInputPrivacyLevel: .maskAll)
+        let snapshot = ContentSnapshot.mockAny(textAndInputPrivacyLevel: .maskAll)
         let textInput = CALayerSnapshot.SemanticObservation.TextInputSemantics(
             isSensitiveText: true,
             isEditable: true,
@@ -234,7 +234,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts SwiftUI drawing layers when masking all text")
     func redactsSwiftUIDrawingLayersWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: TestCGDrawingLayer.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -250,7 +250,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts SwiftUI drawing view delegates when masking all text")
     func redactsSwiftUIDrawingViewDelegatesWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: TestCGDrawingView.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -266,7 +266,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts UILabel backed layers when masking all text")
     func redactsUILabelBackedLayersWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: UILabel.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -282,7 +282,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts UILabel subclass backed layers when masking all text")
     func redactsUILabelSubclassBackedLayersWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             delegateClass: TestLabel.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -298,7 +298,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts UILabel layers when masking all text")
     func redactsUILabelLayersWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: TestUILabelLayer.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -314,7 +314,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts CATextLayer when masking all text")
     func redactsCATextLayerWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: CATextLayer.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -330,7 +330,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Redacts CATextLayer subclasses when masking all text")
     func redactsCATextLayerSubclassesWhenMaskingAllText() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: TestTextLayer.self,
             textAndInputPrivacyLevel: .maskAll
         )
@@ -346,7 +346,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact static text candidates when only masking inputs")
     func doesNotRedactStaticTextCandidatesWhenOnlyMaskingInputs() {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: CATextLayer.self,
             textAndInputPrivacyLevel: .maskAllInputs
         )
@@ -362,7 +362,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Uses placeholder for SwiftUI image layers when masking all images")
     func usesPlaceholderForSwiftUIImageLayersWhenMaskingAllImages() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: try imageLayerClass(),
             imagePrivacyLevel: .maskAll
         )
@@ -378,7 +378,7 @@ struct ImageSnapshotRedactionTests {
     @Test("Does not redact SwiftUI image layers when image masking is disabled")
     func doesNotRedactSwiftUIImageLayersWhenImageMaskingIsDisabled() throws {
         // Given
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             layerClass: try imageLayerClass(),
             imagePrivacyLevel: .maskNone
         )
@@ -395,7 +395,7 @@ struct ImageSnapshotRedactionTests {
     func doesNotRedactSmallSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
         // Given
         let image = UIImage(cgImage: MockCGImage.mockWith(width: 100), scale: 1, orientation: .up)
-        let snapshot = ImageSnapshot.mockAny(
+        let snapshot = ContentSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
             imagePrivacyLevel: .maskNonBundledOnly
@@ -413,7 +413,7 @@ struct ImageSnapshotRedactionTests {
     func usesPlaceholderForLargeSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
         // Given
         let image = UIImage(cgImage: MockCGImage.mockWith(width: 150), scale: 1, orientation: .up)
-        let maskNonBundledOnlySnapshot = ImageSnapshot.mockAny(
+        let maskNonBundledOnlySnapshot = ContentSnapshot.mockAny(
             image: image,
             layerClass: try imageLayerClass(),
             imagePrivacyLevel: .maskNonBundledOnly

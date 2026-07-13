@@ -271,6 +271,31 @@ public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable {
     }
 }
 
+/// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+@_spi(Internal)
+public struct SRCompositionLayerMaskImageModifier: Codable, Hashable {
+    /// Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public let resourceId: String
+
+    /// The type of the modifier.
+    public let type: String = "maskImage"
+
+    public enum CodingKeys: String, CodingKey {
+        case resourceId = "resourceId"
+        case type = "type"
+    }
+
+    /// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+    ///
+    /// - Parameters:
+    ///   - resourceId: Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public init(
+        resourceId: String
+    ) {
+        self.resourceId = resourceId
+    }
+}
+
 /// A rendering modifier applied to the composed layer output.
 @_spi(Internal)
 public enum SRCompositionLayerModifier: Codable, Hashable {
@@ -278,9 +303,11 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
     case compositionLayerGaussianBlurModifier(value: SRCompositionLayerGaussianBlurModifier)
+    case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
+    case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
 
     private enum DiscriminatorCodingKeys: String, CodingKey {
         case discriminator = "type"
@@ -301,11 +328,15 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
             try container.encode(value)
         case .compositionLayerGaussianBlurModifier(let value):
             try container.encode(value)
+        case .compositionLayerShadowModifier(let value):
+            try container.encode(value)
         case .compositionLayerBrightnessBiasModifier(let value):
             try container.encode(value)
         case .compositionLayerSaturateModifier(let value):
             try container.encode(value)
         case .compositionLayerBackgroundMaterialModifier(let value):
+            try container.encode(value)
+        case .compositionLayerMaskImageModifier(let value):
             try container.encode(value)
         }
     }
@@ -328,6 +359,9 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
         case "gaussianBlur":
             self = .compositionLayerGaussianBlurModifier(value: try container.decode(SRCompositionLayerGaussianBlurModifier.self))
             return
+        case "shadow":
+            self = .compositionLayerShadowModifier(value: try container.decode(SRCompositionLayerShadowModifier.self))
+            return
         case "brightnessBias":
             self = .compositionLayerBrightnessBiasModifier(value: try container.decode(SRCompositionLayerBrightnessBiasModifier.self))
             return
@@ -336,6 +370,9 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
             return
         case "backgroundMaterial":
             self = .compositionLayerBackgroundMaterialModifier(value: try container.decode(SRCompositionLayerBackgroundMaterialModifier.self))
+            return
+        case "maskImage":
+            self = .compositionLayerMaskImageModifier(value: try container.decode(SRCompositionLayerMaskImageModifier.self))
             return
         default:
             let error = DecodingError.Context(
@@ -397,6 +434,59 @@ public struct SRCompositionLayerSaturateModifier: Codable, Hashable {
         value: Double
     ) {
         self.value = value
+    }
+}
+
+/// Drop shadow drawn behind the composed layer output.
+@_spi(Internal)
+public struct SRCompositionLayerShadowModifier: Codable, Hashable {
+    /// The shadow color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. SDKs should encode the effective shadow alpha in this color and omit the shadow modifier when the effective alpha is 0.
+    public let color: String
+
+    /// Horizontal shadow offset in pixels.
+    public let offsetX: Double
+
+    /// Vertical shadow offset in pixels.
+    public let offsetY: Double
+
+    /// Optional SVG path string defining the shadow outline, in coordinates local to the layer rectangle. When present, the path is interpreted using the non-zero winding rule. When omitted, the shadow follows the composed layer alpha.
+    public let path: String?
+
+    /// Blur radius used to create the shadow.
+    public let radius: Double
+
+    /// The type of the modifier.
+    public let type: String = "shadow"
+
+    public enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case offsetX = "offsetX"
+        case offsetY = "offsetY"
+        case path = "path"
+        case radius = "radius"
+        case type = "type"
+    }
+
+    /// Drop shadow drawn behind the composed layer output.
+    ///
+    /// - Parameters:
+    ///   - color: The shadow color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. SDKs should encode the effective shadow alpha in this color and omit the shadow modifier when the effective alpha is 0.
+    ///   - offsetX: Horizontal shadow offset in pixels.
+    ///   - offsetY: Vertical shadow offset in pixels.
+    ///   - path: Optional SVG path string defining the shadow outline, in coordinates local to the layer rectangle. When present, the path is interpreted using the non-zero winding rule. When omitted, the shadow follows the composed layer alpha.
+    ///   - radius: Blur radius used to create the shadow.
+    public init(
+        color: String,
+        offsetX: Double,
+        offsetY: Double,
+        path: String? = nil,
+        radius: Double
+    ) {
+        self.color = color
+        self.offsetX = offsetX
+        self.offsetY = offsetY
+        self.path = path
+        self.radius = radius
     }
 }
 
@@ -2721,4 +2811,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/dacedf0e5a6034a47967c142cfb9f4fe3c10464a
+// Generated from https://github.com/DataDog/rum-events-format/tree/ce537790fc56e7f6d456f961a894fe95f5a24029

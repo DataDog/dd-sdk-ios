@@ -677,14 +677,23 @@ public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable
         case radius = "radius"
         case type = "type"
     public init(radius: Double)
+public struct SRCompositionLayerMaskImageModifier: Codable, Hashable
+    public let resourceId: String
+    public let type: String = "maskImage"
+    public enum CodingKeys: String, CodingKey
+        case resourceId = "resourceId"
+        case type = "type"
+    public init(resourceId: String)
 public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerClipModifier(value: SRCompositionLayerClipModifier)
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
     case compositionLayerGaussianBlurModifier(value: SRCompositionLayerGaussianBlurModifier)
+    case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
+    case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
 public struct SRCompositionLayerOpacityModifier: Codable, Hashable
@@ -701,6 +710,21 @@ public struct SRCompositionLayerSaturateModifier: Codable, Hashable
         case type = "type"
         case value = "value"
     public init(value: Double)
+public struct SRCompositionLayerShadowModifier: Codable, Hashable
+    public let color: String
+    public let offsetX: Double
+    public let offsetY: Double
+    public let path: String?
+    public let radius: Double
+    public let type: String = "shadow"
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case offsetX = "offsetX"
+        case offsetY = "offsetY"
+        case path = "path"
+        case radius = "radius"
+        case type = "type"
+    public init(color: String,offsetX: Double,offsetY: Double,path: String? = nil,radius: Double)
 public struct SRCompositionLayerUpdate: Codable, Hashable
     public let children: [SRCompositionLayerChild]?
     public let compositeOperation: CompositeOperation?
@@ -1468,6 +1492,7 @@ public protocol FlagsClientProtocol: AnyObject
     public func setEvaluationContext(_ context: FlagsEvaluationContext)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws
 [?] extension FlagsClientProtocol
+    public func snapshot() -> FlagsSnapshot?
     public func getValue<T>(key: String, defaultValue: T) -> T where T: Equatable, T: FlagValue
     public func getBooleanValue(key: String, defaultValue: Bool) -> Bool
     public func getStringValue(key: String, defaultValue: String) -> String
@@ -1546,6 +1571,14 @@ public struct FlagDetails<T>: Equatable where T: Equatable
     public var error: FlagEvaluationError?
     public var allocationKey: String?
     public init(key: String,value: T,variant: String? = nil,reason: String? = nil,error: FlagEvaluationError? = nil,allocationKey: String? = nil)
+public struct FlagsSnapshot: Equatable, Encodable
+    public let assignments: [String: FlagSnapshot]
+    public init(assignments: [String: FlagSnapshot])
+public struct FlagSnapshot: Equatable, Encodable
+    public let value: AnyValue
+    public let variant: String
+    public let reason: String
+    public init(value: AnyValue,variant: String,reason: String)
 public protocol FlagValue: Encodable
 public enum FlagsError: Error
     case networkError(Error)
@@ -1567,4 +1600,5 @@ public enum Profiling
     public struct Configuration
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5)
+        public var continuousSampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5)

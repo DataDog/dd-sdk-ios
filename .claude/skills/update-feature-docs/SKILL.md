@@ -26,9 +26,9 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
 1. **Discover feature docs** — find all `*_FEATURE.md` files in the repo (excluding `build/` and `artifacts/`).
 
 2. **For each doc, read its frontmatter** — extract `verified_against_commit` and `tracked_files`.
-   - If `tracked_files` is missing, derive the list from the doc's "Key Files" section (every source file path it references). Treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
+   - If `tracked_files` is missing, derive the list from public API and configuration source files in the doc's "Key Files" section. Internal implementation files in "Key Files" are navigation references, not frontmatter drift triggers. Treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
    - If `verified_against_commit` is missing, treat the doc as fully out of date and proceed to step 4 — the diff in step 3 cannot be computed.
-   - **Audit `tracked_files` coverage** against the doc's "Key Files" section. Every public-API source file path referenced in "Key Files" must also appear in `tracked_files`. This audit must happen *here*, before step 3 — otherwise drift in untracked files is silently ignored. If any are missing, add them to `tracked_files` and treat the doc as fully out of date so the newly-tracked files are inspected in step 4.
+   - **Audit `tracked_files` coverage** against the doc's "Key Files" section. Every public API or configuration source file path referenced in "Key Files" must also appear in `tracked_files`. Cross-feature APIs belong to the feature doc that owns them. Do not add internal implementation files solely because they are listed as navigation references. This audit must happen *here*, before step 3 — otherwise drift in untracked public files is silently ignored. If any public API or configuration files are missing, add them to `tracked_files` and treat the doc as fully out of date so the newly-tracked files are inspected in step 4.
 
 3. **Get the diff since that commit** — first ensure the tracked source files have no uncommitted changes:
    ```

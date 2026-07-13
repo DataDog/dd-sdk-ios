@@ -143,7 +143,7 @@ private extension RUMViewUpdateEvent.DD {
             configuration: s.configuration.map { .init($0) },
             documentVersion: s.documentVersion,
             pageStates: s.pageStates.map { $0.map { .init($0) } },
-            profiling: s.profiling.map { .init($0) },
+            profiling: s.profiling,
             replayStats: s.replayStats.map { .init($0) },
             sdkName: s.sdkName,
             session: s.session.map { .init($0) }
@@ -183,52 +183,6 @@ private extension RUMViewUpdateEvent.DD.PageStates.State {
         case .hidden: self = .hidden
         case .frozen: self = .frozen
         case .terminated: self = .terminated
-        }
-    }
-}
-
-private extension RUMViewUpdateEvent.DD.Profiling {
-    init(_ s: RUMViewEvent.DD.Profiling) {
-        self.init(
-            errorReason: s.errorReason.map { .init($0) },
-            quotaReason: s.quotaReason.map { .init($0) },
-            status: s.status.map { .init($0) }
-        )
-    }
-}
-
-private extension RUMViewUpdateEvent.DD.Profiling.ErrorReason {
-    init(_ s: RUMViewEvent.DD.Profiling.ErrorReason) {
-        switch s {
-        case .notSupportedByBrowser: self = .notSupportedByBrowser
-        case .failedToLazyLoad: self = .failedToLazyLoad
-        case .missingDocumentPolicyHeader: self = .missingDocumentPolicyHeader
-        case .unexpectedException: self = .unexpectedException
-        }
-    }
-}
-
-private extension RUMViewUpdateEvent.DD.Profiling.QuotaReason {
-    init(_ s: RUMViewEvent.DD.Profiling.QuotaReason) {
-        switch s {
-        case .quotaOk: self = .quotaOk
-        case .quotaExceeded: self = .quotaExceeded
-        case .orgDisabled: self = .orgDisabled
-        case .backendUnavailable: self = .backendUnavailable
-        case .undefined: self = .undefined
-        case .timeout: self = .timeout
-        case .apiError: self = .apiError
-        }
-    }
-}
-
-private extension RUMViewUpdateEvent.DD.Profiling.Status {
-    init(_ s: RUMViewEvent.DD.Profiling.Status) {
-        switch s {
-        case .starting: self = .starting
-        case .running: self = .running
-        case .stopped: self = .stopped
-        case .error: self = .error
         }
     }
 }

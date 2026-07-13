@@ -13,7 +13,7 @@ import Foundation
 internal protocol LayerSnapshotProcessing {
     func process(
         layerTreeSnapshot: LayerTreeSnapshot,
-        imageSnapshotResults: [Int64: ImageSnapshotResult],
+        imageSnapshots: ImageSnapshotBatch,
         touchSnapshot: TouchSnapshot?
     )
 }
@@ -49,13 +49,13 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
     func process(
         layerTreeSnapshot: LayerTreeSnapshot,
-        imageSnapshotResults: [Int64: ImageSnapshotResult],
+        imageSnapshots: ImageSnapshotBatch,
         touchSnapshot: TouchSnapshot?
     ) {
         queue.run { [weak self] in
             self?.processSync(
                 layerTreeSnapshot: layerTreeSnapshot,
-                imageSnapshotResults: imageSnapshotResults,
+                imageSnapshots: imageSnapshots,
                 touchSnapshot: touchSnapshot
             )
         }
@@ -63,13 +63,13 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
     private func processSync(
         layerTreeSnapshot: LayerTreeSnapshot,
-        imageSnapshotResults: [Int64: ImageSnapshotResult],
+        imageSnapshots: ImageSnapshotBatch,
         touchSnapshot: TouchSnapshot?
     ) {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
-            imageSnapshotResults: imageSnapshotResults
+            imageSnapshots: imageSnapshots
         ).build()
 
         var records = records(

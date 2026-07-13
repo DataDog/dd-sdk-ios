@@ -10,6 +10,133 @@
 
 public protocol RUMDataModel: Codable {}
 
+/// Profiling context
+public struct DDProfiling: Codable, Equatable {
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+    /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+    /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    public let errorReason: ErrorReason?
+
+    /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
+    ///
+    /// Possible values:
+    /// - `quota_ok`: Quota check passed.
+    /// - `quota_exceeded`: The organization has exceeded its profiling quota.
+    /// - `org_disabled`: The organization has profiling disabled.
+    /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
+    /// - `undefined`: The quota reason is undefined.
+    /// - `timeout`: The quota check timed out on the client side.
+    /// - `api-error`: An API error occurred on the client side.
+    public let quotaReason: QuotaReason?
+
+    /// Used to track the status of the RUM Profiler.
+    ///
+    /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+    ///
+    /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+    /// - `running`: The Profiler is running.
+    /// - `stopped`: The Profiler is stopped.
+    /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+    public let status: Status?
+
+    public enum CodingKeys: String, CodingKey {
+        case errorReason = "error_reason"
+        case quotaReason = "quota_reason"
+        case status = "status"
+    }
+
+    /// Profiling context
+    ///
+    /// - Parameters:
+    ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+    /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+    /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
+    ///
+    /// Possible values:
+    /// - `quota_ok`: Quota check passed.
+    /// - `quota_exceeded`: The organization has exceeded its profiling quota.
+    /// - `org_disabled`: The organization has profiling disabled.
+    /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
+    /// - `undefined`: The quota reason is undefined.
+    /// - `timeout`: The quota check timed out on the client side.
+    /// - `api-error`: An API error occurred on the client side.
+    ///   - status: Used to track the status of the RUM Profiler.
+    ///
+    /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+    ///
+    /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+    /// - `running`: The Profiler is running.
+    /// - `stopped`: The Profiler is stopped.
+    /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+    public init(
+        errorReason: ErrorReason? = nil,
+        quotaReason: QuotaReason? = nil,
+        status: Status? = nil
+    ) {
+        self.errorReason = errorReason
+        self.quotaReason = quotaReason
+        self.status = status
+    }
+
+    /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
+    ///
+    /// Possible values:
+    /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
+    /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
+    /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
+    /// - `unexpected-exception`: An exception occurred when starting the Profiler.
+    public enum ErrorReason: String, Codable {
+        case notSupportedByBrowser = "not-supported-by-browser"
+        case failedToLazyLoad = "failed-to-lazy-load"
+        case missingDocumentPolicyHeader = "missing-document-policy-header"
+        case unexpectedException = "unexpected-exception"
+    }
+
+    /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
+    ///
+    /// Possible values:
+    /// - `quota_ok`: Quota check passed.
+    /// - `quota_exceeded`: The organization has exceeded its profiling quota.
+    /// - `org_disabled`: The organization has profiling disabled.
+    /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
+    /// - `undefined`: The quota reason is undefined.
+    /// - `timeout`: The quota check timed out on the client side.
+    /// - `api-error`: An API error occurred on the client side.
+    public enum QuotaReason: String, Codable {
+        case quotaOk = "quota_ok"
+        case quotaExceeded = "quota_exceeded"
+        case orgDisabled = "org_disabled"
+        case backendUnavailable = "backend_unavailable"
+        case undefined = "undefined"
+        case timeout = "timeout"
+        case apiError = "api-error"
+    }
+
+    /// Used to track the status of the RUM Profiler.
+    ///
+    /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
+    ///
+    /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
+    /// - `running`: The Profiler is running.
+    /// - `stopped`: The Profiler is stopped.
+    /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+    public enum Status: String, Codable {
+        case starting = "starting"
+        case running = "running"
+        case stopped = "stopped"
+        case error = "error"
+    }
+}
+
 /// Device properties
 public struct Device: Codable, Equatable {
     /// The CPU architecture of the device that is reporting the error
@@ -1320,7 +1447,7 @@ public struct RUMConnectivity: Codable, Equatable {
 /// Schema of all properties of an Error event
 public struct RUMErrorEvent: RUMDataModel, Equatable {
     /// Internal properties
-    public var dd: DD
+    public let dd: DD
 
     /// Account properties
     public var account: RUMAccount?
@@ -1531,7 +1658,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public let configuration: Configuration?
 
         /// Mapping of source file URLs to their debug IDs for source map deobfuscation
-        public var debugIds: [DebugIds]?
+        public let debugIds: [DebugIds]?
 
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
@@ -1540,7 +1667,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public let parentSpanId: String?
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// trace sample rate in decimal format
         public let rulePsr: Double?
@@ -1589,7 +1716,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             configuration: Configuration? = nil,
             debugIds: [DebugIds]? = nil,
             parentSpanId: String? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             rulePsr: Double? = nil,
             sdkName: String? = nil,
             session: Session? = nil,
@@ -1649,146 +1776,30 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             }
         }
 
-        /// Mapping of a source file URL to its debug ID
+        /// Association between a source file URL and its debug ID
         public struct DebugIds: Codable, Equatable {
             /// Debug ID (UUID) for the source file
-            public var debugIdsInfo: [String: String]
+            public let id: String
 
-            /// Mapping of a source file URL to its debug ID
-            ///
-            /// - Parameters:
-            ///   - debugIdsInfo: Debug ID (UUID) for the source file
-            public init(
-                debugIdsInfo: [String: String]
-            ) {
-                self.debugIdsInfo = debugIdsInfo
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
+            /// URL of the source file
+            public let url: String
 
             public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
+                case id = "id"
+                case url = "url"
             }
 
-            /// Profiling context
+            /// Association between a source file URL and its debug ID
             ///
             /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            ///   - id: Debug ID (UUID) for the source file
+            ///   - url: URL of the source file
             public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
+                id: String,
+                url: String
             ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
+                self.id = id
+                self.url = url
             }
         }
 
@@ -2683,30 +2694,6 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
     }
 }
 
-extension RUMErrorEvent.DD.DebugIds {
-    public func encode(to encoder: Encoder) throws {
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        debugIdsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: String] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.debugIdsInfo = [:]
-
-        try dynamicContainer.allKeys.forEach {
-            self.debugIdsInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
-        }
-    }
-
-    public static func == (lhs: RUMErrorEvent.DD.DebugIds, rhs: RUMErrorEvent.DD.DebugIds) -> Bool {
-        lhs.debugIdsInfo == rhs.debugIdsInfo
-    }
-}
-
 extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
@@ -2944,7 +2931,7 @@ public struct RUMGraphql: Codable, Equatable {
 /// Schema of all properties of a Long Task event
 public struct RUMLongTaskEvent: RUMDataModel, Equatable {
     /// Internal properties
-    public var dd: DD
+    public let dd: DD
 
     /// Account properties
     public var account: RUMAccount?
@@ -3141,7 +3128,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         public let configuration: Configuration?
 
         /// Mapping of source file URLs to their debug IDs for source map deobfuscation
-        public var debugIds: [DebugIds]?
+        public let debugIds: [DebugIds]?
 
         /// Whether the long task should be discarded or indexed
         public let discarded: Bool?
@@ -3150,7 +3137,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         public let formatVersion: Int64 = 2
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
@@ -3184,7 +3171,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             configuration: Configuration? = nil,
             debugIds: [DebugIds]? = nil,
             discarded: Bool? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
@@ -3238,146 +3225,30 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             }
         }
 
-        /// Mapping of a source file URL to its debug ID
+        /// Association between a source file URL and its debug ID
         public struct DebugIds: Codable, Equatable {
             /// Debug ID (UUID) for the source file
-            public var debugIdsInfo: [String: String]
+            public let id: String
 
-            /// Mapping of a source file URL to its debug ID
-            ///
-            /// - Parameters:
-            ///   - debugIdsInfo: Debug ID (UUID) for the source file
-            public init(
-                debugIdsInfo: [String: String]
-            ) {
-                self.debugIdsInfo = debugIdsInfo
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
+            /// URL of the source file
+            public let url: String
 
             public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
+                case id = "id"
+                case url = "url"
             }
 
-            /// Profiling context
+            /// Association between a source file URL and its debug ID
             ///
             /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
+            ///   - id: Debug ID (UUID) for the source file
+            ///   - url: URL of the source file
             public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
+                id: String,
+                url: String
             ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
+                self.id = id
+                self.url = url
             }
         }
 
@@ -3886,30 +3757,6 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             self.referrer = referrer
             self.url = url
         }
-    }
-}
-
-extension RUMLongTaskEvent.DD.DebugIds {
-    public func encode(to encoder: Encoder) throws {
-        // Encode dynamic properties:
-        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        debugIdsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
-        }
-    }
-
-    public init(from decoder: Decoder) throws {
-        // Decode other properties into [String: String] dictionary:
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.debugIdsInfo = [:]
-
-        try dynamicContainer.allKeys.forEach {
-            self.debugIdsInfo[$0.stringValue] = try dynamicContainer.decode(String.self, forKey: $0)
-        }
-    }
-
-    public static func == (lhs: RUMLongTaskEvent.DD.DebugIds, rhs: RUMLongTaskEvent.DD.DebugIds) -> Bool {
-        lhs.debugIdsInfo == rhs.debugIdsInfo
     }
 }
 
@@ -5627,7 +5474,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         public let pageStates: [PageStates]?
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
@@ -5669,7 +5516,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             configuration: Configuration? = nil,
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             replayStats: ReplayStats? = nil,
             sdkName: String? = nil,
             session: Session? = nil
@@ -5710,6 +5557,9 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// The id of the remote configuration applied to the SDK, if any
+            public let remoteConfigurationId: String?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5724,6 +5574,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case remoteConfigurationId = "remote_configuration_id"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -5734,18 +5585,21 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                remoteConfigurationId: String? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.remoteConfigurationId = remoteConfigurationId
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -5786,133 +5640,6 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
                 case hidden = "hidden"
                 case frozen = "frozen"
                 case terminated = "terminated"
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
-
-            public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
-            }
-
-            /// Profiling context
-            ///
-            /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
-            ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
             }
         }
 
@@ -7922,7 +7649,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         public let pageStates: [PageStates]?
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// Debug metadata for Replay Sessions
         public let replayStats: ReplayStats?
@@ -7964,7 +7691,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             configuration: Configuration? = nil,
             documentVersion: Int64,
             pageStates: [PageStates]? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             replayStats: ReplayStats? = nil,
             sdkName: String? = nil,
             session: Session? = nil
@@ -8005,6 +7732,9 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// The id of the remote configuration applied to the SDK, if any
+            public let remoteConfigurationId: String?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -8019,6 +7749,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case remoteConfigurationId = "remote_configuration_id"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -8029,18 +7760,21 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                remoteConfigurationId: String? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.remoteConfigurationId = remoteConfigurationId
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -8081,133 +7815,6 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
                 case hidden = "hidden"
                 case frozen = "frozen"
                 case terminated = "terminated"
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
-
-            public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
-            }
-
-            /// Profiling context
-            ///
-            /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
-            ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
             }
         }
 
@@ -10201,7 +9808,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         public let formatVersion: Int64 = 2
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
@@ -10229,7 +9836,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
@@ -10278,133 +9885,6 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
-
-            public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
-            }
-
-            /// Profiling context
-            ///
-            /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
-            ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
             }
         }
 
@@ -10990,7 +10470,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         public let formatVersion: Int64 = 2
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
@@ -11018,7 +10498,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
@@ -11067,133 +10547,6 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
-
-            public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
-            }
-
-            /// Profiling context
-            ///
-            /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
-            ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
             }
         }
 
@@ -11739,7 +11092,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         public let formatVersion: Int64 = 2
 
         /// Profiling context
-        public let profiling: Profiling?
+        public let profiling: DDProfiling?
 
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
@@ -11767,7 +11120,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
-            profiling: Profiling? = nil,
+            profiling: DDProfiling? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
@@ -11816,133 +11169,6 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
-            }
-        }
-
-        /// Profiling context
-        public struct Profiling: Codable, Equatable {
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public let errorReason: ErrorReason?
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public let quotaReason: QuotaReason?
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public let status: Status?
-
-            public enum CodingKeys: String, CodingKey {
-                case errorReason = "error_reason"
-                case quotaReason = "quota_reason"
-                case status = "status"
-            }
-
-            /// Profiling context
-            ///
-            /// - Parameters:
-            ///   - errorReason: The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            ///   - quotaReason: The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            ///   - status: Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public init(
-                errorReason: ErrorReason? = nil,
-                quotaReason: QuotaReason? = nil,
-                status: Status? = nil
-            ) {
-                self.errorReason = errorReason
-                self.quotaReason = quotaReason
-                self.status = status
-            }
-
-            /// The reason the Profiler encountered an error. This attribute is only present if the status is `error`.
-            ///
-            /// Possible values:
-            /// - `not-supported-by-browser`: The browser does not support the Profiler (i.e., `window.Profiler` is not available).
-            /// - `failed-to-lazy-load`: The Profiler script failed to be loaded by the browser (may be a connection issue or the chunk was not found).
-            /// - `missing-document-policy-header`: The Profiler failed to start because its missing `Document-Policy: js-profiling` HTTP response header.
-            /// - `unexpected-exception`: An exception occurred when starting the Profiler.
-            public enum ErrorReason: String, Codable {
-                case notSupportedByBrowser = "not-supported-by-browser"
-                case failedToLazyLoad = "failed-to-lazy-load"
-                case missingDocumentPolicyHeader = "missing-document-policy-header"
-                case unexpectedException = "unexpected-exception"
-            }
-
-            /// The reason provided by the profiling quota admission API. This attribute is only present if the status is `stopped` due to quota.
-            ///
-            /// Possible values:
-            /// - `quota_ok`: Quota check passed.
-            /// - `quota_exceeded`: The organization has exceeded its profiling quota.
-            /// - `org_disabled`: The organization has profiling disabled.
-            /// - `backend_unavailable`: The quota admission API is unavailable or not initialized.
-            /// - `undefined`: The quota reason is undefined.
-            /// - `timeout`: The quota check timed out on the client side.
-            /// - `api-error`: An API error occurred on the client side.
-            public enum QuotaReason: String, Codable {
-                case quotaOk = "quota_ok"
-                case quotaExceeded = "quota_exceeded"
-                case orgDisabled = "org_disabled"
-                case backendUnavailable = "backend_unavailable"
-                case undefined = "undefined"
-                case timeout = "timeout"
-                case apiError = "api-error"
-            }
-
-            /// Used to track the status of the RUM Profiler.
-            ///
-            /// They are defined in order of when they can happen, from the moment the SDK is initialized to the moment the Profiler is actually running.
-            ///
-            /// - `starting`: The Profiler is starting (i.e., when the SDK just started). This is the initial status.
-            /// - `running`: The Profiler is running.
-            /// - `stopped`: The Profiler is stopped.
-            /// - `error`: The Profiler encountered an error. See `error_reason` for more details.
-            public enum Status: String, Codable {
-                case starting = "starting"
-                case running = "running"
-                case stopped = "stopped"
-                case error = "error"
             }
         }
 
@@ -12576,6 +11802,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
+            /// Whether the beta partial view updates feature is enabled
+            public var betaEnableViewUpdates: Bool?
+
             /// Whether the beta encode cookie options is enabled
             public var betaEncodeCookieOptions: Bool?
 
@@ -12849,6 +12078,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case betaEnableViewUpdates = "beta_enable_view_updates"
                 case betaEncodeCookieOptions = "beta_encode_cookie_options"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
@@ -12950,6 +12180,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - batchProcessingLevel: Maximum number of batches processed sequentially without a delay
             ///   - batchSize: The window duration for batches sent by the SDK (in milliseconds)
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
+            ///   - betaEnableViewUpdates: Whether the beta partial view updates feature is enabled
             ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
@@ -13047,6 +12278,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 batchProcessingLevel: Int64? = nil,
                 batchSize: Int64? = nil,
                 batchUploadFrequency: Int64? = nil,
+                betaEnableViewUpdates: Bool? = nil,
                 betaEncodeCookieOptions: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
@@ -13144,6 +12376,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.batchProcessingLevel = batchProcessingLevel
                 self.batchSize = batchSize
                 self.batchUploadFrequency = batchUploadFrequency
+                self.betaEnableViewUpdates = betaEnableViewUpdates
                 self.betaEncodeCookieOptions = betaEncodeCookieOptions
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
@@ -15131,4 +14364,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/fb4598e35bffee32ea3f29e070004ae0c745bbb3
+// Generated from https://github.com/DataDog/rum-events-format/tree/ce537790fc56e7f6d456f961a894fe95f5a24029

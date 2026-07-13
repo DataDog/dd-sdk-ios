@@ -96,6 +96,8 @@ final class SRCodeDecoratorTests: XCTestCase {
         XCTAssertTrue(typeNames.contains("SRCompositionLayer"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerChild"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerModifier"))
+        XCTAssertTrue(typeNames.contains("SRCompositionLayerShadowModifier"))
+        XCTAssertTrue(typeNames.contains("SRCompositionLayerMaskImageModifier"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerUpdate"))
         XCTAssertTrue(typeNames.contains("SRCompositionTreeMutationData"))
         XCTAssertFalse(typeNames.contains("Layers"))
@@ -141,6 +143,8 @@ final class SRCodeDecoratorTests: XCTestCase {
         let modifier = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerModifier" } as? SwiftAssociatedTypeEnum)
         XCTAssertEqual("type", modifier.discriminatorCodingKey)
         XCTAssertEqual("clip", modifier.cases.first?.discriminatorValue as? String)
+        XCTAssertEqual("shadow", modifier.cases.dropFirst().first?.discriminatorValue as? String)
+        XCTAssertEqual("maskImage", modifier.cases.dropFirst(2).first?.discriminatorValue as? String)
         XCTAssertTrue(modifier.conforms(to: hashableProtocol))
     }
 
@@ -215,6 +219,36 @@ final class SRCodeDecoratorTests: XCTestCase {
                                 named: "type",
                                 type: SwiftPrimitive<String>(),
                                 defaultValue: "clip"
+                            )
+                        ],
+                        conformance: []
+                    )
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "CompositionLayerShadowModifier",
+                    associatedType: SwiftStruct(
+                        name: "CompositionLayerShadowModifier",
+                        comment: nil,
+                        properties: [
+                            property(
+                                named: "type",
+                                type: SwiftPrimitive<String>(),
+                                defaultValue: "shadow"
+                            )
+                        ],
+                        conformance: []
+                    )
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "CompositionLayerMaskImageModifier",
+                    associatedType: SwiftStruct(
+                        name: "CompositionLayerMaskImageModifier",
+                        comment: nil,
+                        properties: [
+                            property(
+                                named: "type",
+                                type: SwiftPrimitive<String>(),
+                                defaultValue: "maskImage"
                             )
                         ],
                         conformance: []

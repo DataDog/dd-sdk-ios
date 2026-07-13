@@ -27,7 +27,7 @@
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
 
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,6 +35,8 @@
 #include <time.h>
 
 namespace dd::profiler {
+
+class binary_image_cache;
 
 /**
  * @brief Represents a deduplicated binary mapping in the profile
@@ -88,7 +90,8 @@ struct label_t {
  * 
  * Represents a single profiling sample containing:
  * - Stack trace as a sequence of location IDs (leaf-to-root order)
- * - Associated labels (e.g., timestamps, thread info)
+ * - Sample timestamp as uptime nanoseconds
+ * - Associated labels (e.g., thread info)
  * - Sample values (e.g., CPU time, wall time, memory allocation)
  * 
  * Samples are not aggregated at this level - aggregation happens during
@@ -96,6 +99,7 @@ struct label_t {
  */
 struct sample_t {
     std::vector<uint32_t> location_ids;
+    uint64_t timestamp_uptime_ns;
     std::vector<label_t> labels;
     std::vector<int64_t> values;
 };
@@ -156,6 +160,18 @@ public:
      */
     void add_samples(const stack_trace_t* traces, size_t count);
 
+    /**
+     * @brief Process multiple stack traces and lazily resolve first-seen locations.
+     *
+     * Existing locations reuse their interned mapping and location IDs without
+     * re-resolving binary image data.
+     *
+     * @param traces Array of stack traces to process
+     * @param count Number of traces in the array
+     * @param image_cache Optional binary image cache used to resolve first-seen locations
+     */
+    void add_samples(const stack_trace_t* traces, size_t count, binary_image_cache* image_cache);
+
     /** @brief Get read-only access to deduplicated string table */
     const std::vector<std::string>& strings() const { return _strings; }
     
@@ -177,11 +193,35 @@ public:
     /** @brief Get cached string ID for "nanoseconds" */
     uint32_t nanoseconds_str_id() const { return _nanoseconds_str_id; }
 
+    /** @brief Number of labels exported for the sample */
+    size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }
+
+    /** @brief Visit labels exported for the sample */
+    template <typename LabelVisitor>
+    void for_each_label(const sample_t& sample, LabelVisitor&& visitor) const {
+        label_t timestamp_label{};
+        timestamp_label.key_id = _end_timestamp_ns_str_id;
+        timestamp_label.str_id = 0;
+        timestamp_label.num = uptime_ns_to_epoch_ns(sample.timestamp_uptime_ns);
+        timestamp_label.num_unit_id = _nanoseconds_str_id;
+        visitor(timestamp_label);
+
+        for (const auto& label : sample.labels) {
+            visitor(label);
+        }
+    }
+
     /** @brief Get profile start timestamp (uptime nanoseconds converted to epoch) */
     int64_t start_timestamp() const { return uptime_ns_to_epoch_ns(_start_timestamp); };
 
     /** @brief Get profile end timestamp (uptime nanoseconds converted to epoch) */
     int64_t end_timestamp() const { return uptime_ns_to_epoch_ns(_end_timestamp); };
+
+    /**
+     * @brief Set the server time correction used for exported timestamps.
+     * @param offset_ns Server time offset in nanoseconds
+     */
+    void set_server_time_offset_ns(int64_t offset_ns) { _server_time_offset_ns = offset_ns; };
 
 private:
     /** @brief Deduplicated string table (index 0 is always empty string) */
@@ -220,6 +260,9 @@ private:
     /** @brief Offset to convert uptime nanoseconds to epoch time */
     int64_t _epoch_offset;
 
+    /** @brief Offset to convert device epoch timestamps to server epoch timestamps */
+    int64_t _server_time_offset_ns;
+
     /** @brief Profile start timestamp (uptime nanoseconds, 0 if no samples) */
     uint64_t _start_timestamp;
 
@@ -241,6 +284,8 @@ private:
     // Helper methods
     uint32_t intern_string(const std::string& str);
     uint32_t intern_frame(const stack_frame_t& frame);
+    // Resolves binary image data for first-seen locations before interning.
+    uint32_t intern_frame(const stack_frame_t& frame, binary_image_cache* image_cache);
     uint32_t intern_binary(const binary_image_t& image);
     uint32_t intern_location(const location_t& location);
 };

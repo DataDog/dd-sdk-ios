@@ -83,7 +83,7 @@ private extension RUMViewEvent.DD {
             configuration: update.configuration.map { .init($0) },
             documentVersion: update.documentVersion,
             pageStates: update.pageStates.map { $0.map { .init($0) } },
-            profiling: update.profiling.map { .init($0) },
+            profiling: update.profiling,
             replayStats: update.replayStats.map { .init($0) },
             sdkName: update.sdkName,
             session: update.session.map { .init($0) }
@@ -304,52 +304,6 @@ private extension RUMViewEvent.DD.PageStates.State {
         case .hidden: self = .hidden
         case .frozen: self = .frozen
         case .terminated: self = .terminated
-        }
-    }
-}
-
-private extension RUMViewEvent.DD.Profiling {
-    init(_ s: RUMViewUpdateEvent.DD.Profiling) {
-        self.init(
-            errorReason: s.errorReason.map { .init($0) },
-            quotaReason: s.quotaReason.map { .init($0) },
-            status: s.status.map { .init($0) }
-        )
-    }
-}
-
-private extension RUMViewEvent.DD.Profiling.ErrorReason {
-    init(_ s: RUMViewUpdateEvent.DD.Profiling.ErrorReason) {
-        switch s {
-        case .notSupportedByBrowser: self = .notSupportedByBrowser
-        case .failedToLazyLoad: self = .failedToLazyLoad
-        case .missingDocumentPolicyHeader: self = .missingDocumentPolicyHeader
-        case .unexpectedException: self = .unexpectedException
-        }
-    }
-}
-
-private extension RUMViewEvent.DD.Profiling.QuotaReason {
-    init(_ s: RUMViewUpdateEvent.DD.Profiling.QuotaReason) {
-        switch s {
-        case .quotaOk: self = .quotaOk
-        case .quotaExceeded: self = .quotaExceeded
-        case .orgDisabled: self = .orgDisabled
-        case .backendUnavailable: self = .backendUnavailable
-        case .undefined: self = .undefined
-        case .timeout: self = .timeout
-        case .apiError: self = .apiError
-        }
-    }
-}
-
-private extension RUMViewEvent.DD.Profiling.Status {
-    init(_ s: RUMViewUpdateEvent.DD.Profiling.Status) {
-        switch s {
-        case .starting: self = .starting
-        case .running: self = .running
-        case .stopped: self = .stopped
-        case .error: self = .error
         }
     }
 }
