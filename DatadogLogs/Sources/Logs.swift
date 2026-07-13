@@ -123,10 +123,14 @@ public enum Logs {
     }
 
     private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
-        core.messageBus.send(
-            message: LogEventAttributes(
+        // Keep log-attribute updates on the legacy bus until CrashReporting migrates:
+        // `CrashContextCoreProvider` still consumes `LogEventAttributes` as a legacy
+        // `FeatureMessageReceiver`, so routing this through the typed bus would drop the
+        // global log attributes from crash reports.
+        core.send(
+            message: .payload(LogEventAttributes(
                 attributes: feature.attributes.getAttributes()
-            )
+            ))
         )
     }
 }

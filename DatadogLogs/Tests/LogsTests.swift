@@ -128,10 +128,12 @@ class LogsTests: XCTestCase {
 
     func testItSendsGlobalLogUpdates_whenAddAttribute() throws {
         // Given
-        let core = SingleFeatureCoreMock<LogsFeature>()
-        Logs.enable(with: .init(), in: core)
-        var received: [LogEventAttributes] = []
-        _ = core.messageBus.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
+        let mockMessageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<LogsFeature>(
+            messageReceiver: mockMessageReceiver
+        )
+        let config = Logs.Configuration()
+        Logs.enable(with: config, in: core)
 
         // When
         let attributeKey: String = .mockRandom()
@@ -139,17 +141,20 @@ class LogsTests: XCTestCase {
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
 
         // Then
-        XCTAssertEqual(received.count, 1)
-        let message = try XCTUnwrap(received.first)
+        let messages = mockMessageReceiver.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        XCTAssertEqual(messages.count, 1)
+        let message = try XCTUnwrap(messages.first)
         XCTAssertEqual(message.attributes[attributeKey] as? String, attributeValue)
     }
 
     func testItSendsGlobalLogUpdates_whenRemoveAttribute() throws {
         // Given
-        let core = SingleFeatureCoreMock<LogsFeature>()
-        Logs.enable(with: .init(), in: core)
-        var received: [LogEventAttributes] = []
-        _ = core.messageBus.subscribe { (attrs: LogEventAttributes, _) in received.append(attrs) }
+        let mockMessageReceiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<LogsFeature>(
+            messageReceiver: mockMessageReceiver
+        )
+        let config = Logs.Configuration()
+        Logs.enable(with: config, in: core)
         let attributeKey: String = .mockRandom()
         let attributeValue: String = .mockRandom()
         Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
@@ -158,8 +163,9 @@ class LogsTests: XCTestCase {
         Logs.removeAttribute(forKey: attributeKey, in: core)
 
         // Then
-        XCTAssertEqual(received.count, 2)
-        let message = try XCTUnwrap(received.last)
+        let messages = mockMessageReceiver.messages.compactMap { $0.asPayload as? LogEventAttributes }
+        XCTAssertEqual(messages.count, 2)
+        let message = try XCTUnwrap(messages.last)
         XCTAssertNil(message.attributes[attributeKey])
     }
 }

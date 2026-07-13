@@ -74,4 +74,23 @@ class SendingCrashReportTests: XCTestCase {
         let lastRUMAttributes = try XCTUnwrap(crashContext.lastRUMAttributes?.contextInfo)
         DDAssertJSONEqual(contextAttributes, lastRUMAttributes.merging(crashReportAttributes) { $1 })
     }
+
+    func testWhenGlobalLogAttributeIsAdded_itUpdatesCrashContext() throws {
+        // Given
+        Logs.enable(in: core)
+        CrashReporting.enable(with: CrashReporterMock(), in: core)
+        core.flush()
+
+        // When
+        let attributeKey: String = .mockRandom()
+        let attributeValue: String = .mockRandom()
+        Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
+        core.flush()
+
+        // Then (the log attribute reaches the crash context)
+        let feature = try XCTUnwrap(core.get(feature: CrashReportingFeature.self))
+        let crashContext = try XCTUnwrap(feature.crashContextProvider.currentCrashContext)
+        let logAttributes = try XCTUnwrap(crashContext.lastLogAttributes)
+        XCTAssertEqual(logAttributes.attributes[attributeKey] as? String, attributeValue)
+    }
 }
