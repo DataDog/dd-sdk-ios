@@ -2151,7 +2151,7 @@ public struct SRShapeBorder: Codable, Hashable {
     }
 }
 
-/// A background gradient for a shape wireframe. When backgroundColor is also present, the background color is painted first and the gradient is painted over it. The gradient is clipped to the wireframe shape, the border is painted afterward, and shape opacity applies to the combined result.
+/// The background gradient for this wireframe.
 @_spi(Internal)
 public enum SRShapeGradient: Codable, Hashable {
     case linear(value: SRShapeLinearGradient)
@@ -2194,7 +2194,6 @@ public enum SRShapeGradient: Codable, Hashable {
     }
 }
 
-/// A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
 @_spi(Internal)
 public struct SRShapeGradientPoint: Codable, Hashable {
     /// Horizontal position, where 0 is the left edge and 1 is the right edge.
@@ -2208,7 +2207,6 @@ public struct SRShapeGradientPoint: Codable, Hashable {
         case y = "y"
     }
 
-    /// A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
     ///
     /// - Parameters:
     ///   - x: Horizontal position, where 0 is the left edge and 1 is the right edge.
@@ -2253,10 +2251,10 @@ public struct SRShapeGradientStop: Codable, Hashable {
 /// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
 @_spi(Internal)
 public struct SRShapeLinearGradient: Codable, Hashable {
-    /// A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
+    /// The point where position 1 of the gradient is placed.
     public let endPoint: SRShapeGradientPoint
 
-    /// A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
+    /// The point where position 0 of the gradient is placed.
     public let startPoint: SRShapeGradientPoint
 
     /// Ordered gradient color stops. Positions must be non-decreasing.
@@ -2275,8 +2273,8 @@ public struct SRShapeLinearGradient: Codable, Hashable {
     /// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
     ///
     /// - Parameters:
-    ///   - endPoint: A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
-    ///   - startPoint: A point in the wireframe's normalized coordinate space. The top-left corner is (0, 0), the bottom-right corner is (1, 1), and values outside this range place the point outside the wireframe bounds.
+    ///   - endPoint: The point where position 1 of the gradient is placed.
+    ///   - startPoint: The point where position 0 of the gradient is placed.
     ///   - stops: Ordered gradient color stops. Positions must be non-decreasing.
     public init(
         endPoint: SRShapeGradientPoint,
@@ -2295,7 +2293,7 @@ public struct SRShapeStyle: Codable, Hashable {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
     public let backgroundColor: String?
 
-    /// A background gradient for a shape wireframe. When backgroundColor is also present, the background color is painted first and the gradient is painted over it. The gradient is clipped to the wireframe shape, the border is painted afterward, and shape opacity applies to the combined result.
+    /// The background gradient for this wireframe.
     public let backgroundGradient: SRShapeGradient?
 
     /// The corner(border) radius of this wireframe in pixels. The default value is 0.
@@ -2315,7 +2313,7 @@ public struct SRShapeStyle: Codable, Hashable {
     ///
     /// - Parameters:
     ///   - backgroundColor: The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
-    ///   - backgroundGradient: A background gradient for a shape wireframe. When backgroundColor is also present, the background color is painted first and the gradient is painted over it. The gradient is clipped to the wireframe shape, the border is painted afterward, and shape opacity applies to the combined result.
+    ///   - backgroundGradient: The background gradient for this wireframe.
     ///   - cornerRadius: The corner(border) radius of this wireframe in pixels. The default value is 0.
     ///   - opacity: The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
     public init(
@@ -2956,4 +2954,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/1fc70eacac9fd593e18a5ac8f977d4e89b58055b
+// Generated from https://github.com/DataDog/rum-events-format/tree/4ed60cbe47c30afcef051481a035adf88161d4b7
