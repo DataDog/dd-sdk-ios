@@ -104,8 +104,6 @@ extension AppLaunchHandling {
     }
 }
 
-#if !os(macOS)
-
 internal struct LaunchInfoPublisher: ContextValuePublisher {
     private let handler: AppLaunchHandling
 
@@ -135,5 +133,3 @@ internal struct LaunchInfoPublisher: ContextValuePublisher {
 
     func cancel() {} // The `handler` already cleans up all callbacks after the notifications are triggered
 }
-
-#endif

@@ -52,6 +52,13 @@ public typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
 public typealias DDColor = UIColor
 public typealias DDFont = UIFont
 
+#if canImport(SwiftUI)
+import SwiftUI
+
+@available(iOS 13.0, *)
+public typealias DDHostingController = UIHostingController
+#endif
+
 #elseif canImport(AppKit)
 import AppKit
 
@@ -106,5 +113,11 @@ extension NSApplication {
 // MARK: - SDK specific
 public typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
 public typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
+
+#if canImport(SwiftUI)
+import SwiftUI
+
+public typealias DDHostingController = NSHostingController
+#endif
 
 #endif
