@@ -231,6 +231,7 @@ private extension RUMAppLaunchManager {
             version: context.version,
             view: .init(
                 id: (activeView?.viewUUID).orNull.toRUMDataFormat,
+                name: activeView?.viewName,
                 url: activeView?.viewPath ?? ""
             ),
             vital: vital
