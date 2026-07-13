@@ -123,7 +123,10 @@ internal class CompositionTreeBuilder {
         // Append a wireframe for the layer background, gradient, or border
         // We don't support containers with image or custom content because `CALayer.render(in:)`
         // renders both the layer and its sublayers
-        if snapshot.hasBackgroundColor || snapshot.hasBorder || snapshot.observation.gradient != nil,
+        if snapshot.hasBackgroundColor
+            || snapshot.hasBorder
+            || snapshot.observation.gradient != nil
+            || snapshot.observation.semantics == .visualEffect(.automaticCapsule),
            let backgroundWireframe = makeWireframeReference(for: snapshot, context: context) {
             children.append(backgroundWireframe)
         }

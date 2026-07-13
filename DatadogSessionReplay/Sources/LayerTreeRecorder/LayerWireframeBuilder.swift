@@ -98,6 +98,16 @@ internal struct LayerWireframeBuilder {
                 wireframe: SRWireframe(layerSnapshot: snapshot, webView: webView),
                 resource: nil
             )
+        case (.visualEffect(.automaticCapsule), _):
+            return Output(
+                id: snapshot.replayID,
+                wireframe: SRWireframe(
+                    layerSnapshot: snapshot,
+                    backgroundColor: .systemBackground,
+                    cornerRadius: min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2
+                ),
+                resource: nil
+            )
         case (.visualEffect(.glassGroup), _) where snapshot.cornerRadii != .zero:
             return Output(
                 id: snapshot.replayID,

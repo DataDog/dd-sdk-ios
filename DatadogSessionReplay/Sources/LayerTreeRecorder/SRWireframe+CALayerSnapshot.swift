@@ -270,7 +270,7 @@ extension SRShapeGradient {
 }
 
 extension String {
-    fileprivate static let fallbackColor = "#FF0000FF"
+    static let fallbackColor = "#FF0000FF"
     fileprivate static let fallbackFontFamily = "-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif"
 }
 

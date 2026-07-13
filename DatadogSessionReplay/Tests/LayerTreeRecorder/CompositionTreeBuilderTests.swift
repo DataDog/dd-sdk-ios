@@ -66,6 +66,41 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates fallback and content references for automatic capsule")
+    func buildCreatesFallbackAndContentReferencesForAutomaticCapsule() throws {
+        // Given
+        let contentSnapshot = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: CGRect(x: 20, y: 30, width: 80, height: 40),
+            backgroundColor: UIColor.red.cgColor
+        )
+        let capsuleSnapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 60),
+            observation: .init(semantics: .visualEffect(.automaticCapsule)),
+            sublayers: [contentSnapshot]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [capsuleSnapshot])
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let layer = try #require(
+            output.compositionTree.layers?.first { $0.id == capsuleSnapshot.replayID }
+        )
+        #expect(layer.children == [
+            .init(id: capsuleSnapshot.replayID, type: .wireframe),
+            .init(id: contentSnapshot.replayID, type: .wireframe)
+        ])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates composition layer for leaf with modifiers")
     func buildCreatesCompositionLayerForLeafWithModifiers() throws {
         // Given

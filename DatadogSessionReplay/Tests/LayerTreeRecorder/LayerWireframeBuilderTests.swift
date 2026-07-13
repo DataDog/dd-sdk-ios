@@ -268,6 +268,33 @@ struct LayerWireframeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates automatic capsule fallback")
+    func buildCreatesAutomaticCapsuleFallback() throws {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.automaticCapsule))
+        )
+        var builder = LayerWireframeBuilder(contentSnapshots: [:], webViewSlotIDs: [])
+
+        // When
+        let result = builder.build(from: snapshot, textInput: nil, cornerRadius: nil)
+        let output = try #require(result)
+
+        // Then
+        guard case .shapeWireframe(let wireframe) = output.wireframe else {
+            Issue.record("Expected a shape wireframe")
+            return
+        }
+
+        #expect(
+            wireframe.shapeStyle?.backgroundColor == hexString(from: UIColor.systemBackground.cgColor)
+        )
+        #expect(wireframe.shapeStyle?.cornerRadius == 20)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates hidden placeholder for private layer")
     func buildCreatesHiddenPlaceholderForPrivateLayer() throws {
         // Given

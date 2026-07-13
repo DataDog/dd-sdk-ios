@@ -14,6 +14,7 @@ extension CALayerSnapshot {
         masksToBounds
             || opacity < 1
             || hasShadow
+            || observation.semantics == .visualEffect(.automaticCapsule)
             || filters.contains {
                 SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil
             }
@@ -26,18 +27,8 @@ extension CALayerSnapshot {
         // Modifiers order determines the final appearance in the player
 
         // Clipping
-        if masksToBounds {
-            result.append(
-                .compositionLayerClipModifier(
-                    value: .init(
-                        path: SwiftUI.Path(
-                            roundedRect: .init(origin: .zero, size: absoluteFrame.size),
-                            cornerRadii: cornerRadii,
-                            cornerCurve: cornerCurve
-                        ).dd.svgString
-                    )
-                )
-            )
+        if let clipModifier {
+            result.append(clipModifier)
         }
 
         // Filters
@@ -65,32 +56,63 @@ extension CALayerSnapshot {
         return result
     }
 
+    private var clipModifier: SRCompositionLayerModifier? {
+        let cornerRadii: CornerRadii? = if case .visualEffect(.automaticCapsule) = observation.semantics {
+            .init(
+                cornerRadius: min(absoluteFrame.width, absoluteFrame.height) / 2,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
+        } else {
+            masksToBounds ? self.cornerRadii : nil
+        }
+
+        return cornerRadii.map {
+            .compositionLayerClipModifier(
+                value: .init(
+                    path: SwiftUI.Path(
+                        roundedRect: .init(origin: .zero, size: absoluteFrame.size),
+                        cornerRadii: $0,
+                        cornerCurve: cornerCurve
+                    ).dd.svgString
+                )
+            )
+        }
+    }
+
     private var shadowModifier: SRCompositionLayerModifier? {
-        guard
-            !masksToBounds,
-            hasShadow,
-            let shadowColor,
-            let effectiveColor = shadowColor.copy(alpha: shadowColor.alpha * CGFloat(shadowOpacity)),
-            let color = hexString(from: effectiveColor)
-        else {
-            return nil
-        }
-
-        let path = shadowPath.map {
-            SwiftUI.Path($0)
-                .applying(.init(translationX: -bounds.minX, y: -bounds.minY))
-                .dd.svgString
-        }
-
-        return .compositionLayerShadowModifier(
-            value: .init(
-                color: color,
+        let shadow: SRCompositionLayerShadowModifier? = if case .visualEffect(.automaticCapsule) = observation.semantics {
+            .init(
+                color: hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor) ?? .fallbackColor,
+                offsetX: 0,
+                offsetY: 0,
+                radius: 8
+            )
+        } else if !masksToBounds, hasShadow, let shadowColor {
+            .init(
+                color: shadowColor
+                    .copy(alpha: shadowColor.alpha * CGFloat(shadowOpacity))
+                    .flatMap(hexString(from:)) ?? .fallbackColor,
                 offsetX: Double(shadowOffset.width),
                 offsetY: Double(shadowOffset.height),
-                path: path,
+                path: shadowPath.map {
+                    SwiftUI.Path($0)
+                        .applying(.init(translationX: -bounds.minX, y: -bounds.minY))
+                        .dd.svgString
+                },
                 radius: Double(shadowRadius)
             )
-        )
+        } else {
+            nil
+        }
+
+        return shadow.map {
+            .compositionLayerShadowModifier(value: $0)
+        }
     }
 }
 

@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import QuartzCore
+import SwiftUI
 import Testing
 import UIKit
 
@@ -84,6 +85,53 @@ struct CALayerSnapshotSRCompositionLayerTests {
         #expect(shadow.offsetX == 2)
         #expect(shadow.offsetY == 3)
         #expect(shadow.radius == 4)
+        #expect(shadow.path == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps automatic capsule effect to clip and shadow modifiers")
+    func mapsAutomaticCapsuleEffectToClipAndShadowModifiers() throws {
+        // Given
+        let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        let snapshot = CALayerSnapshot.mockWith(
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.automaticCapsule))
+        )
+        let cornerRadii = CALayerSnapshot.CornerRadii(
+            cornerRadius: 20,
+            maskedCorners: [
+                .layerMinXMinYCorner,
+                .layerMaxXMinYCorner,
+                .layerMinXMaxYCorner,
+                .layerMaxXMaxYCorner
+            ]
+        )
+        let expectedClipPath = SwiftUI.Path(
+            roundedRect: CGRect(origin: .zero, size: frame.size),
+            cornerRadii: cornerRadii,
+            cornerCurve: .circular
+        ).dd.svgString
+
+        // When
+        let modifiers = snapshot.modifiers()
+
+        // Then
+        #expect(snapshot.requiresCompositionLayer)
+        #expect(modifierTypes(modifiers) == ["clip", "shadow"])
+
+        let firstModifier = try #require(modifiers.first)
+        let lastModifier = try #require(modifiers.last)
+        guard case .compositionLayerClipModifier(let clip) = firstModifier,
+              case .compositionLayerShadowModifier(let shadow) = lastModifier else {
+            Issue.record("Expected clip and shadow modifiers")
+            return
+        }
+
+        #expect(clip.path == expectedClipPath)
+        #expect(shadow.color == hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor))
+        #expect(shadow.offsetX == 0)
+        #expect(shadow.offsetY == 0)
+        #expect(shadow.radius == 8)
         #expect(shadow.path == nil)
     }
 
