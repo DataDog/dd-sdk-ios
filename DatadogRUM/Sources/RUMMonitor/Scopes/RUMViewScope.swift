@@ -565,6 +565,7 @@ extension RUMViewScope {
 
         // Retrieve Session Replay config if any
         let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         let viewEvent = RUMViewEvent(
             dd: .init(
@@ -578,6 +579,7 @@ extension RUMViewScope {
                 ),
                 documentVersion: version.toInt64,
                 pageStates: nil,
+                profiling: profiling,
                 replayStats: .init(
                     recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
                     segmentsCount: nil,
@@ -739,8 +741,11 @@ extension RUMViewScope {
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages)?.dd.decode() == true {
             // Don't try to get binary images if we already have them.
             if binaryImages == nil {
-                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
-                binaryImages = try? dependencies.backtraceReporter?.generateBacktrace()?.binaryImages.compactMap { $0.toRUMDataFormat }
+                do {
+                    binaryImages = try dependencies.backtraceReporter?.binaryImages()?.compactMap { $0.toRUMDataFormat }
+                } catch {
+                    dependencies.telemetry.error(error)
+                }
             }
         }
 

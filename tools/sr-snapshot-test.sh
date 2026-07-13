@@ -9,6 +9,7 @@
 #   --push: Pushes snapshot images to the snapshots repository
 #   --open-project: Opens the SR Snapshot Tests project in Xcode with the required environment variables
 #   --test: Runs snapshot tests against snapshot images in the current repository
+#   --suite: Defines the snapshot test suite to use, e.g., 'view-tree' or 'layer-tree'
 #   --os: Sets the operating system version for --test, e.g., '17.5'
 #   --platform: Defines the type of simulator platform for --test, e.g., 'iOS Simulator'
 #   --device: Specifies the simulator device for --test, e.g., 'iPhone 15'
@@ -23,6 +24,7 @@ define_arg "pull" "false" "Pulls snapshot images from the snapshots repository" 
 define_arg "push" "false" "Pushes snapshot images to the snapshots repository" "store_true"
 define_arg "open-project" "false" "Opens the SR Snapshot Tests project in Xcode with the required environment variables" "store_true"
 define_arg "test" "false" "Runs snapshot tests against snapshot images in the current repository" "store_true"
+define_arg "suite" "view-tree" "Defines the snapshot test suite to use, e.g., 'view-tree' or 'layer-tree'" "string" "false"
 define_arg "os" "" "Sets the operating system version for --test, e.g., '17.5'" "string" "false"
 define_arg "platform" "" "Defines the type of simulator platform for --test, e.g., 'iOS Simulator'" "string" "false"
 define_arg "device" "" "Specifies the simulator device for --test, e.g., 'iPhone 15'" "string" "false"
@@ -34,12 +36,27 @@ parse_args "$@"
 REPO_ROOT=$(realpath .)
 
 SNAPSHOTS_CLI_PATH="$REPO_ROOT/tools/sr-snapshots"
-SNAPSHOTS_DIR="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_"
 SNAPSHOTS_REPO_PATH="$REPO_ROOT/../dd-mobile-session-replay-snapshots"
-
-TEST_SCHEME="SRSnapshotTests"
 TEST_WORKSPACE="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace"
-TEST_ARTIFACTS_PATH="$REPO_ROOT/$artifacts_path/sr-snapshot-tests"
+
+case "$suite" in
+    "view-tree")
+        SNAPSHOTS_DIR="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_"
+        TEST_SCHEME="SRSnapshotTests"
+        TEST_ARTIFACTS_SUBPATH="sr-snapshot-tests"
+        ;;
+    "layer-tree")
+        SNAPSHOTS_DIR="$REPO_ROOT/DatadogSessionReplay/SRSnapshotTests/SRLayerSnapshotTests/_snapshots_"
+        TEST_SCHEME="SRLayerSnapshotTests"
+        TEST_ARTIFACTS_SUBPATH="sr-layer-snapshot-tests"
+        ;;
+    *)
+        echo_err "Error:" "--suite must be 'view-tree' or 'layer-tree'."
+        exit 1
+        ;;
+esac
+
+TEST_ARTIFACTS_PATH="$REPO_ROOT/$artifacts_path/$TEST_ARTIFACTS_SUBPATH"
 
 # On CI, get GitHub token for accessing snapshots repository
 if [ "$CI" = "true" ]; then
@@ -91,6 +108,7 @@ if [ "$open_project" = "true" ]; then
 fi
 
 echo_info "Using"
+echo_info "▸ SUITE = '$suite'"
 echo_info "▸ SNAPSHOTS_CLI_PATH = '$SNAPSHOTS_CLI_PATH'"
 echo_info "▸ SNAPSHOTS_PATH = '$SNAPSHOTS_DIR'"
 echo_info "▸ SNAPSHOTS_REPO_PATH = '$SNAPSHOTS_REPO_PATH'"

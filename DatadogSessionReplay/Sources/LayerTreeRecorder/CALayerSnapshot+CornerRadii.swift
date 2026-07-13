@@ -42,4 +42,19 @@ extension CALayerSnapshot {
         }
     }
 }
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.CornerRadii {
+    var uniformCornerRadius: CGFloat? {
+        guard
+            topLeft.width == topLeft.height,
+            topLeft == topRight,
+            topRight == bottomLeft,
+            bottomLeft == bottomRight
+        else {
+            return nil
+        }
+        return topLeft.width
+    }
+}
 #endif

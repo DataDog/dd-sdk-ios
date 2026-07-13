@@ -46,10 +46,9 @@ internal final class ExposureLogger: ExposureLogging {
                 variationKey: assignment.variationKey
             )
 
-            guard !loggedExposures.contains(exposure) else {
+            guard loggedExposures.track(exposure) else {
                 return
             }
-            loggedExposures.insert(exposure)
 
             let date = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
             let exposureEvent = ExposureEvent(

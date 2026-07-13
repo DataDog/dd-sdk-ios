@@ -118,10 +118,13 @@ struct LayerTreeSnapshotBuilderTests {
         // Then
         #expect(snapshot.webViewSlotIDs == Set([webView.hash]))
         #expect(snapshot.root.sublayers.count == 1)
-        #expect(snapshot.root.sublayers[0].observation == .init(
-            semantics: .webView(.init(slotID: webView.hash)),
-            ignoreSublayers: true
-        ))
+        let webViewSnapshot = snapshot.root.sublayers[0]
+        #expect(
+            webViewSnapshot.observation == .init(
+                semantics: .webView(.init(slotID: webView.hash, slotFrame: webViewSnapshot.absoluteFrame)),
+                ignoresSublayers: true
+            )
+        )
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

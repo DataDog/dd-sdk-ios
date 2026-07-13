@@ -395,7 +395,7 @@ static void walk_frames(
         // so fp must be at or above sp when a stack snapshot is available.
         if (stack_base != 0 && fp_addr < stack_base) break;
 
-        frame_pointer_pair_t next_frame;
+        frame_pointer_pair_t next_frame = {};
         if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
             if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
                 break;

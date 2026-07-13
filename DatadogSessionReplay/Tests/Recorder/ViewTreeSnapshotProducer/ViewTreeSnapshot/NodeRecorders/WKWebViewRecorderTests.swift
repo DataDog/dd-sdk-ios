@@ -57,6 +57,27 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertFalse(wireframes.isEmpty)
     }
 
+    func testWhenWebViewExtendsBeyondSafeArea_itOffsetsNodeFrame() throws {
+        // Given
+        let webView = SafeAreaWebView()
+        webView.stubbedSafeAreaInsets = UIEdgeInsets(top: 30, left: 0, bottom: 0, right: 0)
+        webView.scrollView.contentInsetAdjustmentBehavior = .automatic
+
+        let frame = CGRect(x: 10, y: 20, width: 60, height: 40)
+        let viewAttributes: ViewAttributes = .mockWith(
+            frame: frame,
+            clip: frame,
+            alpha: 1,
+            isHidden: false
+        )
+
+        // When
+        let semantics = try XCTUnwrap(recorder.semantics(of: webView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
+
+        // Then
+        XCTAssertEqual(semantics.nodes.first?.viewAttributes.frame, frame.offsetBy(dx: 0, dy: 30))
+    }
+
     func testVisibleWebViewSlot() throws {
         // Given
         let attributes: ViewAttributes = .mock(fixture: .visible())
@@ -84,6 +105,14 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframe.height, Int64.ddWithNoOverflow( attributes.frame.height))
         XCTAssertTrue(wireframe.isVisible ?? false)
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
+    }
+}
+
+private final class SafeAreaWebView: WKWebView {
+    var stubbedSafeAreaInsets: UIEdgeInsets = .zero
+
+    override var safeAreaInsets: UIEdgeInsets {
+        stubbedSafeAreaInsets
     }
 }
 

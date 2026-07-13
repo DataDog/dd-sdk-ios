@@ -53,6 +53,17 @@ Common oversights:
 9. `RequestBuilder` wraps batch in HTTP POST to Datadog intake
 10. `HTTPClient` sends request; on success files are deleted; on failure backoff/retry applies
 
+### Profiling Pipeline
+
+1. App calls `Profiling.enable(with:in:)` after `Datadog.initialize()`.
+2. `ProfilerFeature` registers as a remote feature, configures the native app-launch UserDefaults flags, and installs message receivers for RUM context, RUM payloads, and quota checks.
+3. The native Mach profiler samples application threads and aggregates stack traces into pprof data.
+4. RUM context provides session IDs and deterministic session sampling; Profiling composes `continuousSampleRate` with the active RUM session sampler for Continuous Profiling.
+5. For Custom Profiling, RUM composes `ProfilingOptions(sampleRate:)` with the active session sampler before sending sampled operation payloads to Profiling.
+6. RUM payload messages provide TTID, operation, app hang, and long task data for profile correlation.
+7. `ProfilingHandler` serializes a `ProfileEvent` plus `wall.pprof` and optional `rum-mobile-events.json` attachments.
+8. `RequestBuilder` sends one multipart upload per profile to `/api/v2/profile`.
+
 ### Storage Pipeline
 
 ```
@@ -181,7 +192,7 @@ The SDK must **never throw exceptions** to customer code:
 
 - **Auth**: Client token passed as `DD-API-KEY` header
 - **Custom headers**: `DD-EVP-ORIGIN`, `DD-EVP-ORIGIN-VERSION`, `DD-REQUEST-ID`
-- **Formats**: JSON, NDJSON (batches), multipart/form-data (Session Replay, crashes)
+- **Formats**: JSON, NDJSON (batches), multipart/form-data (Session Replay, crashes, profiles)
 - **Compression**: Gzip (`Content-Encoding: gzip`)
 - **Endpoints by site**: `.us1` → `browser-intake-datadoghq.com`, `.eu1` → `browser-intake-datadoghq.eu`, etc.
 - **Header builder**: `DatadogInternal/Sources/Upload/URLRequestBuilder.swift`

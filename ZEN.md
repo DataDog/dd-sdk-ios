@@ -32,7 +32,7 @@ This SDK lives in our customer’s applications, and is run on end users devices
 ## Compatibility
 
 - Support all iOS versions supported by current Xcode version that can publish to AppStoreConnect:
-    - Minimum accepted Xcode version: 16
+    - Minimum accepted Xcode version: 26
     - Minimum iOS accepted version: 12.0 
 - Support all main languages; especially the behavior should be the same for any language, but can be enhanced for modern languages.
     - iOS: ObjC/Swift
