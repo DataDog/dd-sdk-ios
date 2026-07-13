@@ -15,6 +15,8 @@ import WebKit
 
 @MainActor
 struct SemanticObservationTests {
+    private final class DestOutView: UIView {}
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
@@ -269,6 +271,19 @@ struct SemanticObservationTests {
             semantics: .visualEffect(.compositorSupport),
             ignoresSublayers: true
         ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records application DestOutView as plain layer semantics")
+    func recordsApplicationDestOutViewAsPlainLayerSemantics() {
+        // Given
+        let view = DestOutView()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: view.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

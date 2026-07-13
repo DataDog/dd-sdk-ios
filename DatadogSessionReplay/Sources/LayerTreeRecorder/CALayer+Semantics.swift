@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
@@ -31,7 +32,13 @@ extension CALayer {
     }
 
     var isDestinationOutView: Bool {
-        delegate.map { NSStringFromClass(type(of: $0)).hasSuffix("DestOutView") } == true
+        guard let view = delegate as? UIView else {
+            return false
+        }
+
+        let viewClass = type(of: view)
+        return Bundle(for: viewClass) == Bundle(for: UIView.self)
+            && NSStringFromClass(viewClass).hasSuffix("DestOutView")
     }
 
     var isTabBarPlatter: Bool {
