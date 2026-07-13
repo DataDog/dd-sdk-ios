@@ -13,7 +13,7 @@ public enum TrackingMode {
     case automatic
 
     /// Registered delegate mode: tracks tasks with a delegate registered via `enableDurationBreakdown(with:)`.
-    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.) as well as the data via the delegate callback.
+    /// Captures `URLSessionTaskMetrics` for detailed timing breakdown (DNS, SSL, TTFB, etc.).
     case registeredDelegate
 }
 
@@ -31,14 +31,16 @@ public class URLSessionTaskInterception {
     public private(set) var metrics: ResourceMetrics?
     /// Task data received during this interception.
     ///
-    /// Data is collected in:
-    /// - Registered delegate mode: via `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` swizzling
-    /// - Automatic mode: via completion handler swizzling (only for tasks with completion handlers)
+    /// Collected via:
+    /// - Registered delegate mode: incremental `URLSessionDataDelegate` chunks
+    /// - Automatic mode: completion handler swizzling (tasks with completion handlers only)
     ///
-    /// Can be `nil` if:
-    /// - Task completed with error
-    /// - Task has no completion handler in automatic mode (e.g., async/await, tasks without handlers)
-    /// - Task is a download task (data is saved to file instead of captured in memory)
+    /// `nil` when:
+    /// - No completion handler in automatic mode (e.g., async/await tasks)
+    /// - Download tasks (data is written to file, not memory)
+    /// - Media responses in registered-delegate mode (`image/*`, `video/*`, `audio/*`, `application/octet-stream`)
+    /// - Response body exceeds 512 KB in registered-delegate mode
+    /// - Task completed with an error before any data was received
     public private(set) var data: Data?
     /// Response size in bytes received during this interception.
     ///
@@ -113,6 +115,10 @@ public class URLSessionTaskInterception {
         } else {
             self.data = nextData
         }
+    }
+
+    func resetData() {
+        data = nil
     }
 
     func register(request: ImmutableRequest) {

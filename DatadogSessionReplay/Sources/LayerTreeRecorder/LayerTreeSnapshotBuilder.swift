@@ -14,7 +14,7 @@ internal struct LayerTreeSnapshot: Sendable {
     let date: Date
     let context: LayerRecordingContext
     let viewportSize: CGSize
-    let root: CALayerSnapshot
+    var root: CALayerSnapshot
     let webViewSlotIDs: Set<Int>
 }
 

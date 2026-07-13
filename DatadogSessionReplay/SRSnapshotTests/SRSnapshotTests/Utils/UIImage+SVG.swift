@@ -110,7 +110,7 @@ private struct SVGShapeDocument {
 }
 
 extension CGPath {
-    fileprivate static func parse(_ d: String) -> CGPath? {
+    static func parse(_ d: String) -> CGPath? {
         let scanner = Scanner(string: d)
         scanner.charactersToBeSkipped = CharacterSet(charactersIn: " ,\n\t\r")
         scanner.locale = Locale(identifier: "en_US_POSIX")

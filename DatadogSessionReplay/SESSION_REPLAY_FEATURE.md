@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-01
-sdk_version: 3.11.0
-verified_against_commit: d3b6c039d
+last_updated: 2026-06-29
+sdk_version: 3.13.0
+verified_against_commit: 48f0891ec
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift

@@ -970,7 +970,7 @@ class WebViewTrackingTests: XCTestCase {
 
     // MARK: - Wildcard host patterns
 
-    func testItAddsUserScriptWithHostPatterns() throws {
+    func testItAddsUserScriptWithWildcardHosts() throws {
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -978,7 +978,8 @@ class WebViewTrackingTests: XCTestCase {
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
-            hostPatterns: ["*.shopist.io", "preview-*.example.com"],
+            hosts: ["*.shopist.io", "preview-*.example.com"],
+            hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
@@ -1006,7 +1007,7 @@ class WebViewTrackingTests: XCTestCase {
         """)
     }
 
-    func testItDropsPatternWithMoreThanOneWildcard() throws {
+    func testItDropsWildcardWithMoreThanOneAsterisk() throws {
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -1014,17 +1015,18 @@ class WebViewTrackingTests: XCTestCase {
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
-            hostPatterns: ["*.foo.*.bar", "shopist.io"],
+            hosts: ["*.foo.*.bar.com", "shopist.io"],
+            hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
-        XCTAssertFalse(script.source.contains("*.foo.*.bar"))
+        XCTAssertFalse(script.source.contains("*.foo.*.bar.com"))
     }
 
-    func testItLowercasesHostPatterns() throws {
+    func testItLowercasesWildcardHosts() throws {
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -1032,7 +1034,8 @@ class WebViewTrackingTests: XCTestCase {
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
-            hostPatterns: ["*.SHOPIST.IO", "Preview-*.Example.COM"],
+            hosts: ["*.SHOPIST.IO", "Preview-*.Example.COM"],
+            hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
@@ -1042,7 +1045,7 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertTrue(script.source.contains("\"preview-*.example.com\""))
     }
 
-    func testItDropsPatternsWithInvalidCharacters() throws {
+    func testItDropsHostsWithInvalidCharacters() throws {
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
         config.userContentController = controller
@@ -1050,7 +1053,8 @@ class WebViewTrackingTests: XCTestCase {
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
-            hostPatterns: ["foo'bar.com", "back\\slash.com", "shopist.io"],
+            hosts: ["foo'bar.com", "back\\slash.com", "shopist.io"],
+            hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
@@ -1061,9 +1065,10 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertFalse(script.source.contains("back\\\\slash.com"))
     }
 
-    func testSerializationEdgeCases() throws {
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
+    func testItSanitizesHostEdgeCases() throws {
+        let printFunction = PrintFunctionSpy()
+        consolePrint = printFunction.print
+        defer { consolePrint = { message, _ in print(message) } }
 
         let config = WKWebViewConfiguration()
         let controller = DDUserContentController()
@@ -1072,24 +1077,27 @@ class WebViewTrackingTests: XCTestCase {
 
         try WebViewTracking.enableOrThrow(
             tracking: webView,
-            hostPatterns: [
-                "*",
-                "",
-                "https://foo.com",
+            hosts: [
+                "*",              // dropped: no label boundary
+                "",               // dropped: empty
+                "https://foo.com", // sanitized to "foo.com"
                 "shopist.io",
             ],
+            hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
 
         let script = try XCTUnwrap(controller.userScripts.last)
-        XCTAssertTrue(script.source.contains("\"*\""))
-        XCTAssertTrue(script.source.contains("\"\""))
+        XCTAssertFalse(script.source.contains("\"*\""))
+        XCTAssertFalse(script.source.contains("\"\""))
         XCTAssertTrue(script.source.contains("\"shopist.io\""))
+        // "https://foo.com" is sanitized to "foo.com" by HostsSanitizer (parity with traceWithHeaders)
         XCTAssertFalse(script.source.contains("https://foo.com"))
-        XCTAssertEqual(dd.logger.warnLogs.map(\.message), [
-            "WebView host pattern \"https://foo.com\" contains invalid characters and will be ignored."
-        ])
+        XCTAssertTrue(script.source.contains("\"foo.com\""))
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("'*'") && $0.contains("is not a valid host pattern") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("''") && $0.contains("is not a valid host name") })
+        XCTAssertTrue(printFunction.printedMessages.contains { $0.contains("https://foo.com") })
     }
 }
 

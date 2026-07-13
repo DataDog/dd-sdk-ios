@@ -100,6 +100,28 @@ class RemoteLoggerTests: XCTestCase {
         }
     }
 
+    func testWhenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages() throws {
+        // Given
+        let generationError = ErrorMock("binary images generation failed")
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock(backtraceGenerationError: generationError)
+        )
+
+        // When
+        logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
+
+        // Then
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertNil(errorMessage.binaryImages, "Binary images should be omitted when generation fails")
+        XCTAssertNotNil(featureScope.telemetryMock.messages.firstError(), "The generation error should be reported to telemetry")
+    }
+
     func testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact() throws {
         // Given
         let logger = RemoteLogger(
