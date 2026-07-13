@@ -134,7 +134,7 @@ extension ContentSnapshotRequest {
             layer = portal.sourceLayer
             bounds = portal.sourceRect
             isOpaque = portal.isOpaque
-            dependencies = [portal.sourceLayer]
+            dependencies = portal.dependencies
         default:
             layer = layerSnapshot.layer
             bounds = layerSnapshot.bounds

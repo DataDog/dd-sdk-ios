@@ -42,19 +42,27 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         sourceLayer.frame = CGRect(x: 6, y: 16, width: 108, height: 48)
         rootLayer.addSublayer(sourceLayer)
         let sourceRect = CGRect(x: 4, y: 4, width: 100, height: 40)
+        let sourceSublayer = CALayer()
+        sourceSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        sourceLayer.addSublayer(sourceSublayer)
         let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
         let snapshot = CALayerSnapshot.mockWith(
             absoluteFrame: frame,
             observation: .init(semantics: .visualEffect(.portal(.init(
                 sourceLayer: CALayerReference(sourceLayer),
                 sourceRect: sourceRect,
-                isOpaque: true
+                isOpaque: true,
+                dependencies: [
+                    CALayerReference(sourceLayer),
+                    CALayerReference(sourceSublayer)
+                ]
             ))))
         )
         let cache = ImageSnapshotCache()
+        let changeset = CALayerChangeset.mockChange(for: sourceSublayer, aspects: .display)
 
         // When
-        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
 
         // Then
         #expect(requests.count == 1)
@@ -64,7 +72,11 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.bounds == sourceRect)
         #expect(request.absoluteFrame == frame)
         #expect(request.isOpaque)
-        #expect(request.dependencies == [CALayerReference(sourceLayer)])
+        #expect(request.dependencies == [
+            CALayerReference(sourceLayer),
+            CALayerReference(sourceSublayer)
+        ])
+        #expect(request.hasChanges)
 
         let resolvedRequest = try request.resolved(relativeTo: rootLayer)
         #expect(resolvedRequest.layer === sourceLayer)

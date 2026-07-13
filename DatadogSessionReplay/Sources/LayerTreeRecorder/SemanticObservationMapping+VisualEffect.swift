@@ -49,14 +49,21 @@ extension CALayerSnapshot.SemanticObservationMapping {
         }
 
         context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
+        let sourceRect = sourceLayer.convert(layer.bounds, from: layer)
+        let dependencies = sourceLayer.visibleDependencies(
+            rootLayer: sourceLayer,
+            visibleBounds: sourceRect
+        )
+        .map(CALayerReference.init)
 
         return .init(
             semantics: .visualEffect(
                 .portal(
                     .init(
                         sourceLayer: CALayerReference(sourceLayer),
-                        sourceRect: sourceLayer.convert(layer.bounds, from: layer),
-                        isOpaque: sourceLayer.isOpaque
+                        sourceRect: sourceRect,
+                        isOpaque: sourceLayer.isOpaque,
+                        dependencies: dependencies
                     )
                 )
             ),

@@ -376,7 +376,8 @@ struct LayerWireframeBuilderTests {
             observation: .init(semantics: .visualEffect(.portal(.init(
                 sourceLayer: CALayerReference(sourceLayer),
                 sourceRect: sourceLayer.bounds,
-                isOpaque: sourceLayer.isOpaque
+                isOpaque: sourceLayer.isOpaque,
+                dependencies: [CALayerReference(sourceLayer)]
             ))))
         )
         let contentSnapshot = ContentSnapshot.mockAny(

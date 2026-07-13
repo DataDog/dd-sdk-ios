@@ -41,6 +41,7 @@ extension CALayerSnapshot.SemanticObservation {
         let sourceLayer: CALayerReference
         let sourceRect: CGRect
         let isOpaque: Bool
+        let dependencies: [CALayerReference]
     }
 }
 

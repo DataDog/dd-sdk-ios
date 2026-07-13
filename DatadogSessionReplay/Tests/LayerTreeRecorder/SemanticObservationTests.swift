@@ -172,6 +172,11 @@ struct SemanticObservationTests {
             }
         )
         let sourceLayer = try #require(portalLayer.value(forKey: "sourceLayer") as? CALayer)
+        let sourceRect = sourceLayer.convert(portalLayer.bounds, from: portalLayer)
+        let sourceSublayer = CALayer()
+        sourceSublayer.frame = sourceRect
+        sourceLayer.addSublayer(sourceSublayer)
+        defer { sourceSublayer.removeFromSuperlayer() }
         let context = CALayerSnapshot.Context.mockAny()
 
         // When
@@ -184,8 +189,10 @@ struct SemanticObservationTests {
         }
 
         #expect(portal.sourceLayer.matches(sourceLayer))
-        #expect(portal.sourceRect == sourceLayer.convert(portalLayer.bounds, from: portalLayer))
+        #expect(portal.sourceRect == sourceRect)
         #expect(portal.isOpaque == sourceLayer.isOpaque)
+        #expect(portal.dependencies.contains(CALayerReference(sourceLayer)))
+        #expect(portal.dependencies.contains(CALayerReference(sourceSublayer)))
         #expect(observation.ignoresSublayers)
         #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
     }
