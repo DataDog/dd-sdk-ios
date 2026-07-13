@@ -120,11 +120,24 @@ internal struct SpanEventBuilder: Sendable {
             tags: tags
         )
 
-        if let eventMapper = eventsMapper {
-            return eventMapper(span)
-        } else {
+        guard let eventMapper = eventsMapper else {
             return span
         }
+
+        var mappedSpan = eventMapper(span)
+
+        // Re-assert the SDK-owned `_dd.compute_stats` after the user mapper runs. The mapper receives
+        // the tag already stamped above, but a mapper that rewrites or drops `tags` could otherwise
+        // strip it, letting the sampled-in span upload without the opt-out while client-side stats are
+        // also uploaded, causing the backend to recompute and double-count. `SpanSanitizer` only
+        // guards against attribute-count limiting dropping the tag, not against the mapper removing it.
+        if statsComputationEnabled {
+            mappedSpan.tags[SpanTags.computeStats] = "0"
+        } else {
+            mappedSpan.tags.removeValue(forKey: SpanTags.computeStats)
+        }
+
+        return mappedSpan
     }
 
     // MARK: - Attributes Conversion

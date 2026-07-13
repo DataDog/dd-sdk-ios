@@ -242,7 +242,15 @@ internal final class StatsConcentrator: @unchecked Sendable {
             return
         }
 
-        let endTime = snapshot.startTime + snapshot.duration
+        // The public tracing API accepts custom start/finish dates, and the SDK's time conversion
+        // clamps to `UInt64.max` rather than trapping. A pathological span (e.g. a far-future start
+        // plus any positive duration) can therefore saturate `startTime`, making this addition
+        // overflow. Drop such a snapshot instead of crashing the host app or mis-bucketing it in the
+        // far future.
+        let (endTime, overflow) = snapshot.startTime.addingReportingOverflow(snapshot.duration)
+        guard !overflow else {
+            return
+        }
         let matchingPeerTags = self.matchingPeerTags(for: snapshot)
         let aggregationKey = makeAggregationKey(from: snapshot, peerTags: matchingPeerTags)
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }
