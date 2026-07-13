@@ -119,6 +119,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
         }
 
+        let vitalsReaders = configuration.vitalsUpdateFrequency.map {
+            VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -149,12 +153,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map {
-                VitalsReaders(
-                    frequency: $0.timeInterval,
-                    telemetry: core.telemetry
-                )
-            },
+            vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
@@ -198,7 +197,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                     predicate: nextViewActionPredicate
                 )
             },
-            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) }
+            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            timeseriesCollector: configuration.enableTimeseries ? vitalsReaders.map {
+                TimeseriesSessionCollector(
+                    memoryReader: $0.memory,
+                    featureScope: featureScope,
+                    batchSize: configuration.timeseriesBatchSize,
+                    collectInBackground: configuration.trackBackgroundEvents
+                )
+            } : nil
         )
 
         self.monitor = Monitor(

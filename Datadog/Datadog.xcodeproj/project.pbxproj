@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */; };
+		A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */; };
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
@@ -1874,6 +1876,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollector.swift; sourceTree = "<group>"; };
+		A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeseriesSessionCollectorTests.swift; sourceTree = "<group>"; };
 		048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierTests.swift; sourceTree = "<group>"; };
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
 		A1B2C3E42F92000100ABCDEF /* ProfilingContext+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingContext+RUM.swift"; sourceTree = "<group>"; };
@@ -3427,6 +3431,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A0A0A0A0A0A0A0A0A0A00001 /* Timeseries */ = {
+			isa = PBXGroup;
+			children = (
+				A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */,
+			);
+			path = Timeseries;
+			sourceTree = "<group>";
+		};
+		A0A0A0A0A0A0A0A0A0A00002 /* Timeseries */ = {
+			isa = PBXGroup;
+			children = (
+				A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */,
+			);
+			path = Timeseries;
+			sourceTree = "<group>";
+		};
 		095AE9512F7D30BD00C332AE /* Sampling */ = {
 			isa = PBXGroup;
 			children = (
@@ -6720,6 +6740,7 @@
 				D29A9F8B29DD860A005C54A4 /* Utils */,
 				618DCFD524C7264100589570 /* UUIDs */,
 				EEC7BD4A3480C5A3191E7A22 /* Heatmaps */,
+				A0A0A0A0A0A0A0A0A0A00001 /* Timeseries */,
 			);
 			name = DatadogRUM;
 			path = ../DatadogRUM/Sources;
@@ -6747,6 +6768,7 @@
 				6174D6182BFE447600EC7469 /* SDKMetrics */,
 				61411B0E24EC15940012EAB2 /* Utils */,
 				67B718E85203992292E96407 /* Heatmaps */,
+				A0A0A0A0A0A0A0A0A0A00002 /* Timeseries */,
 			);
 			name = DatadogRUMTests;
 			path = ../DatadogRUM/Tests;
@@ -9221,6 +9243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */,
+				A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */,
 				615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */,
 				D29A9F8029DD85BB005C54A4 /* UIViewControllerHandler.swift in Sources */,
 				D29A9F5929DD85BB005C54A4 /* RUMCommand.swift in Sources */,
@@ -9356,6 +9379,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6188697C2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */,
+				A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */,
 				61DCC8472C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
 				D29A9FA629DDB483005C54A4 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
 				61C4534A2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,

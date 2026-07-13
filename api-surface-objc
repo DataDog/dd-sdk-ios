@@ -1594,6 +1594,99 @@ public class objc_RUMResourceEventView: NSObject
     public var name: String?
     public var referrer: String?
     public var url: String
+public class objc_RUMTimeseriesCpuEvent: NSObject
+    public internal(set) var swiftModel: RUMTimeseriesCpuEvent
+    public init(swiftModel: RUMTimeseriesCpuEvent)
+    public var dd: objc_RUMTimeseriesCpuEventDD
+    public var application: objc_RUMTimeseriesCpuEventApplication
+    public var date: NSNumber
+    public var service: String?
+    public var session: objc_RUMTimeseriesCpuEventSession
+    public var source: objc_RUMTimeseriesCpuEventSource
+    public var timeseries: objc_RUMTimeseriesCpuEventTimeseries
+    public var type: String
+    public var version: String?
+public class objc_RUMTimeseriesCpuEventDD: NSObject
+    public var formatVersion: NSNumber
+public class objc_RUMTimeseriesCpuEventApplication: NSObject
+    public var id: String
+public class objc_RUMTimeseriesCpuEventSession: NSObject
+    public var id: String
+    public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType
+public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int
+    case user
+    case synthetics
+    case ciTest
+public enum objc_RUMTimeseriesCpuEventSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case rumCpp
+public class objc_RUMTimeseriesCpuEventTimeseries: NSObject
+    public var data: objc_RUMTimeseriesCpuEventTimeseriesData
+    public var end: NSNumber
+    public var id: String
+    public var name: String
+    public var schema: String
+    public var start: NSNumber
+public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject
+    public var timestamps: [NSNumber]
+    public var values: objc_RUMTimeseriesCpuEventTimeseriesDataValues
+public class objc_RUMTimeseriesCpuEventTimeseriesDataValues: NSObject
+    public var cpuUsage: [NSNumber]
+public class objc_RUMTimeseriesMemoryEvent: NSObject
+    public internal(set) var swiftModel: RUMTimeseriesMemoryEvent
+    public init(swiftModel: RUMTimeseriesMemoryEvent)
+    public var dd: objc_RUMTimeseriesMemoryEventDD
+    public var application: objc_RUMTimeseriesMemoryEventApplication
+    public var date: NSNumber
+    public var service: String?
+    public var session: objc_RUMTimeseriesMemoryEventSession
+    public var source: objc_RUMTimeseriesMemoryEventSource
+    public var timeseries: objc_RUMTimeseriesMemoryEventTimeseries
+    public var type: String
+    public var version: String?
+public class objc_RUMTimeseriesMemoryEventDD: NSObject
+    public var formatVersion: NSNumber
+public class objc_RUMTimeseriesMemoryEventApplication: NSObject
+    public var id: String
+public class objc_RUMTimeseriesMemoryEventSession: NSObject
+    public var id: String
+    public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType
+public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int
+    case user
+    case synthetics
+    case ciTest
+public enum objc_RUMTimeseriesMemoryEventSource: Int
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case rumCpp
+public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject
+    public var data: objc_RUMTimeseriesMemoryEventTimeseriesData
+    public var end: NSNumber
+    public var id: String
+    public var name: String
+    public var schema: String
+    public var start: NSNumber
+public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject
+    public var timestamps: [NSNumber]
+    public var values: objc_RUMTimeseriesMemoryEventTimeseriesDataValues
+public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject
+    public var memoryFootprint: [NSNumber]
+    public var memoryPercent: [NSNumber]
 public class objc_RUMViewEvent: NSObject
     public internal(set) var swiftModel: RUMViewEvent
     public init(swiftModel: RUMViewEvent)

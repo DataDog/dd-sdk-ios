@@ -14364,4 +14364,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ce537790fc56e7f6d456f961a894fe95f5a24029
+// Generated from https://github.com/DataDog/rum-events-format/tree/4ed60cbe47c30afcef051481a035adf88161d4b7
