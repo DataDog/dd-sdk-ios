@@ -9,6 +9,7 @@ import DatadogInternal
 import TestUtilities
 @testable import DatadogCore
 
+@MainActor
 class ApplicationStatePublisherTests: XCTestCase {
     func testWhenReceivingAppLifecycleNotification_itUpdatesStatesHistory() throws {
         let date = Date()

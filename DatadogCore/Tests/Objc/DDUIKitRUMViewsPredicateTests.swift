@@ -47,7 +47,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
         let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
-        let uiKitViewController = UIViewController()
+        let uiKitViewController = DDViewController()
         let rumView = predicate.rumView(for: uiKitViewController)
 
         // Then
@@ -60,7 +60,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
         let predicate = objc_DefaultUIKitRUMViewsPredicate()
 
         // When
-        let swiftUIHostingController = UIHostingController<EmptyView>(rootView: EmptyView())
+        let swiftUIHostingController = DDHostingController<EmptyView>(rootView: EmptyView())
         let rumView = predicate.rumView(for: swiftUIHostingController)
 
         // Then

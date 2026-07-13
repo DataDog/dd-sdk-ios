@@ -8,6 +8,8 @@
 
 #if !TARGET_OS_WATCH
 
+#if __has_include(<UIKit/UIKit.h>)
+
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -17,5 +19,19 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#else
+
+#import <AppKit/AppKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface CustomObjcViewController : NSViewController
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+#endif
 
 #endif
