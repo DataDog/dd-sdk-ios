@@ -4,6 +4,8 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if !__has_include(<AppKit/AppKit.h>)
+
 #import <XCTest/XCTest.h>
 @import DatadogRUM;
 @import DatadogInternal;
@@ -220,3 +222,5 @@
 #pragma clang diagnostic pop
 
 @end
+
+#endif

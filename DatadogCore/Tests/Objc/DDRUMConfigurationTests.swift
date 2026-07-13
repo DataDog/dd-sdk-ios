@@ -63,7 +63,7 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertNil(swift.nextViewActionPredicate)
     }
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
     func testCollectAccessibility() {
         let random: Bool = .mockRandom()
         objc.collectAccessibility = random
