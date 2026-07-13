@@ -47,13 +47,13 @@ internal class CompositionTreeBuilder {
     }
 
     private let root: CALayerSnapshot
-    private let imageSnapshots: ImageSnapshotBatch
-    private let webViewSlotIDs: Set<Int>
 
     private var layers: [SRCompositionLayer] = []
     private var wireframes: [SRWireframe] = []
     private var resources: [Resource] = []
-    private var pendingWebViewSlotIDs: Set<Int> = []
+
+    private let compositionLayerBuilder: CompositionLayerBuilder
+    private var layerWireframeBuilder: LayerWireframeBuilder
 
     init(
         root: CALayerSnapshot,
@@ -61,51 +61,49 @@ internal class CompositionTreeBuilder {
         imageSnapshots: ImageSnapshotBatch
     ) {
         self.root = root
-        self.webViewSlotIDs = webViewSlotIDs
-        self.imageSnapshots = imageSnapshots
+        self.compositionLayerBuilder = CompositionLayerBuilder(
+            maskSnapshots: imageSnapshots.maskSnapshots
+        )
+        self.layerWireframeBuilder = LayerWireframeBuilder(
+            contentSnapshots: imageSnapshots.contentSnapshots,
+            webViewSlotIDs: webViewSlotIDs
+        )
     }
 
     func build() -> Output {
         layers.removeAll(keepingCapacity: true)
         wireframes.removeAll(keepingCapacity: true)
         resources.removeAll(keepingCapacity: true)
-        pendingWebViewSlotIDs = webViewSlotIDs
+        layerWireframeBuilder.reset()
 
         let rootLayer = makeCompositionLayer(from: root, context: Context())
-
-        return Output(
+        let hiddenWebViewWireframes = layerWireframeBuilder.makeHiddenWebViewWireframes()
+        let output = Output(
             compositionTree: SRCompositionTree(
                 layers: layers,
                 root: rootLayer
             ),
-            wireframes: makeHiddenWebViewWireframes() + wireframes,
+            wireframes: hiddenWebViewWireframes + wireframes,
             resources: resources
         )
+
+        return output
     }
 
     private func makeCompositionLayer(
         from snapshot: CALayerSnapshot,
         context: Context
     ) -> SRCompositionLayer {
-        var maskImage: (any SessionReplayResource)?
+        let output = compositionLayerBuilder.build(
+            from: snapshot,
+            children: children(for: snapshot, context: context)
+        )
 
-        if let mask = snapshot.mask, case .success(let maskSnapshot) = imageSnapshots.maskSnapshots[mask.replayID] {
-            let resource = ImageSnapshotResource(image: maskSnapshot.image)
+        if let resource = output.resource {
             resources.append(resource)
-            maskImage = resource
         }
 
-        return SRCompositionLayer(
-            children: children(for: snapshot, context: context),
-            compositeOperation: snapshot.compositingFilter
-                .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
-            height: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.height),
-            id: snapshot.replayID,
-            modifiers: snapshot.modifiers(maskImageResourceID: maskImage?.calculateIdentifier()),
-            width: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.width),
-            x: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minX),
-            y: Int64.ddWithNoOverflow(snapshot.absoluteFrame.minY)
-        )
+        return output.layer
     }
 
     private func children(
@@ -157,138 +155,20 @@ internal class CompositionTreeBuilder {
         for snapshot: CALayerSnapshot,
         context: Context
     ) -> SRCompositionLayerChild? {
-        guard !snapshot.isPrivate else {
-            wireframes.append(SRWireframe(placeholderFor: snapshot, label: .hiddenPlaceholder))
-            return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
-        }
-
-        let cornerRadius = context.cornerRadius(for: snapshot)
-
-        let wireframe: SRWireframe? = switch (
-            snapshot.observation.semantics,
-            imageSnapshots.contentSnapshots[snapshot.replayID]
-        ) {
-        case (.layer, .some(let result)),
-            (.image, .some(let result)),
-            (.visualEffect(.portal), .some(let result)):
-            makeContentSnapshotWireframe(for: snapshot, result: result, context: context)
-        case (.layer, .none):
-            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-        case (.gradient(let gradient), _):
-            SRWireframe(
-                layerSnapshot: snapshot,
-                gradient: gradient,
-                cornerRadius: cornerRadius
-            )
-        case (.label(let label), _):
-            SRWireframe(layerSnapshot: snapshot, label: label, cornerRadius: cornerRadius)
-        case (.textInput, .none):
-            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-        case (.image(let image), .none) where image.hasContent:
-            // Private image
-            SRWireframe(
-                placeholderFor: snapshot,
-                label: snapshot.imagePrivacyLevel == .maskNonBundledOnly
-                    ? .contentImagePlaceholder
-                    : .imagePlaceholder
-            )
-        case (.image, .none):
-            // Empty image
-            SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-        case (.webView(let webView), _):
-            makeVisibleWebViewWireframe(for: snapshot, webView: webView)
-        case (.visualEffect(.glassGroup), _) where snapshot.cornerRadii != .zero:
-            SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
-        case (.visualEffect(.backdrop), _):
-            SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground)
-        case (.visualEffect(.background(let color)), _):
-            SRWireframe(layerSnapshot: snapshot, backgroundColor: color ?? .secondarySystemFill)
-        default:
-            nil
-        }
-
-        guard let wireframe else {
+        guard let output = layerWireframeBuilder.build(
+            from: snapshot,
+            textInput: context.textInput,
+            cornerRadius: context.cornerRadius(for: snapshot)
+        ) else {
             return nil
         }
 
-        wireframes.append(wireframe)
-        return SRCompositionLayerChild(id: snapshot.wireframeID, type: .wireframe)
-    }
-
-    private func makeContentSnapshotWireframe(
-        for layerSnapshot: CALayerSnapshot,
-        result: ContentSnapshotResult,
-        context: Context
-    ) -> SRWireframe? {
-        switch result {
-        case .success(let imageSnapshot):
-            do {
-                switch try imageSnapshot.redacted(parentTextInput: context.textInput) {
-                case .image(let image):
-                    let resource = ImageSnapshotResource(image: image)
-                    resources.append(resource)
-
-                    return SRWireframe(
-                        id: layerSnapshot.replayID,
-                        imageSnapshot: imageSnapshot,
-                        resource: resource
-                    )
-                case .placeholder(let color):
-                    return SRWireframe(
-                        layerSnapshot: layerSnapshot,
-                        backgroundColor: color,
-                        cornerRadius: context.cornerRadius(for: layerSnapshot)
-                    )
-                }
-            } catch {
-                return SRWireframe(
-                    placeholderFor: layerSnapshot,
-                    label: .redactedPlaceholder
-                )
-            }
-        case .failure(.timedOut):
-            return SRWireframe(
-                placeholderFor: layerSnapshot,
-                label: .timedOutPlaceholder
-            )
-        case .failure(.discarded):
-            return nil
+        if let resource = output.resource {
+            resources.append(resource)
         }
-    }
 
-    private func makeVisibleWebViewWireframe(
-        for layerSnapshot: CALayerSnapshot,
-        webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
-    ) -> SRWireframe {
-        let wireframe = SRWireframe(layerSnapshot: layerSnapshot, webView: webView)
-        pendingWebViewSlotIDs.remove(webView.slotID)
-        return wireframe
-    }
-
-    private func makeHiddenWebViewWireframes() -> [SRWireframe] {
-        let result = pendingWebViewSlotIDs.map(SRWireframe.init(hiddenWebViewSlotID:))
-        pendingWebViewSlotIDs.removeAll()
-        return result
-    }
-}
-
-extension String {
-    fileprivate static let hiddenPlaceholder = "Hidden"
-    fileprivate static let imagePlaceholder = "Image"
-    fileprivate static let contentImagePlaceholder = "Content Image"
-    fileprivate static let timedOutPlaceholder = "Timed out"
-    fileprivate static let redactedPlaceholder = "Redacted"
-}
-
-@available(iOS 13.0, tvOS 13.0, *)
-private extension CALayerSnapshot {
-    var wireframeID: Int64 {
-        switch observation.semantics {
-        case .webView(let webView):
-            return Int64(webView.slotID)
-        default:
-            return replayID
-        }
+        wireframes.append(output.wireframe)
+        return SRCompositionLayerChild(id: output.id, type: .wireframe)
     }
 }
 
