@@ -87,6 +87,45 @@ struct ContentSnapshotRedactionTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts portal snapshots when masking all text")
+    func redactsPortalSnapshotsWhenMaskingAllText() throws {
+        // Given
+        let snapshot = ContentSnapshot.mockAny(
+            layerClass: try portalLayerClass(),
+            hasLayerSemantics: false,
+            textAndInputPrivacyLevel: .maskAll
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: nil)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Redacts portal snapshots inside sensitive text inputs")
+    func redactsPortalSnapshotsInsideSensitiveTextInputs() throws {
+        // Given
+        let snapshot = ContentSnapshot.mockAny(
+            layerClass: try portalLayerClass(),
+            hasLayerSemantics: false,
+            textAndInputPrivacyLevel: .maskSensitiveInputs
+        )
+        let textInput = CALayerSnapshot.SemanticObservation.TextInputSemantics(
+            isSensitiveText: true,
+            isEditable: true,
+            isEmpty: false
+        )
+
+        // When
+        let action = snapshot.redactionAction(parentTextInput: textInput)
+
+        // Then
+        #expect(action == .redactText)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts sensitive non-empty text input layout fragments when masking sensitive inputs")
     func redactsSensitiveNonEmptyTextInputLayoutFragmentsWhenMaskingSensitiveInputs() throws {
         // Given
@@ -471,5 +510,9 @@ private func textFieldCanvasClass() throws -> AnyClass {
 
 private func imageLayerClass() throws -> AnyClass {
     try #require(NSClassFromString("SwiftUI.ImageLayer"))
+}
+
+private func portalLayerClass() throws -> AnyClass {
+    try #require(NSClassFromString("CAPortalLayer"))
 }
 #endif

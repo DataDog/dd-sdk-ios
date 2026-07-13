@@ -42,11 +42,7 @@ extension ContentSnapshot {
     func redactionAction(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> ImageRedactionAction {
-        guard hasLayerSemantics else {
-            return .none
-        }
-
-        if isImageLayer {
+        if hasLayerSemantics, isImageLayer {
             return imageLayerRedactionAction
         }
 
@@ -60,7 +56,11 @@ extension ContentSnapshot {
     private func shouldRedactText(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> Bool {
-        if let parentTextInput, isTextLayoutFragment {
+        guard hasLayerSemantics || isPortalLayer else {
+            return false
+        }
+
+        if let parentTextInput, isTextLayoutFragment || isPortalLayer {
             guard !parentTextInput.isEmpty else {
                 return false
             }
@@ -75,13 +75,20 @@ extension ContentSnapshot {
             }
         }
 
-        return textAndInputPrivacyLevel == .maskAll && isStaticText
+        return textAndInputPrivacyLevel == .maskAll && (isStaticText || isPortalLayer)
+    }
+
+    private var isPortalLayer: Bool {
+        Classes.portalLayer.map { layerClass.isSubclass(of: $0) } == true
     }
 
     private var isTextLayoutFragment: Bool {
-        delegateClassName == "_UITextLayoutFragmentView" ||
-        delegateClassName == "_UITextViewCanvasView" ||
-        delegateClassName == "_UITextFieldCanvasView"
+        guard let delegateClass else {
+            return false
+        }
+        return Classes.textLayoutFragmentView.map { delegateClass.isSubclass(of: $0) } == true
+            || Classes.textViewCanvasView.map { delegateClass.isSubclass(of: $0) } == true
+            || Classes.textFieldCanvasView.map { delegateClass.isSubclass(of: $0) } == true
     }
 
     private var isStaticText: Bool {
@@ -93,7 +100,7 @@ extension ContentSnapshot {
     }
 
     private var isImageLayer: Bool {
-        layerClassName == "SwiftUI.ImageLayer"
+        Classes.imageLayer.map { layerClass.isSubclass(of: $0) } == true
     }
 
     private var imageLayerRedactionAction: ImageRedactionAction {
@@ -117,5 +124,13 @@ extension ContentSnapshot {
     private var delegateClassName: String? {
         delegateClass.map(NSStringFromClass)
     }
+}
+
+private enum Classes {
+    static let textLayoutFragmentView: AnyClass? = NSClassFromString("_UITextLayoutFragmentView")
+    static let textViewCanvasView: AnyClass? = NSClassFromString("_UITextViewCanvasView")
+    static let textFieldCanvasView: AnyClass? = NSClassFromString("_UITextFieldCanvasView")
+    static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
+    static let imageLayer: AnyClass? = NSClassFromString("SwiftUI.ImageLayer")
 }
 #endif
