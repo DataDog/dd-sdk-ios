@@ -112,6 +112,54 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
+    @Test("Records scroll pockets with their rect edge and ignores sublayers")
+    func recordsScrollPocketsWithTheirRectEdgeAndIgnoresSublayers() throws {
+        // Given
+        let viewController = UITableViewController(style: .plain)
+        viewController.navigationItem.title = "Title"
+        viewController.toolbarItems = [
+            UIBarButtonItem(systemItem: .refresh),
+            UIBarButtonItem(systemItem: .flexibleSpace),
+            UIBarButtonItem(systemItem: .add)
+        ]
+
+        let navigationController = UINavigationController(rootViewController: viewController)
+        navigationController.setToolbarHidden(false, animated: false)
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = navigationController
+        window.makeKeyAndVisible()
+        navigationController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let scrollPockets = try [UIRectEdge.top, .bottom].map { edge in
+            try #require(
+                window.layer.firstDescendant { layer in
+                    guard
+                        let delegate = layer.delegate as? NSObject,
+                        NSStringFromClass(type(of: delegate)) == "_UIScrollPocket",
+                        let value = delegate.value(forKey: "edge") as? NSNumber
+                    else {
+                        return false
+                    }
+                    return UIRectEdge(rawValue: value.uintValue) == edge
+                }
+            )
+        }
+
+        // When
+        let observations = scrollPockets.map {
+            CALayerSnapshot.SemanticObservation(layer: $0, context: .mockAny())
+        }
+
+        // Then
+        #expect(observations == [
+            .init(semantics: .visualEffect(.scrollPocket(.top)), ignoresSublayers: true),
+            .init(semantics: .visualEffect(.scrollPocket(.bottom)), ignoresSublayers: true)
+        ])
+    }
+
+    @available(iOS 26.0, *)
     @Test("Records tab bar platter as an automatic capsule and records sublayers")
     func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
         // Given

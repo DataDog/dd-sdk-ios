@@ -79,6 +79,22 @@ extension CALayerSnapshot.SemanticObservationMapping {
         return .init(semantics: .visualEffect(.automaticCapsule))
     }
 
+    static let scrollPocket = Self { layer, _, _ in
+        guard
+            layer.isScrollPocket,
+            let delegate = layer.delegate as? NSObject,
+            delegate.responds(to: NSSelectorFromString("edge")),
+            let edge = delegate.value(forKey: "edge") as? NSNumber
+        else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.scrollPocket(UIRectEdge(rawValue: edge.uintValue))),
+            ignoresSublayers: true
+        )
+    }
+
     static let glassGroup = Self { layer, _, _ in
         guard layer.isGlassGroup else {
             return nil
