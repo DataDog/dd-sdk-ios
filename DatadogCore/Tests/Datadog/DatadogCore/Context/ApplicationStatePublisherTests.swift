@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(macOS)
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -55,3 +56,4 @@ class ApplicationStatePublisherTests: XCTestCase {
         XCTAssertEqual(history.state(at: .distantFuture), .background)
     }
 }
+#endif
