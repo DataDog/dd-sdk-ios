@@ -25,6 +25,9 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// The date provider for the Application state snapshot timestamp.
     private let dateProvider: DateProvider
 
+    
+    private let stateSystemProvider: ApplicationStateSystemProvider
+
     /// The current application state history.
     ///
     /// **Note**: It must be accessed from the main thread.
@@ -82,6 +85,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         appStateHistory: AppStateHistory,
         applicationNotificationCenter: NotificationCenter,
         workspaceNotificationCenter: NotificationCenter,
+        stateSystemProvider: ApplicationStateSystemProvider,
         dateProvider: DateProvider
     ) {
         self.initialValue = appStateHistory
@@ -89,6 +93,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         self.dateProvider = dateProvider
         self.applicationNotificationCenter = applicationNotificationCenter
         self.workspaceNotificationCenter = workspaceNotificationCenter
+        self.stateSystemProvider = stateSystemProvider
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
@@ -106,7 +111,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
             addApplicationObserver(ApplicationNotifications.didUnhide),
             addApplicationObserver(ApplicationNotifications.willTerminate) { [weak self] _ in
                 self?.append(state: .terminating)
-                return true
+                return false
             }
         ])
 
@@ -266,10 +271,10 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
             append(state: .sleeping)
         } else if isUserSessionActive == false || areScreensSleeping || isLoginWindowProcessActive {
             append(state: .lockScreen)
-        } else if NSApp.isHidden {
+        } else if stateSystemProvider.isHidden {
             append(state: .hidden)
         } else {
-            append(state: NSApp.isActive ? .active : .inactive)
+            append(state: stateSystemProvider.isActive ? .active : .inactive)
         }
     }
 

@@ -10,8 +10,7 @@ import Foundation
 /// See: https://developer.apple.com/documentation/uikit/uiapplication/state
 public protocol AppStateProvider: Sendable {
     /// The current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
+    @MainActor
     var current: AppState { get }
 }
 
@@ -241,7 +240,7 @@ extension AppState {
     }
 }
 
-#else // macOS (no UIKit and no WatchKit)
+#elseif canImport(AppKit)
 
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
