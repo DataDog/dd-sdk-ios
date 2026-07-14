@@ -171,7 +171,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(eventFile.data, event.data)
 
         let pprofFile = multipartSpy.formFiles[1]
-        XCTAssertEqual(pprofFile.filename, "wall.pprof")
+        XCTAssertEqual(pprofFile.filename, "profile.pprof")
         XCTAssertEqual(pprofFile.mimeType, "application/octet-stream")
         XCTAssertEqual(pprofFile.data, pprof)
 
