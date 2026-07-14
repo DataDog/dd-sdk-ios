@@ -315,7 +315,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
         if let history = contextReceiver.context.applicationStateHistory {
             let fetchDuration = startTime...safeEndTime
-            let foregroundDuration = history.foregroundDuration(during: fetchDuration)
+            // Users sometimes see spans for requests that take hours, even days, which is unexpected.
+            // This happens when a request starts, the application is suspended (as in, the OS suspends
+            // the process for a reason like a user sending the application to the background on an
+            // iPhone), and later resumed. When resuming, the ongoing request will fail, and the span
+            // will only finish then.
+            // We want to measure here the time the application could not be suspended, as in the
+            // process was actually running on the CPU, so users can understand why a span took an
+            // unexpected long time.
+            // This is usually the same as foregroundDuration in iOS (hence the historical name),
+            // but not on macOS, where applications in the background keep running normally, and
+            // are only suspended during the periods the Mac is sleeping.
+            let foregroundDuration = history.applicationNotSuspendedDuration(during: fetchDuration)
             span.setTag(key: SpanTags.foregroundDuration, value: foregroundDuration.dd.toNanoseconds)
 
             #if os(macOS)
