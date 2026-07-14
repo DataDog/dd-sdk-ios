@@ -25,8 +25,8 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// The date provider for the Application state snapshot timestamp.
     private let dateProvider: DateProvider
 
-    
-    private let stateSystemProvider: ApplicationStateSystemProvider
+    /// Provides app state information coming from system APIs.
+    private let applicationStateProvider: MacOSApplicationStateProvider
 
     /// The current application state history.
     ///
@@ -78,14 +78,16 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     ///
     /// - Parameters:
     ///   - appStateHistory: The history of app state and their transitions over time.
-    ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
+    ///   - applicationNotificationCenter: The notification center where this publisher observes `NSApplication` notifications.
+    ///   - workspaceNotificationCenter: The notification center where this publisher observes `NSWorkspace` notifications.
+    ///   - applicationStateProvider: Provides app state information coming from system APIs.
     ///   - dateProvider: The date provider for the Application state snapshot timestamp.
     @MainActor
     init(
         appStateHistory: AppStateHistory,
         applicationNotificationCenter: NotificationCenter,
         workspaceNotificationCenter: NotificationCenter,
-        stateSystemProvider: ApplicationStateSystemProvider,
+        applicationStateProvider: MacOSApplicationStateProvider,
         dateProvider: DateProvider
     ) {
         self.initialValue = appStateHistory
@@ -93,7 +95,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         self.dateProvider = dateProvider
         self.applicationNotificationCenter = applicationNotificationCenter
         self.workspaceNotificationCenter = workspaceNotificationCenter
-        self.stateSystemProvider = stateSystemProvider
+        self.applicationStateProvider = applicationStateProvider
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
@@ -271,10 +273,10 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
             append(state: .sleeping)
         } else if isUserSessionActive == false || areScreensSleeping || isLoginWindowProcessActive {
             append(state: .lockScreen)
-        } else if stateSystemProvider.isHidden {
+        } else if applicationStateProvider.isHidden {
             append(state: .hidden)
         } else {
-            append(state: stateSystemProvider.isActive ? .active : .inactive)
+            append(state: applicationStateProvider.isActive ? .active : .inactive)
         }
     }
 

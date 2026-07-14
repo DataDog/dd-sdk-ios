@@ -594,7 +594,7 @@ extension DatadogContextProvider {
             appStateHistory: appStateHistory,
             applicationNotificationCenter: notificationCenters.applicationCenter,
             workspaceNotificationCenter: notificationCenters.workspaceCenter,
-            stateSystemProvider: DefaultApplicationStateSystemProvider(),
+            applicationStateProvider: DefaultMacOSApplicationStateProvider(),
             dateProvider: dateProvider
         )
         self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
