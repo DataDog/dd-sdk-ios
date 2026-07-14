@@ -357,6 +357,7 @@ public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
 public typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
 public typealias DDColor = UIColor
 public typealias DDFont = UIFont
+public typealias DDHostingController = UIHostingController
 public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]

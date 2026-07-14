@@ -7,11 +7,12 @@
 import Foundation
 
 /// A protocol that provides access to the current application state.
-/// See: https://developer.apple.com/documentation/uikit/uiapplication/state
+///
+/// This is used only at the SDK initialization. State changes during the SDK instance lifetime are tracked
+/// by `DatadogCore.ApplicationStatePublisher`.
 public protocol AppStateProvider: Sendable {
     /// The current application state.
-    @MainActor
-    var current: AppState { get }
+    @MainActor var current: AppState { get }
 }
 
 #if os(macOS)
@@ -190,12 +191,13 @@ public struct AppStateHistory: Codable, Equatable {
 
 import WatchKit
 
+/// Default provider for WatchOS.
+///
+/// See: https://developer.apple.com/documentation/watchkit/wkapplication/applicationstate
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
 
     /// Gets the current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
     public var current: AppState {
         return AppState(WKApplication.shared().applicationState)
     }
@@ -217,12 +219,13 @@ extension AppState {
 
 import UIKit
 
+/// Default app state provider for iOS.
+///
+/// See: https://developer.apple.com/documentation/uikit/uiapplication/state
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
 
     /// Gets the current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
     public var current: AppState {
         let uiKitState = UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
         return AppState(uiKitState)
@@ -242,9 +245,28 @@ extension AppState {
 
 #elseif canImport(AppKit)
 
+import AppKit
+
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
     public var current: AppState {
+        // We don't have access to all the information available in the macOS version of ApplicationStatePublisher,
+        // so we do a best effort.
+        //
+        // Note: based on empirical evidence, when an app is launched in macOS, sometimes NSApp.isActive returns
+        // true, sometimes false, during the AppDelegate.applicationDidFinishLaunching method. This happens even
+        // if the conditions the app is launched in are exactly the same (for example, double-clicking it in the
+        // Finder). Do not assume this will always return true if the application is launched directly to the
+        // foreground.
+        let loginWindowActive = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.loginwindow"
+        if loginWindowActive {
+            return .lockScreen
+        }
+
+        if DDApplication.shared.isHidden {
+            return .hidden
+        }
+
         return DDApplication.shared.isActive ? .active : .inactive
     }
 }
