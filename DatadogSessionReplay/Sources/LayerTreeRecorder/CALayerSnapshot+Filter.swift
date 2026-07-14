@@ -14,6 +14,7 @@ extension CALayerSnapshot {
     enum Filter: Sendable, Equatable {
         case gaussianBlur(CGFloat)
         case colorMatrix(ColorMatrix)
+        case vibrantColorMatrix(ColorMatrix)
         case saturate(CGFloat)
         case brightness(CGFloat)
         case multiplyColor(CGColor)
@@ -42,13 +43,20 @@ extension CALayerSnapshot.Filter {
                 return nil
             }
             self = .gaussianBlur(radius)
-        case "colorMatrix", "vibrantColorMatrix":
+        case "colorMatrix":
             guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
                 return nil
             }
             var colorMatrix = CALayerSnapshot.ColorMatrix()
             value.getValue(&colorMatrix)
             self = .colorMatrix(colorMatrix)
+        case "vibrantColorMatrix":
+            guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
+                return nil
+            }
+            var colorMatrix = CALayerSnapshot.ColorMatrix()
+            value.getValue(&colorMatrix)
+            self = .vibrantColorMatrix(colorMatrix)
         case "colorSaturate":
             guard let amount = filter.safeValue(forKey: "inputAmount") as? CGFloat else {
                 return nil

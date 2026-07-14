@@ -146,6 +146,15 @@ extension SRCompositionLayerModifier {
             self = .compositionLayerGaussianBlurModifier(value: .init(radius: Double(radius)))
         case .colorMatrix(let colorMatrix):
             self = .compositionLayerColorMatrixModifier(value: .init(matrix: colorMatrix.values))
+        case .vibrantColorMatrix(var colorMatrix):
+            // Vibrant color matrices use compositor-specific alpha handling. We need to preserve
+            // source alpha to avoid making transparent pixels opaque.
+            colorMatrix.m41 = 0
+            colorMatrix.m42 = 0
+            colorMatrix.m43 = 0
+            colorMatrix.m44 = 1
+            colorMatrix.m45 = 0
+            self = .compositionLayerColorMatrixModifier(value: .init(matrix: colorMatrix.values))
         case .saturate(let value):
             self = .compositionLayerSaturateModifier(value: .init(value: value))
         case .brightness(let value):
