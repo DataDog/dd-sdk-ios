@@ -47,9 +47,8 @@ public enum AppState: Codable {
     /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
     public var isRunningInForeground: Bool {
         switch self {
-        // TODO: RUM-17303 This is not finished yet.
         case .active: true
-        default: false
+        case .inactive, .hidden, .lockScreen, .terminating, .sleeping: false
         }
     }
 }
@@ -74,6 +73,10 @@ public enum AppState: Codable {
         case .background, .terminated:
             return false
         }
+    }
+
+    public var mayBeSuspended: Bool {
+        !isRunningInForeground
     }
 }
 #endif
@@ -154,9 +157,28 @@ public struct AppStateHistory: Codable, Equatable {
     /// - Parameter range: The time period to analyze.
     /// - Returns: The total time (in seconds) spent in foreground states.
     public func foregroundDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0.isRunningInForeground })
+    }
+
+    /// Computes the total duration the app was running in states where the process could not have been suspended within the given time range.
+    ///
+    /// - Parameter range: The time period to analyze.
+    /// - Returns: The total time (in seconds) spent in states the process could not have been suspended.
+    public func applicationNotSuspendedDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0.mayBeSuspended == false })
+    }
+
+    /// Helper function for calculating durations of a given condition.
+    ///
+    /// - Parameters:
+    ///   - range: The time period to analyze.
+    ///   - predicate: The predicate applied to each state in the history inside the given range. If `true` the duration of that
+    ///   state is considered.
+    /// - Returns: The total time (in seconds) spent in states that satisfy the predicate.
+    private func duration(during range: ClosedRange<Date>, predicate: (AppState) -> Bool) -> TimeInterval {
         var total: TimeInterval = 0
         iterateStates(in: range) { state, duration in
-            if state.isRunningInForeground {
+            if predicate(state) {
                 total += duration
             }
         }
