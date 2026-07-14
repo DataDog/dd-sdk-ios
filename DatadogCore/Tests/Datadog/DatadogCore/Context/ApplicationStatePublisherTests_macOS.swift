@@ -12,7 +12,7 @@ import TestUtilities
 
 @MainActor
 class ApplicationStatePublisherTests: XCTestCase {
-    private class TestApplicationStateProvider: ApplicationStateSystemProvider {
+    private class TestApplicationStateProvider: MacOSApplicationStateProvider {
         var isActive: Bool = true
         var isHidden: Bool = false
     }
@@ -36,7 +36,7 @@ class ApplicationStatePublisherTests: XCTestCase {
             appStateHistory: .mockWith(initialState: .active, date: dateProvider.now),
             applicationNotificationCenter: appNotificationCenter,
             workspaceNotificationCenter: wsNotificationCenter,
-            stateSystemProvider: applicationStateProvider,
+            applicationStateProvider: applicationStateProvider,
             dateProvider: dateProvider
         )
 
@@ -134,7 +134,8 @@ class ApplicationStatePublisherTests: XCTestCase {
             XCTAssertEqual(
                 history.state(at: date + step),
                 expectedState,
-                "Expected \(expectedState), got \(String(describing: history.state(at: date + step))) at step \(String(format: "%0.0f", step))")
+                "Expected \(expectedState), got \(String(describing: history.state(at: date + step))) at step \(String(format: "%0.0f", step))"
+            )
 
             step += 1
         }
