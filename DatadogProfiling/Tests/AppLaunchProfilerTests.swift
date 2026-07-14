@@ -190,7 +190,7 @@ final class AppLaunchProfilerTests: XCTestCase {
         XCTAssertEqual(event.family, "ios")
         XCTAssertEqual(event.runtime, "ios")
         XCTAssertEqual(event.version, "4")
-        XCTAssertEqual(event.attachments, [ProfileAttachments.Constants.wallFilename, ProfileAttachments.Constants.rumEventsFilename])
+        XCTAssertEqual(event.attachments, [ProfileAttachments.Constants.pprofFilename, ProfileAttachments.Constants.rumEventsFilename])
 
         let expectedTags = [
             "service:test-service",

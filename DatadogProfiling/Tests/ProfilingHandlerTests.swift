@@ -149,7 +149,7 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(event.runtime, "ios")
         XCTAssertEqual(event.version, "4")
         XCTAssertEqual(event.attachments, [
-            ProfileAttachments.Constants.wallFilename,
+            ProfileAttachments.Constants.pprofFilename,
             ProfileAttachments.Constants.rumEventsFilename
         ])
 
