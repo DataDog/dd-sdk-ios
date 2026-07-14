@@ -12,7 +12,7 @@ internal struct ProfileAttachments: Codable {
     internal enum Constants {
         static let profileEventFilename: String = "event.json"
         static let rumEventsFilename: String = "rum-mobile-events.json"
-        static let wallFilename: String = "wall.pprof"
+        static let pprofFilename: String = "profile.pprof"
     }
 
     let pprof: Data
