@@ -49,12 +49,23 @@ extension CALayer {
         delegate?.isKind(of: Classes.scrollPocket) == true
     }
 
+    var isCaptureOnlyBackdrop: Bool {
+        guard
+            isKind(of: Classes.backdropLayer),
+            let captureOnly = safeValue(forKey: "captureOnly") as? Bool
+        else {
+            return false
+        }
+
+        return captureOnly
+    }
+
     var isVisualEffectBackground: Bool {
         delegate?.isKind(of: Classes.visualEffectBackgroundView) == true
     }
 
     var isVisualEffectBackdrop: Bool {
-        isKind(of: Classes.backdropLayer)
+        isKind(of: Classes.visualEffectBackdropLayer)
     }
 }
 
@@ -67,8 +78,9 @@ private enum Classes {
     static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
     static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
     static let scrollPocket: AnyClass? = NSClassFromString("_UIScrollPocket")
+    static let backdropLayer: AnyClass? = NSClassFromString("CABackdropLayer")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
-    static let backdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
+    static let visualEffectBackdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
 }
 
 extension NSObjectProtocol {

@@ -7,6 +7,7 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import SwiftUI
 import TestUtilities
 import Testing
 import UIKit
@@ -18,6 +19,25 @@ import WebKit
 @MainActor
 struct SemanticObservationTests {
     private final class DestOutView: UIView {}
+
+    @available(iOS 26.0, *)
+    private struct ScrollPocketFixture: View {
+        var body: some View {
+            NavigationStack {
+                ScrollView {
+                    Color.clear.frame(height: 2_000)
+                }
+                .navigationTitle("Title")
+                .toolbar {
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        Button("Refresh", systemImage: "arrow.clockwise", action: {})
+                        Spacer()
+                        Button("Add", systemImage: "plus", action: {})
+                    }
+                }
+            }
+        }
+    }
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
@@ -115,21 +135,12 @@ struct SemanticObservationTests {
     @Test("Records scroll pockets with their rect edge and ignores sublayers")
     func recordsScrollPocketsWithTheirRectEdgeAndIgnoresSublayers() throws {
         // Given
-        let viewController = UITableViewController(style: .plain)
-        viewController.navigationItem.title = "Title"
-        viewController.toolbarItems = [
-            UIBarButtonItem(systemItem: .refresh),
-            UIBarButtonItem(systemItem: .flexibleSpace),
-            UIBarButtonItem(systemItem: .add)
-        ]
-
-        let navigationController = UINavigationController(rootViewController: viewController)
-        navigationController.setToolbarHidden(false, animated: false)
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
 
         let window = UIWindow(frame: UIScreen.main.bounds)
-        window.rootViewController = navigationController
+        window.rootViewController = viewController
         window.makeKeyAndVisible()
-        navigationController.view.layoutIfNeeded()
+        viewController.view.layoutIfNeeded()
         defer { window.isHidden = true }
 
         let scrollPockets = try [UIRectEdge.top, .bottom].map { edge in
@@ -157,6 +168,35 @@ struct SemanticObservationTests {
             .init(semantics: .visualEffect(.scrollPocket(.top)), ignoresSublayers: true),
             .init(semantics: .visualEffect(.scrollPocket(.bottom)), ignoresSublayers: true)
         ])
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records capture-only backdrops as compositor support")
+    func recordsCaptureOnlyBackdropsAsCompositorSupport() throws {
+        // Given
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        viewController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let backdropLayer = try #require(
+            window.layer.firstDescendant { layer in
+                layer.responds(to: NSSelectorFromString("captureOnly"))
+                    && (layer.value(forKey: "captureOnly") as? Bool) == true
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: backdropLayer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
     }
 
     @available(iOS 26.0, *)

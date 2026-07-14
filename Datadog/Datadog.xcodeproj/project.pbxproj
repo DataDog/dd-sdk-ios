@@ -321,6 +321,7 @@
 		49D8C0BD2AC5F2BB0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		5B0A9B8B2E3BB98E00A8131C /* GraphicsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */; };
 		5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */; };
+		5B0E0626300637B5004CF4D3 /* NSObject+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E0625300637A8004CF4D3 /* NSObject+SessionReplay.swift */; };
 		5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75D92E9690C400F66739 /* ExposureTracker.swift */; };
 		5B0E75DD2E96C57800F66739 /* IssueReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E75DC2E96C57400F66739 /* IssueReporter.swift */; };
 		5B16A3662E83E3BF0046A863 /* AnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B16A3652E83E3BF0046A863 /* AnyValue.swift */; };
@@ -2137,6 +2138,7 @@
 		5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregatorTests.swift; sourceTree = "<group>"; };
 		5B0A9B8A2E3BB98500A8131C /* GraphicsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphicsFilter.swift; sourceTree = "<group>"; };
 		5B0A9B8C2E3BBB3D00A8131C /* GraphicsFilter+Reflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphicsFilter+Reflection.swift"; sourceTree = "<group>"; };
+		5B0E0625300637A8004CF4D3 /* NSObject+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+SessionReplay.swift"; sourceTree = "<group>"; };
 		5B0E75D92E9690C400F66739 /* ExposureTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTracker.swift; sourceTree = "<group>"; };
 		5B0E75DC2E96C57400F66739 /* IssueReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueReporter.swift; sourceTree = "<group>"; };
 		5B16A3652E83E3BF0046A863 /* AnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyValue.swift; sourceTree = "<group>"; };
@@ -4185,6 +4187,7 @@
 		61054E132A6EE10A00AAA894 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				5B0E0625300637A8004CF4D3 /* NSObject+SessionReplay.swift */,
 				5B2835E02FFFF2C300C6F0E4 /* UILabel+SRWireframe.swift */,
 				5BB771A72FE59F8500C95960 /* Path+CornerRadii.swift */,
 				5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */,
@@ -8572,6 +8575,7 @@
 				D274FD1C2CBFEF6D005270B5 /* CGSize+SessionReplay.swift in Sources */,
 				61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */,
 				5B69166B2F3B823B0074A909 /* TimerScheduler.swift in Sources */,
+				5B0E0626300637B5004CF4D3 /* NSObject+SessionReplay.swift in Sources */,
 				A7B932FE2B1F6A0A00AE6477 /* SRDataModels+UIKit.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				5B0A9B8D2E3BBB4500A8131C /* GraphicsFilter+Reflection.swift in Sources */,

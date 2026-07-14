@@ -34,14 +34,14 @@ extension CALayerSnapshot.SemanticObservationMapping {
             return nil
         }
 
-        guard (layer.value(forKey: "hidesSourceLayer") as? Bool) == true else {
+        guard (layer.safeValue(forKey: "hidesSourceLayer") as? Bool) == true else {
             return .init(
                 semantics: .visualEffect(.compositorSupport),
                 ignoresSublayers: true
             )
         }
 
-        guard let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer else {
+        guard let sourceLayer = layer.safeValue(forKey: "sourceLayer") as? CALayer else {
             return .init(
                 semantics: .visualEffect(.compositorSupport),
                 ignoresSublayers: true
@@ -83,14 +83,24 @@ extension CALayerSnapshot.SemanticObservationMapping {
         guard
             layer.isScrollPocket,
             let delegate = layer.delegate as? NSObject,
-            delegate.responds(to: NSSelectorFromString("edge")),
-            let edge = delegate.value(forKey: "edge") as? NSNumber
+            let edge = delegate.safeValue(forKey: "edge") as? NSNumber
         else {
             return nil
         }
 
         return .init(
             semantics: .visualEffect(.scrollPocket(UIRectEdge(rawValue: edge.uintValue))),
+            ignoresSublayers: true
+        )
+    }
+
+    static let captureOnlyBackdrop = Self { layer, _, _ in
+        guard layer.isCaptureOnlyBackdrop else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
             ignoresSublayers: true
         )
     }

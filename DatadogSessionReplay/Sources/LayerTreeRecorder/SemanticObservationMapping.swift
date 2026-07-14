@@ -39,6 +39,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .tabBarPlatter,
         .glassGroup,
         .scrollPocket,
+        .captureOnlyBackdrop,
         .visualEffectBackdrop,
         .visualEffectBackground,
         .liquidLens
