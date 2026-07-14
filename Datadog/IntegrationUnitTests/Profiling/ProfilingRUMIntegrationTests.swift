@@ -382,7 +382,7 @@ private extension ProfilingRUMIntegrationTests {
             XCTAssertEqual(profilingEvent.family, "ios")
             XCTAssertEqual(profilingEvent.runtime, "ios")
             XCTAssertEqual(profilingEvent.attachments, [
-                ProfileAttachments.Constants.wallFilename,
+                ProfileAttachments.Constants.pprofFilename,
                 ProfileAttachments.Constants.rumEventsFilename
             ])
             XCTAssertFalse(profilingEvent.tags.isEmpty)
