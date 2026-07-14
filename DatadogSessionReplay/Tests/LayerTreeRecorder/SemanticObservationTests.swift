@@ -237,8 +237,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records portal semantics and collects hidden source replay IDs")
-    func recordsPortalSemanticsAndCollectsHiddenSourceReplayIDs() throws {
+    @Test("Records portal semantics")
+    func recordsPortalSemantics() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
@@ -265,10 +265,6 @@ struct SemanticObservationTests {
         )
         let sourceLayer = try #require(portalLayer.value(forKey: "sourceLayer") as? CALayer)
         let sourceRect = sourceLayer.convert(portalLayer.bounds, from: portalLayer)
-        let sourceSublayer = CALayer()
-        sourceSublayer.frame = sourceRect
-        sourceLayer.addSublayer(sourceSublayer)
-        defer { sourceSublayer.removeFromSuperlayer() }
         let context = CALayerSnapshot.Context.mockAny()
 
         // When
@@ -280,13 +276,21 @@ struct SemanticObservationTests {
             return
         }
 
-        #expect(portal.sourceLayer.matches(sourceLayer))
+        #expect(portal.sourceReplayID == sourceLayer.replayID)
         #expect(portal.sourceRect == sourceRect)
-        #expect(portal.isOpaque == sourceLayer.isOpaque)
-        #expect(portal.dependencies.contains(CALayerReference(sourceLayer)))
-        #expect(portal.dependencies.contains(CALayerReference(sourceSublayer)))
+        #expect(
+            portal.matchesPosition
+                == ((portalLayer.safeValue(forKey: "matchesPosition") as? Bool) == true)
+        )
+        #expect(
+            portal.matchesTransform
+                == ((portalLayer.safeValue(forKey: "matchesTransform") as? Bool) == true)
+        )
+        #expect(
+            portal.matchesOpacity
+                == ((portalLayer.safeValue(forKey: "matchesOpacity") as? Bool) == true)
+        )
         #expect(observation.ignoresSublayers)
-        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
     }
 
     @available(iOS 26.0, *)

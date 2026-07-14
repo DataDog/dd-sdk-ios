@@ -368,22 +368,15 @@ struct LayerWireframeBuilderTests {
     @Test("Build creates image resource for content snapshot")
     func buildCreatesImageResourceForContentSnapshot() throws {
         // Given
-        let sourceLayer = CALayer()
         let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
         let snapshot = CALayerSnapshot.mockWith(
             replayID: 2,
-            absoluteFrame: frame,
-            observation: .init(semantics: .visualEffect(.portal(.init(
-                sourceLayer: CALayerReference(sourceLayer),
-                sourceRect: sourceLayer.bounds,
-                isOpaque: sourceLayer.isOpaque,
-                dependencies: [CALayerReference(sourceLayer)]
-            ))))
+            absoluteFrame: frame
         )
         let contentSnapshot = ContentSnapshot.mockAny(
             image: UIImage.mockWith(color: .red),
             frame: frame,
-            hasLayerSemantics: false,
+            hasLayerSemantics: true,
             textAndInputPrivacyLevel: .maskSensitiveInputs,
             imagePrivacyLevel: .maskNone
         )

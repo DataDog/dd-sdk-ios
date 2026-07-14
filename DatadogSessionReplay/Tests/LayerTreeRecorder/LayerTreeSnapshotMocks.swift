@@ -22,8 +22,7 @@ extension LayerTreeSnapshot {
         viewID: String = "view-id",
         viewportSize: CGSize = CGSize(width: 320, height: 640),
         root: CALayerSnapshot = .mockRoot(),
-        webViewSlotIDs: Set<Int> = [],
-        hiddenPortalSourceReplayIDs: Set<Int64> = []
+        webViewSlotIDs: Set<Int> = []
     ) -> LayerTreeSnapshot {
         return LayerTreeSnapshot(
             date: date,
@@ -41,8 +40,7 @@ extension LayerTreeSnapshot {
             ),
             viewportSize: viewportSize,
             root: root,
-            webViewSlotIDs: webViewSlotIDs,
-            hiddenPortalSourceReplayIDs: hiddenPortalSourceReplayIDs
+            webViewSlotIDs: webViewSlotIDs
         )
     }
 }
@@ -65,11 +63,15 @@ extension CALayerSnapshot {
         replayID: Int64 = 1,
         absoluteFrame: CGRect = .zero,
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
+        bounds: CGRect? = nil,
+        transform: CATransform3D = CATransform3DIdentity,
         backgroundColor: CGColor? = nil,
         cornerRadii: CALayerSnapshot.CornerRadii = .zero,
         filters: [CALayerSnapshot.Filter] = [],
         isPrivate: Bool = false,
         isOpaque: Bool = false,
+        masksToBounds: Bool = false,
+        opacity: Float = 1,
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
         let layer = CALayer()
@@ -83,23 +85,23 @@ extension CALayerSnapshot {
             textAndInputPrivacyLevel: .maskSensitiveInputs,
             imagePrivacyLevel: .maskNone,
             isPrivate: isPrivate,
-            bounds: CGRect(origin: .zero, size: absoluteFrame.size),
+            bounds: bounds ?? CGRect(origin: .zero, size: absoluteFrame.size),
             position: absoluteFrame.origin,
             zPosition: 0,
-            transform: CATransform3DIdentity,
+            transform: transform,
             absoluteFrame: absoluteFrame,
             sublayers: sublayers,
             dependencies: [],
             sublayerTransform: CATransform3DIdentity,
             mask: nil,
-            masksToBounds: false,
+            masksToBounds: masksToBounds,
             isOpaque: isOpaque,
             backgroundColor: backgroundColor,
             cornerRadii: cornerRadii,
             cornerCurve: .circular,
             borderWidth: 0,
             borderColor: nil,
-            opacity: 1,
+            opacity: opacity,
             allowsGroupOpacity: true,
             compositingFilter: nil,
             filters: filters,

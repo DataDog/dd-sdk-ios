@@ -20,9 +20,6 @@ extension CALayerSnapshot {
         /// Weak references to web views found while capturing the layer tree.
         let webViewCache: NSHashTable<WKWebView>
 
-        /// Replay IDs of source layers hidden by portal layers during capture.
-        var hiddenPortalSourceReplayIDs: Set<Int64> = []
-
         init(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,

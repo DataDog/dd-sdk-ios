@@ -54,8 +54,7 @@ internal struct LayerWireframeBuilder {
             contentSnapshots[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
-            (.image, .some(let result)),
-            (.visualEffect(.portal), .some(let result)):
+            (.image, .some(let result)):
             return makeContentSnapshotOutput(
                 for: snapshot,
                 result: result,

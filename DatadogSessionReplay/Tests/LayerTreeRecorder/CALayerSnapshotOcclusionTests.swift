@@ -15,28 +15,6 @@ import UIKit
 
 @Suite(.datadogTesting)
 @MainActor
-struct CALayerSnapshotFilteringTests {
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Removes layer subtrees with matching replay IDs")
-    func removesLayerSubtreesWithMatchingReplayIDs() throws {
-        // Given
-        let removedSublayer = CALayerSnapshot.mockWith(replayID: 3)
-        let removedLayer = CALayerSnapshot.mockWith(
-            replayID: 2,
-            sublayers: [removedSublayer]
-        )
-        let retainedLayer = CALayerSnapshot.mockWith(replayID: 4)
-        let root = CALayerSnapshot.mockRoot(sublayers: [removedLayer, retainedLayer])
-
-        // When
-        let result = try #require(root.removingLayers(withReplayIDs: [removedLayer.replayID]))
-
-        // Then
-        #expect(result.sublayers.map(\.replayID) == [retainedLayer.replayID])
-    }
-}
-
-@MainActor
 struct CALayerSnapshotOcclusionTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the contents property is set")
@@ -537,6 +515,30 @@ struct CALayerSnapshotOcclusionTests {
 
         // Then
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 0, y: 0, width: 100, height: 100)])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps visible children of a zero-sized container that does not clip")
+    func keepsVisibleChildrenOfZeroSizedNonClippingContainer() throws {
+        // Given
+        let child = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: CGRect(x: 10, y: 10, width: 20, height: 20),
+            backgroundColor: UIColor.red.cgColor
+        )
+        let container = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: .zero,
+            sublayers: [child]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [container])
+
+        // When
+        let result = try #require(root.removingOccluded())
+
+        // Then
+        let visibleContainer = try #require(result.sublayers.first)
+        #expect(visibleContainer.sublayers.map(\.replayID) == [child.replayID])
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

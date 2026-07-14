@@ -70,7 +70,7 @@ internal actor LayerRecorder: LayerRecording {
         guard
             var layerTreeSnapshot,
             let root = layerTreeSnapshot.root
-                .removingLayers(withReplayIDs: layerTreeSnapshot.hiddenPortalSourceReplayIDs)?
+                .resolvingPortalLayers()
                 .removingOccluded()
         else {
             return

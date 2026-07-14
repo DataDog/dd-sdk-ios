@@ -16,7 +16,6 @@ internal struct LayerTreeSnapshot: Sendable {
     let viewportSize: CGSize
     var root: CALayerSnapshot
     let webViewSlotIDs: Set<Int>
-    let hiddenPortalSourceReplayIDs: Set<Int64>
 }
 
 /// Creates layer tree snapshots on the main actor.
@@ -57,8 +56,7 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
             context: context,
             viewportSize: rootLayer.bounds.size,
             root: root,
-            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash)),
-            hiddenPortalSourceReplayIDs: snapshotContext.hiddenPortalSourceReplayIDs
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
     }
 }

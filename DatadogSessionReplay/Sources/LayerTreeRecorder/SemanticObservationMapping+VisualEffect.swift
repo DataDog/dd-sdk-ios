@@ -29,7 +29,7 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
-    static let portal = Self { layer, _, context in
+    static let portal = Self { layer, _, _ in
         guard layer.isPortal else {
             return nil
         }
@@ -48,22 +48,30 @@ extension CALayerSnapshot.SemanticObservationMapping {
             )
         }
 
-        context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
-        let sourceRect = sourceLayer.convert(layer.bounds, from: layer)
-        let dependencies = sourceLayer.visibleDependencies(
-            rootLayer: sourceLayer,
-            visibleBounds: sourceRect
-        )
-        .map(CALayerReference.init)
+        let matchesPosition = (layer.safeValue(forKey: "matchesPosition") as? Bool) == true
+        let matchesTransform = (layer.safeValue(forKey: "matchesTransform") as? Bool) == true
+        let matchesOpacity = (layer.safeValue(forKey: "matchesOpacity") as? Bool) == true
+
+        let sourceRect = if matchesPosition {
+            sourceLayer.convert(layer.bounds, from: layer)
+        } else {
+            CGRect(
+                x: sourceLayer.bounds.minX + layer.bounds.minX,
+                y: sourceLayer.bounds.minY + layer.bounds.minY,
+                width: layer.bounds.width,
+                height: layer.bounds.height
+            )
+        }
 
         return .init(
             semantics: .visualEffect(
                 .portal(
                     .init(
-                        sourceLayer: CALayerReference(sourceLayer),
+                        sourceReplayID: sourceLayer.replayID,
                         sourceRect: sourceRect,
-                        isOpaque: sourceLayer.isOpaque,
-                        dependencies: dependencies
+                        matchesPosition: matchesPosition,
+                        matchesTransform: matchesTransform,
+                        matchesOpacity: matchesOpacity
                     )
                 )
             ),
