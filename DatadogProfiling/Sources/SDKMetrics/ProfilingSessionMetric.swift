@@ -21,6 +21,7 @@ internal final class ProfilingSessionMetric {
         static let noProfileErrorMessage = "No profile was stored."
         static let noDataErrorMessage = "Error serializing the profile."
         static let noProfiledEventsErrorMessage = "Profile was not written because no profiled events were collected."
+        static let profileTooLargeErrorMessage = "Profile was not written because its serialized size exceeded the limit."
         static let quotaErrorMessage = "Profile was not written because profiling quota rejected the session."
     }
 
@@ -32,12 +33,15 @@ internal final class ProfilingSessionMetric {
 
     enum ProfileDropReason: Equatable {
         case noProfiledEvents
+        case profileTooLarge
         case quotaRejected(DDProfiling.QuotaReason?)
 
         var errorMessage: String {
             switch self {
             case .noProfiledEvents:
                 return Constants.noProfiledEventsErrorMessage
+            case .profileTooLarge:
+                return Constants.profileTooLargeErrorMessage
             case .quotaRejected(let reason):
                 guard let reason else {
                     return Constants.quotaErrorMessage
