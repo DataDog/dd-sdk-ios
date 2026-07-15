@@ -11,6 +11,7 @@ import TestUtilities
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler.Cxx
 import DatadogMachProfiler.Pprof
+import DatadogMachProfiler.Testing
 // swiftlint:enable duplicate_imports
 
 final class ProfileCxxTests: XCTestCase {
@@ -267,11 +268,42 @@ final class ProfileCxxTests: XCTestCase {
         defer { dd_pprof_free_serialized_data(data) }
 
         // Then
+        XCTAssertEqual(dd_pprof_sample_count(profile), 0, "Empty profile should report zero samples")
         XCTAssertGreaterThan(size, 0, "Empty profile should still produce some data")
         XCTAssertNotNil(data, "Serialized data should not be nil")
         // - Validate basic profile structure
         let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
         perftools__profiles__profile__free_unpacked(unpackedProfile, nil)
+    }
+
+    func testProfileSerialization_withServerTimeOffset_appliesOffsetWithoutMutatingSamples() throws {
+        // Given
+        let profile = dd_pprof_create(10_000_000)
+        defer { dd_pprof_destroy(profile) }
+        XCTAssertNotNil(profile)
+
+        let stackTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        stackTrace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: 1_000_000_000
+        )
+        defer { dd_free(stackTrace) }
+
+        dd_pprof_add_samples(profile, stackTrace, 1)
+        let originalStart = dd_pprof_get_start_timestamp_s(profile)
+
+        // When
+        dd_pprof_set_server_time_offset_ns(profile, 2_000_000_000)
+        let firstTimestamp = try firstSerializedSampleEndTimestampSeconds(from: profile)
+
+        dd_pprof_set_server_time_offset_ns(profile, 3_000_000_000)
+        let secondTimestamp = try firstSerializedSampleEndTimestampSeconds(from: profile)
+
+        // Then
+        XCTAssertEqual(dd_pprof_get_start_timestamp_s(profile), originalStart + 3, accuracy: 0.001)
+        XCTAssertEqual(firstTimestamp, originalStart + 2, accuracy: 0.001)
+        XCTAssertEqual(secondTimestamp, originalStart + 3, accuracy: 0.001)
     }
 
     func testProfileSerialization_withNilProfile_returnsZero() {
@@ -340,7 +372,95 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertGreaterThan(unpackedProfile.pointee.n_mapping, 0, "Should have mappings")
         XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 1, "Should have one sample type")
     }
+
+    func testProfileAggregation_withMissingImageCache_fallsBackToBinaryLookup() throws {
+        // Given
+        let profile = try XCTUnwrap(dd_pprof_create(10_000_000))
+        defer { dd_pprof_destroy(profile) }
+
+        let validPC = try XCTUnwrap(anyKnownProgramCounter())
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [UInt64(UInt(bitPattern: validPC))],
+            binaryImage: binary_image_t(load_address: 0, uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), filename: nil)
+        )
+        defer { dd_free(trace) }
+
+        // When
+        dd_pprof_add_samples(profile, trace, 1)
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        // Then
+        XCTAssertGreaterThan(size, 0, "Serialized profile should not be empty")
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        XCTAssertEqual(unpackedProfile.pointee.n_mapping, 1, "Resolved frame should create one concrete mapping")
+
+        let mapping = try XCTUnwrap(unpackedProfile.pointee.mapping[0])
+        XCTAssertGreaterThan(mapping.pointee.memory_start, 0, "Fallback lookup should populate the binary load address")
+
+        let buildID = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(mapping.pointee.build_id)])
+        XCTAssertNotEqual(
+            String(cString: buildID),
+            "00000000-0000-0000-0000-000000000000",
+            "Fallback lookup should populate a non-zero build id"
+        )
+
+        let filename = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(mapping.pointee.filename)])
+        XCTAssertFalse(String(cString: filename).isEmpty, "Fallback lookup should populate the binary filename")
+    }
+
+    private func firstSerializedSampleEndTimestampSeconds(from profile: OpaquePointer?) throws -> TimeInterval {
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
+        var timestamp: TimeInterval?
+
+        for index in 0..<sample.pointee.n_label {
+            guard let label = sample.pointee.label?[index],
+                  let key = unpackedProfile.pointee.string_table[Int(label.pointee.key)]
+            else {
+                continue
+            }
+
+            if String(cString: key) == "end_timestamp_ns" {
+                timestamp = TimeInterval(label.pointee.num) / 1_000_000_000
+                break
+            }
+        }
+
+        return try XCTUnwrap(timestamp)
+    }
 }
+
+private func anyKnownProgramCounter() -> UnsafeMutableRawPointer? {
+    guard let handle = dlopen(nil, RTLD_LAZY) else {
+        return nil
+    }
+
+    let symbols = [
+        "strlen",
+        "malloc",
+        "free",
+        "dlopen",
+        "dlsym"
+    ]
+    guard let randomSymbol = symbols.randomElement() else {
+        return nil
+    }
+    return randomSymbol.withCString { dlsym(handle, $0) }
+}
+
 ///  Deallocates a stack_trace_t and its subsequent frames
 func dd_free(_ trace: UnsafeMutablePointer<stack_trace_t>) {
     // Deallocate frames if they exist

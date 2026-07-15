@@ -15,7 +15,7 @@ internal protocol SRDataModel: Codable {}
 
 /// A rendering group that groups child wireframes and child layers. Does not draw pixels itself. Ordered rendering modifiers and compositing are applied to its composed output.
 @_spi(Internal)
-public struct SRCompositionLayer: Codable {
+public struct SRCompositionLayer: Codable, Hashable {
     /// Ordered back-to-front references to child wireframes or child layers.
     public let children: [SRCompositionLayerChild]
 
@@ -93,7 +93,7 @@ public struct SRCompositionLayer: Codable {
 
 /// Represents a platform background material effect captured as layer rendering state.
 @_spi(Internal)
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable {
+public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable {
     /// Material kind.
     public let kind: Kind
 
@@ -124,7 +124,7 @@ public struct SRCompositionLayerBackgroundMaterialModifier: Codable {
 
 /// Adds a signed brightness bias to the rendered layer contents.
 @_spi(Internal)
-public struct SRCompositionLayerBrightnessBiasModifier: Codable {
+public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "brightnessBias"
 
@@ -149,7 +149,7 @@ public struct SRCompositionLayerBrightnessBiasModifier: Codable {
 
 /// A reference to a child wireframe or child layer in a composition layer.
 @_spi(Internal)
-public struct SRCompositionLayerChild: Codable {
+public struct SRCompositionLayerChild: Codable, Hashable {
     /// The id of the referenced wireframe or layer.
     public let id: Int64
 
@@ -184,7 +184,7 @@ public enum SRCompositionLayerChildType: String, Codable {
 
 /// Geometric clipping applied to the composed layer output, in coordinates local to the layer rectangle.
 @_spi(Internal)
-public struct SRCompositionLayerClipModifier: Codable {
+public struct SRCompositionLayerClipModifier: Codable, Hashable {
     /// Path fill rule. Defaults to 'nonzero'.
     public let fillRule: FillRule?
 
@@ -223,7 +223,7 @@ public struct SRCompositionLayerClipModifier: Codable {
 
 /// Color transformation using a 4x5 matrix applied to the composed layer output.
 @_spi(Internal)
-public struct SRCompositionLayerColorMatrixModifier: Codable {
+public struct SRCompositionLayerColorMatrixModifier: Codable, Hashable {
     /// 4x5 color matrix encoded as 20 numbers in row-major order. Input and output color channels are normalized to [0, 1]. The transform for each output channel is: R' = m[0]*R + m[1]*G + m[2]*B + m[3]*A + m[4], G' = m[5]*R + m[6]*G + m[7]*B + m[8]*A + m[9], B' = m[10]*R + m[11]*G + m[12]*B + m[13]*A + m[14], A' = m[15]*R + m[16]*G + m[17]*B + m[18]*A + m[19]. Each output channel is clamped to [0, 1] after evaluation.
     public let matrix: [Double]
 
@@ -248,7 +248,7 @@ public struct SRCompositionLayerColorMatrixModifier: Codable {
 
 /// Gaussian blur applied to the composed layer output.
 @_spi(Internal)
-public struct SRCompositionLayerGaussianBlurModifier: Codable {
+public struct SRCompositionLayerGaussianBlurModifier: Codable, Hashable {
     /// Gaussian blur radius.
     public let radius: Double
 
@@ -271,16 +271,43 @@ public struct SRCompositionLayerGaussianBlurModifier: Codable {
     }
 }
 
+/// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+@_spi(Internal)
+public struct SRCompositionLayerMaskImageModifier: Codable, Hashable {
+    /// Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public let resourceId: String
+
+    /// The type of the modifier.
+    public let type: String = "maskImage"
+
+    public enum CodingKeys: String, CodingKey {
+        case resourceId = "resourceId"
+        case type = "type"
+    }
+
+    /// Image mask applied to the composed layer output at this point in the modifier order. The referenced image is mapped to the layer bounds and interpreted as an alpha mask: transparent pixels hide content, opaque pixels keep content, and partial alpha multiplies content alpha. RGB channels are ignored.
+    ///
+    /// - Parameters:
+    ///   - resourceId: Unique identifier of the image resource used as a bounds-aligned alpha mask.
+    public init(
+        resourceId: String
+    ) {
+        self.resourceId = resourceId
+    }
+}
+
 /// A rendering modifier applied to the composed layer output.
 @_spi(Internal)
-public enum SRCompositionLayerModifier: Codable {
+public enum SRCompositionLayerModifier: Codable, Hashable {
     case compositionLayerClipModifier(value: SRCompositionLayerClipModifier)
     case compositionLayerOpacityModifier(value: SRCompositionLayerOpacityModifier)
     case compositionLayerColorMatrixModifier(value: SRCompositionLayerColorMatrixModifier)
     case compositionLayerGaussianBlurModifier(value: SRCompositionLayerGaussianBlurModifier)
+    case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
     case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
+    case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
 
     private enum DiscriminatorCodingKeys: String, CodingKey {
         case discriminator = "type"
@@ -301,11 +328,15 @@ public enum SRCompositionLayerModifier: Codable {
             try container.encode(value)
         case .compositionLayerGaussianBlurModifier(let value):
             try container.encode(value)
+        case .compositionLayerShadowModifier(let value):
+            try container.encode(value)
         case .compositionLayerBrightnessBiasModifier(let value):
             try container.encode(value)
         case .compositionLayerSaturateModifier(let value):
             try container.encode(value)
         case .compositionLayerBackgroundMaterialModifier(let value):
+            try container.encode(value)
+        case .compositionLayerMaskImageModifier(let value):
             try container.encode(value)
         }
     }
@@ -328,6 +359,9 @@ public enum SRCompositionLayerModifier: Codable {
         case "gaussianBlur":
             self = .compositionLayerGaussianBlurModifier(value: try container.decode(SRCompositionLayerGaussianBlurModifier.self))
             return
+        case "shadow":
+            self = .compositionLayerShadowModifier(value: try container.decode(SRCompositionLayerShadowModifier.self))
+            return
         case "brightnessBias":
             self = .compositionLayerBrightnessBiasModifier(value: try container.decode(SRCompositionLayerBrightnessBiasModifier.self))
             return
@@ -336,6 +370,9 @@ public enum SRCompositionLayerModifier: Codable {
             return
         case "backgroundMaterial":
             self = .compositionLayerBackgroundMaterialModifier(value: try container.decode(SRCompositionLayerBackgroundMaterialModifier.self))
+            return
+        case "maskImage":
+            self = .compositionLayerMaskImageModifier(value: try container.decode(SRCompositionLayerMaskImageModifier.self))
             return
         default:
             let error = DecodingError.Context(
@@ -352,7 +389,7 @@ public enum SRCompositionLayerModifier: Codable {
 
 /// Opacity applied to the composed layer output at this point in the modifier order.
 @_spi(Internal)
-public struct SRCompositionLayerOpacityModifier: Codable {
+public struct SRCompositionLayerOpacityModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "opacity"
 
@@ -377,7 +414,7 @@ public struct SRCompositionLayerOpacityModifier: Codable {
 
 /// Applies a saturation adjustment to the rendered layer contents.
 @_spi(Internal)
-public struct SRCompositionLayerSaturateModifier: Codable {
+public struct SRCompositionLayerSaturateModifier: Codable, Hashable {
     /// The type of the modifier.
     public let type: String = "saturate"
 
@@ -400,9 +437,62 @@ public struct SRCompositionLayerSaturateModifier: Codable {
     }
 }
 
+/// Drop shadow drawn behind the composed layer output.
+@_spi(Internal)
+public struct SRCompositionLayerShadowModifier: Codable, Hashable {
+    /// The shadow color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. SDKs should encode the effective shadow alpha in this color and omit the shadow modifier when the effective alpha is 0.
+    public let color: String
+
+    /// Horizontal shadow offset in pixels.
+    public let offsetX: Double
+
+    /// Vertical shadow offset in pixels.
+    public let offsetY: Double
+
+    /// Optional SVG path string defining the shadow outline, in coordinates local to the layer rectangle. When present, the path is interpreted using the non-zero winding rule. When omitted, the shadow follows the composed layer alpha.
+    public let path: String?
+
+    /// Blur radius used to create the shadow.
+    public let radius: Double
+
+    /// The type of the modifier.
+    public let type: String = "shadow"
+
+    public enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case offsetX = "offsetX"
+        case offsetY = "offsetY"
+        case path = "path"
+        case radius = "radius"
+        case type = "type"
+    }
+
+    /// Drop shadow drawn behind the composed layer output.
+    ///
+    /// - Parameters:
+    ///   - color: The shadow color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. SDKs should encode the effective shadow alpha in this color and omit the shadow modifier when the effective alpha is 0.
+    ///   - offsetX: Horizontal shadow offset in pixels.
+    ///   - offsetY: Vertical shadow offset in pixels.
+    ///   - path: Optional SVG path string defining the shadow outline, in coordinates local to the layer rectangle. When present, the path is interpreted using the non-zero winding rule. When omitted, the shadow follows the composed layer alpha.
+    ///   - radius: Blur radius used to create the shadow.
+    public init(
+        color: String,
+        offsetX: Double,
+        offsetY: Double,
+        path: String? = nil,
+        radius: Double
+    ) {
+        self.color = color
+        self.offsetX = offsetX
+        self.offsetY = offsetY
+        self.path = path
+        self.radius = radius
+    }
+}
+
 /// Sparse update for a composition layer. Omitted fields are unchanged.
 @_spi(Internal)
-public struct SRCompositionLayerUpdate: Codable {
+public struct SRCompositionLayerUpdate: Codable, Hashable {
     /// When present, replaces the full child list for this layer.
     public let children: [SRCompositionLayerChild]?
 
@@ -2721,4 +2811,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/dacedf0e5a6034a47967c142cfb9f4fe3c10464a
+// Generated from https://github.com/DataDog/rum-events-format/tree/740734dfd21f4d83fb2dacbc1cde09a16f326175

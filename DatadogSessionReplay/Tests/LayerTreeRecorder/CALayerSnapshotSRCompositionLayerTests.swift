@@ -25,7 +25,46 @@ struct CALayerSnapshotSRCompositionLayerTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
         layer.masksToBounds = true
         layer.filters = [filter]
+        layer.shadowColor = UIColor.black.cgColor // Shadow modifier is suppressed with masksToBounds == true
+        layer.shadowOffset = CGSize(width: 0, height: 1)
+        layer.shadowOpacity = 0.25
+        layer.shadowRadius = 5
         layer.opacity = 0.5
+
+        let maskLayer = CALayer()
+        maskLayer.bounds = layer.bounds
+        maskLayer.backgroundColor = UIColor.black.cgColor
+        layer.mask = maskLayer
+
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
+        let resourceID = "mask-resource-id"
+
+        // When
+        let modifiers = snapshot.modifiers(maskImageResourceID: resourceID)
+
+        // Then
+        #expect(snapshot.requiresCompositionLayer)
+        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity", "maskImage"])
+
+        let modifier = try #require(modifiers.last)
+        guard case .compositionLayerMaskImageModifier(let maskImageModifier) = modifier else {
+            Issue.record("Expected a mask image modifier")
+            return
+        }
+
+        #expect(maskImageModifier.resourceId == resourceID)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps shadows to shadow modifiers")
+    func mapsShadowsToShadowModifiers() throws {
+        // Given
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 50)
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 2, height: 3)
+        layer.shadowOpacity = 0.5
+        layer.shadowRadius = 4
 
         let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
@@ -33,8 +72,19 @@ struct CALayerSnapshotSRCompositionLayerTests {
         let modifiers = snapshot.modifiers()
 
         // Then
+        let modifier = try #require(modifiers.first)
+        guard case .compositionLayerShadowModifier(let shadow) = modifier else {
+            Issue.record("Expected a shadow modifier")
+            return
+        }
+
         #expect(snapshot.requiresCompositionLayer)
-        #expect(modifierTypes(modifiers) == ["clip", "brightnessBias", "opacity"])
+        #expect(modifiers.count == 1)
+        #expect(shadow.color == "#00000080")
+        #expect(shadow.offsetX == 2)
+        #expect(shadow.offsetY == 3)
+        #expect(shadow.radius == 4)
+        #expect(shadow.path == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -83,12 +133,16 @@ struct CALayerSnapshotSRCompositionLayerTests {
                 "colorMatrix"
             case .compositionLayerGaussianBlurModifier:
                 "gaussianBlur"
+            case .compositionLayerShadowModifier:
+                "shadow"
             case .compositionLayerBrightnessBiasModifier:
                 "brightnessBias"
             case .compositionLayerSaturateModifier:
                 "saturate"
             case .compositionLayerBackgroundMaterialModifier:
                 "backgroundMaterial"
+            case .compositionLayerMaskImageModifier:
+                "maskImage"
             }
         }
     }

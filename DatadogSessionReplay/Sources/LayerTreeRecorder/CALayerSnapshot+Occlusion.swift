@@ -12,12 +12,12 @@ import QuartzCore
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        observation.ignoreSublayers
+        observation.ignoresSublayers
             || layerClass != CALayer.self
             || contentsClass != nil
             || hasBackgroundColor
             || hasBorder
-            || hasVisibleShadow
+            || hasShadow
     }
 
     /// A Boolean value indicating whether the layer paints its frame as an opaque rectangle.
@@ -111,7 +111,7 @@ extension CALayerSnapshot {
         return borderColor.alpha > 0
     }
 
-    fileprivate var hasVisibleShadow: Bool {
+    var hasShadow: Bool {
         shadowOpacity > 0 && (shadowColor?.alpha ?? 0) > 0
     }
 
@@ -159,7 +159,7 @@ extension CALayerSnapshot {
 
         if visibleLayers.isEmpty {
             if drawsContent {
-                if !hasVisibleShadow && occlusionMap.isCovered(visibleFrame) {
+                if !hasShadow && occlusionMap.isCovered(visibleFrame) {
                     return nil
                 }
             } else {

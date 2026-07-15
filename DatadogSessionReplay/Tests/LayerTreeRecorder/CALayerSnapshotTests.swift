@@ -61,7 +61,7 @@ struct CALayerSnapshotTests {
             #expect(snapshot.transform.m11 == 2)
             #expect(snapshot.transform.m22 == 3)
             #expect(snapshot.sublayerTransform.m34 == CGFloat(-1) / 500)
-            #expect(snapshot.mask?.matches(mask) == true)
+            #expect(snapshot.mask?.layer.matches(mask) == true)
             #expect(snapshot.masksToBounds)
             #expect(snapshot.isOpaque)
             #expect(snapshot.backgroundColor == UIColor.red.cgColor)
@@ -382,6 +382,56 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii.topRight == .zero)
         #expect(snapshot.cornerRadii.bottomLeft == .zero)
         #expect(snapshot.cornerRadii.bottomRight == CGSize(width: 8, height: 8))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Resolves automatic corner radius in switch sublayers")
+    func resolvesAutomaticCornerRadiusInSwitchSublayers() throws {
+        // Given
+        let switchControl = UISwitch(frame: CGRect(x: 0, y: 0, width: 63, height: 28))
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 37, height: 24)
+        layer.position = CGPoint(x: 18.5, y: 12)
+        layer.backgroundColor = UIColor.white.cgColor
+        layer.cornerRadius = .nan
+        switchControl.layer.addSublayer(layer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: switchControl.layer, in: .mockAny()))
+
+        // Then
+        let layerSnapshot = try #require(snapshot.sublayers.first { $0.layer.matches(layer) })
+
+        if #available(iOS 26.0, *) {
+            #expect(layerSnapshot.cornerRadii.uniformCornerRadius == 12)
+        } else {
+            #expect(layerSnapshot.cornerRadii == .zero)
+        }
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Resolves automatic corner radius in slider sublayers")
+    func resolvesAutomaticCornerRadiusInSliderSublayers() throws {
+        // Given
+        let slider = UISlider(frame: CGRect(x: 0, y: 0, width: 280, height: 31))
+        let layer = CALayer()
+        layer.bounds = CGRect(x: 0, y: 0, width: 37, height: 24)
+        layer.position = CGPoint(x: 18.5, y: 12)
+        layer.backgroundColor = UIColor.white.cgColor
+        layer.cornerRadius = .nan
+        slider.layer.addSublayer(layer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: slider.layer, in: .mockAny()))
+
+        // Then
+        let layerSnapshot = try #require(snapshot.sublayers.first { $0.layer.matches(layer) })
+
+        if #available(iOS 26.0, *) {
+            #expect(layerSnapshot.cornerRadii.uniformCornerRadius == 12)
+        } else {
+            #expect(layerSnapshot.cornerRadii == .zero)
+        }
     }
 }
 

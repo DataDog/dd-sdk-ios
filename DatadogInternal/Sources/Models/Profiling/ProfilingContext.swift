@@ -52,9 +52,6 @@ public struct ProfilingContext: AdditionalContext {
 
             /// Profiling stopped because app was pre-warmed (iOS 15+ app launch optimization).
             case prewarmed
-
-            /// Profiling was not started due to sampling configuration (profiling was sampled out).
-            case sampledOut
         }
 
         /// Errors that can occur during profiling operations.
@@ -82,10 +79,15 @@ public struct ProfilingContext: AdditionalContext {
     /// The current profiling status.
     public let status: Status
 
+    /// The reason provided by the profiling quota admission API.
+    public let quotaReason: DDProfiling.QuotaReason?
+
     /// Creates a new profiling context with the specified status.
     ///
     /// - Parameter status: The current profiling status to be included in the context.
-    public init(status: Status) {
+    /// - Parameter quotaReason: The reason provided by the profiling quota admission API.
+    public init(status: Status, quotaReason: DDProfiling.QuotaReason? = nil) {
         self.status = status
+        self.quotaReason = quotaReason
     }
 }
