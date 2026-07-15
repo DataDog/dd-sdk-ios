@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */; };
+		5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */; };
 		5B8D57B12FF7F8A80082404D /* StepperFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */; };
 		5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */; };
 		5BA0067B2E49F6A3000148DB /* UIImage+SVG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA0067A2E49F698000148DB /* UIImage+SVG.swift */; };
@@ -67,6 +68,7 @@
 		12214F9A2906409FA7979ACC /* WireframeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframeView.swift; sourceTree = "<group>"; };
 		157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFixtureView.swift; sourceTree = "<group>"; };
 		26878FC02BB942329DFBEB9D /* CompositionLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionLayerView.swift; sourceTree = "<group>"; };
+		5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarFixtureView.swift; sourceTree = "<group>"; };
 		5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperFixtureView.swift; sourceTree = "<group>"; };
 		5B94B8EA2FFFE3C5007DFF8E /* AlertFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertFixtureView.swift; sourceTree = "<group>"; };
 		5BA0067A2E49F698000148DB /* UIImage+SVG.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+SVG.swift"; sourceTree = "<group>"; };
@@ -247,6 +249,7 @@
 				5B8D57B02FF7F8A00082404D /* StepperFixtureView.swift */,
 				157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */,
 				5BA07FD03002E97700322F5D /* TabFixtureView.swift */,
+				5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -443,6 +446,7 @@
 				0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */,
 				E6DE736005334DA8BD20F1E2 /* WireframeView.swift in Sources */,
 				5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */,
+				5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */,
 				86D5C4A1ED484C5DB60D627B /* ImageComposition.swift in Sources */,
 				AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */,
 				DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */,

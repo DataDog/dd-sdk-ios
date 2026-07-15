@@ -29,8 +29,10 @@ internal struct CompositionLayerBuilder {
         let resource = maskResource(for: snapshot)
         let layer = SRCompositionLayer(
             children: children,
-            compositeOperation: snapshot.compositingFilter
-                .flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)),
+            compositeOperation: SRCompositionLayer.CompositeOperation(
+                compositingFilter: snapshot.compositingFilter,
+                semantics: snapshot.observation.semantics
+            ),
             height: Int64.ddWithNoOverflow(dimension: snapshot.absoluteFrame.height),
             id: snapshot.replayID,
             modifiers: snapshot.modifiers(maskImageResourceID: resource?.calculateIdentifier()),

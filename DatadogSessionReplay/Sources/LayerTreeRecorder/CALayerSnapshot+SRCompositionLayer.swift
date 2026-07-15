@@ -18,7 +18,10 @@ extension CALayerSnapshot {
             || filters.contains {
                 SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil
             }
-            || compositingFilter.flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)) != nil
+            || SRCompositionLayer.CompositeOperation(
+                compositingFilter: compositingFilter,
+                semantics: observation.semantics
+            ) != nil
     }
 
     func modifiers(maskImageResourceID: String? = nil) -> [SRCompositionLayerModifier] {
@@ -118,7 +121,19 @@ extension CALayerSnapshot {
 
 extension SRCompositionLayer.CompositeOperation {
     @available(iOS 13.0, tvOS 13.0, *)
-    init?(compositingFilter: CALayerSnapshot.CompositingFilter) {
+    init?(
+        compositingFilter: CALayerSnapshot.CompositingFilter?,
+        semantics: CALayerSnapshot.SemanticObservation.Semantics
+    ) {
+        if case .visualEffect(.scrollPocket) = semantics {
+            self = .destinationOut
+            return
+        }
+
+        guard let compositingFilter else {
+            return nil
+        }
+
         switch compositingFilter {
         case .destinationIn:
             self = .destinationIn

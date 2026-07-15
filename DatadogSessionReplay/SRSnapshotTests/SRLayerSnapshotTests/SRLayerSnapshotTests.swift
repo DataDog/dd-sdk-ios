@@ -58,4 +58,12 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
             folderPath: snapshotsFolderPath
         )
     }
+
+    func testToolbar() async throws {
+        try await takeLayerSnapshotFor(
+            ToolbarFixtureView(),
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
 }

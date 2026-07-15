@@ -28,10 +28,9 @@ extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
-        gradient: CALayerSnapshot.SemanticObservation.GradientSemantics? = nil,
+        backgroundGradient: SRShapeGradient? = nil,
         cornerRadius: CGFloat? = nil
     ) {
-        let backgroundGradient = gradient.flatMap(SRShapeGradient.init(gradient:))
         guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder || backgroundGradient != nil else {
             return nil
         }
@@ -236,7 +235,7 @@ extension SRShapeStyle {
 
 extension SRShapeGradient {
     @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(
+    init?(
         gradient: CALayerSnapshot.SemanticObservation.GradientSemantics
     ) {
         guard gradient.type == .axial else {
@@ -264,6 +263,34 @@ extension SRShapeGradient {
                     y: Double(gradient.startPoint.y)
                 ),
                 stops: stops
+            )
+        )
+    }
+
+    init?(scrollPocketEdge edge: UIRectEdge) {
+        let startPoint: SRShapeGradientPoint
+        let endPoint: SRShapeGradientPoint
+
+        switch edge {
+        case .top:
+            startPoint = .init(x: 0.5, y: 0)
+            endPoint = .init(x: 0.5, y: 1)
+        case .bottom:
+            startPoint = .init(x: 0.5, y: 1)
+            endPoint = .init(x: 0.5, y: 0)
+        default:
+            return nil
+        }
+
+        self = .linear(
+            value: .init(
+                endPoint: endPoint,
+                startPoint: startPoint,
+                stops: [
+                    .init(color: "#000000FF", position: 0),
+                    .init(color: "#000000FF", position: 0.35),
+                    .init(color: "#00000000", position: 1)
+                ]
             )
         )
     }

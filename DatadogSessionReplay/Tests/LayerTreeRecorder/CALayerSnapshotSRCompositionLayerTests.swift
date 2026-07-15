@@ -225,6 +225,24 @@ struct CALayerSnapshotSRCompositionLayerTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps scroll pocket effects to destination-out compositing")
+    func mapsScrollPocketEffectsToDestinationOutCompositing() {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .visualEffect(.scrollPocket(.top)))
+        )
+
+        // When
+        let compositeOperation = SRCompositionLayer.CompositeOperation(
+            compositingFilter: snapshot.compositingFilter,
+            semantics: snapshot.observation.semantics
+        )
+
+        // Then
+        #expect(compositeOperation == .destinationOut)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     private func modifierTypes(_ modifiers: [SRCompositionLayerModifier]) -> [String] {
         modifiers.map { modifier in
             switch modifier {
@@ -242,8 +260,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
                 "brightnessBias"
             case .compositionLayerSaturateModifier:
                 "saturate"
-            case .compositionLayerBackgroundMaterialModifier:
-                "backgroundMaterial"
             case .compositionLayerMaskImageModifier:
                 "maskImage"
             }
