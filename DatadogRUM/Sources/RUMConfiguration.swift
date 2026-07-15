@@ -726,6 +726,7 @@ extension RUM.Configuration {
         /// gestures will no longer count as candidate "last interactions" for INV
         /// (Interaction-to-Next-View) attribution.
         case trackScrollAndSwipeActions
+        case viewUpdates
     }
 }
 

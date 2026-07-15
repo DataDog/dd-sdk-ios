@@ -496,6 +496,118 @@ final class SwiftPrinterTests: XCTestCase {
         XCTAssertEqual(expected, actual)
     }
 
+    func testPrintingSwiftStructWithDynamicCodingKeysAndEquatable() throws {
+        let equatableProtocol = SwiftProtocol(name: "Equatable", conformance: [])
+        let `struct` = SwiftStruct(
+            name: "Foo",
+            comment: nil,
+            properties: [
+                SwiftStruct.Property(
+                    name: "property1",
+                    comment: nil,
+                    type: SwiftPrimitive<Int>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_1")
+                ),
+                SwiftStruct.Property(
+                    name: "context",
+                    comment: nil,
+                    type: SwiftDictionary(value: SwiftEncodable()),
+                    isOptional: false,
+                    mutability: .mutableInternally,
+                    defaultValue: nil,
+                    codingKey: .dynamic
+                ),
+                SwiftStruct.Property(
+                    name: "property2",
+                    comment: nil,
+                    type: SwiftPrimitive<Bool>(),
+                    isOptional: true,
+                    mutability: .mutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "property_2")
+                ),
+            ],
+            conformance: [codableProtocol, equatableProtocol]
+        )
+
+        let printer = SwiftPrinter()
+        let actual = try printer.print(swiftTypes: [`struct`])
+
+        let expected = """
+
+        public struct Foo: Codable, Equatable {
+            public let property1: Int
+
+            public internal(set) var context: [String: Encodable]
+
+            public var property2: Bool?
+
+            public enum StaticCodingKeys: String, CodingKey {
+                case property1 = "property_1"
+                case property2 = "property_2"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - property1:
+            ///   - context:
+            ///   - property2:
+            public init(
+                property1: Int,
+                context: [String: Encodable],
+                property2: Bool? = nil
+            ) {
+                self.property1 = property1
+                self.context = context
+                self.property2 = property2
+            }
+        }
+
+        extension Foo {
+            public func encode(to encoder: Encoder) throws {
+                // Encode static properties:
+                var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+                try staticContainer.encodeIfPresent(property1, forKey: .property1)
+                try staticContainer.encodeIfPresent(property2, forKey: .property2)
+
+                // Encode dynamic properties:
+                var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+                context.forEach { name, value in
+                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                // Decode static properties:
+                let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+                self.property1 = try staticContainer.decode(Int.self, forKey: .property1)
+                self.property2 = try staticContainer.decodeIfPresent(Bool.self, forKey: .property2)
+
+                // Decode other properties into [String: AnyCodable] dictionary:
+                let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+                self.context = [:]
+
+                let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+                try dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }.forEach {
+                    self.context[$0.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $0)
+                }
+            }
+
+            public static func == (lhs: Foo, rhs: Foo) -> Bool {
+                lhs.property1 == rhs.property1 &&
+                lhs.context.dd == rhs.context.dd &&
+                lhs.property2 == rhs.property2
+            }
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
+
     func testPrintingSwiftStructWithAssociatedTypeEnum() throws {
         let `struct` = SwiftStruct(
             name: "Foo",
