@@ -420,10 +420,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertTrue(
-            monitor.scopes.dependencies.trackBackgroundEvents,
-            "Remote `trackBackgroundEvents` must override the in-code value at enable time"
-        )
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
     }
 
     func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
@@ -437,10 +434,7 @@ class RUMTests: XCTestCase {
 
         // Then
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        XCTAssertTrue(
-            monitor.scopes.dependencies.trackBackgroundEvents,
-            "Without remote configuration, RUM must behave exactly as configured in-code"
-        )
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
     }
 
     func testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation() throws {
