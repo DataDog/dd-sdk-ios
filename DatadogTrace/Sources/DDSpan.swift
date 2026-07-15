@@ -50,6 +50,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         self.startTime = startTime
         self.loggingIntegration = tracer.loggingIntegration
         self.operationName = operationName
+        // Assumes `tags` is already flattened and merged (see `DatadogTracer.startSpan`/`mergeTags`).
         self.tags = tags
         self.logFields = []
         self.isFinished = false
@@ -78,9 +79,41 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
+        // `willSetTagWithKey` intercepts literal `SpanTags.manualKeep`/`manualDrop` + `true` (e.g. from
+        // `keepTrace()`) to trigger a sampling override instead of storing a tag. Checking it once here, against
+        // the caller's key/value exactly as given, before flattening, means a dictionary that happens to nest a
+        // "keep"/"drop" key under a "manual" key can never be mistaken for that literal call.
+        guard ddContext.span(self, willSetTagWithKey: key, value: value) else {
+            return
+        }
+        storeFlattenedTags(flattenedTagPairs(key: key, value: value))
+    }
 
-        if ddContext.span(self, willSetTagWithKey: key, value: value) {
-            _tags.mutate { $0[key] = value }
+    /// Overrides the `OTSpan` default (which loops over the public `setTag(key:value:)` per entry) so the whole
+    /// dictionary is flattened and stored in one pass: `willSetTagWithKey` never sees the synthetic leaf keys
+    /// this produces, and every leaf lands in `_tags` under a single lock instead of one per leaf.
+    func setTag(key: String, value: [String: OTTagValue]) {
+        if warnIfFinished("setTag(key:value:)") {
+            return
+        }
+        storeFlattenedTags(flattenedTagPairs(key: key, dict: value))
+    }
+
+    private func storeFlattenedTags(_ pairs: [(String, OTTagValue)]) {
+        // `setTag(key:value: OTTagValue)` calls this with exactly 1 pair whenever `value` isn't a `Dictionary` —
+        // the overwhelming majority of calls — which can never collide with itself; skip the check below for it.
+        if pairs.count > 1 {
+            let uniqueKeyCount = Set(pairs.map { $0.0 }).count
+            _ = warn(
+                if: uniqueKeyCount != pairs.count,
+                message: """
+                Setting a dictionary tag whose keys collide once flattened (e.g. a literal "a.b" key alongside a \
+                nested "a": ["b": ...] entry) is not supported; only one of the colliding tags was kept.
+                """
+            )
+        }
+        _tags.mutate { tags in
+            tags.merge(pairs, uniquingKeysWith: { _, new in new })
         }
     }
 

@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add a preview snapshot API to `DatadogFlags` for reading cached precomputed feature flag assignments without recording evaluations. See [#2937][]
+- [IMPROVEMENT] `OTSpan.setTag` now flattens `Dictionary` tag values into one tag per leaf field (e.g. `context.foo`) instead of serializing the whole dictionary as a single JSON string tag. See [#NNNN][]
 
 # 3.13.0 / 30-06-2026
 - [FEATURE] Expose `allocationKey` as a top-level property on `FlagDetails` for callers using `getDetails(key:defaultValue:)`. See [#2989][]

@@ -604,8 +604,8 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.double"), "10.5")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.array-of-int"), "[1,2,3]")
         XCTAssertEqual(
-            try spanMatcher.meta.custom(keyPath: "meta.dictionary-with-date"),
-            #"{"date":"2019-12-15T10:00:00.000Z"}"#
+            try spanMatcher.meta.custom(keyPath: "meta.dictionary-with-date.date"),
+            #""2019-12-15T10:00:00.000Z""#
         )
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.person"),
