@@ -237,6 +237,37 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
+    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
+    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+        // Given
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        viewController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let interactionLayer = try #require(
+            window.layer.firstDescendant { layer in
+                guard let view = layer.delegate as? UIView else {
+                    return false
+                }
+                return NSStringFromClass(type(of: view)).hasSuffix("UIPlatformGlassInteractionView")
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(
+            layer: interactionLayer,
+            context: .mockAny()
+        )
+
+        // Then
+        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+    }
+
+    @available(iOS 26.0, *)
     @Test("Records portal semantics")
     func recordsPortalSemantics() throws {
         // Given

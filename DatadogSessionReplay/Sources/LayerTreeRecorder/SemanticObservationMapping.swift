@@ -36,7 +36,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .signedDistanceField,
         .destinationOutView,
         .portal,
-        .tabBarPlatter,
+        .automaticCapsule,
         .glassGroup,
         .scrollPocket,
         .captureOnlyBackdrop,
