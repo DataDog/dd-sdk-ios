@@ -159,10 +159,20 @@ internal enum StatsUtils {
     /// the iOS SDK always uses weight 1.0 (no weighted sampling), so this reduces
     /// to simple truncation.
     static func stochasticRound(_ value: Double) -> UInt64 {
+        // Guard the `UInt64(value)` conversion: it traps for non-finite doubles and for values
+        // outside `0 ..< 2^64`. Counters are accumulated as `Double`, and with pathological custom
+        // span durations a group total can exceed `UInt64.max`; clamp instead of crashing the host
+        // app at flush time.
+        guard value.isFinite, value > 0 else {
+            return 0
+        }
+        guard value < Double(UInt64.max) else {
+            return .max
+        }
         let truncated = UInt64(value)
         let fractional = value - Double(truncated)
         if Double.random(in: 0..<1) < fractional {
-            return truncated + 1
+            return truncated == .max ? truncated : truncated + 1
         }
         return truncated
     }

@@ -53,13 +53,19 @@ public enum Trace {
 
         // Register Trace feature:
         let trace = TraceFeature(in: core, configuration: configuration)
-        try core.register(feature: trace)
 
+        // Attach the stats hook BEFORE registering (exposing) the Trace feature. Once registered,
+        // `Tracer.shared()` is reachable from other threads and its `SpanEventBuilder` already stamps
+        // `meta._dd.compute_stats=0`. If the hook were installed after registration, a span finished
+        // in that window would suppress the backend's stats without being added to the concentrator,
+        // losing its RED metrics.
         if let stats {
             trace.tracer.onSpanFinished = { [weak stats] snapshot in
                 stats?.concentrator.add(snapshot)
             }
         }
+
+        try core.register(feature: trace)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
         if let urlSessionTracking = configuration.urlSessionTracking {
