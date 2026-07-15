@@ -243,12 +243,13 @@ internal final class StatsConcentrator: @unchecked Sendable {
         }
 
         // The public tracing API accepts custom start/finish dates, and the SDK's time conversion
-        // clamps to `UInt64.max` rather than trapping. A pathological span (e.g. a far-future start
-        // plus any positive duration) can therefore saturate `startTime`, making this addition
-        // overflow. Drop such a snapshot instead of crashing the host app or mis-bucketing it in the
-        // far future.
+        // clamps to `UInt64.max` rather than trapping. A pathological span (e.g. a far-future start,
+        // with or without added duration) can therefore saturate the end time. Drop such a snapshot
+        // instead of crashing the host app or mis-bucketing it in the far future. `UInt64.max` is the
+        // saturation sentinel; a real span ending in the year ~2554 is not expected. This also keeps
+        // a zero-duration saturated span (no arithmetic overflow) out of the buckets.
         let (endTime, overflow) = snapshot.startTime.addingReportingOverflow(snapshot.duration)
-        guard !overflow else {
+        guard !overflow, endTime != .max else {
             return
         }
         let matchingPeerTags = self.matchingPeerTags(for: snapshot)
@@ -294,12 +295,22 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 return []
             }
 
-            let cutoff = force ? Int64.max : Int64(now) - Int64(bufferLen) * Int64(bucketDuration)
+            // Compare bucket timestamps in the `UInt64` domain. A pathological span whose start time
+            // saturated to `UInt64.max` could produce a bucket key above `Int64.max`; casting that to
+            // `Int64` here would trap and crash the host app. Staying in `UInt64` keeps the comparison
+            // total and crash-free.
+            let cutoff: UInt64
+            if force {
+                cutoff = .max
+            } else {
+                let window = UInt64(bufferLen) * bucketDuration
+                cutoff = now > window ? now - window : 0
+            }
             var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
 
             for (ts, bucket) in buckets {
-                if Int64(ts) > cutoff {
+                if ts > cutoff {
                     continue
                 }
                 keysToRemove.append(ts)
