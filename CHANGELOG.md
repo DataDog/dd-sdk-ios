@@ -1,9 +1,12 @@
 # Unreleased
 
+# 3.14.0 / 15-07-2026
+
 - [FEATURE] Add Continuous Profiling with RUM correlation for app hangs, long tasks, operations, and app start vitals (TTID/TTFD). See [#3051][]
 - [FEATURE] Add a preview snapshot API to `DatadogFlags` for reading cached precomputed feature flag assignments without recording evaluations. See [#2937][]
 
 # 3.13.0 / 30-06-2026
+
 - [FEATURE] Expose `allocationKey` as a top-level property on `FlagDetails` for callers using `getDetails(key:defaultValue:)`. See [#2989][]
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
 - [FIX] Fix `DatadogFlags` exposure deduplication so assignment changes for the same subject and flag emit new exposure events. See [#2987][]
@@ -1175,21 +1178,22 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 [#2876]: https://github.com/DataDog/dd-sdk-ios/pull/2876
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
+[#2937]: https://github.com/DataDog/dd-sdk-ios/pull/2937
 [#2941]: https://github.com/DataDog/dd-sdk-ios/pull/2941
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
 [#2944]: https://github.com/DataDog/dd-sdk-ios/pull/2944
-[#2859]: https://github.com/DataDog/dd-sdk-ios/pull/2859
 [#2948]: https://github.com/DataDog/dd-sdk-ios/pull/2948
-[#2956]: https://github.com/DataDog/dd-sdk-ios/pull/2956
-[#2966]: https://github.com/DataDog/dd-sdk-ios/pull/2966
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
+[#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
+[#2956]: https://github.com/DataDog/dd-sdk-ios/pull/2956
+[#2859]: https://github.com/DataDog/dd-sdk-ios/pull/2859
+[#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
+[#2966]: https://github.com/DataDog/dd-sdk-ios/pull/2966
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
-[#2963]: https://github.com/DataDog/dd-sdk-ios/pull/2963
-[#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
-[#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
 [#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
+[#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051

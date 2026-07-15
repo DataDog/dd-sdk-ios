@@ -33,8 +33,9 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     /// Setting max-file-age to minimum will force creating a batch per profile.
     /// It is necessary as the profiling intake only accepts one profile per request.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
-        maxFileSize: Constants.maxFileSize,
-        maxObjectSize: Constants.maxObjectSize,
+        // Add 5 MB to accommodate base64 expansion when encoding the pprof attachment.
+        maxFileSize: Constants.maxFileSize + 5.MB.asUInt32(),
+        maxObjectSize: Constants.maxObjectSize + 5.MB.asUInt32(),
         maxObjectsInFile: Constants.maxObjectsInFile
     )
 
