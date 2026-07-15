@@ -28,13 +28,48 @@ struct ImageSnapshotterTests {
         let results = await snapshotter.takeImageSnapshots(for: root, changeset: .init(), timeout: 1)
 
         // Then
-        let result = try #require(results[root.replayID])
+        let result = try #require(results.contentSnapshots[root.replayID])
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == root.absoluteFrame)
         #expect(imageSnapshot.image.size == root.bounds.size)
         #expect(imageSnapshot.layerClass == root.layerClass)
         #expect(imageSnapshot.delegateClass == root.delegateClass)
         #expect(imageSnapshot.hasLayerSemantics)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Renders and caches mask snapshot for container mask")
+    func rendersAndCachesMaskSnapshotForContainerMask() async throws {
+        // Given
+        let fixture = MaskFixture()
+        let snapshotter = ImageSnapshotter()
+
+        let firstRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
+        let firstResult = try #require(firstResults.maskSnapshots[fixture.mask.replayID])
+        let firstMaskSnapshot = try firstResult.get()
+
+        // When
+        let secondRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: .init(), timeout: 1)
+
+        // Then
+        let secondResult = try #require(secondResults.maskSnapshots[fixture.mask.replayID])
+        let secondMaskSnapshot = try secondResult.get()
+        #expect(firstMaskSnapshot === secondMaskSnapshot)
+        #expect(secondMaskSnapshot.image.size == fixture.maskedLayer.bounds.size)
+
+        // When
+        fixture.maskChild.backgroundColor = UIColor.white.cgColor
+        let changedRoot = try #require(CALayerSnapshot(from: fixture.rootLayer, in: .mockAny()))
+        let changeset = CALayerChangeset.mockChange(for: fixture.maskChild, aspects: .display)
+        let changedResults = await snapshotter.takeImageSnapshots(for: changedRoot, changeset: changeset, timeout: 1)
+
+        // Then
+        let changedResult = try #require(changedResults.maskSnapshots[fixture.mask.replayID])
+        let changedMaskSnapshot = try changedResult.get()
+        #expect(changedMaskSnapshot !== firstMaskSnapshot)
+        #expect(changedMaskSnapshot.image.size == fixture.maskedLayer.bounds.size)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -50,7 +85,7 @@ struct ImageSnapshotterTests {
         let results = await snapshotter.takeImageSnapshots(for: root, changeset: .init(), timeout: 0)
 
         // Then
-        let result = try #require(results[root.replayID])
+        let result = try #require(results.contentSnapshots[root.replayID])
         #expect(throws: ImageSnapshotError.timedOut) {
             try result.get()
         }
@@ -72,7 +107,7 @@ struct ImageSnapshotterTests {
         let snapshotter = ImageSnapshotter()
         let firstRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         layer.backgroundColor = UIColor.blue.cgColor
@@ -81,7 +116,7 @@ struct ImageSnapshotterTests {
 
         // When
         let timedOutResults = await snapshotter.takeImageSnapshots(for: changedRoot, changeset: changeset, timeout: 0)
-        let timedOutResult = try #require(timedOutResults[layer.replayID])
+        let timedOutResult = try #require(timedOutResults.contentSnapshots[layer.replayID])
 
         // Then
         #expect(throws: ImageSnapshotError.timedOut) {
@@ -90,7 +125,7 @@ struct ImageSnapshotterTests {
 
         let nextRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let nextResults = await snapshotter.takeImageSnapshots(for: nextRoot, changeset: .init(), timeout: 1)
-        let nextResult = try #require(nextResults[layer.replayID])
+        let nextResult = try #require(nextResults.contentSnapshots[layer.replayID])
         let nextImageSnapshot = try nextResult.get()
         #expect(firstImageSnapshot.image !== nextImageSnapshot.image)
     }
@@ -111,7 +146,7 @@ struct ImageSnapshotterTests {
         let snapshotter = ImageSnapshotter()
         let firstRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         // When
@@ -120,7 +155,7 @@ struct ImageSnapshotterTests {
         let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: .init(), timeout: 1)
 
         // Then
-        let secondResult = try #require(secondResults[layer.replayID])
+        let secondResult = try #require(secondResults.contentSnapshots[layer.replayID])
         let secondImageSnapshot = try secondResult.get()
         #expect(firstImageSnapshot.image === secondImageSnapshot.image)
         #expect(secondImageSnapshot.frame == CGRect(x: 20, y: 15, width: 100, height: 40))
@@ -147,7 +182,7 @@ struct ImageSnapshotterTests {
             )
         )
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         // When
@@ -163,7 +198,7 @@ struct ImageSnapshotterTests {
         let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: .init(), timeout: 1)
 
         // Then
-        let secondResult = try #require(secondResults[layer.replayID])
+        let secondResult = try #require(secondResults.contentSnapshots[layer.replayID])
         let secondImageSnapshot = try secondResult.get()
         #expect(firstImageSnapshot.image === secondImageSnapshot.image)
         #expect(secondImageSnapshot.textAndInputPrivacyLevel == .maskSensitiveInputs)
@@ -189,7 +224,7 @@ struct ImageSnapshotterTests {
         let snapshotter = ImageSnapshotter()
         let firstRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         // When
@@ -199,7 +234,7 @@ struct ImageSnapshotterTests {
         let secondResults = await snapshotter.takeImageSnapshots(for: secondRoot, changeset: changeset, timeout: 1)
 
         // Then
-        let secondResult = try #require(secondResults[layer.replayID])
+        let secondResult = try #require(secondResults.contentSnapshots[layer.replayID])
         let secondImageSnapshot = try secondResult.get()
         #expect(firstImageSnapshot.image !== secondImageSnapshot.image)
         #expect(secondImageSnapshot.frame == layer.frame)
@@ -221,7 +256,7 @@ struct ImageSnapshotterTests {
         let snapshotter = ImageSnapshotter()
         let firstRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         layer.backgroundColor = UIColor.blue.cgColor
@@ -241,13 +276,13 @@ struct ImageSnapshotterTests {
 
         // Then
         #expect(!occludedRoot.sublayers.contains { $0.layer.matches(layer) })
-        #expect(occludedResults[layer.replayID] == nil)
+        #expect(occludedResults.contentSnapshots[layer.replayID] == nil)
 
         occluder.removeFromSuperlayer()
 
         let revealedRoot = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
-        let revealedResult = try #require(revealedResults[layer.replayID])
+        let revealedResult = try #require(revealedResults.contentSnapshots[layer.replayID])
         let revealedImageSnapshot = try revealedResult.get()
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }
@@ -274,7 +309,7 @@ struct ImageSnapshotterTests {
             CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let firstResults = await snapshotter.takeImageSnapshots(for: firstRoot, changeset: .init(), timeout: 1)
-        let firstResult = try #require(firstResults[imageView.layer.replayID])
+        let firstResult = try #require(firstResults.contentSnapshots[imageView.layer.replayID])
         let firstImageSnapshot = try firstResult.get()
 
         ignoredSublayer.backgroundColor = UIColor.blue.cgColor
@@ -296,7 +331,7 @@ struct ImageSnapshotterTests {
 
         // Then
         #expect(!occludedRoot.sublayers.contains { $0.layer.matches(imageView.layer) })
-        #expect(occludedResults[imageView.layer.replayID] == nil)
+        #expect(occludedResults.contentSnapshots[imageView.layer.replayID] == nil)
 
         occluder.removeFromSuperlayer()
 
@@ -304,7 +339,7 @@ struct ImageSnapshotterTests {
             CALayerSnapshot(from: rootLayer, in: .mockAny(imagePrivacyLevel: .maskNone))
         )
         let revealedResults = await snapshotter.takeImageSnapshots(for: revealedRoot, changeset: .init(), timeout: 1)
-        let revealedResult = try #require(revealedResults[imageView.layer.replayID])
+        let revealedResult = try #require(revealedResults.contentSnapshots[imageView.layer.replayID])
         let revealedImageSnapshot = try revealedResult.get()
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }
@@ -334,7 +369,7 @@ struct ImageSnapshotterTests {
         let results = await snapshotter.takeImageSnapshots(for: root, changeset: .init(), timeout: 1)
 
         // Then
-        let result = try #require(results[layer.replayID])
+        let result = try #require(results.contentSnapshots[layer.replayID])
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == CGRect(x: 30, y: 30, width: 40, height: 40))
         #expect(imageSnapshot.image.size == CGSize(width: 40, height: 40))
@@ -360,10 +395,55 @@ struct ImageSnapshotterTests {
         let results = await snapshotter.takeImageSnapshots(for: root, changeset: .init(), timeout: 1)
 
         // Then
-        let result = try #require(results[layer.replayID])
+        let result = try #require(results.contentSnapshots[layer.replayID])
         let imageSnapshot = try result.get()
         #expect(imageSnapshot.frame == CGRect(x: 0, y: 0, width: 100, height: 100))
         #expect(imageSnapshot.image.size == CGSize(width: 100, height: 100))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    private struct MaskFixture {
+        let rootLayer: CALayer
+        let maskedLayer: CALayer
+        let mask: CALayer
+        let maskChild: CALayer
+
+        init() {
+            let rootLayer = CALayer()
+            rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+            let maskedLayer = CALayer()
+            maskedLayer.frame = CGRect(x: 10, y: 10, width: 100, height: 40)
+            rootLayer.addSublayer(maskedLayer)
+
+            let child = CATextLayer()
+            child.frame = maskedLayer.bounds
+            child.backgroundColor = UIColor.red.cgColor
+            child.contentsScale = 1
+            maskedLayer.addSublayer(child)
+
+            let mask = CALayer()
+            mask.bounds = maskedLayer.bounds
+            let maskChild = CALayer()
+            maskChild.frame = maskedLayer.bounds
+            maskChild.backgroundColor = UIColor.black.cgColor
+            mask.addSublayer(maskChild)
+            maskedLayer.mask = mask
+
+            self.init(
+                rootLayer: rootLayer,
+                maskedLayer: maskedLayer,
+                mask: mask,
+                maskChild: maskChild
+            )
+        }
+
+        init(rootLayer: CALayer, maskedLayer: CALayer, mask: CALayer, maskChild: CALayer) {
+            self.rootLayer = rootLayer
+            self.maskedLayer = maskedLayer
+            self.mask = mask
+            self.maskChild = maskChild
+        }
     }
 }
 #endif

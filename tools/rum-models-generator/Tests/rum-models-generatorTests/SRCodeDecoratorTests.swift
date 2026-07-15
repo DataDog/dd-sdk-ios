@@ -96,6 +96,8 @@ final class SRCodeDecoratorTests: XCTestCase {
         XCTAssertTrue(typeNames.contains("SRCompositionLayer"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerChild"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerModifier"))
+        XCTAssertTrue(typeNames.contains("SRCompositionLayerShadowModifier"))
+        XCTAssertTrue(typeNames.contains("SRCompositionLayerMaskImageModifier"))
         XCTAssertTrue(typeNames.contains("SRCompositionLayerUpdate"))
         XCTAssertTrue(typeNames.contains("SRCompositionTreeMutationData"))
         XCTAssertFalse(typeNames.contains("Layers"))
@@ -120,6 +122,15 @@ final class SRCodeDecoratorTests: XCTestCase {
         let updates: SwiftStruct.Property = try XCTUnwrap(mutationData.properties.first { $0.name == "updates" })
         XCTAssertEqual("SRCompositionLayerUpdate", ((updates.type as? SwiftArray)?.element as? SwiftTypeReference)?.referencedTypeName)
 
+        let compositionLayer = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayer" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayer.conforms(to: hashableProtocol))
+
+        let compositionLayerChild = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerChild" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayerChild.conforms(to: hashableProtocol))
+
+        let compositionLayerUpdate = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerUpdate" } as? SwiftStruct)
+        XCTAssertTrue(compositionLayerUpdate.conforms(to: hashableProtocol))
+
         let transformedIncrementalSnapshotRecord = try XCTUnwrap(
             actual.swiftTypes.first { $0.typeName == "SRIncrementalSnapshotRecord" } as? SwiftStruct
         )
@@ -132,7 +143,12 @@ final class SRCodeDecoratorTests: XCTestCase {
         let modifier = try XCTUnwrap(actual.swiftTypes.first { $0.typeName == "SRCompositionLayerModifier" } as? SwiftAssociatedTypeEnum)
         XCTAssertEqual("type", modifier.discriminatorCodingKey)
         XCTAssertEqual("clip", modifier.cases.first?.discriminatorValue as? String)
+        XCTAssertEqual("shadow", modifier.cases.dropFirst().first?.discriminatorValue as? String)
+        XCTAssertEqual("maskImage", modifier.cases.dropFirst(2).first?.discriminatorValue as? String)
+        XCTAssertTrue(modifier.conforms(to: hashableProtocol))
     }
+
+    private let hashableProtocol = SwiftProtocol(name: "Hashable", conformance: [codableProtocol])
 
     private static func property(
         named name: String,
@@ -203,6 +219,36 @@ final class SRCodeDecoratorTests: XCTestCase {
                                 named: "type",
                                 type: SwiftPrimitive<String>(),
                                 defaultValue: "clip"
+                            )
+                        ],
+                        conformance: []
+                    )
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "CompositionLayerShadowModifier",
+                    associatedType: SwiftStruct(
+                        name: "CompositionLayerShadowModifier",
+                        comment: nil,
+                        properties: [
+                            property(
+                                named: "type",
+                                type: SwiftPrimitive<String>(),
+                                defaultValue: "shadow"
+                            )
+                        ],
+                        conformance: []
+                    )
+                ),
+                SwiftAssociatedTypeEnum.Case(
+                    label: "CompositionLayerMaskImageModifier",
+                    associatedType: SwiftStruct(
+                        name: "CompositionLayerMaskImageModifier",
+                        comment: nil,
+                        properties: [
+                            property(
+                                named: "type",
+                                type: SwiftPrimitive<String>(),
+                                defaultValue: "maskImage"
                             )
                         ],
                         conformance: []

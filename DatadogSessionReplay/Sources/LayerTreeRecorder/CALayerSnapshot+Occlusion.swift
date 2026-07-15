@@ -12,12 +12,12 @@ import QuartzCore
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
-        observation.ignoreSublayers
+        observation.ignoresSublayers
             || layerClass != CALayer.self
             || contentsClass != nil
             || hasBackgroundColor
             || hasBorder
-            || hasVisibleShadow
+            || hasShadow
     }
 
     /// A Boolean value indicating whether the layer paints its frame as an opaque rectangle.
@@ -97,21 +97,21 @@ extension CALayerSnapshot.CornerRadii {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    fileprivate var hasBackgroundColor: Bool {
+    var hasBackgroundColor: Bool {
         guard let backgroundColor else {
             return false
         }
         return backgroundColor.alpha > 0
     }
 
-    fileprivate var hasBorder: Bool {
+    var hasBorder: Bool {
         guard let borderColor, borderWidth > 0 else {
             return false
         }
         return borderColor.alpha > 0
     }
 
-    fileprivate var hasVisibleShadow: Bool {
+    var hasShadow: Bool {
         shadowOpacity > 0 && (shadowColor?.alpha ?? 0) > 0
     }
 
@@ -159,7 +159,7 @@ extension CALayerSnapshot {
 
         if visibleLayers.isEmpty {
             if drawsContent {
-                if !hasVisibleShadow && occlusionMap.isCovered(visibleFrame) {
+                if !hasShadow && occlusionMap.isCovered(visibleFrame) {
                     return nil
                 }
             } else {

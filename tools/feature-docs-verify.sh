@@ -57,10 +57,21 @@ def parse_frontmatter(path):
 
     return commit, files
 
-# Discover all *_FEATURE.md files, skipping generated output directories
+# Discover all *_FEATURE.md files, skipping generated output directories,
+# local agent worktrees, and vendored dependency checkouts.
 docs = []
+ignored_dirs = {
+    ".build",
+    ".claude",
+    ".git",
+    "artifacts",
+    "build",
+    "Carthage",
+    "Checkouts",
+    "DerivedData",
+}
 for dirpath, dirnames, filenames in os.walk(repo_root):
-    dirnames[:] = [d for d in dirnames if d not in ("build", "artifacts")]
+    dirnames[:] = [d for d in dirnames if d not in ignored_dirs]
     for name in filenames:
         if name.endswith("_FEATURE.md"):
             docs.append(os.path.join(dirpath, name))

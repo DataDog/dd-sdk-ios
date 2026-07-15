@@ -59,22 +59,18 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             return nil
         }
 
-        var binaryImages: [UInt64: BinaryImage] = [:]
+        var binaryImages: [String: BinaryImage] = [:]
         let stack = (0..<count).compactMap { index in
             let address = addresses[index]
 
             guard
-                let binaryImage = symbolicate(address: address),
-                let imageName = binaryImage.name,
-                let path = NSString(utf8String: imageName),
-                let imageUUID = binaryImage.uuid
+                let rawBinaryImage = symbolicate(address: address),
+                let binaryImage = BinaryImage(rawBinaryImage)
             else {
                 return String(format: "%-4ld ??? 0x%016llx 0x0 + 0", index, address) // no binary image info
             }
 
-            let libraryName = path.lastPathComponent
-            let loadAddress = binaryImage.address
-            let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+            let loadAddress = rawBinaryImage.address
 
             let offset: UInt64
             if address >= loadAddress {
@@ -84,25 +80,12 @@ internal struct KSCrashBacktrace: BacktraceReporting {
                 telemetry.error("Invalid image load address, symbolication will fail")
             }
 
-            // Get architecture from binary image's CPU type
-            let architecture = String(cString: kscpu_archForCPU(
-                cpu_type_t(binaryImage.cpuType),
-                cpu_subtype_t(binaryImage.cpuSubType)
-            ))
-
-            if binaryImages[loadAddress] == nil {
-                binaryImages[loadAddress] = BinaryImage(
-                    libraryName: libraryName,
-                    uuid: uuid.uuidString,
-                    architecture: architecture,
-                    path: path,
-                    loadAddress: loadAddress,
-                    maxAddress: loadAddress + binaryImage.size
-                )
+            if binaryImages[binaryImage.loadAddress] == nil {
+                binaryImages[binaryImage.loadAddress] = binaryImage
             }
 
             // Format: frame_index (4 chars left-aligned) + library_name (35 chars left-aligned) + addresses + offset
-            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, libraryName, address, loadAddress, offset)
+            return String(format: "%-4ld %-35@ 0x%016llx 0x%016llx + %lld", index, binaryImage.libraryName, address, loadAddress, offset)
         }
         .joined(separator: "\n")
 
@@ -120,6 +103,35 @@ internal struct KSCrashBacktrace: BacktraceReporting {
             binaryImages: Array(binaryImages.values),
             wasTruncated: false
         )
+    }
+
+    func binaryImages() throws -> [BinaryImage]? {
+        let images = enumerateBinaryImages()
+        return images.isEmpty ? nil : images
+    }
+
+    private func enumerateBinaryImages() -> [BinaryImage] {
+        ksbic_init()
+        var count: UInt32 = 0
+        guard let images = ksbic_getImages(&count) else {
+            return []
+        }
+        return (0..<Int(count)).compactMap { i in
+            let info = images[i]
+            guard
+                let header = info.imageLoadAddress,
+                let imageName = info.imageFilePath
+            else {
+                return nil
+            }
+
+            var binaryImage = KSBinaryImage()
+            guard ksdl_binaryImageForHeader(UnsafeRawPointer(header), imageName, &binaryImage) else {
+                return nil
+            }
+
+            return BinaryImage(binaryImage)
+        }
     }
 
     /// Get the name of a pthread
@@ -167,4 +179,34 @@ private func symbolicate(address: uintptr_t) -> KSBinaryImage? {
     }
 
     return binaryImage
+}
+
+private extension BinaryImage {
+    /// Creates a `BinaryImage` from a KSCrash `KSBinaryImage`.
+    ///
+    /// - Returns: `nil` when the image lacks the fields required for symbolication.
+    init?(_ image: KSBinaryImage) {
+        guard
+            let imageName = image.name,
+            let path = NSString(utf8String: imageName),
+            let imageUUID = image.uuid
+        else {
+            return nil
+        }
+
+        let uuid = UUID(uuid: imageUUID.withMemoryRebound(to: uuid_t.self, capacity: 1) { $0.pointee })
+        let architecture = String(cString: kscpu_archForCPU(
+            cpu_type_t(image.cpuType),
+            cpu_subtype_t(image.cpuSubType)
+        ))
+
+        self.init(
+            libraryName: path.lastPathComponent,
+            uuid: uuid.uuidString,
+            architecture: architecture,
+            path: path,
+            loadAddress: image.address,
+            maxAddress: image.address + image.size
+        )
+    }
 }

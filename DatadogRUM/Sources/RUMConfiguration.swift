@@ -336,9 +336,12 @@ extension RUM {
         /// Default: `false`.
         public var enableTimeseries: Bool
 
+        /// The default number of samples collected before a timeseries batch is flushed.
+        public static let defaultTimeseriesBatchSize = 120
+
         /// The number of samples collected before a timeseries batch is flushed.
         ///
-        /// Default: `30`.
+        /// Default: `120`.
         public var timeseriesBatchSize: Int
 
         /// Feature flags to preview features in RUM.
@@ -371,6 +374,11 @@ extension RUM {
             /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
             ///
             /// Note: This is not supported for async-await APIs.
+            ///
+            /// **Constraints on the `data` parameter in registered-delegate mode**
+            /// (`URLSessionInstrumentation.enableDurationBreakdown(with:)`):
+            /// - Media responses (`image/*`, `video/*`, `audio/*`, `application/octet-stream`) always pass `nil`.
+            /// - All other responses are capped at 512 KB; `data` is `nil` for larger responses.
             ///
             /// Default: `nil`.
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
@@ -457,6 +465,8 @@ extension RUM.Configuration.URLSessionTracking {
     public enum FirstPartyHostsTracing {
         /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
         ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
+        ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
         ///   - sampleRate: The sampling rate for tracing. This is ignored if Trace is enabled and there is an active span. Must be a value between `0.0` and `100.0`. Default: `100`.
@@ -468,6 +478,8 @@ extension RUM.Configuration.URLSessionTracking {
         )
 
         /// Trace given hosts with using custom tracing headers.
+        ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
         ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
         /// - `sampleRate` - The sampling rate for tracing. This is ignored if Trace is enabled and there is an active span. Must be a value between `0.0` and `100.0`. Default: `100`.
@@ -559,7 +571,7 @@ extension RUM.Configuration {
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
     ///   - enableTimeseries: Enables collection of memory and CPU timeseries events. Default: `false`.
-    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `30`.
+    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `120`.
     ///   - featureFlags: Experimental feature flags.
     /// 
     /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
@@ -596,7 +608,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = 30,
+        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -655,7 +667,7 @@ extension RUM.Configuration {
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
         enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = 30,
+        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
