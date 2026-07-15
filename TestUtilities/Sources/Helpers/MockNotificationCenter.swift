@@ -6,22 +6,22 @@
 
 import Foundation
 
-final class MockNotificationCenter: NotificationCenter, @unchecked Sendable {
-        private(set) var observers: [(name: Notification.Name?, object: Any?, queue: OperationQueue?, block: (Notification) -> Void)] = []
+public final class MockNotificationCenter: NotificationCenter, @unchecked Sendable {
+    private(set) var observers: [(name: Notification.Name?, object: Any?, queue: OperationQueue?, block: (Notification) -> Void)] = []
 
-        override func addObserver(forName name: Notification.Name?, object: Any?, queue: OperationQueue?, using block: @escaping (Notification) -> Void) -> NSObjectProtocol {
-            let observer = NSObject()
-            observers.append((name, object, queue, block))
-            return observer
-        }
+    override public func addObserver(forName name: Notification.Name?, object: Any?, queue: OperationQueue?, using block: @escaping (Notification) -> Void) -> NSObjectProtocol {
+        let observer = NSObject()
+        observers.append((name, object, queue, block))
+        return observer
+    }
 
-        func postFakeNotification(name: Notification.Name) {
-            for observer in observers where observer.name == name {
-                observer.block(Notification(name: name))
-            }
-        }
-
-        func getObserverNames() -> [Notification.Name] {
-            observers.compactMap(\.name)
+    public func postFakeNotification(name: Notification.Name) {
+        for observer in observers where observer.name == name {
+            observer.block(Notification(name: name))
         }
     }
+
+    public func getObserverNames() -> [Notification.Name] {
+        observers.compactMap(\.name)
+    }
+}

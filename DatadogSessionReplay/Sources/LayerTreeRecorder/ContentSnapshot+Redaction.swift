@@ -25,7 +25,7 @@ internal enum ImageRedactionResult {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshot {
+extension ContentSnapshot {
     func redacted(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) throws -> ImageRedactionResult {

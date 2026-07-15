@@ -42,7 +42,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [slotID],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -92,7 +92,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [slotID],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -137,7 +137,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -190,7 +190,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -218,7 +218,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -251,7 +251,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -295,7 +295,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -322,6 +322,60 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build creates mask image resource for container mask snapshot")
+    func buildCreatesMaskImageResourceForContainerMaskSnapshot() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 100)
+
+        let containerLayer = CALayer()
+        containerLayer.frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+
+        let leafLayer = CALayer()
+        leafLayer.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
+        leafLayer.backgroundColor = UIColor.red.cgColor
+        containerLayer.addSublayer(leafLayer)
+
+        let maskLayer = CALayer()
+        maskLayer.bounds = containerLayer.bounds
+        maskLayer.backgroundColor = UIColor.black.cgColor
+        containerLayer.mask = maskLayer
+
+        rootLayer.addSublayer(containerLayer)
+
+        let root = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
+        let containerSnapshot = try #require(root.sublayers.first)
+        let mask = try #require(containerSnapshot.mask)
+        let maskSnapshot = MaskSnapshot.mockAny(image: UIImage.mockWith(color: .black))
+
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            imageSnapshots: .init(maskSnapshots: [mask.replayID: .success(maskSnapshot)])
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        #expect(output.compositionTree.root.children.count == 1)
+        #expect(output.compositionTree.root.children.first?.id == containerSnapshot.replayID)
+        #expect(output.compositionTree.root.children.first?.type == .layer)
+
+        let container = try #require(output.compositionTree.layers?.first { $0.id == containerSnapshot.replayID })
+        let modifier = try #require(container.modifiers?.first)
+        let resource = try #require(output.resources.first)
+
+        guard case .compositionLayerMaskImageModifier(let maskImageModifier) = modifier else {
+            Issue.record("Expected a mask image modifier")
+            return
+        }
+
+        #expect(output.resources.count == 1)
+        #expect(maskImageModifier.resourceId == resource.calculateIdentifier())
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for text input appearance")
     func buildCreatesShapeWireframeForTextInputAppearance() throws {
         // Given
@@ -344,7 +398,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -395,7 +449,7 @@ struct CompositionTreeBuilderTests {
         let root = try #require(CALayerSnapshot(from: rootView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
         let imageSnapshot = try #require(root.sublayers.first)
         let snapshotImage = UIImage.mockWith(color: .red)
-        let renderedImage = ImageSnapshot.mockAny(
+        let renderedImage = ContentSnapshot.mockAny(
             image: snapshotImage,
             frame: imageSnapshot.absoluteFrame,
             layerClass: imageSnapshot.layerClass,
@@ -407,7 +461,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [imageSnapshot.replayID: .success(renderedImage)]
+            imageSnapshots: .init(contentSnapshots: [imageSnapshot.replayID: .success(renderedImage)])
         )
 
         // When
@@ -454,7 +508,7 @@ struct CompositionTreeBuilderTests {
             in: .mockAny(textAndInputPrivacyLevel: .maskAll, imagePrivacyLevel: .maskAll)
         ))
         let controlSnapshot = try #require(root.sublayers.first)
-        let renderedImage = ImageSnapshot.mockAny(
+        let renderedImage = ContentSnapshot.mockAny(
             image: UIImage.mockWith(color: .red),
             frame: controlSnapshot.absoluteFrame,
             layerClass: controlSnapshot.layerClass,
@@ -467,7 +521,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [controlSnapshot.replayID: .success(renderedImage)]
+            imageSnapshots: .init(contentSnapshots: [controlSnapshot.replayID: .success(renderedImage)])
         )
 
         // When
@@ -505,7 +559,7 @@ struct CompositionTreeBuilderTests {
 
         let root = try #require(CALayerSnapshot(from: rootLayer, in: .mockAny()))
         let layerSnapshot = try #require(root.sublayers.first)
-        let renderedImage = ImageSnapshot.mockAny(
+        let renderedImage = ContentSnapshot.mockAny(
             image: UIImage.mockWith(color: .red),
             frame: layerSnapshot.absoluteFrame,
             layerClass: try imageLayerClass(),
@@ -517,7 +571,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [layerSnapshot.replayID: .success(renderedImage)]
+            imageSnapshots: .init(contentSnapshots: [layerSnapshot.replayID: .success(renderedImage)])
         )
 
         // When
@@ -556,7 +610,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -591,7 +645,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When
@@ -618,7 +672,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [imageSnapshot.replayID: .failure(.timedOut)]
+            imageSnapshots: .init(contentSnapshots: [imageSnapshot.replayID: .failure(.timedOut)])
         )
 
         // When
@@ -651,7 +705,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
-            imageSnapshotResults: [imageSnapshot.replayID: .failure(.discarded)]
+            imageSnapshots: .init(contentSnapshots: [imageSnapshot.replayID: .failure(.discarded)])
         )
 
         // When
@@ -685,7 +739,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [42],
-            imageSnapshotResults: [:]
+            imageSnapshots: .init()
         )
 
         // When

@@ -6,6 +6,13 @@
 
 import Foundation
 
+private struct AssociatedTypeEnumPropertyIdentity: Hashable {
+    let rootSwiftTypeName: String
+    let ownerObjcTypeName: String
+    let propertyName: String
+    let associatedTypeEnumName: String
+}
+
 /// Generates Swift code for Obj-c interoperability for given `ObjcInteropType` schemas.
 ///
 /// E.g. given `ObjcInteropType` describing Swift struct:
@@ -59,6 +66,27 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     /// Overrides for generated `@objc(...)` runtime names.
     /// Keys are generated type names (e.g. `objc_RUMErrorEventErrorMeta`), values are runtime names (e.g. `DDRUMErrorEventMeta`).
     private let objcRuntimeNameOverrides: [String: String]
+    /// Overrides for preserving ObjC source compatibility when a schema changes a property into an associated-type enum.
+    private static let legacyStringAccessorWrapperPropertyNames: [AssociatedTypeEnumPropertyIdentity: String] = [
+        .init(
+            rootSwiftTypeName: "TelemetryConfigurationEvent",
+            ownerObjcTypeName: "TelemetryConfigurationEventAction",
+            propertyName: "id",
+            associatedTypeEnumName: "RUMActionID"
+        ): "idValue",
+        .init(
+            rootSwiftTypeName: "TelemetryDebugEvent",
+            ownerObjcTypeName: "TelemetryDebugEventAction",
+            propertyName: "id",
+            associatedTypeEnumName: "RUMActionID"
+        ): "idValue",
+        .init(
+            rootSwiftTypeName: "TelemetryErrorEvent",
+            ownerObjcTypeName: "TelemetryErrorEventAction",
+            propertyName: "id",
+            associatedTypeEnumName: "RUMActionID"
+        ): "idValue"
+    ]
 
     func print(objcInteropTypes: [ObjcInteropType]) throws -> String {
         reset()
@@ -549,6 +577,49 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
     private func printPropertyAccessingNestedAssociatedTypeEnum(_ propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum) throws {
         let nestedObjcAssociatedTypeEnum = propertyWrapper.objcNestedAssociatedTypeEnum! // swiftlint:disable:this force_unwrapping
 
+        let swiftProperty = propertyWrapper.bridgedSwiftProperty
+        let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
+
+        if let wrapperPropertyName = legacyStringAccessorWrapperPropertyName(
+            for: propertyWrapper,
+            nestedObjcAssociatedTypeEnum: nestedObjcAssociatedTypeEnum
+        ) {
+            writeLine("public var \(swiftProperty.backtickName): String {")
+            indentRight()
+                writeLine("switch root.swiftModel.\(propertyWrapper.keyPath) {")
+                writeLine("case .string(let value):")
+                    indentRight()
+                    writeLine("return value")
+                    indentLeft()
+                    writeLine("case .stringsArray(let value):")
+                    indentRight()
+                    writeLine("return value.first ?? \"\"")
+                    indentLeft()
+                writeLine("}")
+            indentLeft()
+            writeLine("}")
+
+            writeEmptyLine()
+            try printPropertyAccessingNestedAssociatedTypeEnumWrapper(
+                named: wrapperPropertyName,
+                objcClassName: objcClassName,
+                propertyWrapper: propertyWrapper
+            )
+            return
+        }
+
+        try printPropertyAccessingNestedAssociatedTypeEnumWrapper(
+            named: swiftProperty.backtickName,
+            objcClassName: objcClassName,
+            propertyWrapper: propertyWrapper
+        )
+    }
+
+    private func printPropertyAccessingNestedAssociatedTypeEnumWrapper(
+        named objcPropertyName: String,
+        objcClassName: String,
+        propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum
+    ) throws {
         // Generate accessor to the referenced wrapper, e.g.:
         // ```
         // @objc public var bar: DDFooBar? {
@@ -556,9 +627,7 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
         // }
         // ```
         let swiftProperty = propertyWrapper.bridgedSwiftProperty
-        let objcPropertyName = swiftProperty.backtickName
         let objcPropertyOptionality = swiftProperty.isOptional ? "?" : ""
-        let objcClassName = objcTypeNamesPrefix + nestedObjcAssociatedTypeEnum.objcTypeName
 
         writeLine("public var \(objcPropertyName): \(objcClassName)\(objcPropertyOptionality) {")
         indentRight()
@@ -577,6 +646,24 @@ public class ObjcInteropPrinter: BasePrinter, CodePrinter {
             }
         indentLeft()
         writeLine("}")
+    }
+
+    private func legacyStringAccessorWrapperPropertyName(
+        for propertyWrapper: ObjcInteropPropertyWrapperAccessingNestedAssociatedTypeEnum,
+        nestedObjcAssociatedTypeEnum: ObjcInteropAssociatedTypeEnum
+    ) -> String? {
+        guard let owner = propertyWrapper.owner as? ObjcInteropReflectable else {
+            return nil
+        }
+
+        let identity = AssociatedTypeEnumPropertyIdentity(
+            rootSwiftTypeName: owner.objcRootClass.bridgedSwiftStruct.name,
+            ownerObjcTypeName: owner.objcTypeName,
+            propertyName: propertyWrapper.bridgedSwiftProperty.name,
+            associatedTypeEnumName: nestedObjcAssociatedTypeEnum.bridgedSwiftAssociatedTypeEnum.name
+        )
+
+        return Self.legacyStringAccessorWrapperPropertyNames[identity]
     }
 
     // MARK: - Generating names

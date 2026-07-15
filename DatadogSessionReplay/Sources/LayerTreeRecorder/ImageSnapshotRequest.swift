@@ -10,9 +10,34 @@ import QuartzCore
 
 @preconcurrency import DatadogInternal
 
-/// Request to render one `CALayerSnapshot` as an image.
+/// Request to render one layer bitmap.
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ImageSnapshotRequest: Sendable {
+internal enum ImageSnapshotRequest: Sendable {
+    case content(ContentSnapshotRequest)
+    case mask(MaskSnapshotRequest)
+
+    var replayID: Int64 {
+        switch self {
+        case .content(let request):
+            return request.replayID
+        case .mask(let request):
+            return request.replayID
+        }
+    }
+
+    var hasChanges: Bool {
+        switch self {
+        case .content(let request):
+            return request.hasChanges
+        case .mask(let request):
+            return request.hasChanges
+        }
+    }
+}
+
+/// Request to render one `CALayerSnapshot` as a content image.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ContentSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
     let layerClass: AnyClass
@@ -27,7 +52,7 @@ internal struct ImageSnapshotRequest: Sendable {
     let hasChanges: Bool
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
-    let previousSnapshotData: ImageSnapshotData?
+    let previousSnapshotData: ContentSnapshotData?
 
     init(
         replayID: Int64,
@@ -44,7 +69,7 @@ internal struct ImageSnapshotRequest: Sendable {
         hasChanges: Bool,
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
         imagePrivacyLevel: ImagePrivacyLevel,
-        previousSnapshotData: ImageSnapshotData?
+        previousSnapshotData: ContentSnapshotData?
     ) {
         self.replayID = replayID
         self.layer = layer
@@ -66,9 +91,52 @@ internal struct ImageSnapshotRequest: Sendable {
 
 /// An image snapshot request resolved against the current layer tree.
 @available(iOS 13.0, tvOS 13.0, *)
-internal struct ResolvedImageSnapshotRequest {
+internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
     let localRect: CGRect
+    let frame: CGRect
+    let needsSnapshot: Bool
+}
+
+/// Request to render one layer mask as an image.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct MaskSnapshotRequest: Sendable {
+    let replayID: Int64
+    let layer: CALayerReference
+
+    /// The owner layer bounds used to render the mask, not the mask layer bounds.
+    /// Some masks draw through sublayers even when the mask root has empty bounds.
+    let bounds: CGRect
+
+    let frame: CGRect
+    let dependencies: [CALayerReference]
+    let hasChanges: Bool
+    let previousSnapshotData: MaskSnapshotData?
+
+    init(
+        replayID: Int64,
+        layer: CALayerReference,
+        bounds: CGRect,
+        frame: CGRect,
+        dependencies: [CALayerReference],
+        hasChanges: Bool,
+        previousSnapshotData: MaskSnapshotData?
+    ) {
+        self.replayID = replayID
+        self.layer = layer
+        self.bounds = bounds
+        self.frame = frame
+        self.dependencies = dependencies
+        self.hasChanges = hasChanges
+        self.previousSnapshotData = previousSnapshotData
+    }
+}
+
+/// A mask snapshot request resolved against the current layer tree.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ResolvedMaskSnapshotRequest {
+    let layer: CALayer
+    let bounds: CGRect
     let frame: CGRect
     let needsSnapshot: Bool
 }
@@ -81,9 +149,9 @@ internal enum ImageSnapshotRequestResolutionError: Error {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotRequest {
+extension ContentSnapshotRequest {
     @MainActor
-    func resolved(relativeTo rootLayer: CALayer) throws -> ResolvedImageSnapshotRequest {
+    func resolved(relativeTo rootLayer: CALayer) throws -> ResolvedContentSnapshotRequest {
         guard let layer = layer.resolve() else {
             throw ImageSnapshotRequestResolutionError.missingLayer
         }
@@ -150,7 +218,32 @@ extension ImageSnapshotRequest {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotData {
+extension MaskSnapshotRequest {
+    @MainActor
+    func resolved() throws -> ResolvedMaskSnapshotRequest {
+        guard let layer = layer.resolve() else {
+            throw ImageSnapshotRequestResolutionError.missingLayer
+        }
+
+        guard !bounds.isNull, !bounds.isEmpty else {
+            throw ImageSnapshotRequestResolutionError.invalidRect
+        }
+
+        let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
+        let snapshotFrameDidChange = previousSnapshotData.map { !$0.frame.equalTo(frame) } ?? false
+        let needsSnapshot = previousSnapshotData == nil || hasChanges || snapshotBoundsDidChange || snapshotFrameDidChange
+
+        return .init(
+            layer: layer,
+            bounds: bounds,
+            frame: frame,
+            needsSnapshot: needsSnapshot
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension ContentSnapshotData {
     fileprivate var isPartial: Bool {
         !bounds.equalTo(localRect)
     }

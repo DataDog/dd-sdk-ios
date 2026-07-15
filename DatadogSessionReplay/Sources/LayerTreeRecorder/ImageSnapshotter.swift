@@ -19,7 +19,22 @@ internal protocol ImageSnapshotting: AnyObject {
         for root: CALayerSnapshot,
         changeset: CALayerChangeset,
         timeout: TimeInterval
-    ) async -> [Int64: ImageSnapshotResult]
+    ) async -> ImageSnapshotBatch
+}
+
+/// Rendered snapshots produced by `ImageSnapshotter`.
+@available(iOS 13.0, tvOS 13.0, *)
+internal struct ImageSnapshotBatch: Sendable {
+    let contentSnapshots: [Int64: ContentSnapshotResult]
+    let maskSnapshots: [Int64: MaskSnapshotResult]
+
+    init(
+        contentSnapshots: [Int64: ContentSnapshotResult] = [:],
+        maskSnapshots: [Int64: MaskSnapshotResult] = [:]
+    ) {
+        self.contentSnapshots = contentSnapshots
+        self.maskSnapshots = maskSnapshots
+    }
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
@@ -53,24 +68,27 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         for root: CALayerSnapshot,
         changeset: CALayerChangeset,
         timeout: TimeInterval
-    ) async -> [Int64: ImageSnapshotResult] {
+    ) async -> ImageSnapshotBatch {
         // Invalidate changed layers before request extraction. Occlusion pruning can
         // remove changed layers from the snapshot tree, but their cached images must not
         // be reused if they become visible again later.
-        cache.removeSnapshotDataForChanges(in: changeset)
+        cache.removeContentSnapshotDataForChanges(in: changeset)
+        cache.removeMaskSnapshotDataForChanges(in: changeset)
 
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
-        cache.updateFrameNumber(for: requests.map(\.replayID))
+        cache.updateFrameNumber(for: requests)
 
         guard let rootLayer = root.layer.resolve(), !requests.isEmpty else {
-            return [:]
+            return .init()
         }
 
         let startTime = timeSource.now
         var lastYieldTime = startTime
-        var results: [Int64: ImageSnapshotResult] = [:]
+        var contentSnapshots: [Int64: ContentSnapshotResult] = [:]
+        var maskSnapshots: [Int64: MaskSnapshotResult] = [:]
 
-        results.reserveCapacity(requests.count)
+        contentSnapshots.reserveCapacity(requests.count)
+        maskSnapshots.reserveCapacity(requests.count)
 
         var firstUnprocessedIndex = requests.endIndex
 
@@ -83,7 +101,13 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             }
 
             let request = requests[index]
-            results[request.replayID] = takeImageSnapshot(for: request, rootLayer: rootLayer)
+
+            switch request {
+            case .content(let request):
+                contentSnapshots[request.replayID] = takeContentSnapshot(for: request, rootLayer: rootLayer)
+            case .mask(let request):
+                maskSnapshots[request.replayID] = takeMaskSnapshot(for: request)
+            }
 
             if now - lastYieldTime >= Constants.yieldThreshold {
                 await Task.yield()
@@ -94,25 +118,36 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         if firstUnprocessedIndex < requests.endIndex {
             for request in requests[firstUnprocessedIndex...] {
                 if request.hasChanges {
-                    cache.removeSnapshotData(forReplayID: request.replayID)
+                    switch request {
+                    case .content:
+                        cache.removeContentSnapshotData(forReplayID: request.replayID)
+                    case .mask:
+                        cache.removeMaskSnapshotData(forReplayID: request.replayID)
+                    }
                 }
-                results[request.replayID] = .failure(.timedOut)
+
+                switch request {
+                case .content:
+                    contentSnapshots[request.replayID] = .failure(.timedOut)
+                case .mask:
+                    maskSnapshots[request.replayID] = .failure(.timedOut)
+                }
             }
         }
 
-        return results
+        return .init(contentSnapshots: contentSnapshots, maskSnapshots: maskSnapshots)
     }
 
-    private func takeImageSnapshot(
-        for request: ImageSnapshotRequest,
+    private func takeContentSnapshot(
+        for request: ContentSnapshotRequest,
         rootLayer: CALayer
-    ) -> ImageSnapshotResult {
+    ) -> ContentSnapshotResult {
         do {
             let resolvedRequest = try request.resolved(relativeTo: rootLayer)
-            let snapshot: ImageSnapshot
+            let snapshot: ContentSnapshot
 
             if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
-                snapshot = ImageSnapshot(
+                snapshot = ContentSnapshot(
                     image: cachedSnapshot.image,
                     frame: resolvedRequest.frame,
                     layerClass: request.layerClass,
@@ -122,7 +157,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                     imagePrivacyLevel: request.imagePrivacyLevel
                 )
             } else {
-                snapshot = ImageSnapshot(
+                snapshot = ContentSnapshot(
                     image: try renderImage(
                         for: resolvedRequest.layer,
                         in: resolvedRequest.localRect,
@@ -137,7 +172,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 )
             }
 
-            cache.setSnapshotData(
+            cache.setContentSnapshotData(
                 .init(
                     snapshot: snapshot,
                     localRect: resolvedRequest.localRect,
@@ -148,14 +183,56 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             )
             return .success(snapshot)
         } catch ImageSnapshotRequestResolutionError.missingLayer {
-            cache.removeSnapshotData(forReplayID: request.replayID)
+            cache.removeContentSnapshotData(forReplayID: request.replayID)
             return .failure(.discarded)
         } catch let objc as ObjcException {
             telemetry.error(
                 "[SR] Failed to capture layer image snapshot due to Objective-C runtime exception",
                 error: objc.error
             )
-            cache.removeSnapshotData(forReplayID: request.replayID)
+            cache.removeContentSnapshotData(forReplayID: request.replayID)
+            return .failure(.discarded)
+        } catch {
+            return .failure(.discarded)
+        }
+    }
+
+    private func takeMaskSnapshot(for request: MaskSnapshotRequest) -> MaskSnapshotResult {
+        do {
+            let resolvedRequest = try request.resolved()
+            let snapshot: MaskSnapshot
+
+            if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
+                snapshot = cachedSnapshot
+            } else {
+                snapshot = MaskSnapshot(
+                    image: try renderMaskImage(
+                        for: resolvedRequest.layer,
+                        in: resolvedRequest.bounds,
+                        frame: resolvedRequest.frame
+                    )
+                )
+            }
+
+            cache.setMaskSnapshotData(
+                .init(
+                    snapshot: snapshot,
+                    bounds: resolvedRequest.bounds,
+                    frame: resolvedRequest.frame,
+                    dependencies: request.dependencies
+                ),
+                forReplayID: request.replayID
+            )
+            return .success(snapshot)
+        } catch ImageSnapshotRequestResolutionError.missingLayer {
+            cache.removeMaskSnapshotData(forReplayID: request.replayID)
+            return .failure(.discarded)
+        } catch let objc as ObjcException {
+            telemetry.error(
+                "[SR] Failed to capture layer mask snapshot due to Objective-C runtime exception",
+                error: objc.error
+            )
+            cache.removeMaskSnapshotData(forReplayID: request.replayID)
             return .failure(.discarded)
         } catch {
             return .failure(.discarded)
@@ -172,6 +249,27 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             try objc_rethrow {
                 renderer.image { context in
                     context.cgContext.translateBy(x: -rect.origin.x, y: -rect.origin.y)
+                    layer.render(in: context.cgContext)
+                }
+            }
+        }
+    }
+
+    private func renderMaskImage(for layer: CALayer, in bounds: CGRect, frame: CGRect) throws -> UIImage {
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = scale ?? layer.contentsScale
+        format.opaque = false
+
+        let renderer = UIGraphicsImageRenderer(size: bounds.size, format: format)
+        return try screenChangeFilter.ignoringChanges {
+            try objc_rethrow {
+                renderer.image { context in
+                    // Render in owner coordinates.
+                    // Offset masks are supported, but transformed masks are out of scope.
+                    context.cgContext.translateBy(
+                        x: frame.minX - bounds.minX,
+                        y: frame.minY - bounds.minY
+                    )
                     layer.render(in: context.cgContext)
                 }
             }

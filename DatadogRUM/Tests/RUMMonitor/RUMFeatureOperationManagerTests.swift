@@ -25,7 +25,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         manager = RUMFeatureOperationManager(
             parent: mockParent,
-            dependencies: mockDependencies
+            dependencies: mockDependencies,
+            sessionSampler: .mockKeepAll()
         )
     }
 
@@ -44,8 +45,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Given
         let command = RUMOperationStepVitalCommand.mockRandom()
         let view: RUMViewScope = .mockAny()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
 
         // When
+        mockContext.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
         manager.process(
             command,
             context: mockContext,
@@ -89,6 +92,45 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(vital.stepType, command.stepType)
         XCTAssertEqual(vital.failureReason, command.failureReason)
         XCTAssertNil(vital.vitalDescription)
+
+        // Profiling Status
+        XCTAssertEqual(event.dd.profiling?.status, .running)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
+    }
+
+    func testFeatureOperationCommand_sendsOperationMessageWithServerTimeOffset() throws {
+        // Given
+        let featureScope = FeatureScopeMock()
+        mockDependencies = .mockWith(featureScope: featureScope)
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: mockDependencies,
+            sessionSampler: .mockKeepAll()
+        )
+        mockContext.serverTimeOffset = 2
+        let command: RUMOperationStepVitalCommand = .mockWith(
+            stepType: .start,
+            options: ProfilingOptions(sampleRate: .maxSampleRate),
+            time: Date()
+        )
+
+        // When
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
+
+        // Then
+        let message = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }.first
+        )
+        XCTAssertEqual(message.operation.serverTimeOffset, mockContext.serverTimeOffset)
+        XCTAssertEqual(message.operation.date, command.time)
+
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(
+            event.date,
+            command.time
+                .addingTimeInterval(mockContext.serverTimeOffset)
+                .timeIntervalSince1970.dd.toInt64Milliseconds
+        )
     }
 
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
@@ -346,7 +388,8 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         mockDependencies = RUMScopeDependencies.mockWith(syntheticsTest: syntheticsTest)
         manager = RUMFeatureOperationManager(
             parent: mockParent,
-            dependencies: mockDependencies
+            dependencies: mockDependencies,
+            sessionSampler: .mockKeepAll()
         )
 
         let command = RUMOperationStepVitalCommand.mockRandom()

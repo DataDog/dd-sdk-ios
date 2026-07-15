@@ -1,7 +1,9 @@
 # Unreleased
 
-# 3.13.0 / 30-06-2026
+- [FEATURE] Add Continuous Profiling with RUM correlation for app hangs, long tasks, operations, and app start vitals (TTID/TTFD). See [#3051][]
+- [FEATURE] Add a preview snapshot API to `DatadogFlags` for reading cached precomputed feature flag assignments without recording evaluations. See [#2937][]
 
+# 3.13.0 / 30-06-2026
 - [FEATURE] Expose `allocationKey` as a top-level property on `FlagDetails` for callers using `getDetails(key:defaultValue:)`. See [#2989][]
 - [FEATURE] Add wildcard host pattern support to WebView tracking via `WebViewTracking.enable(webView:hostPatterns:)`. See [#2963][]
 - [FIX] Fix `DatadogFlags` exposure deduplication so assignment changes for the same subject and flag emit new exposure events. See [#2987][]
@@ -1189,9 +1191,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2987]: https://github.com/DataDog/dd-sdk-ios/pull/2987
 [#2955]: https://github.com/DataDog/dd-sdk-ios/pull/2955
 [#2975]: https://github.com/DataDog/dd-sdk-ios/pull/2975
+[#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
-[#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
+[#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

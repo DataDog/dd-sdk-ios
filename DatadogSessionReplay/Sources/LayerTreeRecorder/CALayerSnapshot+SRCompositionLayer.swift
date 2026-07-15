@@ -18,7 +18,7 @@ extension CALayerSnapshot {
             || compositingFilter.flatMap(SRCompositionLayer.CompositeOperation.init(compositingFilter:)) != nil
     }
 
-    func modifiers() -> [SRCompositionLayerModifier] {
+    func modifiers(maskImageResourceID: String? = nil) -> [SRCompositionLayerModifier] {
         var result: [SRCompositionLayerModifier] = []
 
         // Modifiers order determines the final appearance in the player
@@ -51,6 +51,11 @@ extension CALayerSnapshot {
         // Opacity
         if opacity < 1 {
             result.append(.compositionLayerOpacityModifier(value: .init(value: Double(opacity))))
+        }
+
+        // Mask
+        if mask != nil, let maskImageResourceID {
+            result.append(.compositionLayerMaskImageModifier(value: .init(resourceId: maskImageResourceID)))
         }
 
         return result

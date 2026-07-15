@@ -22,6 +22,7 @@ Each feature module contains a `*_FEATURE.md` file at its root:
 DatadogRUM/RUM_FEATURE.md
 DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 DatadogTrace/TRACE_FEATURE.md
+DatadogProfiling/PROFILING_FEATURE.md
 DatadogLogs/LOGS_FEATURE.md            # (future)
 DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
@@ -44,11 +45,11 @@ tracked_files:
 - **last_updated**: Date when the file was last reviewed/updated.
 - **sdk_version**: SDK version the documentation was verified against.
 - **verified_against_commit**: Short git commit hash at which the doc was last verified to match the source. The verify script uses `git diff <verified_against_commit>..HEAD -- <tracked_files>` to detect drift.
-- **tracked_files**: List of public-API source files whose changes should trigger a doc update.
+- **tracked_files**: List of public API and configuration source files whose changes should trigger a doc update. Cross-feature APIs should be tracked by the feature doc that owns them. Internal implementation files can be referenced in "Key Files" for navigation without being tracked.
 
 ## Sections
 
-Every feature doc contains these sections, in order:
+Every feature doc contains these core sections, in order. Optional sections are called out below and should keep the same relative position when used.
 
 ### Overview
 - Brief description of feature purpose
@@ -62,8 +63,11 @@ A complete, compilable Swift code snippet that:
 - Has accurate inline comments describing each option and its default
 - Includes optional features (manual control, per-view overrides) where applicable
 
+### Architecture Overview (optional)
+Use a `## Architecture Overview` section after Quick Start when the feature spans multiple runtime components, message flows, native layers, or cross-feature coordination. Keep it high-level and use "Key Files" for source navigation.
+
 ### Key Files
-Full relative paths from repository root, with a brief description of each file's purpose. Group by role (Feature Entry Point, Configuration, Public API, Implementation).
+Full relative paths from repository root, with a brief description of each file's purpose. Include public API/configuration files and the most useful internal implementation files for navigation. Group by role (Feature Entry Point, Configuration, Public API, Implementation).
 
 ### Configuration Categories
 Logical groupings of configuration options (Sampling, Privacy, Performance Monitoring, Event Modification, etc.). Reference defaults and explain interactions between options.
@@ -92,7 +96,7 @@ The Quick Start snippet should be valid Swift against the current SDK version. P
 Cases marked `@available(*, deprecated, message:)` — enum cases, methods, properties — must appear in the doc with a clear deprecation note. They remain on the public API and customers can still encounter them.
 
 ### Coverage
-Every source file referenced in the "Key Files" section should also appear in `tracked_files` (the `update-feature-docs` skill audits this).
+Every public API or configuration source file referenced in the "Key Files" section should also appear in `tracked_files` (the `update-feature-docs` skill audits this). Internal implementation files in "Key Files" are navigation references and do not need to be frontmatter drift triggers.
 
 ### What to skip
 - Don't replicate customer-facing public documentation verbatim — these files are LLM-optimized, not customer-facing.

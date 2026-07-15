@@ -13,15 +13,15 @@ import UIKit
 @testable import DatadogSessionReplay
 
 @MainActor
-struct ImageSnapshotRequestTests {
+struct ContentSnapshotRequestTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Throws when layer reference is deallocated")
     func throwsWhenLayerReferenceIsDeallocated() {
         // Given
         let rootLayer = CALayer()
-        let request: ImageSnapshotRequest = {
+        let request: ContentSnapshotRequest = {
             var layer: CALayer? = CALayer()
-            let request = ImageSnapshotRequest.mockAny(layer: layer!)
+            let request = ContentSnapshotRequest.mockAny(layer: layer!)
             layer = nil
             return request
         }()
@@ -39,7 +39,7 @@ struct ImageSnapshotRequestTests {
         let rootLayer = CALayer()
         let layer = CALayer()
         rootLayer.addSublayer(layer)
-        let request = ImageSnapshotRequest.mockAny(layer: layer, visibleFrame: .zero)
+        let request = ContentSnapshotRequest.mockAny(layer: layer, visibleFrame: .zero)
 
         // When / Then
         #expect(throws: ImageSnapshotRequestResolutionError.invalidRect) {
@@ -58,7 +58,7 @@ struct ImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(layer: layer, hasContents: true)
+        let request = ContentSnapshotRequest.mockAny(layer: layer, hasContents: true)
 
         // When
         let resolvedRequest = try request.resolved(relativeTo: rootLayer)
@@ -80,7 +80,7 @@ struct ImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             hasContents: true,
             previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
@@ -105,7 +105,7 @@ struct ImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             hasChanges: true,
             previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
@@ -130,7 +130,7 @@ struct ImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
         )
@@ -155,7 +155,7 @@ struct ImageSnapshotRequestTests {
         layer.bounds = CGRect(x: 0, y: 0, width: 120, height: 80)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             previousSnapshotData: .mockAny(localRect: previousBounds, bounds: previousBounds)
         )
@@ -180,7 +180,7 @@ struct ImageSnapshotRequestTests {
         layer.add(CABasicAnimation(keyPath: "position"), forKey: "position")
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             previousSnapshotData: .mockAny(localRect: layer.bounds, bounds: layer.bounds)
         )
@@ -205,7 +205,7 @@ struct ImageSnapshotRequestTests {
         layer.frame = capturedFrame
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(layer: layer)
+        let request = ContentSnapshotRequest.mockAny(layer: layer)
 
         layer.frame = CGRect(x: 30, y: 40, width: 100, height: 40)
 
@@ -228,7 +228,7 @@ struct ImageSnapshotRequestTests {
         layer.position = CGPoint(x: 200, y: 60)
         rootLayer.addSublayer(layer)
 
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             visibleFrame: CGRect(x: 180, y: 0, width: 20, height: 100),
             previousSnapshotData: .mockAny(
@@ -259,7 +259,7 @@ struct ImageSnapshotRequestTests {
         rootLayer.addSublayer(layer)
 
         let visibleFrame = CGRect(x: 180, y: 0, width: 20, height: 100)
-        let request = ImageSnapshotRequest.mockAny(
+        let request = ContentSnapshotRequest.mockAny(
             layer: layer,
             visibleFrame: visibleFrame,
             previousSnapshotData: .mockAny(
@@ -279,7 +279,7 @@ struct ImageSnapshotRequestTests {
 }
 
 @available(iOS 13.0, tvOS 13.0, *)
-extension ImageSnapshotRequest {
+extension ContentSnapshotRequest {
     @MainActor
     fileprivate static func mockAny(
         layer: CALayer,
@@ -287,9 +287,9 @@ extension ImageSnapshotRequest {
         hasContents: Bool = false,
         dependencies: [CALayerReference] = [],
         hasChanges: Bool = false,
-        previousSnapshotData: ImageSnapshotData? = nil
-    ) -> ImageSnapshotRequest {
-        ImageSnapshotRequest(
+        previousSnapshotData: ContentSnapshotData? = nil
+    ) -> ContentSnapshotRequest {
+        ContentSnapshotRequest(
             replayID: layer.replayID,
             layer: CALayerReference(layer),
             layerClass: type(of: layer),
