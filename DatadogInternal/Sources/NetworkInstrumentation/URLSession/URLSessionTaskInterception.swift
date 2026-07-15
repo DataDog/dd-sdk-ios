@@ -266,6 +266,9 @@ public struct ResourceMetrics {
     /// - `decoded`: Size before encoding (original content size).
     public let requestBodySize: (encoded: Int64, decoded: Int64)?
 
+    /// Tells if the resource was served from the device's local cache.
+    public let isLocalCacheHit: Bool
+
     public init(
         fetch: DateInterval,
         redirection: DateInterval?,
@@ -275,7 +278,8 @@ public struct ResourceMetrics {
         firstByte: DateInterval?,
         download: DateInterval?,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        requestBodySize: (encoded: Int64, decoded: Int64)? = nil
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        isLocalCacheHit: Bool = false
     ) {
         self.fetch = fetch
         self.redirection = redirection
@@ -286,6 +290,7 @@ public struct ResourceMetrics {
         self.download = download
         self.responseBodySize = responseBodySize
         self.requestBodySize = requestBodySize
+        self.isLocalCacheHit = isLocalCacheHit
     }
 }
 
@@ -305,6 +310,7 @@ extension ResourceMetrics {
         // * if `200 OK` was preceded by `301` redirection, it will contain 2 transactions.
         let mainTransaction = transactions.last
         let redirectionTransactions = transactions.dropLast()
+        let isLocalCacheHit = taskMetrics.transactionMetrics.last?.resourceFetchType == .localCache
 
         var redirection: DateInterval? = nil
 
@@ -376,7 +382,8 @@ extension ResourceMetrics {
             firstByte: firstByte,
             download: download,
             responseBodySize: responseBodySize,
-            requestBodySize: requestBodySize
+            requestBodySize: requestBodySize,
+            isLocalCacheHit: isLocalCacheHit
         )
     }
 }

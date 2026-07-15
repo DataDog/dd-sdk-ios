@@ -179,6 +179,11 @@ public struct CrossPlatformAttributes {
     /// Used in RUM resources to transport response headers through the RUM command pipeline.
     /// Expects `[String: String]` value containing header keys and values.
     public static let responseHeaders = "_dd.response_headers"
+
+    /// Indicates the resource was served from the device's local cache, captured from native URLSession interception.
+    /// Only ever sent as `true`. Absence means "not a local cache hit".
+    /// Expects `Bool` value.
+    public static let localCacheHit = "_dd.local_cache_hit"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.
