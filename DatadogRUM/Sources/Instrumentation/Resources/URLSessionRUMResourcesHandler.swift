@@ -178,6 +178,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             }
         }
 
+        if interception.metrics?.isLocalCacheHit == true {
+            combinedAttributes[CrossPlatformAttributes.localCacheHit] = true
+        }
+
         if let resourceMetrics = interception.metrics {
             subscriber.process(
                 command: RUMAddResourceMetricsCommand(
