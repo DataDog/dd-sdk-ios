@@ -52,23 +52,11 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// However, there is no way to run code while the system is sleeping (as the CPU is off) so this will always be an approximation.
     @MainActor private var isSleeping: Bool = false
 
-    /// `true` if the system displays are turned off, `false` otherwise.
-    @MainActor private var areScreensSleeping: Bool = false
-
-    /// `true` if the graphical session on the Mac's console matches the user that is running this app, `false` otherwise.
-    ///
-    /// macOS supports multiple users logged in simultaneously on the graphical console. The normal state is the user being
-    /// logged in and using their apps, so this is `true` most of the time (and always on a single user Mac). However, if the
-    /// user switching feature is used to switch to another use's account, the original user session becomes inactive and this
-    /// variable changes to `false`.
-    @MainActor private var isUserSessionActive: Bool = true
-
     /// `true` if the system is displaying the login window, `false` otherwise.
     ///
     /// The login window is displayed in many situations. The obvious ones are the lock screen, but it's also displayed (even
-    /// if the login prompt is not visible) when the screen saver is active, or during sleep. Note the user does not necessarily
-    /// have to unlock the Mac manually (by typing the password or using biometrics), as that depends on the system
-    /// configuration.
+    /// if the login prompt is not visible) when the screen saver is active, during display or system sleep. This happens even
+    /// if the system is configured to never ask for authentication after waking up.
     @MainActor private var isLoginWindowProcessActive: Bool = false
 
     /// Creates a Application state publisher for publishing application state
@@ -124,22 +112,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
             },
             addWorkspaceObserver(WorkspaceNotifications.willSleep) { [weak self] _ in
                 self?.isSleeping = true
-                return true
-            },
-            addWorkspaceObserver(WorkspaceNotifications.screensDidWake) { [weak self] _ in
-                self?.areScreensSleeping = false
-                return true
-            },
-            addWorkspaceObserver(WorkspaceNotifications.screensDidSleep) { [weak self] _ in
-                self?.areScreensSleeping = true
-                return true
-            },
-            addWorkspaceObserver(WorkspaceNotifications.sessionDidBecomeActive) { [weak self] _ in
-                self?.isUserSessionActive = true
-                return true
-            },
-            addWorkspaceObserver(WorkspaceNotifications.sessionDidResignActive) { [weak self] _ in
-                self?.isUserSessionActive = false
                 return true
             },
             addWorkspaceObserver(WorkspaceNotifications.didActivateApplication, f: handleDidActivateApplication),
@@ -271,7 +243,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
 
         if isSleeping {
             append(state: .sleeping)
-        } else if isUserSessionActive == false || areScreensSleeping || isLoginWindowProcessActive {
+        } else if isLoginWindowProcessActive {
             append(state: .lockScreen)
         } else if applicationStateProvider.isHidden {
             append(state: .hidden)
