@@ -15,18 +15,41 @@ public protocol AppStateProvider: Sendable {
     @MainActor var current: AppState { get }
 }
 
+public protocol AppStateProtocol: Codable {
+    /// `true` if the application execution may be suspended in this state, `false` otherwise.
+    ///
+    /// This method's name uses the word "may" since it's not guaranteed the application is suspended just for being
+    /// in one of the suspension-prone states. Returning `true` from here means the application may be suspended
+    /// at any point while it remains on this state. In fact, if this method returns something, it means the application cannot
+    /// be suspended, otherwise it would not be executing at all.
+    ///
+    /// On macOS, the only state when the application process stops running is during the device's sleep stages. Note this
+    /// does not include the STOP/CONT UNIX signal handling. These signals are not catchable, and applications don't know
+    /// they are about to be suspended, or have been resumed, using these signals.
+    ///
+    /// On iOS, the application may be suspended while it's in the background state. The OS may switch between suspended
+    /// and background states allowing the application to perform background tasks.
+    ///
+    /// On all operating systems, the terminating/terminated states are not considered suspended, since on those states
+    /// the application is indeed given CPU time to perform house-cleaning routines before being effectively terminated.
+    var applicationMayBeSuspended: Bool { get }
+
+    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    var isRunningInForeground: Bool { get }
+}
+
 #if os(macOS)
 /// Application state.
-public enum AppState: Codable {
+public enum AppState: AppStateProtocol {
     /// The app is running in the foreground and currently receiving events.
     case active
-    /// The app is in the background, or in the foreground but blocked by an interruption like a system dialog (for example, the shutdown confirmation dialog).
+    /// The app is in the background, or in the foreground but blocked by an interruption like a system dialog (for example,
+    /// the shutdown confirmation dialog).
     case inactive
     /// The app is hidden (using the Hide command in Finder).
     case hidden
     /// The lock screen is active, and the Mac is **not** sleeping.
-    /// This happens in multiple situations, like displays sleeping, lock screen, or screen saver turned on. We also consider to be in the `lockScreen`
-    /// state if the Mac is switched to a different account.
+    /// This happens in multiple situations, like displays sleeping, lock screen, or screen saver turned on.
     /// Note the lock screen being active does not mean a password will be asked. That depends on the system configuration.
     case lockScreen
     /// The system is entering the sleep state, or sleeping.
@@ -37,14 +60,13 @@ public enum AppState: Codable {
     /// The app is going through its shutdown sequence.
     case terminating
 
-    public var mayBeSuspended: Bool {
+    public var applicationMayBeSuspended: Bool {
         switch self {
         case .sleeping: true
         case .active, .inactive, .hidden, .lockScreen, .terminating: false
         }
     }
 
-    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
     public var isRunningInForeground: Bool {
         switch self {
         case .active: true
@@ -54,7 +76,7 @@ public enum AppState: Codable {
 }
 #else
 /// Application state.
-public enum AppState: Codable {
+public enum AppState: AppStateProtocol {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
@@ -65,7 +87,15 @@ public enum AppState: Codable {
     /// The app is terminated.
     case terminated
 
-    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    public var applicationMayBeSuspended: Bool {
+        switch self {
+        case .background:
+            return true
+        case .active, .inactive, .terminated:
+            return false
+        }
+    }
+
     public var isRunningInForeground: Bool {
         switch self {
         case .active, .inactive:
@@ -73,10 +103,6 @@ public enum AppState: Codable {
         case .background, .terminated:
             return false
         }
-    }
-
-    public var mayBeSuspended: Bool {
-        !isRunningInForeground
     }
 }
 #endif
@@ -165,7 +191,7 @@ public struct AppStateHistory: Codable, Equatable {
     /// - Parameter range: The time period to analyze.
     /// - Returns: The total time (in seconds) spent in states the process could not have been suspended.
     public func applicationNotSuspendedDuration(during range: ClosedRange<Date>) -> TimeInterval {
-        duration(during: range, predicate: { $0.mayBeSuspended == false })
+        duration(during: range, predicate: { $0.applicationMayBeSuspended == false })
     }
 
     /// Helper function for calculating durations of a given condition.
@@ -272,14 +298,17 @@ import AppKit
 public struct DefaultAppStateProvider: AppStateProvider {
     public init() {}
     public var current: AppState {
-        // We don't have access to all the information available in the macOS version of ApplicationStatePublisher,
-        // so we do a best effort.
-        //
         // Note: based on empirical evidence, when an app is launched in macOS, sometimes NSApp.isActive returns
-        // true, sometimes false, during the AppDelegate.applicationDidFinishLaunching method. This happens even
-        // if the conditions the app is launched in are exactly the same (for example, double-clicking it in the
-        // Finder). Do not assume this will always return true if the application is launched directly to the
-        // foreground.
+        // true, sometimes false, when called during the AppDelegate.applicationDidFinishLaunching method. This
+        // happens even if the conditions the app is launched in are exactly the same (for example, double-clicking
+        // it in the Finder). Do not assume this will always return true if the application is launched directly
+        // to the foreground.
+        //
+        // We cannot detect here if the system broadcasted the NSWorkspace.willSleepNotification notification
+        // to running apps and the system is about to go to sleep. It's unlikely that is the case when
+        // an application is being launched, assuming Datadog SDK is being initialized at app startup,
+        // but it's possible.
+        // This is mitigated by
         let loginWindowActive = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.loginwindow"
         if loginWindowActive {
             return .lockScreen
