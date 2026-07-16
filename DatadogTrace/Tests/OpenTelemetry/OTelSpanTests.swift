@@ -386,6 +386,32 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
+    func testWhenLocalAttributeOverridesAGlobalDictionaryTagWithAScalar_itReplacesTheWholeGlobalNamespace() throws {
+        // Given: a global dictionary tag — `end()` applies `tracer.tags` (already flattened into leaves) and
+        // local attributes as a sequence of `setTag` calls on the same underlying `DDSpan`, so this exercises
+        // the same self-override path as `DDSpan.setTag`, just reached through the OTel API instead.
+        let tracer: DatadogTracer = .mockWith(
+            featureScope: featureScope,
+            tags: ["context": ["foo": "global-foo", "baz": "global-baz"]]
+        )
+
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When: a local attribute overrides the whole "context" tag with a scalar value.
+        span.setAttribute(key: "context", value: .string("local-value"))
+        span.end()
+
+        // Then: the local override must win outright — none of the global dictionary's leaves should survive.
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        let expectedTags = [
+            "context": "local-value",
+            "span.kind": "internal",
+        ]
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
+    }
+
     func testStatus_whenStatusIsNotSet() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)

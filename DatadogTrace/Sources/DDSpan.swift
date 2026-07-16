@@ -86,7 +86,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         guard ddContext.span(self, willSetTagWithKey: key, value: value) else {
             return
         }
-        storeFlattenedTags(flattenedTagPairs(key: key, value: value))
+        storeFlattenedTags(key: key, pairs: flattenedTagPairs(key: key, value: value))
     }
 
     /// Overrides the `OTSpan` default (which loops over the public `setTag(key:value:)` per entry) so the whole
@@ -96,10 +96,15 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         if warnIfFinished("setTag(key:value:)") {
             return
         }
-        storeFlattenedTags(flattenedTagPairs(key: key, dict: value))
+        storeFlattenedTags(key: key, pairs: flattenedTagPairs(key: key, dict: value))
     }
 
-    private func storeFlattenedTags(_ pairs: [(String, OTTagValue)]) {
+    /// Stores `pairs` (the leaves `key`'s value flattens into), first dropping any leaf already stored under
+    /// `key` from an earlier `setTag` call (exact match, or a `"key."`-prefixed child) — otherwise re-setting
+    /// `key` with a `Dictionary` that dropped or renamed some of its previous entries would leave those stale
+    /// leaves sitting alongside the new ones, instead of `key`'s value being replaced outright as `setTag`
+    /// promises. Same rationale as `mergeTags`'s per-span-override cleanup, applied here to self-overrides.
+    private func storeFlattenedTags(key: String, pairs: [(String, OTTagValue)]) {
         // `setTag(key:value: OTTagValue)` calls this with exactly 1 pair whenever `value` isn't a `Dictionary` —
         // the overwhelming majority of calls — which can never collide with itself; skip the check below for it.
         if pairs.count > 1 {
@@ -113,6 +118,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             )
         }
         _tags.mutate { tags in
+            tags = tags.filter { $0.key != key && !$0.key.hasPrefix("\(key).") }
             tags.merge(pairs, uniquingKeysWith: { _, new in new })
         }
     }

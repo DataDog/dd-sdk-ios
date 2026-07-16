@@ -1,10 +1,11 @@
 # Unreleased
 
+- [IMPROVEMENT] `OTSpan.setTag` now flattens `Dictionary` tag values into one tag per leaf field (e.g. `context.foo`) instead of serializing the whole dictionary as a single JSON string tag. See [#3067][]
+
 # 3.14.0 / 15-07-2026
 
 - [FEATURE] Add Continuous Profiling with RUM correlation for app hangs, long tasks, operations, and app start vitals (TTID/TTFD). See [#3051][]
 - [FEATURE] Add a preview snapshot API to `DatadogFlags` for reading cached precomputed feature flag assignments without recording evaluations. See [#2937][]
-- [IMPROVEMENT] `OTSpan.setTag` now flattens `Dictionary` tag values into one tag per leaf field (e.g. `context.foo`) instead of serializing the whole dictionary as a single JSON string tag. See [#3067][]
 
 # 3.13.0 / 30-06-2026
 

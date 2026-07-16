@@ -306,6 +306,54 @@ class DDSpanTests: XCTestCase {
         XCTAssertNil(tags["context.baz"], "a per-span override must replace the whole global dictionary namespace, not sit alongside its stale leaves")
     }
 
+    func testWhenSettingTheSameDictionaryTagKeyTwice_itReplacesTheWholeNamespaceInsteadOfMergingLeaves() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When: the same top-level key is set twice with different dictionary tags — per `setTag`'s usual
+        // "replace" semantics, the second call should replace the first entirely, not merge with it.
+        span.setTag(key: "ctx", value: ["a": "old", "b": "old"])
+        span.setTag(key: "ctx", value: ["a": "new"])
+        span.finish()
+
+        // Then: only the leaves from the second call must survive — "ctx.b" must not linger from the first.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx.a"], "new")
+        XCTAssertNil(tags["ctx.b"], "re-setting the same dictionary tag key must replace its whole namespace, not leave stale leaves from the previous value")
+    }
+
+    func testWhenOverridingADictionaryTagKeyWithAScalar_itReplacesTheWholeNamespace() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When: a dictionary tag is set under "ctx", then the same top-level key is overridden with a scalar —
+        // the same self-override case exercised by `OTelSpan.end()`, which applies global tags (possibly
+        // dictionaries) and local attributes as a sequence of `setTag` calls on the same span.
+        span.setTag(key: "ctx", value: ["a": "old", "b": "old"])
+        span.setTag(key: "ctx", value: "scalar-value")
+        span.finish()
+
+        // Then: none of the earlier dictionary's leaves should survive alongside the scalar override.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx"], "scalar-value")
+        XCTAssertNil(tags["ctx.a"], "a scalar self-override must replace the whole dictionary namespace, not sit alongside its stale leaves")
+        XCTAssertNil(tags["ctx.b"], "a scalar self-override must replace the whole dictionary namespace, not sit alongside its stale leaves")
+    }
+
     func testWhenFlattenedDictionaryKeyCollidesWithManualKeepOrDrop_itStoresTheTagInsteadOfOverridingSampling() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
