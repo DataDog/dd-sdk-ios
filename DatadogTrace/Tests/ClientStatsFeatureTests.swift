@@ -94,6 +94,22 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
     }
 
+    // MARK: - Clear In-Memory Data
+
+    func testWhenClearInMemoryDataCalled_itDiscardsBufferedStats() throws {
+        // Given: a registered feature with a span buffered in its concentrator.
+        config.statsComputationEnabled = true
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 2_000_000_000, isTopLevel: true))
+
+        // When: the app clears unsent data, routed to the feature via InMemoryDataClearing.
+        (stats as InMemoryDataClearing).clearInMemoryData()
+
+        // Then: the buffered span is dropped and a forced flush finds nothing.
+        XCTAssertTrue(stats.concentrator.flush(now: 100_000_000_000, force: true).isEmpty)
+    }
+
     // MARK: - Request Builder
 
     func testWhenStatsComputationEnabled_thenRequestBuilderUsesStatsEndpoint() throws {

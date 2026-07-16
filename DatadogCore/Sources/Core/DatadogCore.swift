@@ -253,6 +253,10 @@ internal final class DatadogCore {
     func clearAllData() {
         allStorages.forEach { $0.clearAllData() }
         allDataStores.forEach { $0.clearAllData() }
+        // Storages and data stores only cover on-disk data. Features that buffer not-yet-uploaded
+        // data in memory clear it here so `clearAllData()` removes all unsent data, not just the
+        // part the core can see.
+        features.values.forEach { ($0 as? InMemoryDataClearing)?.clearInMemoryData() }
     }
 
     /// Adds a message receiver to the bus.
