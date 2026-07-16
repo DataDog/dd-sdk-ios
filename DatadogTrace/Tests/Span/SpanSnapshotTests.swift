@@ -318,6 +318,53 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertNotNil(capturedSnapshot, "Snapshot must be captured regardless of sampling decision")
     }
 
+    // MARK: - Sanitization Consistency
+    //
+    // The uploaded `SpanEvent` is sanitized at encode time (attribute-key normalization and the
+    // 256-attribute limit). The stats `SpanSnapshot` is derived from the same sanitized
+    // representation, so client-side stats never emit a peer dimension the uploaded span dropped or
+    // renamed — a divergence the backend cannot reconcile because `_dd.compute_stats=0` suppresses
+    // its own recomputation.
+
+    func testSnapshotPeerTagsMatchSanitizedUploadedSpan() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            samplingProvider: TracerSamplerProviderMock.mockKeepAll()
+        )
+
+        var capturedSnapshot: SpanSnapshot?
+        tracer.onSpanFinished = { capturedSnapshot = $0 }
+
+        // A span carrying more tags than the sanitizer's attribute limit, including peer tags: the
+        // limit drops some tags, and the snapshot must reflect exactly what the upload keeps.
+        var tags: [String: Encodable] = [
+            "peer.service": "downstream-svc",
+            "out.host": "db.example.com",
+            SpanTags.kind: "client"
+        ]
+        for i in 0..<(AttributesSanitizer.Constraints.maxNumberOfAttributes + 16) {
+            tags["extra.tag.\(i)"] = "v"
+        }
+
+        let span = tracer.startSpan(operationName: "network.request", tags: tags)
+        span.finish()
+
+        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let uploaded = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first)
+        let sanitizedUpload = SpanSanitizer().sanitize(span: try XCTUnwrap(uploaded.spans.first))
+
+        // Each peer key must be present in the snapshot exactly when the sanitized upload keeps it,
+        // with an identical value — proving stats read the same sanitized tags the span uploads.
+        for key in SpanSnapshot.peerTagKeys {
+            XCTAssertEqual(
+                snapshot.peerTags[key],
+                sanitizedUpload.tags[key],
+                "Snapshot peer tag '\(key)' must match the sanitized uploaded span"
+            )
+        }
+    }
+
     // MARK: - EventMapper Consistency
     //
     // The user-configured `SpanEventMapper` mutates `resource`, `operationName`, and `tags` on the
