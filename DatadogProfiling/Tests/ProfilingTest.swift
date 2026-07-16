@@ -27,7 +27,7 @@ class ProfilingTest: XCTestCase {
         // Then
         let feature = core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self)
         let requestBuilder = feature?.requestBuilder as? RequestBuilder
-        XCTAssertEqual(feature?.performanceOverride?.maxFileSize, ProfilerFeature.Constants.maxFileSize)
+        XCTAssertEqual(feature?.performanceOverride?.maxFileSize, 15.MB.asUInt32())
         XCTAssertEqual(requestBuilder?.customUploadURL, configuration.customEndpoint)
         XCTAssertEqual(feature?.telemetryController.sampleRate, 20)
 
