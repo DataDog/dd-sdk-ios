@@ -181,6 +181,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             },
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
+            featureFlags: configuration.featureFlags,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
                     viewName: viewName,

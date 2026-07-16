@@ -1157,6 +1157,7 @@ extension RUMScopeDependencies {
         },
         appStateManager: AppStateManaging = AppStateManagerMock(),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags = .defaults,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
         },
@@ -1192,6 +1193,7 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory,
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
             sessionType: sessionType,
@@ -1225,6 +1227,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         appStateManager: AppStateManager? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
         sessionType: RUMSessionType? = nil
@@ -1255,6 +1258,7 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             appStateManager: appStateManager ?? self.appStateManager,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
+            featureFlags: featureFlags ?? self.featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
             sessionType: sessionType
