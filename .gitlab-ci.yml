@@ -479,7 +479,7 @@ Publish GH Asset:
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-github
@@ -492,7 +492,7 @@ Publish CP podspecs (internal):
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-internal-podspecs
@@ -506,7 +506,7 @@ Publish CP podspecs (internal):
     - *export_MAKE_release_params
   needs: ["Build Artifacts", "Publish CP podspecs (internal)"]
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-podspec PODSPEC_NAME="$PODSPEC_NAME"
