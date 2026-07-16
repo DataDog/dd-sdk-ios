@@ -37,9 +37,9 @@ internal class Generator {
     /// Tracks currently traversed items.
     private var items: [SurfaceItem] = []
 
-    func generateSurfaceItems(for module: Module, language: Language) throws -> [SurfaceItem] {
+    func generateSurfaceItems(docs moduleDocs: [SwiftDocs], language: Language) throws -> [SurfaceItem] {
         items = []
-        for docs in module.docs {
+        for docs in moduleDocs {
             guard let path = docs.file.path,
                   language.shouldParse(path: path) else {
                 continue

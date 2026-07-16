@@ -37,7 +37,9 @@ docs/
 
 Feature-specific docs (in each module directory):
 ├── DatadogRUM/RUM_FEATURE.md
-└── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
+├── DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
+├── DatadogTrace/TRACE_FEATURE.md
+└── DatadogProfiling/PROFILING_FEATURE.md
 ```
 
 ## Where to Look First
@@ -53,6 +55,8 @@ Feature-specific docs (in each module directory):
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
 | Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |
 | Work on Session Replay specifically | `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md` |
+| Work on Trace (APM) specifically | `DatadogTrace/TRACE_FEATURE.md` |
+| Work on Profiling specifically | `DatadogProfiling/PROFILING_FEATURE.md` |
 | Update a `*_FEATURE.md` file | `docs/LLM_FEATURE_DOCS_GUIDELINES.md` |
 
 ## Critical Rules (always apply)
@@ -65,6 +69,7 @@ Feature-specific docs (in each module directory):
 - **Do NOT change networking formats or endpoints.**
 - **Do NOT introduce new public API** without RFC review.
 - **Do NOT edit build scripts** unless instructed.
+- **Do NOT name branches with `codex`.** Use repo branch naming conventions instead.
 - **Never mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
 - **Never write or modify a swizzle without reading `docs/SWIZZLING.md` first.** Past incidents have caused production crashes.
 

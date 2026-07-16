@@ -19,9 +19,7 @@ internal struct RecordingComponents {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
             // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
             self = try runOnMainThreadSync {
-                try MainActor.assumeIsolated {
-                    try .layerTreeRecordingComponents(core: core, configuration: configuration)
-                }
+                try .layerTreeRecordingComponents(core: core, configuration: configuration)
             }
         } else {
             self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
@@ -100,20 +98,46 @@ internal struct RecordingComponents {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws -> Self {
-        let telemetryQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.telemetry", qos: .background)
+        let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
+        // The telemetry queue targets the processors queue with a lower qos.
+        let telemetryQueue = BackgroundAsyncQueue(
+            label: "com.datadoghq.session-replay.telemetry",
+            qos: .background,
+            target: processorsQueue
+        )
         let telemetry = SessionReplayTelemetry(
             telemetry: core.telemetry,
             queue: telemetryQueue
         )
+        let resourceProcessor = ResourceProcessor(
+            queue: processorsQueue,
+            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+        )
+        let snapshotProcessor = LayerSnapshotProcessor(
+            queue: processorsQueue,
+            recordWriter: RecordWriter(core: core),
+            resourceProcessor: resourceProcessor,
+            replayContextPublisher: SRContextPublisher(core: core),
+            telemetry: telemetry
+        )
 
         let keyWindowObserver = KeyWindowObserver()
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
+        let screenChangeFilter = ScreenChangeFilter()
         let layerRecorder = LayerRecorder(
             snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
-            touchSnapshotProducer: touchSnapshotProducer
+            touchSnapshotProducer: touchSnapshotProducer,
+            imageSnapshotter: ImageSnapshotter(
+                screenChangeFilter: screenChangeFilter,
+                telemetry: telemetry
+            ),
+            snapshotProcessor: snapshotProcessor
         )
-        let screenChangeMonitor = try ScreenChangeMonitor(minimumDeliveryInterval: 0.1)
+        let screenChangeMonitor = try ScreenChangeMonitor(
+            minimumDeliveryInterval: 0.1,
+            screenChangeFilter: screenChangeFilter
+        )
         let recordingCoordinator = LayerTreeRecordingCoordinator(
             screenChangeMonitor: screenChangeMonitor,
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,

@@ -5,7 +5,6 @@
  */
 
 import DatadogInternal
-import DatadogRUM
 import Foundation
 import QuartzCore
 

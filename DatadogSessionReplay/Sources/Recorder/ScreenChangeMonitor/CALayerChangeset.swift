@@ -16,6 +16,12 @@ internal struct CALayerChangeset: Sendable, Equatable {
         changes.isEmpty
     }
 
+    var contentChanges: [CALayerChange] {
+        changes.values.filter { change in
+            change.aspects.contains(.display) || change.aspects.contains(.draw)
+        }
+    }
+
     private let changes: [ObjectIdentifier: CALayerChange]
 
     init(_ changes: [ObjectIdentifier: CALayerChange] = [:]) {
@@ -38,6 +44,14 @@ internal struct CALayerChangeset: Sendable, Equatable {
             return false
         }
         return aspects.contains(.display) || aspects.contains(.draw)
+    }
+
+    func hasChanges(for layer: CALayerReference) -> Bool {
+        aspects(for: layer) != nil
+    }
+
+    func hasChanges<S: Sequence>(for layers: S) -> Bool where S.Element == CALayerReference {
+        layers.contains { hasChanges(for: $0) }
     }
 }
 

@@ -383,20 +383,20 @@ public class objc_LogEventDevice: NSObject {
         root.swiftModel.device.architecture
     }
 
-    public var batteryLevel: Double? {
-        root.swiftModel.device.batteryLevel
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device.batteryLevel as NSNumber?
     }
 
     public var brand: String? {
         root.swiftModel.device.brand
     }
 
-    public var brightnessLevel: Double? {
-        root.swiftModel.device.brightnessLevel
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device.brightnessLevel as NSNumber?
     }
 
-    public var isLowRam: Bool? {
-        root.swiftModel.device.isLowRam
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device.isLowRam as NSNumber?
     }
 
     public var locale: String? {
@@ -407,8 +407,8 @@ public class objc_LogEventDevice: NSObject {
         root.swiftModel.device.locales
     }
 
-    public var logicalCpuCount: Double? {
-        root.swiftModel.device.logicalCpuCount
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device.logicalCpuCount as NSNumber?
     }
 
     public var model: String? {
@@ -419,16 +419,16 @@ public class objc_LogEventDevice: NSObject {
         root.swiftModel.device.name
     }
 
-    public var powerSavingMode: Bool? {
-        root.swiftModel.device.powerSavingMode
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device.powerSavingMode as NSNumber?
     }
 
     public var timeZone: String? {
         root.swiftModel.device.timeZone
     }
 
-    public var totalRam: Double? {
-        root.swiftModel.device.totalRam
+    public var totalRam: NSNumber? {
+        root.swiftModel.device.totalRam as NSNumber?
     }
 
     public var type: objc_LogEventDeviceDeviceType {

@@ -17,93 +17,132 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class AppLaunchProfiler: FeatureMessageReceiver {
-    /// Shared counter to track pending `AppLaunchProfiler`s from handling the `ProfilerStop` message
+internal final class AppLaunchProfiler: ProfilingHandler {
+    /// Shared counter to track pending `AppLaunchProfiler`s until a `TTIDMessage` harvest completes.
     private static var pendingInstances: Int = 0
+    /// App launch profile attached with TTID.
+    private static var appLaunchProfile: OpaquePointer?
     private static let lock = NSLock()
 
-    private let telemetryController: ProfilingTelemetryController
+    private let profilingSamplerProvider: ProfilingSamplerProvider
+    private let quotaChecker: ProfilingQuotaChecking
 
-    init(telemetryController: ProfilingTelemetryController = .init()) {
+    let featureScope: FeatureScope
+    let telemetryController: ProfilingTelemetryController
+    let operation: ProfilingOperation = .appLaunch
+    let encoder: JSONEncoder
+
+    @ReadWriteLock
+    private(set) var attributes: [AttributeKey: AttributeValue] = [:]
+    // Interval between device and server time.
+    private(set) var currentServerTimeOffset: TimeInterval = .zero
+    private var currentRUMVitals: [String: Vital] = [:]
+    private var hasProcessedAppLaunch: Bool = false
+
+    init(
+        core: DatadogCoreProtocol,
+        profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking,
+        telemetryController: ProfilingTelemetryController = .init(),
+        encoder: JSONEncoder = JSONEncoder()
+    ) {
         Self.registerInstance()
+
+        self.featureScope = core.scope(for: ProfilerFeature.self)
+        self.profilingSamplerProvider = profilingSamplerProvider
+        self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
+        self.encoder = encoder
     }
 
+    deinit {
+        if !hasProcessedAppLaunch {
+            Self.unregisterInstance()
+        }
+    }
+}
+
+extension AppLaunchProfiler: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(cmd as ProfilerStop) = message else {
+        guard hasProcessedAppLaunch == false else {
             return false
         }
 
-        let profileStatus = ctor_profiler_get_status()
-        guard profileStatus == CTOR_PROFILER_STATUS_RUNNING
-                || profileStatus == CTOR_PROFILER_STATUS_TIMEOUT
-                || profileStatus == CTOR_PROFILER_STATUS_STOPPED else {
-            if profileStatus != CTOR_PROFILER_STATUS_SAMPLED_OUT
-                && profileStatus != CTOR_PROFILER_STATUS_PREWARMED {
-                telemetryController.send(metric: AppLaunchMetric.statusNotHandled)
+        if case let .context(context) = message {
+            telemetryController.register(context: context)
+            return false
+        } else if case let .payload(message as TTIDMessage) = message {
+            hasProcessedAppLaunch = true
+            attributes = message.attributes
+            currentServerTimeOffset = message.ttid.serverTimeOffset
+            dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
+
+            defer {
+                if Self.unregisterInstance(stopProfiler: quotaChecker.isRejectedByQuota) {
+                    updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
+                }
+            }
+
+            // Quota is fail-open while pending or unavailable; only an explicit rejection drops app-launch.
+            guard !quotaChecker.isRejectedByQuota else {
+                telemetryController.sendProfileDropped(
+                    for: operation,
+                    reason: .quotaRejected(quotaChecker.quotaResult?.reason)
+                )
+                return false
+            }
+
+            if profilingSamplerProvider.isContinuousProfilingConfigured == false
+                && self.currentRUMVitals.didCompleteOperations() {
+                dd_profiler_stop()
+                self.updateProfilingContext()
+            }
+
+            currentRUMVitals[message.ttid.key] = message.ttid
+
+            guard let profile = appLaunchProfile() else {
+                telemetryController.sendNoProfile(for: operation)
+                return false
+            }
+
+            self.write(profile: profile, rumVitals: Array(self.currentRUMVitals.values))
+            return false
+        } else if case let .payload(message as OperationMessage) = message {
+            // Capture vitals like TTFD that are not operation steps.
+            if message.operation.stepType == nil {
+                currentRUMVitals[message.operation.key] = message.operation
+            } else if message.operation.stepType == .start {
+                currentRUMVitals[message.operation.key] = message.operation
+            } else if var startVital = currentRUMVitals[message.operation.key] {
+                // Add duration to vital to help Profiling backend label correctly the samples of this vital
+                let duration = message.operation.date.timeIntervalSince(startVital.date)
+                startVital.duration = duration.dd.toInt64Nanoseconds
+                currentRUMVitals[message.operation.key] = startVital
             }
             return false
         }
 
-        ctor_profiler_stop()
-        core.set(context: ProfilingContext(status: .current))
-        defer { Self.unregisterInstance() }
+        return false
+    }
 
-        guard let profile = ctor_profiler_get_profile() else {
-            telemetryController.send(metric: AppLaunchMetric.noProfile)
-            return false
+    private func appLaunchProfile() -> OpaquePointer? {
+        Self.lock.lock()
+        defer { Self.lock.unlock() }
+        if let profile = Self.appLaunchProfile {
+            return profile
         }
 
-        var data: UnsafeMutablePointer<UInt8>?
-        let start = dd_pprof_get_start_timestamp_s(profile)
-        let end = dd_pprof_get_end_timestamp_s(profile)
-        let duration = (end - start).dd.toInt64Nanoseconds
-        let size = dd_pprof_serialize(profile, &data)
+        let currentProfile = dd_profiler_flush_and_get_profile()
+        Self.appLaunchProfile = currentProfile
 
-        guard let data else {
-            telemetryController.send(metric: AppLaunchMetric.noData)
-            return false
-        }
-
-        let pprof = Data(bytes: data, count: size)
-        dd_pprof_free_serialized_data(data)
-
-        core.scope(for: ProfilerFeature.self).eventWriteContext { context, writer in
-            let event = ProfileEvent(
-                family: "ios",
-                runtime: "ios",
-                version: "4",
-                start: Date(timeIntervalSince1970: start),
-                end: Date(timeIntervalSince1970: end),
-                attachments: [ProfileEvent.Constants.wallFilename],
-                tags: [
-                    "\(DDTag.service):\(context.service)",
-                    "\(DDTag.version):\(context.version)",
-                    "\(DDTag.sdkVersion):\(context.sdkVersion)",
-                    "profiler_version:\(context.sdkVersion)",
-                    "runtime_version:\(context.os.version)",
-                    "\(DDTag.env):\(context.env)",
-                    "source:\(context.source)",
-                    "language:swift",
-                    "format:pprof",
-                    "remote_symbols:yes",
-                    "operation:launch"
-                ].joined(separator: ","),
-                additionalAttributes: cmd.context
-            )
-
-            writer.write(value: pprof, metadata: event)
-            self.telemetryController.send(metric: AppLaunchMetric(status: .init(profileStatus), durationNs: duration, fileSize: Int64(size)))
-        }
-
-        return true
+        return currentProfile
     }
 }
 
 // MARK: - Handle AppLaunchProfiler instances
 
 private extension AppLaunchProfiler {
-    /// Registers the `AppLaunchProfiler` to handle the `ProfilerStop` message.
+    /// Registers the `AppLaunchProfiler` for app launch profile lifecycle tracking.
     static func registerInstance() {
         lock.lock()
         defer { lock.unlock() }
@@ -112,14 +151,26 @@ private extension AppLaunchProfiler {
     }
 
     /// Decrements the pending instance counter and destroys the profiler when all instances are done.
-    static func unregisterInstance() {
+    @discardableResult
+    static func unregisterInstance(stopProfiler: Bool = false) -> Bool {
         lock.lock()
         defer { lock.unlock() }
 
         pendingInstances -= 1
-        if pendingInstances <= 0 {
-            ctor_profiler_destroy()
+        guard pendingInstances <= 0 else {
+            return false
         }
+
+        if stopProfiler {
+            dd_profiler_stop()
+            if let profile = dd_profiler_flush_and_get_profile() {
+                dd_pprof_destroy(profile)
+            }
+        }
+
+        dd_pprof_destroy(Self.appLaunchProfile)
+        Self.appLaunchProfile = nil
+        return stopProfiler
     }
 }
 
@@ -133,39 +184,47 @@ extension AppLaunchProfiler {
         return pendingInstances
     }
 
-    /// Resets the pending instances counter.
+    /// Resets the pending instances counter and destroys any stored profile (for testing).
     static func resetPendingInstances() {
         lock.lock()
         defer { lock.unlock() }
+        dd_pprof_destroy(Self.appLaunchProfile)
+        Self.appLaunchProfile = nil
         pendingInstances = 0
     }
 }
 
 extension ProfilingContext.Status {
-    static var current: Self { .init(ctor_profiler_get_status()) }
+    static var current: Self { .init(dd_profiler_get_status()) }
 
-    init(_ status: ctor_profiler_status_t) {
+    init(_ status: dd_profiler_status_t) {
         switch status {
-        case CTOR_PROFILER_STATUS_NOT_STARTED:
+        case DD_PROFILER_STATUS_NOT_STARTED:
             self = .stopped(reason: .notStarted)
-        case CTOR_PROFILER_STATUS_RUNNING:
+        case DD_PROFILER_STATUS_RUNNING:
             self = .running
-        case CTOR_PROFILER_STATUS_STOPPED:
+        case DD_PROFILER_STATUS_STOPPED:
             self = .stopped(reason: .manual)
-        case CTOR_PROFILER_STATUS_TIMEOUT:
+        case DD_PROFILER_STATUS_TIMEOUT:
             self = .stopped(reason: .timeout)
-        case CTOR_PROFILER_STATUS_PREWARMED:
+        case DD_PROFILER_STATUS_PREWARMED:
             self = .stopped(reason: .prewarmed)
-        case CTOR_PROFILER_STATUS_SAMPLED_OUT:
-            self = .stopped(reason: .sampledOut)
-        case CTOR_PROFILER_STATUS_ALLOCATION_FAILED:
+        case DD_PROFILER_STATUS_ALLOCATION_FAILED:
             self = .error(reason: .memoryAllocationFailed)
-        case CTOR_PROFILER_STATUS_ALREADY_STARTED:
-            self = .error(reason: .alreadyStarted)
         default:
             self = .unknown
         }
     }
 }
 
+extension Dictionary where Key == String, Value == Vital {
+    func didCompleteOperations() -> Bool {
+        let vitals = self.values
+        return vitals.contains { $0.duration == nil } == false
+    }
+
+    func ongoingOperations() -> [String: Vital] {
+        filter { $0.1.duration == nil }
+    }
+}
 #endif

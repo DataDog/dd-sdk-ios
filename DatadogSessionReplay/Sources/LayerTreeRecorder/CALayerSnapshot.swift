@@ -40,10 +40,12 @@ internal struct CALayerSnapshot: Sendable {
     /// The layer's frame in the root layer coordinate space.
     let absoluteFrame: CGRect
 
-    let sublayers: [CALayerSnapshot]
+    var sublayers: [CALayerSnapshot]
+    /// Live descendant layers omitted from `sublayers` but captured when this layer is rendered as an image.
+    let dependencies: [CALayerReference]
     let sublayerTransform: CATransform3D
 
-    let mask: CALayerReference?
+    let mask: Mask?
     let masksToBounds: Bool
 
     let isOpaque: Bool
@@ -70,7 +72,7 @@ internal struct CALayerSnapshot: Sendable {
 extension CALayerSnapshot {
     @MainActor
     init?(from root: CALayer, in context: Context) {
-        let privacy = ResolvedPrivacy(
+        let state = ResolvedSnapshotState(
             textAndInputPrivacyLevel: context.textAndInputPrivacyLevel,
             imagePrivacyLevel: context.imagePrivacyLevel,
             isPrivate: false
@@ -80,7 +82,7 @@ extension CALayerSnapshot {
             from: root,
             rootLayer: root,
             visibleBounds: root.bounds,
-            privacy: privacy,
+            state: state,
             context: context
         )
     }
@@ -90,7 +92,7 @@ extension CALayerSnapshot {
         from layer: CALayer,
         rootLayer: CALayer,
         visibleBounds: CGRect,
-        privacy: ResolvedPrivacy,
+        state: ResolvedSnapshotState,
         context: Context
     ) {
         guard !layer.isHidden, layer.opacity > 0 else {
@@ -106,26 +108,48 @@ extension CALayerSnapshot {
             return nil
         }
 
-        let privacy = privacy.applying(layer.privacyOverrides)
-        let observation = privacy.isPrivate
-            ? SemanticObservation(semantics: .layer, ignoreSubtree: true)
-            : SemanticObservation(layer: layer, context: context)
+        var state = state
+        state.apply(layer.privacyOverrides)
+
+        let observation = state.isPrivate
+            ? SemanticObservation(semantics: .layer, ignoresSublayers: true)
+            : SemanticObservation(layer: layer, absoluteFrame: absoluteFrame, context: context)
+
+        if observation.ignoresImagePrivacy, layer.privacyOverrides?.imagePrivacy == nil {
+            state.imagePrivacyLevel = .maskNone
+        }
+
+        state.apply(observation)
 
         let childVisibleBounds = layer.masksToBounds
             ? absoluteFrame.intersection(visibleBounds)
             : visibleBounds
 
-        let sublayers = observation.ignoreSubtree || childVisibleBounds.isEmpty
-            ? []
-            : layer.sublayers?.compactMap {
+        let sublayers = if observation.ignoresSublayers || childVisibleBounds.isEmpty {
+            [CALayerSnapshot]()
+        } else {
+            layer.sublayers?.compactMap {
                 CALayerSnapshot(
                     from: $0,
                     rootLayer: rootLayer,
                     visibleBounds: childVisibleBounds,
-                    privacy: privacy,
+                    state: state,
                     context: context
                 )
             } ?? []
+        }
+
+        let dependencies = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
+            layer.sublayers?.flatMap {
+                $0.visibleDependencies(
+                    rootLayer: rootLayer,
+                    visibleBounds: childVisibleBounds
+                )
+                .map(CALayerReference.init)
+            } ?? []
+        } else {
+            [CALayerReference]()
+        }
 
         var cornerRadii = CornerRadii()
 
@@ -135,10 +159,21 @@ extension CALayerSnapshot {
         }
 
         if cornerRadii == .zero {
-            cornerRadii = CornerRadii(
-                cornerRadius: layer.cornerRadius,
-                maskedCorners: layer.maskedCorners
-            )
+            if layer.cornerRadius.isFinite, layer.cornerRadius > 0 {
+                cornerRadii = CornerRadii(
+                    cornerRadius: layer.cornerRadius,
+                    maskedCorners: layer.maskedCorners
+                )
+            } else if state.usesAutomaticCornerRadius, layer.cornerRadius.isNaN {
+                let cornerRadius = min(layer.bounds.width, layer.bounds.height) / 2
+
+                if cornerRadius > 0 {
+                    cornerRadii = CornerRadii(
+                        cornerRadius: cornerRadius,
+                        maskedCorners: layer.maskedCorners
+                    )
+                }
+            }
         }
 
         self.init(
@@ -148,17 +183,18 @@ extension CALayerSnapshot {
             layerClass: type(of: layer),
             delegateClass: layer.delegate.map { type(of: $0) },
             contentsClass: layer.contents.map { type(of: $0 as AnyObject) },
-            textAndInputPrivacyLevel: privacy.textAndInputPrivacyLevel,
-            imagePrivacyLevel: privacy.imagePrivacyLevel,
-            isPrivate: privacy.isPrivate,
+            textAndInputPrivacyLevel: state.textAndInputPrivacyLevel,
+            imagePrivacyLevel: state.imagePrivacyLevel,
+            isPrivate: state.isPrivate,
             bounds: layer.bounds,
             position: layer.position,
             zPosition: layer.zPosition,
             transform: layer.transform,
             absoluteFrame: absoluteFrame,
             sublayers: sublayers,
+            dependencies: dependencies,
             sublayerTransform: layer.sublayerTransform,
-            mask: layer.mask.map(CALayerReference.init),
+            mask: layer.mask.map(Mask.init),
             masksToBounds: layer.masksToBounds,
             isOpaque: layer.isOpaque,
             backgroundColor: layer.backgroundColor?.safeCast,
@@ -181,23 +217,24 @@ extension CALayerSnapshot {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    fileprivate struct ResolvedPrivacy {
+    fileprivate struct ResolvedSnapshotState {
         var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         var imagePrivacyLevel: ImagePrivacyLevel
         var isPrivate: Bool
+        var usesAutomaticCornerRadius: Bool = false
 
-        func applying(_ overrides: PrivacyOverrides?) -> Self {
+        mutating func apply(_ overrides: PrivacyOverrides?) {
             guard let overrides else {
-                return self
+                return
             }
 
-            var resolved = self
+            textAndInputPrivacyLevel = overrides.textAndInputPrivacy ?? textAndInputPrivacyLevel
+            imagePrivacyLevel = overrides.imagePrivacy ?? imagePrivacyLevel
+            isPrivate = isPrivate || overrides.hide == true
+        }
 
-            resolved.textAndInputPrivacyLevel = overrides.textAndInputPrivacy ?? self.textAndInputPrivacyLevel
-            resolved.imagePrivacyLevel = overrides.imagePrivacy ?? self.imagePrivacyLevel
-            resolved.isPrivate = self.isPrivate || overrides.hide == true
-
-            return resolved
+        mutating func apply(_ observation: SemanticObservation) {
+            usesAutomaticCornerRadius = usesAutomaticCornerRadius || observation.usesAutomaticCornerRadius
         }
     }
 }
@@ -206,6 +243,39 @@ extension CALayerSnapshot {
 extension CALayer {
     @MainActor fileprivate var privacyOverrides: SessionReplayPrivacyOverrides? {
         (delegate as? UIView)?.dd._privacyOverrides
+    }
+
+    @MainActor
+    fileprivate func visibleDependencies(rootLayer: CALayer, visibleBounds: CGRect) -> [CALayer] {
+        guard !isHidden, opacity > 0 else {
+            return []
+        }
+
+        let absoluteFrame = convert(bounds, to: rootLayer)
+
+        guard
+            !(absoluteFrame.isEmpty && masksToBounds),
+            absoluteFrame.intersects(visibleBounds)
+        else {
+            return []
+        }
+
+        let childVisibleBounds = masksToBounds
+            ? absoluteFrame.intersection(visibleBounds)
+            : visibleBounds
+
+        let sublayerDependencies = if childVisibleBounds.isEmpty {
+            [CALayer]()
+        } else {
+            sublayers?.flatMap {
+                $0.visibleDependencies(
+                    rootLayer: rootLayer,
+                    visibleBounds: childVisibleBounds
+                )
+            } ?? []
+        }
+
+        return CollectionOfOne(self) + sublayerDependencies
     }
 }
 #endif

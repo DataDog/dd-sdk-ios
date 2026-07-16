@@ -17,17 +17,29 @@ internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let uiApplicationSwizzler: UIApplicationSwizzler
     private let touchSnapshotProducer: any TouchSnapshotProducer
+    private let imageSnapshotter: any ImageSnapshotting
+    private let snapshotProcessor: any LayerSnapshotProcessing
+    private let timeoutInterval: TimeInterval
+    private let timeSource: any TimeSource
 
     private var recordTask: Task<Void, Never>?
 
     init(
         snapshotBuilder: any LayerTreeSnapshotBuilding,
         uiApplicationSwizzler: UIApplicationSwizzler,
-        touchSnapshotProducer: any TouchSnapshotProducer
+        touchSnapshotProducer: any TouchSnapshotProducer,
+        imageSnapshotter: any ImageSnapshotting,
+        snapshotProcessor: any LayerSnapshotProcessing,
+        timeoutInterval: TimeInterval = 0.09,
+        timeSource: any TimeSource = MediaTimeSource()
     ) {
         self.snapshotBuilder = snapshotBuilder
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.touchSnapshotProducer = touchSnapshotProducer
+        self.imageSnapshotter = imageSnapshotter
+        self.snapshotProcessor = snapshotProcessor
+        self.timeoutInterval = timeoutInterval
+        self.timeSource = timeSource
 
         uiApplicationSwizzler.swizzle()
     }
@@ -47,42 +59,65 @@ internal actor LayerRecorder: LayerRecording {
         }
     }
 
-    private func record(_: CALayerChangeset, context: LayerRecordingContext) async {
-        let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(context: context)
+    private func record(_ changeset: CALayerChangeset, context: LayerRecordingContext) async {
+        let startTime = timeSource.now
+        let (layerTreeSnapshot, touchSnapshot) = await takeSnapshot(
+            context: context,
+            snapshotBuilder: snapshotBuilder,
+            touchSnapshotProducer: touchSnapshotProducer
+        )
 
-        guard let layerTreeSnapshot else {
+        guard
+            var layerTreeSnapshot,
+            let root = layerTreeSnapshot.root.removingOccluded()
+        else {
             return
         }
 
-        _ = (layerTreeSnapshot, touchSnapshot)
-        // TODO: PANA-7436 Process captured layer tree and touch snapshots
+        layerTreeSnapshot.root = root
+
+        let remainingTime = max(0, timeoutInterval - (timeSource.now - startTime))
+        let imageSnapshots = await imageSnapshotter.takeImageSnapshots(
+            for: layerTreeSnapshot.root,
+            changeset: changeset,
+            timeout: remainingTime
+        )
+
+        snapshotProcessor.process(
+            layerTreeSnapshot: layerTreeSnapshot,
+            imageSnapshots: imageSnapshots,
+            touchSnapshot: touchSnapshot
+        )
     }
 
-    private func takeSnapshot(context: LayerRecordingContext) async -> (LayerTreeSnapshot?, TouchSnapshot?) {
-        return await MainActor.run { [snapshotBuilder, touchSnapshotProducer] in
-            do {
-                return try objc_rethrow { () -> (LayerTreeSnapshot?, TouchSnapshot?) in
-                    guard let layerTreeSnapshot = snapshotBuilder.takeSnapshot(context: context) else {
-                        return (nil, nil)
-                    }
-                    let touchSnapshot = touchSnapshotProducer.takeSnapshot(
-                        context: .init(
-                            touchPrivacy: context.touchPrivacy,
-                            viewServerTimeOffset: context.viewServerTimeOffset
-                        )
-                    )
-                    return (layerTreeSnapshot, touchSnapshot)
+    @MainActor
+    private func takeSnapshot(
+        context: LayerRecordingContext,
+        snapshotBuilder: any LayerTreeSnapshotBuilding,
+        touchSnapshotProducer: any TouchSnapshotProducer
+    ) -> (LayerTreeSnapshot?, TouchSnapshot?) {
+        do {
+            return try objc_rethrow { () -> (LayerTreeSnapshot?, TouchSnapshot?) in
+                guard let layerTreeSnapshot = snapshotBuilder.takeSnapshot(context: context) else {
+                    return (nil, nil)
                 }
-            } catch let objc as ObjcException {
-                context.telemetry.error(
-                    "[SR] Failed to take snapshot due to Objective-C runtime exception",
-                    error: objc.error
+                let touchSnapshot = touchSnapshotProducer.takeSnapshot(
+                    context: .init(
+                        touchPrivacy: context.touchPrivacy,
+                        viewServerTimeOffset: context.viewServerTimeOffset
+                    )
                 )
-                return (nil, nil)
-            } catch {
-                context.telemetry.error("[SR] Failed to take snapshot", error: error)
-                return (nil, nil)
+                return (layerTreeSnapshot, touchSnapshot)
             }
+        } catch let objc as ObjcException {
+            context.telemetry.error(
+                "[SR] Failed to take snapshot due to Objective-C runtime exception",
+                error: objc.error
+            )
+            return (nil, nil)
+        } catch {
+            context.telemetry.error("[SR] Failed to take snapshot", error: error)
+            return (nil, nil)
         }
     }
 }

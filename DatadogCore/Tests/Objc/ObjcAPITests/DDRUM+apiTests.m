@@ -80,6 +80,14 @@
     [DDRUM enableWith:config];
 }
 
+- (void)testDDRUMInstanceNameAPI {
+    DDRUMConfiguration *config = [[DDRUMConfiguration alloc] initWithApplicationID:@"app-id"];
+    NSString *instanceName = @"rum-test-instance";
+    [DDRUM enableWith:config instanceName:instanceName];
+    DDRUMMonitor *monitor = [DDRUMMonitor sharedWithInstanceName:instanceName];
+    (void)monitor;
+}
+
 - (void)testDDRUMConfigurationAPI {
     DDRUMConfiguration *config = [[DDRUMConfiguration alloc] initWithApplicationID:@"app-id"];
     XCTAssertEqual(config.applicationID, @"app-id");

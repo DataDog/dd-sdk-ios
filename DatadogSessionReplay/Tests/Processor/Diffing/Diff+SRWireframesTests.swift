@@ -149,6 +149,38 @@ class DiffSRWireframes: XCTestCase {
         }
     }
 
+    func testWhenComputingMutationsForImageWireframe_itUpdatesResourceID() throws {
+        // Given
+        let randomID: WireframeID = .mockRandom()
+        let resourceID: String = .mockRandom()
+        let wireframeA: SRWireframe = .imageWireframe(value: SRImageWireframe(
+            height: 100,
+            id: randomID,
+            resourceId: .mockRandom(),
+            width: 200,
+            x: 10,
+            y: 20
+        ))
+        let wireframeB: SRWireframe = .imageWireframe(value: SRImageWireframe(
+            height: 100,
+            id: randomID,
+            resourceId: resourceID,
+            width: 200,
+            x: 10,
+            y: 20
+        ))
+
+        // When
+        let mutations = try wireframeB.mutations(from: wireframeA)
+
+        // Then
+        guard case let .imageWireframeUpdate(update) = mutations else {
+            XCTFail("mutations are expected to be `.imageWireframeUpdate`")
+            return
+        }
+        XCTAssertEqual(update.resourceId, resourceID)
+    }
+
     func testUpdatingContentClip() throws {
         let id: WireframeID = .mockRandom()
 
@@ -244,6 +276,7 @@ extension SRWireframe {
             id: update.id,
             isEmpty: update.isEmpty ?? wireframe.isEmpty,
             mimeType: update.mimeType ?? wireframe.mimeType,
+            resourceId: update.resourceId ?? wireframe.resourceId,
             shapeStyle: update.shapeStyle ?? wireframe.shapeStyle,
             width: update.width ?? wireframe.width,
             x: update.x ?? wireframe.x,

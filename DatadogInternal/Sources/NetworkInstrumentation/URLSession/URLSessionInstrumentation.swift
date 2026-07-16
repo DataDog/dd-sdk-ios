@@ -125,11 +125,15 @@ extension URLSessionInstrumentation {
     public enum FirstPartyHostsTracing {
         /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
         ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
+        ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
         case trace(hosts: Set<String>)
 
         /// Trace given hosts with using custom tracing headers.
+        ///
+        /// Wildcard patterns using `*` are supported (e.g. `"*.example.com"`).
         ///
         /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>])

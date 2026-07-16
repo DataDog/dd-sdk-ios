@@ -35,12 +35,14 @@ internal class RUMFeatureOperationManager {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
+    private let sessionSampler: DeterministicSampler
 
     // MARK: - Initialization
 
-    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies) {
+    init(parent: RUMContextProvider, dependencies: RUMScopeDependencies, sessionSampler: DeterministicSampler) {
         self.parent = parent
         self.dependencies = dependencies
+        self.sessionSampler = sessionSampler
     }
 
     // MARK: - Public Interface
@@ -91,8 +93,25 @@ internal class RUMFeatureOperationManager {
             .merging(activeView?.attributes ?? [:]) { $1 }
             .merging(command.attributes) { $1 }
 
+        let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
+
+        if shouldSendOperationMessage(for: command) {
+            let message = OperationMessage(
+                attributes: parent.rumContextAttributes,
+                operation: Vital(
+                    id: command.vitalId,
+                    name: command.name,
+                    operationKey: command.operationKey,
+                    stepType: command.stepType,
+                    date: command.time,
+                    serverTimeOffset: context.serverTimeOffset
+                )
+            )
+            dependencies.featureScope.send(message: .payload(message))
+        }
+
         let vitalEvent = RUMVitalOperationStepEvent(
-            dd: .init(),
+            dd: .init(profiling: profiling),
             account: .init(context: context),
             application: .init(id: parent.context.rumApplicationID),
             buildId: context.buildId,
@@ -126,6 +145,20 @@ internal class RUMFeatureOperationManager {
         writer.write(value: vitalEvent)
     }
 
+    private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {
+        switch command.stepType {
+        case .start:
+            guard let options = command.options as? ProfilingOptions else {
+                return false
+            }
+            return sessionSampler.combined(with: options.sampleRate).sample()
+        case .end:
+            return true
+        case .update, .retry:
+            return false
+        }
+    }
+
     private func trackOperationStart(name: String, operationKey: String?, lookupKey: String) {
         // Check if operation is already being tracked
         if activeOperations.contains(lookupKey) {
@@ -157,30 +190,63 @@ internal class RUMFeatureOperationManager {
     /// Validates the `name` and `operationKey` of the command
     private func validateCommand(_ command: RUMOperationStepVitalCommand) -> Bool {
         // Validate name (required)
-        guard validateString(command.name, stepType: command.stepType) else {
+        guard validateName(command.name, stepType: command.stepType) else {
             return false
         }
 
         // Validate operationKey if present (optional)
         if let operationKey = command.operationKey,
-           !validateString(operationKey, stepType: command.stepType) {
+           !validateOperationKey(operationKey, stepType: command.stepType) {
             return false
         }
 
         return true
     }
 
-    /// Validates the string is not empty
-    // or contains only whitespace/line breaks
-    private func validateString(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
+    /// ASCII character set accepted by the backend for `vital.name`, matching
+    /// the server-side regex `[\w.@$-]` (letters, digits, `_`, `.`, `@`, `$`,
+    /// `-`). Built explicitly from ASCII so that Unicode-aware categories
+    /// (which `CharacterSet.alphanumerics` would pull in) do not mask
+    /// non-conforming names — e.g. `ログイン` is all Unicode "Letter, other"
+    /// and must still trigger the warning.
+    private static let validOperationNameCharacters = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.@$-"
+    )
+
+    /// Validates the operation name.
+    ///
+    /// Blank / empty names are rejected (the backend rejects them with its
+    /// own non-empty precondition before evaluating the character-set regex).
+    /// Names that fail the backend's `[\w.@$-]*` character-set regex trigger
+    /// a developer warning but the event is still emitted — the backend is
+    /// the source of truth on character-set policy, so client-side drop
+    /// would force an SDK bump if that policy is ever relaxed.
+    private func validateName(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
-            DD.logger.error("Operation `name` and `operationKey` cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
+            DD.logger.error("Operation `name` cannot be empty or contain only whitespace/line breaks. \(stepType) command will be ignored.")
             return false
         }
 
-        // Backend takes care of sanitizing user inputs
+        if !value.unicodeScalars.allSatisfy(Self.validOperationNameCharacters.contains) {
+            DD.logger.warn("Operation `name` '\(value)' does not match the backend-accepted pattern [\\w.@$-]* (letters, digits, _ . @ $ -). The \(stepType) command will still be emitted and may be rejected by the backend.")
+        }
+
+        return true
+    }
+
+    /// Validates the operation key: non-blank. The schema does not restrict
+    /// the character set for `operation_key`.
+    /// A blank value is warned about but the event is still emitted — `operationKey`
+    /// is optional, so a blank value should not discard the entire operation step.
+    private func validateOperationKey(_ value: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.isEmpty {
+            DD.logger.warn("Operation `operationKey`, when provided, cannot be empty or contain only whitespace/line breaks. The \(stepType) command will still be emitted.")
+        }
+
         return true
     }
 

@@ -332,6 +332,52 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.build, "os-build")
     }
 
+    func testWhenViewIsStartedAndStoppedWithProfilingContext_itSendsViewUpdateEventsWithProfiling() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
+        var context = self.context
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(2)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        viewEvents.forEach { viewEvent in
+            XCTAssertEqual(viewEvent.dd.profiling?.status, .running)
+            XCTAssertEqual(viewEvent.dd.profiling?.quotaReason, quotaReason)
+            XCTAssertNil(viewEvent.dd.profiling?.errorReason)
+        }
+    }
+
     func testWhenViewIsStopped_itMakesAttributesImmutable() throws {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
@@ -2058,8 +2104,10 @@ class RUMViewScopeTests: XCTestCase {
         let completionExpectation = expectation(description: "Error processing completion")
 
         let hasReplay: Bool = .mockRandom()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -2137,6 +2185,10 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
+
+        // Profiling Status
+        XCTAssertEqual(error.dd.profiling?.status, .running)
+        XCTAssertEqual(error.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource() throws {
@@ -2354,6 +2406,62 @@ class RUMViewScopeTests: XCTestCase {
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
         XCTAssertEqual(error.error.fingerprint, fakeFingerprint)
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
+    }
+
+    func testGivenStartedView_whenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages() throws {
+        // Given
+        let generationError = ErrorMock("binary images generation failed")
+        let featureScope = FeatureScopeMock()
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                backtraceReporter: BacktraceReporterMock(backtraceGenerationError: generationError)
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        CrossPlatformAttributes.includeBinaryImages: true
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertNil(error.error.binaryImages, "Binary images should be omitted when generation fails")
+        XCTAssertNotNil(featureScope.telemetryMock.messages.firstError(), "The generation error should be reported to telemetry")
     }
 
     func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() throws {
@@ -2915,8 +3023,10 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
+        let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
+        context.set(additionalContext: ProfilingContext(status: .running, quotaReason: quotaReason))
 
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
@@ -2984,6 +3094,10 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
+
+        // Profiling Status
+        XCTAssertEqual(event.dd.profiling?.status, .running)
+        XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
@@ -3743,6 +3857,66 @@ class RUMViewScopeTests: XCTestCase {
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
         let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
         DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
+    }
+
+    func testWhenInactiveViewEmitsTerminalEventAfterStopResource_itDoesNotOverwriteFatalErrorContext() throws {
+        // Given
+        let identityA = ViewIdentifier.mockRandomString()
+        let identityB = ViewIdentifier.mockRandomString()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let deps = RUMScopeDependencies.mockWith(fatalErrorContext: fatalErrorContext)
+
+        let scopeA = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: deps,
+            identity: identityA,
+            path: "ViewControllerA",
+            name: "ViewA",
+            customTimings: [:],
+            startTime: Date(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        // Step 1: Start View A
+        _ = scopeA.process(command: RUMStartViewCommand.mockWith(identity: identityA), context: context, writer: writer)
+
+        // Step 2: Start a resource on A while it is still active
+        _ = scopeA.process(command: RUMStartResourceCommand.mockWith(resourceKey: "/resource"), context: context, writer: writer)
+
+        // Step 3: Start View B — A becomes inactive but stays alive due to the pending resource
+        let startViewBCommand = RUMStartViewCommand.mockWith(identity: identityB)
+        XCTAssertTrue(
+            scopeA.process(command: startViewBCommand, context: context, writer: writer),
+            "View A must stay alive while '/resource' is pending"
+        )
+        XCTAssertFalse(scopeA.isActiveView, "View A must be inactive after View B starts")
+
+        let scopeB = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: deps,
+            identity: identityB,
+            path: "ViewControllerB",
+            name: "ViewB",
+            customTimings: [:],
+            startTime: Date(),
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+        _ = scopeB.process(command: startViewBCommand, context: context, writer: writer)
+
+        let snapshotForB = try XCTUnwrap(fatalErrorContext.view, "Fatal error context must reflect View B after it starts")
+
+        // Step 4: Stop the resource on A — triggers A's terminal view event (is_active: false, resource.count: 1)
+        _ = scopeA.process(command: RUMStopResourceCommand.mockWith(resourceKey: "/resource"), context: context, writer: writer)
+
+        // Then: fatal error context must still point to View B, not A's terminal event
+        let finalView = try XCTUnwrap(fatalErrorContext.view)
+        DDAssertReflectionEqual(finalView, snapshotForB, "Inactive view's terminal event must not overwrite the active view in fatal error context")
     }
 
     // MARK: - Tracking Time To Network Settled Metric

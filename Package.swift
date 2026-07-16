@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 
 import PackageDescription
 import Foundation
@@ -55,7 +55,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
-        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.3.0")),
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
     ],
     targets: [
         .target(
@@ -112,7 +112,10 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core")
             ],
-            path: "DatadogTrace/Sources"
+            path: "DatadogTrace/Sources",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
         .testTarget(
             name: "DatadogTraceTests",
@@ -120,19 +123,28 @@ let package = Package(
                 .target(name: "DatadogTrace"),
                 .target(name: "TestUtilities"),
             ],
-            path: "DatadogTrace/Tests"
+            path: "DatadogTrace/Tests",
+            swiftSettings: [
+                .swiftLanguageMode(.v6)
+            ]
         ),
 
         .target(
             name: "DatadogRUM",
             dependencies: [
                 .target(name: "DatadogInternal"),
+                .target(name: "DatadogRUMPrivate"),
             ],
             path: "DatadogRUM",
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
-            ]
+            ],
+            swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
+        ),
+        .target(
+            name: "DatadogRUMPrivate",
+            path: "DatadogRUM/Private"
         ),
         .testTarget(
             name: "DatadogRUMTests",
@@ -260,6 +272,7 @@ let package = Package(
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings
         )
     ],
+    swiftLanguageModes: [.v5],
     cxxLanguageStandard: .cxx17
 )
 

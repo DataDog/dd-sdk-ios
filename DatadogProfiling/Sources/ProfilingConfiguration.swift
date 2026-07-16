@@ -23,20 +23,30 @@ extension Profiling {
         /// Default: `5.0`.
         public var applicationLaunchSampleRate: SampleRate
 
+        /// The sampling rate for continuous Profiling.
+        ///
+        /// It must be a number between 0.0 and 100.0, where 0 means no profiles will be collected.
+        ///
+        /// Default: `5.0`.
+        public var continuousSampleRate: SampleRate
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
+        internal var minProfileDuration: TimeInterval = DatadogProfiler.Constants.minProfileDuration
 
         /// Creates the Profiling configuration.
         /// - Parameters:
         ///   - customEndpoint: Optional custom server endpoint for profile uploads.
-        ///   - sampleRate: The sampling rate for Profiling.
+        ///   - applicationLaunchSampleRate: The sampling rate for the application launch profiling.
         public init(
             customEndpoint: URL? = nil,
-            applicationLaunchSampleRate: SampleRate = 5
+            applicationLaunchSampleRate: SampleRate = 5,
+            continuousSampleRate: SampleRate = 5
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
+            self.continuousSampleRate = continuousSampleRate
         }
     }
 }

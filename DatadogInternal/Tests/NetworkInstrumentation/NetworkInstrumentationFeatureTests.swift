@@ -51,7 +51,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidComplete.expectedFulfillmentCount = expectedFulfillmentCount
 
-        let delivery: ServerMock.Delivery = error.map { .failure(error: $0) } ?? .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: dataSize))
+        let delivery: ServerMock.Delivery = error.map { .failure(error: $0) } ?? .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: dataSize))
         let server = ServerMock(delivery: delivery, skipIsMainThreadCheck: true)
 
         scopeHandler(to: server)
@@ -110,7 +110,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)))
 
         handler.onRequestMutation = { _, _, _ in notifyRequestMutation.fulfill() }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -584,6 +584,61 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
+    func testRegisteredDelegate_doesNotBufferMediaResponseBody() throws {
+        // Regression test for RUM-16927.
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockWith(statusCode: 200, mimeType: "image/jpeg"),
+                data: .mockRandom(ofSize: 1_024) // well under the 512 KB cap
+            ),
+            skipIsMainThreadCheck: true
+        )
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        session.dataTask(with: URL.mockAny()).resume()
+
+        wait(for: [notifyInterceptionDidComplete], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertNil(interception.data, "Media response body must not be buffered")
+    }
+
+    func testRegisteredDelegate_truncatesBodyAtSizeCap() throws {
+        // Regression test for RUM-16927.
+        let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
+        let overCapSize = NetworkInstrumentationFeature.maxBufferedBodySize + 1_024
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockWith(statusCode: 200, mimeType: "application/json"),
+                data: .mockRandom(ofSize: overCapSize)
+            ),
+            skipIsMainThreadCheck: true
+        )
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        scopeHandler(to: server)
+
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let delegate = SessionDataDelegateMock()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        session.dataTask(with: URL.mockAny()).resume()
+
+        wait(for: [notifyInterceptionDidComplete], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first).value
+        XCTAssertNil(interception.data)
+    }
+
     // MARK: - Automatic Mode
 
     func testAutomaticMode_tracksTasksWithoutDelegateRegistration() throws {
@@ -998,7 +1053,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         let server = ServerMock(
-            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)),
             skipIsMainThreadCheck: true
         )
         scopeHandler(to: server)
@@ -1803,12 +1858,43 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             taskCompleted.fulfill()
         }
         task.resume()
+        task.cancel()
 
-        // Wait for task to complete
-        wait(for: [taskCompleted], timeout: 10)
+        // Wait for the cancellation completion.
+        wait(for: [taskCompleted], timeout: 1)
 
         // Then - Verify SDK request with DD-API-KEY was not intercepted
         XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-API-KEY header, even to custom endpoints")
+    }
+
+    func testAutomaticMode_doesNotTrackSDKRequestsAuthenticatedWithClientToken() throws {
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        let session = URLSession(configuration: .ephemeral)
+
+        var interceptedSDKRequests: [URLSessionTaskInterception] = []
+        handler.onInterceptionDidStart = { interception in
+            interceptedSDKRequests.append(interception)
+        }
+
+        // When - Make a request with DD-CLIENT-TOKEN (used by the profiling quota admission API)
+        let quotaURL = URL(string: "http://custom-endpoint.example.com/api/v2/profiling/quota?session_id=test")!
+        var request = URLRequest(url: quotaURL)
+        request.setValue(.mockRandom(), forHTTPHeaderField: "DD-CLIENT-TOKEN")
+
+        let taskCompleted = expectation(description: "Task completed")
+        let task = session.dataTask(with: request) { _, _, _ in
+            taskCompleted.fulfill()
+        }
+        task.resume()
+        task.cancel()
+
+        // Wait for the cancellation completion.
+        wait(for: [taskCompleted], timeout: 1)
+
+        // Then
+        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-CLIENT-TOKEN header")
     }
 
     func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
@@ -2091,9 +2177,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testRegisteredDelegate_detectsFirstPartyHosts() throws {
-        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
-        scopeHandler(to: server)
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
@@ -2116,7 +2200,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 5, handler: nil)
+        wait(for: [notifyInterceptionDidStart, notifyInterceptionDidComplete], timeout: 5, enforceOrder: true)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
