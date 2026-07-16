@@ -98,13 +98,15 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertNotNil(profile)
 
         let addresses: [UInt64] = [0x100001000, 0x100002000, 0x100003000]
+        let thread1ID = UInt64(UInt32.max) + 1
+        let thread2ID = thread1ID + 1
 
         // When
         // - Add same stack from different threads with different names
         let thread1Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread1Trace.pointee = .mockWith(tid: 1, addresses: addresses, threadName: "Thread1")
+        thread1Trace.pointee = .mockWith(tid: thread1ID, addresses: addresses, threadName: "Thread1")
         let thread2Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread2Trace.pointee = .mockWith(tid: 2, addresses: addresses, threadName: "Thread2")
+        thread2Trace.pointee = .mockWith(tid: thread2ID, addresses: addresses, threadName: "Thread2")
         defer {
             dd_free(thread1Trace)
             dd_free(thread2Trace)
@@ -152,7 +154,7 @@ final class ProfileCxxTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(receivedTIDs, [1, 2])
+        XCTAssertEqual(receivedTIDs, [Int64(thread1ID), Int64(thread2ID)])
         XCTAssertEqual(receivedThreadNames, ["Thread1", "Thread2"])
     }
 
@@ -221,7 +223,7 @@ final class ProfileCxxTests: XCTestCase {
                 UInt64(0x300000000 + i * 0x1000)
             ]
             let stackTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-            stackTrace.pointee = .mockWith(tid: UInt32(i % 10), addresses: addresses)
+            stackTrace.pointee = .mockWith(tid: UInt64(i % 10), addresses: addresses)
             dd_pprof_add_samples(profile, stackTrace, 1)
             dd_free(stackTrace)
         }
