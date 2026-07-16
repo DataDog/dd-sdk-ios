@@ -384,7 +384,7 @@ extension DatadogProfilerTests {
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "long-task-session-id",
-            RUMCoreContext.IDs.viewID: "long-task-view-id"
+            RUMCoreContext.IDs.viewID: ["long-task-view-id"]
         ]
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: attributes, longTask: longTask)), from: core)
@@ -406,7 +406,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(eventIDs(ofType: "long_task", in: rumEvents), [longTask.id])
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "long-task-session-id")
-        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? String, "long-task-view-id")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["long-task-view-id"])
         withExtendedLifetime(profiler) {}
     }
 
@@ -422,7 +422,7 @@ extension DatadogProfilerTests {
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "app-hang-session-id",
-            RUMCoreContext.IDs.viewID: "app-hang-view-id"
+            RUMCoreContext.IDs.viewID: ["app-hang-view-id"]
         ]
         let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
         XCTAssertTrue(profiler.receive(message: .payload(AppHangMessage(attributes: attributes, hang: hang)), from: core))
@@ -443,7 +443,7 @@ extension DatadogProfilerTests {
         XCTAssertEqual(eventIDs(ofType: "error", in: rumEvents), [hang.id])
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
         XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "app-hang-session-id")
-        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? String, "app-hang-view-id")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["app-hang-view-id"])
         withExtendedLifetime(profiler) {}
     }
 }
