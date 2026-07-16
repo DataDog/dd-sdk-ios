@@ -166,7 +166,7 @@ protected:
      * @param thread The thread to sample
      * @param interval_nanos The actual sampling interval in nanoseconds for this sample
      */
-    void sample_thread(thread_t thread, uint64_t interval_nanos, uint64_t cpu_time_nanos);
+    void sample_thread(thread_t thread, uint64_t interval_nanos);
 
     /**
      * @brief Returns true when the thread is owned by the profiler itself.
@@ -176,14 +176,19 @@ protected:
     /**
      * @brief Returns CPU time consumed since the previous observation for this thread.
      */
-    uint64_t thread_cpu_time_delta_nanos(thread_t thread);
+    uint64_t thread_cpu_time_delta_nanos(thread_t thread, uint64_t thread_id);
 
     /**
      * @brief Removes CPU-time state for threads no longer present in the task.
      */
-    void prune_thread_cpu_time_state(const thread_t* threads, mach_msg_type_number_t count);
+    void prune_thread_cpu_time_state();
 
 private:
+    struct cpu_time_baseline {
+        uint64_t cumulative_nanos;
+        uint64_t last_seen_cycle;
+    };
+
     /**
      * @brief Static entry point for the sampling thread
      */
@@ -195,7 +200,8 @@ private:
     std::mutex state_mutex;
     /// Indicates whether `sampling_thread` currently refers to a live session thread.
     std::atomic<bool> has_sampling_thread{false};
-    std::unordered_map<thread_t, uint64_t> previous_thread_cpu_time_nanos;
+    uint64_t cpu_time_sampling_cycle = 0;
+    std::unordered_map<uint64_t, cpu_time_baseline> cpu_time_baselines;
 };
 
 } // namespace dd::profiler

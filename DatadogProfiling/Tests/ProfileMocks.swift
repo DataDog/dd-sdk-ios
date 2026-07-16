@@ -29,7 +29,7 @@ extension binary_image_t {
 
 extension stack_trace_t {
     static func mockWith(
-        tid: UInt32,
+        tid: UInt64,
         addresses: [UInt64],
         threadName: StaticString = "TestThread",
         timestamp: UInt64? = nil,
