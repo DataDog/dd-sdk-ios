@@ -75,9 +75,19 @@ internal func flattenedTags(_ tags: [String: OTTagValue]) -> [String: OTTagValue
 /// calls this once per span created). A collision that's only visible after flattening `user` (e.g. a global tag
 /// literally keyed `"a.b"` colliding with a user tag `["a": ["b": ...]]`) still resolves by the "user wins" rule
 /// below, since `global` arrives pre-flattened and `user` is flattened here before merging.
+///
+/// Before merging, drops every `global` leaf under one of `user`'s own top-level keys (exact match, or a
+/// `"key."`-prefixed child) — otherwise a global dictionary tag, once flattened into leaves at init, no longer
+/// has a single key a per-span override could collide with, so e.g. a global `["context": ["foo": "x"]]`
+/// (flattened to `"context.foo"`) would sit alongside a per-span `setTag(key: "context", value: "y")` instead
+/// of being replaced by it, unlike before flattening existed (when both were a single literal `"context"` key).
 internal func mergeTags(global: [String: OTTagValue], user: [String: OTTagValue]?) -> [String: OTTagValue] {
     guard let user, !user.isEmpty else {
         return global
     }
-    return global.merging(flattenedTags(user)) { _, user in user }
+    var reducedGlobal = global
+    for key in user.keys {
+        reducedGlobal = reducedGlobal.filter { $0.key != key && !$0.key.hasPrefix("\(key).") }
+    }
+    return reducedGlobal.merging(flattenedTags(user)) { _, user in user }
 }

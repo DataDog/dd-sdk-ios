@@ -279,6 +279,33 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(tags["context.foo"], "user-value", "user tags must win over global tags even when the collision only appears after flattening")
     }
 
+    func testWhenUserOverridesGlobalDictionaryTagWithAScalar_itReplacesTheWholeGlobalNamespace() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given: a global dictionary tag, already flattened into leaves at `DatadogTracer.init` — so by the
+        // time `startSpan` merges tags, there is no single "context" key left in `global` for a per-span
+        // scalar override to collide with directly (only "context.foo"/"context.baz" leaves exist).
+        let tracer: DatadogTracer = .mockWith(core: core, tags: ["context": ["foo": "global-foo", "baz": "global-baz"]])
+
+        // When: the caller overrides the whole "context" tag with a scalar value for this one span — the same
+        // thing they could do before dictionary flattening existed, when "context" was still a single literal
+        // key on both sides.
+        let span = tracer.startSpan(operationName: .mockAny(), tags: ["context": "span-value"])
+        span.finish()
+
+        // Then: the override must win outright — none of the global dictionary's leaves should survive
+        // alongside it. (Before this fix, `mergeTags` had no key left to collide on, so both
+        // "context.foo"/"context.baz" and the new "context" tag ended up on the span at once.)
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["context"], "span-value")
+        XCTAssertNil(tags["context.foo"], "a per-span override must replace the whole global dictionary namespace, not sit alongside its stale leaves")
+        XCTAssertNil(tags["context.baz"], "a per-span override must replace the whole global dictionary namespace, not sit alongside its stale leaves")
+    }
+
     func testWhenFlattenedDictionaryKeyCollidesWithManualKeepOrDrop_itStoresTheTagInsteadOfOverridingSampling() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
