@@ -77,6 +77,12 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
 
+            if let tags = event["ddtags"] as? String, !tags.isEmpty {
+                event["ddtags"] = "\(context.ddTags),\(tags)"
+            } else {
+                event["ddtags"] = context.ddTags
+            }
+
             if let date = event["date"] as? Int,
                let view = event["view"] as? JSON,
                let id = view["id"] as? String {
