@@ -197,7 +197,14 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
                 logFields: self.logFields
             )
 
-            onSpanFinished(SpanSnapshot(from: event, startTime: self.startTime))
+            // Derive the snapshot from the sanitized event so client-side stats aggregate the same
+            // tags the uploaded span carries. `SpanEventEncoder` sanitizes the event again at encode
+            // time (attribute-key normalization and count-limiting), so reading the raw event here
+            // would let stats emit peer/dimension tags the upload dropped or renamed — a divergence
+            // the backend cannot correct because `_dd.compute_stats=0` suppresses its recomputation.
+            // Sanitizing is idempotent, so the uploaded envelope below stays byte-identical.
+            let sanitizedEvent = SpanSanitizer().sanitize(span: event)
+            onSpanFinished(SpanSnapshot(from: sanitizedEvent, startTime: self.startTime))
 
             if self.ddContext.samplingDecision.samplingPriority.isKept {
                 let envelope = SpanEventsEnvelope(span: event, environment: context.env)
