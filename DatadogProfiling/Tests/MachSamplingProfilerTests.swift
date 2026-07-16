@@ -24,6 +24,18 @@ final class MachSamplingProfilerTests: XCTestCase {
 
     // MARK: - Sampling & profile aggregation
 
+    func testThreadIdentifier_matchesPthreadIdentifier() {
+        var expectedThreadID: UInt64 = 0
+        XCTAssertEqual(pthread_threadid_np(nil, &expectedThreadID), 0)
+
+        let currentThread = mach_thread_self()
+        defer { mach_port_deallocate(mach_task_self_, currentThread) }
+
+        var actualThreadID: UInt64 = 0
+        XCTAssertTrue(dd_profiler_get_thread_id_for_testing(currentThread, &actualThreadID))
+        XCTAssertEqual(actualThreadID, expectedThreadID)
+    }
+
     func testGlobalProfiler_collectsSamplesUnderCPULoad() {
         let mockThread = MockThread {
             XCTAssertEqual(dd_profiler_start(), 1)
