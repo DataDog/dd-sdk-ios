@@ -44,8 +44,8 @@ typedef struct stack_frame {
  * Represents a complete stack trace.
  */
 typedef struct stack_trace {
-    /** Thread ID */
-    mach_port_t tid;
+    /** System-wide unique 64-bit thread ID */
+    uint64_t tid;
     /** Thread name  */
     const char* thread_name;
     /** Timestamp in nanoseconds since system boot */
