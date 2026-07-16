@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "mach_profiler.h"
+#include "dd_profiler.h"
 
 #ifdef __cplusplus
 namespace dd::profiler {
@@ -75,15 +75,12 @@ size_t dd_pprof_serialize(dd_pprof_t* profile, uint8_t** data);
 void dd_pprof_free_serialized_data(uint8_t* data);
 
 /**
- * Callback function that forwards stack traces to a dd_pprof_t instance.
- * 
- * Use this with profiler_create() by passing your dd_pprof_t instance as the ctx parameter.
- * 
- * Example:
- *   dd_pprof_t* profile = dd_pprof_create(1000000);
- *   profiler_t* profiler = profiler_create(&config, dd_pprof_callback, profile);
+ * Callback function that resolves binary images and forwards stack traces
+ * to a dd_pprof_t instance.
+ *
+ * Performs full Mach-O header parsing for image resolution (no cache).
  */
-void dd_pprof_callback(const stack_trace_t* traces, size_t count, void* ctx);
+void dd_pprof_callback(stack_trace_t* traces, size_t count, void* ctx);
 
 /**
  * Get profile start timestamp in seconds since Unix epoch
@@ -100,6 +97,14 @@ double dd_pprof_get_start_timestamp_s(dd_pprof_t* profile);
  * @return End timestamp in seconds since Unix epoch, or 0.0 if no samples
  */
 double dd_pprof_get_end_timestamp_s(dd_pprof_t* profile);
+
+/**
+ * Set the server time correction used for exported timestamps.
+ *
+ * @param profile Pointer to the profile
+ * @param offset_ns Server time offset in nanoseconds
+ */
+void dd_pprof_set_server_time_offset_ns(dd_pprof_t* profile, int64_t offset_ns);
 
 #ifdef __cplusplus
 }

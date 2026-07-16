@@ -23,10 +23,12 @@
  */
 
 #include "profile.h"
+#include "binary_image_resolver.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <time.h>
+#include <algorithm>
 
 namespace dd::profiler {
 
@@ -43,12 +45,12 @@ int64_t uptime_epoch_offset() {
     uint64_t uptime_ns = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 
     // Get current epoch time
-    struct timespec ts;
+    struct timespec ts{};
     clock_gettime(CLOCK_REALTIME, &ts);
-    int64_t epoch_time_ns = (int64_t)ts.tv_sec * 1000000000LL + (int64_t)ts.tv_nsec;
+    int64_t epoch_time_ns = (static_cast<int64_t>(ts.tv_sec) * 1000000000LL) + static_cast<int64_t>(ts.tv_nsec);
 
     // Calculate and return offset to convert uptime to epoch
-    return epoch_time_ns - (int64_t)uptime_ns;
+    return epoch_time_ns - static_cast<int64_t>(uptime_ns);
 }
 
 /**
@@ -81,6 +83,8 @@ std::string uuid_string(const uuid_t uuid) {
  */
 profile::profile(uint64_t sampling_interval_ns) 
     : _sampling_interval_ns(sampling_interval_ns)
+    , _epoch_offset(uptime_epoch_offset())
+    , _server_time_offset_ns(0)
     , _start_timestamp(0)
     , _end_timestamp(0) {
     
@@ -95,9 +99,6 @@ profile::profile(uint64_t sampling_interval_ns)
     _end_timestamp_ns_str_id = intern_string("end_timestamp_ns");
     _thread_id_str_id = intern_string("thread id");
     _thread_name_str_id = intern_string("thread name");
-
-    // Initialize epoch offset for uptime conversion
-    _epoch_offset = uptime_epoch_offset();
 }
 
 /**
@@ -107,7 +108,7 @@ profile::profile(uint64_t sampling_interval_ns)
  * @return Epoch time in nanoseconds
  */
 int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
-    return static_cast<int64_t>(uptime_ns) + _epoch_offset;
+    return static_cast<int64_t>(uptime_ns) + _epoch_offset + _server_time_offset_ns;
 }
 
 /**
@@ -122,14 +123,20 @@ int64_t profile::uptime_ns_to_epoch_ns(uint64_t uptime_ns) const {
  * 
  * **Processing Steps:**
  * 1. Convert stack frames to deduplicated location IDs
- * 2. Create timestamp labels for each sample
+ * 2. Create labels for each sample
  * 3. Store sample values (sampling intervals)
  * 4. Add completed samples to the profile
  */
 void profile::add_samples(const stack_trace_t* traces, size_t count) {
+    add_samples(traces, count, nullptr);
+}
+
+void profile::add_samples(const stack_trace_t* traces, size_t count, binary_image_cache* image_cache) {
     if (!traces) return;
-    
-    for (int i = 0; i < count; ++i) {
+
+    _samples.reserve(_samples.size() + count);
+
+    for (size_t i = 0; i < count; ++i) {
         const auto& trace = traces[i];
         
         // Build location IDs from stack frames
@@ -137,24 +144,16 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         location_ids.reserve(trace.frame_count);
         for (uint32_t j = 0; j < trace.frame_count; ++j) {
             const auto& frame = trace.frames[j];
-            uint32_t location_id = intern_frame(frame);
+            uint32_t location_id = intern_frame(frame, image_cache);
             location_ids.push_back(location_id);
         }
         
-        // Create labels with timestamp, tid, and thread name
+        // Create labels with tid and thread name. Timestamp labels are derived during serialization.
         std::vector<label_t> labels;
-        labels.reserve(3);
-        
-        // Add timestamp label (convert uptime nanoseconds to epoch)
-        label_t timestamp_label;
-        timestamp_label.key_id = _end_timestamp_ns_str_id;
-        timestamp_label.str_id = 0;
-        timestamp_label.num = uptime_ns_to_epoch_ns(trace.timestamp);
-        timestamp_label.num_unit_id = _nanoseconds_str_id;
-        labels.push_back(timestamp_label);
+        labels.reserve(2);
         
         // Add thread ID label
-        label_t thread_label;
+        label_t thread_label{};
         thread_label.key_id = _thread_id_str_id;
         thread_label.str_id = 0;
         thread_label.num = static_cast<int64_t>(trace.tid);
@@ -163,7 +162,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         
         // Add thread name label if available
         if (trace.thread_name) {
-            label_t thread_name_label;
+            label_t thread_name_label{};
             thread_name_label.key_id = _thread_name_str_id;
             thread_name_label.str_id = intern_string(trace.thread_name);
             thread_name_label.num = 0;
@@ -174,6 +173,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
         // Create sample
         sample_t sample;
         sample.location_ids = std::move(location_ids);
+        sample.timestamp_uptime_ns = trace.timestamp;
         sample.labels = std::move(labels);
         sample.values = {static_cast<int64_t>(trace.sampling_interval_nanos)};
         
@@ -184,9 +184,7 @@ void profile::add_samples(const stack_trace_t* traces, size_t count) {
             _start_timestamp = trace.timestamp;
         }
 
-        if (_end_timestamp < trace.timestamp) {
-            _end_timestamp = trace.timestamp;
-        }
+        _end_timestamp = std::max(_end_timestamp, trace.timestamp);
     }
 }
 
@@ -221,8 +219,35 @@ uint32_t profile::intern_string(const std::string& str) {
  * @return Location ID (1-based) for the frame's instruction address
  */
 uint32_t profile::intern_frame(const stack_frame_t& frame) {
-    uint32_t mapping_id = intern_binary(frame.image);
-    location_t location;
+    return intern_frame(frame, nullptr);
+}
+
+uint32_t profile::intern_frame(const stack_frame_t& frame, binary_image_cache* image_cache) {
+    // Resolve binary image data only when the instruction pointer is first seen.
+    auto existing_location = _location_lookup.find(frame.instruction_ptr);
+    if (existing_location != _location_lookup.end()) {
+        return existing_location->second;
+    }
+
+    binary_image_t resolved_image{};
+    const binary_image_t* image = &frame.image;
+    bool destroy_resolved_image = false;
+
+    if (frame.image.load_address == 0) {
+        if (image_cache && image_cache->lookup(frame.instruction_ptr, &resolved_image)) {
+            image = &resolved_image;
+        } else if (binary_image_lookup_pc(&resolved_image, reinterpret_cast<void*>(frame.instruction_ptr))) {
+            image = &resolved_image;
+            destroy_resolved_image = true;
+        }
+    }
+
+    uint32_t mapping_id = intern_binary(*image);
+    if (destroy_resolved_image) {
+        binary_image_destroy(&resolved_image);
+    }
+
+    location_t location{};
     location.mapping_id = mapping_id;
     location.address = frame.instruction_ptr;
     return intern_location(location);
@@ -244,7 +269,7 @@ uint32_t profile::intern_binary(const binary_image_t& image) {
 
     std::string build_id = uuid_string(image.uuid);
     
-    mapping_t mapping;
+    mapping_t mapping{};
     mapping.memory_start = image.load_address;
     mapping.filename_id = image.filename ? intern_string(image.filename): 0;
     mapping.build_id = intern_string(build_id);
@@ -277,4 +302,3 @@ uint32_t profile::intern_location(const location_t& location) {
 } // namespace dd::profiler
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
-
