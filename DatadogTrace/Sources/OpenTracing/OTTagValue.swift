@@ -55,8 +55,13 @@ internal func flattenedTagPairs(key: String, dict: [String: OTTagValue]) -> [(St
 /// Warns if that collision actually occurs (same mechanism `DDSpan.storeFlattenedTags` uses for the identical
 /// shape reached via `setTag`) — this function is `DatadogTracer`'s only entry point for flattening global/
 /// initial tags, so it's the only place that could otherwise silently drop one of them with zero diagnostic.
-internal func flattenedTags(_ tags: [String: OTTagValue]) -> [String: OTTagValue] {
-    let pairs = tags.sorted { $0.key < $1.key }.flatMap { flattenedTagPairs(key: $0.key, value: $0.value) }
+internal func flattenedTags(_ tags: [String: OTTagValue]) -> FlattenedTags {
+    var owners: [String: Set<String>] = [:]
+    let pairs = tags.sorted { $0.key < $1.key }.flatMap { entry -> [(String, OTTagValue)] in
+        let pairs = flattenedTagPairs(key: entry.key, value: entry.value)
+        owners[entry.key] = Set(pairs.map { $0.0 })
+        return pairs
+    }
     let uniqueKeyCount = Set(pairs.map { $0.0 }).count
     _ = warn(
         if: uniqueKeyCount != pairs.count,
@@ -65,7 +70,17 @@ internal func flattenedTags(_ tags: [String: OTTagValue]) -> [String: OTTagValue
         ["b": ...] entry) — only one of them was kept.
         """
     )
-    return Dictionary(pairs, uniquingKeysWith: { _, new in new })
+    return FlattenedTags(tags: Dictionary(pairs, uniquingKeysWith: { _, new in new }), owners: owners)
+}
+
+/// The result of flattening a group of tags: the flattened leaf tags themselves, plus, for each original
+/// top-level key, exactly the leaves its value flattened into. `mergeTags` needs this ownership info to drop a
+/// global dictionary tag's leaves on a per-span override of the same key — dropping every tag that merely
+/// shares the `"key."` prefix instead would also erase an unrelated, independently-set literal dotted tag
+/// (e.g. a global tag literally keyed `"context.foo"`, never a leaf of a `"context"` dictionary).
+internal struct FlattenedTags {
+    let tags: [String: OTTagValue]
+    let owners: [String: Set<String>]
 }
 
 /// Merges tracer-level default tags with per-span user tags, user tags winning on key collision.
@@ -76,18 +91,28 @@ internal func flattenedTags(_ tags: [String: OTTagValue]) -> [String: OTTagValue
 /// literally keyed `"a.b"` colliding with a user tag `["a": ["b": ...]]`) still resolves by the "user wins" rule
 /// below, since `global` arrives pre-flattened and `user` is flattened here before merging.
 ///
-/// Before merging, drops every `global` leaf under one of `user`'s own top-level keys (exact match, or a
-/// `"key."`-prefixed child) — otherwise a global dictionary tag, once flattened into leaves at init, no longer
-/// has a single key a per-span override could collide with, so e.g. a global `["context": ["foo": "x"]]`
-/// (flattened to `"context.foo"`) would sit alongside a per-span `setTag(key: "context", value: "y")` instead
-/// of being replaced by it, unlike before flattening existed (when both were a single literal `"context"` key).
-internal func mergeTags(global: [String: OTTagValue], user: [String: OTTagValue]?) -> [String: OTTagValue] {
+/// Before merging, drops only the leaves `global.owners[key]` actually recorded for one of `user`'s own
+/// top-level keys, plus `key` itself — otherwise a global dictionary tag, once flattened into leaves at init,
+/// no longer has a single key a per-span override could collide with, so e.g. a global `["context": ["foo":
+/// "x"]]` (flattened to `"context.foo"`) would sit alongside a per-span `setTag(key: "context", value: "y")`
+/// instead of being replaced by it, unlike before flattening existed (when both were a single literal
+/// `"context"` key). Dropping every tag that merely shares the `"key."` prefix, instead of only tracked
+/// leaves, would also erase an unrelated global tag literally keyed e.g. `"context.foo"` that was never a leaf
+/// of a `"context"` dictionary — the same bug shape fixed in `DDSpan.storeFlattenedTags`.
+internal func mergeTags(global: FlattenedTags, user: [String: OTTagValue]?) -> FlattenedTags {
     guard let user, !user.isEmpty else {
         return global
     }
-    var reducedGlobal = global
+    let flattenedUser = flattenedTags(user)
+    var reducedTags = global.tags
+    var reducedOwners = global.owners
     for key in user.keys {
-        reducedGlobal = reducedGlobal.filter { $0.key != key && !$0.key.hasPrefix("\(key).") }
+        let staleChildren = global.owners[key] ?? []
+        reducedTags = reducedTags.filter { $0.key != key && !staleChildren.contains($0.key) }
+        reducedOwners[key] = nil
     }
-    return reducedGlobal.merging(flattenedTags(user)) { _, user in user }
+    return FlattenedTags(
+        tags: reducedTags.merging(flattenedUser.tags) { _, user in user },
+        owners: reducedOwners.merging(flattenedUser.owners) { _, user in user }
+    )
 }

@@ -68,7 +68,7 @@ class TraceTests: XCTestCase {
         XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, 100)
         XCTAssertNil(tracer.spanEventBuilder.service)
         XCTAssertNil(tracer.loggingIntegration.service)
-        XCTAssertTrue(tracer.tags.isEmpty)
+        XCTAssertTrue(tracer.tags.tags.isEmpty)
         XCTAssertNil(core.get(feature: NetworkInstrumentationFeature.self))
         XCTAssertEqual(tracer.spanEventBuilder.networkInfoEnabled, false)
         XCTAssertNil(tracer.spanEventBuilder.eventsMapper)
@@ -133,7 +133,7 @@ class TraceTests: XCTestCase {
         for (key, value) in nestedDictionary {
             expectedTags["dictionary-attribute.\(key)"] = value
         }
-        DDAssertDictionariesEqual(tracer.tags, expectedTags)
+        DDAssertDictionariesEqual(tracer.tags.tags, expectedTags)
     }
 
     func testWhenEnabledWithURLSessionTracking() throws {

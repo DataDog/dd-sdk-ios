@@ -329,6 +329,26 @@ class DDSpanTests: XCTestCase {
         XCTAssertNil(tags["ctx.b"], "re-setting the same dictionary tag key must replace its whole namespace, not leave stale leaves from the previous value")
     }
 
+    func testWhenScalarOverrideCollidesWithUnrelatedGlobalDottedTag_itDoesNotDropIt() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given: a global tag literally keyed "context.foo" (not derived from flattening any "context" dict).
+        let tracer: DatadogTracer = .mockWith(core: core, tags: ["context.foo": "global-value"])
+
+        // When: a per-span scalar override is set for the unrelated "context" key.
+        let span = tracer.startSpan(operationName: .mockAny(), tags: ["context": "scalar-value"])
+        span.finish()
+
+        // Then: the independent global "context.foo" tag must survive.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["context"], "scalar-value")
+        XCTAssertEqual(tags["context.foo"], "global-value", "an unrelated literal global dotted tag must survive a per-span scalar override of a different key")
+    }
+
     func testWhenOverridingADictionaryTagKeyWithAScalar_itReplacesTheWholeNamespace() throws {
         let writeSpansExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock()
@@ -352,6 +372,29 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(tags["ctx"], "scalar-value")
         XCTAssertNil(tags["ctx.a"], "a scalar self-override must replace the whole dictionary namespace, not sit alongside its stale leaves")
         XCTAssertNil(tags["ctx.b"], "a scalar self-override must replace the whole dictionary namespace, not sit alongside its stale leaves")
+    }
+
+    func testWhenSettingAScalarTag_itDoesNotDropAnIndependentlySetDottedTagUnderTheSamePrefix() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When: "ctx.foo" is set as its own literal tag (never produced by flattening a "ctx" dictionary), then
+        // "ctx" is set as an unrelated scalar tag — the two must coexist, since dotted keys are valid flat tags.
+        span.setTag(key: "ctx.foo", value: "independent")
+        span.setTag(key: "ctx", value: "scalar-value")
+        span.finish()
+
+        // Then: the literal "ctx.foo" tag must survive — it was never a leaf of "ctx"'s value.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx"], "scalar-value")
+        XCTAssertEqual(tags["ctx.foo"], "independent", "a scalar setTag under \"ctx\" must not drop an independently-set \"ctx.foo\" tag that was never a leaf of a \"ctx\" dictionary")
     }
 
     func testWhenFlattenedDictionaryKeyCollidesWithManualKeepOrDrop_itStoresTheTagInsteadOfOverridingSampling() throws {

@@ -23,6 +23,14 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     /// Span tags.
     @ReadWriteLock
     private var tags: [String: OTTagValue]
+    /// For each tag `key` last set on this span via a `Dictionary` value, the leaf keys (`"key.subKey"`, ...)
+    /// it flattened into — so a later `setTag` under the same `key` can drop exactly those stale leaves,
+    /// instead of dropping every `"key."`-prefixed tag regardless of origin. The latter would also erase an
+    /// unrelated dotted tag the caller set independently: `setTag(key: "context.foo", value: "x")` followed by
+    /// `setTag(key: "context", value: "y")` must leave `"context.foo"` untouched, since it was never a leaf
+    /// produced by flattening `"context"`.
+    @ReadWriteLock
+    private var flattenedChildren: [String: Set<String>]
     /// Span log fields.
     @ReadWriteLock
     private var logFields: [[String: Encodable & Sendable]]
@@ -41,7 +49,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: OTTagValue],
+        tags: FlattenedTags,
         eventBuilder: SpanEventBuilder,
         eventWriter: SpanWriteContext
     ) {
@@ -50,8 +58,12 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         self.startTime = startTime
         self.loggingIntegration = tracer.loggingIntegration
         self.operationName = operationName
-        // Assumes `tags` is already flattened and merged (see `DatadogTracer.startSpan`/`mergeTags`).
-        self.tags = tags
+        // Assumes `tags` is already flattened and merged (see `DatadogTracer.startSpan`/`mergeTags`). Seeding
+        // `flattenedChildren` from `tags.owners`, instead of starting it empty, means a later `setTag` on this
+        // same key correctly clears the leaves a global dictionary tag was merged in as here, not just leaves
+        // produced by a subsequent `setTag` call on the live span.
+        self.tags = tags.tags
+        self.flattenedChildren = tags.owners
         self.logFields = []
         self.isFinished = false
         self.eventBuilder = eventBuilder
@@ -99,11 +111,14 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         storeFlattenedTags(key: key, pairs: flattenedTagPairs(key: key, dict: value))
     }
 
-    /// Stores `pairs` (the leaves `key`'s value flattens into), first dropping any leaf already stored under
-    /// `key` from an earlier `setTag` call (exact match, or a `"key."`-prefixed child) — otherwise re-setting
-    /// `key` with a `Dictionary` that dropped or renamed some of its previous entries would leave those stale
-    /// leaves sitting alongside the new ones, instead of `key`'s value being replaced outright as `setTag`
-    /// promises. Same rationale as `mergeTags`'s per-span-override cleanup, applied here to self-overrides.
+    /// Stores `pairs` (the leaves `key`'s value flattens into), first dropping the exact `key` entry plus any
+    /// leaf `flattenedChildren[key]` recorded from `key`'s previous `Dictionary` value, if any — otherwise
+    /// re-setting `key` with a `Dictionary` that dropped or renamed some of its previous entries would leave
+    /// those stale leaves sitting alongside the new ones, instead of `key`'s value being replaced outright as
+    /// `setTag` promises. Only leaves this same method previously produced for `key` are dropped, never every
+    /// tag that happens to share the `"key."` prefix — a literal dotted tag the caller set independently (e.g.
+    /// `setTag(key: "context.foo", ...)`) is not a leaf of `"context"` and must survive `setTag(key: "context",
+    /// ...)`.
     private func storeFlattenedTags(key: String, pairs: [(String, OTTagValue)]) {
         // `setTag(key:value: OTTagValue)` calls this with exactly 1 pair whenever `value` isn't a `Dictionary` —
         // the overwhelming majority of calls — which can never collide with itself; skip the check below for it.
@@ -117,9 +132,17 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
                 """
             )
         }
+        // A dictionary flattens into pairs keyed `"key.subKey"`, never a bare `key`; a scalar (the overwhelming
+        // majority of calls) flattens into exactly one pair keyed `key` itself. That's the only signal available
+        // here to tell the two apart, since `flattenedTagPairs` erases whether it recursed into a `Dictionary`.
+        let isContainer = pairs.count != 1 || pairs[0].0 != key
+        let staleChildren = flattenedChildren[key] ?? []
         _tags.mutate { tags in
-            tags = tags.filter { $0.key != key && !$0.key.hasPrefix("\(key).") }
+            tags = tags.filter { $0.key != key && !staleChildren.contains($0.key) }
             tags.merge(pairs, uniquingKeysWith: { _, new in new })
+        }
+        _flattenedChildren.mutate { children in
+            children[key] = isContainer ? Set(pairs.map { $0.0 }) : nil
         }
     }
 

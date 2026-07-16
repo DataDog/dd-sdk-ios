@@ -12,8 +12,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
-    /// Global tags configured for Trace feature.
-    let tags: [String: OTTagValue]
+    /// Global tags configured for Trace feature, already flattened (see `flattenedTags(_:)`).
+    let tags: FlattenedTags
     /// Integration with Logging.
     let loggingIntegration: TracingWithLoggingIntegration
 
