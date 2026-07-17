@@ -19,19 +19,41 @@ namespace dd::profiler {
 class profile;
 
 /**
- * Pack profile data into pprof protobuf binary format
+ * Pack profile data into pprof protobuf binary format (wall-time variant)
  *
  * Converts internal profile data structures to the standardized pprof
  * protobuf format for serialization and consumption by profiling tools.
+ * Emits a single wall-time/nanoseconds sample type.
  *
  * @param prof The profile data to pack
  * @param data Output buffer pointer - allocated buffer containing serialized data
  * @return Size of serialized data in bytes, or 0 on failure
- * 
+ *
  * @note The caller is responsible for freeing the returned buffer with free()
  * @note This function is thread-safe and does not modify the input profile
  */
 size_t profile_pprof_pack(const profile& prof, uint8_t** data);
+
+/**
+ * Pack profile data into pprof protobuf binary format (heap variant)
+ *
+ * Emits four sample types in Go-aligned order:
+ *   alloc_objects/count, alloc_space/bytes, inuse_objects/count, inuse_space/bytes
+ *
+ * The period_type is space/bytes and the period is the profile's sampling_interval_ns()
+ * value (expected to be 524288 bytes for a standard heap profile).
+ *
+ * Each sample's values vector must contain exactly four entries in the same order
+ * as the sample types above.
+ *
+ * @param prof The profile data to pack
+ * @param data Output buffer pointer - allocated buffer containing serialized data
+ * @return Size of serialized data in bytes, or 0 on failure
+ *
+ * @note The caller is responsible for freeing the returned buffer with free()
+ * @note This function is thread-safe and does not modify the input profile
+ */
+size_t profile_pprof_pack_heap(const profile& prof, uint8_t** data);
 
 } // namespace dd::profiler
 

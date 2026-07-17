@@ -199,6 +199,40 @@ public:
     /** @brief Whether samples include a CPU-time value in addition to wall-time */
     bool cpu_time_enabled() const { return _record_cpu_time; }
 
+    /** @brief Get cached string ID for "alloc_objects" */
+    uint32_t alloc_objects_str_id() const { return _alloc_objects_str_id; }
+
+    /** @brief Get cached string ID for "alloc_space" */
+    uint32_t alloc_space_str_id() const { return _alloc_space_str_id; }
+
+    /** @brief Get cached string ID for "inuse_objects" */
+    uint32_t inuse_objects_str_id() const { return _inuse_objects_str_id; }
+
+    /** @brief Get cached string ID for "inuse_space" */
+    uint32_t inuse_space_str_id() const { return _inuse_space_str_id; }
+
+    /** @brief Get cached string ID for "count" */
+    uint32_t count_str_id() const { return _count_str_id; }
+
+    /** @brief Get cached string ID for "bytes" */
+    uint32_t bytes_str_id() const { return _bytes_str_id; }
+
+    /** @brief Get cached string ID for "space" */
+    uint32_t space_str_id() const { return _space_str_id; }
+
+    /**
+     * @brief Append a raw sample directly to the profile (testing use only)
+     *
+     * Bypasses stack_trace_t ingestion — useful when the caller already has
+     * deduplicated location IDs and wants to inject exact sample values without
+     * going through binary-image resolution.
+     *
+     * @param sample Fully-formed sample_t to append.
+     *
+     * @warning FOR TESTING USE ONLY
+     */
+    void add_raw_sample(sample_t sample) { _samples.push_back(std::move(sample)); }
+
     /** @brief Number of labels exported for the sample */
     size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }
 
@@ -256,10 +290,31 @@ private:
 
     /** @brief Cached string ID for "cpu-time" */
     uint32_t _cpu_time_str_id;
-    
+
     /** @brief Cached string ID for "nanoseconds" */
     uint32_t _nanoseconds_str_id;
-    
+
+    /** @brief Cached string ID for "alloc_objects" */
+    uint32_t _alloc_objects_str_id;
+
+    /** @brief Cached string ID for "alloc_space" */
+    uint32_t _alloc_space_str_id;
+
+    /** @brief Cached string ID for "inuse_objects" */
+    uint32_t _inuse_objects_str_id;
+
+    /** @brief Cached string ID for "inuse_space" */
+    uint32_t _inuse_space_str_id;
+
+    /** @brief Cached string ID for "count" */
+    uint32_t _count_str_id;
+
+    /** @brief Cached string ID for "bytes" */
+    uint32_t _bytes_str_id;
+
+    /** @brief Cached string ID for "space" */
+    uint32_t _space_str_id;
+
     /** @brief Cached string ID for "end_timestamp_ns" */
     uint32_t _end_timestamp_ns_str_id;
     
