@@ -195,8 +195,23 @@ internal final class StatsConcentrator: @unchecked Sendable {
         "server.address"
     ]
 
+    /// Length of each aggregation window, in nanoseconds. A finished span is placed in the bucket
+    /// whose start is its end time rounded down to a multiple of this value, so all spans completing
+    /// within the same window aggregate together. Defaults to `defaultBucketDuration` (10s), matching
+    /// the backend's stats granularity.
     private let bucketDuration: Nanoseconds
+
+    /// How many recent bucket windows to retain before a window becomes eligible for flush. With the
+    /// default of `2`, the current and immediately preceding windows are held back so late-arriving
+    /// spans can still land in their window; only windows older than that are exported. This trades a
+    /// small flush delay for fewer partially-filled buckets. Matches Go's `defaultBufferLen`.
     private let bufferLen: Int
+
+    /// Span attribute keys whose values are promoted to peer tags and folded into the aggregation key
+    /// for client/producer/consumer spans (e.g. `peer.service`, `db.instance`). These act as extra
+    /// stats dimensions, so the set must match the backend's configured peer tags: an over- or
+    /// under-broad set would split or merge groups differently than the backend expects. Defaults to
+    /// `defaultPeerTagKeys`.
     private let peerTagKeys: [String]
 
     /// Serial queue protecting `buckets` and `oldestTs`.
@@ -218,6 +233,20 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// otherwise leave the backend with no stats and no client bucket for that window.
     private var currentConsent: TrackingConsent
 
+    /// Creates a concentrator.
+    ///
+    /// Bucketing and flushing are driven by the `now` value passed to each `add`/`flush` call rather
+    /// than by wall-clock reads, which keeps the type deterministic and testable; `now` here only
+    /// seeds the initial `oldestTs`.
+    ///
+    /// - Parameters:
+    ///   - now: Current time in nanoseconds, used to seed `oldestTs` (the earliest window that still
+    ///     accepts spans).
+    ///   - initialConsent: Tracking consent at creation. `.granted`/`.pending` record, `.notGranted`
+    ///     drops. Defaults to `.pending` (record-but-hold) — see `currentConsent`.
+    ///   - bucketDuration: See `bucketDuration`. Defaults to `defaultBucketDuration`.
+    ///   - bufferLen: See `bufferLen`. Defaults to `defaultBufferLen`.
+    ///   - peerTagKeys: See `peerTagKeys`. Defaults to `defaultPeerTagKeys`.
     init(
         now: Nanoseconds,
         initialConsent: TrackingConsent = .pending,
