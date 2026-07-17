@@ -46,6 +46,8 @@ setup_test_visibility() {
     export DD_DISABLE_NETWORK_INSTRUMENTATION=1
     export DD_DISABLE_RUM_INTEGRATION=1
     export DD_DISABLE_SOURCE_LOCATION=0
+    # Disabled: contends with some targets' own crash handler (e.g. DatadogCrashReporting's
+    # KSCrash instance) and breaks their tests. Needs per-target opt-in before re-enabling.
     export DD_DISABLE_CRASH_HANDLER=1
 
     # Debugging:
