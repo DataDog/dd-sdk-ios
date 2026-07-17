@@ -51,6 +51,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
 
         Self.setProfilingEnabled(in: userDefaults)
+        Self.setMemory(sampleRate: configuration.memorySampleRate, in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
         let datadogProfiler = DatadogProfiler(
@@ -74,6 +75,9 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+    }
+    private static func setMemory(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(sampleRate, forKey: DD_MEMORY_SAMPLE_RATE_KEY)
     }
 }
 
