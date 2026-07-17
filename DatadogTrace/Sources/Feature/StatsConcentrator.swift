@@ -305,22 +305,30 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 return []
             }
 
-            // Compare bucket timestamps in the `UInt64` domain. A pathological span whose start time
-            // saturated to `UInt64.max` could produce a bucket key above `Int64.max`; casting that to
-            // `Int64` here would trap and crash the host app. Staying in `UInt64` keeps the comparison
-            // total and crash-free.
-            let cutoff: UInt64
+            // A bucket is complete once it is older than the retention window ending at `now`, i.e.
+            // when `ts <= now - window`. Comparisons stay in the `UInt64` domain: a pathological span
+            // whose start time saturated to `UInt64.max` could produce a bucket key above `Int64.max`,
+            // and casting that to `Int64` would trap and crash the host app.
+            //
+            // When `now < window`, `now - window` would be negative, so no bucket is old enough yet and
+            // nothing (short of a forced flush) is eligible. Clamping the cutoff to `0` instead would
+            // wrongly flush a bucket sitting exactly at `ts == 0`, so guard that case explicitly rather
+            // than relying on a clamped cutoff.
+            let window = UInt64(bufferLen) * bucketDuration
+            let isFlushable: (UInt64) -> Bool
             if force {
-                cutoff = .max
+                isFlushable = { _ in true }
+            } else if now >= window {
+                let cutoff = now - window
+                isFlushable = { $0 <= cutoff }
             } else {
-                let window = UInt64(bufferLen) * bucketDuration
-                cutoff = now > window ? now - window : 0
+                isFlushable = { _ in false }
             }
             var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
 
             for (ts, bucket) in buckets {
-                if ts > cutoff {
+                if !isFlushable(ts) {
                     continue
                 }
                 keysToRemove.append(ts)
