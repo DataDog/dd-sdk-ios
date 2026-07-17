@@ -221,17 +221,36 @@ public:
     uint32_t space_str_id() const { return _space_str_id; }
 
     /**
-     * @brief Append a raw sample directly to the profile (testing use only)
+     * @brief Append a raw sample directly to the profile.
      *
      * Bypasses stack_trace_t ingestion — useful when the caller already has
-     * deduplicated location IDs and wants to inject exact sample values without
-     * going through binary-image resolution.
+     * deduplicated location IDs (e.g. from resolve_locations) and wants to
+     * inject exact sample values without going through the wall-time sampling path.
+     *
+     * Used by the heap converter (memory_to_pprof.cpp) and by tests.
      *
      * @param sample Fully-formed sample_t to append.
-     *
-     * @warning FOR TESTING USE ONLY
      */
     void add_raw_sample(sample_t sample) { _samples.push_back(std::move(sample)); }
+
+    /**
+     * @brief Resolve a stack trace into deduplicated location IDs.
+     *
+     * Interns all frames in `trace` via the same `intern_frame(frame, cache)`
+     * path used by `add_samples`, reusing cached entries for instruction
+     * pointers that have already been seen. Returns the ordered location ID
+     * vector (leaf at index 0, root last) that the caller can attach to a
+     * `sample_t` with explicit values before calling `add_raw_sample`.
+     *
+     * This lets heap-profiling callers reuse the existing symbolication path
+     * while supplying their own four-value tuple instead of the wall-time
+     * sampling interval.
+     *
+     * @param trace Single stack trace whose frames should be resolved.
+     * @param image_cache Optional binary image cache (may be nullptr).
+     * @return Vector of 1-based location IDs in leaf-to-root order.
+     */
+    std::vector<uint32_t> resolve_locations(const stack_trace_t& trace, binary_image_cache* image_cache);
 
     /** @brief Number of labels exported for the sample */
     size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }

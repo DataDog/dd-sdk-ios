@@ -224,6 +224,9 @@
 		11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2C2DC3CC9900E8DFA2 /* DatadogConfiguration.swift */; };
 		11EA5C342DC5077500E8DFA2 /* InternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */; };
 		11EDDAC1300A9394002C3D43 /* HeapPprofPackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC0300A9394002C3D43 /* HeapPprofPackerTests.swift */; };
+		11EDDAC3300A9D21002C3D43 /* MemoryToPprofTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC2300A9D21002C3D43 /* MemoryToPprofTests.swift */; };
+		11EDDAC5300A9FD4002C3D43 /* memory_to_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC4300A9FD4002C3D43 /* memory_to_pprof.cpp */; };
+		11EDDAC7300A9FE4002C3D43 /* memory_to_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EDDAC6300A9FE4002C3D43 /* memory_to_pprof.h */; };
 		11F55FCE2DCBB4F600DE4944 /* URLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */; };
 		11F55FD42DCBB61A00DE4944 /* TracingHeaderType+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */; };
 		11F55FD62DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
@@ -2073,6 +2076,9 @@
 		11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TracingHeaderType+objc.swift"; sourceTree = "<group>"; };
 		11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InternalLogger+objc.swift"; sourceTree = "<group>"; };
 		11EDDAC0300A9394002C3D43 /* HeapPprofPackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeapPprofPackerTests.swift; sourceTree = "<group>"; };
+		11EDDAC2300A9D21002C3D43 /* MemoryToPprofTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryToPprofTests.swift; sourceTree = "<group>"; };
+		11EDDAC4300A9FD4002C3D43 /* memory_to_pprof.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_to_pprof.cpp; sourceTree = "<group>"; };
+		11EDDAC6300A9FE4002C3D43 /* memory_to_pprof.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_to_pprof.h; sourceTree = "<group>"; };
 		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -6382,23 +6388,24 @@
 		D229FF5A2E3BA298009CCD62 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */,
 				115793092F51F05100AEE829 /* binary_image_resolver_testing.h */,
 				115792E42F4504F700AEE829 /* binary_image_resolver.h */,
-				118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */,
-				D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */,
 				D2F0E8A02F5C000100E7CFDE /* dd_pprof_testing.h */,
-				CEB62C3E321F2A6F83985A91 /* memory_profiler.h */,
-				CEB62C3E321F2A6F83985B91 /* memory_swizzle_poc.h */,
-				FE3401B54794431DB4F8C89A /* vm_region_walker.h */,
-				ED3FB762D1EB7D05283646F4 /* memory_profiler_testing.h */,
+				D233E7FE2E4B588B00E7CFDE /* dd_pprof.h */,
+				118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */,
 				D229FF592E3BA298009CCD62 /* dd_profiler.h */,
 				D2E937192E4E25E800FECA76 /* mach_sampling_profiler.h */,
+				ED3FB762D1EB7D05283646F4 /* memory_profiler_testing.h */,
+				CEB62C3E321F2A6F83985A91 /* memory_profiler.h */,
+				CEB62C3E321F2A6F83985B91 /* memory_swizzle_poc.h */,
+				11EDDAC6300A9FE4002C3D43 /* memory_to_pprof.h */,
 				D2E937272E53324A00FECA76 /* profile_pprof_packer.h */,
 				D2E937242E53324100FECA76 /* profile.h */,
 				D2E9372A2E53325200FECA76 /* profile.pb-c.h */,
 				D2E9372D2E53325900FECA76 /* protobuf-c.h */,
-				A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */,
 				110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */,
+				FE3401B54794431DB4F8C89A /* vm_region_walker.h */,
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 			);
 			path = include;
@@ -6409,16 +6416,17 @@
 			children = (
 				D233E7EB2E4B588000E7CFDE /* profile.pb-c.c */,
 				D233E7ED2E4B588000E7CFDE /* protobuf-c.c */,
+				A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */,
 				115792E12F4504E900AEE829 /* binary_image_resolver.cpp */,
 				D233E8012E4B653F00E7CFDE /* dd_pprof.cpp */,
-				2FC76A051A617C43EE892F27 /* memory_profiler.cpp */,
-				2FC76A051A617C43EE892F28 /* memory_swizzle_poc.cpp */,
-				CE62FA3360B654023351D624 /* vm_region_walker.cpp */,
 				D2D0E1F12E3CE59700BA4113 /* dd_profiler.cpp */,
 				D2D0E1F72E3CE73700BA4113 /* mach_sampling_profiler.cpp */,
+				2FC76A051A617C43EE892F27 /* memory_profiler.cpp */,
+				2FC76A051A617C43EE892F28 /* memory_swizzle_poc.cpp */,
+				11EDDAC4300A9FD4002C3D43 /* memory_to_pprof.cpp */,
 				D233E7E92E4B588000E7CFDE /* profile_pprof_packer.cpp */,
 				D233E7E72E4B588000E7CFDE /* profile.cpp */,
-				A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */,
+				CE62FA3360B654023351D624 /* vm_region_walker.cpp */,
 				D229FF5A2E3BA298009CCD62 /* include */,
 			);
 			name = Mach;
@@ -6986,6 +6994,7 @@
 				D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */,
 				3AC1F17BA7C149F3634429D2 /* MemoryProfilerPOCTests.swift */,
 				3AC1F17BA7C149F3634429D3 /* MemorySwizzlingPOCTests.swift */,
+				11EDDAC2300A9D21002C3D43 /* MemoryToPprofTests.swift */,
 				D2D0E2182E40E34A00BA4113 /* MockThread.swift */,
 				D2E937302E53368E00FECA76 /* ProfileCxxTests.swift */,
 				D262DA642E7D5D0F002A94C9 /* ProfileEventTests.swift */,
@@ -7251,6 +7260,7 @@
 				A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* dd_profiler.h in Headers */,
 				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
+				11EDDAC7300A9FE4002C3D43 /* memory_to_pprof.h in Headers */,
 				D2F0E8A52F5C000100E7CFDE /* dd_pprof_testing.h in Headers */,
 				118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */,
 				110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */,
@@ -8923,6 +8933,7 @@
 				5758EA9EBBDBC85CC8E869A0 /* vm_region_walker.cpp in Sources */,
 				E3CEAE0D612BFA0876A576F2 /* MemoryProfilerPOC.swift in Sources */,
 				E3CEAE0D612BFA0876A576F3 /* MemorySwizzlingPOC.swift in Sources */,
+				11EDDAC5300A9FD4002C3D43 /* memory_to_pprof.cpp in Sources */,
 				D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
@@ -9521,6 +9532,7 @@
 				7FF044DD3F678ED05D8F975B /* MemoryProfilerPOCTests.swift in Sources */,
 				7FF044DD3F678ED05D8F975C /* MemorySwizzlingPOCTests.swift in Sources */,
 				110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
+				11EDDAC3300A9D21002C3D43 /* MemoryToPprofTests.swift in Sources */,
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */,
