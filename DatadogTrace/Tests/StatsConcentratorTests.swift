@@ -102,7 +102,7 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertTrue(buckets.isEmpty)
     }
 
-    func testSingleSpanProducesOneGroupInOneBucket() {
+    func testSingleSpanProducesOneGroupInOneBucket() throws {
         let concentrator = makeConcentrator(now: 0)
 
         let snapshot = SpanSnapshot.mockWith(
@@ -118,10 +118,10 @@ class StatsConcentratorTests: XCTestCase {
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
 
         XCTAssertEqual(buckets.count, 1)
-        let bucket = buckets[0]
+        let bucket = try XCTUnwrap(buckets.first)
         XCTAssertEqual(bucket.stats.count, 1)
 
-        let stats = bucket.stats[0]
+        let stats = try XCTUnwrap(bucket.stats.first)
         XCTAssertEqual(stats.service, "web")
         XCTAssertEqual(stats.name, "http.request")
         XCTAssertEqual(stats.resource, "GET /api")
@@ -130,7 +130,7 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(stats.topLevelHits, 1)
     }
 
-    func testMultipleSpansWithSameKeyAggregateIntoOneGroup() {
+    func testMultipleSpansWithSameKeyAggregateIntoOneGroup() throws {
         let concentrator = makeConcentrator(now: 0)
 
         for i in 0..<5 {
@@ -149,7 +149,7 @@ class StatsConcentratorTests: XCTestCase {
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
 
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.hits, 5)
         XCTAssertEqual(stats.topLevelHits, 5)
     }
@@ -176,10 +176,10 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
-        XCTAssertEqual(buckets[0].stats.count, 2)
+        XCTAssertEqual(buckets.first?.stats.count, 2)
     }
 
-    func testErrorSpansIncrementErrorCount() {
+    func testErrorSpansIncrementErrorCount() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -197,12 +197,12 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.hits, 2)
         XCTAssertEqual(stats.errors, 1)
     }
 
-    func testDurationIsAccumulatedAcrossSpans() {
+    func testDurationIsAccumulatedAcrossSpans() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -218,11 +218,11 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.duration, 10_000_000_000)
     }
 
-    func testNonTopLevelSpanDoesNotIncrementTopLevelHits() {
+    func testNonTopLevelSpanDoesNotIncrementTopLevelHits() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -234,7 +234,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.hits, 1)
         XCTAssertEqual(stats.topLevelHits, 0)
     }
@@ -263,8 +263,8 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(buckets.count, 2)
 
         let sortedBuckets = buckets.sorted { $0.start < $1.start }
-        XCTAssertEqual(sortedBuckets[0].start, 0)
-        XCTAssertEqual(sortedBuckets[1].start, 10_000_000_000)
+        XCTAssertEqual(sortedBuckets.first?.start, 0)
+        XCTAssertEqual(sortedBuckets.last?.start, 10_000_000_000)
     }
 
     func testBucketAlignment() {
@@ -311,12 +311,12 @@ class StatsConcentratorTests: XCTestCase {
         // Bucket 20s (ts=20 > 5) stays.
         let midBuckets = concentrator.flush(now: 25_000_000_000, force: false)
         XCTAssertEqual(midBuckets.count, 1)
-        XCTAssertEqual(midBuckets[0].start, 0)
+        XCTAssertEqual(midBuckets.first?.start, 0)
 
         // At t=45s, cutoff = 45 - 20 = 25. Bucket 20s (ts=20 <= 25) is flushed.
         let lateBuckets = concentrator.flush(now: 45_000_000_000, force: false)
         XCTAssertEqual(lateBuckets.count, 1)
-        XCTAssertEqual(lateBuckets[0].start, 20_000_000_000)
+        XCTAssertEqual(lateBuckets.first?.start, 20_000_000_000)
     }
 
     func testForceFlushReturnsAllBuckets() {
@@ -402,7 +402,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].stats.count, 2)
+        XCTAssertEqual(buckets.first?.stats.count, 2)
     }
 
     func testDifferentHTTPStatusCodesProduceSeparateGroups() {
@@ -424,10 +424,10 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].stats.count, 2)
+        XCTAssertEqual(buckets.first?.stats.count, 2)
     }
 
-    func testIsTraceRootDerivedFromParentSpanID() {
+    func testIsTraceRootDerivedFromParentSpanID() throws {
         let concentrator = makeConcentrator(now: 0)
 
         // Root span (no parent)
@@ -448,17 +448,18 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].stats.count, 2)
+        let stats = try XCTUnwrap(buckets.first).stats
+        XCTAssertEqual(stats.count, 2)
 
-        let root = buckets[0].stats.first { $0.isTraceRoot == .true }
-        let child = buckets[0].stats.first { $0.isTraceRoot == .false }
+        let root = stats.first { $0.isTraceRoot == .true }
+        let child = stats.first { $0.isTraceRoot == .false }
         XCTAssertNotNil(root)
         XCTAssertNotNil(child)
     }
 
     // MARK: - Peer Tags
 
-    func testPeerTagsIncludedForClientSpanKind() {
+    func testPeerTagsIncludedForClientSpanKind() throws {
         let concentrator = makeConcentrator(now: 0, peerTagKeys: ["peer.service", "out.host"])
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -471,13 +472,13 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.peerTags.count, 2)
         XCTAssertTrue(stats.peerTags.contains("peer.service:downstream-svc"))
         XCTAssertTrue(stats.peerTags.contains("out.host:db.example.com"))
     }
 
-    func testPeerTagsNotIncludedForServerSpanKind() {
+    func testPeerTagsNotIncludedForServerSpanKind() throws {
         let concentrator = makeConcentrator(now: 0, peerTagKeys: ["peer.service"])
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -490,11 +491,11 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertTrue(stats.peerTags.isEmpty)
     }
 
-    func testPeerTagsIncludedForProducerSpanKind() {
+    func testPeerTagsIncludedForProducerSpanKind() throws {
         let concentrator = makeConcentrator(now: 0, peerTagKeys: ["peer.service"])
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -507,7 +508,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertTrue(stats.peerTags.contains("peer.service:msg-queue"))
     }
 
@@ -556,12 +557,12 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].duration, bucketDuration)
+        XCTAssertEqual(buckets.first?.duration, bucketDuration)
     }
 
     // MARK: - Latency Sketches
 
-    func testOkSpanPopulatesOkSummaryNotErrorSummary() {
+    func testOkSpanPopulatesOkSummaryNotErrorSummary() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -572,7 +573,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
 
         // An empty DDSketch encodes only the mapping field (11 bytes); a sketch
         // that has recorded at least one value also encodes a positive store.
@@ -583,7 +584,7 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(stats.errorSummary, emptySketchBytes)
     }
 
-    func testErrorSpanPopulatesErrorSummaryNotOkSummary() {
+    func testErrorSpanPopulatesErrorSummaryNotOkSummary() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -594,14 +595,14 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
 
         let emptySketchBytes = DDSketch.makeForStats().toProtoBytes()
         XCTAssertEqual(stats.okSummary, emptySketchBytes)
         XCTAssertGreaterThan(stats.errorSummary.count, emptySketchBytes.count)
     }
 
-    func testMixedOkAndErrorSpans_populateBothSummaries() {
+    func testMixedOkAndErrorSpans_populateBothSummaries() throws {
         let concentrator = makeConcentrator(now: 0)
 
         // Two ok spans + one error span, all into the same aggregation group.
@@ -622,7 +623,7 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
 
         XCTAssertEqual(stats.hits, 3)
         XCTAssertEqual(stats.errors, 1)
@@ -653,7 +654,7 @@ class StatsConcentratorTests: XCTestCase {
     /// exactly what a `DDSketch` built independently from the same input produces.
     /// Catches any future regression where the wiring stops feeding the sketch the
     /// raw `Double(duration)` we expect.
-    func testOkSummaryBytesMatchIndependentlyBuiltSketch() {
+    func testOkSummaryBytesMatchIndependentlyBuiltSketch() throws {
         let concentrator = makeConcentrator(now: 0)
         let durations: [Nanoseconds] = [100_000_000, 250_000_000, 1_000_000_000, 2_500_000_000]
 
@@ -672,13 +673,13 @@ class StatsConcentratorTests: XCTestCase {
         }
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        let stats = buckets[0].stats[0]
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
         XCTAssertEqual(stats.okSummary, reference.toProtoBytes())
     }
 
     /// Two spans with different resources land in two distinct aggregation groups.
     /// Each group's sketch must reflect only its own span's duration, not the other's.
-    func testDistinctAggregationKeysGetIndependentSketches() {
+    func testDistinctAggregationKeysGetIndependentSketches() throws {
         let concentrator = makeConcentrator(now: 0)
 
         concentrator.add(SpanSnapshot.mockWith(
@@ -703,7 +704,7 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
-        let allStats = buckets[0].stats
+        let allStats = try XCTUnwrap(buckets.first).stats
         XCTAssertEqual(allStats.count, 2)
 
         let statsByResource = Dictionary(uniqueKeysWithValues: allStats.map { ($0.resource, $0) })
@@ -752,7 +753,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].stats[0].serviceSource, "m")
+        XCTAssertEqual(buckets.first?.stats.first?.serviceSource, "m")
     }
 
     // MARK: - Synthetics
@@ -767,7 +768,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertFalse(buckets[0].stats[0].synthetics)
+        XCTAssertEqual(buckets.first?.stats.first?.synthetics, false)
     }
 
     // MARK: - Span Type Passthrough
@@ -783,7 +784,7 @@ class StatsConcentratorTests: XCTestCase {
         ))
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets[0].stats[0].type, "http")
+        XCTAssertEqual(buckets.first?.stats.first?.type, "http")
     }
 
     // MARK: - Consent
@@ -839,7 +840,7 @@ class StatsConcentratorTests: XCTestCase {
 
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
-        XCTAssertEqual(buckets[0].stats[0].hits, 1)
+        XCTAssertEqual(buckets.first?.stats.first?.hits, 1)
     }
 
     func testWhenConsentIsGrantedAfterNotGranted_itResumesAggregating() {
