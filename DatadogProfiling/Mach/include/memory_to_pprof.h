@@ -20,7 +20,8 @@ extern "C" {
 #endif
 
 /**
- * Convert a heap snapshot into serialized heap-pprof bytes.
+ * Convert a heap snapshot into serialized heap-pprof bytes with optional RUM
+ * correlation labels.
  *
  * Converts the live allocations in `snapshot` into a pprof protobuf buffer
  * with four Go-aligned sample types (alloc_objects/count, alloc_space/bytes,
@@ -32,14 +33,28 @@ extern "C" {
  * single snapshot only carries the live set — true period deltas are a deferred
  * follow-up.
  *
- * @param snapshot Heap snapshot captured with dd_memory_snapshot_capture().
- *                 May be NULL or have sample_count == 0; both return 0.
- * @param out_data Output parameter for the allocated buffer.  The caller is
- *                 responsible for releasing it with free(). Set to NULL on
- *                 failure.
+ * When a non-NULL, non-empty RUM correlation ID is supplied the corresponding
+ * string label (`session_id`, `view_id`, `application_id`) is attached to every
+ * emitted pprof sample (Go-aligned label names). All samples in the snapshot
+ * carry the same values because the snapshot is point-in-time. NULL or empty
+ * strings are silently omitted (no label is added for that ID).
+ *
+ * @param snapshot        Heap snapshot captured with dd_memory_snapshot_capture().
+ *                        May be NULL or have sample_count == 0; both return 0.
+ * @param session_id      Current RUM session UUID string, or NULL/empty to omit.
+ * @param view_id         Current RUM view UUID string, or NULL/empty to omit.
+ * @param application_id  Current RUM application UUID string, or NULL/empty to omit.
+ * @param out_data        Output parameter for the allocated buffer.  The caller is
+ *                        responsible for releasing it with free(). Set to NULL on
+ *                        failure.
  * @return Number of bytes written to *out_data, or 0 on failure / empty input.
  */
-size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t** out_data);
+size_t dd_memory_snapshot_to_pprof(
+    const dd_memory_snapshot_t* snapshot,
+    const char* session_id,
+    const char* view_id,
+    const char* application_id,
+    uint8_t** out_data);
 
 #ifdef __cplusplus
 }

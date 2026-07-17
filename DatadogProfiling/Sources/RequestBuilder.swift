@@ -48,12 +48,14 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             mimeType: "application/json"
         )
 
-        multipart.addFormData(
-            name: ProfileAttachments.Constants.pprofFilename,
-            filename: ProfileAttachments.Constants.pprofFilename,
-            data: attachments.pprof,
-            mimeType: "application/octet-stream"
-        )
+        if let pprof = attachments.pprof {
+            multipart.addFormData(
+                name: ProfileAttachments.Constants.pprofFilename,
+                filename: ProfileAttachments.Constants.pprofFilename,
+                data: pprof,
+                mimeType: "application/octet-stream"
+            )
+        }
 
         if let rumEvents = attachments.rumEvents {
             multipart.addFormData(
@@ -61,6 +63,15 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 filename: ProfileAttachments.Constants.rumEventsFilename,
                 data: rumEvents,
                 mimeType: "application/json"
+            )
+        }
+
+        if let heapPprof = attachments.heapPprof {
+            multipart.addFormData(
+                name: ProfileAttachments.Constants.heapFilename,
+                filename: ProfileAttachments.Constants.heapFilename,
+                data: heapPprof,
+                mimeType: "application/octet-stream"
             )
         }
 

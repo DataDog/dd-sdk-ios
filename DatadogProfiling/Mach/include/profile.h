@@ -221,17 +221,35 @@ public:
     uint32_t space_str_id() const { return _space_str_id; }
 
     /**
-     * @brief Append a raw sample directly to the profile.
+     * @brief Append a fully-formed sample directly to the profile.
      *
-     * Bypasses stack_trace_t ingestion — useful when the caller already has
-     * deduplicated location IDs (e.g. from resolve_locations) and wants to
-     * inject exact sample values without going through the wall-time sampling path.
-     *
-     * Used by the heap converter (memory_to_pprof.cpp) and by tests.
+     * Bypasses stack_trace_t ingestion — used by the heap converter
+     * (memory_to_pprof.cpp) when the caller already has deduplicated
+     * location IDs (from resolve_locations) and wants to inject exact
+     * sample values without going through the wall-time sampling path.
      *
      * @param sample Fully-formed sample_t to append.
      */
     void add_raw_sample(sample_t sample) { _samples.push_back(std::move(sample)); }
+
+    /**
+     * @brief Build a string-valued label_t using interned key and value strings.
+     *
+     * Convenience helper that interns both `key` and `value` and returns a
+     * fully-formed string label (num == 0, num_unit_id == 0).
+     *
+     * @param key   Label key string (e.g. "session_id").
+     * @param value Label value string (e.g. the UUID).
+     * @return label_t ready to be pushed into sample_t::labels.
+     */
+    label_t make_string_label(const std::string& key, const std::string& value) {
+        label_t label{};
+        label.key_id      = intern_string(key);
+        label.str_id      = intern_string(value);
+        label.num         = 0;
+        label.num_unit_id = 0;
+        return label;
+    }
 
     /**
      * @brief Resolve a stack trace into deduplicated location IDs.
@@ -252,18 +270,38 @@ public:
      */
     std::vector<uint32_t> resolve_locations(const stack_trace_t& trace, binary_image_cache* image_cache);
 
-    /** @brief Number of labels exported for the sample */
-    size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }
+    /**
+     * @brief Number of labels exported for the sample.
+     *
+     * Returns the exact count of labels that `for_each_label` will visit.
+     * The `end_timestamp_ns` label is included only for samples with a
+     * non-zero uptime timestamp (wall-time samples); heap samples
+     * (timestamp_uptime_ns == 0) are excluded from that label.
+     *
+     * IMPORTANT: this count must stay perfectly consistent with `for_each_label`
+     * because the packer allocates `n_label` slots via this method and then fills
+     * them via `for_each_label`. A mismatch would leave uninitialized label pointers.
+     */
+    size_t label_count(const sample_t& sample) const {
+        return sample.labels.size() + (sample.timestamp_uptime_ns != 0 ? 1 : 0);
+    }
 
-    /** @brief Visit labels exported for the sample */
+    /** @brief Visit labels exported for the sample.
+     *
+     * Emits `end_timestamp_ns` only when `sample.timestamp_uptime_ns != 0`
+     * (i.e. wall-time samples), then visits all entries in `sample.labels`.
+     * The number of visits exactly equals `label_count(sample)`.
+     */
     template <typename LabelVisitor>
     void for_each_label(const sample_t& sample, LabelVisitor&& visitor) const {
-        label_t timestamp_label{};
-        timestamp_label.key_id = _end_timestamp_ns_str_id;
-        timestamp_label.str_id = 0;
-        timestamp_label.num = uptime_ns_to_epoch_ns(sample.timestamp_uptime_ns);
-        timestamp_label.num_unit_id = _nanoseconds_str_id;
-        visitor(timestamp_label);
+        if (sample.timestamp_uptime_ns != 0) {
+            label_t timestamp_label{};
+            timestamp_label.key_id = _end_timestamp_ns_str_id;
+            timestamp_label.str_id = 0;
+            timestamp_label.num = uptime_ns_to_epoch_ns(sample.timestamp_uptime_ns);
+            timestamp_label.num_unit_id = _nanoseconds_str_id;
+            visitor(timestamp_label);
+        }
 
         for (const auto& label : sample.labels) {
             visitor(label);

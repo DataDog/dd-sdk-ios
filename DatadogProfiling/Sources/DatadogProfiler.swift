@@ -118,6 +118,15 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
             self?.handle(quotaResult: result)
         }
 
+        // Memory profiling installs process-wide allocation interception (the +allocWithZone:
+        // swizzle + Poisson sampler), so its lifecycle is tied to the profiler instance, not to
+        // the continuous/custom state machine. Starting it here — rather than in
+        // updateProfilerState — guarantees the sample table is populated regardless of the
+        // continuous-profiling sampling decision. Paired with stopMemoryProfiling() in deinit.
+        if memorySampleRate > 0 {
+            startMemoryProfiling()
+        }
+
         if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
@@ -347,9 +356,6 @@ private extension DatadogProfiler {
         var currentStatus = ProfilingContext.Status.current
         if currentStatus == .running && !canProfile {
             dd_profiler_stop()
-            if memorySampleRate > 0 {
-                stopMemoryProfiling()
-            }
             currentStatus = ProfilingContext.Status.current
         }
 
@@ -374,9 +380,6 @@ private extension DatadogProfiler {
                 cleanUpState(preservingOngoingOperations: false)
             } else if canProfile {
                 dd_profiler_start()
-                if memorySampleRate > 0 {
-                    startMemoryProfiling()
-                }
                 profileStartDate = dateProvider.now
                 startTimer()
             }
@@ -406,7 +409,8 @@ private extension DatadogProfiler {
                 operation: operation,
                 rumVitals: Array(self.currentRUMVitals.values),
                 hangs: hangs,
-                longTasks: longTasks
+                longTasks: longTasks,
+                captureHeapProfile: memorySampleRate > 0
             )
         } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)

@@ -25,7 +25,9 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <new>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -91,7 +93,13 @@ struct HeapAccum {
 
 extern "C" {
 
-size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t** out_data) {
+size_t dd_memory_snapshot_to_pprof(
+    const dd_memory_snapshot_t* snapshot,
+    const char* session_id,
+    const char* view_id,
+    const char* application_id,
+    uint8_t** out_data)
+{
     if (out_data) *out_data = nullptr;
     if (!snapshot || snapshot->sample_count == 0 || !out_data) {
         return 0;
@@ -103,7 +111,33 @@ size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t
     dd::profiler::profile prof(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
 
     // ------------------------------------------------------------------
-    // 2. Obtain a binary_image_cache the same way the wall-profiling path
+    // 2. Pre-build the RUM correlation labels (uniform across all samples
+    //    — this is a point-in-time snapshot so every sample carries the
+    //    same context).  Label keys use Go-aligned names ("session_id",
+    //    "view_id", "application_id").  NULL or empty strings are omitted.
+    //
+    //    Strings are interned via prof.make_string_label() which delegates
+    //    to the private intern_string() path — no duplication of interning.
+    // ------------------------------------------------------------------
+    std::vector<dd::profiler::label_t> rum_labels;
+    rum_labels.reserve(3);
+
+    auto non_empty = [](const char* s) -> bool {
+        return s != nullptr && s[0] != '\0';
+    };
+
+    if (non_empty(session_id)) {
+        rum_labels.push_back(prof.make_string_label("session_id", session_id));
+    }
+    if (non_empty(view_id)) {
+        rum_labels.push_back(prof.make_string_label("view_id", view_id));
+    }
+    if (non_empty(application_id)) {
+        rum_labels.push_back(prof.make_string_label("application_id", application_id));
+    }
+
+    // ------------------------------------------------------------------
+    // 3. Obtain a binary_image_cache the same way the wall-profiling path
     //    does in dd_profiler.cpp::auto_start().
     // ------------------------------------------------------------------
     dd::profiler::binary_image_cache* cache =
@@ -114,9 +148,12 @@ size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t
     }
 
     // ------------------------------------------------------------------
-    // 3. Resolve every sample's stack and accumulate by unique location
+    // 4. Resolve every sample's stack and accumulate by unique location
     //    vector.  Identical stacks (same resolved location_ids) are
     //    merged so the pprof emits one sample per unique callsite.
+    //
+    //    NOTE: RUM labels are uniform and applied after aggregation, so
+    //    they do NOT affect the aggregation key (location_ids only).
     // ------------------------------------------------------------------
     std::unordered_map<std::vector<uint32_t>, HeapAccum, VectorHash> accum;
 
@@ -138,7 +175,7 @@ size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t
     delete cache;
 
     // ------------------------------------------------------------------
-    // 4. Emit one sample_t per aggregated stack.
+    // 5. Emit one sample_t per aggregated stack.
     //
     //    Value order (Go-aligned, matching profile_pprof_pack_heap):
     //      [0] alloc_objects
@@ -150,10 +187,12 @@ size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t
     //    have the live set.  True period deltas (allocation events between
     //    two snapshots) are a deferred follow-up and will require a
     //    separate accumulation path.
+    //
+    //    RUM correlation labels are appended to every sample (uniform).
     // ------------------------------------------------------------------
     for (auto& [loc_ids, a] : accum) {
         dd::profiler::sample_t sample;
-        sample.location_ids       = loc_ids;
+        sample.location_ids        = loc_ids;
         sample.timestamp_uptime_ns = 0;  // heap samples have no per-sample timestamp
         // alloc_* == inuse_* (single-snapshot approximation — see note above)
         sample.values = {
@@ -162,11 +201,13 @@ size_t dd_memory_snapshot_to_pprof(const dd_memory_snapshot_t* snapshot, uint8_t
             a.inuse_objects,  // inuse_objects
             a.inuse_space,    // inuse_space
         };
+        // Attach RUM correlation labels (empty rum_labels → nothing appended).
+        sample.labels = rum_labels;
         prof.add_raw_sample(std::move(sample));
     }
 
     // ------------------------------------------------------------------
-    // 5. Serialize with the heap packer and return.
+    // 6. Serialize with the heap packer and return.
     // ------------------------------------------------------------------
     return dd::profiler::profile_pprof_pack_heap(prof, out_data);
 }
