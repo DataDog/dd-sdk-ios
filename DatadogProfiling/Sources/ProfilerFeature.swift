@@ -56,6 +56,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         let cpuTimeSamplesEnabled = configuration.featureFlags[.cpuTimeSamples]
         Self.setProfilingEnabled(in: userDefaults)
+        Self.setMemory(sampleRate: configuration.memorySampleRate, in: userDefaults)
         Self.setCPUTimeSamplesEnabled(cpuTimeSamplesEnabled, in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
@@ -80,6 +81,10 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+    }
+
+    private static func setMemory(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(sampleRate, forKey: DD_MEMORY_SAMPLE_RATE_KEY)
     }
 
     private static func setCPUTimeSamplesEnabled(_ enabled: Bool, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name

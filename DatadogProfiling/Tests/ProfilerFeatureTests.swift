@@ -53,6 +53,41 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_IS_ENABLED_KEY) as? Bool, true)
     }
 
+    func testInit_setsMemorySampleRateValue() {
+        // Given
+        userDefaults.removeObject(forKey: DD_MEMORY_SAMPLE_RATE_KEY)
+        let memorySampleRate: SampleRate = 100
+
+        // When
+        _ = ProfilerFeature(
+            core: core,
+            configuration: .init(memorySampleRate: memorySampleRate),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+
+        // Then
+        XCTAssertEqual(userDefaults.value(forKey: DD_MEMORY_SAMPLE_RATE_KEY) as? SampleRate, memorySampleRate)
+    }
+
+    func testInit_setsMemorySampleRateValue_whenDisabled() {
+        // Given
+        userDefaults.removeObject(forKey: DD_MEMORY_SAMPLE_RATE_KEY)
+
+        // When
+        _ = ProfilerFeature(
+            core: core,
+            configuration: .init(memorySampleRate: 0),
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+
+        // Then
+        XCTAssertEqual(userDefaults.value(forKey: DD_MEMORY_SAMPLE_RATE_KEY) as? SampleRate, 0)
+    }
+
     func testInit_setsSampleRateValue() {
         // Given
         userDefaults.setValue(SampleRate(20), forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)

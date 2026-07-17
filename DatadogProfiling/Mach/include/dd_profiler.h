@@ -127,6 +127,7 @@ typedef void (*stack_trace_callback_t)(stack_trace_t* traces, size_t count, void
 #define DD_PROFILING_USER_DEFAULTS_SUITE_NAME "com.datadoghq.ios-sdk.profiling"
 #define DD_PROFILING_IS_ENABLED_KEY "is_profiling_enabled"
 #define DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY "profiling_app_launch_sample_rate"
+#define DD_MEMORY_SAMPLE_RATE_KEY "profiling_memory_sample_rate"
 #define DD_PROFILING_RECORD_CPU_TIME_KEY "profiling_record_cpu_time"
 
 #ifdef __cplusplus
@@ -298,6 +299,13 @@ void dd_profiler_set_server_time_offset_ns(int64_t offset_ns);
  * @see `dd_profiler_get_profile()`, `dd_profiler_flush_and_get_profile()`
  */
 void dd_profiler_destroy(void);
+
+/**
+ * @brief Reads the memory profiling sample rate from UserDefaults.
+ *
+ * @return The memory sample rate as a double (0.0–100.0), or 0.0 if not set or invalid.
+ */
+double read_profiling_memory_sample_rate(void);
 
 #ifdef __cplusplus
 }
