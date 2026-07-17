@@ -13,10 +13,20 @@ internal struct ProfileAttachments: Codable {
         static let profileEventFilename: String = "event.json"
         static let rumEventsFilename: String = "rum-mobile-events.json"
         static let pprofFilename: String = "profile.pprof"
+        static let heapFilename: String = "heap.pprof"
     }
 
-    let pprof: Data
+    /// Serialized wall/CPU pprof bytes, present on wall profile events.
+    let pprof: Data?
     let rumEvents: Data?
+    /// Serialized heap pprof bytes, present only on heap profile events.
+    let heapPprof: Data?
+
+    init(pprof: Data? = nil, rumEvents: Data? = nil, heapPprof: Data? = nil) {
+        self.pprof = pprof
+        self.rumEvents = rumEvents
+        self.heapPprof = heapPprof
+    }
 }
 
 /// Bundles individually all RUM events that are part of a profile event.

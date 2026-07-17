@@ -58,7 +58,7 @@ final class MemoryToPprofTests: XCTestCase {
 
     func testNullSnapshot_returns0() {
         var out: UnsafeMutablePointer<UInt8>?
-        let size = dd_memory_snapshot_to_pprof(nil, &out)
+        let size = dd_memory_snapshot_to_pprof(nil, nil, nil, nil, &out)
         XCTAssertEqual(size, 0)
         XCTAssertNil(out)
     }
@@ -69,7 +69,7 @@ final class MemoryToPprofTests: XCTestCase {
         snapshot.sample_count = 0
         snapshot.timestamp_ns = 0
         var out: UnsafeMutablePointer<UInt8>?
-        let size = dd_memory_snapshot_to_pprof(&snapshot, &out)
+        let size = dd_memory_snapshot_to_pprof(&snapshot, nil, nil, nil, &out)
         XCTAssertEqual(size, 0)
         XCTAssertNil(out)
     }
@@ -102,7 +102,7 @@ final class MemoryToPprofTests: XCTestCase {
             snapshot.timestamp_ns = 0
 
             var out: UnsafeMutablePointer<UInt8>?
-            let n = dd_memory_snapshot_to_pprof(&snapshot, &out)
+            let n = dd_memory_snapshot_to_pprof(&snapshot, nil, nil, nil, &out)
             return (n, out)
         }
         defer { if let d = data { free(d) } }
@@ -164,7 +164,7 @@ final class MemoryToPprofTests: XCTestCase {
             snapshot.sample_count = buf.count
             snapshot.timestamp_ns = 0
             var out: UnsafeMutablePointer<UInt8>?
-            let n = dd_memory_snapshot_to_pprof(&snapshot, &out)
+            let n = dd_memory_snapshot_to_pprof(&snapshot, nil, nil, nil, &out)
             return (n, out)
         }
         defer { if let d = data { free(d) } }
@@ -178,6 +178,136 @@ final class MemoryToPprofTests: XCTestCase {
         XCTAssertEqual(String(cString: strings[Int(periodType.pointee.unit)]!), "bytes")
         XCTAssertEqual(pprof.pointee.period, Int64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES),
                        "period must equal DD_MEMORY_POISSON_DEFAULT_RATE_BYTES (524288)")
+    }
+
+    // MARK: - RUM correlation labels
+
+    /// Converter called with all three RUM IDs must attach string labels
+    /// `session_id`, `view_id`, and `application_id` to every emitted sample.
+    func testRUMLabels_allPresent() throws {
+        let sample = Self.makeSample(size: 1024, weight: 1.0, addresses: [0xDEAD_0001])
+        var samples = [sample]
+
+        let (byteCount, data) = samples.withUnsafeMutableBufferPointer { buf -> (Int, UnsafeMutablePointer<UInt8>?) in
+            var snapshot = dd_memory_snapshot_t()
+            snapshot.samples = buf.baseAddress
+            snapshot.sample_count = buf.count
+            snapshot.timestamp_ns = 0
+            var out: UnsafeMutablePointer<UInt8>?
+            let n = dd_memory_snapshot_to_pprof(&snapshot, "S", "V", "A", &out)
+            return (n, out)
+        }
+        defer { if let d = data { free(d) } }
+
+        let pprof = try XCTUnwrap(
+            perftools__profiles__profile__unpack(nil, byteCount, data),
+            "Failed to unpack pprof protobuf"
+        )
+        defer { perftools__profiles__profile__free_unpacked(pprof, nil) }
+
+        XCTAssertEqual(pprof.pointee.n_sample, 1)
+        let pprofSample = try XCTUnwrap(pprof.pointee.sample?[0])
+        let strings = pprof.pointee.string_table!
+
+        // Collect all string labels emitted on this sample.
+        var labelsByKey: [String: String] = [:]
+        for li in 0..<Int(pprofSample.pointee.n_label) {
+            guard let lbl = pprofSample.pointee.label?[li] else { continue }
+            let key = String(cString: strings[Int(lbl.pointee.key)]!)
+            // String label: str field is a non-zero string-table index.
+            if lbl.pointee.str != 0 {
+                labelsByKey[key] = String(cString: strings[Int(lbl.pointee.str)]!)
+            }
+        }
+
+        XCTAssertEqual(labelsByKey["session_id"],     "S", "session_id label mismatch")
+        XCTAssertEqual(labelsByKey["view_id"],        "V", "view_id label mismatch")
+        XCTAssertEqual(labelsByKey["application_id"], "A", "application_id label mismatch")
+    }
+
+    // MARK: - No spurious end_timestamp_ns label on heap samples
+
+    /// Heap samples have `timestamp_uptime_ns == 0`, so `for_each_label` must NOT
+    /// emit an `end_timestamp_ns` label — that label is wall-time-only.
+    func testHeapSamples_noEndTimestampNsLabel() throws {
+        let sample = Self.makeSample(size: 1024, weight: 1.0, addresses: [0xDEAD_0003])
+        var samples = [sample]
+
+        let (byteCount, data) = samples.withUnsafeMutableBufferPointer { buf -> (Int, UnsafeMutablePointer<UInt8>?) in
+            var snapshot = dd_memory_snapshot_t()
+            snapshot.samples = buf.baseAddress
+            snapshot.sample_count = buf.count
+            snapshot.timestamp_ns = 0
+            var out: UnsafeMutablePointer<UInt8>?
+            let n = dd_memory_snapshot_to_pprof(&snapshot, "S", "V", "A", &out)
+            return (n, out)
+        }
+        defer { if let d = data { free(d) } }
+
+        let pprof = try XCTUnwrap(
+            perftools__profiles__profile__unpack(nil, byteCount, data),
+            "Failed to unpack pprof protobuf"
+        )
+        defer { perftools__profiles__profile__free_unpacked(pprof, nil) }
+
+        XCTAssertEqual(pprof.pointee.n_sample, 1)
+        let pprofSample = try XCTUnwrap(pprof.pointee.sample?[0])
+        let strings = pprof.pointee.string_table!
+
+        // Collect all label keys emitted on this heap sample.
+        var labelKeys: [String] = []
+        for li in 0..<Int(pprofSample.pointee.n_label) {
+            guard let lbl = pprofSample.pointee.label?[li] else { continue }
+            labelKeys.append(String(cString: strings[Int(lbl.pointee.key)]!))
+        }
+
+        XCTAssertFalse(
+            labelKeys.contains("end_timestamp_ns"),
+            "Heap samples must NOT carry an end_timestamp_ns label (timestamp_uptime_ns == 0)"
+        )
+
+        // RUM labels must still be present (regression guard).
+        XCTAssertTrue(labelKeys.contains("session_id"),     "session_id label must be present")
+        XCTAssertTrue(labelKeys.contains("view_id"),        "view_id label must be present")
+        XCTAssertTrue(labelKeys.contains("application_id"), "application_id label must be present")
+    }
+
+    /// Converter called with NULL IDs must NOT emit RUM correlation labels.
+    func testRUMLabels_nullIDs_noLabelsEmitted() throws {
+        let sample = Self.makeSample(size: 1024, weight: 1.0, addresses: [0xDEAD_0002])
+        var samples = [sample]
+
+        let (byteCount, data) = samples.withUnsafeMutableBufferPointer { buf -> (Int, UnsafeMutablePointer<UInt8>?) in
+            var snapshot = dd_memory_snapshot_t()
+            snapshot.samples = buf.baseAddress
+            snapshot.sample_count = buf.count
+            snapshot.timestamp_ns = 0
+            var out: UnsafeMutablePointer<UInt8>?
+            let n = dd_memory_snapshot_to_pprof(&snapshot, nil, nil, nil, &out)
+            return (n, out)
+        }
+        defer { if let d = data { free(d) } }
+
+        let pprof = try XCTUnwrap(
+            perftools__profiles__profile__unpack(nil, byteCount, data),
+            "Failed to unpack pprof protobuf"
+        )
+        defer { perftools__profiles__profile__free_unpacked(pprof, nil) }
+
+        XCTAssertEqual(pprof.pointee.n_sample, 1)
+        let pprofSample = try XCTUnwrap(pprof.pointee.sample?[0])
+        let strings = pprof.pointee.string_table!
+
+        var labelKeys: Set<String> = []
+        for li in 0..<Int(pprofSample.pointee.n_label) {
+            guard let lbl = pprofSample.pointee.label?[li] else { continue }
+            let key = String(cString: strings[Int(lbl.pointee.key)]!)
+            labelKeys.insert(key)
+        }
+
+        XCTAssertFalse(labelKeys.contains("session_id"),     "No session_id label expected when id is nil")
+        XCTAssertFalse(labelKeys.contains("view_id"),        "No view_id label expected when id is nil")
+        XCTAssertFalse(labelKeys.contains("application_id"), "No application_id label expected when id is nil")
     }
 }
 #endif // !os(watchOS)

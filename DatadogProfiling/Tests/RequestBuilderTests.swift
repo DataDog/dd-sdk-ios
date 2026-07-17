@@ -220,6 +220,84 @@ class RequestBuilderTests: XCTestCase {
         ))
     }
 
+    func testItIncludesHeapPprofPartWhenPresent() throws {
+        // Given
+        let heapData: Data = .mockRandom()
+        let encoder = JSONEncoder.dd.default()
+        let attachments = ProfileAttachments(heapPprof: heapData)
+        let event = try Event(
+            data: encoder.encode(profileEvent),
+            metadata: encoder.encode(attachments)
+        )
+        let multipartSpy = MultipartBuilderSpy()
+        let builder = RequestBuilder(multipartBuilder: multipartSpy, customUploadURL: nil, telemetry: TelemetryMock())
+
+        // When
+        _ = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+
+        // Then – event + heap.pprof parts only (no wall.pprof, no rum-events)
+        XCTAssertEqual(multipartSpy.formFiles.count, 2)
+
+        let eventFile = multipartSpy.formFiles[0]
+        XCTAssertEqual(eventFile.filename, "event.json")
+
+        let heapFile = multipartSpy.formFiles[1]
+        XCTAssertEqual(heapFile.filename, "heap.pprof")
+        XCTAssertEqual(heapFile.mimeType, "application/octet-stream")
+        XCTAssertEqual(heapFile.data, heapData)
+
+        // wall.pprof must NOT be present
+        XCTAssertFalse(multipartSpy.formFiles.map(\.filename).contains("wall.pprof"))
+    }
+
+    func testItExcludesHeapPprofPartWhenAbsent() throws {
+        // Given
+        let event = try mockEvent() // uses ProfileAttachments(pprof:rumEvents:), heapPprof defaults to nil
+        let multipartSpy = MultipartBuilderSpy()
+        let builder = RequestBuilder(multipartBuilder: multipartSpy, customUploadURL: nil, telemetry: TelemetryMock())
+
+        // When
+        _ = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+
+        // Then – heap.pprof must NOT be present
+        XCTAssertFalse(multipartSpy.formFiles.map(\.filename).contains("heap.pprof"))
+        // wall.pprof must still be present
+        XCTAssertTrue(multipartSpy.formFiles.map(\.filename).contains("profile.pprof"))
+    }
+
+    func testItIncludesWallHeapAndRumPartsInOneRequestWhenAllPresent() throws {
+        // Given – a single profile event carrying wall + rum-events + heap, i.e. the combined
+        // upload shape produced when memory profiling is enabled (Go-aligned: one event, multiple
+        // pprof attachments merged into one profile by the backend).
+        let wallData: Data = .mockRandom()
+        let rumData: Data = .mockRandom()
+        let heapData: Data = .mockRandom()
+        let encoder = JSONEncoder.dd.default()
+        let attachments = ProfileAttachments(pprof: wallData, rumEvents: rumData, heapPprof: heapData)
+        let event = try Event(
+            data: encoder.encode(profileEvent),
+            metadata: encoder.encode(attachments)
+        )
+        let multipartSpy = MultipartBuilderSpy()
+        let builder = RequestBuilder(multipartBuilder: multipartSpy, customUploadURL: nil, telemetry: TelemetryMock())
+
+        // When
+        _ = try builder.request(for: [event], with: .mockAny(), execution: .mockAny())
+
+        // Then – event.json + wall.pprof + rum-mobile-events.json + heap.pprof all in one request.
+        let filenames = multipartSpy.formFiles.map(\.filename)
+        XCTAssertTrue(filenames.contains("event.json"))
+        XCTAssertTrue(filenames.contains("profile.pprof"))
+        XCTAssertTrue(filenames.contains("rum-mobile-events.json"))
+        XCTAssertTrue(filenames.contains("heap.pprof"))
+
+        let wallFile = try XCTUnwrap(multipartSpy.formFiles.first { $0.filename == "profile.pprof" })
+        XCTAssertEqual(wallFile.data, wallData)
+        let heapFile = try XCTUnwrap(multipartSpy.formFiles.first { $0.filename == "heap.pprof" })
+        XCTAssertEqual(heapFile.data, heapData)
+        XCTAssertEqual(heapFile.mimeType, "application/octet-stream")
+    }
+
     func testItSetsRetryQueryParameters() throws {
         // Given
         let randomAttempt: UInt = .mockRandom(min: 1, max: 10)

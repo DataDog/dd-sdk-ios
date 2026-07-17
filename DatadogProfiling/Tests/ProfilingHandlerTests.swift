@@ -167,7 +167,8 @@ final class ProfilingHandlerTests: XCTestCase {
 
         // Then
         let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-        XCTAssertFalse(metadata.pprof.isEmpty)
+        let wallPprof = try XCTUnwrap(metadata.pprof)
+        XCTAssertFalse(wallPprof.isEmpty)
     }
 
     func testWriteProfileAttachments_containRumEventsWithProvidedVitals() throws {
