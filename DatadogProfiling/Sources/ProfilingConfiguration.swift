@@ -30,6 +30,13 @@ extension Profiling {
         /// Default: `5.0`.
         public var continuousSampleRate: SampleRate
 
+        /// The sampling rate for memory (heap) profiling.
+        ///
+        /// It must be a number between 0.0 and 100.0, where 0 means no memory profiles will be collected.
+        ///
+        /// Default: `0.0`.
+        public var memorySampleRate: SampleRate
+
         /// Feature flags to preview features in Profiling.
         public var featureFlags: FeatureFlags
 
@@ -46,11 +53,13 @@ extension Profiling {
             customEndpoint: URL? = nil,
             applicationLaunchSampleRate: SampleRate = 5,
             continuousSampleRate: SampleRate = 5,
+            memorySampleRate: SampleRate = 0,
             featureFlags: FeatureFlags = .defaults
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
             self.continuousSampleRate = continuousSampleRate
+            self.memorySampleRate = memorySampleRate
             self.featureFlags = featureFlags
         }
     }

@@ -21,6 +21,14 @@ final class ProfilingConfigurationTests: XCTestCase {
         XCTAssertEqual(config.continuousSampleRate, 5)
         XCTAssertFalse(config.featureFlags[.cpuTimeSamples])
     }
+
+    func testMemorySampleRateDefaultsToZeroAndIsConfigurable() {
+        // Default is disabled (0)
+        XCTAssertEqual(Profiling.Configuration().memorySampleRate, 0)
+
+        // Configurable via init
+        XCTAssertEqual(Profiling.Configuration(memorySampleRate: 100).memorySampleRate, 100)
+    }
 }
 
 #endif
