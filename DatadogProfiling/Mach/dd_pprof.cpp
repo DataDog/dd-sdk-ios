@@ -88,6 +88,30 @@ size_t dd_pprof_sample_count(dd_pprof_t* profile) {
     return reinterpret_cast<dd::profiler::profile*>(profile)->samples().size();
 }
 
+void dd_pprof_add_heap_sample_for_testing(
+    dd_pprof_t* profile,
+    uint32_t location_id,
+    int64_t alloc_objects,
+    int64_t alloc_space,
+    int64_t inuse_objects,
+    int64_t inuse_space
+) {
+    if (!profile) return;
+    dd::profiler::sample_t sample;
+    sample.location_ids = { location_id };
+    sample.timestamp_uptime_ns = 0;
+    sample.labels = {};
+    sample.values = { alloc_objects, alloc_space, inuse_objects, inuse_space };
+    reinterpret_cast<dd::profiler::profile*>(profile)->add_raw_sample(std::move(sample));
+}
+
+size_t dd_pprof_serialize_heap_for_testing(dd_pprof_t* profile, uint8_t** data) {
+    if (!profile || !data) return 0;
+    return dd::profiler::profile_pprof_pack_heap(
+        *reinterpret_cast<dd::profiler::profile*>(profile), data
+    );
+}
+
 } // extern "C"
 
 #endif // __APPLE__ && !TARGET_OS_WATCH

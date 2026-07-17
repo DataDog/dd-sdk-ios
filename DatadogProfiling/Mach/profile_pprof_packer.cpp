@@ -76,6 +76,26 @@ void perftools_profiles_profile_add_strings(const std::vector<std::string>& stri
 /** @brief Set sample type definitions (e.g., "cpu"/"nanoseconds", "wall"/"nanoseconds") */
 void perftools_profiles_profile_set_sample_type(const profile& prof, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
+/**
+ * @brief Set the four Go-aligned heap sample type definitions
+ *
+ * Allocates and populates four ValueType entries in order:
+ *   alloc_objects/count, alloc_space/bytes, inuse_objects/count, inuse_space/bytes
+ *
+ * @param alloc_objects_id  String ID for "alloc_objects"
+ * @param alloc_space_id    String ID for "alloc_space"
+ * @param inuse_objects_id  String ID for "inuse_objects"
+ * @param inuse_space_id    String ID for "inuse_space"
+ * @param count_id          String ID for "count"
+ * @param bytes_id          String ID for "bytes"
+ */
+void perftools_profiles_profile_set_sample_type_heap(
+    int64_t alloc_objects_id, int64_t alloc_space_id,
+    int64_t inuse_objects_id, int64_t inuse_space_id,
+    int64_t count_id, int64_t bytes_id,
+    Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator
+);
+
 /** @brief Set period type and value for sampling interval */
 void perftools_profiles_profile_set_period(int64_t type, int64_t unit, int64_t period, Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator);
 
@@ -155,8 +175,79 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
 }
 
 /**
+ * @brief Pack profile data into pprof protobuf binary format (heap variant)
+ *
+ * Sibling of profile_pprof_pack that emits four Go-aligned heap sample types:
+ *   alloc_objects/count, alloc_space/bytes, inuse_objects/count, inuse_space/bytes
+ *
+ * The period_type is space/bytes and the period value is taken from
+ * prof.sampling_interval_ns() (expected to be 524288 bytes).
+ *
+ * All string/mapping/location/sample helpers are reused unchanged from the
+ * wall-time path — they already handle N-value samples and arbitrary labels.
+ *
+ * @param prof The profile data to pack (samples must carry 4-element values vectors)
+ * @param data Output parameter - pointer to allocated buffer containing serialized data
+ * @return Size of the serialized data in bytes, or 0 on failure
+ *
+ * @note The caller is responsible for freeing the returned buffer with free()
+ */
+size_t profile_pprof_pack_heap(const profile& prof, uint8_t** data) {
+    if (!data) return 0;
+
+    auto* pprof = static_cast<Perftools__Profiles__Profile*>(
+        pb_alloc(&profile_allocator, sizeof(Perftools__Profiles__Profile))
+    );
+    perftools__profiles__profile__init(pprof);
+
+    perftools_profiles_profile_add_strings(prof.strings(), pprof, &profile_allocator);
+    perftools_profiles_profile_set_sample_type_heap(
+        prof.alloc_objects_str_id(), prof.alloc_space_str_id(),
+        prof.inuse_objects_str_id(), prof.inuse_space_str_id(),
+        prof.count_str_id(), prof.bytes_str_id(),
+        pprof, &profile_allocator
+    );
+    perftools_profiles_profile_set_period(
+        prof.space_str_id(), prof.bytes_str_id(),
+        static_cast<int64_t>(prof.sampling_interval_ns()),
+        pprof, &profile_allocator
+    );
+    perftools_profiles_profile_add_mappings(prof.mappings(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_locations(prof.locations(), pprof, &profile_allocator);
+    perftools_profiles_profile_add_samples(prof, pprof, &profile_allocator);
+
+    size_t packed_size = perftools__profiles__profile__get_packed_size(pprof);
+
+    if (packed_size == 0) {
+        perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
+        return 0;
+    }
+
+    uint8_t* buffer = static_cast<uint8_t*>(malloc(packed_size));
+    if (!buffer) {
+        perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
+        return 0;
+    }
+
+    size_t actual_size = pprof_pb_message_pack(
+        reinterpret_cast<const ProtobufCMessage*>(pprof),
+        buffer
+    );
+
+    perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
+
+    if (actual_size == 0) {
+        free(buffer);
+        return 0;
+    }
+
+    *data = buffer;
+    return actual_size;
+}
+
+/**
  * @brief Convert string table to protobuf format
- * 
+ *
  * Copies all strings from the internal string table to protobuf format.
  * Each string is allocated using the protobuf allocator to ensure
  * consistent memory management.
@@ -193,6 +284,41 @@ void perftools_profiles_profile_set_sample_type(const profile& prof, Perftools__
     add_sample_type(0, prof.wall_time_str_id(), prof.nanoseconds_str_id());
     if (prof.cpu_time_enabled()) {
         add_sample_type(1, prof.cpu_time_str_id(), prof.nanoseconds_str_id());
+    }
+}
+
+void perftools_profiles_profile_set_sample_type_heap(
+    int64_t alloc_objects_id, int64_t alloc_space_id,
+    int64_t inuse_objects_id, int64_t inuse_space_id,
+    int64_t count_id, int64_t bytes_id,
+    Perftools__Profiles__Profile* pprof, ProtobufCAllocator* allocator
+) {
+    // Four heap sample types in Go-aligned order:
+    //   [0] alloc_objects/count
+    //   [1] alloc_space/bytes
+    //   [2] inuse_objects/count
+    //   [3] inuse_space/bytes
+    static constexpr size_t kHeapSampleTypeCount = 4;
+    pprof->n_sample_type = kHeapSampleTypeCount;
+    pprof->sample_type = static_cast<Perftools__Profiles__ValueType**>(
+        pb_alloc(allocator, kHeapSampleTypeCount * sizeof(Perftools__Profiles__ValueType*))
+    );
+
+    struct { int64_t type; int64_t unit; } entries[kHeapSampleTypeCount] = {
+        { alloc_objects_id, count_id  },
+        { alloc_space_id,   bytes_id  },
+        { inuse_objects_id, count_id  },
+        { inuse_space_id,   bytes_id  },
+    };
+
+    for (size_t i = 0; i < kHeapSampleTypeCount; ++i) {
+        auto* vt = static_cast<Perftools__Profiles__ValueType*>(
+            pb_alloc(allocator, sizeof(Perftools__Profiles__ValueType))
+        );
+        perftools__profiles__value_type__init(vt);
+        vt->type = entries[i].type;
+        vt->unit = entries[i].unit;
+        pprof->sample_type[i] = vt;
     }
 }
 

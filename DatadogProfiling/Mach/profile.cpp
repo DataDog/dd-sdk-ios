@@ -98,6 +98,13 @@ profile::profile(uint64_t sampling_interval_ns, bool record_cpu_time)
     _wall_time_str_id = intern_string("wall-time");
     _cpu_time_str_id = _record_cpu_time ? intern_string("cpu-time") : 0;
     _nanoseconds_str_id = intern_string("nanoseconds");
+    _alloc_objects_str_id = intern_string("alloc_objects");
+    _alloc_space_str_id = intern_string("alloc_space");
+    _inuse_objects_str_id = intern_string("inuse_objects");
+    _inuse_space_str_id = intern_string("inuse_space");
+    _count_str_id = intern_string("count");
+    _bytes_str_id = intern_string("bytes");
+    _space_str_id = intern_string("space");
     _end_timestamp_ns_str_id = intern_string("end_timestamp_ns");
     _thread_id_str_id = intern_string("thread id");
     _thread_name_str_id = intern_string("thread name");
