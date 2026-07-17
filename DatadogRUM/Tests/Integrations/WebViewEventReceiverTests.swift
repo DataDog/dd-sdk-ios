@@ -304,8 +304,8 @@ class WebViewEventReceiverTests: XCTestCase {
             "session": ["id": String.mockRandom()],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": Int(date),
-            // Browser SDK only sends a partial set of tags (e.g. `sdk_version`) when running in a WebView:
-            "ddtags": "sdk_version:5.2.0"
+            // Browser SDK sends its own tag alongside a key that collides with a native one:
+            "ddtags": "browser_sdk_version:3.6.13,sdk_version:5.2.0"
         ]
 
         // When
@@ -317,7 +317,7 @@ class WebViewEventReceiverTests: XCTestCase {
             "session": ["id": rumContext.sessionID],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
-            "ddtags": "\(featureScope.contextMock.ddTags),sdk_version:5.2.0"
+            "ddtags": "browser_sdk_version:3.6.13,env:abc,sdk_version:5.2.0,service:abc,version:abc"
         ]
 
         XCTAssertTrue(result, "It must accept the message")
