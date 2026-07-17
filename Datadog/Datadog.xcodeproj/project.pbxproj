@@ -227,6 +227,7 @@
 		11EDDAC3300A9D21002C3D43 /* MemoryToPprofTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC2300A9D21002C3D43 /* MemoryToPprofTests.swift */; };
 		11EDDAC5300A9FD4002C3D43 /* memory_to_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC4300A9FD4002C3D43 /* memory_to_pprof.cpp */; };
 		11EDDAC7300A9FE4002C3D43 /* memory_to_pprof.h in Headers */ = {isa = PBXBuildFile; fileRef = 11EDDAC6300A9FE4002C3D43 /* memory_to_pprof.h */; };
+		11EDDAC9300AA20C002C3D43 /* DatadogProfilerMemoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EDDAC8300AA20C002C3D43 /* DatadogProfilerMemoryTests.swift */; };
 		11F55FCE2DCBB4F600DE4944 /* URLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */; };
 		11F55FD42DCBB61A00DE4944 /* TracingHeaderType+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */; };
 		11F55FD62DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
@@ -2079,6 +2080,7 @@
 		11EDDAC2300A9D21002C3D43 /* MemoryToPprofTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryToPprofTests.swift; sourceTree = "<group>"; };
 		11EDDAC4300A9FD4002C3D43 /* memory_to_pprof.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_to_pprof.cpp; sourceTree = "<group>"; };
 		11EDDAC6300A9FE4002C3D43 /* memory_to_pprof.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = memory_to_pprof.h; sourceTree = "<group>"; };
+		11EDDAC8300AA20C002C3D43 /* DatadogProfilerMemoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerMemoryTests.swift; sourceTree = "<group>"; };
 		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -6987,6 +6989,7 @@
 			children = (
 				115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
+				11EDDAC8300AA20C002C3D43 /* DatadogProfilerMemoryTests.swift */,
 				11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */,
 				D2D0E2012E3CEF1200BA4113 /* DDProfilerCAPITests.swift */,
 				1166C5942F748138008E34BC /* DDProfilerTests.swift */,
@@ -9532,6 +9535,7 @@
 				7FF044DD3F678ED05D8F975B /* MemoryProfilerPOCTests.swift in Sources */,
 				7FF044DD3F678ED05D8F975C /* MemorySwizzlingPOCTests.swift in Sources */,
 				110DD1B72EEC3E45002F3B8B /* SafeReadTests.swift in Sources */,
+				11EDDAC9300AA20C002C3D43 /* DatadogProfilerMemoryTests.swift in Sources */,
 				11EDDAC3300A9D21002C3D43 /* MemoryToPprofTests.swift in Sources */,
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,

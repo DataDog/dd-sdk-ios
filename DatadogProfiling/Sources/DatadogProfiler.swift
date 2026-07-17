@@ -40,6 +40,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
     private let isAppLaunchProfilingEnabled: Bool
+    private let memorySampleRate: SampleRate
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
@@ -88,6 +89,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         minProfileDuration: TimeInterval = Constants.minProfileDuration,
         isAppLaunchProfilingEnabled: Bool = false,
+        memorySampleRate: SampleRate = 0,
         encoder: JSONEncoder = JSONEncoder(),
         dateProvider: DateProvider = SystemDateProvider()
     ) {
@@ -100,6 +102,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
         self.isAppLaunchProfilingEnabled = isAppLaunchProfilingEnabled
+        self.memorySampleRate = memorySampleRate
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
@@ -118,6 +121,10 @@ internal final class DatadogProfiler: ProfilingHandler {
 
     deinit {
         stopTimer()
+
+        if memorySampleRate > 0 {
+            stopMemoryProfiling()
+        }
     }
 }
 
@@ -330,6 +337,9 @@ private extension DatadogProfiler {
         var currentStatus = ProfilingContext.Status.current
         if currentStatus == .running && !canProfile {
             dd_profiler_stop()
+            if memorySampleRate > 0 {
+                stopMemoryProfiling()
+            }
             currentStatus = ProfilingContext.Status.current
         }
 
@@ -354,6 +364,9 @@ private extension DatadogProfiler {
                 cleanUpState(preservingOngoingOperations: false)
             } else if canProfile {
                 dd_profiler_start()
+                if memorySampleRate > 0 {
+                    startMemoryProfiling()
+                }
                 profileStartDate = dateProvider.now
                 startTimer()
             }
@@ -574,6 +587,22 @@ private extension DatadogProfiler {
         return currentRUMVitals.ongoingOperations().contains {
             dateProvider.now.timeIntervalSince($1.date) < Constants.cutOffTime
         }
+    }
+
+    func startMemoryProfiling() {
+        // Passive profiler start (allocates sample table, initialises Poisson sampler, flips
+        // the enabled flag) MUST precede the swizzle installation so that allocations observed
+        // by the +allocWithZone: trampoline have a live sample table to write into.
+        // dd_memory_swizzle_start internally calls dd_memory_profiler_start_passive and
+        // installs the swizzle in the correct order, so a single call is sufficient.
+        MemorySwizzlingPOC.start(poissonRateBytes: MemorySwizzlingPOC.defaultPoissonRateBytes)
+    }
+
+    func stopMemoryProfiling() {
+        // dd_memory_swizzle_stop restores the original +allocWithZone: IMP and clears the
+        // sampler's enabled flag (equivalent to calling dd_memory_profiler_stop after the
+        // swizzle is removed). Safe to call even when not running.
+        MemorySwizzlingPOC.stop()
     }
 
     var shouldHarvestAppLaunchProfileOnTTID: Bool {

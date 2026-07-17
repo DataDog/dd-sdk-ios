@@ -66,7 +66,8 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration,
-            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
+            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0,
+            memorySampleRate: configuration.memorySampleRate
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
