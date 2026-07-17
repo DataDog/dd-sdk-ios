@@ -22,6 +22,16 @@ private struct FeatureMock: DatadogRemoteFeature {
     var performanceOverride: PerformancePresetOverride? = nil
 }
 
+private final class InMemoryClearingFeatureMock: DatadogFeature, InMemoryDataClearing {
+    static let name: String = "in-memory-clearing-mock"
+    var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+
+    private(set) var clearInMemoryDataCallCount = 0
+    func clearInMemoryData() {
+        clearInMemoryDataCallCount += 1
+    }
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -619,6 +629,32 @@ class DatadogCoreTests: XCTestCase {
             .map { $0.data.utf8String }
 
         XCTAssertEqual(uploadedEvents, [#"{"event":"test"}"#])
+    }
+
+    func testWhenClearingAllData_itClearsInMemoryDataOfConformingFeatures() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        let feature = InMemoryClearingFeatureMock()
+        try core.register(feature: feature)
+
+        // When
+        core.clearAllData()
+
+        // Then
+        XCTAssertEqual(feature.clearInMemoryDataCallCount, 1)
     }
 
     func testItClearsAnonymousIdentifier() {

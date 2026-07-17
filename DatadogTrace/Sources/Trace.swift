@@ -40,8 +40,31 @@ public enum Trace {
             )
         }
 
+        // Register Client-Side Stats feature first if enabled, so the Trace feature (which stamps
+        // `meta._dd.compute_stats=0` on every span) is only registered once the stats pipeline is
+        // known to be installed. If stats registration fails, we return before any span is stamped,
+        // which prevents suppressing the backend's own stats while no client stats are uploaded.
+        var stats: ClientStatsFeature?
+        if configuration.statsComputationEnabled {
+            let statsFeature = ClientStatsFeature(core: core, configuration: configuration, dateProvider: configuration.dateProvider)
+            try core.register(feature: statsFeature)
+            stats = statsFeature
+        }
+
         // Register Trace feature:
         let trace = TraceFeature(in: core, configuration: configuration)
+
+        // Attach the stats hook BEFORE registering (exposing) the Trace feature. Once registered,
+        // `Tracer.shared()` is reachable from other threads and its `SpanEventBuilder` already stamps
+        // `meta._dd.compute_stats=0`. If the hook were installed after registration, a span finished
+        // in that window would suppress the backend's stats without being added to the concentrator,
+        // losing its RED metrics.
+        if let stats {
+            trace.tracer.onSpanFinished = { [weak stats] snapshot in
+                stats?.concentrator.add(snapshot)
+            }
+        }
+
         try core.register(feature: trace)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:

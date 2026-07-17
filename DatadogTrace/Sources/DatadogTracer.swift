@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 import OpenTelemetryApi
 
-internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
+internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer, @unchecked Sendable {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
@@ -34,6 +34,11 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
+
+    /// Optional callback invoked when any span finishes, regardless of sampling.
+    /// Set by `Trace.enableOrThrow()` when client-side stats is enabled.
+    @ReadWriteLock
+    var onSpanFinished: ((SpanSnapshot) -> Void)?
 
     // MARK: - Initialization
 
@@ -187,6 +192,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             }
         )
     }
+
     // MARK: - OpenTelemetry
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
