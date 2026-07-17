@@ -311,6 +311,27 @@ uint32_t profile::intern_location(const location_t& location) {
     return id;
 }
 
+/**
+ * @brief Resolve a stack trace's frames into deduplicated location IDs.
+ *
+ * Delegates to `intern_frame(frame, image_cache)` for every frame in the
+ * trace, reusing the profile's existing symbolication path without
+ * duplicating any interning logic.  The returned vector is in the same
+ * leaf-to-root order as the frames array.
+ *
+ * @param trace Single stack trace to resolve.
+ * @param image_cache Optional binary image cache for lazy image resolution.
+ * @return Ordered vector of 1-based location IDs.
+ */
+std::vector<uint32_t> profile::resolve_locations(const stack_trace_t& trace, binary_image_cache* image_cache) {
+    std::vector<uint32_t> location_ids;
+    location_ids.reserve(trace.frame_count);
+    for (uint32_t j = 0; j < trace.frame_count; ++j) {
+        location_ids.push_back(intern_frame(trace.frames[j], image_cache));
+    }
+    return location_ids;
+}
+
 } // namespace dd::profiler
 
 #endif // __APPLE__ && !TARGET_OS_WATCH
