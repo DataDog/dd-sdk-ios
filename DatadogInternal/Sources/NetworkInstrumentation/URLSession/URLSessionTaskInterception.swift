@@ -266,7 +266,7 @@ public struct ResourceMetrics {
     /// - `decoded`: Size before encoding (original content size).
     public let requestBodySize: (encoded: Int64, decoded: Int64)?
 
-    /// Tells if the resource was served from the device's local cache.
+    /// Indicates whether the resource was served from the device's local cache.
     public let isLocalCacheHit: Bool
 
     public init(
