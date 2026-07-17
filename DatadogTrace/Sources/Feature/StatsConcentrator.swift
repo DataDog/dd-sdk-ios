@@ -286,12 +286,30 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 return []
             }
 
-            let cutoff = force ? Int64.max : Int64(now) - Int64(bufferLen) * Int64(bucketDuration)
+            // A bucket is complete once it is older than the retention window ending at `now`, i.e.
+            // when `ts <= now - window`. Comparisons stay in the `UInt64` domain: a pathological span
+            // whose start time saturated to `UInt64.max` could produce a bucket key above `Int64.max`,
+            // and casting that to `Int64` would trap and crash the host app.
+            //
+            // When `now < window`, `now - window` would be negative, so no bucket is old enough yet and
+            // nothing (short of a forced flush) is eligible. Clamping the cutoff to `0` instead would
+            // wrongly flush a bucket sitting exactly at `ts == 0`, so guard that case explicitly rather
+            // than relying on a clamped cutoff.
+            let window = UInt64(bufferLen) * bucketDuration
+            let isFlushable: (UInt64) -> Bool
+            if force {
+                isFlushable = { _ in true }
+            } else if now >= window {
+                let cutoff = now - window
+                isFlushable = { $0 <= cutoff }
+            } else {
+                isFlushable = { _ in false }
+            }
             var flushed: [ExportedBucket] = []
             var keysToRemove: [UInt64] = []
 
             for (ts, bucket) in buckets {
-                if Int64(ts) > cutoff {
+                if !isFlushable(ts) {
                     continue
                 }
                 keysToRemove.append(ts)
