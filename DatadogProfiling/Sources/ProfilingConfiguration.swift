@@ -30,6 +30,13 @@ extension Profiling {
         /// Default: `5.0`.
         public var continuousSampleRate: SampleRate
 
+        /// The sampling rate for memory (heap) profiling.
+        ///
+        /// It must be a number between 0.0 and 100.0, where 0 means no memory profiles will be collected.
+        ///
+        /// Default: `0.0`.
+        public var memorySampleRate: SampleRate
+
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -42,11 +49,13 @@ extension Profiling {
         public init(
             customEndpoint: URL? = nil,
             applicationLaunchSampleRate: SampleRate = 5,
-            continuousSampleRate: SampleRate = 5
+            continuousSampleRate: SampleRate = 5,
+            memorySampleRate: SampleRate = 0
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
             self.continuousSampleRate = continuousSampleRate
+            self.memorySampleRate = memorySampleRate
         }
 
         /// Merges the remote configuration on top of this in-code configuration.
