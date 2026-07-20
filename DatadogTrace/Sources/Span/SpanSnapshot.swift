@@ -86,8 +86,8 @@ extension SpanSnapshot {
         // parent lives in a different service (distributed-tracing continuation) or
         // when the user explicitly marks the span with `_dd.top_level`. Mirrors the
         // dd-trace-go convention (`_top_level` tag).
-        let isTopLevel = event.parentID == nil || event.tags["_dd.top_level"] == "1"
-        let isMeasured = event.tags["_dd.measured"] == "1"
+        let isTopLevel = event.parentID == nil || event.tags[SpanTags.topLevel] == "1"
+        let isMeasured = event.tags[SpanTags.measured] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
 
         var peerTags: [String: String] = [:]
