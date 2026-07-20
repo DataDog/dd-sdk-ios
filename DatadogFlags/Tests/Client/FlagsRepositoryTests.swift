@@ -94,6 +94,228 @@ final class FlagsRepositoryTests: XCTestCase {
         )
     }
 
+    func testSetEvaluationContext_whenInitialDataStoreReadIsDelayed_startsFetchingAssignmentsWithoutWaitingForRead() {
+        // Given
+        let dataStore = DelayedReadDataStore()
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let fetchStarted = expectation(description: "fetch started")
+        let flagsRepository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchStarted.fulfill()
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            completed.fulfill()
+        }
+
+        // Then
+        wait(for: [fetchStarted, completed], timeout: 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitialDataStoreRead_whenCompletesAfterSuccessfulContextUpdate_doesNotOverwriteFetchedFlags() throws {
+        // Given
+        let clientName = "client"
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let requestedContext = FlagsEvaluationContext(targetingKey: "fresh-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        let dataStore = DelayedReadDataStore(
+            storage: [
+                clientName: .value(
+                    try JSONEncoder().encode(cachedData),
+                    dataStoreDefaultKeyVersion
+                )
+            ]
+        )
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["fresh": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "fresh"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+    }
+
+    func testInitialDataStoreRead_whenCompletesDuringReconcilingWithMatchingContext_servesCachedFlags() throws {
+        // Given
+        let clientName = "client"
+        let requestedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: requestedContext,
+            date: .mockAny()
+        )
+        let dataStore = DelayedReadDataStore(
+            storage: [
+                clientName: .value(
+                    try JSONEncoder().encode(cachedData),
+                    dataStoreDefaultKeyVersion
+                )
+            ]
+        )
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let fetchStarted = expectation(description: "fetch started")
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+                fetchStarted.fulfill()
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            completed.fulfill()
+        }
+        wait(for: [fetchStarted], timeout: 1)
+
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "fresh"))
+
+        fetchCompletion?(.success(["fresh": .mockAny()]))
+        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "fresh"))
+    }
+
+    func testInitialDataStoreRead_whenCompletesAfterFailedContextUpdate_doesNotRestoreMismatchedCachedFlags() throws {
+        // Given
+        let clientName = "client"
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let requestedContext = FlagsEvaluationContext(targetingKey: "fresh-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        let dataStore = DelayedReadDataStore(
+            storage: [
+                clientName: .value(
+                    try JSONEncoder().encode(cachedData),
+                    dataStoreDefaultKeyVersion
+                )
+            ]
+        )
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { result in
+            if case .success = result {
+                XCTFail("Expected failure")
+            }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 1)
+
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+    }
+
     func testSetEvaluationContextError() throws {
         // Given
         let flagsRepository = FlagsRepository(
@@ -475,5 +697,48 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+}
+
+private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
+    @ReadWriteLock
+    private var storage: [String: DataStoreValueResult]
+
+    private let queue = DispatchQueue(label: "com.datadoghq.flags-delayed-read-data-store")
+    private let readSemaphore = DispatchSemaphore(value: 0)
+
+    var onReadStarted: (() -> Void)?
+
+    init(storage: [String: DataStoreValueResult] = [:]) {
+        self.storage = storage
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        storage[key] = .value(value, version)
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        queue.async {
+            let result = self.storage[key] ?? .noValue
+            self.onReadStarted?()
+            self.readSemaphore.wait()
+            callback(result)
+        }
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {
+        queue.sync {}
+    }
+
+    func resumeRead() {
+        readSemaphore.signal()
     }
 }
