@@ -101,15 +101,6 @@ extension ClientStatsFeature: Flushable {
     }
 }
 
-extension ClientStatsFeature: InMemoryDataClearing {
-    /// Drops the buckets buffered in the concentrator when the app clears unsent data. The
-    /// feature's on-disk storage is cleared by the core; this covers the in-memory aggregation
-    /// buffer that the core cannot reach.
-    func clearInMemoryData() {
-        concentrator.clearBuffer()
-    }
-}
-
 /// Forwards tracking-consent changes from the message bus to the `StatsConcentrator`.
 ///
 /// Holds the concentrator weakly: it is owned by `ClientStatsFeature`, while the bus owns this
