@@ -40,22 +40,22 @@ class ProfilingTest: XCTestCase {
     func testWhenEnabledWithRemoteConfiguration_itInjectsApplicationLaunchSampleRate() throws {
         // Clear the shared suite so the feature's "lowest sample rate wins" persistence is deterministic.
         let userDefaults = try XCTUnwrap(UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME))
-        delete_profiling_defaults()
-        defer { delete_profiling_defaults() }
+        dd_delete_profiling_defaults()
+        defer { dd_delete_profiling_defaults() }
 
         // Given a remote `profiling` namespace overriding the in-code application launch sample rate
         let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5)
         let core = SingleFeatureCoreMock<ProfilerFeature>()
         core.remoteConfiguration = .mockWith(profiling: .mockWith(applicationLaunchSampleRate: 100))
-        ctor_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds)
-        defer { ctor_profiler_destroy() }
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        defer { dd_profiler_destroy() }
 
         // When
         Profiling.enable(with: configuration, in: core)
 
         // Then the merged remote sample rate is injected into the feature and persisted at enable time
         XCTAssertNotNil(core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self))
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_SAMPLE_RATE_KEY) as? SampleRate, 100)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, 100)
     }
 }
 
