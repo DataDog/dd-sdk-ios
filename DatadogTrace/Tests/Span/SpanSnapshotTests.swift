@@ -323,7 +323,7 @@ class SpanSnapshotTests: XCTestCase {
     // The uploaded `SpanEvent` is sanitized at encode time (attribute-key normalization and the
     // 256-attribute limit). The stats `SpanSnapshot` is derived from the same sanitized
     // representation, so client-side stats never emit a peer dimension the uploaded span dropped or
-    // renamed — a divergence the backend cannot reconcile because `_dd.compute_stats=0` suppresses
+    // renamed, a divergence the backend cannot reconcile because `_dd.compute_stats=0` suppresses
     // its own recomputation.
 
     func testSnapshotPeerTagsMatchSanitizedUploadedSpan() throws {
@@ -352,14 +352,15 @@ class SpanSnapshotTests: XCTestCase {
 
         let snapshot = try XCTUnwrap(capturedSnapshot)
         let uploaded = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first)
-        let sanitizedUpload = SpanSanitizer().sanitize(span: try XCTUnwrap(uploaded.spans.first))
+        let uploadedSpan = try XCTUnwrap(uploaded.spans.first)
 
         // Each peer key must be present in the snapshot exactly when the sanitized upload keeps it,
-        // with an identical value — proving stats read the same sanitized tags the span uploads.
+        // with an identical value, proving stats read the same sanitized tags the span uploads.
+        XCTAssertTrue(uploadedSpan.isSanitized)
         for key in SpanSnapshot.peerTagKeys {
             XCTAssertEqual(
                 snapshot.peerTags[key],
-                sanitizedUpload.tags[key],
+                uploadedSpan.tags[key],
                 "Snapshot peer tag '\(key)' must match the sanitized uploaded span"
             )
         }

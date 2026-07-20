@@ -129,4 +129,26 @@ class SpanSanitizerTests: XCTestCase {
         // Then the SDK-owned opt-out survives even though user tags were dropped to fit the limit.
         XCTAssertEqual(sanitized.tags[SpanTags.computeStats], "0", "The reserved `_dd.compute_stats` tag must never be dropped by attribute limiting")
     }
+
+    func testWhenNumberOfAttributesExceedsLimit_itKeepsStatsEligibilityTags() {
+        let twiceTheLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        var mockTags = (0..<twiceTheLimit).reduce(into: [String: String]()) { tags, index in
+            tags["tag-\(index)"] = .mockAny()
+        }
+        mockTags[SpanTags.kind] = "client"
+        mockTags[SpanTags.topLevel] = "1"
+        mockTags[SpanTags.measured] = "1"
+
+        let span = SpanEvent.mockWith(parentID: 42, tags: mockTags)
+
+        // When
+        let sanitized = SpanSanitizer().sanitize(span: span)
+
+        // Then stats eligibility tags survive even when user tags were dropped to fit the limit.
+        XCTAssertEqual(sanitized.tags[SpanTags.kind], "client")
+        XCTAssertEqual(sanitized.tags[SpanTags.topLevel], "1")
+        XCTAssertEqual(sanitized.tags[SpanTags.measured], "1")
+        XCTAssertTrue(StatsConcentrator.isEligible(SpanSnapshot(from: sanitized, startTime: .mockAny())))
+    }
 }
