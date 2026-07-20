@@ -45,6 +45,10 @@ public enum SpanTags {
     /// Internal tag used to encode the span kind. This can be either "client" or "server" for RPC spans,
     /// and "producer" or "consumer" for messaging spans.
     internal static let kind = "span.kind"
+    /// Internal tag used to mark a child span as top-level for stats computation.
+    internal static let topLevel = "_dd.top_level"
+    /// Internal tag used to mark a span as measured for stats computation.
+    internal static let measured = "_dd.measured"
     /// Tag used to mark a span as manually dropped.
     public static let manualDrop = "manual.drop"
     /// Tag used to mark a span as manually kept.

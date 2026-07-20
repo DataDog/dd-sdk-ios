@@ -9,6 +9,13 @@ import DatadogInternal
 
 /// Sanitizes `SpanEvent` representation received from the user, so it can match Datadog APM constraints.
 internal struct SpanSanitizer {
+    private static let reservedTagKeys = [
+        SpanTags.computeStats,
+        SpanTags.kind,
+        SpanTags.topLevel,
+        SpanTags.measured
+    ]
+
     private let attributesSanitizer = AttributesSanitizer(featureName: "Span")
 
     func sanitize(span: SpanEvent) -> SpanEvent {
@@ -20,11 +27,13 @@ internal struct SpanSanitizer {
         }
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)
 
-        // The SDK owns `_dd.compute_stats` and must never let attribute-count limiting drop it.
-        // If an opted-out span lost the flag here, it would upload without it while client stats
-        // are also uploaded, so the backend would recompute stats and double-count. Hold it aside,
-        // limit the rest, then restore it so it never competes for the attribute budget.
-        let reservedComputeStats = sanitizedTags.removeValue(forKey: SpanTags.computeStats)
+        // Keep stats-control tags outside the attribute budget. Dropping them would either
+        // re-enable backend stats or make client-side stats skip otherwise eligible spans.
+        let reservedTags = Self.reservedTagKeys.reduce(into: [String: String]()) { reservedTags, key in
+            if let value = sanitizedTags.removeValue(forKey: key) {
+                reservedTags[key] = value
+            }
+        }
 
         // Limit to max number of attributes
         // If any attributes need to be removed, we first reduce number of
@@ -42,14 +51,13 @@ internal struct SpanSanitizer {
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedAccountExtraInfo.count - sanitizedUserExtraInfo.count
         )
 
-        if let reservedComputeStats = reservedComputeStats {
-            sanitizedTags[SpanTags.computeStats] = reservedComputeStats
-        }
+        sanitizedTags.merge(reservedTags) { _, reservedValue in reservedValue }
 
         var sanitizedSpan = span
         sanitizedSpan.userInfo.extraInfo = sanitizedUserExtraInfo
         sanitizedSpan.accountInfo?.extraInfo = sanitizedAccountExtraInfo
         sanitizedSpan.tags = sanitizedTags
+        sanitizedSpan.isSanitized = true
         return sanitizedSpan
     }
 }
