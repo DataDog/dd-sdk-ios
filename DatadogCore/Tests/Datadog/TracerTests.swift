@@ -618,10 +618,9 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let logging: LogsFeature = .mockWith()
         try core.register(feature: logging)
+        core.messageBus.subscribe(receiver: logging.logMessageReceiver)
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -651,10 +650,9 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let logging: LogsFeature = .mockWith()
         try core.register(feature: logging)
+        core.messageBus.subscribe(receiver: logging.logMessageReceiver)
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -676,10 +674,9 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let logging: LogsFeature = .mockWith()
         try core.register(feature: logging)
+        core.messageBus.subscribe(receiver: logging.logMessageReceiver)
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -707,10 +704,9 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let logging: LogsFeature = .mockWith(
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let logging: LogsFeature = .mockWith()
         try core.register(feature: logging)
+        core.messageBus.subscribe(receiver: logging.logMessageReceiver)
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)

@@ -89,6 +89,9 @@ public enum Logs {
         )
 
         try core.register(feature: feature)
+
+        // Subscribe typed-bus receivers:
+        core.messageBus.subscribe(receiver: feature.logMessageReceiver)
     }
 
     /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
@@ -120,6 +123,10 @@ public enum Logs {
     }
 
     private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
+        // Keep log-attribute updates on the legacy bus until CrashReporting migrates:
+        // `CrashContextCoreProvider` still consumes `LogEventAttributes` as a legacy
+        // `FeatureMessageReceiver`, so routing this through the typed bus would drop the
+        // global log attributes from crash reports.
         core.send(
             message: .payload(LogEventAttributes(
                 attributes: feature.attributes.getAttributes()

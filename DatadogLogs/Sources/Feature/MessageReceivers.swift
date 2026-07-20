@@ -8,26 +8,21 @@ import Foundation
 import DatadogInternal
 
 /// Receiver to consume a Log message
-internal struct LogMessageReceiver: FeatureMessageReceiver {
+internal final class LogMessageReceiver: BusMessageReceiver {
     /// The log event mapper
     let logEventMapper: LogEventMapper?
 
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .payload(log as LogMessage) = message else {
-            return false
-        }
+    init(logEventMapper: LogEventMapper?) {
+        self.logEventMapper = logEventMapper
+    }
 
+    func receive(message log: LogMessage, from core: DatadogCoreProtocol) {
         core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
             let builder = LogEventBuilder(
                 service: log.service ?? context.service,
                 loggerName: log.logger,
                 networkInfoEnabled: log.networkInfoEnabled ?? false,
-                eventMapper: logEventMapper
+                eventMapper: self.logEventMapper
             )
 
             builder.createLogEvent(
@@ -56,18 +51,11 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                 callback: writer.write
             )
         }
-
-        return true
     }
 }
 
 /// Receiver to consume a Log event coming from Browser SDK.
 internal struct WebViewLogReceiver: FeatureMessageReceiver {
-    /// Process messages receives from the bus.
-    ///
-    /// - Parameters:
-    ///   - message: The Feature message
-    ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case var .webview(.log(event)) = message else {
             return false
