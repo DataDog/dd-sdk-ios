@@ -107,8 +107,11 @@ public struct SpanEvent: Encodable {
     /// Tags associated with the span.
     public var tags: [String: String]
 
+    /// Whether this event has already passed through `SpanSanitizer`.
+    internal var isSanitized: Bool = false
+
     public func encode(to encoder: Encoder) throws {
-        let sanitizedSpan = SpanSanitizer().sanitize(span: self)
+        let sanitizedSpan = isSanitized ? self : SpanSanitizer().sanitize(span: self)
         try SpanEventEncoder().encode(sanitizedSpan, to: encoder)
     }
 }
