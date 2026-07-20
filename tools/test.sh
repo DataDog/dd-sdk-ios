@@ -52,7 +52,7 @@ setup_test_visibility() {
 
     # Debugging:
     # - If `DD_TRACE_DEBUG` is enabled, the `dd-sdk-swift-testing` will print extra debug logs.
-    export DD_TRACE_DEBUG=1
+    export DD_TRACE_DEBUG=0
 
     # Git metadata:
     # - While `dd-sdk-swift-testing` can read Git metadata from `.git` folder, following info must be overwritten
