@@ -747,14 +747,3 @@ final class FlagsClientTests: XCTestCase {
         XCTAssertNil(evaluationLogger.logEvaluationCalls[0].error)
     }
 }
-
-extension FeatureMessage {
-    fileprivate var isRUMMessage: Bool {
-        switch self {
-        case .payload(let message) where message is RUMFlagEvaluationMessage:
-            return true
-        default:
-            return false
-        }
-    }
-}
