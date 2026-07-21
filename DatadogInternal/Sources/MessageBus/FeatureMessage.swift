@@ -16,6 +16,12 @@ public enum FeatureMessage {
     /// Represent a Browser SDK event sent through the JS bridge.
     case webview(WebViewMessage)
 
+    /// A Flutter message.
+    ///
+    /// Represents session-replay records produced by an embedded Flutter engine
+    /// and forwarded to the native SDK through the FFI bridge.
+    case flutterView(FlutterMessage)
+
     /// A core context message.
     ///
     /// The core will send updated context through the bus. Do not send new context values

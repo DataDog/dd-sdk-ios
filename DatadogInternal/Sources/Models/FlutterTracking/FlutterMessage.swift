@@ -1,0 +1,23 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
+
+/// A Flutter message is transmitted by the `DatadogSessionReplay` Flutter plugin
+/// on the message-bus when Flutter is embedded inside a native iOS app.
+///
+/// Such message carries session-replay records captured by the Flutter engine and
+/// is handled by `FlutterRecordReceiver` inside `SessionReplayFeature`.
+public enum FlutterMessage {
+    public typealias Event = [String: Any]
+
+    public struct View: Decodable {
+        public let id: String
+    }
+
+    /// A single Flutter SR record for the given view
+    case record(Event, View)
+}

@@ -80,7 +80,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
     }
 
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
-        let builder = WireframesBuilder(webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs)
+        let builder = WireframesBuilder(webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs, flutterViewSlotIDs: viewTreeSnapshot.flutterViewSlotIDs)
         let nodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
 
         // build wireframe from nodes
@@ -90,8 +90,15 @@ internal class SnapshotProcessor: SnapshotProcessing {
         }
         builder.heatmapIdentifier = nil
 
-        // build hidden webview wireframes and place them at the beginning
-        wireframes = builder.hiddenWebViewWireframes() + wireframes
+        // build hidden webview and Flutter wireframes and place them at the beginning
+        wireframes = builder.hiddenWebViewWireframes() + builder.hiddenEmbeddedContentWireframes() + wireframes
+
+        let embeddedWireframes = wireframes.compactMap { wf -> SREmbeddedContentWireframe? in
+            if case .embeddedContentWireframe(let ev) = wf { return ev } else { return nil }
+        }
+        if !embeddedWireframes.isEmpty {
+            NSLog("[DD-SR] SnapshotProcessor cycle — embedded_view candidates: \(embeddedWireframes.map { "slotId=\($0.slotId) isVisible=\(String(describing: $0.isVisible))" })")
+        }
 
         interceptWireframes?(wireframes)
 
@@ -110,6 +117,9 @@ internal class SnapshotProcessor: SnapshotProcessing {
             // Such can be added to current segment.
             // Prefer creating "incremental snapshot" records but fallback to "full snapshot" (unexpected):
             let record = recordsBuilder.createIncrementalSnapshotRecord(from: viewTreeSnapshot, with: wireframes, lastWireframes: lastWireframes)
+            if !embeddedWireframes.isEmpty {
+                NSLog("[DD-SR] SnapshotProcessor incremental diff — \(record != nil ? "SENDING (changes detected)" : "SUPPRESSED (no changes)")")
+            }
             record.flatMap { records.append($0) }
 
             // Create viewport orientation change record
@@ -139,6 +149,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
             trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
 
             recordWriter.write(nextRecord: enrichedRecord)
+            NSLog("[DD-SR-N] writing \(records.count) native record(s) for viewID=\(enrichedRecord.viewID)")
         }
 
         // Track state:
