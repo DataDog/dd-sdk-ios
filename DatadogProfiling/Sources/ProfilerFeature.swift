@@ -45,6 +45,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaChecker(),
+        profilerCoordinator: ProfilerCoordinating = ProfilerCoordinator.shared,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
@@ -63,6 +64,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
+            profilerCoordinator: profilerCoordinator,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration,
             isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
