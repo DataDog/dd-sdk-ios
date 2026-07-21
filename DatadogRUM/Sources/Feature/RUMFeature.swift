@@ -15,6 +15,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let messageReceiver: FeatureMessageReceiver
 
+    let crashReportReceiver: CrashReportReceiver
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -269,7 +271,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
-        let crashReportReceiver = CrashReportReceiver(
+        self.crashReportReceiver = CrashReportReceiver(
             featureScope: featureScope,
             applicationID: configuration.applicationID,
             dateProvider: configuration.dateProvider,

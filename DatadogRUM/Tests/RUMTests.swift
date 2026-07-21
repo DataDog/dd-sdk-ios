@@ -88,13 +88,13 @@ class RUMTests: XCTestCase {
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
         let telemetryReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: TelemetryReceiver.self)
-        let crashReportReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        let crashReportReceiver = rum.crashReportReceiver
         XCTAssertEqual(rum.performanceOverride?.maxFileAgeForRead, 24.hours)
         XCTAssertEqual(monitor.applicationScope.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.applicationScope.dependencies.samplingRate, 100)
         XCTAssertEqual(monitor.applicationScope.dependencies.sessionEndedMetric.sampleRate, 15)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
-        XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(crashReportReceiver.sessionSampler.samplingRate, 100)
     }
 
     #if !os(watchOS)
@@ -338,9 +338,9 @@ class RUMTests: XCTestCase {
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        let crashReceiver = rum.crashReportReceiver
         XCTAssertEqual(monitor.applicationScope.dependencies.samplingRate, 100)
-        XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(crashReceiver.sessionSampler.samplingRate, 100)
     }
 
     func testWhenEnabledWithNoDebugSDKArgument() throws {
@@ -355,9 +355,9 @@ class RUMTests: XCTestCase {
         // Then
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
-        let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        let crashReceiver = rum.crashReportReceiver
         XCTAssertEqual(monitor.applicationScope.dependencies.samplingRate, random)
-        XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
+        XCTAssertEqual(crashReceiver.sessionSampler.samplingRate, random)
     }
 
     func testWhenEnabledWithDebugViewsArgument() {
