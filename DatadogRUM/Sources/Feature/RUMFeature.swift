@@ -306,8 +306,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache
-            ),
-            crashReportReceiver
+            )
         ]
 
         if let watchdogTermination = watchdogTermination {
