@@ -286,9 +286,6 @@ extension SessionReplayWireframesBuilder {
     }
 
     public func hiddenEmbeddedContentWireframes() -> [SRWireframe] {
-        if !flutterViewSlotIDs.isEmpty {
-            NSLog("[DD-SR] hiddenEmbeddedContentWireframes emitting \(flutterViewSlotIDs.count) hidden slot(s): \(flutterViewSlotIDs)")
-        }
         defer { flutterViewSlotIDs.removeAll() }
         return flutterViewSlotIDs.map { id in
             let wireframe = SREmbeddedContentWireframe(

@@ -24,7 +24,6 @@ internal class FlutterViewRecorder: NodeRecorder {
         }
 
         context.flutterViewCache.add(view)
-        NSLog("[DD-SR] FlutterViewRecorder detected slotId=\(view.hash) isVisible=\(attributes.isVisible)")
 
         let builder = FlutterViewWireframesBuilder(slotID: view.hash, attributes: attributes)
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -47,13 +46,11 @@ internal struct FlutterViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         guard attributes.isVisible else {
-            NSLog("[DD-SR] FlutterViewWireframesBuilder slotId=\(slotID) hidden — deferring to cache")
             // ignore hidden webview, the wireframes will be built
             // for hidden slot
             return []
         }
 
-        NSLog("[DD-SR] FlutterViewWireframesBuilder slotId=\(slotID) emitting visible wireframe frame=\(attributes.frame)")
         return [
             builder.visibleEmbeddedContentWireframe(
                 id: slotID,

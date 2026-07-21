@@ -45,7 +45,6 @@ internal struct FlutterRecordReceiver: FeatureMessageReceiver {
             )
 
             writer.write(value: record)
-            NSLog("[DD-SR-N] received record for viewID=\(view.id), slotId=\(event["slotId"] ?? "nil")")
         }
 
         return true
