@@ -18,13 +18,14 @@ final class ProfilerFeatureTests: XCTestCase {
     private let telemetryController = ProfilingTelemetryController()
 
     private var userDefaults: UserDefaults! //swiftlint:disable:this implicitly_unwrapped_optional
+    private var coordinator: ProfilerCoordinator! //swiftlint:disable:this implicitly_unwrapped_optional
     private let suiteName = "ProfilerFeatureTests-\(UUID().uuidString)"
 
     override func setUp() {
         super.setUp()
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
+        coordinator = ProfilerCoordinator()
         userDefaults = UserDefaults(suiteName: suiteName)!
         userDefaults.removePersistentDomain(forName: suiteName)
     }
@@ -32,7 +33,7 @@ final class ProfilerFeatureTests: XCTestCase {
     override func tearDown() {
         userDefaults.removePersistentDomain(forName: suiteName)
         userDefaults = nil
-        DatadogProfiler.resetActiveInstance()
+        coordinator = nil
         dd_profiler_stop()
         dd_profiler_destroy()
         super.tearDown()
@@ -48,6 +49,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
@@ -66,6 +68,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(applicationLaunchSampleRate: newSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
@@ -104,6 +107,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(applicationLaunchSampleRate: lowerSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
@@ -125,6 +129,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(applicationLaunchSampleRate: higherSampleRate),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
@@ -141,6 +146,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             quotaChecker: quotaChecker,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
         let context: DatadogContext = .mockWith(
@@ -162,6 +168,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
         let quotaChecker = ProfilingQuotaCheckerMock()
@@ -172,6 +179,7 @@ final class ProfilerFeatureTests: XCTestCase {
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             quotaChecker: quotaChecker,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
         let context: DatadogContext = .mockWith(
@@ -257,6 +265,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(continuousSampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
@@ -288,6 +297,7 @@ final class ProfilerFeatureTests: XCTestCase {
             configuration: .init(continuousSampleRate: 100),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
+            profilerCoordinator: coordinator,
             userDefaults: userDefaults
         )
 
