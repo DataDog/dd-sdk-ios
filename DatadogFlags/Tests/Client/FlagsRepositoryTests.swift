@@ -297,23 +297,89 @@ final class FlagsRepositoryTests: XCTestCase {
         wait(for: [readStarted], timeout: 1)
 
         let completed = expectation(description: "completed")
+        var didComplete = false
 
         // When
         flagsRepository.setEvaluationContext(requestedContext) { result in
+            didComplete = true
             if case .success = result {
                 XCTFail("Expected failure")
             }
             completed.fulfill()
         }
-        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        XCTAssertFalse(didComplete)
 
         dataStore.resumeRead()
         dataStore.flush()
+        wait(for: [completed], timeout: 1)
 
         // Then
         XCTAssertEqual(flagsRepository.state.currentState, .error)
         XCTAssertNil(flagsRepository.context)
         XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+    }
+
+    func testInitialDataStoreRead_whenCompletesAfterFailedContextUpdate_usesMatchingCachedFlags() throws {
+        // Given
+        let clientName = "client"
+        let requestedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: requestedContext,
+            date: .mockAny()
+        )
+        let dataStore = DelayedReadDataStore(
+            storage: [
+                clientName: .value(
+                    try JSONEncoder().encode(cachedData),
+                    dataStoreDefaultKeyVersion
+                )
+            ]
+        )
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+        var didComplete = false
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { result in
+            didComplete = true
+            if case .success = result {
+                XCTFail("Expected failure")
+            }
+            completed.fulfill()
+        }
+
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        XCTAssertFalse(didComplete)
+
+        dataStore.resumeRead()
+        dataStore.flush()
+        wait(for: [completed], timeout: 1)
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
     }
 
     func testSetEvaluationContextError() throws {
@@ -502,7 +568,7 @@ final class FlagsRepositoryTests: XCTestCase {
         )
 
         // When — call setEvaluationContext while the disk read may still be in-flight.
-        // The fix ensures waitForFlagsDataRead() is called before checking hadFlags.
+        // The repository waits for the disk read before deciding stale vs error on failure.
         let completed = expectation(description: "completed")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
             completed.fulfill()
