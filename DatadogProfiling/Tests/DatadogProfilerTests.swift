@@ -17,12 +17,13 @@ import DatadogMachProfiler.Testing
 
 final class DatadogProfilerTests: XCTestCase {
     private var core: PassthroughCoreMock!  // swiftlint:disable:this implicitly_unwrapped_optional
+    private var coordinator: ProfilerCoordinator! // swiftlint:disable:this implicitly_unwrapped_optional
     private let profilerQueue = DispatchQueue(label: "test.profiler")
 
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
-        DatadogProfiler.resetActiveInstance()
+        coordinator = ProfilerCoordinator()
         dd_profiler_stop()
         dd_profiler_destroy()
     }
@@ -30,11 +31,11 @@ final class DatadogProfilerTests: XCTestCase {
     override func tearDown() {
         profilerQueue.sync {}
         core.messageReceiver = NOPFeatureMessageReceiver()
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
         core = nil
+        coordinator = nil
         super.tearDown()
     }
 
@@ -320,6 +321,7 @@ extension DatadogProfilerTests {
             core: observerCore,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
             quotaChecker: quotaChecker(),
+            profilerCoordinator: self.coordinator,
             queue: profilerQueue,
             isAppLaunchProfilingEnabled: true
         )
@@ -791,6 +793,7 @@ extension DatadogProfilerTests {
             core: observerCore,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
             quotaChecker: quotaChecker(),
+            profilerCoordinator: self.coordinator,
             queue: profilerQueue,
             isAppLaunchProfilingEnabled: true
         )
@@ -1687,79 +1690,6 @@ extension DatadogProfilerTests {
         // Then - custom profiler does not restart without recent operations (unlike continuous)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_STARTED)
         withExtendedLifetime(profiler) {}
-    }
-}
-
-// MARK: - Singleton Guard
-
-extension DatadogProfilerTests {
-    func testSingletonGuard_secondInstanceIsObserver() {
-        // Given
-        let first = continuousProfiler()
-        XCTAssertTrue(DatadogProfiler.isInstantiated)
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
-
-        // When
-        let second = DatadogProfiler(
-            core: core,
-            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
-            quotaChecker: quotaChecker()
-        )
-
-        // Then - first still processes messages normally, and later instances do not coordinate continuous profiling.
-        XCTAssertEqual(first.role, .coordinator)
-        XCTAssertEqual(second.role, .observer)
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
-        XCTAssertTrue(first.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
-        XCTAssertFalse(second.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
-        XCTAssertNotNil(first)
-    }
-
-    func testSingletonGuard_instanceBecomesActiveAfterPreviousDeallocates() {
-        // Given
-        var first: DatadogProfiler? = continuousProfiler()
-        XCTAssertTrue(DatadogProfiler.isInstantiated)
-        XCTAssertNotNil(first)
-        first = nil
-        XCTAssertFalse(DatadogProfiler.isInstantiated, "Singleton guard should be released after dealloc")
-
-        // When
-        let second = continuousProfiler()
-
-        // Then
-        XCTAssertTrue(DatadogProfiler.isInstantiated)
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
-        let hang = DurationEvent(id: .mockRandom(), type: .error, start: 0, duration: 500)
-        XCTAssertTrue(second.receive(message: .payload(AppHangMessage(attributes: mockRandomAttributes(), hang: hang)), from: core))
-        XCTAssertNotNil(second)
-    }
-
-    func testSingletonGuard_isThreadSafe() {
-        // Given
-        let iterations = 100
-        let expectation = expectation(description: "All concurrent creations complete")
-        expectation.expectedFulfillmentCount = iterations
-        var profilers: [DatadogProfiler?] = []
-        let lock = NSLock()
-
-        // When - many instances created concurrently
-        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            let profiler = DatadogProfiler(
-                core: core,
-                profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
-                quotaChecker: quotaChecker()
-            )
-            lock.lock()
-            profilers.append(profiler)
-            lock.unlock()
-            expectation.fulfill()
-        }
-
-        // Then
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertEqual(profilers.compactMap { $0 }.filter { $0.role == .coordinator }.count, 1, "Exactly one instance should coordinate profiling")
-        XCTAssertEqual(profilers.compactMap { $0 }.filter { $0.role == .observer }.count, iterations - 1)
-        XCTAssertTrue(DatadogProfiler.isInstantiated)
     }
 }
 
@@ -3276,6 +3206,7 @@ private extension DatadogProfilerTests {
             core: core ?? self.core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
+            profilerCoordinator: self.coordinator,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3299,6 +3230,7 @@ private extension DatadogProfilerTests {
             core: core ?? self.core,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
             quotaChecker: quotaChecker,
+            profilerCoordinator: self.coordinator,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
