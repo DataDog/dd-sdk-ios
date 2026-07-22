@@ -42,8 +42,8 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.trackAnonymousUser, rum.trackAnonymousUser)
             XCTAssertEqual(configuration.trackBackgroundEvents, rum.trackBackgroundEvents)
             XCTAssertEqual(configuration.trackFrustrations, rum.trackFrustrations)
-            XCTAssertEqual(configuration.longTaskThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.longTaskThresholdMs))))
-            XCTAssertEqual(configuration.appHangThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.appHangThresholdMs))))
+            XCTAssertEqual(configuration.longTaskThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.longTask?.threshold))))
+            XCTAssertEqual(configuration.appHangThreshold, .ddFromMilliseconds(.ddWithNoOverflow(try XCTUnwrap(rum.appHang?.threshold))))
             XCTAssertEqual(configuration.trackSlowFrames, rum.trackSlowFrames)
             XCTAssertEqual(configuration.trackWatchdogTerminations, rum.trackWatchdogTerminations)
             XCTAssertEqual(configuration.vitalsUpdateFrequency, expectedVitalsFrequency(try XCTUnwrap(rum.vitalsUpdateFrequency)))
@@ -93,7 +93,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
 
     /// The `trace` namespace must enable network instrumentation (even when none was configured
     /// in-code) and set up distributed tracing for the given hosts. When header formats are provided,
-    /// they apply to every traced host.
+    /// they apply to their host.
     func testWhenRemoteTraceProvidesHostsAndHeaderTypes_itConfiguresDistributedTracing() throws {
         // Given no in-code network instrumentation
         var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
@@ -101,8 +101,10 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             trace: .init(
                 sampleRate: 55,
                 traceContextInjection: .all,
-                tracedHosts: ["api.example.com", "example.com"],
-                tracingHeaderTypes: [.datadog, .b3]
+                tracedHosts: [
+                    .init(host: "api.example.com", propagatorTypes: [.datadog, .b3]),
+                    .init(host: "example.com", propagatorTypes: [.datadog, .b3])
+                ]
             )
         )
 
@@ -122,22 +124,22 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(injection, .all)
     }
 
-    /// When the `trace` namespace provides hosts but no header formats, RUM falls back to the default
-    /// trace headers and the default sample rate / injection strategy.
-    func testWhenRemoteTraceProvidesHostsWithoutHeaderTypes_itUsesDefaultTraceHeaders() throws {
+    /// When the `trace` namespace provides hosts but no header formats, those hosts are traced with no
+    /// header formats; the sample rate / injection strategy fall back to the module defaults.
+    func testWhenRemoteTraceProvidesHostsWithoutHeaderTypes_itUsesNoHeaderFormats() throws {
         // Given no in-code network instrumentation
         var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
-        let remote: RemoteConfiguration = .mockWith(trace: .init(tracedHosts: ["example.com"]))
+        let remote: RemoteConfiguration = .mockWith(trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])]))
 
         // When
         configuration.apply(remoteConfiguration: remote)
 
         // Then
-        guard case let .trace(hosts, sampleRate, injection) =
+        guard case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection) =
             configuration.urlSessionTracking?.firstPartyHostsTracing else {
-            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+            return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hosts, ["example.com"])
+        XCTAssertEqual(hostsWithHeaders, ["example.com": []])
         XCTAssertEqual(sampleRate, .maxSampleRate) // default when the remote omits `sampleRate`
         XCTAssertEqual(injection, .sampled) // default when the remote omits `traceContextInjection`
     }
@@ -184,12 +186,12 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             )
         }
 
-        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["remote.example.com"])))
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "remote.example.com", propagatorTypes: [])])))
 
-        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
-            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        guard case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hosts, ["remote.example.com"])
+        XCTAssertEqual(hostsWithHeaders, ["remote.example.com": []])
         XCTAssertEqual(sampleRate, 30)
         XCTAssertEqual(injection, .all)
     }
@@ -221,35 +223,50 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         configuration.apply(
             remoteConfiguration: .mockWith(
                 rum: .mockWith(trackResources: false),
-                trace: .init(tracedHosts: ["example.com"])
+                trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])
             )
         )
 
         XCTAssertNil(configuration.urlSessionTracking)
     }
 
-    /// `appHangThresholdMs` follows "omit to disable" semantics: within a present `rum` namespace, an
-    /// omitted value clears the in-code `appHangThreshold`, disabling app-hang monitoring — even though
-    /// it was enabled in code.
-    func testWhenRemoteRUMOmitsAppHangThreshold_itDisablesAppHangMonitoring() {
+    /// An explicit `appHang.enabled == false` clears the in-code `appHangThreshold`, disabling app-hang
+    /// monitoring — even though it was enabled in code — regardless of any `threshold` value.
+    func testWhenRemoteAppHangIsDisabled_itDisablesAppHangMonitoring() {
         var configuration: RUM.Configuration = .mockWith { $0.appHangThreshold = 0.25 }
 
-        // A present `rum` namespace that does not carry `appHangThresholdMs`.
-        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(appHangThresholdMs: nil)))
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(appHang: .mockWith(enabled: false, threshold: 800))))
 
         XCTAssertNil(configuration.appHangThreshold)
     }
 
-    /// `longTaskThresholdMs` follows "omit to disable" semantics: within a present `rum` namespace, an
-    /// omitted value clears the in-code `longTaskThreshold`, disabling long-task tracking — even though
-    /// it was enabled in code.
-    func testWhenRemoteRUMOmitsLongTaskThreshold_itDisablesLongTaskTracking() {
+    /// When `appHang` (or its `threshold`) is omitted, the in-code `appHangThreshold` is left untouched.
+    func testWhenRemoteAppHangOmitsThreshold_itPreservesInCodeValue() {
+        var configuration: RUM.Configuration = .mockWith { $0.appHangThreshold = 0.25 }
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(appHang: .mockWith(enabled: true, threshold: nil))))
+
+        XCTAssertEqual(configuration.appHangThreshold, 0.25)
+    }
+
+    /// An explicit `longTask.enabled == false` clears the in-code `longTaskThreshold`, disabling
+    /// long-task tracking — even though it was enabled in code — regardless of any `threshold` value.
+    func testWhenRemoteLongTaskIsDisabled_itDisablesLongTaskTracking() {
         var configuration: RUM.Configuration = .mockWith { $0.longTaskThreshold = 0.5 }
 
-        // A present `rum` namespace that does not carry `longTaskThresholdMs`.
-        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(longTaskThresholdMs: nil)))
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(longTask: .mockWith(enabled: false, threshold: 800))))
 
         XCTAssertNil(configuration.longTaskThreshold)
+    }
+
+    /// When `longTask` (or its `threshold`) is omitted, the in-code `longTaskThreshold` is left
+    /// untouched.
+    func testWhenRemoteLongTaskOmitsThreshold_itPreservesInCodeValue() {
+        var configuration: RUM.Configuration = .mockWith { $0.longTaskThreshold = 0.5 }
+
+        configuration.apply(remoteConfiguration: .mockWith(rum: .mockWith(longTask: .mockWith(enabled: true, threshold: nil))))
+
+        XCTAssertEqual(configuration.longTaskThreshold, 0.5)
     }
 
     /// A remote `vitalsUpdateFrequency == .never` disables vitals collection: `VitalsFrequency.init?`
