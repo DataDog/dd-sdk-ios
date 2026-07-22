@@ -852,30 +852,4 @@ class StatsConcentratorTests: XCTestCase {
         let buckets = concentrator.flush(now: 100_000_000_000, force: true)
         XCTAssertEqual(buckets.count, 1)
     }
-
-    // MARK: - Clear Buffer
-
-    func testWhenBufferIsCleared_itDiscardsBufferedData() {
-        let concentrator = makeConcentrator(now: 0, initialConsent: .granted)
-        concentrator.add(makeEligibleSnapshot())
-
-        concentrator.clearBuffer()
-
-        // Even a forced flush must find nothing: the buffered span was dropped, not merely held.
-        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertTrue(buckets.isEmpty)
-    }
-
-    func testWhenBufferIsCleared_itKeepsAggregatingSpansRecordedAfterwards() {
-        let concentrator = makeConcentrator(now: 0, initialConsent: .granted)
-        concentrator.add(makeEligibleSnapshot())
-
-        // Clearing drops only the pre-clear span; spans added afterwards accumulate normally.
-        concentrator.clearBuffer()
-        concentrator.add(makeEligibleSnapshot())
-
-        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
-        XCTAssertEqual(buckets.count, 1)
-        XCTAssertEqual(buckets.first?.stats.first?.hits, 1)
-    }
 }

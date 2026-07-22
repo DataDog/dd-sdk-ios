@@ -18,17 +18,6 @@ public protocol DatadogFeature {
     var messageReceiver: FeatureMessageReceiver { get }
 }
 
-/// A Feature that buffers not-yet-uploaded data in memory, outside its `FeatureStorage`.
-///
-/// The core clears each Feature's on-disk storage and data store directly when the app calls
-/// `Datadog.clearAllData()`. Features holding unsent data in memory (buffers the core cannot see)
-/// conform to this protocol so that data is discarded too, upholding the promise that
-/// `clearAllData()` removes all not-yet-uploaded data.
-public protocol InMemoryDataClearing {
-    /// Discards all not-yet-uploaded data buffered in memory.
-    func clearInMemoryData()
-}
-
 /// A Datadog Feature with remote data store.
 public protocol DatadogRemoteFeature: DatadogFeature {
     /// The URL request builder for uploading data.

@@ -398,20 +398,6 @@ internal final class StatsConcentrator: @unchecked Sendable {
         }
     }
 
-    // MARK: - Clear
-
-    /// Discards all buckets buffered in memory.
-    ///
-    /// Called when the app clears its not-yet-uploaded data via `Datadog.clearAllData()`. Runs on
-    /// the serial queue so the clear is ordered with any in-flight `add` and `flush`, mirroring the
-    /// consent-revoke clear: spans aggregated before the call are dropped, while spans recorded
-    /// afterwards accumulate normally.
-    func clearBuffer() {
-        queue.async { [self] in
-            buckets.removeAll()
-        }
-    }
-
     // MARK: - Eligibility
 
     /// A span is eligible for stats if it is top-level, measured, or has a
