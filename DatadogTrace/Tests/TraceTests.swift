@@ -65,8 +65,10 @@ class TraceTests: XCTestCase {
             trace: .init(
                 sampleRate: 55,
                 traceContextInjection: .all,
-                tracedHosts: ["api.example.com", "example.com"],
-                tracingHeaderTypes: [.datadog, .b3]
+                tracedHosts: [
+                    .init(host: "api.example.com", propagatorTypes: [.datadog, .b3]),
+                    .init(host: "example.com", propagatorTypes: [.datadog, .b3])
+                ]
             )
         )
 

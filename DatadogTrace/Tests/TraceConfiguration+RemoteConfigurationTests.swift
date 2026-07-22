@@ -52,8 +52,10 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
             trace: .init(
                 sampleRate: 55,
                 traceContextInjection: .all,
-                tracedHosts: ["api.example.com", "example.com"],
-                tracingHeaderTypes: [.datadog, .b3]
+                tracedHosts: [
+                    .init(host: "api.example.com", propagatorTypes: [.datadog, .b3]),
+                    .init(host: "example.com", propagatorTypes: [.datadog, .b3])
+                ]
             )
         ))
 
@@ -70,18 +72,18 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(injection, .all)
     }
 
-    /// When the `trace` namespace provides hosts but no header formats, Trace falls back to the default
-    /// trace headers and the default sample rate / injection strategy.
-    func testWhenRemoteTraceProvidesHostsWithoutHeaderTypes_itUsesDefaultTraceHeaders() {
+    /// When the `trace` namespace provides hosts but no header formats, those hosts are traced with no
+    /// header formats; the sample rate / injection strategy fall back to the module defaults.
+    func testWhenRemoteTraceProvidesHostsWithoutHeaderTypes_itUsesNoHeaderFormats() {
         var configuration = Trace.Configuration(urlSessionTracking: nil)
 
-        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["example.com"])))
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])))
 
-        guard case let .trace(hosts, sampleRate, injection) =
+        guard case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection) =
             configuration.urlSessionTracking?.firstPartyHostsTracing else {
-            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+            return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hosts, ["example.com"])
+        XCTAssertEqual(hostsWithHeaders, ["example.com": []])
         XCTAssertEqual(sampleRate, .maxSampleRate) // default when the remote omits `sampleRate`
         XCTAssertEqual(injection, .sampled) // default when the remote omits `traceContextInjection`
     }
@@ -138,12 +140,12 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
             )
         )
 
-        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["remote.example.com"])))
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "remote.example.com", propagatorTypes: [])])))
 
-        guard case let .trace(hosts, _, _) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
-            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        guard case let .traceWithHeaders(hostsWithHeaders, _, _) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hosts, ["remote.example.com"], "First-party hosts tracing is replaced by the remote hosts")
+        XCTAssertEqual(hostsWithHeaders, ["remote.example.com": []], "First-party hosts tracing is replaced by the remote hosts")
         XCTAssertEqual(configuration.urlSessionTracking?.redactedStatusCodes, [401, 403], "Other settings are preserved")
     }
 
@@ -156,12 +158,12 @@ class TraceConfiguration_RemoteConfigurationTests: XCTestCase {
             )
         )
 
-        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: ["remote.example.com"])))
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "remote.example.com", propagatorTypes: [])])))
 
-        guard case let .trace(hosts, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
-            return XCTFail("Expected `.trace` first-party hosts tracing to be configured")
+        guard case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
+            return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hosts, ["remote.example.com"])
+        XCTAssertEqual(hostsWithHeaders, ["remote.example.com": []])
         XCTAssertEqual(sampleRate, 30)
         XCTAssertEqual(injection, .all)
     }
