@@ -82,6 +82,41 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(errors[1].stack, #"SwiftError(description: "error description")"#)
     }
 
+    // RUM-17396: `AnyEncodable`'s `encode(to:)` falls back to a `default:` branch for values
+    // it cannot cast to a supported shape (e.g. a dictionary with non-`String` keys), throwing
+    // an `EncodingError` whose default Swift description embeds the whole raw offending value.
+    // If such an error reaches `Telemetry.error`, that raw value must be dropped before it is
+    // sent through internal telemetry.
+    func testSendingErrorTelemetry_doesNotCaptureRawAttributeValueFromAnyEncodableEncodingError() throws {
+        // Given
+        // Forge `AnyEncodable`'s encoding error by encoding an unsupported value.
+        func forgeAnyEncodableEncodingError(capturing attributeValue: String) -> Error {
+            struct CustomKey: Hashable {
+                func hash(into hasher: inout Hasher) { hasher.combine(42) }
+            }
+            let unsupportedEncodable = [CustomKey(): attributeValue]
+            let encodable = AnyEncodable(unsupportedEncodable)
+            do {
+                _ = try JSONEncoder().encode(encodable)
+                XCTFail("Encoding with custom key should fail")
+                fatalError("Encoding with custom key should fail")
+            } catch {
+                return error
+            }
+        }
+
+        let attributeValue = "attribute-value-\(String.mockRandom(length: 16))"
+        let encodingError = forgeAnyEncodableEncodingError(capturing: attributeValue)
+        XCTAssertTrue("\(encodingError)".contains(attributeValue), "the forged error captures the raw attribute value")
+
+        // When
+        telemetry.error("failed to encode attribute", error: encodingError)
+
+        // Then
+        let error = try XCTUnwrap(telemetry.messages.compactMap({ $0.asError }).first)
+        XCTAssertFalse("\(error)".contains(attributeValue), "error must not capture raw attribute values: \(error)")
+    }
+
     func testSendingErrorTelemetry_withNSError() throws {
         // Given
         let nsError = NSError(
