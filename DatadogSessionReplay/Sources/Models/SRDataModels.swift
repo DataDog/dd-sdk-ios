@@ -1232,6 +1232,11 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     // Decode enum case from associated value
                     let container = try decoder.singleValueContainer()
 
+                    // TODO: Move the order in wireframe-schema.json from rum-events-format and regenerate the file
+                    if let value = try? container.decode(EmbeddedContentWireframeUpdate.self) {
+                        self = .embeddedContentWireframeUpdate(value: value)
+                        return
+                    }
                     if let value = try? container.decode(TextWireframeUpdate.self) {
                         self = .textWireframeUpdate(value: value)
                         return
@@ -1250,10 +1255,6 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     }
                     if let value = try? container.decode(WebviewWireframeUpdate.self) {
                         self = .webviewWireframeUpdate(value: value)
-                        return
-                    }
-                    if let value = try? container.decode(EmbeddedContentWireframeUpdate.self) {
-                        self = .embeddedContentWireframeUpdate(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -3153,6 +3154,11 @@ public enum SRWireframe: Codable {
         // Decode enum case from associated value
         let container = try decoder.singleValueContainer()
 
+        // TODO: Move the order in wireframe-schema.json from rum-events-format and regenerate the file
+        if let value = try? container.decode(SREmbeddedContentWireframe.self) {
+            self = .embeddedContentWireframe(value: value)
+            return
+        }
         if let value = try? container.decode(SRShapeWireframe.self) {
             self = .shapeWireframe(value: value)
             return
@@ -3171,10 +3177,6 @@ public enum SRWireframe: Codable {
         }
         if let value = try? container.decode(SRWebviewWireframe.self) {
             self = .webviewWireframe(value: value)
-            return
-        }
-        if let value = try? container.decode(SREmbeddedContentWireframe.self) {
-            self = .embeddedContentWireframe(value: value)
             return
         }
         let error = DecodingError.Context(

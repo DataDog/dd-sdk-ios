@@ -1235,6 +1235,7 @@
 		D2B3F04D282A85FD00C2B5EE /* DatadogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */; };
 		D2B3F052282E827700C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
 		D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */; };
+		F295128DD4737D9998C4660B /* FlutterViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B8BE9A05841A7DCE396D88 /* FlutterViewRecorder.swift */; };
 		D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */; };
 		D2BEEDAC2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */; };
 		D2BEEDAF2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */; };
@@ -3092,6 +3093,7 @@
 		D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandler.swift; sourceTree = "<group>"; };
 		D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests.swift; sourceTree = "<group>"; };
 		D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorder.swift; sourceTree = "<group>"; };
+		F8B8BE9A05841A7DCE396D88 /* FlutterViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterViewRecorder.swift; sourceTree = "<group>"; };
 		D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorderTests.swift; sourceTree = "<group>"; };
 		D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzlerTests.swift; sourceTree = "<group>"; };
@@ -4260,6 +4262,7 @@
 				61054E362A6EE10A00AAA894 /* UnsupportedViewRecorder.swift */,
 				D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */,
 				D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */,
+				F8B8BE9A05841A7DCE396D88 /* FlutterViewRecorder.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -8561,6 +8564,7 @@
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				D2AD1CCC2CE4AE9800106C74 /* UIHostingViewRecorder.swift in Sources */,
 				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
+				F295128DD4737D9998C4660B /* FlutterViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
