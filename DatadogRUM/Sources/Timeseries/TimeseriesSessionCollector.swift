@@ -219,6 +219,13 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let eventID = UUID().uuidString.lowercased()
 
         featureScope.eventWriteContext { context, writer in
+            // Timeseries batches are flushed regardless of an active view; without one there is no
+            // `view.id`/`view.url` to report, which the RUM event format requires, so the batch is dropped.
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
+            guard let viewID = rum?.viewID else {
+                return
+            }
+            let viewPath = rum?.viewPath ?? ""
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let timestamps = batch.map { $0.timestamp + offsetNs }
             let adjustedStart = start + offsetNs
@@ -242,7 +249,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
-                version: context.version
+                version: context.version,
+                view: .init(id: viewID, url: viewPath)
             )
             writer.write(value: event)
         }
@@ -262,6 +270,13 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let eventID = UUID().uuidString.lowercased()
 
         featureScope.eventWriteContext { context, writer in
+            // Timeseries batches are flushed regardless of an active view; without one there is no
+            // `view.id`/`view.url` to report, which the RUM event format requires, so the batch is dropped.
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
+            guard let viewID = rum?.viewID else {
+                return
+            }
+            let viewPath = rum?.viewPath ?? ""
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let timestamps = batch.map { $0.timestamp + offsetNs }
             let adjustedStart = start + offsetNs
@@ -282,7 +297,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
-                version: context.version
+                version: context.version,
+                view: .init(id: viewID, url: viewPath)
             )
             writer.write(value: event)
         }
