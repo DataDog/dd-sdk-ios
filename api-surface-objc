@@ -1635,7 +1635,6 @@ public class objc_RUMTimeseriesCpuEventDD: NSObject
     public var session: objc_RUMTimeseriesCpuEventDDSession?
 public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
-    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -1817,7 +1816,6 @@ public class objc_RUMTimeseriesMemoryEventDD: NSObject
     public var session: objc_RUMTimeseriesMemoryEventDDSession?
 public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
-    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
