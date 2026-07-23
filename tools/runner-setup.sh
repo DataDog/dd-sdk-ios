@@ -100,14 +100,22 @@ fi
 
 if [ "$visionOS" = "true" ]; then
     echo_subtitle "Install visionOS platform"
-    echo "▸ xcodebuild -downloadPlatform visionOS -quiet"
-    xcodebuild -downloadPlatform visionOS -quiet
+    if xcrun simctl runtime list 2>/dev/null | grep -q "^xrOS\|^visionOS"; then
+        echo_succ "visionOS platform already installed, skipping download"
+    else
+        echo "▸ xcodebuild -downloadPlatform visionOS -quiet"
+        xcodebuild -downloadPlatform visionOS -quiet
+    fi
 fi
 
 if [ "$watchOS" = "true" ]; then
     echo_subtitle "Install watchOS platform"
-    echo "▸ xcodebuild -downloadPlatform watchOS -quiet"
-    xcodebuild -downloadPlatform watchOS -quiet
+    if xcrun simctl runtime list 2>/dev/null | grep -q "^watchOS"; then
+        echo_succ "watchOS platform already installed, skipping download"
+    else
+        echo "▸ xcodebuild -downloadPlatform watchOS -quiet"
+        xcodebuild -downloadPlatform watchOS -quiet
+    fi
 fi
 
 if [ "$ssh" = "true" ]; then
