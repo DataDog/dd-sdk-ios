@@ -12165,8 +12165,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
-				kind = exactVersion;
-				version = "2.7.7-alpha1";
+				kind = upToNextMinorVersion;
+				minimumVersion = "2.7.7";
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
