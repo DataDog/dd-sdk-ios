@@ -101,6 +101,8 @@ internal class RecordingCoordinator {
    }
 
     private func onRUMContextChanged(rumContext: RUMCoreContext?) {
+        let previousViewID = currentRUMContext?.viewID
+
         if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             if let sampler = rumContext?.sessionSampler {
                 isSampled = sampler.combined(with: replaySampleRate).sample()
@@ -115,6 +117,12 @@ internal class RecordingCoordinator {
         currentRUMContext = rumContext
 
         evaluateRecordingConditions()
+
+        // Force an immediate capture when the RUM view changes, so the new view always gets
+        // its full snapshot right away instead of waiting for the next scheduler tick.
+        if recordingEnabled, isSampled, let viewID = rumContext?.viewID, viewID != previousViewID {
+            captureNextRecord()
+        }
     }
 
     /// Updates the `has_replay` flag to indicate if recording is active.

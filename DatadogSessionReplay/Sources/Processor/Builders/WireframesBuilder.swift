@@ -26,19 +26,15 @@ public class SessionReplayWireframesBuilder {
     private(set) var resources: [Resource]
     /// The cache of webview slot IDs in memory during snapshot.
     private var webViewSlotIDs: Set<Int>
+    /// The cache of Flutter view slot IDs in memory during snapshot.
+    private var flutterViewSlotIDs: Set<Int>
     /// The heatmap identifier that will be attached to the wireframes.
     var heatmapIdentifier: HeatmapIdentifier?
 
-    /// Creates a builder for builder wireframes in snapshot processing.
-    ///
-    /// The builder takes optional webview slot IDs in cache that can be updated
-    /// while traversing the node. The cache will be used to create wireframes
-    /// that are not visible be still need to be kept by the player.
-    ///
-    /// - Parameter webviewSlotIDs: The webview slot IDs in memory during snapshot.
-    init(resources: [Resource] = [], webViewSlotIDs: Set<Int> = []) {
+    init(resources: [Resource] = [], webViewSlotIDs: Set<Int> = [], flutterViewSlotIDs: Set<Int> = []) {
         self.resources = resources
         self.webViewSlotIDs = webViewSlotIDs
+        self.flutterViewSlotIDs = flutterViewSlotIDs
     }
 }
 
@@ -256,6 +252,55 @@ extension SessionReplayWireframesBuilder {
             )
 
             return .webviewWireframe(value: wireframe)
+        }
+    }
+
+    public func visibleEmbeddedContentWireframe(
+        id: Int,
+        frame: CGRect,
+        clip: CGRect,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SREmbeddedContentWireframe(
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow(frame.height),
+            id: Int64(id),
+            isVisible: true,
+            permanentId: heatmapIdentifier?.rawValue,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
+            slotId: String(id),
+            width: Int64.ddWithNoOverflow(frame.size.width),
+            x: Int64.ddWithNoOverflow(frame.minX),
+            y: Int64.ddWithNoOverflow(frame.minY)
+        )
+
+        /// Remove the slot from the builder because a wireframe
+        /// has been created.
+        flutterViewSlotIDs.remove(id)
+        return .embeddedContentWireframe(value: wireframe)
+    }
+
+    public func hiddenEmbeddedContentWireframes() -> [SRWireframe] {
+        defer { flutterViewSlotIDs.removeAll() }
+        return flutterViewSlotIDs.map { id in
+            let wireframe = SREmbeddedContentWireframe(
+                border: nil,
+                clip: nil,
+                height: 0,
+                id: Int64(id),
+                isVisible: false,
+                shapeStyle: nil,
+                slotId: String(id),
+                width: 0,
+                x: 0,
+                y: 0
+            )
+            return .embeddedContentWireframe(value: wireframe)
         }
     }
 

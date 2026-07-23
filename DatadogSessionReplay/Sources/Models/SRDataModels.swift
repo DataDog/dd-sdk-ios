@@ -684,6 +684,101 @@ public struct SRContentClip: Codable, Hashable {
     }
 }
 
+/// Schema of all properties of an EmbeddedContentWireframe.
+@_spi(Internal)
+public struct SREmbeddedContentWireframe: Codable, Hashable {
+    /// The border properties of this wireframe. The default value is null (no-border).
+    public let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    public let clip: SRContentClip?
+
+    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    public let height: Int64
+
+    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    public let id: Int64
+
+    /// Whether this embedded content is visible or not.
+    public let isVisible: Bool?
+
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
+    /// The style of this wireframe.
+    public let shapeStyle: SRShapeStyle?
+
+    /// Unique Id of the slot containing this embedded content.
+    public let slotId: String
+
+    /// The type of the wireframe.
+    public let type: String = "embedded_content"
+
+    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    public let width: Int64
+
+    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let x: Int64
+
+    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let y: Int64
+
+    public enum CodingKeys: String, CodingKey {
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case permanentId = "permanentId"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    }
+
+    /// Schema of all properties of an EmbeddedContentWireframe.
+    ///
+    /// - Parameters:
+    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+    ///   - clip: Schema of clipping information for a Wireframe.
+    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    ///   - isVisible: Whether this embedded content is visible or not.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    ///   - shapeStyle: The style of this wireframe.
+    ///   - slotId: Unique Id of the slot containing this embedded content.
+    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public init(
+        border: SRShapeBorder? = nil,
+        clip: SRContentClip? = nil,
+        height: Int64,
+        id: Int64,
+        isVisible: Bool? = nil,
+        permanentId: String? = nil,
+        shapeStyle: SRShapeStyle? = nil,
+        slotId: String,
+        width: Int64,
+        x: Int64,
+        y: Int64
+    ) {
+        self.border = border
+        self.clip = clip
+        self.height = height
+        self.id = id
+        self.isVisible = isVisible
+        self.permanentId = permanentId
+        self.shapeStyle = shapeStyle
+        self.slotId = slotId
+        self.width = width
+        self.x = x
+        self.y = y
+    }
+}
+
 /// Schema of a Record type which contains focus information.
 @_spi(Internal)
 public struct SRFocusRecord: Codable {
@@ -746,6 +841,9 @@ public struct SRFocusRecord: Codable {
 public struct SRFullSnapshotRecord: Codable {
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -754,6 +852,7 @@ public struct SRFullSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -762,12 +861,15 @@ public struct SRFullSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data:
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
@@ -913,6 +1015,9 @@ public struct SRIncrementalSnapshotRecord: Codable {
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -921,6 +1026,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -929,12 +1035,15 @@ public struct SRIncrementalSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data: Mobile-specific. Schema of a Session Replay IncrementalData type.
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
@@ -1095,6 +1204,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
                 case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                case embeddedContentWireframeUpdate(value: EmbeddedContentWireframeUpdate)
 
                 // MARK: - Codable
 
@@ -1113,6 +1223,8 @@ public struct SRIncrementalSnapshotRecord: Codable {
                         try container.encode(value)
                     case .webviewWireframeUpdate(let value):
                         try container.encode(value)
+                    case .embeddedContentWireframeUpdate(let value):
+                        try container.encode(value)
                     }
                 }
 
@@ -1120,6 +1232,11 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     // Decode enum case from associated value
                     let container = try decoder.singleValueContainer()
 
+                    // TODO: Move the order in wireframe-schema.json from rum-events-format and regenerate the file
+                    if let value = try? container.decode(EmbeddedContentWireframeUpdate.self) {
+                        self = .embeddedContentWireframeUpdate(value: value)
+                        return
+                    }
                     if let value = try? container.decode(TextWireframeUpdate.self) {
                         self = .textWireframeUpdate(value: value)
                         return
@@ -1548,6 +1665,94 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     ///   - isVisible: Whether this webview is visible or not.
                     ///   - shapeStyle: The style of this wireframe.
                     ///   - slotId: Unique Id of the slot containing this webview.
+                    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public init(
+                        border: SRShapeBorder? = nil,
+                        clip: SRContentClip? = nil,
+                        height: Int64? = nil,
+                        id: Int64,
+                        isVisible: Bool? = nil,
+                        shapeStyle: SRShapeStyle? = nil,
+                        slotId: String,
+                        width: Int64? = nil,
+                        x: Int64? = nil,
+                        y: Int64? = nil
+                    ) {
+                        self.border = border
+                        self.clip = clip
+                        self.height = height
+                        self.id = id
+                        self.isVisible = isVisible
+                        self.shapeStyle = shapeStyle
+                        self.slotId = slotId
+                        self.width = width
+                        self.x = x
+                        self.y = y
+                    }
+                }
+
+                /// Schema of all properties of an EmbeddedContentWireframeUpdate.
+                @_spi(Internal)
+                public struct EmbeddedContentWireframeUpdate: Codable {
+                    /// The border properties of this wireframe. The default value is null (no-border).
+                    public let border: SRShapeBorder?
+
+                    /// Schema of clipping information for a Wireframe.
+                    public let clip: SRContentClip?
+
+                    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    public let height: Int64?
+
+                    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    public let id: Int64
+
+                    /// Whether this embedded content is visible or not.
+                    public let isVisible: Bool?
+
+                    /// The style of this wireframe.
+                    public let shapeStyle: SRShapeStyle?
+
+                    /// Unique Id of the slot containing this embedded content.
+                    public let slotId: String
+
+                    /// The type of the wireframe.
+                    public let type: String = "embedded_content"
+
+                    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    public let width: Int64?
+
+                    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let x: Int64?
+
+                    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let y: Int64?
+
+                    public enum CodingKeys: String, CodingKey {
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+
+                    /// Schema of all properties of an EmbeddedContentWireframeUpdate.
+                    ///
+                    /// - Parameters:
+                    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+                    ///   - clip: Schema of clipping information for a Wireframe.
+                    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    ///   - isVisible: Whether this embedded content is visible or not.
+                    ///   - shapeStyle: The style of this wireframe.
+                    ///   - slotId: Unique Id of the slot containing this embedded content.
                     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
                     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
                     ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -2157,6 +2362,9 @@ public struct SRShapeStyle: Codable, Hashable {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
     public let backgroundColor: String?
 
+    /// The background gradient for this wireframe.
+    public let backgroundGradient: BackgroundGradient?
+
     /// The corner(border) radius of this wireframe in pixels. The default value is 0.
     public let cornerRadius: Double?
 
@@ -2165,6 +2373,7 @@ public struct SRShapeStyle: Codable, Hashable {
 
     public enum CodingKeys: String, CodingKey {
         case backgroundColor = "backgroundColor"
+        case backgroundGradient = "backgroundGradient"
         case cornerRadius = "cornerRadius"
         case opacity = "opacity"
     }
@@ -2173,16 +2382,178 @@ public struct SRShapeStyle: Codable, Hashable {
     ///
     /// - Parameters:
     ///   - backgroundColor: The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
+    ///   - backgroundGradient: The background gradient for this wireframe.
     ///   - cornerRadius: The corner(border) radius of this wireframe in pixels. The default value is 0.
     ///   - opacity: The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
     public init(
         backgroundColor: String? = nil,
+        backgroundGradient: BackgroundGradient? = nil,
         cornerRadius: Double? = nil,
         opacity: Double? = nil
     ) {
         self.backgroundColor = backgroundColor
+        self.backgroundGradient = backgroundGradient
         self.cornerRadius = cornerRadius
         self.opacity = opacity
+    }
+
+    /// The background gradient for this wireframe.
+    @_spi(Internal)
+    public enum BackgroundGradient: Codable, Hashable {
+        case shapeLinearGradient(value: ShapeLinearGradient)
+
+        // MARK: - Codable
+
+        public func encode(to encoder: Encoder) throws {
+            // Encode only the associated value, without encoding enum case
+            var container = encoder.singleValueContainer()
+
+            switch self {
+            case .shapeLinearGradient(let value):
+                try container.encode(value)
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            // Decode enum case from associated value
+            let container = try decoder.singleValueContainer()
+
+            if let value = try? container.decode(ShapeLinearGradient.self) {
+                self = .shapeLinearGradient(value: value)
+                return
+            }
+            let error = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: """
+                Failed to decode `BackgroundGradient`.
+                Ran out of possibilities when trying to decode the value of associated type.
+                """
+            )
+            throw DecodingError.typeMismatch(BackgroundGradient.self, error)
+        }
+
+        /// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
+        @_spi(Internal)
+        public struct ShapeLinearGradient: Codable, Hashable {
+            /// The point where position 1 of the gradient is placed.
+            public let endPoint: EndPoint
+
+            /// The point where position 0 of the gradient is placed.
+            public let startPoint: StartPoint
+
+            /// Ordered gradient color stops. Positions must be non-decreasing.
+            public let stops: [Stops]
+
+            /// The type of the gradient.
+            public let type: String = "linear"
+
+            public enum CodingKeys: String, CodingKey {
+                case endPoint = "endPoint"
+                case startPoint = "startPoint"
+                case stops = "stops"
+                case type = "type"
+            }
+
+            /// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
+            ///
+            /// - Parameters:
+            ///   - endPoint: The point where position 1 of the gradient is placed.
+            ///   - startPoint: The point where position 0 of the gradient is placed.
+            ///   - stops: Ordered gradient color stops. Positions must be non-decreasing.
+            public init(
+                endPoint: EndPoint,
+                startPoint: StartPoint,
+                stops: [Stops]
+            ) {
+                self.endPoint = endPoint
+                self.startPoint = startPoint
+                self.stops = stops
+            }
+
+            /// The point where position 1 of the gradient is placed.
+            @_spi(Internal)
+            public struct EndPoint: Codable, Hashable {
+                /// Horizontal position, where 0 is the left edge and 1 is the right edge.
+                public let x: Double
+
+                /// Vertical position, where 0 is the top edge and 1 is the bottom edge.
+                public let y: Double
+
+                public enum CodingKeys: String, CodingKey {
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// The point where position 1 of the gradient is placed.
+                ///
+                /// - Parameters:
+                ///   - x: Horizontal position, where 0 is the left edge and 1 is the right edge.
+                ///   - y: Vertical position, where 0 is the top edge and 1 is the bottom edge.
+                public init(
+                    x: Double,
+                    y: Double
+                ) {
+                    self.x = x
+                    self.y = y
+                }
+            }
+
+            /// The point where position 0 of the gradient is placed.
+            @_spi(Internal)
+            public struct StartPoint: Codable, Hashable {
+                /// Horizontal position, where 0 is the left edge and 1 is the right edge.
+                public let x: Double
+
+                /// Vertical position, where 0 is the top edge and 1 is the bottom edge.
+                public let y: Double
+
+                public enum CodingKeys: String, CodingKey {
+                    case x = "x"
+                    case y = "y"
+                }
+
+                /// The point where position 0 of the gradient is placed.
+                ///
+                /// - Parameters:
+                ///   - x: Horizontal position, where 0 is the left edge and 1 is the right edge.
+                ///   - y: Vertical position, where 0 is the top edge and 1 is the bottom edge.
+                public init(
+                    x: Double,
+                    y: Double
+                ) {
+                    self.x = x
+                    self.y = y
+                }
+            }
+
+            /// A color and its relative position in a shape gradient.
+            @_spi(Internal)
+            public struct Stops: Codable, Hashable {
+                /// The stop color as a hexadecimal string in #RRGGBB or #RRGGBBAA format.
+                public let color: String
+
+                /// Relative stop position between 0 and 1. Stops must be ordered by non-decreasing position.
+                public let position: Double
+
+                public enum CodingKeys: String, CodingKey {
+                    case color = "color"
+                    case position = "position"
+                }
+
+                /// A color and its relative position in a shape gradient.
+                ///
+                /// - Parameters:
+                ///   - color: The stop color as a hexadecimal string in #RRGGBB or #RRGGBBAA format.
+                ///   - position: Relative stop position between 0 and 1. Stops must be ordered by non-decreasing position.
+                public init(
+                    color: String,
+                    position: Double
+                ) {
+                    self.color = color
+                    self.position = position
+                }
+            }
+        }
     }
 }
 
@@ -2755,6 +3126,7 @@ public enum SRWireframe: Codable {
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
+    case embeddedContentWireframe(value: SREmbeddedContentWireframe)
 
     // MARK: - Codable
 
@@ -2773,6 +3145,8 @@ public enum SRWireframe: Codable {
             try container.encode(value)
         case .webviewWireframe(let value):
             try container.encode(value)
+        case .embeddedContentWireframe(let value):
+            try container.encode(value)
         }
     }
 
@@ -2780,6 +3154,11 @@ public enum SRWireframe: Codable {
         // Decode enum case from associated value
         let container = try decoder.singleValueContainer()
 
+        // TODO: Move the order in wireframe-schema.json from rum-events-format and regenerate the file
+        if let value = try? container.decode(SREmbeddedContentWireframe.self) {
+            self = .embeddedContentWireframe(value: value)
+            return
+        }
         if let value = try? container.decode(SRShapeWireframe.self) {
             self = .shapeWireframe(value: value)
             return
@@ -2811,4 +3190,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/740734dfd21f4d83fb2dacbc1cde09a16f326175
+// Generated from https://github.com/DataDog/rum-events-format/tree/5d9d21083fab58ef54816bb2a8a7b2122068c8ed

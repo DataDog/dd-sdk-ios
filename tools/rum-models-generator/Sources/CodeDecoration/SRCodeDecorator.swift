@@ -23,6 +23,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRImageWireframe",
                 "SRPlaceholderWireframe",
                 "SRWebviewWireframe",
+                "SREmbeddedContentWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
                 "SRFullSnapshotRecord",
                 "SRIncrementalSnapshotRecord",
@@ -96,6 +97,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
         if transformed.name == "SRCompositionLayerModifier" {
             transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+            transformed.conformance.append(hashableProtocol)
+        }
+
+        let isNestedInWireframe = context.predecessorStruct(matching: { $0.name.lowercased().contains("wireframe") }) != nil
+        if isNestedInWireframe {
             transformed.conformance.append(hashableProtocol)
         }
 
