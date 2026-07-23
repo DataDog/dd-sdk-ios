@@ -23,12 +23,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let timestamp: Int64
         let footprintKB: Double
         let percent: Double
+        /// The view active when this sample was collected, if any.
+        let viewID: String?
+        let viewPath: String?
     }
 
     /// A single CPU sample: usage as a percentage (0.0 to 100.0).
     private struct CPUSample {
         let timestamp: Int64
         let usage: Double
+        /// The view active when this sample was collected, if any.
+        let viewID: String?
+        let viewPath: String?
     }
 
     private let memoryReader: SamplingBasedVitalReader
@@ -46,6 +52,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+
+    /// The most recently known active view, refreshed on every sample tick. Read and written only on `queue`.
+    /// Samples are tagged with this cached value rather than the view at flush time, so a batch collected
+    /// under an active view isn't dropped just because that view happened to end right before it was flushed.
+    private var cachedViewID: String?
+    private var cachedViewPath: String?
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -175,6 +187,17 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    /// Returns the most recently active view among the given samples, searching from the end of the batch
+    /// backwards, or `nil` if no sample in the batch had a view.
+    private static func lastKnownView(in samples: [(viewID: String?, viewPath: String?)]) -> (id: String, path: String)? {
+        for sample in samples.reversed() {
+            if let id = sample.viewID {
+                return (id: id, path: sample.viewPath ?? "")
+            }
+        }
+        return nil
+    }
+
     private func makeTimer() -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
@@ -187,20 +210,38 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     private func sample() {
         let now = Int64.ddWithNoOverflow(Date().timeIntervalSince1970 * 1_000_000_000)
+        let viewID = cachedViewID
+        let viewPath = cachedViewPath
 
         if let bytes = memoryReader.readVitalData() {
             let footprintKB = bytes / 1_024
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
-            memoryBuffer.append(MemorySample(timestamp: now, footprintKB: footprintKB, percent: memoryPercent))
+            memoryBuffer.append(
+                MemorySample(timestamp: now, footprintKB: footprintKB, percent: memoryPercent, viewID: viewID, viewPath: viewPath)
+            )
             if memoryBuffer.count >= batchSize {
                 flushMemory()
             }
         }
 
         if let cpuUsage = cpuUsageProvider() {
-            cpuBuffer.append(CPUSample(timestamp: now, usage: cpuUsage))
+            cpuBuffer.append(CPUSample(timestamp: now, usage: cpuUsage, viewID: viewID, viewPath: viewPath))
             if cpuBuffer.count >= batchSize {
                 flushCPU()
+            }
+        }
+
+        refreshCachedView()
+    }
+
+    /// Fetches the currently active view and caches it for tagging future samples. Runs asynchronously and
+    /// hops back onto `queue` to apply the result, so it never blocks sampling.
+    private func refreshCachedView() {
+        featureScope.context { [weak self] context in
+            let rum = context.additionalContext(ofType: RUMCoreContext.self)
+            self?.queue.async {
+                self?.cachedViewID = rum?.viewID
+                self?.cachedViewPath = rum?.viewPath
             }
         }
     }
@@ -218,14 +259,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
 
+        // The batch is attributed to the most recently active view among its samples, not the view active
+        // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
+        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
+        guard let view = Self.lastKnownView(in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath) }) else {
+            return
+        }
+
         featureScope.eventWriteContext { context, writer in
-            // Timeseries batches are flushed regardless of an active view; without one there is no
-            // `view.id`/`view.url` to report, which the RUM event format requires, so the batch is dropped.
-            let rum = context.additionalContext(ofType: RUMCoreContext.self)
-            guard let viewID = rum?.viewID else {
-                return
-            }
-            let viewPath = rum?.viewPath ?? ""
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let timestamps = batch.map { $0.timestamp + offsetNs }
             let adjustedStart = start + offsetNs
@@ -250,7 +291,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     start: adjustedStart
                 ),
                 version: context.version,
-                view: .init(id: viewID, url: viewPath)
+                view: .init(id: view.id, url: view.path)
             )
             writer.write(value: event)
         }
@@ -269,14 +310,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
 
+        // The batch is attributed to the most recently active view among its samples, not the view active
+        // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
+        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
+        guard let view = Self.lastKnownView(in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath) }) else {
+            return
+        }
+
         featureScope.eventWriteContext { context, writer in
-            // Timeseries batches are flushed regardless of an active view; without one there is no
-            // `view.id`/`view.url` to report, which the RUM event format requires, so the batch is dropped.
-            let rum = context.additionalContext(ofType: RUMCoreContext.self)
-            guard let viewID = rum?.viewID else {
-                return
-            }
-            let viewPath = rum?.viewPath ?? ""
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
             let timestamps = batch.map { $0.timestamp + offsetNs }
             let adjustedStart = start + offsetNs
@@ -298,7 +339,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     start: adjustedStart
                 ),
                 version: context.version,
-                view: .init(id: viewID, url: viewPath)
+                view: .init(id: view.id, url: view.path)
             )
             writer.write(value: event)
         }
