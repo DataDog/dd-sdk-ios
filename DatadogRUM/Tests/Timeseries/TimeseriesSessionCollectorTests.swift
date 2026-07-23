@@ -12,7 +12,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class TimeseriesSessionCollectorTests: XCTestCase {
-    private let featureScope = FeatureScopeMock()
+    private let featureScope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
     private let memoryReader = SamplingBasedVitalReaderMock()
 
     // MARK: - Memory events
@@ -128,7 +128,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 5.0))
+        let scope = FeatureScopeMock(context: .mockWith(serverTimeOffset: 5.0, additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -160,7 +160,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenContextSourceIsReactNative_itUsesContextSource() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(source: "react-native"))
+        let scope = FeatureScopeMock(context: .mockWith(source: "react-native", additionalContext: [RUMCoreContext.mockAny()]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -183,6 +183,62 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
         XCTAssertEqual(events[0].source, .reactNative)
+    }
+
+    func testWhenActiveViewExists_itAttachesViewToEvent() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let rum: RUMCoreContext = .mockWith(viewID: "view-abc", viewPath: "/view/abc")
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].view.id, "view-abc")
+        XCTAssertEqual(events[0].view.url, "/view/abc")
+    }
+
+    func testWhenNoActiveView_itDropsEvent() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "samples collected")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-no-view", applicationID: "app-no-view", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then — no view context means no `view.id`/`view.url` to report, so the batch is dropped
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
     }
 
     func testWhenStartIsCalledWithoutStop_itFlushesPartialBufferBeforeNewSession() {
