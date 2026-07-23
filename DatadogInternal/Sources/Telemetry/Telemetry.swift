@@ -327,22 +327,30 @@ extension Telemetry {
 
     /// Collect execution error.
     ///
+    /// - Note: Not exposed publicly — a `DDError` built outside this file may carry a raw,
+    ///   unsanitized error description. Callers should use `error(_ error: Error, ...)`
+    ///   instead, which is the single choke point for future error sanitization.
+    ///
     /// - Parameters:
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
+    func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
         self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
+    ///
+    /// - Note: Not exposed publicly — a `DDError` built outside this file may carry a raw,
+    ///   unsanitized error description. Callers should use `error(_ message: String, error: Error, ...)`
+    ///   instead, which is the single choke point for future error sanitization.
     ///
     /// - Parameters:
     ///   - message: The error message.
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
+    func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
         self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
     }
 
