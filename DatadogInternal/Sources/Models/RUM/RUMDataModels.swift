@@ -5826,6 +5826,47 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             self.url = url
         }
     }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        ///   - name: User defined name of the view
+        ///   - referrer: URL that linked to the initial view of the page
+        ///   - url: URL of the view
+        public init(
+            id: String,
+            name: String? = nil,
+            referrer: String? = nil,
+            url: String
+        ) {
+            self.id = id
+            self.name = name
+            self.referrer = referrer
+            self.url = url
+        }
+    }
 }
 
 /// Schema for a memory timeseries event.
