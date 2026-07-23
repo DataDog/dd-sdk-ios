@@ -1598,19 +1598,132 @@ public class objc_RUMTimeseriesCpuEvent: NSObject
     public internal(set) var swiftModel: RUMTimeseriesCpuEvent
     public init(swiftModel: RUMTimeseriesCpuEvent)
     public var dd: objc_RUMTimeseriesCpuEventDD
+    public var account: objc_RUMTimeseriesCpuEventRUMAccount?
     public var application: objc_RUMTimeseriesCpuEventApplication
+    public var buildId: String?
+    public var buildVersion: String?
+    public var ciTest: objc_RUMTimeseriesCpuEventRUMCITest?
+    public var connectivity: objc_RUMTimeseriesCpuEventRUMConnectivity?
+    public var context: objc_RUMTimeseriesCpuEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
+    public var device: objc_RUMTimeseriesCpuEventDevice?
+    public var display: objc_RUMTimeseriesCpuEventDisplay?
+    public var os: objc_RUMTimeseriesCpuEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMTimeseriesCpuEventSession
     public var source: objc_RUMTimeseriesCpuEventSource
+    public var stream: objc_RUMTimeseriesCpuEventStream?
+    public var synthetics: objc_RUMTimeseriesCpuEventRUMSyntheticsTest?
+    public var tab: objc_RUMTimeseriesCpuEventTAB?
     public var timeseries: objc_RUMTimeseriesCpuEventTimeseries
     public var type: String
+    public var usr: objc_RUMTimeseriesCpuEventRUMUser?
     public var version: String?
+    public var view: objc_RUMTimeseriesCpuEventView
 public class objc_RUMTimeseriesCpuEventDD: NSObject
+    public var browserSdkVersion: String?
+    public var configuration: objc_RUMTimeseriesCpuEventDDConfiguration?
     public var formatVersion: NSNumber
-public class objc_RUMTimeseriesCpuEventApplication: NSObject
+    public var sdkName: String?
+    public var session: objc_RUMTimeseriesCpuEventDDSession?
+public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
+    public var sessionReplaySampleRate: NSNumber?
+    public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
+public class objc_RUMTimeseriesCpuEventDDSession: NSObject
+    public var plan: objc_RUMTimeseriesCpuEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMTimeseriesCpuEventDDSessionRUMSessionPrecondition
+public enum objc_RUMTimeseriesCpuEventDDSessionPlan: Int
+    case none
+    case plan1
+    case plan2
+public enum objc_RUMTimeseriesCpuEventDDSessionRUMSessionPrecondition: Int
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+public class objc_RUMTimeseriesCpuEventRUMAccount: NSObject
     public var id: String
+    public var name: String?
+    public var accountInfo: [String: Any]
+public class objc_RUMTimeseriesCpuEventApplication: NSObject
+    public var currentLocale: String?
+    public var id: String
+public class objc_RUMTimeseriesCpuEventRUMCITest: NSObject
+    public var testExecutionId: String
+public class objc_RUMTimeseriesCpuEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMTimeseriesCpuEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMTimeseriesCpuEventRUMConnectivityEffectiveType
+    public var interfaces: [Int]?
+    public var status: objc_RUMTimeseriesCpuEventRUMConnectivityStatus
+public class objc_RUMTimeseriesCpuEventRUMConnectivityCellular: NSObject
+    public var carrierName: String?
+    public var technology: String?
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityEffectiveType: Int
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityInterfaces: Int
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityStatus: Int
+    case connected
+    case notConnected
+    case maybe
+public class objc_RUMTimeseriesCpuEventRUMEventAttributes: NSObject
+    public var contextInfo: [String: Any]
+public class objc_RUMTimeseriesCpuEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: NSNumber?
+    public var brand: String?
+    public var brightnessLevel: NSNumber?
+    public var isLowRam: NSNumber?
+    public var locale: String?
+    public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: NSNumber?
+    public var timeZone: String?
+    public var totalRam: NSNumber?
+    public var type: objc_RUMTimeseriesCpuEventDeviceDeviceType
+public enum objc_RUMTimeseriesCpuEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+public class objc_RUMTimeseriesCpuEventDisplay: NSObject
+    public var viewport: objc_RUMTimeseriesCpuEventDisplayViewport?
+public class objc_RUMTimeseriesCpuEventDisplayViewport: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject
+    public var build: String?
+    public var name: String
+    public var version: String
+    public var versionMajor: String
 public class objc_RUMTimeseriesCpuEventSession: NSObject
+    public var hasReplay: NSNumber?
     public var id: String
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType
 public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int
@@ -1618,6 +1731,7 @@ public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int
     case synthetics
     case ciTest
 public enum objc_RUMTimeseriesCpuEventSource: Int
+    case none
     case android
     case ios
     case browser
@@ -1628,6 +1742,16 @@ public enum objc_RUMTimeseriesCpuEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
+public class objc_RUMTimeseriesCpuEventStream: NSObject
+    public var id: String
+public class objc_RUMTimeseriesCpuEventRUMSyntheticsTest: NSObject
+    public var injected: NSNumber?
+    public var resultId: String
+    public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMTimeseriesCpuEventTAB: NSObject
+    public var id: String
 public class objc_RUMTimeseriesCpuEventTimeseries: NSObject
     public var data: objc_RUMTimeseriesCpuEventTimeseriesData
     public var end: NSNumber
@@ -1640,23 +1764,147 @@ public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject
     public var values: objc_RUMTimeseriesCpuEventTimeseriesDataValues
 public class objc_RUMTimeseriesCpuEventTimeseriesDataValues: NSObject
     public var cpuUsage: [NSNumber]
+public class objc_RUMTimeseriesCpuEventRUMUser: NSObject
+    public var anonymousId: String?
+    public var email: String?
+    public var id: String?
+    public var name: String?
+    public var usrInfo: [String: Any]
+public class objc_RUMTimeseriesCpuEventView: NSObject
+    public var id: String
+    public var name: String?
+    public var referrer: String?
+    public var url: String
 public class objc_RUMTimeseriesMemoryEvent: NSObject
     public internal(set) var swiftModel: RUMTimeseriesMemoryEvent
     public init(swiftModel: RUMTimeseriesMemoryEvent)
     public var dd: objc_RUMTimeseriesMemoryEventDD
+    public var account: objc_RUMTimeseriesMemoryEventRUMAccount?
     public var application: objc_RUMTimeseriesMemoryEventApplication
+    public var buildId: String?
+    public var buildVersion: String?
+    public var ciTest: objc_RUMTimeseriesMemoryEventRUMCITest?
+    public var connectivity: objc_RUMTimeseriesMemoryEventRUMConnectivity?
+    public var context: objc_RUMTimeseriesMemoryEventRUMEventAttributes?
     public var date: NSNumber
+    public var ddtags: String?
+    public var device: objc_RUMTimeseriesMemoryEventDevice?
+    public var display: objc_RUMTimeseriesMemoryEventDisplay?
+    public var os: objc_RUMTimeseriesMemoryEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMTimeseriesMemoryEventSession
     public var source: objc_RUMTimeseriesMemoryEventSource
+    public var stream: objc_RUMTimeseriesMemoryEventStream?
+    public var synthetics: objc_RUMTimeseriesMemoryEventRUMSyntheticsTest?
+    public var tab: objc_RUMTimeseriesMemoryEventTAB?
     public var timeseries: objc_RUMTimeseriesMemoryEventTimeseries
     public var type: String
+    public var usr: objc_RUMTimeseriesMemoryEventRUMUser?
     public var version: String?
+    public var view: objc_RUMTimeseriesMemoryEventView
 public class objc_RUMTimeseriesMemoryEventDD: NSObject
+    public var browserSdkVersion: String?
+    public var configuration: objc_RUMTimeseriesMemoryEventDDConfiguration?
     public var formatVersion: NSNumber
-public class objc_RUMTimeseriesMemoryEventApplication: NSObject
+    public var sdkName: String?
+    public var session: objc_RUMTimeseriesMemoryEventDDSession?
+public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject
+    public var profilingSampleRate: NSNumber?
+    public var sessionReplaySampleRate: NSNumber?
+    public var sessionSampleRate: NSNumber
+    public var traceSampleRate: NSNumber?
+public class objc_RUMTimeseriesMemoryEventDDSession: NSObject
+    public var plan: objc_RUMTimeseriesMemoryEventDDSessionPlan
+    public var sessionPrecondition: objc_RUMTimeseriesMemoryEventDDSessionRUMSessionPrecondition
+public enum objc_RUMTimeseriesMemoryEventDDSessionPlan: Int
+    case none
+    case plan1
+    case plan2
+public enum objc_RUMTimeseriesMemoryEventDDSessionRUMSessionPrecondition: Int
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+public class objc_RUMTimeseriesMemoryEventRUMAccount: NSObject
     public var id: String
+    public var name: String?
+    public var accountInfo: [String: Any]
+public class objc_RUMTimeseriesMemoryEventApplication: NSObject
+    public var currentLocale: String?
+    public var id: String
+public class objc_RUMTimeseriesMemoryEventRUMCITest: NSObject
+    public var testExecutionId: String
+public class objc_RUMTimeseriesMemoryEventRUMConnectivity: NSObject
+    public var cellular: objc_RUMTimeseriesMemoryEventRUMConnectivityCellular?
+    public var effectiveType: objc_RUMTimeseriesMemoryEventRUMConnectivityEffectiveType
+    public var interfaces: [Int]?
+    public var status: objc_RUMTimeseriesMemoryEventRUMConnectivityStatus
+public class objc_RUMTimeseriesMemoryEventRUMConnectivityCellular: NSObject
+    public var carrierName: String?
+    public var technology: String?
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityEffectiveType: Int
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityInterfaces: Int
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityStatus: Int
+    case connected
+    case notConnected
+    case maybe
+public class objc_RUMTimeseriesMemoryEventRUMEventAttributes: NSObject
+    public var contextInfo: [String: Any]
+public class objc_RUMTimeseriesMemoryEventDevice: NSObject
+    public var architecture: String?
+    public var batteryLevel: NSNumber?
+    public var brand: String?
+    public var brightnessLevel: NSNumber?
+    public var isLowRam: NSNumber?
+    public var locale: String?
+    public var locales: [String]?
+    public var logicalCpuCount: NSNumber?
+    public var model: String?
+    public var name: String?
+    public var powerSavingMode: NSNumber?
+    public var timeZone: String?
+    public var totalRam: NSNumber?
+    public var type: objc_RUMTimeseriesMemoryEventDeviceDeviceType
+public enum objc_RUMTimeseriesMemoryEventDeviceDeviceType: Int
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+public class objc_RUMTimeseriesMemoryEventDisplay: NSObject
+    public var viewport: objc_RUMTimeseriesMemoryEventDisplayViewport?
+public class objc_RUMTimeseriesMemoryEventDisplayViewport: NSObject
+    public var height: NSNumber
+    public var width: NSNumber
+public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject
+    public var build: String?
+    public var name: String
+    public var version: String
+    public var versionMajor: String
 public class objc_RUMTimeseriesMemoryEventSession: NSObject
+    public var hasReplay: NSNumber?
     public var id: String
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType
 public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int
@@ -1664,6 +1912,7 @@ public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int
     case synthetics
     case ciTest
 public enum objc_RUMTimeseriesMemoryEventSource: Int
+    case none
     case android
     case ios
     case browser
@@ -1674,6 +1923,16 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int
     case kotlinMultiplatform
     case electron
     case rumCpp
+    case maui
+public class objc_RUMTimeseriesMemoryEventStream: NSObject
+    public var id: String
+public class objc_RUMTimeseriesMemoryEventRUMSyntheticsTest: NSObject
+    public var injected: NSNumber?
+    public var resultId: String
+    public var testId: String
+    public var syntheticsInfo: [String: Any]
+public class objc_RUMTimeseriesMemoryEventTAB: NSObject
+    public var id: String
 public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject
     public var data: objc_RUMTimeseriesMemoryEventTimeseriesData
     public var end: NSNumber
@@ -1687,6 +1946,17 @@ public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject
 public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject
     public var memoryFootprint: [NSNumber]
     public var memoryPercent: [NSNumber]
+public class objc_RUMTimeseriesMemoryEventRUMUser: NSObject
+    public var anonymousId: String?
+    public var email: String?
+    public var id: String?
+    public var name: String?
+    public var usrInfo: [String: Any]
+public class objc_RUMTimeseriesMemoryEventView: NSObject
+    public var id: String
+    public var name: String?
+    public var referrer: String?
+    public var url: String
 public class objc_RUMViewEvent: NSObject
     public internal(set) var swiftModel: RUMViewEvent
     public init(swiftModel: RUMViewEvent)
