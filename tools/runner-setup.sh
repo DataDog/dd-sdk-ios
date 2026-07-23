@@ -80,8 +80,8 @@ xcodebuild -version
 
 if [ "$iOS" = "true" ]; then
     echo_subtitle "Install iOS platform"
-    if xcrun simctl runtime list 2>/dev/null | grep -q "^iOS"; then
-        echo_succ "iOS platform already installed, skipping download"
+    if xcodebuild -showsdks 2>/dev/null | grep -q "iphoneos"; then
+        echo_succ "iOS platform SDK already available, skipping download"
     else
         echo "▸ xcodebuild -downloadPlatform iOS -quiet"
         xcodebuild -downloadPlatform iOS -quiet
@@ -90,8 +90,8 @@ fi
 
 if [ "$tvOS" = "true" ]; then
     echo_subtitle "Install tvOS platform"
-    if xcrun simctl runtime list 2>/dev/null | grep -q "^tvOS"; then
-        echo_succ "tvOS platform already installed, skipping download"
+    if xcodebuild -showsdks 2>/dev/null | grep -q "appletvos"; then
+        echo_succ "tvOS platform SDK already available, skipping download"
     else
         echo "▸ xcodebuild -downloadPlatform tvOS -quiet"
         xcodebuild -downloadPlatform tvOS -quiet
@@ -100,8 +100,8 @@ fi
 
 if [ "$visionOS" = "true" ]; then
     echo_subtitle "Install visionOS platform"
-    if xcrun simctl runtime list 2>/dev/null | grep -q "^xrOS\|^visionOS"; then
-        echo_succ "visionOS platform already installed, skipping download"
+    if xcodebuild -showsdks 2>/dev/null | grep -q "xros"; then
+        echo_succ "visionOS platform SDK already available, skipping download"
     else
         echo "▸ xcodebuild -downloadPlatform visionOS -quiet"
         xcodebuild -downloadPlatform visionOS -quiet
@@ -110,8 +110,8 @@ fi
 
 if [ "$watchOS" = "true" ]; then
     echo_subtitle "Install watchOS platform"
-    if xcrun simctl runtime list 2>/dev/null | grep -q "^watchOS"; then
-        echo_succ "watchOS platform already installed, skipping download"
+    if xcodebuild -showsdks 2>/dev/null | grep -q "watchos"; then
+        echo_succ "watchOS platform SDK already available, skipping download"
     else
         echo "▸ xcodebuild -downloadPlatform watchOS -quiet"
         xcodebuild -downloadPlatform watchOS -quiet
