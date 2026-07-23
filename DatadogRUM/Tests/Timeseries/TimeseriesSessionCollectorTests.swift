@@ -215,6 +215,42 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].view.url, "/view/abc")
     }
 
+    func testWhenViewEndsRightBeforeFlush_itStillAttachesTheViewSamplesWereCollectedUnder() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let rum: RUMCoreContext = .mockWith(viewID: "view-ending", viewPath: "/view/ending")
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 100, // won't auto-flush — only the explicit stop() below triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+
+        // When — samples are collected while a view is active
+        let expectation = self.expectation(description: "samples collected under an active view")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        collector.start(sessionID: "session-ending-view", applicationID: "app-ending-view", sessionType: .user)
+        waitForExpectations(timeout: 2)
+
+        // The view ends right before the batch is flushed
+        scope.contextMock = .mockWith(additionalContext: [])
+
+        let syncExpectation = self.expectation(description: "stop completed")
+        collector.stop()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the batch is still written, attributed to the view it was actually collected under
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected the batch collected under an active view to be flushed, not dropped")
+        XCTAssertEqual(events[0].view.id, "view-ending")
+        XCTAssertEqual(events[0].view.url, "/view/ending")
+    }
+
     func testWhenNoActiveView_itDropsEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
