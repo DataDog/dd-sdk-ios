@@ -80,14 +80,22 @@ xcodebuild -version
 
 if [ "$iOS" = "true" ]; then
     echo_subtitle "Install iOS platform"
-    echo "▸ xcodebuild -downloadPlatform iOS -quiet"
-    xcodebuild -downloadPlatform iOS -quiet
+    if xcrun simctl runtime list 2>/dev/null | grep -q "^iOS"; then
+        echo_succ "iOS platform already installed, skipping download"
+    else
+        echo "▸ xcodebuild -downloadPlatform iOS -quiet"
+        xcodebuild -downloadPlatform iOS -quiet
+    fi
 fi
 
 if [ "$tvOS" = "true" ]; then
     echo_subtitle "Install tvOS platform"
-    echo "▸ xcodebuild -downloadPlatform tvOS -quiet"
-    xcodebuild -downloadPlatform tvOS -quiet
+    if xcrun simctl runtime list 2>/dev/null | grep -q "^tvOS"; then
+        echo_succ "tvOS platform already installed, skipping download"
+    else
+        echo "▸ xcodebuild -downloadPlatform tvOS -quiet"
+        xcodebuild -downloadPlatform tvOS -quiet
+    fi
 fi
 
 if [ "$visionOS" = "true" ]; then
