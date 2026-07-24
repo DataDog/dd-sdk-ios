@@ -16,7 +16,7 @@ import WebKit
 
 @Suite(.datadogTesting)
 @MainActor
-struct CALayerSnapshotSemanticObservationTests {
+struct SemanticObservationTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
@@ -28,6 +28,123 @@ struct CALayerSnapshotSemanticObservationTests {
 
         // Then
         #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records linear gradient semantics")
+    func recordsLinearGradientSemantics() throws {
+        // Given
+        let colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+        let locations = [CGFloat(0.25), CGFloat(0.75)]
+        let layer = CAGradientLayer()
+        layer.colors = colors
+        layer.locations = locations.map { NSNumber(value: Double($0)) }
+        layer.startPoint = CGPoint(x: 0, y: 0.5)
+        layer.endPoint = CGPoint(x: 1, y: 0.5)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        let gradient = try #require(
+            CALayerSnapshot.SemanticObservation.GradientSemantics(
+                type: .axial,
+                colors: colors,
+                locations: locations,
+                startPoint: layer.startPoint,
+                endPoint: layer.endPoint
+            )
+        )
+        #expect(observation == .init(semantics: .gradient(gradient)))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records unsupported gradient as plain layer semantics")
+    func recordsUnsupportedGradientAsPlainLayerSemantics() {
+        // Given
+        let layer = CAGradientLayer()
+        layer.type = .radial
+        layer.colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records masked leaf gradient as plain layer semantics")
+    func recordsMaskedLeafGradientAsPlainLayerSemantics() {
+        // Given
+        let layer = CAGradientLayer()
+        layer.colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+        layer.mask = CALayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records visual effect backdrop semantics and ignores sublayers")
+    func recordsVisualEffectBackdropSemanticsAndIgnoresSublayers() throws {
+        // Given
+        let visualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
+        let backdropLayer = try #require(
+            visualEffectView.layer.sublayers?.first {
+                NSStringFromClass(type(of: $0)) == "UICABackdropLayer"
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: backdropLayer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .visualEffect(.backdrop),
+            ignoresSublayers: true
+        ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Rejects gradient semantics with fewer than two colors")
+    func rejectsGradientSemanticsWithFewerThanTwoColors() {
+        // Given
+        let colors = [UIColor.red.cgColor]
+
+        // When
+        let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(
+            type: .axial,
+            colors: colors,
+            locations: nil,
+            startPoint: CGPoint(x: 0.5, y: 0),
+            endPoint: CGPoint(x: 0.5, y: 1)
+        )
+
+        // Then
+        #expect(gradient == nil)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Rejects gradient semantics with mismatched locations")
+    func rejectsGradientSemanticsWithMismatchedLocations() {
+        // Given
+        let colors = [UIColor.red.cgColor, UIColor.blue.cgColor]
+
+        // When
+        let gradient = CALayerSnapshot.SemanticObservation.GradientSemantics(
+            type: .axial,
+            colors: colors,
+            locations: [0],
+            startPoint: CGPoint(x: 0.5, y: 0),
+            endPoint: CGPoint(x: 0.5, y: 1)
+        )
+
+        // Then
+        #expect(gradient == nil)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -47,7 +164,7 @@ struct CALayerSnapshotSemanticObservationTests {
     @Test("Records label semantics and ignores sublayers")
     func recordsLabelSemanticsAndIgnoresSublayers() {
         // Given
-        let font = UIFont.boldSystemFont(ofSize: 14)
+        let font = UIFont.systemFont(ofSize: 14)
         let label = UILabel()
         label.text = "Hello"
         label.textColor = .red
@@ -83,7 +200,7 @@ struct CALayerSnapshotSemanticObservationTests {
         label.attributedText = NSAttributedString(
             string: "Hello",
             attributes: [
-                .font: UIFont.boldSystemFont(ofSize: 14),
+                .font: UIFont.systemFont(ofSize: 14),
                 .foregroundColor: UIColor.red
             ]
         )
@@ -105,6 +222,86 @@ struct CALayerSnapshotSemanticObservationTests {
             ),
             ignoresSublayers: true
         ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records bold labels as layer semantics")
+    func recordsBoldLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .boldSystemFont(ofSize: 14)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records non-regular system font labels as layer semantics")
+    func recordsNonRegularSystemFontLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .systemFont(ofSize: 14, weight: .medium)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records italic labels as layer semantics")
+    func recordsItalicLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .italicSystemFont(ofSize: 14)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records non-system font labels as layer semantics")
+    func recordsNonSystemFontLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.text = "Hello"
+        label.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records underlined single run attributed labels as layer semantics")
+    func recordsUnderlinedSingleRunAttributedLabelsAsLayerSemantics() {
+        // Given
+        let label = UILabel()
+        label.attributedText = NSAttributedString(
+            string: "Hello",
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 14),
+                .underlineStyle: NSUnderlineStyle.single.rawValue
+            ]
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: label.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -167,14 +364,10 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: slider.layer, context: .mockAny())
 
         // Then
-        var expected = CALayerSnapshot.SemanticObservation(
+        let expected = CALayerSnapshot.SemanticObservation(
             semantics: .layer,
             ignoresImagePrivacy: true
         )
-
-        if #available(iOS 26.0, *) {
-            expected.usesAutomaticCornerRadius = true
-        }
 
         #expect(observation == expected)
     }
@@ -327,14 +520,10 @@ struct CALayerSnapshotSemanticObservationTests {
         let observation = CALayerSnapshot.SemanticObservation(layer: switchControl.layer, context: .mockAny())
 
         // Then
-        var expected = CALayerSnapshot.SemanticObservation(
+        let expected = CALayerSnapshot.SemanticObservation(
             semantics: .layer,
             ignoresImagePrivacy: true
         )
-
-        if #available(iOS 26.0, *) {
-            expected.usesAutomaticCornerRadius = true
-        }
 
         #expect(observation == expected)
     }

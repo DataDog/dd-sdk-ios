@@ -41,6 +41,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeStyle",
                 "SRTextPosition",
                 "SRTextStyle",
+                // Detach shape gradient types to shared, root-level definitions:
+                "SRShapeGradient",
+                "SRShapeLinearGradient",
+                "SRShapeGradientPoint",
+                "SRShapeGradientStop",
                 // Detach composition tree types to shared, root-level definitions:
                 "SRCompositionTree",
                 "SRCompositionLayer",
@@ -99,6 +104,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             transformed.conformance.append(hashableProtocol)
         }
 
+        if transformed.name == "SRShapeGradient" {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+            transformed.conformance.append(hashableProtocol)
+        }
+
         let parentIncrementalSnapshotRecord = context.predecessorStruct(
             matching: { $0.name.lowercased() == "mobileincrementalsnapshotrecord" }
         )
@@ -122,6 +132,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             enumCaseName: enumCaseName
                 .replacingOccurrences(of: "mobile", with: "")
                 .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+                .replacingOccurrences(of: "ShapeLinearGradient", with: "linear")
         )
     }
 
@@ -159,6 +170,19 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
         if parentWireframe != nil && fixedName == "TextStyle" {
             fixedName = "SRTextStyle"
+        }
+
+        // Detach shape gradient types to shared, root-level definitions.
+        let parentShapeStyle = context.predecessorStruct(matching: { $0.name.lowercased() == "shapestyle" })
+        let parentLinearGradient = context.predecessorStruct(matching: { $0.name.lowercased() == "shapelineargradient" })
+        if parentShapeStyle != nil && fixedName == "BackgroundGradient" {
+            fixedName = "SRShapeGradient"
+        }
+        if parentLinearGradient != nil && (fixedName == "EndPoint" || fixedName == "StartPoint") {
+            fixedName = "SRShapeGradientPoint"
+        }
+        if parentLinearGradient != nil && fixedName == "Stops" {
+            fixedName = "SRShapeGradientStop"
         }
 
         // Detach composition tree types to shared, root-level definitions.

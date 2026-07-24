@@ -62,6 +62,7 @@ extension CALayerSnapshot {
     static func mockWith(
         replayID: Int64 = 1,
         absoluteFrame: CGRect = .zero,
+        observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
         backgroundColor: CGColor? = nil,
         isPrivate: Bool = false,
         sublayers: [CALayerSnapshot] = []
@@ -70,7 +71,7 @@ extension CALayerSnapshot {
         return CALayerSnapshot(
             layer: CALayerReference(layer),
             replayID: replayID,
-            observation: .init(semantics: .layer),
+            observation: observation,
             layerClass: CALayer.self,
             delegateClass: nil,
             contentsClass: nil,

@@ -93,6 +93,7 @@ internal struct ContentSnapshotRequest: Sendable {
 @available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
+    let renderBounds: CGRect
     let localRect: CGRect
     let frame: CGRect
     let needsSnapshot: Bool
@@ -156,7 +157,26 @@ extension ContentSnapshotRequest {
             throw ImageSnapshotRequestResolutionError.missingLayer
         }
 
-        let visibleLocalRect = layer.convert(visibleFrame, from: rootLayer)
+        // Bounds changes invalidate the bitmap coordinate space
+        let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
+
+        // Collapsed sublayers can draw outside the semantic owner's bounds
+        let renderBounds: CGRect
+        if !hasChanges, !snapshotBoundsDidChange, let previousSnapshotData {
+            renderBounds = previousSnapshotData.renderBounds
+        } else {
+            renderBounds = self.renderBounds(for: layer)
+        }
+
+        let renderFrame = frame(for: renderBounds, layer: layer, rootLayer: rootLayer)
+        let requiresPartialSnapshot = self.requiresPartialSnapshot(
+            renderBounds: renderBounds,
+            relativeTo: rootLayer
+        )
+        let visibleRenderFrame = renderBounds.equalTo(bounds)
+            ? visibleFrame
+            : renderFrame.intersection(rootLayer.bounds)
+        let visibleLocalRect = layer.convert(visibleRenderFrame, from: rootLayer)
 
         guard !visibleLocalRect.isNull, !visibleLocalRect.isEmpty else {
             throw ImageSnapshotRequestResolutionError.invalidRect
@@ -164,17 +184,13 @@ extension ContentSnapshotRequest {
 
         let isNewSnapshot = previousSnapshotData == nil
 
-        // Oversized layers are rendered only in their visible area
-        let requiresPartialSnapshot = self.requiresPartialSnapshot(relativeTo: rootLayer)
-
         // Full snapshots can be moved without re-rendering, but partial snapshots depend on the visible slice
         let partialSnapshotHasChanges = self.hasPartialSnapshotChanges(
             visibleLocalRect: visibleLocalRect,
             requiresPartialSnapshot: requiresPartialSnapshot
         )
 
-        // Bounds changes invalidate the bitmap coordinate space
-        let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
+        let renderBoundsDidChange = previousSnapshotData.map { !$0.renderBounds.equalTo(renderBounds) } ?? false
 
         // Plain layers need contents or collapsed dependencies to produce pixels on first capture
         let shouldCaptureInitialSnapshot = layerClass != CALayer.self || hasContents || !dependencies.isEmpty
@@ -183,22 +199,43 @@ extension ContentSnapshotRequest {
         let needsSnapshot = (isNewSnapshot && shouldCaptureInitialSnapshot) ||
             hasChanges ||
             partialSnapshotHasChanges ||
-            snapshotBoundsDidChange
+            snapshotBoundsDidChange ||
+            renderBoundsDidChange
 
-        // Full snapshots capture the layer bounds while partial snapshots capture only the visible slice
-        let localRect = requiresPartialSnapshot ? visibleLocalRect : bounds
-        let frame = requiresPartialSnapshot ? visibleFrame : absoluteFrame
+        // Full snapshots capture the render bounds while partial snapshots capture only the visible slice
+        let localRect = requiresPartialSnapshot ? visibleLocalRect : renderBounds
+        let frame = requiresPartialSnapshot ? visibleRenderFrame : renderFrame
 
         return .init(
             layer: layer,
+            renderBounds: renderBounds,
             localRect: localRect,
             frame: frame,
             needsSnapshot: needsSnapshot
         )
     }
 
-    private func requiresPartialSnapshot(relativeTo rootLayer: CALayer) -> Bool {
-        bounds.width > rootLayer.bounds.width || bounds.height > rootLayer.bounds.height
+    @MainActor
+    private func renderBounds(for layer: CALayer) -> CGRect {
+        guard !layer.masksToBounds else {
+            return bounds
+        }
+
+        return dependencies.reduce(into: bounds) { renderBounds, dependency in
+            guard let dependencyLayer = dependency.resolve() else {
+                return
+            }
+
+            renderBounds = renderBounds.union(dependencyLayer.convert(dependencyLayer.bounds, to: layer))
+        }
+    }
+
+    private func frame(for renderBounds: CGRect, layer: CALayer, rootLayer: CALayer) -> CGRect {
+        renderBounds.equalTo(bounds) ? absoluteFrame : layer.convert(renderBounds, to: rootLayer)
+    }
+
+    private func requiresPartialSnapshot(renderBounds: CGRect, relativeTo rootLayer: CALayer) -> Bool {
+        renderBounds.width > rootLayer.bounds.width || renderBounds.height > rootLayer.bounds.height
     }
 
     private func hasPartialSnapshotChanges(
@@ -245,7 +282,7 @@ extension MaskSnapshotRequest {
 @available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotData {
     fileprivate var isPartial: Bool {
-        !bounds.equalTo(localRect)
+        !renderBounds.equalTo(localRect)
     }
 }
 #endif

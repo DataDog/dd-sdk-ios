@@ -150,6 +150,13 @@ internal class LayerSnapshotTestCase: XCTestCase {
             resources: output.resources
         )
 
+        var layerTreeRoot = ""
+        dump(output.layerTreeSnapshot.root, to: &layerTreeRoot)
+        let layerTreeSnapshotAttachment = XCTAttachment(string: layerTreeRoot)
+        layerTreeSnapshotAttachment.name = "recorded-layer-tree-root-(\(textAndInputPrivacyLevel)).txt"
+        layerTreeSnapshotAttachment.lifetime = .deleteOnSuccess
+        add(layerTreeSnapshotAttachment)
+
         let compositionTreeAttachment = XCTAttachment(
             string: renderedCompositionTree.debugInfo.dumpCompositionTreeAsJSON()
         )
