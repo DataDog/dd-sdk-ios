@@ -124,12 +124,12 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         XCTAssertEqual(injection, .all)
     }
 
-    /// When the `trace` namespace provides hosts but no header formats, those hosts are traced with no
-    /// header formats; the sample rate / injection strategy fall back to the module defaults.
-    func testWhenRemoteTraceProvidesHostsWithoutHeaderTypes_itUsesNoHeaderFormats() throws {
+    /// When the `trace` namespace provides hosts with a single header format, that host is traced with
+    /// exactly that header format; the sample rate / injection strategy fall back to the module defaults.
+    func testWhenRemoteTraceProvidesHostsWithSingleHeaderType_itUsesThatHeaderFormat() throws {
         // Given no in-code network instrumentation
         var configuration: RUM.Configuration = .mockWith { $0.urlSessionTracking = nil }
-        let remote: RemoteConfiguration = .mockWith(trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])]))
+        let remote: RemoteConfiguration = .mockWith(trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [.b3])]))
 
         // When
         configuration.apply(remoteConfiguration: remote)
@@ -139,7 +139,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             configuration.urlSessionTracking?.firstPartyHostsTracing else {
             return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hostsWithHeaders, ["example.com": []])
+        XCTAssertEqual(hostsWithHeaders, ["example.com": [.b3]])
         XCTAssertEqual(sampleRate, .maxSampleRate) // default when the remote omits `sampleRate`
         XCTAssertEqual(injection, .sampled) // default when the remote omits `traceContextInjection`
     }
@@ -186,12 +186,12 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             )
         }
 
-        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "remote.example.com", propagatorTypes: [])])))
+        configuration.apply(remoteConfiguration: .mockWith(trace: .init(tracedHosts: [.init(host: "remote.example.com", propagatorTypes: [.b3])])))
 
         guard case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection) = configuration.urlSessionTracking?.firstPartyHostsTracing else {
             return XCTFail("Expected `.traceWithHeaders` first-party hosts tracing to be configured")
         }
-        XCTAssertEqual(hostsWithHeaders, ["remote.example.com": []])
+        XCTAssertEqual(hostsWithHeaders, ["remote.example.com": [.b3]])
         XCTAssertEqual(sampleRate, 30)
         XCTAssertEqual(injection, .all)
     }
@@ -223,7 +223,7 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
         configuration.apply(
             remoteConfiguration: .mockWith(
                 rum: .mockWith(trackResources: false),
-                trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])
+                trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [.b3])])
             )
         )
 
