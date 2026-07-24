@@ -12,19 +12,17 @@ internal protocol RUMFlagEvaluationReporting {
 }
 
 internal final class RUMFlagEvaluationReporter: RUMFlagEvaluationReporting {
-    private let featureScope: any FeatureScope
+    private let messageBus: any MessageBus
 
-    init(featureScope: any FeatureScope) {
-        self.featureScope = featureScope
+    init(messageBus: any MessageBus) {
+        self.messageBus = messageBus
     }
 
     func sendFlagEvaluation<T>(flagKey: String, value: T) where T: FlagValue {
-        featureScope.send(
-            message: .payload(
-                RUMFlagEvaluationMessage(
-                    flagKey: flagKey,
-                    value: value
-                )
+        messageBus.send(
+            message: RUMFlagEvaluationMessage(
+                flagKey: flagKey,
+                value: value
             )
         )
     }

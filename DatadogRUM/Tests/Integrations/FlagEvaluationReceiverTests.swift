@@ -21,19 +21,17 @@ class FlagEvaluationReceiverTests: XCTestCase {
                 dateProvider: SystemDateProvider()
             )
         )
-        let message: FeatureMessage = .payload(
-            RUMFlagEvaluationMessage(
-                flagKey: "feature-flag",
-                value: true
-            )
-        )
 
         // When
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(
+            message: RUMFlagEvaluationMessage(
+                flagKey: "feature-flag",
+                value: true
+            ),
+            from: NOPDatadogCore()
+        )
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
-
         let viewEvents: [RUMViewEvent] = featureScope.eventsWritten()
         XCTAssertFalse(viewEvents.isEmpty, "It should write a view event")
 
