@@ -25,13 +25,12 @@ extension Trace.Configuration {
     /// redacted status codes), and its first-party hosts tracing is merged field by field.
     ///
     /// The host list drives whether propagation exists: a non-empty list configures (or replaces) it,
-    /// while an explicit empty list clears it — no host is treated as first-party, so no headers are
-    /// injected, while an in-code `urlSessionTracking` keeps its other settings. When `tracedHosts` is
-    /// omitted, existing propagation is preserved (only its sample rate / injection are updated if the
-    /// remote provides them); an empty list is a no-op when no `urlSessionTracking` was configured in
-    /// code (there is nothing to clear). Each entry in `tracedHosts` carries its own `propagatorTypes`,
-    /// mapped directly onto the host's header formats — an empty list traces the host with no header
-    /// formats.
+    /// while an explicit empty list clears it — the URLSession instrumentation is removed entirely,
+    /// since no host would ever be first-party. When `tracedHosts` is omitted, existing propagation is
+    /// preserved (only its sample rate / injection are updated if the remote provides them); an empty
+    /// list is a no-op when no `urlSessionTracking` was configured in code (there is nothing to clear).
+    /// Each entry in `tracedHosts` carries its own `propagatorTypes`, mapped directly onto the host's
+    /// header formats — an empty list traces the host with no header formats.
     ///
     /// The merge happens once, at `Trace.enable(with:)` time; live updates after initialization are out
     /// of scope.
@@ -53,7 +52,9 @@ extension Trace.Configuration {
 
 private extension Trace.Configuration.URLSessionTracking {
     /// Returns a copy merging the remote `trace` namespace's first-party hosts tracing on top of this
-    /// in-code configuration, leaving any other settings (e.g. redacted status codes) intact.
+    /// in-code configuration, leaving any other settings (e.g. redacted status codes) intact — or `nil`
+    /// when the remote config explicitly clears the traced hosts, since instrumentation with no
+    /// first-party host would have nothing to do.
     ///
     /// The host list drives whether propagation exists: a non-empty list configures (or replaces) it,
     /// while an explicit empty list clears it. When `tracedHosts` is omitted, a present sample rate /
@@ -61,8 +62,9 @@ private extension Trace.Configuration.URLSessionTracking {
     /// fall back to the in-code value when the remote omits them.
     ///
     /// - Parameter trace: The remote `trace` namespace.
-    /// - Returns: A copy with first-party hosts tracing merged with `trace`.
-    func overriding(with trace: RemoteConfiguration.Trace) -> Self {
+    /// - Returns: A copy with first-party hosts tracing merged with `trace`, or `nil` when `tracedHosts`
+    ///   is explicitly empty.
+    func overriding(with trace: RemoteConfiguration.Trace) -> Self? {
         var tracking = self
         let sampleRate = trace.sampleRate.map { SampleRate($0) }
         let traceControlInjection = trace.traceContextInjection.map { TraceContextInjection($0) }
@@ -78,9 +80,9 @@ private extension Trace.Configuration.URLSessionTracking {
         }
 
         if tracedHosts.isEmpty {
-            // Explicit empty list: clear propagation, keeping any other instrumentation settings.
-            tracking.firstPartyHostsTracing = .trace(hosts: [])
-            return tracking
+            // Explicit empty list: no host would ever be first-party, so the URLSession instrumentation
+            // would only pay swizzling overhead for no benefit — remove it entirely.
+            return nil
         }
 
         // Non-empty list: configure (or replace) propagation for these hosts.
