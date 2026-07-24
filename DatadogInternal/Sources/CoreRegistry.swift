@@ -82,11 +82,15 @@ public final class CoreRegistry {
     /// - Parameter feature: The feature type to check for.
     /// - Returns: `true` if the feature is enabled in at least one instance, otherwise `false`.
     public static func isFeatureEnabled<T>(feature: T.Type) -> Bool where T: DatadogFeature {
-        for instance in instances.values {
-            if instance.get(feature: T.self) != nil {
-                return true
-            }
-        }
-        return false
+        instanceName(for: feature) != nil
+    }
+
+    /// Returns the name of a registered core instance that has enabled the specified feature.
+    ///
+    /// - Parameter feature: The feature type to check for.
+    /// - Returns: The instance name if the feature is enabled, otherwise `nil`.
+    @_spi(Internal)
+    public static func instanceName<T>(for feature: T.Type) -> String? where T: DatadogFeature {
+        instances.first { $0.value.get(feature: T.self) != nil }?.key
     }
 }

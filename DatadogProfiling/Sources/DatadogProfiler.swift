@@ -18,11 +18,6 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 internal final class DatadogProfiler: ProfilingHandler {
-    enum Role: Equatable {
-        case coordinator
-        case observer
-    }
-
     enum Constants {
         /// Default profile duration during continuous profiling.
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
@@ -30,8 +25,6 @@ internal final class DatadogProfiler: ProfilingHandler {
         static let minProfileDuration: TimeInterval = 5 // 5 seconds profiles
         /// Maximum time to keep profiling alive while waiting for RUM events.
         static let cutOffTime: TimeInterval = 60 // 1 minute cutoff
-        /// Maximum time to delay a stopped app-launch profile flush so registered observers can attach their own TTID.
-        static let appLaunchObserverTimeout: DispatchTimeInterval = .milliseconds(100)
     }
 
     static let defaultQueue = DispatchQueue(
@@ -41,7 +34,6 @@ internal final class DatadogProfiler: ProfilingHandler {
 
     /// The queue used to synchronize the profiling data and the writes.
     private let queue: DispatchQueue
-    private let profilerCoordinator: ProfilerCoordinating
     private let profilingSamplerProvider: ProfilingSamplerProvider
     private let quotaChecker: ProfilingQuotaChecking
     private let profilingConditions: ProfilingConditions
@@ -54,7 +46,6 @@ internal final class DatadogProfiler: ProfilingHandler {
     let telemetryController: ProfilingTelemetryController
     let encoder: JSONEncoder
     let dateProvider: DateProvider
-    private(set) var role: Role = .observer
 
     @ReadWriteLock
     private(set) var attributes: [String: AttributeValue] = [:]
@@ -91,7 +82,6 @@ internal final class DatadogProfiler: ProfilingHandler {
         core: DatadogCoreProtocol,
         profilingSamplerProvider: ProfilingSamplerProvider,
         quotaChecker: ProfilingQuotaChecking,
-        profilerCoordinator: ProfilerCoordinating = ProfilerCoordinator.shared,
         queue: DispatchQueue = DatadogProfiler.defaultQueue,
         telemetryController: ProfilingTelemetryController = .init(),
         profilingConditions: ProfilingConditions = .init(),
@@ -103,7 +93,6 @@ internal final class DatadogProfiler: ProfilingHandler {
     ) {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.queue = queue
-        self.profilerCoordinator = profilerCoordinator
         self.profilingSamplerProvider = profilingSamplerProvider
         self.quotaChecker = quotaChecker
         self.telemetryController = telemetryController
@@ -122,16 +111,13 @@ internal final class DatadogProfiler: ProfilingHandler {
             self?.handle(quotaResult: result)
         }
 
-        role = profilerCoordinator.register(self)
-
-        if role == .coordinator, profilingSamplerProvider.isContinuousProfilingConfigured {
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
             startTimer()
         }
     }
 
     deinit {
         stopTimer()
-        profilerCoordinator.unregister(self)
     }
 }
 
@@ -147,17 +133,17 @@ extension DatadogProfiler: FeatureMessageReceiver {
             switch message {
             case let message as TTIDMessage:
                 handleAppLaunch(message: message)
-                return role == .coordinator
+                return true
             case let message as OperationMessage:
                 handleOperation(message: message)
                 // Every OperationMessage is consumed by the active profiler after app launch vital.
-                return role == .coordinator && hasReceivedAppLaunchVital
+                return hasReceivedAppLaunchVital
             case let message as AppHangMessage:
                 handleAppHang(message: message)
-                return role == .coordinator
+                return true
             case let message as LongTaskMessage:
                 handleLongTask(message: message)
-                return role == .coordinator
+                return true
             default:
                 return false
             }
@@ -203,43 +189,19 @@ private extension DatadogProfiler {
     func handle(context: DatadogContext) {
         telemetryController.register(context: context)
         currentServerTimeOffset = context.serverTimeOffset
-
-        if role == .coordinator {
-            dd_profiler_set_server_time_offset_ns(context.serverTimeOffset.dd.toInt64Nanoseconds)
-        }
+        dd_profiler_set_server_time_offset_ns(context.serverTimeOffset.dd.toInt64Nanoseconds)
 
         queue.async { [weak self] in
             guard let self else {
                 return
             }
 
-            // Consent belongs to each SDK instance, so observers must update their state as well.
             let wasTrackingConsentAllowed = isTrackingConsentAllowed
             isTrackingConsentAllowed = context.trackingConsent != .notGranted
             if !isTrackingConsentAllowed {
-                // Every role drops its RUM correlation data so it cannot migrate into a profile after consent is granted.
                 cleanUpState(preservingOngoingOperations: false)
-                // Only the coordinator owns the shared native profiler and is responsible for stopping and discarding it.
-                if role == .coordinator {
-                    updateProfilerState(canProfile: false)
-                    discardCurrentProfile()
-                    profilerCoordinator.cleanUp(profiler: self, synchronizedWith: queue)
-                } else {
-                    updateProfilingContext(
-                        status: .stopped(reason: .manual),
-                        quotaReason: quotaChecker.isRejectedByQuota ? quotaChecker.quotaResult?.reason : nil
-                    )
-                }
-                return
-            }
-
-            guard role == .coordinator else {
-                if !wasTrackingConsentAllowed {
-                    updateProfilingContext(
-                        status: quotaChecker.isRejectedByQuota ? .stopped(reason: .manual) : .current,
-                        quotaReason: quotaChecker.isRejectedByQuota ? quotaChecker.quotaResult?.reason : nil
-                    )
-                }
+                updateProfilerState(canProfile: false)
+                discardCurrentProfile()
                 return
             }
 
@@ -263,7 +225,7 @@ private extension DatadogProfiler {
                     // The profiler was running optimistically while waiting for the RUM
                     // sampling decision. If that decision samples out continuous profiling,
                     // stop the optimistic profiler unless app-launch profiling still needs
-                    // the shared native profiler to harvest TTID.
+                    // the native profiler to harvest TTID.
                     isContinuousProfilingGraceAvailable = false
                     let canProfile = shouldKeepProfilerRunning()
                     if canProfile || !shouldWaitForAppLaunchVital {
@@ -313,9 +275,7 @@ private extension DatadogProfiler {
                 currentRUMVitals[message.operation.key] = message.operation
             } else if message.operation.stepType == .start {
                 currentRUMVitals[message.operation.key] = message.operation
-                if role == .coordinator {
-                    updateProfilerState(canProfile: shouldKeepProfilerRunning())
-                }
+                updateProfilerState(canProfile: shouldKeepProfilerRunning())
             } else if message.operation.stepType == .end {
                 if var startVital = currentRUMVitals[message.operation.key] {
                     // Add duration to vital to help Profiling backend label correctly the samples of this vital
@@ -323,8 +283,7 @@ private extension DatadogProfiler {
                     startVital.duration = duration.dd.toInt64Nanoseconds
                     currentRUMVitals[message.operation.key] = startVital
 
-                    if role == .coordinator,
-                       currentRUMVitals.hasCompletedAllOperations(),
+                    if currentRUMVitals.hasCompletedAllOperations(),
                        isCustomProfiling,
                        hasReceivedAppLaunchVital || !shouldWaitForAppLaunchVital {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
@@ -361,7 +320,7 @@ private extension DatadogProfiler {
         updateProfilerState(canProfile: shouldKeepProfilerRunning(), shouldSendProfile: true)
     }
 
-    /// Updates the shared native profiler lifecycle.
+    /// Updates the native profiler lifecycle.
     /// `canProfile` must already account for tracking consent, quota, and runtime conditions.
     func updateProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
         if !canProfile {
@@ -410,7 +369,6 @@ private extension DatadogProfiler {
         guard let profile = dd_profiler_flush_and_get_profile() else {
             telemetryController.sendNoProfile(for: operation)
             cleanUpState()
-            profilerCoordinator.cleanUp(profiler: self, synchronizedWith: queue)
             return
         }
 
@@ -426,13 +384,6 @@ private extension DatadogProfiler {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
         }
 
-        if operation == .continuousProfiling {
-            // Share the coordinator-owned pprof so observers can attach their local
-            // RUM events, including TTID, without triggering a separate profile flush.
-            profilerCoordinator.notify(profile: profile, operation: .continuousProfiling, from: self, synchronizedWith: queue)
-        } else if operation == .customProfiling {
-            profilerCoordinator.notify(profile: profile, operation: .appLaunch, from: self, synchronizedWith: queue)
-        }
         cleanUpState()
         dd_pprof_destroy(profile)
     }
@@ -459,11 +410,7 @@ private extension DatadogProfiler {
 
 private extension DatadogProfiler {
     func handleAppLaunch(message: TTIDMessage) {
-        guard (role == .coordinator
-               || isAppLaunchProfilingEnabled
-               || profilingSamplerProvider.isContinuousProfilingConfigured)
-                && hasReceivedAppLaunchVital == false
-        else {
+        guard hasReceivedAppLaunchVital == false else {
             return
         }
         hasReceivedAppLaunchVital = true
@@ -476,29 +423,21 @@ private extension DatadogProfiler {
             attributes = message.attributes
             currentRUMVitals[message.ttid.key] = message.ttid
             currentServerTimeOffset = message.ttid.serverTimeOffset
-
-            if role == .coordinator {
-                dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
-            }
+            dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
             guard !quotaChecker.isRejectedByQuota else {
                 cleanUpState(preservingOngoingOperations: false)
                 telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
-
-                if role == .coordinator {
-                    stopTimer()
-                    dd_profiler_stop()
-                    discardCurrentProfile()
-                    profilerCoordinator.cleanUp(profiler: self, synchronizedWith: queue)
-                    updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
-                }
+                stopTimer()
+                dd_profiler_stop()
+                discardCurrentProfile()
+                updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
                 return
             }
 
-            switch role {
-            case .coordinator where shouldHarvestAppLaunchProfile:
+            if shouldHarvestAppLaunchProfile {
                 stopAndWriteAppLaunchProfile()
-            case .coordinator:
+            } else {
                 if shouldKeepProfilerRunning() {
                     updateProfilerState(canProfile: true)
                 } else if currentRUMVitals.hasCompletedAllOperations(), isCustomProfiling {
@@ -506,10 +445,6 @@ private extension DatadogProfiler {
                     let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                     fireTimer(after: fireInterval)
                 }
-            case .observer:
-                // Keep TTID as local correlation data. The coordinator owns profile
-                // boundaries and will share the current pprof when it flushes.
-                break
             }
         }
     }
@@ -522,32 +457,13 @@ private extension DatadogProfiler {
         guard let profile = dd_profiler_flush_and_get_profile() else {
             telemetryController.sendNoProfile(for: .appLaunch)
             cleanUpState()
-            profilerCoordinator.cleanUp(profiler: self, synchronizedWith: queue)
             return
         }
 
-        let shouldDelayObserverWrites = profilerCoordinator.canNotifyAppLaunchProfile(from: self)
         if isAppLaunchProfilingEnabled {
             writeAppLaunchProfile(profile)
         }
         cleanUpState()
-
-        // The app-launch native profile is already harvested at coordinator TTID. This
-        // delay only lets registered observers enqueue and process their own TTID correlation.
-        if shouldDelayObserverWrites {
-            queue.asyncAfter(deadline: .now() + Constants.appLaunchObserverTimeout) { [weak self] in
-                guard let self else {
-                    dd_pprof_destroy(profile)
-                    return
-                }
-
-                profilerCoordinator.notify(profile: profile, operation: .appLaunch, from: self, synchronizedWith: queue)
-                dd_pprof_destroy(profile)
-            }
-            return
-        }
-
-        profilerCoordinator.notify(profile: profile, operation: .appLaunch, from: self, synchronizedWith: queue)
         dd_pprof_destroy(profile)
     }
 
@@ -569,76 +485,6 @@ private extension DatadogProfiler {
     }
 }
 
-// MARK: - Observer Profiler
-
-extension DatadogProfiler {
-    func write(
-        observedProfile profile: OpaquePointer,
-        as operation: ProfilingOperation,
-        synchronizedWith coordinatorQueue: DispatchQueue
-    ) {
-        syncOnQueue(from: coordinatorQueue) {
-            write(observedProfile: profile, as: operation)
-        }
-    }
-
-    func write(observedProfile: OpaquePointer, as profileOperation: ProfilingOperation) {
-        guard role == .observer else {
-            return
-        }
-
-        var operation = profileOperation
-        let canWriteProfile: Bool
-        switch profileOperation {
-        case .continuousProfiling:
-            if hasEventsOfInterest && profilingSamplerProvider.continuousProfilingSampled == true {
-                canWriteProfile = true
-            } else {
-                operation = .appLaunch
-                canWriteProfile = hasReceivedAppLaunchVital && isAppLaunchProfilingEnabled && currentRUMVitals.isEmpty == false
-            }
-        case .appLaunch:
-            canWriteProfile = hasReceivedAppLaunchVital && isAppLaunchProfilingEnabled && currentRUMVitals.isEmpty == false
-        default:
-            canWriteProfile = false
-        }
-
-        guard canWriteProfile, !quotaChecker.isRejectedByQuota else {
-            cleanUpState(preservingOngoingOperations: false)
-            return
-        }
-
-        defer {
-            cleanUpState()
-        }
-
-        write(
-            profile: observedProfile,
-            operation: operation,
-            rumVitals: Array(currentRUMVitals.values),
-            hangs: hangs,
-            longTasks: longTasks
-        )
-    }
-
-    var canObserveAppLaunchProfile: Bool {
-        role == .observer
-            && isAppLaunchProfilingEnabled
-            && isTrackingConsentAllowed
-            && !quotaChecker.isRejectedByQuota
-    }
-
-    var hasEventsOfInterest: Bool {
-        currentRUMVitals.isEmpty == false || hangs.isEmpty == false || longTasks.isEmpty == false
-    }
-
-    func cleanUpObservedState(synchronizedWith coordinatorQueue: DispatchQueue) {
-        syncOnQueue(from: coordinatorQueue) {
-            cleanUpState(preservingOngoingOperations: false)
-        }
-    }
-}
-
 // MARK: - Quota
 
 private extension DatadogProfiler {
@@ -653,29 +499,16 @@ private extension DatadogProfiler {
                 // continuous, custom and app-launch profiles in that session.
                 cleanUpState(preservingOngoingOperations: false)
                 isStoppedByQuota = true
-                if role == .coordinator {
-                    updateProfilerState(canProfile: shouldKeepProfilerRunning())
-                    discardCurrentProfile()
-                    profilerCoordinator.cleanUp(profiler: self, synchronizedWith: queue)
-                } else {
-                    // The shared native profiler may keep running for another core,
-                    // but profiling is stopped for this core by its quota decision.
-                    updateProfilingContext(status: .stopped(reason: .manual), quotaReason: quotaResult?.reason)
-                }
+                updateProfilerState(canProfile: shouldKeepProfilerRunning())
+                discardCurrentProfile()
             } else if isStoppedByQuota {
                 // A new session clears the previous quota result before the next check completes.
                 isStoppedByQuota = false
-                if role == .coordinator {
-                    // Restart immediately when profiling is otherwise allowed, matching quota fail-open.
-                    let canProfile = shouldKeepProfilerRunning()
-                    updateProfilerState(canProfile: canProfile)
-                    if canProfile && timer == nil {
-                        startTimer()
-                    }
-                } else {
-                    updateProfilingContext(
-                        status: isTrackingConsentAllowed ? .current : .stopped(reason: .manual)
-                    )
+                // Restart immediately when profiling is otherwise allowed, matching quota fail-open.
+                let canProfile = shouldKeepProfilerRunning()
+                updateProfilerState(canProfile: canProfile)
+                if canProfile && timer == nil {
+                    startTimer()
                 }
             }
         }
@@ -701,7 +534,7 @@ private extension DatadogProfiler {
             && !quotaChecker.isRejectedByQuota
     }
 
-    /// Evaluates every condition required to keep or restart the shared native profiler.
+    /// Evaluates every condition required to keep or restart the native profiler.
     func shouldKeepProfilerRunning() -> Bool {
         guard isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
             return false
@@ -722,9 +555,9 @@ private extension DatadogProfiler {
     }
 
     var shouldWaitForAppLaunchVital: Bool {
-        // If continuous profiling samples out before TTID, keep the shared native profiler
-        // briefly so the active profiler can harvest the launch profile.
-        hasAppLaunchProfileWriter
+        // If continuous profiling samples out before TTID, keep the native profiler
+        // briefly so it can harvest the launch profile.
+        isAppLaunchProfilingEnabled
             && hasReceivedAppLaunchVital == false
             && dateProvider.now.timeIntervalSince(profileStartDate) < Constants.cutOffTime
     }
@@ -747,8 +580,7 @@ private extension DatadogProfiler {
     var shouldHarvestAppLaunchProfileOnTTID: Bool {
         // TTID may still be attached to continuous/custom profiles when standalone
         // app-launch upload is disabled; this gate only decides standalone launch harvesting.
-        guard role == .coordinator
-                && hasAppLaunchProfileWriter
+        guard isAppLaunchProfilingEnabled
                 && hasReceivedAppLaunchVital
                 && !quotaChecker.isRejectedByQuota else {
             return false
@@ -761,22 +593,6 @@ private extension DatadogProfiler {
 
         return currentRUMVitals.hasCompletedOperations() == false
             && canExtendCustomProfiling() == false
-    }
-
-    var hasAppLaunchProfileWriter: Bool {
-        // The coordinator owns the native profiler, so it can harvest the shared
-        // app-launch profile for app-launch-enabled observers even when its own
-        // standalone app-launch upload is disabled.
-        isAppLaunchProfilingEnabled
-            || profilerCoordinator.canNotifyAppLaunchProfile(from: self)
-    }
-
-    func syncOnQueue(from coordinatorQueue: DispatchQueue, _ block: () -> Void) {
-        if queue === coordinatorQueue {
-            block()
-        } else {
-            queue.sync(execute: block)
-        }
     }
 }
 

@@ -56,7 +56,6 @@
 		114CA15C2D75D6AB00262287 /* DisplayLinkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */; };
 		114FFDE92E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114FFDE72E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift */; };
 		11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */; };
-		3BD70A8EAB4AAD03E603644D /* ProfilerCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A36630669AE510B775E0B2AB /* ProfilerCoordinatorTests.swift */; };
 		115792E32F4504E900AEE829 /* binary_image_resolver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 115792E12F4504E900AEE829 /* binary_image_resolver.cpp */; };
 		115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 115792E42F4504F700AEE829 /* binary_image_resolver.h */; };
 		115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */; };
@@ -196,7 +195,6 @@
 		1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848592F6C50EC008D2919 /* ProfilingHandler.swift */; };
 		118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188485E2F6C5122008D2919 /* ProfilingOperation.swift */; };
 		1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* DatadogProfiler.swift */; };
-		D50324B83EAA6E8B98DF2920 /* ProfilerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04217C1A3DA5AADBCA124D4B /* ProfilerCoordinator.swift */; };
 		1188486F2F717EEF008D2919 /* ProfilingConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486D2F717EE5008D2919 /* ProfilingConditions.swift */; };
 		118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */; };
 		118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118ACA3A2EEED247004E7F20 /* AppLaunchMetricController.swift */; };
@@ -1927,7 +1925,6 @@
 		114CA15B2D75D6A700262287 /* DisplayLinkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLinkerTests.swift; sourceTree = "<group>"; };
 		114FFDE72E0031BA00330C91 /* SwiftUIRUMViewsPredicate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwiftUIRUMViewsPredicate+objc.swift"; sourceTree = "<group>"; };
 		11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerTests.swift; sourceTree = "<group>"; };
-		A36630669AE510B775E0B2AB /* ProfilerCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerCoordinatorTests.swift; sourceTree = "<group>"; };
 		115792E12F4504E900AEE829 /* binary_image_resolver.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = binary_image_resolver.cpp; sourceTree = "<group>"; };
 		115792E42F4504F700AEE829 /* binary_image_resolver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = binary_image_resolver.h; sourceTree = "<group>"; };
 		115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageResolverTests.swift; sourceTree = "<group>"; };
@@ -2031,7 +2028,6 @@
 		118848592F6C50EC008D2919 /* ProfilingHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingHandler.swift; sourceTree = "<group>"; };
 		1188485E2F6C5122008D2919 /* ProfilingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingOperation.swift; sourceTree = "<group>"; };
 		1188486A2F717DD8008D2919 /* DatadogProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfiler.swift; sourceTree = "<group>"; };
-		04217C1A3DA5AADBCA124D4B /* ProfilerCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilerCoordinator.swift; sourceTree = "<group>"; };
 		1188486D2F717EE5008D2919 /* ProfilingConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingConditions.swift; sourceTree = "<group>"; };
 		118AAE052EBBB74D0018E745 /* dd_profiler_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dd_profiler_testing.h; sourceTree = "<group>"; };
 		118ACA392EEED247004E7F20 /* AppLaunchMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLaunchMetric.swift; sourceTree = "<group>"; };
@@ -6923,7 +6919,6 @@
 			isa = PBXGroup;
 			children = (
 				1188486A2F717DD8008D2919 /* DatadogProfiler.swift */,
-				04217C1A3DA5AADBCA124D4B /* ProfilerCoordinator.swift */,
 				D233E7C22E4625D400E7CFDE /* ProfileEvent.swift */,
 				D233E7CA2E46264500E7CFDE /* ProfilerFeature.swift */,
 				D233E7C12E4625D400E7CFDE /* Profiling.swift */,
@@ -6948,7 +6943,6 @@
 				115792EB2F4608A200AEE829 /* BinaryImageResolverTests.swift */,
 				D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */,
 				11522CC62F8B90E000752E87 /* DatadogProfilerTests.swift */,
-				A36630669AE510B775E0B2AB /* ProfilerCoordinatorTests.swift */,
 				D2D0E2012E3CEF1200BA4113 /* DDProfilerCAPITests.swift */,
 				1166C5942F748138008E34BC /* DDProfilerTests.swift */,
 				D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */,
@@ -8903,7 +8897,6 @@
 				D233E7EF2E4B588000E7CFDE /* profile_pprof_packer.cpp in Sources */,
 				118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */,
 				1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */,
-				D50324B83EAA6E8B98DF2920 /* ProfilerCoordinator.swift in Sources */,
 				1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */,
 				D233E7F02E4B588000E7CFDE /* profile.cpp in Sources */,
 				D233E7F12E4B588000E7CFDE /* protobuf-c.c in Sources */,
@@ -9480,7 +9473,6 @@
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */,
-				3BD70A8EAB4AAD03E603644D /* ProfilerCoordinatorTests.swift in Sources */,
 				118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,

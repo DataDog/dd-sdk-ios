@@ -45,7 +45,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaChecker(),
-        profilerCoordinator: ProfilerCoordinating = ProfilerCoordinator.shared,
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
@@ -64,7 +63,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
-            profilerCoordinator: profilerCoordinator,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration,
             isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
@@ -81,13 +79,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
     }
 
     private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate
-
-        // Profiling uses the most restrictive app-launch sample rate already persisted
-        // by an active profiler configuration.
-        if previousSampleRate == nil || previousSampleRate ?? .maxSampleRate > sampleRate {
-            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-        }
+        userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
     }
 
     private static func setCPUTimeSamplesEnabled(_ enabled: Bool, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
