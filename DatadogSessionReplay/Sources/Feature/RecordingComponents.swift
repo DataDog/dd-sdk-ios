@@ -11,6 +11,7 @@ import DatadogInternal
 internal struct RecordingComponents {
     let recordingCoordinator: any RecordingController
     let messageReceiver: any FeatureMessageReceiver
+    let contextReceiver: RUMContextReceiver
 
     init(
         core: DatadogCoreProtocol,
@@ -28,10 +29,12 @@ internal struct RecordingComponents {
 
     private init(
         recordingCoordinator: any RecordingController,
-        messageReceiver: any FeatureMessageReceiver
+        messageReceiver: any FeatureMessageReceiver,
+        contextReceiver: RUMContextReceiver
     ) {
         self.recordingCoordinator = recordingCoordinator
         self.messageReceiver = messageReceiver
+        self.contextReceiver = contextReceiver
     }
 
     private static func viewTreeRecordingComponents(
@@ -88,7 +91,8 @@ internal struct RecordingComponents {
 
         return .init(
             recordingCoordinator: recordingCoordinator,
-            messageReceiver: contextReceiver
+            messageReceiver: NOPFeatureMessageReceiver(),
+            contextReceiver: contextReceiver
         )
     }
 
@@ -152,7 +156,8 @@ internal struct RecordingComponents {
 
         return .init(
             recordingCoordinator: recordingCoordinator,
-            messageReceiver: recordingCoordinator
+            messageReceiver: recordingCoordinator,
+            contextReceiver: RUMContextReceiver()
         )
     }
 }
