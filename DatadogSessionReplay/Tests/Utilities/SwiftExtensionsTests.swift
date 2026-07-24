@@ -9,6 +9,39 @@ import XCTest
 @testable import DatadogSessionReplay
 
 class FixedWidthIntegerTests: XCTestCase {
+    func testWhenConvertingZeroDimension_itReturnsZero() {
+        // Given
+        let dimension = CGFloat.zero
+
+        // When
+        let convertedDimension = Int64.ddWithNoOverflow(dimension: dimension)
+
+        // Then
+        XCTAssertEqual(convertedDimension, 0)
+    }
+
+    func testWhenConvertingSubpointDimension_itReturnsOne() {
+        // Given
+        let dimension = CGFloat(1) / 3
+
+        // When
+        let convertedDimension = Int64.ddWithNoOverflow(dimension: dimension)
+
+        // Then
+        XCTAssertEqual(convertedDimension, 1)
+    }
+
+    func testWhenConvertingRegularDimension_itUsesStandardRounding() {
+        // Given
+        let dimensions = [CGFloat(10.4), CGFloat(10.6)]
+
+        // When
+        let convertedDimensions = dimensions.map(Int64.ddWithNoOverflow(dimension:))
+
+        // Then
+        XCTAssertEqual(convertedDimensions, [10, 11])
+    }
+
     func testWhenConvertingWithNoOverflow_itPreservesTheValue() {
         // Given
         let floatingValue = CGFloat(Int.mockRandom(min: .min, max: .max))

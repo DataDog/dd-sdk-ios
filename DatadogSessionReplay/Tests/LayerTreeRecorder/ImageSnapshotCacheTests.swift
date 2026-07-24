@@ -21,7 +21,8 @@ struct ImageSnapshotCacheTests {
         let snapshotData = ContentSnapshotData.mockAny(
             snapshot: snapshot,
             localRect: CGRect(x: 1, y: 2, width: 3, height: 4),
-            bounds: CGRect(x: 5, y: 6, width: 7, height: 8)
+            bounds: CGRect(x: 5, y: 6, width: 7, height: 8),
+            renderBounds: CGRect(x: 2, y: 3, width: 5, height: 6)
         )
 
         // When
@@ -31,6 +32,7 @@ struct ImageSnapshotCacheTests {
         // Then
         #expect(cachedSnapshotData.snapshot === snapshot)
         #expect(cachedSnapshotData.localRect == snapshotData.localRect)
+        #expect(cachedSnapshotData.renderBounds == snapshotData.renderBounds)
         #expect(cachedSnapshotData.bounds == snapshotData.bounds)
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }

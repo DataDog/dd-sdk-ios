@@ -2151,11 +2151,150 @@ public struct SRShapeBorder: Codable, Hashable {
     }
 }
 
+/// The background gradient for this wireframe.
+@_spi(Internal)
+public enum SRShapeGradient: Codable, Hashable {
+    case linear(value: SRShapeLinearGradient)
+
+    private enum DiscriminatorCodingKeys: String, CodingKey {
+        case discriminator = "type"
+    }
+
+    // MARK: - Codable
+
+    public func encode(to encoder: Encoder) throws {
+        // Encode only the associated value, without encoding enum case
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case .linear(let value):
+            try container.encode(value)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode enum case from discriminator
+        let container = try decoder.singleValueContainer()
+        let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
+
+        switch try discriminatorContainer.decode(String.self, forKey: .discriminator) {
+        case "linear":
+            self = .linear(value: try container.decode(SRShapeLinearGradient.self))
+            return
+        default:
+            let error = DecodingError.Context(
+                codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                debugDescription: """
+                Failed to decode `SRShapeGradient`.
+                Discriminator `type` did not match any known case.
+                """
+            )
+            throw DecodingError.dataCorrupted(error)
+        }
+    }
+}
+
+@_spi(Internal)
+public struct SRShapeGradientPoint: Codable, Hashable {
+    /// Horizontal position, where 0 is the left edge and 1 is the right edge.
+    public let x: Double
+
+    /// Vertical position, where 0 is the top edge and 1 is the bottom edge.
+    public let y: Double
+
+    public enum CodingKeys: String, CodingKey {
+        case x = "x"
+        case y = "y"
+    }
+
+    ///
+    /// - Parameters:
+    ///   - x: Horizontal position, where 0 is the left edge and 1 is the right edge.
+    ///   - y: Vertical position, where 0 is the top edge and 1 is the bottom edge.
+    public init(
+        x: Double,
+        y: Double
+    ) {
+        self.x = x
+        self.y = y
+    }
+}
+
+/// A color and its relative position in a shape gradient.
+@_spi(Internal)
+public struct SRShapeGradientStop: Codable, Hashable {
+    /// The stop color as a hexadecimal string in #RRGGBB or #RRGGBBAA format.
+    public let color: String
+
+    /// Relative stop position between 0 and 1. Stops must be ordered by non-decreasing position.
+    public let position: Double
+
+    public enum CodingKeys: String, CodingKey {
+        case color = "color"
+        case position = "position"
+    }
+
+    /// A color and its relative position in a shape gradient.
+    ///
+    /// - Parameters:
+    ///   - color: The stop color as a hexadecimal string in #RRGGBB or #RRGGBBAA format.
+    ///   - position: Relative stop position between 0 and 1. Stops must be ordered by non-decreasing position.
+    public init(
+        color: String,
+        position: Double
+    ) {
+        self.color = color
+        self.position = position
+    }
+}
+
+/// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
+@_spi(Internal)
+public struct SRShapeLinearGradient: Codable, Hashable {
+    /// The point where position 1 of the gradient is placed.
+    public let endPoint: SRShapeGradientPoint
+
+    /// The point where position 0 of the gradient is placed.
+    public let startPoint: SRShapeGradientPoint
+
+    /// Ordered gradient color stops. Positions must be non-decreasing.
+    public let stops: [SRShapeGradientStop]
+
+    /// The type of the gradient.
+    public let type: String = "linear"
+
+    public enum CodingKeys: String, CodingKey {
+        case endPoint = "endPoint"
+        case startPoint = "startPoint"
+        case stops = "stops"
+        case type = "type"
+    }
+
+    /// A linear background gradient for a shape wireframe. Colors before the first stop and after the last stop are clamped to the nearest stop color.
+    ///
+    /// - Parameters:
+    ///   - endPoint: The point where position 1 of the gradient is placed.
+    ///   - startPoint: The point where position 0 of the gradient is placed.
+    ///   - stops: Ordered gradient color stops. Positions must be non-decreasing.
+    public init(
+        endPoint: SRShapeGradientPoint,
+        startPoint: SRShapeGradientPoint,
+        stops: [SRShapeGradientStop]
+    ) {
+        self.endPoint = endPoint
+        self.startPoint = startPoint
+        self.stops = stops
+    }
+}
+
 /// The style of this wireframe.
 @_spi(Internal)
 public struct SRShapeStyle: Codable, Hashable {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
     public let backgroundColor: String?
+
+    /// The background gradient for this wireframe.
+    public let backgroundGradient: SRShapeGradient?
 
     /// The corner(border) radius of this wireframe in pixels. The default value is 0.
     public let cornerRadius: Double?
@@ -2165,6 +2304,7 @@ public struct SRShapeStyle: Codable, Hashable {
 
     public enum CodingKeys: String, CodingKey {
         case backgroundColor = "backgroundColor"
+        case backgroundGradient = "backgroundGradient"
         case cornerRadius = "cornerRadius"
         case opacity = "opacity"
     }
@@ -2173,14 +2313,17 @@ public struct SRShapeStyle: Codable, Hashable {
     ///
     /// - Parameters:
     ///   - backgroundColor: The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
+    ///   - backgroundGradient: The background gradient for this wireframe.
     ///   - cornerRadius: The corner(border) radius of this wireframe in pixels. The default value is 0.
     ///   - opacity: The opacity of this wireframe. Takes values from 0 to 1, default value is 1.
     public init(
         backgroundColor: String? = nil,
+        backgroundGradient: SRShapeGradient? = nil,
         cornerRadius: Double? = nil,
         opacity: Double? = nil
     ) {
         self.backgroundColor = backgroundColor
+        self.backgroundGradient = backgroundGradient
         self.cornerRadius = cornerRadius
         self.opacity = opacity
     }
@@ -2811,4 +2954,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/740734dfd21f4d83fb2dacbc1cde09a16f326175
+// Generated from https://github.com/DataDog/rum-events-format/tree/4ed60cbe47c30afcef051481a035adf88161d4b7

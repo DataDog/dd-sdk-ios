@@ -61,15 +61,29 @@ internal final class WireframeView: UIView {
 @available(iOS 13.0, *)
 @MainActor
 private final class ShapeWireframeView: UIView {
+    private var backgroundGradientLayer: CAGradientLayer?
+
     init(_ wireframe: SRShapeWireframe, frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .clear
         applyWireframeShapeStyle(wireframe.shapeStyle, border: wireframe.border)
+
+        if let backgroundGradient = wireframe.shapeStyle?.backgroundGradient {
+            let gradientLayer = CAGradientLayer(backgroundGradient)
+            gradientLayer.frame = bounds
+            layer.insertSublayer(gradientLayer, at: 0)
+            backgroundGradientLayer = gradientLayer
+        }
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        backgroundGradientLayer?.frame = bounds
     }
 }
 
@@ -323,6 +337,27 @@ private extension NSLineBreakMode {
             self = .byTruncatingMiddle
         case nil:
             self = .byWordWrapping
+        }
+    }
+}
+
+private extension CAGradientLayer {
+    convenience init(_ gradient: SRShapeGradient) {
+        self.init()
+
+        switch gradient {
+        case .linear(let gradient):
+            type = .axial
+            colors = gradient.stops.map { UIColor(hexString: $0.color).cgColor }
+            locations = gradient.stops.map { NSNumber(value: $0.position) }
+            startPoint = CGPoint(
+                x: CGFloat(gradient.startPoint.x),
+                y: CGFloat(gradient.startPoint.y)
+            )
+            endPoint = CGPoint(
+                x: CGFloat(gradient.endPoint.x),
+                y: CGFloat(gradient.endPoint.y)
+            )
         }
     }
 }

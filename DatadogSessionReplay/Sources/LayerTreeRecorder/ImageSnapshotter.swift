@@ -161,7 +161,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                     image: try renderImage(
                         for: resolvedRequest.layer,
                         in: resolvedRequest.localRect,
-                        opaque: request.isOpaque
+                        opaque: request.isOpaque && resolvedRequest.renderBounds.equalTo(request.bounds)
                     ),
                     frame: resolvedRequest.frame,
                     layerClass: request.layerClass,
@@ -176,6 +176,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 .init(
                     snapshot: snapshot,
                     localRect: resolvedRequest.localRect,
+                    renderBounds: resolvedRequest.renderBounds,
                     bounds: request.bounds,
                     dependencies: request.dependencies
                 ),

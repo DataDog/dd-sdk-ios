@@ -52,6 +52,9 @@ internal struct ContentSnapshotData: Sendable {
     /// The rendered rect in the source layer coordinate space.
     let localRect: CGRect
 
+    /// The full rect selected for rendering in the source layer coordinate space.
+    let renderBounds: CGRect
+
     /// The source layer bounds captured when the image was rendered.
     let bounds: CGRect
 

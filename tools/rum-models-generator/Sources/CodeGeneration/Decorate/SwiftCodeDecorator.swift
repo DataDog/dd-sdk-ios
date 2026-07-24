@@ -202,20 +202,44 @@ open class SwiftCodeDecorator: CodeDecorator {
             throw Exception.illegal("Type \(type) cannot be shared.")
         }
 
-        if let existing = sharedRootTypes.first(where: { $0.typeName == name }) {
+        if let index = sharedRootTypes.firstIndex(where: { $0.typeName == name }) {
+            let existing = sharedRootTypes[index]
+            let existingWithoutComment = removingDeclarationComment(from: existing)
+            let typeWithoutComment = removingDeclarationComment(from: type)
+
             // If a type with given name is already declared as shared, its definition must be
-            // equal to `type`, otherwise sharing is not possible.
-            guard existing == type else {
+            // equal to `type`, except for contextual comments from each use site.
+            guard existingWithoutComment == typeWithoutComment else {
                 throw Exception.inconsistency(
                     """
                     \(type) and \(existing) cannot be printed as a shared root type because their definitions are different.
                     """
                 )
             }
+
+            if existing != type {
+                sharedRootTypes[index] = existingWithoutComment
+            }
         } else {
             sharedRootTypes.append(type)
         }
 
         return SwiftTypeReference(referencedTypeName: name)
+    }
+
+    private func removingDeclarationComment(from type: SwiftType) -> SwiftType {
+        switch type {
+        case var `struct` as SwiftStruct:
+            `struct`.comment = nil
+            return `struct`
+        case var `enum` as SwiftEnum:
+            `enum`.comment = nil
+            return `enum`
+        case var associatedTypeEnum as SwiftAssociatedTypeEnum:
+            associatedTypeEnum.comment = nil
+            return associatedTypeEnum
+        default:
+            return type
+        }
     }
 }

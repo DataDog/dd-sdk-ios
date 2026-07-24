@@ -40,9 +40,16 @@ extension ContentSnapshotData {
         snapshot: ContentSnapshot = .mockAny(),
         localRect: CGRect = .zero,
         bounds: CGRect = .zero,
+        renderBounds: CGRect? = nil,
         dependencies: [CALayerReference] = []
     ) -> ContentSnapshotData {
-        ContentSnapshotData(snapshot: snapshot, localRect: localRect, bounds: bounds, dependencies: dependencies)
+        ContentSnapshotData(
+            snapshot: snapshot,
+            localRect: localRect,
+            renderBounds: renderBounds ?? bounds,
+            bounds: bounds,
+            dependencies: dependencies
+        )
     }
 }
 
