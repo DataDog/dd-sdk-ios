@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
+
 # 3.14.0 / 15-07-2026
 
 - [FEATURE] Add Continuous Profiling with RUM correlation for app hangs, long tasks, operations, and app start vitals (TTID/TTFD). See [#3051][]
@@ -1197,6 +1199,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
+[#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
