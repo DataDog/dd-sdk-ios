@@ -78,7 +78,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
         cache.updateFrameNumber(for: requests)
 
-        guard let rootLayer = root.layer.resolve(), !requests.isEmpty else {
+        guard !requests.isEmpty else {
             return .init()
         }
 
@@ -104,7 +104,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
             switch request {
             case .content(let request):
-                contentSnapshots[request.replayID] = takeContentSnapshot(for: request, rootLayer: rootLayer)
+                contentSnapshots[request.replayID] = takeContentSnapshot(for: request)
             case .mask(let request):
                 maskSnapshots[request.replayID] = takeMaskSnapshot(for: request)
             }
@@ -138,18 +138,15 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         return .init(contentSnapshots: contentSnapshots, maskSnapshots: maskSnapshots)
     }
 
-    private func takeContentSnapshot(
-        for request: ContentSnapshotRequest,
-        rootLayer: CALayer
-    ) -> ContentSnapshotResult {
+    private func takeContentSnapshot(for request: ContentSnapshotRequest) -> ContentSnapshotResult {
         do {
-            let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+            let resolvedRequest = try request.resolved()
             let snapshot: ContentSnapshot
 
             if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
                 snapshot = ContentSnapshot(
                     image: cachedSnapshot.image,
-                    frame: resolvedRequest.frame,
+                    frame: resolvedRequest.geometry.frame,
                     layerClass: request.layerClass,
                     delegateClass: request.delegateClass,
                     hasLayerSemantics: request.hasLayerSemantics,
@@ -160,10 +157,10 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 snapshot = ContentSnapshot(
                     image: try renderImage(
                         for: resolvedRequest.layer,
-                        in: resolvedRequest.localRect,
-                        opaque: request.isOpaque && resolvedRequest.renderBounds.equalTo(request.bounds)
+                        in: resolvedRequest.geometry.localRect,
+                        opaque: request.isOpaque && resolvedRequest.geometry.renderBounds.equalTo(request.bounds)
                     ),
-                    frame: resolvedRequest.frame,
+                    frame: resolvedRequest.geometry.frame,
                     layerClass: request.layerClass,
                     delegateClass: request.delegateClass,
                     hasLayerSemantics: request.hasLayerSemantics,
@@ -175,8 +172,8 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             cache.setContentSnapshotData(
                 .init(
                     snapshot: snapshot,
-                    localRect: resolvedRequest.localRect,
-                    renderBounds: resolvedRequest.renderBounds,
+                    localRect: resolvedRequest.geometry.localRect,
+                    renderBounds: resolvedRequest.geometry.renderBounds,
                     bounds: request.bounds,
                     dependencies: request.dependencies
                 ),

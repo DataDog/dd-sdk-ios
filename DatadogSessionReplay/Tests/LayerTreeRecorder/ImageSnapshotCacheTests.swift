@@ -202,8 +202,11 @@ struct ImageSnapshotCacheTests {
                 delegateClass: nil,
                 hasLayerSemantics: true,
                 bounds: layer.bounds,
-                absoluteFrame: layer.frame,
-                visibleFrame: layer.frame,
+                geometry: .init(
+                    renderBounds: layer.bounds,
+                    localRect: layer.bounds,
+                    frame: layer.frame
+                ),
                 isOpaque: layer.isOpaque,
                 hasContents: false,
                 dependencies: [],

@@ -107,8 +107,18 @@ struct CALayerSnapshotPortalTests {
 
         let resolvedSource = try #require(resolvedPortal.sublayers.first)
         #expect(resolvedSource.absoluteFrame == portal.absoluteFrame)
+        #expect(resolvedSource.contentGeometry.renderBounds == source.bounds)
+        #expect(resolvedSource.contentGeometry.localRect == source.bounds)
+        #expect(resolvedSource.contentGeometry.frame == portal.absoluteFrame)
         #expect(resolvedSource.opacity == 1)
-        #expect(resolvedSource.sublayers.first?.absoluteFrame == CGRect(x: 202, y: 304, width: 20, height: 10))
+        let resolvedContent = try #require(resolvedSource.sublayers.first)
+        #expect(resolvedContent.absoluteFrame == CGRect(x: 202, y: 304, width: 20, height: 10))
+        #expect(resolvedContent.contentGeometry.renderBounds == sourceContent.bounds)
+        #expect(resolvedContent.contentGeometry.localRect == sourceContent.bounds)
+        #expect(
+            resolvedContent.contentGeometry.frame
+                == CGRect(x: 202, y: 304, width: 20, height: 10)
+        )
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

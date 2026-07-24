@@ -40,6 +40,9 @@ internal struct CALayerSnapshot: Sendable {
     /// The layer's frame in the root layer coordinate space.
     var absoluteFrame: CGRect
 
+    /// Geometry used to render the layer content into an image.
+    var contentGeometry: ContentGeometry
+
     var sublayers: [CALayerSnapshot]
     /// Live descendant layers omitted from `sublayers` but captured when this layer is rendered as an image.
     let dependencies: [CALayerReference]
@@ -70,6 +73,22 @@ internal struct CALayerSnapshot: Sendable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
+    /// Geometry captured for rendering the layer content.
+    struct ContentGeometry: Sendable {
+        /// The complete area that can contribute pixels, in the source layer coordinate space.
+        let renderBounds: CGRect
+
+        /// The portion of `renderBounds` captured in the bitmap.
+        let localRect: CGRect
+
+        /// The bitmap frame in the root layer coordinate space.
+        var frame: CGRect
+
+        var isPartial: Bool {
+            !renderBounds.equalTo(localRect)
+        }
+    }
+
     @MainActor
     init?(from root: CALayer, in context: Context) {
         let privacy = ResolvedPrivacy(
@@ -137,17 +156,24 @@ extension CALayerSnapshot {
             } ?? []
         }
 
-        let dependencies = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
+        let dependencies: [CALayer] = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
             layer.sublayers?.flatMap {
                 $0.visibleDependencies(
                     rootLayer: rootLayer,
                     visibleBounds: childVisibleBounds
                 )
-                .map(CALayerReference.init)
             } ?? []
         } else {
-            [CALayerReference]()
+            []
         }
+
+        let contentGeometry = ContentGeometry(
+            layer: layer,
+            rootLayer: rootLayer,
+            absoluteFrame: absoluteFrame,
+            visibleBounds: visibleBounds,
+            dependencies: dependencies
+        )
 
         var cornerRadii = CornerRadii()
 
@@ -180,8 +206,9 @@ extension CALayerSnapshot {
             zPosition: layer.zPosition,
             transform: layer.transform,
             absoluteFrame: absoluteFrame,
+            contentGeometry: contentGeometry,
             sublayers: sublayers,
-            dependencies: dependencies,
+            dependencies: dependencies.map(CALayerReference.init),
             sublayerTransform: layer.sublayerTransform,
             mask: layer.mask.map(Mask.init),
             masksToBounds: layer.masksToBounds,
@@ -200,6 +227,44 @@ extension CALayerSnapshot {
             shadowOffset: layer.shadowOffset,
             shadowRadius: layer.shadowRadius,
             shadowPath: layer.shadowPath
+        )
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.ContentGeometry {
+    @MainActor
+    fileprivate init(
+        layer: CALayer,
+        rootLayer: CALayer,
+        absoluteFrame: CGRect,
+        visibleBounds: CGRect,
+        dependencies: [CALayer]
+    ) {
+        let renderBounds = layer.masksToBounds
+            ? layer.bounds
+            : dependencies.reduce(into: layer.bounds) { bounds, dependency in
+                bounds = bounds.union(dependency.convert(dependency.bounds, to: layer))
+            }
+
+        let rendersLayerBounds = renderBounds.equalTo(layer.bounds)
+        let renderFrame = rendersLayerBounds
+            ? absoluteFrame
+            : layer.convert(renderBounds, to: rootLayer)
+
+        let isOversized = renderBounds.width > rootLayer.bounds.width
+            || renderBounds.height > rootLayer.bounds.height
+
+        let visibleRenderFrame = rendersLayerBounds
+            ? renderFrame.intersection(visibleBounds)
+            : renderFrame.intersection(rootLayer.bounds)
+
+        self.init(
+            renderBounds: renderBounds,
+            localRect: isOversized
+                ? layer.convert(visibleRenderFrame, from: rootLayer)
+                : renderBounds,
+            frame: isOversized ? visibleRenderFrame : renderFrame
         )
     }
 }

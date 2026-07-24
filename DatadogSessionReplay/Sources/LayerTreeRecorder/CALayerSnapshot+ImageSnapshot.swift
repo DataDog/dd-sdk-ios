@@ -43,7 +43,6 @@ extension CALayerSnapshot {
 
             let request = ContentSnapshotRequest(
                 layerSnapshot: self,
-                visibleFrame: visibleFrame,
                 cache: cache,
                 changeset: changeset
             )
@@ -117,7 +116,6 @@ extension MaskSnapshotRequest {
 extension ContentSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
-        visibleFrame: CGRect,
         cache: ImageSnapshotCache,
         changeset: CALayerChangeset
     ) {
@@ -145,8 +143,7 @@ extension ContentSnapshotRequest {
             delegateClass: layerSnapshot.delegateClass,
             hasLayerSemantics: layerSnapshot.observation.semantics == .layer,
             bounds: layerSnapshot.bounds,
-            absoluteFrame: layerSnapshot.absoluteFrame,
-            visibleFrame: visibleFrame,
+            geometry: layerSnapshot.contentGeometry,
             isOpaque: layerSnapshot.isOpaque,
             hasContents: layerSnapshot.contentsClass != nil,
             dependencies: layerSnapshot.dependencies,
