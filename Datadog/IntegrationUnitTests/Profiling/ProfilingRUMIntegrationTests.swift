@@ -32,7 +32,6 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_start()
 
@@ -51,7 +50,6 @@ final class ProfilingRUMIntegrationTests: XCTestCase {
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
-        DatadogProfiler.resetActiveInstance()
 
         super.tearDown()
     }
