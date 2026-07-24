@@ -17,13 +17,11 @@ import DatadogMachProfiler.Testing
 
 final class DatadogProfilerTests: XCTestCase {
     private var core: PassthroughCoreMock!  // swiftlint:disable:this implicitly_unwrapped_optional
-    private var coordinator: ProfilerCoordinator! // swiftlint:disable:this implicitly_unwrapped_optional
     private let profilerQueue = DispatchQueue(label: "test.profiler")
 
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
-        coordinator = ProfilerCoordinator()
         dd_profiler_stop()
         dd_profiler_destroy()
     }
@@ -35,7 +33,6 @@ final class DatadogProfilerTests: XCTestCase {
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
         core = nil
-        coordinator = nil
         super.tearDown()
     }
 
@@ -76,7 +73,7 @@ final class DatadogProfilerTests: XCTestCase {
         )
 
         // Then
-        XCTAssertTrue(result, "Coordinator consumes app launch vitals")
+        XCTAssertTrue(result, "Profiler consumes app launch vitals")
 
         // When
         result = profiler.receive(
@@ -310,92 +307,6 @@ extension DatadogProfilerTests {
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         withExtendedLifetime(profiler) {}
-    }
-
-    func testTrackingConsentNotGranted_cleansObserverPayloadsAndUpdatesProfilingContext() throws {
-        // Given
-        let coordinatorSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
-        let coordinator = continuousProfiler(profilingSamplerProvider: coordinatorSamplerProvider)
-        let observerCore = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
-        let observer = DatadogProfiler(
-            core: observerCore,
-            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: true),
-            quotaChecker: quotaChecker(),
-            profilerCoordinator: self.coordinator,
-            queue: profilerQueue,
-            isAppLaunchProfilingEnabled: true
-        )
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-        observerCore.set(context: ProfilingContext(status: .current))
-        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-
-        _ = observer.receive(
-            message: .payload(LongTaskMessage(
-                attributes: mockRandomAttributes(),
-                longTask: longTask
-            )),
-            from: observerCore
-        )
-        flushQueue()
-        XCTAssertTrue(observer.hasEventsOfInterest)
-        XCTAssertEqual(
-            try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self)).status,
-            .running
-        )
-
-        // When
-        var observerContext = observerCore.context
-        observerContext.trackingConsent = .notGranted
-        observerCore.context = observerContext
-        _ = observer.receive(message: .context(observerContext), from: observerCore)
-
-        _ = observer.receive(
-            message: .payload(LongTaskMessage(
-                attributes: mockRandomAttributes(),
-                longTask: longTask
-            )),
-            from: observerCore
-        )
-        flushQueue()
-
-        // Then
-        XCTAssertFalse(observer.hasEventsOfInterest)
-        XCTAssertEqual(
-            try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self)).status,
-            .stopped(reason: .manual)
-        )
-
-        // When - consent is granted again.
-        observerContext = observerCore.context
-        observerContext.trackingConsent = .granted
-        observerCore.context = observerContext
-        _ = observer.receive(message: .context(observerContext), from: observerCore)
-        flushQueue()
-
-        // Then - the observer publishes the shared native profiler status again.
-        XCTAssertEqual(
-            try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self)).status,
-            .running
-        )
-
-        // When - consent is revoked before the coordinator receives its sampling decision.
-        observerContext = observerCore.context
-        observerContext.trackingConsent = .notGranted
-        observerCore.context = observerContext
-        _ = observer.receive(message: .context(observerContext), from: observerCore)
-        flushQueue()
-
-        coordinatorSamplerProvider.updateWith(
-            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: 0)
-        )
-        _ = coordinator.receive(message: .context(core.context), from: core)
-        flushQueue()
-
-        // Then - the denied observer does not keep the sampled-out native profiler alive.
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-        withExtendedLifetime(coordinator) {}
-        withExtendedLifetime(observer) {}
     }
 
     func testApplicationDidEnterBackground_doesNothing_whenAppWasNeverInForeground() {
@@ -783,21 +694,12 @@ extension DatadogProfilerTests {
     func testReceiveContext_keepsNativeProfilerRunning_whenSessionIsSampledOutBeforeAppLaunchVital() throws {
         // Given
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
-        let observerCore = PassthroughCoreMock()
-        let coordinatorSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
         let profiler = continuousProfiler(
-            profilingSamplerProvider: coordinatorSamplerProvider,
-            isAppLaunchProfilingEnabled: false
-        )
-        let observer = DatadogProfiler(
-            core: observerCore,
-            profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
-            quotaChecker: quotaChecker(),
-            profilerCoordinator: self.coordinator,
-            queue: profilerQueue,
+            profilingSamplerProvider: profilingSamplerProvider,
             isAppLaunchProfilingEnabled: true
         )
-        connectMessageReceiver(to: profiler, profilingSamplerProvider: coordinatorSamplerProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -809,36 +711,32 @@ extension DatadogProfilerTests {
         )
         flushQueue()
 
-        // Then - observer app-launch profiling keeps the shared native profiler alive.
+        // Then - app-launch profiling keeps the native profiler alive.
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
 
         // When - TTID is processed.
-        let observerWriteExpectation = expectation(description: "observer app-launch profile write")
-        observerCore.onEventWriteContext = { _ in observerWriteExpectation.fulfill() }
-        defer { observerCore.onEventWriteContext = nil }
+        waitForProfileWrite(timeout: 1.0) {
+            _ = profiler.receive(
+                message: .payload(TTIDMessage(
+                    attributes: mockRandomAttributes(),
+                    ttid: .mockWith(id: "ttid-id", stepType: nil)
+                )),
+                from: core
+            )
+            flushQueue()
+        }
 
-        _ = profiler.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith(stepType: nil))),
-            from: core
-        )
-        flushQueue()
-        _ = observer.receive(
-            message: .payload(TTIDMessage(
-                attributes: mockRandomAttributes(),
-                ttid: .mockWith(id: "observer-ttid-id", stepType: nil)
-            )),
-            from: observerCore
-        )
-
-        // Then - the sampled-out continuous profiler can stop after app-launch harvesting.
-        waitForExpectations(timeout: 1.0)
+        // Then - the sampled-out continuous profiler stops after app-launch harvesting.
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-        XCTAssertTrue(core.events.isEmpty)
-        XCTAssertEqual(observerCore.events.count, 1)
-        let observerMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(eventIDs(ofType: "vital", in: try typedRUMEvents(from: observerMetadata)), ["observer-ttid-id"])
+        XCTAssertEqual(core.events.count, 1)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(
+            eventIDs(ofType: "vital", in: try typedRUMEvents(from: metadata)),
+            ["ttid-id"]
+        )
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertTrue(event.tags.contains("operation:launch"))
         withExtendedLifetime(profiler) {}
-        withExtendedLifetime(observer) {}
     }
 
     func testReceiveOperationStart_afterContinuousProfilingSamplesOut_doesNotStartCustomProfiling() {
@@ -1906,81 +1804,17 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testQuotaRejectionBeforeAppLaunchVital_stopsNativeProfilerAndCleansObserverState() {
-        // Given
-        let quotaChecker = ProfilingQuotaCheckerMock()
-        quotaChecker.receiveHandler = { _ in
-            .init(decision: .quotaKO, reason: .quotaExceeded)
-        }
-        let observerCore = PassthroughCoreMock()
-        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
-        profilingSamplerProvider.updateWith(
-            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
-        )
-        let profiler = continuousProfiler(
-            profilingSamplerProvider: profilingSamplerProvider,
-            quotaChecker: quotaChecker
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true
-        )
-        core.context = .mockWith(
-            applicationStateHistory: .mockAppInForeground(),
-            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
-        )
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
-
-        // When - quota rejects before TTID has been harvested.
-        connectMessageReceiver(
-            to: profiler,
-            profilingSamplerProvider: profilingSamplerProvider,
-            quotaChecker: quotaChecker
-        )
-
-        // Then - continuous, custom and app-launch profiling are disabled for the rejected session.
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-
-        // When - the observer accumulates data after the quota callback cleanup.
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith(stepType: nil))),
-            from: observerCore
-        )
-        flushQueue()
-        XCTAssertTrue(observer.hasEventsOfInterest)
-
-        // When - the coordinator processes TTID with quota already rejected.
-        _ = profiler.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith(stepType: nil))),
-            from: core
-        )
-        flushQueue()
-
-        // Then - app launch does not restart profiling after quota rejection.
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-        XCTAssertFalse(observer.hasEventsOfInterest)
-        withExtendedLifetime(profiler) {}
-        withExtendedLifetime(observer) {}
-    }
-
     func testQuotaRejectionAfterAppLaunchVital_doesNotFlushAppLaunchProfileOnSampleOutContext() {
         // Given
         let telemetry = TelemetryMock()
         let telemetryController = ProfilingTelemetryController(telemetry: telemetry)
         let quotaChecker = ProfilingQuotaCheckerMock()
-        let observerCore = PassthroughCoreMock()
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
         let profiler = continuousProfiler(
             profilingSamplerProvider: profilingSamplerProvider,
             isAppLaunchProfilingEnabled: true,
             telemetryController: telemetryController,
             quotaChecker: quotaChecker
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true
         )
         core.context = .mockWith(
             applicationStateHistory: .mockAppInForeground(),
@@ -2000,35 +1834,13 @@ extension DatadogProfilerTests {
         XCTAssertTrue(core.metadata.isEmpty)
         XCTAssertNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
 
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: .mockWith(stepType: nil))),
-            from: observerCore
-        )
-        _ = observer.receive(
-            message: .payload(LongTaskMessage(
-                attributes: mockRandomAttributes(),
-                longTask: .init(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
-            )),
-            from: observerCore
-        )
-        _ = observer.receive(
-            message: .payload(AppHangMessage(
-                attributes: mockRandomAttributes(),
-                hang: .init(id: .mockRandom(), type: .error, start: 0, duration: 500)
-            )),
-            from: observerCore
-        )
-        flushQueue()
-        XCTAssertTrue(observer.hasEventsOfInterest)
-
         // When - quota rejects asynchronously before the RUM sampling decision arrives.
         quotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
         quotaChecker.onQuotaResultUpdate?(quotaChecker.quotaResult)
         flushQueue()
 
-        // Then - the rejected shared profile and observer correlation data are discarded.
+        // Then - the rejected profile is discarded.
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-        XCTAssertFalse(observer.hasEventsOfInterest)
 
         // When - the later RUM sampling decision samples continuous profiling out.
         profilingSamplerProvider.updateWith(
@@ -2057,7 +1869,6 @@ extension DatadogProfilerTests {
         XCTAssertNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
         withExtendedLifetime(profiler) {}
-        withExtendedLifetime(observer) {}
     }
 
     func testQuotaRejectionBeforeAppLaunchVital_doesNotRestartNativeProfiler_whenAppIsBackgrounded() {
@@ -2203,63 +2014,6 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
-    func testObserverQuotaAndConsent_updateLocalProfilingContext_withoutStoppingCoordinator() throws {
-        // Given
-        let observerCore = PassthroughCoreMock()
-        let observerQuotaChecker = ProfilingQuotaCheckerMock()
-        let coordinator = continuousProfiler(continuousProfilingSampled: true)
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            quotaChecker: observerQuotaChecker
-        )
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        // When
-        observerQuotaChecker.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
-        observerQuotaChecker.onQuotaResultUpdate?(observerQuotaChecker.quotaResult)
-        flushQueue()
-
-        // Then
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
-        var profilingContext = try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(profilingContext.status, .stopped(reason: .manual))
-        XCTAssertEqual(profilingContext.quotaReason, .quotaExceeded)
-
-        // When - consent is revoked before quota resets for the observer's next session.
-        var observerContext = observerCore.context
-        observerContext.trackingConsent = .notGranted
-        observerCore.context = observerContext
-        _ = observer.receive(message: .context(observerContext), from: observerCore)
-        flushQueue()
-
-        observerQuotaChecker.quotaResult = nil
-        observerQuotaChecker.onQuotaResultUpdate?(nil)
-        flushQueue()
-
-        // Then - the observer remains stopped by consent while the coordinator keeps running.
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
-        profilingContext = try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(profilingContext.status, .stopped(reason: .manual))
-        XCTAssertNil(profilingContext.quotaReason)
-
-        // When - consent is granted again.
-        observerContext = observerCore.context
-        observerContext.trackingConsent = .granted
-        observerCore.context = observerContext
-        _ = observer.receive(message: .context(observerContext), from: observerCore)
-        flushQueue()
-
-        // Then - the observer publishes the shared native profiler status again.
-        profilingContext = try XCTUnwrap(observerCore.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(profilingContext.status, .running)
-        XCTAssertNil(profilingContext.quotaReason)
-        withExtendedLifetime(coordinator) {}
-        withExtendedLifetime(observer) {}
-    }
-
     func testQuotaRejection_discardsRejectedRUMEventsBeforeNextAdmittedProfile() throws {
         // Given
         let telemetry = TelemetryMock()
@@ -2393,437 +2147,6 @@ extension DatadogProfilerTests {
         let profilingContext = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
         XCTAssertEqual(profilingContext.quotaReason, .quotaExceeded)
         withExtendedLifetime(profiler) {}
-    }
-}
-
-// MARK: - Observer Profiling
-
-extension DatadogProfilerTests {
-    func testObserver_preservesOngoingOperationAcrossAppLaunchAndContinuousProfileFlushes() throws {
-        // Given
-        let dateProvider = DateProviderMock()
-        let observerCore = PassthroughCoreMock()
-        let coordinatorSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
-        coordinatorSamplerProvider.updateWith(
-            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: 0)
-        )
-        let coordinator = continuousProfiler(
-            profilingSamplerProvider: coordinatorSamplerProvider,
-            isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
-        )
-        let coordinatorTTID = Vital.mockWith(id: "coordinator-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let operationStart = Vital.mockWith(
-            id: "observer-operation-id",
-            name: "operation",
-            stepType: .start,
-            date: dateProvider.now
-        )
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-            from: observerCore
-        )
-        _ = observer.receive(
-            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: operationStart)),
-            from: observerCore
-        )
-        flushQueue()
-        XCTAssertTrue(observerCore.events.isEmpty)
-
-        // When - the coordinator broadcasts an app-launch profile while the observer operation is ongoing.
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            _ = coordinator.receive(
-                message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: coordinatorTTID)),
-                from: core
-            )
-        }
-
-        // Then - the app-launch profile contains the unresolved operation start.
-        let appLaunchMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(
-            Set(try eventIDs(ofType: "vital", from: appLaunchMetadata)),
-            Set(["observer-ttid-id", "observer-operation-id"])
-        )
-        let appLaunchOperation = try XCTUnwrap(
-            typedRUMEvents(from: appLaunchMetadata).first { $0["id"] as? String == operationStart.id }
-        )
-        XCTAssertNil(appLaunchOperation["duration_ns"])
-        XCTAssertTrue(try XCTUnwrap(observerCore.events.first as? ProfileEvent).tags.contains("operation:launch"))
-
-        // When - continuous profiling starts and flushes while the operation remains ongoing.
-        coordinatorSamplerProvider.updateWith(
-            deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate)
-        )
-        core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: dateProvider.now))
-        _ = coordinator.receive(message: .context(core.context), from: core)
-        flushQueue()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
-
-        core.context = .mockWith(applicationStateHistory: .mockWith(
-            initialState: .active,
-            date: dateProvider.now.addingTimeInterval(-1),
-            transitions: [(state: .background, date: dateProvider.now)]
-        ))
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            _ = coordinator.receive(message: .context(core.context), from: core)
-        }
-
-        // Then - the continuous profile still contains the unresolved operation start.
-        XCTAssertEqual(observerCore.metadata.count, 2)
-        let ongoingMetadata = try XCTUnwrap(observerCore.metadata.last as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: ongoingMetadata), ["observer-operation-id"])
-        let ongoingOperation = try XCTUnwrap(
-            typedRUMEvents(from: ongoingMetadata).first { $0["id"] as? String == operationStart.id }
-        )
-        XCTAssertNil(ongoingOperation["duration_ns"])
-        XCTAssertTrue(try XCTUnwrap(observerCore.events.last as? ProfileEvent).tags.contains("operation:continuous"))
-
-        // When - the operation ends during the next profile window.
-        core.context = .mockWith(applicationStateHistory: .mockAppInForeground(since: dateProvider.now))
-        _ = coordinator.receive(message: .context(core.context), from: core)
-        flushQueue()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
-
-        dateProvider.now = dateProvider.now.addingTimeInterval(1)
-        let operationEnd = Vital.mockWith(
-            name: operationStart.name,
-            operationKey: operationStart.operationKey,
-            stepType: .end,
-            date: dateProvider.now
-        )
-        _ = observer.receive(
-            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: operationEnd)),
-            from: observerCore
-        )
-
-        core.context = .mockWith(applicationStateHistory: .mockWith(
-            initialState: .active,
-            date: dateProvider.now.addingTimeInterval(-1),
-            transitions: [(state: .background, date: dateProvider.now)]
-        ))
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            _ = coordinator.receive(message: .context(core.context), from: core)
-        }
-
-        // Then - the next profile contains the same operation with its completed duration.
-        XCTAssertEqual(observerCore.metadata.count, 3)
-        let completedMetadata = try XCTUnwrap(observerCore.metadata.last as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: completedMetadata), ["observer-operation-id"])
-        let completedOperation = try XCTUnwrap(
-            typedRUMEvents(from: completedMetadata).first { $0["id"] as? String == operationStart.id }
-        )
-        XCTAssertEqual(completedOperation["duration_ns"] as? Int64, 1.seconds.dd.toInt64Nanoseconds)
-        XCTAssertTrue(try XCTUnwrap(observerCore.events.last as? ProfileEvent).tags.contains("operation:continuous"))
-    }
-
-    func testObserver_writesContinuousProfileWithLocalTTIDOnItsQueue_whenCoordinatorFlushes() throws {
-        // Given
-        let dateProvider = DateProviderMock()
-        let observerCore = PassthroughCoreMock()
-        let coordinatorQueue = DispatchQueue(label: "test.app-launch-coordinator-profiler")
-        let coordinatorQueueKey = DispatchSpecificKey<Bool>()
-        coordinatorQueue.setSpecific(key: coordinatorQueueKey, value: true)
-        let observerQueue = DispatchQueue(label: "test.app-launch-observer-profiler")
-        let observerQueueKey = DispatchSpecificKey<Bool>()
-        observerQueue.setSpecific(key: observerQueueKey, value: true)
-        let coordinator = continuousProfiler(
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true,
-            queue: coordinatorQueue,
-            dateProvider: dateProvider
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true,
-            queue: observerQueue,
-            dateProvider: dateProvider
-        )
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-            from: observerCore
-        )
-        observerQueue.sync {}
-        XCTAssertTrue(observerCore.events.isEmpty)
-
-        let writeExpectation = expectation(description: "observer profile write")
-        observerCore.onEventWriteContext = { _ in
-            XCTAssertFalse(DispatchQueue.getSpecific(key: coordinatorQueueKey) == true)
-            XCTAssertTrue(DispatchQueue.getSpecific(key: observerQueueKey) == true)
-            writeExpectation.fulfill()
-        }
-        defer { observerCore.onEventWriteContext = nil }
-
-        // When - coordinator flushes the shared native profile.
-        core.context = .mockWith(applicationStateHistory: .mockWith(
-            initialState: .active,
-            date: dateProvider.now.addingTimeInterval(-1),
-            transitions: [(state: .background, date: dateProvider.now)]
-        ))
-        _ = coordinator.receive(message: .context(core.context), from: core)
-        waitForExpectations(timeout: 1.0)
-
-        // Then
-        XCTAssertTrue(core.events.isEmpty)
-        let observerMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: observerMetadata), ["observer-ttid-id"])
-        let observerEvent = try XCTUnwrap(observerCore.events.first as? ProfileEvent)
-        XCTAssertTrue(observerEvent.tags.contains("operation:continuous"))
-    }
-
-    func testObserver_writesStandaloneAppLaunchProfile_whenContinuousSamplingRejects() throws {
-        // Given
-        let dateProvider = DateProviderMock()
-        let observerCore = PassthroughCoreMock()
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let coordinator = continuousProfiler(
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: false,
-            isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
-        )
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-            from: observerCore
-        )
-
-        // When - coordinator flushes the shared native profile.
-        core.context = .mockWith(applicationStateHistory: .mockWith(
-            initialState: .active,
-            date: dateProvider.now.addingTimeInterval(-1),
-            transitions: [(state: .background, date: dateProvider.now)]
-        ))
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            _ = coordinator.receive(message: .context(core.context), from: core)
-        }
-
-        // Then - the observer cannot write continuous, so it uses the shared first-minute profile for app launch.
-        let observerMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: observerMetadata), ["observer-ttid-id"])
-        let observerEvent = try XCTUnwrap(observerCore.events.first as? ProfileEvent)
-        XCTAssertTrue(observerEvent.tags.contains("operation:launch"))
-    }
-
-    func testObserver_writesAppLaunchProfile_whenCoordinatorFlushesCustomProfile() throws {
-        // Given
-        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
-        let dateProvider = DateProviderMock(now: initialDate)
-        let observerCore = PassthroughCoreMock()
-        let coordinator = customProfiler(isAppLaunchProfilingEnabled: false, dateProvider: dateProvider)
-        let observer = customProfiler(core: observerCore, isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
-        let startOperation = Vital.mockWith(
-            id: "coordinator-operation-id",
-            name: "operation",
-            stepType: .start,
-            date: dateProvider.now
-        )
-        let coordinatorTTID = Vital.mockWith(id: "coordinator-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
-
-        _ = coordinator.receive(
-            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
-            from: core
-        )
-
-        _ = coordinator.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: coordinatorTTID)),
-            from: core
-        )
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-            from: observerCore
-        )
-        flushQueue()
-        XCTAssertTrue(observerCore.events.isEmpty)
-
-        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
-        let endOperation = Vital.mockWith(
-            name: startOperation.name,
-            operationKey: startOperation.operationKey,
-            stepType: .end,
-            date: dateProvider.now
-        )
-
-        // When - the coordinator completes and flushes its custom profile.
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            _ = coordinator.receive(
-                message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)),
-                from: core
-            )
-        }
-
-        // Then - the observer reuses it as an app-launch profile with its own TTID.
-        let coordinatorEvent = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(coordinatorEvent.tags.contains("operation:custom"))
-        let observerMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: observerMetadata), ["observer-ttid-id"])
-        let observerEvent = try XCTUnwrap(observerCore.events.first as? ProfileEvent)
-        XCTAssertTrue(observerEvent.tags.contains("operation:launch"))
-    }
-
-    func testObserver_doesNotWriteStandaloneAppLaunchProfile_whenAppLaunchProfilingIsDisabled() {
-        // Given
-        let dateProvider = DateProviderMock()
-        let observerCore = PassthroughCoreMock()
-        let coordinator = continuousProfiler(
-            continuousProfilingSampled: false,
-            isAppLaunchProfilingEnabled: true,
-            dateProvider: dateProvider
-        )
-        let observer = continuousProfiler(
-            core: observerCore,
-            continuousProfilingSampled: true,
-            isAppLaunchProfilingEnabled: false,
-            dateProvider: dateProvider
-        )
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)),
-            from: observerCore
-        )
-
-        // When - coordinator cuts and broadcasts a standalone app-launch profile.
-        waitForProfileWrite(on: observerCore, expectingWrite: false, timeout: 0.15) {
-            _ = coordinator.receive(
-                message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)),
-                from: core
-            )
-        }
-
-        // Then
-        XCTAssertTrue(observerCore.events.isEmpty)
-    }
-
-    func testObserver_writesStandaloneAppLaunchProfile_whenCoordinatorReceivesTTIDBeforeObserver() throws {
-        // Given
-        let dateProvider = DateProviderMock()
-        let observerCore = PassthroughCoreMock()
-        let coordinator = customProfiler(isAppLaunchProfilingEnabled: false, dateProvider: dateProvider)
-        let observer = customProfiler(core: observerCore, isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
-        let coordinatorTTID = Vital.mockWith(id: "coordinator-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-
-        XCTAssertEqual(coordinator.role, .coordinator)
-        XCTAssertEqual(observer.role, .observer)
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        // When - the coordinator cuts the native profile before the observer receives its TTID.
-        waitForProfileWrite(on: observerCore, timeout: 1.0) {
-            XCTAssertTrue(coordinator.receive(
-                message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: coordinatorTTID)),
-                from: core
-            ))
-            flushQueue()
-            XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-            XCTAssertFalse(observer.receive(
-                message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-                from: observerCore
-            ))
-        }
-
-        // Then - the observer still writes the coordinator-harvested launch profile with its local TTID.
-        XCTAssertTrue(core.events.isEmpty)
-        let observerMetadata = try XCTUnwrap(observerCore.metadata.first as? ProfileAttachments)
-        XCTAssertEqual(try eventIDs(ofType: "vital", from: observerMetadata), ["observer-ttid-id"])
-        let observerEvent = try XCTUnwrap(observerCore.events.first as? ProfileEvent)
-        XCTAssertTrue(observerEvent.tags.contains("operation:launch"))
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-    }
-
-    func testObserver_discardsStandaloneAppLaunchData_whenCoordinatorFlushesNoNativeProfile() throws {
-        // Given
-        let initialDate = Date().addingTimeInterval(-(DatadogProfiler.Constants.minProfileDuration + 3))
-        let dateProvider = DateProviderMock(now: initialDate)
-        let observerCore = PassthroughCoreMock()
-        let coordinator = customProfiler(isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
-        let observer = customProfiler(core: observerCore, isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
-        let observerTTID = Vital.mockWith(id: "observer-ttid-id", name: "time_to_initial_display", stepType: nil)
-        let coordinatorTTID = Vital.mockWith(id: "coordinator-ttid-id", name: "time_to_initial_display", stepType: nil)
-
-        _ = observer.receive(
-            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: observerTTID)),
-            from: observerCore
-        )
-
-        // When - standalone app-launch harvest runs without a native profile to share.
-        waitForProfileWrite(on: observerCore, expectingWrite: false, timeout: 0.3) {
-            _ = coordinator.receive(
-                message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: coordinatorTTID)),
-                from: core
-            )
-            flushQueue()
-        }
-
-        // When - the same coordinator later broadcasts a custom profile.
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
-        let startOperation = Vital.mockWith(
-            id: "coordinator-operation-id",
-            name: "operation",
-            stepType: .start,
-            date: dateProvider.now
-        )
-        _ = coordinator.receive(
-            message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)),
-            from: core
-        )
-        flushQueue()
-
-        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.minProfileDuration + 1)
-        let endOperation = Vital.mockWith(
-            name: startOperation.name,
-            operationKey: startOperation.operationKey,
-            stepType: .end,
-            date: dateProvider.now
-        )
-
-        waitForProfileWrite(timeout: 1.0) {
-            _ = coordinator.receive(
-                message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)),
-                from: core
-            )
-        }
-
-        // Then - the observer does not attach its stale TTID to the later broadcast.
-        let coordinatorEvent = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(coordinatorEvent.tags.contains("operation:custom"))
-        XCTAssertTrue(observerCore.events.isEmpty)
-        withExtendedLifetime(observer) {}
     }
 }
 
@@ -3206,7 +2529,6 @@ private extension DatadogProfilerTests {
             core: core ?? self.core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
-            profilerCoordinator: self.coordinator,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
@@ -3230,7 +2552,6 @@ private extension DatadogProfilerTests {
             core: core ?? self.core,
             profilingSamplerProvider: profilingSamplerProvider(isContinuousProfiling: false),
             quotaChecker: quotaChecker,
-            profilerCoordinator: self.coordinator,
             queue: queue ?? profilerQueue,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
