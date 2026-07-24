@@ -47,6 +47,9 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.site = .us5()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .us5)
 
+        objcConfig.site = .uk1()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .uk1)
+
         objcConfig.site = .us1_fed()
         XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1_fed)
 
