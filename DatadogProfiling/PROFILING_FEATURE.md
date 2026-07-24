@@ -101,7 +101,7 @@ monitor.succeedOperation(
 
 ## Architecture Overview
 
-Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, app-launch profiler, and the main `DatadogProfiler` message receiver.
+Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, and a single `DatadogProfiler` message receiver.
 
 The low-level sampler lives in `DatadogProfiling/Mach`. It samples application threads with Mach APIs, aggregates stack traces into a pprof profile, and exposes the native profiler to Swift through a C interface.
 
@@ -135,8 +135,7 @@ flowchart TD
 
 ### Runtime Orchestration
 - **`DatadogProfiling/Sources/ProfilerFeature.swift`** - Internal feature composition. Registers message receivers, configures app-launch UserDefaults, creates samplers and quota checks.
-- **`DatadogProfiling/Sources/AppLaunchProfiler.swift`** - Handles app-launch profiles and flushes them when TTID arrives.
-- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - Main Continuous and Custom Profiling state machine. Starts/stops native profiling, handles RUM operation/app hang/long task messages, and flushes profiles.
+- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - App-launch, Continuous, and Custom Profiling state machine. Owns the native profiler lifecycle, handles RUM messages, and flushes profiles.
 - **`DatadogProfiling/Sources/ProfilingSamplerProvider.swift`** - Stores continuous profiling configuration and session-linked sampling decisions.
 - **`DatadogProfiling/Sources/ProfilingQuotaChecker.swift`** - Checks session-scoped profiling quota admission.
 - **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** - Blocks profiling in low battery, Low Power Mode, or background conditions.
@@ -156,7 +155,7 @@ flowchart TD
 - **`customEndpoint`**: Optional replacement URL for profile uploads. Default: `nil`, which uses the Datadog site endpoint plus `/api/v2/profile`.
 
 ### Sampling
-- **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch. If multiple SDK instances set it, the native side uses the lowest sample rate.
+- **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch.
 - **Continuous Profiling**: `continuousSampleRate` default is `5.0`. A value above zero configures continuous profiling. The final decision is composed with the current RUM session sampler via `RUMCoreContext.sessionSampler.combined(with: continuousSampleRate)`.
 - **Custom Profiling**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Operation-based custom profiling controls the profiling window only when Continuous Profiling is disabled or sampled out; otherwise sampled operation steps are attached to the continuous profile.
 
@@ -196,7 +195,7 @@ Profile uploads are multipart/form-data requests that include profile metadata, 
 5. Operation-based custom profiling takes over only when Continuous Profiling is disabled or sampled out. If Continuous Profiling is sampled in, sampled operation steps are attached to the continuous profile instead of creating a separate custom profile.
 
 ### "App launch profile is missing"
-1. Ensure RUM is enabled early enough to emit the TTID message consumed by `AppLaunchProfiler`.
+1. Ensure RUM is enabled early enough to emit the TTID message consumed by `DatadogProfiler`.
 2. Do not rely on `monitor.reportAppFullyDisplayed()` to emit TTID. It reports TTFD, which is delivered as a vital/operation message for continuous profile correlation.
 3. Verify `applicationLaunchSampleRate` is greater than zero.
 4. Remember that app-launch profiling settings are read at library load, before `Profiling.enable()` runs. Enabling profiling or changing `applicationLaunchSampleRate` affects the next process launch, not the current launch.
@@ -211,6 +210,6 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 
 ## Additional Context
 
-- Only one `DatadogProfiler` instance can be active in a process. The initializer returns `nil` if another instance is already active.
+- Profiling supports one SDK core instance per process. If another core calls `Profiling.enable`, the existing Profiling feature remains active and the SDK logs a warning identifying its core instance.
 - Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, such as after the app returns to foreground.
 - Profile uploads include pprof data, correlated RUM events, and profile metadata.
