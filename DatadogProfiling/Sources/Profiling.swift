@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 #if !os(watchOS)
@@ -26,6 +27,9 @@ public enum Profiling {
     /// 
     /// This method registers the profiling feature with the Datadog core, setting up
     /// the necessary components.
+    ///
+    /// Profiling supports only one SDK instance. Later calls are ignored with a warning
+    /// identifying the instance where Profiling is already enabled.
     /// 
     /// - Parameters:
     ///   - configuration: The profiling configuration to use.
@@ -50,9 +54,11 @@ public enum Profiling {
             )
         }
 
-        guard core.get(feature: ProfilerFeature.self) == nil else {
+        if let instanceName = CoreRegistry.instanceName(for: ProfilerFeature.self) {
+            core.telemetry.debug("Profiling has already been enabled in SDK instance '\(instanceName)'")
             throw ProgrammerError(
-                description: "Profiling is already enabled and does not support multiple instances. " +
+                description: "Profiling is already enabled in SDK instance '\(instanceName)' " +
+                "and does not support multiple instances. " +
                 "The existing instance will continue to be used."
             )
         }
