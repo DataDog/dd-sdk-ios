@@ -126,10 +126,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // If the application has not been yet activated and no sessions exist -> create the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1219 to start new session automatically when
         // a user action is sent (startView or addUserAction).
-        if sessionScopes.isEmpty && !applicationActive {
+        if sessionScopes.isEmpty && !applicationActive && didCreateInitialSessionCount == 0 {
             // This flow is likely stale code as`RUMSDKInitCommand` should already start the session before reaching this point
             dependencies.telemetry.debug("Starting initial session from lazy flow")
             createInitialSession(with: context, on: command)
+            applicationActive = true
         }
 
         // Create the application launch view on any command
@@ -251,6 +252,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
+        applicationActive = true
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -287,6 +289,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        applicationActive = true
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -343,15 +346,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
     /// after it became active.
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        applicationActive = true
-
         let isUserLaunch = context.launchInfo.launchReason == .userLaunch
         let isPrewarmed = context.launchInfo.launchReason == .prewarming
         let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
         let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
         guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
+            // applicationActive stays false so _process retries on the next command (prewarm/background launch deferral)
             return
         }
+
+        applicationActive = true
 
         // Immediately start the ApplicationLaunchView for the new session
         _ = process(

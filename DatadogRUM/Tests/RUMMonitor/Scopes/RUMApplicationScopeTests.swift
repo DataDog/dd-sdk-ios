@@ -697,6 +697,201 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .prewarm)
     }
 
+    // MARK: - RUMS-6062: Prewarmed App Session Inflation Fix
+
+    func testGivenPrewarmedApp_whenStartViewArrivesBeforeTimeout_itLandsInSessionA() throws {
+        // Given - prewarmed app, SDK initialises in background
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let prewarmContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockWith(initialState: .background, date: currentTime)
+        )
+
+        let scope = RUMApplicationScope(dependencies: .mockWith(samplingRate: 100))
+
+        // SDK init command (app in background — guard fires, applicationActive stays false)
+        let initCommand = RUMSDKInitCommand(time: currentTime, globalAttributes: [:])
+        _ = scope.process(command: initCommand, context: prewarmContext, writer: writer)
+
+        let sessionA = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(sessionA.context.sessionPrecondition, .prewarm)
+        XCTAssertFalse(scope.applicationActive, "applicationActive must stay false for prewarmed apps")
+
+        // Lifecycle event (willEnterForeground) — still before any view
+        currentTime.addTimeInterval(1)
+        let lifecycleCommand = RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground)
+        _ = scope.process(command: lifecycleCommand, context: prewarmContext, writer: writer)
+
+        // JS navigation fires startView — within timeout window
+        currentTime.addTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: prewarmContext,
+            writer: writer
+        )
+
+        // Then - only one session, view belongs to Session A
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        XCTAssertEqual(scope.activeSession?.sessionUUID, sessionA.sessionUUID, "startView must land in Session A")
+        XCTAssertFalse(scope.sessionScopes[0].viewScopes.isEmpty, "Session A must have at least one view")
+    }
+
+    func testGivenPrewarmedApp_whenStartViewArrivesAfterTimeout_itCreatesSessionBWithInactivityPrecondition() throws {
+        // Given - prewarmed app, SDK initialises in background
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let prewarmContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockWith(initialState: .background, date: currentTime)
+        )
+
+        let featureScope = FeatureScopeMock()
+        let scope = RUMApplicationScope(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100))
+
+        let initCommand = RUMSDKInitCommand(time: currentTime, globalAttributes: [:])
+        _ = scope.process(command: initCommand, context: prewarmContext, writer: writer)
+
+        let sessionA = try XCTUnwrap(scope.activeSession)
+
+        // JS navigation fires startView AFTER the timeout — Session A has expired.
+        // By now the user has opened the app, so it is in the foreground.
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let foregroundContext: DatadogContext = .mockWith(
+            sdkInitDate: prewarmContext.sdkInitDate,
+            launchInfo: prewarmContext.launchInfo,
+            applicationStateHistory: .mockAppInForeground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: foregroundContext,
+            writer: writer
+        )
+
+        // Then - Session B is created with inactivityTimeout, not a spurious userAppLaunch
+        XCTAssertEqual(scope.sessionScopes.count, 1, "Only Session B should exist")
+        let sessionB = try XCTUnwrap(scope.activeSession)
+        XCTAssertNotEqual(sessionA.sessionUUID, sessionB.sessionUUID)
+        XCTAssertEqual(sessionB.context.sessionPrecondition, .inactivityTimeout)
+        XCTAssertTrue(scope.applicationActive, "applicationActive must be true once a session renewal occurs")
+        XCTAssertNil(featureScope.telemetryMock.messages.firstError(), "No spurious telemetry error must be fired")
+    }
+
+    func testGivenPrewarmedApp_whenSessionExpiresOnLifecycleCommand_startViewCreatesSessionBCorrectly() throws {
+        // Given - prewarmed app, SDK initialises in background
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let prewarmContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockWith(initialState: .background, date: currentTime)
+        )
+
+        let featureScope = FeatureScopeMock()
+        let scope = RUMApplicationScope(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100))
+
+        let initCommand = RUMSDKInitCommand(time: currentTime, globalAttributes: [:])
+        _ = scope.process(command: initCommand, context: prewarmContext, writer: writer)
+
+        // Session A idles past the timeout; lifecycle command expires it but does NOT refresh (lifecycle commands skip refresh)
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let lifecycleCommand = RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground)
+        _ = scope.process(command: lifecycleCommand, context: prewarmContext, writer: writer)
+
+        XCTAssertTrue(scope.sessionScopes.isEmpty, "Session A must have been expired and removed by the lifecycle command")
+
+        // JS navigation fires startView — the app is now in the foreground (user opened it).
+        // Must not trigger spurious telemetry error or wrong precondition.
+        currentTime.addTimeInterval(1)
+        let foregroundContext: DatadogContext = .mockWith(
+            sdkInitDate: prewarmContext.sdkInitDate,
+            launchInfo: prewarmContext.launchInfo,
+            applicationStateHistory: .mockAppInForeground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: foregroundContext,
+            writer: writer
+        )
+
+        // Then - Session B with inactivityTimeout precondition; no error telemetry
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        let sessionB = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(sessionB.context.sessionPrecondition, .inactivityTimeout)
+        XCTAssertTrue(scope.applicationActive)
+        XCTAssertNil(featureScope.telemetryMock.messages.firstError(), "Secondary fix must prevent spurious 'Creating initial session extra time' error")
+    }
+
+    func testGivenUserLaunchedApp_applicationLaunchViewCreatedImmediately() throws {
+        // Given
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockAppInForeground(since: currentTime)
+        )
+
+        // When
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+
+        // Then - ApplicationLaunch view created immediately and applicationActive is true
+        let session = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(session.context.sessionPrecondition, .userAppLaunch)
+        XCTAssertFalse(session.viewScopes.isEmpty, "ApplicationLaunch view must be created immediately for user-launched apps")
+        XCTAssertTrue(scope.applicationActive)
+    }
+
+    func testGivenPrewarmedApp_whenSessionRefreshOccurs_applicationActiveBecomesTrue() throws {
+        // Given - prewarmed app, Session A times out on a non-lifecycle command (refresh path)
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let prewarmContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .prewarming,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockWith(initialState: .background, date: currentTime)
+        )
+
+        let scope = RUMApplicationScope(dependencies: .mockWith(samplingRate: 100))
+
+        let initCommand = RUMSDKInitCommand(time: currentTime, globalAttributes: [:])
+        _ = scope.process(command: initCommand, context: prewarmContext, writer: writer)
+        XCTAssertFalse(scope.applicationActive)
+
+        // Non-lifecycle command after timeout — triggers refresh() path.
+        // By now the user has opened the app, so it is in the foreground.
+        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let foregroundContext: DatadogContext = .mockWith(
+            sdkInitDate: prewarmContext.sdkInitDate,
+            launchInfo: prewarmContext.launchInfo,
+            applicationStateHistory: .mockAppInForeground(since: currentTime)
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: currentTime),
+            context: foregroundContext,
+            writer: writer
+        )
+
+        // Then - applicationActive is true after refresh; retry loop terminated
+        XCTAssertTrue(scope.applicationActive, "applicationActive must become true after refresh() to stop the startApplicationLaunchView retry")
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
+    }
+
     func testGivenUserLaunchedApp_whenSessionTimesOutInBackground_itSetsInactivityTimeoutPrecondition() {
         // Given - app launched by user, session becomes inactive
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
