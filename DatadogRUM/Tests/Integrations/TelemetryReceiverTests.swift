@@ -73,7 +73,9 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
+        #sourceLocation(file: "File.swift", line: 1)
         TelemetryMock(with: receiver).error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
+        #sourceLocation()
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first
@@ -83,7 +85,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.source, .ios)
         XCTAssertEqual(event?.telemetry.message, "Oops")
         XCTAssertEqual(event?.telemetry.error?.kind, "OutOfMemory")
-        XCTAssertEqual(event?.telemetry.error?.stack, "a\nhay\nneedle\nstack")
+        XCTAssertEqual(event?.telemetry.error?.stack, "\(moduleName())/File.swift:1\na\nhay\nneedle\nstack")
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 

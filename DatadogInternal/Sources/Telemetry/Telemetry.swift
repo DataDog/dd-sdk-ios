@@ -321,7 +321,7 @@ extension Telemetry {
             id: "\(file):\(line):\(message)",
             message: message,
             kind: kind ?? "\(file)",
-            stack: stack ?? "\(file):\(line)"
+            stack: stack.map { "\(file):\(line)\n\($0)" } ?? "\(file):\(line)"
         )
     }
 
