@@ -56,11 +56,11 @@ extension ContentSnapshot {
     private func shouldRedactText(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> Bool {
-        guard hasLayerSemantics || isPortalLayer else {
+        guard hasLayerSemantics else {
             return false
         }
 
-        if let parentTextInput, isTextLayoutFragment || isPortalLayer {
+        if let parentTextInput, isTextLayoutFragment {
             guard !parentTextInput.isEmpty else {
                 return false
             }
@@ -75,11 +75,7 @@ extension ContentSnapshot {
             }
         }
 
-        return textAndInputPrivacyLevel == .maskAll && (isStaticText || isPortalLayer)
-    }
-
-    private var isPortalLayer: Bool {
-        Classes.portalLayer.map { layerClass.isSubclass(of: $0) } == true
+        return textAndInputPrivacyLevel == .maskAll && isStaticText
     }
 
     private var isTextLayoutFragment: Bool {
@@ -130,7 +126,6 @@ private enum Classes {
     static let textLayoutFragmentView: AnyClass? = NSClassFromString("_UITextLayoutFragmentView")
     static let textViewCanvasView: AnyClass? = NSClassFromString("_UITextViewCanvasView")
     static let textFieldCanvasView: AnyClass? = NSClassFromString("_UITextFieldCanvasView")
-    static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
     static let imageLayer: AnyClass? = NSClassFromString("SwiftUI.ImageLayer")
 }
 #endif

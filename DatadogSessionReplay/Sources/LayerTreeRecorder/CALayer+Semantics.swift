@@ -32,17 +32,38 @@ extension CALayer {
     }
 
     var isDestinationOutView: Bool {
-        guard let view = delegate as? UIView else {
-            return false
+        hasViewDelegateClass {
+            NSStringFromClass($0).hasSuffix("DestOutView")
         }
+    }
 
-        let viewClass = type(of: view)
-        return Bundle(for: viewClass) == Bundle(for: UIView.self)
-            && NSStringFromClass(viewClass).hasSuffix("DestOutView")
+    var isNavigationBarPlatter: Bool {
+        delegate?.isKind(of: Classes.navigationBarPlatterView) == true
+    }
+
+    var isPlatformGlassInteraction: Bool {
+        hasViewDelegateClass {
+            NSStringFromClass($0).hasSuffix("UIPlatformGlassInteractionView")
+        }
     }
 
     var isTabBarPlatter: Bool {
         delegate?.isKind(of: Classes.tabBarPlatterView) == true
+    }
+
+    var isScrollPocket: Bool {
+        delegate?.isKind(of: Classes.scrollPocket) == true
+    }
+
+    var isCaptureOnlyBackdrop: Bool {
+        guard
+            isKind(of: Classes.backdropLayer),
+            let captureOnly = safeValue(forKey: "captureOnly") as? Bool
+        else {
+            return false
+        }
+
+        return captureOnly
     }
 
     var isVisualEffectBackground: Bool {
@@ -50,7 +71,17 @@ extension CALayer {
     }
 
     var isVisualEffectBackdrop: Bool {
-        isKind(of: Classes.backdropLayer)
+        isKind(of: Classes.visualEffectBackdropLayer)
+    }
+
+    private func hasViewDelegateClass(matching predicate: (AnyClass) -> Bool) -> Bool {
+        guard
+            let view = delegate as? UIView,
+            Bundle(for: type(of: view)) == Bundle(for: UIView.self)
+        else {
+            return false
+        }
+        return predicate(type(of: view))
     }
 }
 
@@ -61,9 +92,12 @@ private enum Classes {
     static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
     static let sdfLayer: AnyClass? = NSClassFromString("CASDFLayer")
     static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
+    static let navigationBarPlatterView: AnyClass? = NSClassFromString("_UINavigationBarPlatterView")
     static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
+    static let scrollPocket: AnyClass? = NSClassFromString("_UIScrollPocket")
+    static let backdropLayer: AnyClass? = NSClassFromString("CABackdropLayer")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
-    static let backdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
+    static let visualEffectBackdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
 }
 
 extension NSObjectProtocol {

@@ -167,7 +167,7 @@ struct DiffSRCompositionTreeTests {
         )
         let newLayer = SRCompositionLayer(
             children: [.init(id: 2, type: .layer)],
-            compositeOperation: .plusDarker,
+            compositeOperation: .destinationOut,
             height: 110,
             id: 42,
             modifiers: [.compositionLayerGaussianBlurModifier(value: .init(radius: 4))],
@@ -182,7 +182,7 @@ struct DiffSRCompositionTreeTests {
         // Then
         #expect(mutation.id == 42)
         #expect(mutation.children == newLayer.children)
-        #expect(mutation.compositeOperation == .plusDarker)
+        #expect(mutation.compositeOperation == .destinationOut)
         #expect(mutation.height == 110)
         #expect(mutation.modifiers == newLayer.modifiers)
         #expect(mutation.width == 220)

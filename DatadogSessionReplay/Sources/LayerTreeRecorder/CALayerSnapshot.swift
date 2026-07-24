@@ -22,7 +22,7 @@ import UIKit
 internal struct CALayerSnapshot: Sendable {
     let layer: CALayerReference
     let replayID: Int64
-    let observation: SemanticObservation
+    var observation: SemanticObservation
 
     let layerClass: AnyClass
     let delegateClass: AnyClass?
@@ -38,7 +38,7 @@ internal struct CALayerSnapshot: Sendable {
     let transform: CATransform3D
 
     /// The layer's frame in the root layer coordinate space.
-    let absoluteFrame: CGRect
+    var absoluteFrame: CGRect
 
     var sublayers: [CALayerSnapshot]
     /// Live descendant layers omitted from `sublayers` but captured when this layer is rendered as an image.
@@ -55,7 +55,7 @@ internal struct CALayerSnapshot: Sendable {
     let cornerCurve: CALayerCornerCurve
     let borderWidth: CGFloat
     let borderColor: CGColor?
-    let opacity: Float
+    var opacity: Float
     let allowsGroupOpacity: Bool
 
     let compositingFilter: CompositingFilter?
@@ -151,7 +151,7 @@ extension CALayerSnapshot {
 
         var cornerRadii = CornerRadii()
 
-        if let cornerRadiiValue = layer.value(forKey: "cornerRadii") as? NSValue {
+        if let cornerRadiiValue = layer.safeValue(forKey: "cornerRadii") as? NSValue {
             // SwiftUI layers store per-corner radii separately.
             cornerRadiiValue.getValue(&cornerRadii)
         }

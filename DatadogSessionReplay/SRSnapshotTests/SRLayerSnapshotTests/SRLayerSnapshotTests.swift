@@ -53,6 +53,15 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     func testTab() async throws {
         try await takeLayerSnapshotFor(
             TabFixtureView(),
+            with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
+
+    func testToolbar() async throws {
+        try await takeLayerSnapshotFor(
+            ToolbarFixtureView(),
             shouldRecord: shouldRecord,
             folderPath: snapshotsFolderPath
         )

@@ -14,6 +14,7 @@ extension CALayerSnapshot {
     enum Filter: Sendable, Equatable {
         case gaussianBlur(CGFloat)
         case colorMatrix(ColorMatrix)
+        case vibrantColorMatrix(ColorMatrix)
         case saturate(CGFloat)
         case brightness(CGFloat)
         case multiplyColor(CGColor)
@@ -30,37 +31,44 @@ extension CALayerSnapshot.Filter {
             let filterClass = NSClassFromString(["CA", "Filter"].joined()),
             let filter = filterValue as? NSObject,
             type(of: filter).isSubclass(of: filterClass),
-            filter.value(forKey: "enabled") as? Bool == true,
-            let name = filter.value(forKey: "name") as? String
+            filter.safeValue(forKey: "enabled") as? Bool == true,
+            let name = filter.safeValue(forKey: "name") as? String
         else {
             return nil
         }
 
         switch name {
         case "gaussianBlur", "variableBlur":
-            guard let radius = filter.value(forKey: "inputRadius") as? CGFloat else {
+            guard let radius = filter.safeValue(forKey: "inputRadius") as? CGFloat else {
                 return nil
             }
             self = .gaussianBlur(radius)
-        case "colorMatrix", "vibrantColorMatrix":
-            guard let value = filter.value(forKey: "inputColorMatrix") as? NSValue else {
+        case "colorMatrix":
+            guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
                 return nil
             }
             var colorMatrix = CALayerSnapshot.ColorMatrix()
             value.getValue(&colorMatrix)
             self = .colorMatrix(colorMatrix)
+        case "vibrantColorMatrix":
+            guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
+                return nil
+            }
+            var colorMatrix = CALayerSnapshot.ColorMatrix()
+            value.getValue(&colorMatrix)
+            self = .vibrantColorMatrix(colorMatrix)
         case "colorSaturate":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
+            guard let amount = filter.safeValue(forKey: "inputAmount") as? CGFloat else {
                 return nil
             }
             self = .saturate(amount)
         case "colorBrightness":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
+            guard let amount = filter.safeValue(forKey: "inputAmount") as? CGFloat else {
                 return nil
             }
             self = .brightness(amount)
         case "multiplyColor":
-            guard let color = CGColor.safeCast(filter.value(forKey: "inputColor")) else {
+            guard let color = CGColor.safeCast(filter.safeValue(forKey: "inputColor")) else {
                 return nil
             }
             self = .multiplyColor(color)

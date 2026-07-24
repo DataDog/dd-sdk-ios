@@ -59,7 +59,6 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRCompositionLayerShadowModifier",
                 "SRCompositionLayerBrightnessBiasModifier",
                 "SRCompositionLayerSaturateModifier",
-                "SRCompositionLayerBackgroundMaterialModifier",
                 "SRCompositionLayerMaskImageModifier",
                 "SRCompositionLayerUpdate",
                 "SRCompositionTreeMutationData",

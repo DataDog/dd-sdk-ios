@@ -172,6 +172,38 @@ struct CALayerSnapshotSRCompositionLayerTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps vibrant color matrix filters while preserving source alpha")
+    func mapsVibrantColorMatrixFiltersPreservingSourceAlpha() throws {
+        // Given
+        // swiftlint:disable multiline_arguments
+        let matrix = CALayerSnapshot.ColorMatrix(
+            m11: 1, m12: 2, m13: 3, m14: 4, m15: 5,
+            m21: 6, m22: 7, m23: 8, m24: 9, m25: 10,
+            m31: 11, m32: 12, m33: 13, m34: 14, m35: 15,
+            m41: 16, m42: 17, m43: 18, m44: 19, m45: 20
+        )
+        // swiftlint:enable multiline_arguments
+        let snapshot = CALayerSnapshot.mockWith(filters: [.vibrantColorMatrix(matrix)])
+
+        // When
+        let modifiers = snapshot.modifiers()
+
+        // Then
+        let modifier = try #require(modifiers.first)
+        guard case .compositionLayerColorMatrixModifier(let colorMatrix) = modifier else {
+            Issue.record("Expected a color matrix modifier")
+            return
+        }
+
+        #expect(colorMatrix.matrix == [
+            1, 2, 3, 4, 5,
+            6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15,
+            0, 0, 0, 1, 0
+        ])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Maps Gaussian blur only for regular layers")
     func mapsGaussianBlurOnlyForRegularLayers() {
         // Given
@@ -193,6 +225,24 @@ struct CALayerSnapshotSRCompositionLayerTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Maps scroll pocket effects to destination-out compositing")
+    func mapsScrollPocketEffectsToDestinationOutCompositing() {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .visualEffect(.scrollPocket(.top)))
+        )
+
+        // When
+        let compositeOperation = SRCompositionLayer.CompositeOperation(
+            compositingFilter: snapshot.compositingFilter,
+            semantics: snapshot.observation.semantics
+        )
+
+        // Then
+        #expect(compositeOperation == .destinationOut)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     private func modifierTypes(_ modifiers: [SRCompositionLayerModifier]) -> [String] {
         modifiers.map { modifier in
             switch modifier {
@@ -210,8 +260,6 @@ struct CALayerSnapshotSRCompositionLayerTests {
                 "brightnessBias"
             case .compositionLayerSaturateModifier:
                 "saturate"
-            case .compositionLayerBackgroundMaterialModifier:
-                "backgroundMaterial"
             case .compositionLayerMaskImageModifier:
                 "maskImage"
             }

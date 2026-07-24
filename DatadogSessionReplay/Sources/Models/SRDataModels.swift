@@ -87,38 +87,8 @@ public struct SRCompositionLayer: Codable, Hashable {
     public enum CompositeOperation: String, Codable {
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
-    }
-}
-
-/// Represents a platform background material effect captured as layer rendering state.
-@_spi(Internal)
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable {
-    /// Material kind.
-    public let kind: Kind
-
-    /// The type of the modifier.
-    public let type: String = "backgroundMaterial"
-
-    public enum CodingKeys: String, CodingKey {
-        case kind = "kind"
-        case type = "type"
-    }
-
-    /// Represents a platform background material effect captured as layer rendering state.
-    ///
-    /// - Parameters:
-    ///   - kind: Material kind.
-    public init(
-        kind: Kind
-    ) {
-        self.kind = kind
-    }
-
-    /// Material kind.
-    @_spi(Internal)
-    public enum Kind: String, Codable {
-        case glass = "glass"
     }
 }
 
@@ -306,7 +276,6 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
     case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
-    case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
     case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
 
     private enum DiscriminatorCodingKeys: String, CodingKey {
@@ -333,8 +302,6 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
         case .compositionLayerBrightnessBiasModifier(let value):
             try container.encode(value)
         case .compositionLayerSaturateModifier(let value):
-            try container.encode(value)
-        case .compositionLayerBackgroundMaterialModifier(let value):
             try container.encode(value)
         case .compositionLayerMaskImageModifier(let value):
             try container.encode(value)
@@ -367,9 +334,6 @@ public enum SRCompositionLayerModifier: Codable, Hashable {
             return
         case "saturate":
             self = .compositionLayerSaturateModifier(value: try container.decode(SRCompositionLayerSaturateModifier.self))
-            return
-        case "backgroundMaterial":
-            self = .compositionLayerBackgroundMaterialModifier(value: try container.decode(SRCompositionLayerBackgroundMaterialModifier.self))
             return
         case "maskImage":
             self = .compositionLayerMaskImageModifier(value: try container.decode(SRCompositionLayerMaskImageModifier.self))
@@ -564,6 +528,7 @@ public struct SRCompositionLayerUpdate: Codable, Hashable {
     public enum CompositeOperation: String, Codable {
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
     }
 }
@@ -2954,4 +2919,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/4ed60cbe47c30afcef051481a035adf88161d4b7
+// Generated from https://github.com/DataDog/rum-events-format/tree/1886a75e6c9dbc2390d7a4d8fd0ac97aac5de100

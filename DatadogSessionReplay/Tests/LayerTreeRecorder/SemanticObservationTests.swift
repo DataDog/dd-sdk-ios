@@ -7,6 +7,7 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import SwiftUI
 import TestUtilities
 import Testing
 import UIKit
@@ -18,6 +19,25 @@ import WebKit
 @MainActor
 struct SemanticObservationTests {
     private final class DestOutView: UIView {}
+
+    @available(iOS 26.0, *)
+    private struct ScrollPocketFixture: View {
+        var body: some View {
+            NavigationStack {
+                ScrollView {
+                    Color.clear.frame(height: 2_000)
+                }
+                .navigationTitle("Title")
+                .toolbar {
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        Button("Refresh", systemImage: "arrow.clockwise", action: {})
+                        Spacer()
+                        Button("Add", systemImage: "plus", action: {})
+                    }
+                }
+            }
+        }
+    }
 
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
@@ -112,6 +132,74 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
+    @Test("Records scroll pockets with their rect edge and ignores sublayers")
+    func recordsScrollPocketsWithTheirRectEdgeAndIgnoresSublayers() throws {
+        // Given
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        viewController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let scrollPockets = try [UIRectEdge.top, .bottom].map { edge in
+            try #require(
+                window.layer.firstDescendant { layer in
+                    guard
+                        let delegate = layer.delegate as? NSObject,
+                        NSStringFromClass(type(of: delegate)) == "_UIScrollPocket",
+                        let value = delegate.value(forKey: "edge") as? NSNumber
+                    else {
+                        return false
+                    }
+                    return UIRectEdge(rawValue: value.uintValue) == edge
+                }
+            )
+        }
+
+        // When
+        let observations = scrollPockets.map {
+            CALayerSnapshot.SemanticObservation(layer: $0, context: .mockAny())
+        }
+
+        // Then
+        #expect(observations == [
+            .init(semantics: .visualEffect(.scrollPocket(.top)), ignoresSublayers: true),
+            .init(semantics: .visualEffect(.scrollPocket(.bottom)), ignoresSublayers: true)
+        ])
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records capture-only backdrops as compositor support")
+    func recordsCaptureOnlyBackdropsAsCompositorSupport() throws {
+        // Given
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        viewController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let backdropLayer = try #require(
+            window.layer.firstDescendant { layer in
+                layer.responds(to: NSSelectorFromString("captureOnly"))
+                    && (layer.value(forKey: "captureOnly") as? Bool) == true
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: backdropLayer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
+    }
+
+    @available(iOS 26.0, *)
     @Test("Records tab bar platter as an automatic capsule and records sublayers")
     func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
         // Given
@@ -149,8 +237,39 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records portal semantics and collects hidden source replay IDs")
-    func recordsPortalSemanticsAndCollectsHiddenSourceReplayIDs() throws {
+    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
+    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+        // Given
+        let viewController = UIHostingController(rootView: ScrollPocketFixture())
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = viewController
+        window.makeKeyAndVisible()
+        viewController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let interactionLayer = try #require(
+            window.layer.firstDescendant { layer in
+                guard let view = layer.delegate as? UIView else {
+                    return false
+                }
+                return NSStringFromClass(type(of: view)).hasSuffix("UIPlatformGlassInteractionView")
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(
+            layer: interactionLayer,
+            context: .mockAny()
+        )
+
+        // Then
+        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records portal semantics")
+    func recordsPortalSemantics() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
@@ -177,10 +296,6 @@ struct SemanticObservationTests {
         )
         let sourceLayer = try #require(portalLayer.value(forKey: "sourceLayer") as? CALayer)
         let sourceRect = sourceLayer.convert(portalLayer.bounds, from: portalLayer)
-        let sourceSublayer = CALayer()
-        sourceSublayer.frame = sourceRect
-        sourceLayer.addSublayer(sourceSublayer)
-        defer { sourceSublayer.removeFromSuperlayer() }
         let context = CALayerSnapshot.Context.mockAny()
 
         // When
@@ -192,13 +307,21 @@ struct SemanticObservationTests {
             return
         }
 
-        #expect(portal.sourceLayer.matches(sourceLayer))
+        #expect(portal.sourceReplayID == sourceLayer.replayID)
         #expect(portal.sourceRect == sourceRect)
-        #expect(portal.isOpaque == sourceLayer.isOpaque)
-        #expect(portal.dependencies.contains(CALayerReference(sourceLayer)))
-        #expect(portal.dependencies.contains(CALayerReference(sourceSublayer)))
+        #expect(
+            portal.matchesPosition
+                == ((portalLayer.safeValue(forKey: "matchesPosition") as? Bool) == true)
+        )
+        #expect(
+            portal.matchesTransform
+                == ((portalLayer.safeValue(forKey: "matchesTransform") as? Bool) == true)
+        )
+        #expect(
+            portal.matchesOpacity
+                == ((portalLayer.safeValue(forKey: "matchesOpacity") as? Bool) == true)
+        )
         #expect(observation.ignoresSublayers)
-        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
     }
 
     @available(iOS 26.0, *)

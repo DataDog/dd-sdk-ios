@@ -54,8 +54,7 @@ internal struct LayerWireframeBuilder {
             contentSnapshots[snapshot.replayID]
         ) {
         case (.layer, .some(let result)),
-            (.image, .some(let result)),
-            (.visualEffect(.portal), .some(let result)):
+            (.image, .some(let result)):
             return makeContentSnapshotOutput(
                 for: snapshot,
                 result: result,
@@ -68,7 +67,7 @@ internal struct LayerWireframeBuilder {
         case (.gradient(let gradient), _):
             return SRWireframe(
                 layerSnapshot: snapshot,
-                gradient: gradient,
+                backgroundGradient: SRShapeGradient(gradient: gradient),
                 cornerRadius: cornerRadius
             ).map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
         case (.label(let label), _):
@@ -129,6 +128,12 @@ internal struct LayerWireframeBuilder {
                 ),
                 resource: nil
             )
+        case (.visualEffect(.scrollPocket(let edge)), _):
+            guard let gradient = SRShapeGradient(scrollPocketEdge: edge) else {
+                return nil
+            }
+            return SRWireframe(layerSnapshot: snapshot, backgroundGradient: gradient)
+                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
         default:
             return nil
         }

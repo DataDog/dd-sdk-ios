@@ -10,23 +10,6 @@ import QuartzCore
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    /// Returns a copy of the layer tree without layers matching the given replay IDs.
-    func removingLayers(withReplayIDs replayIDs: Set<Int64>) -> CALayerSnapshot? {
-        guard !replayIDs.isEmpty else {
-            return self
-        }
-
-        guard !replayIDs.contains(replayID) else {
-            return nil
-        }
-
-        var result = self
-        result.sublayers = sublayers.compactMap {
-            $0.removingLayers(withReplayIDs: replayIDs)
-        }
-        return result
-    }
-
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
         observation.ignoresSublayers
@@ -148,7 +131,7 @@ extension CALayerSnapshot {
     ) -> CALayerSnapshot? {
         let visibleFrame = absoluteFrame.intersection(clip)
 
-        guard !visibleFrame.isEmpty else {
+        guard !visibleFrame.isEmpty || !masksToBounds else {
             return nil
         }
 
@@ -175,6 +158,10 @@ extension CALayerSnapshot {
         }
 
         if visibleLayers.isEmpty {
+            guard !visibleFrame.isEmpty else {
+                return nil
+            }
+
             if drawsContent {
                 if !hasShadow && occlusionMap.isCovered(visibleFrame) {
                     return nil

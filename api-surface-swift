@@ -623,16 +623,8 @@ public struct SRCompositionLayer: Codable, Hashable
     public enum CompositeOperation: String, Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable
-    public let kind: Kind
-    public let type: String = "backgroundMaterial"
-    public enum CodingKeys: String, CodingKey
-        case kind = "kind"
-        case type = "type"
-    public init(kind: Kind)
-    public enum Kind: String, Codable
-        case glass = "glass"
 public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable
     public let type: String = "brightnessBias"
     public let value: Double
@@ -691,7 +683,6 @@ public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
-    case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
     case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
@@ -746,6 +737,7 @@ public struct SRCompositionLayerUpdate: Codable, Hashable
     public enum CompositeOperation: String, Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
 public struct SRCompositionTree: Codable
     public let layers: [SRCompositionLayer]?

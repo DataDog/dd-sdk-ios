@@ -29,41 +29,49 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
-    static let portal = Self { layer, _, context in
+    static let portal = Self { layer, _, _ in
         guard layer.isPortal else {
             return nil
         }
 
-        guard (layer.value(forKey: "hidesSourceLayer") as? Bool) == true else {
+        guard (layer.safeValue(forKey: "hidesSourceLayer") as? Bool) == true else {
             return .init(
                 semantics: .visualEffect(.compositorSupport),
                 ignoresSublayers: true
             )
         }
 
-        guard let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer else {
+        guard let sourceLayer = layer.safeValue(forKey: "sourceLayer") as? CALayer else {
             return .init(
                 semantics: .visualEffect(.compositorSupport),
                 ignoresSublayers: true
             )
         }
 
-        context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
-        let sourceRect = sourceLayer.convert(layer.bounds, from: layer)
-        let dependencies = sourceLayer.visibleDependencies(
-            rootLayer: sourceLayer,
-            visibleBounds: sourceRect
-        )
-        .map(CALayerReference.init)
+        let matchesPosition = (layer.safeValue(forKey: "matchesPosition") as? Bool) == true
+        let matchesTransform = (layer.safeValue(forKey: "matchesTransform") as? Bool) == true
+        let matchesOpacity = (layer.safeValue(forKey: "matchesOpacity") as? Bool) == true
+
+        let sourceRect = if matchesPosition {
+            sourceLayer.convert(layer.bounds, from: layer)
+        } else {
+            CGRect(
+                x: sourceLayer.bounds.minX + layer.bounds.minX,
+                y: sourceLayer.bounds.minY + layer.bounds.minY,
+                width: layer.bounds.width,
+                height: layer.bounds.height
+            )
+        }
 
         return .init(
             semantics: .visualEffect(
                 .portal(
                     .init(
-                        sourceLayer: CALayerReference(sourceLayer),
+                        sourceReplayID: sourceLayer.replayID,
                         sourceRect: sourceRect,
-                        isOpaque: sourceLayer.isOpaque,
-                        dependencies: dependencies
+                        matchesPosition: matchesPosition,
+                        matchesTransform: matchesTransform,
+                        matchesOpacity: matchesOpacity
                     )
                 )
             ),
@@ -71,12 +79,41 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
-    static let tabBarPlatter = Self { layer, _, _ in
-        guard layer.isTabBarPlatter else {
+    static let automaticCapsule = Self { layer, _, _ in
+        guard layer.isTabBarPlatter
+            || layer.isNavigationBarPlatter
+            || layer.isPlatformGlassInteraction
+        else {
             return nil
         }
 
         return .init(semantics: .visualEffect(.automaticCapsule))
+    }
+
+    static let scrollPocket = Self { layer, _, _ in
+        guard
+            layer.isScrollPocket,
+            let delegate = layer.delegate as? NSObject,
+            let edge = delegate.safeValue(forKey: "edge") as? NSNumber
+        else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.scrollPocket(UIRectEdge(rawValue: edge.uintValue))),
+            ignoresSublayers: true
+        )
+    }
+
+    static let captureOnlyBackdrop = Self { layer, _, _ in
+        guard layer.isCaptureOnlyBackdrop else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
     }
 
     static let glassGroup = Self { layer, _, _ in

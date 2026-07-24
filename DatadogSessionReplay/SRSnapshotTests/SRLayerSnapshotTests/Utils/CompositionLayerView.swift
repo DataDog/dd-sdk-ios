@@ -91,8 +91,6 @@ internal final class CompositionLayerView: UIView {
                 alpha = CGFloat(modifier.value)
             case .compositionLayerColorMatrixModifier(let modifier):
                 applyColorMatrixModifier(modifier)
-            case .compositionLayerBackgroundMaterialModifier(let modifier):
-                applyBackgroundMaterialModifier(modifier)
             case .compositionLayerGaussianBlurModifier(let modifier):
                 applyGaussianBlurModifier(modifier)
             case .compositionLayerShadowModifier(let modifier):
@@ -111,6 +109,8 @@ internal final class CompositionLayerView: UIView {
         switch compositeOperation {
         case .destinationIn:
             layer.compositingFilter = "destIn"
+        case .destinationOut:
+            layer.compositingFilter = "destOut"
         case .plusDarker:
             layer.compositingFilter = "plusD"
         case .sourceOver, nil:
@@ -165,19 +165,6 @@ internal final class CompositionLayerView: UIView {
             m45: Float(modifier.matrix[19])
         )
         filter.setValue(matrix.nsValue, forKey: "inputColorMatrix")
-        appendFilter(filter)
-    }
-
-    private func applyBackgroundMaterialModifier(_ modifier: SRCompositionLayerBackgroundMaterialModifier) {
-        let filterType = switch modifier.kind {
-        case .glass:
-            "glassBackground"
-        }
-
-        guard let filter = NSObject.makeCAFilter(type: filterType) else {
-            return
-        }
-
         appendFilter(filter)
     }
 
