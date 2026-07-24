@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import DatadogInternal
+import TestUtilities
 import QuartzCore
 import Testing
 import UIKit
@@ -13,6 +14,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CompositionTreeBuilderTests {
     @available(iOS 13.0, tvOS 13.0, *)

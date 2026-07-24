@@ -266,7 +266,7 @@ let package = Package(
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogCrashReporting"),
                 .target(name: "DatadogWebViewTracking"),
-                .target(name: "DatadogFlags")
+                .target(name: "DatadogFlags"),
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings

@@ -5,11 +5,13 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct ImageSnapshotCacheTests {
     @available(iOS 13.0, tvOS 13.0, *)

@@ -7,12 +7,14 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 import WebKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct SemanticObservationTests {
     private final class DestOutView: UIView {}
