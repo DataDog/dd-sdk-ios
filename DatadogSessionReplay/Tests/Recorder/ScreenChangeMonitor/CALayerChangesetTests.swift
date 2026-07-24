@@ -6,10 +6,12 @@
 
 #if os(iOS)
 import QuartzCore
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct CALayerChangesetTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Display and draw changes are content changes")

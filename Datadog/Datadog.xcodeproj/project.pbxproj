@@ -83,7 +83,7 @@
 		118246A12D90674900E3D16F /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
 		118246B62D906C9A00E3D16F /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
 		118246BE2D906F1500E3D16F /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
-		118246C62D906FFB00E3D16F /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, tvos, ); productRef = 118246C52D906FFB00E3D16F /* DatadogSDKTesting */; };
+		118246C62D906FFB00E3D16F /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 118246C52D906FFB00E3D16F /* DatadogSDKTesting */; };
 		118246C72D9070FA00E3D16F /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		118246CA2D90712D00E3D16F /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		118247BE2D908BEF00E3D16F /* RUMViewEndedMetricIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E141EE2D42BC74008C8851 /* RUMViewEndedMetricIntegrationTests.swift */; };
@@ -170,6 +170,7 @@
 		1182FA592DA2F827007FE71A /* Mockable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182FA172DA2F827007FE71A /* Mockable.swift */; };
 		1182FA5A2DA2F827007FE71A /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9DB2DA2F827007FE71A /* HTTPClientMock.swift */; };
 		1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */; };
+		A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */ = {isa = PBXBuildFile; fileRef = C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */; };
 		1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9BE2DA2F827007FE71A /* Decompression.swift */; };
 		1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9F92DA2F827007FE71A /* RUMFeatureMocks.swift */; };
 		1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D92DA2F827007FE71A /* DatadogContextProviderMock.swift */; };
@@ -292,7 +293,7 @@
 		3C6C7FFC2B459AF6006F5CBC /* OTelTraceId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF32B459AB3006F5CBC /* OTelTraceId+DatadogTests.swift */; };
 		3C6C7FFD2B459AF6006F5CBC /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF42B459AB3006F5CBC /* OTelSpanTests.swift */; };
 		3C85D42129F7C5C900AFF894 /* WebViewTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */; };
-		3C85D42A29F7C70300AFF894 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; platformFilters = (ios, xros, ); };
+		3C85D42A29F7C70300AFF894 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; platformFilters = (ios, xros, ); };
 		3CA8525F2BF2073800B52CBA /* TraceContextInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA8525E2BF2073800B52CBA /* TraceContextInjection.swift */; };
 		3CB012DD2B482E0400557951 /* NOPOTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */; };
@@ -1287,7 +1288,7 @@
 		D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2022E3CEF1200BA4113 /* MachSamplingProfilerTests.swift */; };
 		D2D0E2082E3CEF1200BA4113 /* DDProfilerCAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E2012E3CEF1200BA4113 /* DDProfilerCAPITests.swift */; };
 		D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D0E20D2E3CFA6500BA4113 /* CCallbackContext.swift */; };
-		D2D0E2102E3D0B3B00BA4113 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; platformFilters = (ios, tvos, xros, ); };
+		D2D0E2102E3D0B3B00BA4113 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		D2D30E5B2A40BF540020C553 /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5A2A40BF540020C553 /* Logs.swift */; };
 		D2D30E602A40CD310020C553 /* LogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */; };
 		D2D3199A29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */; };
@@ -1934,6 +1935,7 @@
 		1182F9C02DA2F827007FE71A /* FuzzyHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyHelpers.swift; sourceTree = "<group>"; };
 		1182F9C12DA2F827007FE71A /* ModuleName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleName.swift; sourceTree = "<group>"; };
 		1182F9C22DA2F827007FE71A /* SwiftExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
+		C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSDKTestingCompat.swift; sourceTree = "<group>"; };
 		1182F9C32DA2F827007FE71A /* TestsDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		1182F9C42DA2F827007FE71A /* UIKitHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitHelpers.swift; sourceTree = "<group>"; };
 		1182F9C52DA2F827007FE71A /* XCTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestCase.swift; sourceTree = "<group>"; };
@@ -3481,6 +3483,7 @@
 				6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */,
 				862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */,
 				1182F9BD2DA2F827007FE71A /* DDAssert.swift */,
+				C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */,
 				1182F9BE2DA2F827007FE71A /* Decompression.swift */,
 				1182F9BF2DA2F827007FE71A /* Encoding.swift */,
 				1182F9C02DA2F827007FE71A /* FuzzyHelpers.swift */,
@@ -9075,6 +9078,7 @@
 				1182FA592DA2F827007FE71A /* Mockable.swift in Sources */,
 				1182FA5A2DA2F827007FE71A /* HTTPClientMock.swift in Sources */,
 				1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
+				A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */,
 				1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */,
 				1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
 				1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
@@ -9545,10 +9549,6 @@
 		};
 		3C41693E29FBF5BB0042B9D2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				ios,
-				xros,
-			);
 			target = D257953D298ABA65008A1BE5 /* TestUtilities */;
 			targetProxy = D25EF00F2F45E9AC007E6CEE /* PBXContainerItemProxy */;
 		};
@@ -9865,11 +9865,6 @@
 		};
 		D2D0E2172E3D0B6200BA4113 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				ios,
-				tvos,
-				xros,
-			);
 			target = D257953D298ABA65008A1BE5 /* TestUtilities */;
 			targetProxy = D25EF0162F45E9AC007E6CEE /* PBXContainerItemProxy */;
 		};
@@ -12191,7 +12186,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.7.0;
+				minimumVersion = "2.7.7";
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {

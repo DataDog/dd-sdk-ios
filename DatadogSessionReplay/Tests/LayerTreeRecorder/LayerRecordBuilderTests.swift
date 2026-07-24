@@ -15,6 +15,7 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct LayerRecordBuilderTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Meta record uses layer snapshot viewport and timestamp")

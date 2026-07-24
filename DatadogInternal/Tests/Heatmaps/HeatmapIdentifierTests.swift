@@ -4,9 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 import Testing
 import DatadogInternal
 
+@Suite(.datadogTesting)
 struct HeatmapIdentifierTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Produces a 32 lowercase hex character string")

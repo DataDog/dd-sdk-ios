@@ -15,6 +15,7 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct HeatmapIdentifierComputationTests {
     @available(iOS 13.0, tvOS 13.0, *)

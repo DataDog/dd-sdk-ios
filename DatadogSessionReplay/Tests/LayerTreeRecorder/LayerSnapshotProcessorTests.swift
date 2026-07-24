@@ -15,6 +15,7 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct LayerSnapshotProcessorTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("First layer tree snapshot starts a segment and processes resources")

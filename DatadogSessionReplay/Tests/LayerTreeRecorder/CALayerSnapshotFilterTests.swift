@@ -7,10 +7,12 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct CALayerSnapshotFilterTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores unsupported filter values")
