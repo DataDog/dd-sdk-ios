@@ -327,44 +327,53 @@ extension Telemetry {
 
     /// Collect execution error.
     ///
-    /// - Note: Not exposed publicly — a `DDError` built outside this file may carry a raw,
-    ///   unsanitized error description. Callers should use `error(_ error: Error, ...)`
-    ///   instead, which is the single choke point for future error sanitization.
+    /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
+    ///   error description can never reach this sink. Callers should use `error(_ error: Error, ...)`
+    ///   instead, which sanitizes the error via `makeTelemetrySafe(_:)` before forwarding here.
     ///
     /// - Parameters:
-    ///   - error: The error.
+    ///   - error: The sanitized error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
-        self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
+    func error(_ error: TelemetrySanitizedError, file: String = #fileID, line: Int = #line) {
+        self.error(error.message, kind: error.kind, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
     ///
-    /// - Note: Not exposed publicly — a `DDError` built outside this file may carry a raw,
-    ///   unsanitized error description. Callers should use `error(_ message: String, error: Error, ...)`
-    ///   instead, which is the single choke point for future error sanitization.
+    /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
+    ///   error description can never reach this sink. Callers should use
+    ///   `error(_ message: String, error: Error, ...)` instead, which sanitizes the error via
+    ///   `makeTelemetrySafe(_:)` before forwarding here.
     ///
     /// - Parameters:
     ///   - message: The error message.
-    ///   - error: The error.
+    ///   - error: The sanitized error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
-        self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
+    func error(_ message: String, error: TelemetrySanitizedError, file: String = #fileID, line: Int = #line) {
+        self.error("\(message) - \(error.message)", kind: error.kind, stack: error.stack, file: file, line: line)
     }
 
     /// Collect execution error.
+    ///
+    /// - Note: If `error` conforms to `TelemetrySanitizableError`, its own sanitized context is reported.
+    ///   Otherwise, it falls back to Telemetry's default sanitization, which may drop most contextual
+    ///   information to avoid leaking sensitive data.
     ///
     /// - Parameters:
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(DDError(error: error), file: file, line: line)
+        self.error(makeTelemetrySafe(error), file: file, line: line)
     }
 
     /// Collect execution error.
+    ///
+    /// - Note: If `error` conforms to `TelemetrySanitizableError`, its own sanitized context is reported.
+    ///   Otherwise, it falls back to Telemetry's default sanitization, which may drop most contextual
+    ///   information to avoid leaking sensitive data.
     ///
     /// - Parameters:
     ///   - message: The error message.
@@ -372,7 +381,7 @@ extension Telemetry {
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(message, error: DDError(error: error), file: file, line: line)
+        self.error(message, error: makeTelemetrySafe(error), file: file, line: line)
     }
 
     /// Report a Configuration Telemetry.
