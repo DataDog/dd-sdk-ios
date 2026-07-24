@@ -17,6 +17,16 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let crashReportReceiver: CrashReportReceiver
 
+    let errorMessageReceiver: ErrorMessageReceiver
+
+    let flagEvaluationReceiver: FlagEvaluationReceiver
+
+    let telemetryReceiver: TelemetryReceiver
+
+    let webViewEventReceiver: WebViewEventReceiver
+
+    let watchdogTerminationMonitor: WatchdogTerminationMonitor?
+
     let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
@@ -271,7 +281,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             telemetry: core.telemetry
         )
 
-        core.messageBus.subscribe(receiver: FlagEvaluationReceiver(monitor: monitor))
         self.crashReportReceiver = CrashReportReceiver(
             featureScope: featureScope,
             applicationID: configuration.applicationID,
@@ -289,33 +298,31 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             }(),
             eventsMapper: eventsMapper
         )
-        core.messageBus.subscribe(receiver: crashReportReceiver)
 
-        var messageReceivers: [FeatureMessageReceiver] = [
-            TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
-            TelemetryReceiver(
-                featureScope: featureScope,
-                dateProvider: configuration.dateProvider,
-                sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
-                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
-            ),
-            ErrorMessageReceiver(
-                featureScope: featureScope,
-                monitor: monitor
-            ),
-            WebViewEventReceiver(
-                featureScope: featureScope,
-                dateProvider: configuration.dateProvider,
-                commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
-            )
-        ]
+        self.errorMessageReceiver = ErrorMessageReceiver(
+            featureScope: featureScope,
+            monitor: monitor
+        )
 
-        if let watchdogTermination = watchdogTermination {
-            messageReceivers.append(watchdogTermination)
-        }
+        self.flagEvaluationReceiver = FlagEvaluationReceiver(monitor: monitor)
 
-        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
+        self.telemetryReceiver = TelemetryReceiver(
+            featureScope: featureScope,
+            dateProvider: configuration.dateProvider,
+            sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
+            configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate),
+            sessionEndedMetric: sessionEndedMetric
+        )
+
+        self.webViewEventReceiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: configuration.dateProvider,
+            commandSubscriber: monitor,
+            viewCache: dependencies.viewCache
+        )
+
+        self.watchdogTerminationMonitor = watchdogTermination
+        self.messageReceiver = NOPFeatureMessageReceiver()
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
