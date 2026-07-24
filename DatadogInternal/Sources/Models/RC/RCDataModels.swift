@@ -71,18 +71,12 @@ public struct RemoteConfiguration: Codable {
     }
 
     public struct RUM: Codable {
-        /// Minimum main-thread freeze duration to report as an app hang. Omit to disable.
-        public let appHangThresholdMs: Double?
+        public let appHang: AppHang?
 
         /// UUID of the RUM application
         public let applicationId: String
 
-        public let env: String?
-
-        /// Minimum main-thread task duration to report as a long task
-        public let longTaskThresholdMs: Double?
-
-        public let service: String?
+        public let longTask: LongTask?
 
         public let telemetrySampleRate: Double?
 
@@ -105,11 +99,9 @@ public struct RemoteConfiguration: Codable {
         public let vitalsUpdateFrequency: VitalsUpdateFrequency?
 
         public enum CodingKeys: String, CodingKey {
-            case appHangThresholdMs = "appHangThresholdMs"
+            case appHang = "appHang"
             case applicationId = "applicationId"
-            case env = "env"
-            case longTaskThresholdMs = "longTaskThresholdMs"
-            case service = "service"
+            case longTask = "longTask"
             case telemetrySampleRate = "telemetrySampleRate"
             case trackAnonymousUser = "trackAnonymousUser"
             case trackBackgroundEvents = "trackBackgroundEvents"
@@ -124,11 +116,9 @@ public struct RemoteConfiguration: Codable {
 
         ///
         /// - Parameters:
-        ///   - appHangThresholdMs: Minimum main-thread freeze duration to report as an app hang. Omit to disable.
+        ///   - appHang:
         ///   - applicationId: UUID of the RUM application
-        ///   - env:
-        ///   - longTaskThresholdMs: Minimum main-thread task duration to report as a long task
-        ///   - service:
+        ///   - longTask:
         ///   - telemetrySampleRate:
         ///   - trackAnonymousUser:
         ///   - trackBackgroundEvents:
@@ -140,11 +130,9 @@ public struct RemoteConfiguration: Codable {
         ///   - trackWatchdogTerminations:
         ///   - vitalsUpdateFrequency:
         public init(
-            appHangThresholdMs: Double? = nil,
+            appHang: AppHang? = nil,
             applicationId: String,
-            env: String? = nil,
-            longTaskThresholdMs: Double? = nil,
-            service: String? = nil,
+            longTask: LongTask? = nil,
             telemetrySampleRate: Double? = nil,
             trackAnonymousUser: Bool? = nil,
             trackBackgroundEvents: Bool? = nil,
@@ -156,11 +144,9 @@ public struct RemoteConfiguration: Codable {
             trackWatchdogTerminations: Bool? = nil,
             vitalsUpdateFrequency: VitalsUpdateFrequency? = nil
         ) {
-            self.appHangThresholdMs = appHangThresholdMs
+            self.appHang = appHang
             self.applicationId = applicationId
-            self.env = env
-            self.longTaskThresholdMs = longTaskThresholdMs
-            self.service = service
+            self.longTask = longTask
             self.telemetrySampleRate = telemetrySampleRate
             self.trackAnonymousUser = trackAnonymousUser
             self.trackBackgroundEvents = trackBackgroundEvents
@@ -171,6 +157,54 @@ public struct RemoteConfiguration: Codable {
             self.trackUserInteractions = trackUserInteractions
             self.trackWatchdogTerminations = trackWatchdogTerminations
             self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        }
+
+        public struct AppHang: Codable {
+            public let enabled: Bool?
+
+            /// Minimum main-thread freeze duration in milliseconds to report as an app hang
+            public let threshold: Double?
+
+            public enum CodingKeys: String, CodingKey {
+                case enabled = "enabled"
+                case threshold = "threshold"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - enabled:
+            ///   - threshold: Minimum main-thread freeze duration in milliseconds to report as an app hang
+            public init(
+                enabled: Bool? = nil,
+                threshold: Double? = nil
+            ) {
+                self.enabled = enabled
+                self.threshold = threshold
+            }
+        }
+
+        public struct LongTask: Codable {
+            public let enabled: Bool?
+
+            /// Minimum main-thread task duration in milliseconds to report as a long task
+            public let threshold: Double?
+
+            public enum CodingKeys: String, CodingKey {
+                case enabled = "enabled"
+                case threshold = "threshold"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - enabled:
+            ///   - threshold: Minimum main-thread task duration in milliseconds to report as a long task
+            public init(
+                enabled: Bool? = nil,
+                threshold: Double? = nil
+            ) {
+                self.enabled = enabled
+                self.threshold = threshold
+            }
         }
 
         public enum VitalsUpdateFrequency: String, Codable {
@@ -186,9 +220,6 @@ public struct RemoteConfiguration: Codable {
 
         public let sampleRate: Double?
 
-        /// Whether Session Replay starts recording as soon as the SDK initializes
-        public let startRecordingImmediately: Bool?
-
         public let textAndInputPrivacy: TextAndInputPrivacy?
 
         public let touchPrivacy: TouchPrivacy?
@@ -196,7 +227,6 @@ public struct RemoteConfiguration: Codable {
         public enum CodingKeys: String, CodingKey {
             case imagePrivacy = "imagePrivacy"
             case sampleRate = "sampleRate"
-            case startRecordingImmediately = "startRecordingImmediately"
             case textAndInputPrivacy = "textAndInputPrivacy"
             case touchPrivacy = "touchPrivacy"
         }
@@ -205,19 +235,16 @@ public struct RemoteConfiguration: Codable {
         /// - Parameters:
         ///   - imagePrivacy:
         ///   - sampleRate:
-        ///   - startRecordingImmediately: Whether Session Replay starts recording as soon as the SDK initializes
         ///   - textAndInputPrivacy:
         ///   - touchPrivacy:
         public init(
             imagePrivacy: ImagePrivacy? = nil,
             sampleRate: Double? = nil,
-            startRecordingImmediately: Bool? = nil,
             textAndInputPrivacy: TextAndInputPrivacy? = nil,
             touchPrivacy: TouchPrivacy? = nil
         ) {
             self.imagePrivacy = imagePrivacy
             self.sampleRate = sampleRate
-            self.startRecordingImmediately = startRecordingImmediately
             self.textAndInputPrivacy = textAndInputPrivacy
             self.touchPrivacy = touchPrivacy
         }
@@ -245,35 +272,28 @@ public struct RemoteConfiguration: Codable {
 
         public let traceContextInjection: TraceContextInjection?
 
-        /// Hostnames for which distributed tracing headers are injected
-        public let tracedHosts: [String]?
-
-        /// Tracing header formats injected on requests to all traced hosts
-        public let tracingHeaderTypes: [TracingHeaderTypes]?
+        /// Per-host distributed tracing configuration. Aligns with browser's allowedTracingUrls model (without regex matching).
+        public let tracedHosts: [TracedHosts]?
 
         public enum CodingKeys: String, CodingKey {
             case sampleRate = "sampleRate"
             case traceContextInjection = "traceContextInjection"
             case tracedHosts = "tracedHosts"
-            case tracingHeaderTypes = "tracingHeaderTypes"
         }
 
         ///
         /// - Parameters:
         ///   - sampleRate:
         ///   - traceContextInjection:
-        ///   - tracedHosts: Hostnames for which distributed tracing headers are injected
-        ///   - tracingHeaderTypes: Tracing header formats injected on requests to all traced hosts
+        ///   - tracedHosts: Per-host distributed tracing configuration. Aligns with browser's allowedTracingUrls model (without regex matching).
         public init(
             sampleRate: Double? = nil,
             traceContextInjection: TraceContextInjection? = nil,
-            tracedHosts: [String]? = nil,
-            tracingHeaderTypes: [TracingHeaderTypes]? = nil
+            tracedHosts: [TracedHosts]? = nil
         ) {
             self.sampleRate = sampleRate
             self.traceContextInjection = traceContextInjection
             self.tracedHosts = tracedHosts
-            self.tracingHeaderTypes = tracingHeaderTypes
         }
 
         public enum TraceContextInjection: String, Codable {
@@ -281,13 +301,36 @@ public struct RemoteConfiguration: Codable {
             case sampled = "sampled"
         }
 
-        public enum TracingHeaderTypes: String, Codable {
-            case datadog = "datadog"
-            case b3 = "b3"
-            case b3multi = "b3multi"
-            case tracecontext = "tracecontext"
+        public struct TracedHosts: Codable {
+            public let host: String
+
+            public let propagatorTypes: [PropagatorTypes]
+
+            public enum CodingKeys: String, CodingKey {
+                case host = "host"
+                case propagatorTypes = "propagatorTypes"
+            }
+
+            ///
+            /// - Parameters:
+            ///   - host:
+            ///   - propagatorTypes:
+            public init(
+                host: String,
+                propagatorTypes: [PropagatorTypes]
+            ) {
+                self.host = host
+                self.propagatorTypes = propagatorTypes
+            }
+
+            public enum PropagatorTypes: String, Codable {
+                case datadog = "datadog"
+                case b3 = "b3"
+                case b3multi = "b3multi"
+                case tracecontext = "tracecontext"
+            }
         }
     }
 }
 
-// Generated from https://github.com/DataDog/dd-go/blob/2fc3a72fc0222d5275db1c478dbfee942dd0f816/remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/STAGING/ios.json
+// Generated from https://github.com/DataDog/dd-go/blob/96df9f634c7c1215670fce6a12adee84ae5bc392/remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/STAGING/ios.json

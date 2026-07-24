@@ -460,7 +460,7 @@ class RUMTests: XCTestCase {
         config = RUM.Configuration(applicationID: .mockRandom())
         config.urlSessionTracking = nil
         core.remoteConfiguration = RemoteConfiguration(
-            trace: .init(tracedHosts: ["example.com"])
+            trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])
         )
 
         // When

@@ -11,10 +11,10 @@ import DatadogInternal
 extension SessionReplay.Configuration {
     /// Merges the remote configuration on top of this in-code configuration.
     ///
-    /// The `sessionReplay` namespace overrides the supported behavioral parameters: sample rate, the
-    /// three privacy levels, and whether recording starts immediately. Remote values take precedence,
-    /// while any parameter the remote configuration omits keeps its in-code value; passing `nil` (no
-    /// remote configuration was fetched) therefore leaves the configuration entirely unchanged.
+    /// The `sessionReplay` namespace overrides the supported behavioral parameters: sample rate and the
+    /// three privacy levels. Remote values take precedence, while any parameter the remote configuration
+    /// omits keeps its in-code value; passing `nil` (no remote configuration was fetched) therefore
+    /// leaves the configuration entirely unchanged.
     ///
     /// The merge happens once, at `SessionReplay.enable(with:)` time; live updates after initialization
     /// are out of scope.
@@ -39,7 +39,6 @@ extension SessionReplay.Configuration {
         }
 
         override(\.replaySampleRate, with: sessionReplay.sampleRate.map { SampleRate($0) })
-        override(\.startRecordingImmediately, with: sessionReplay.startRecordingImmediately)
         override(\.textAndInputPrivacyLevel, with: sessionReplay.textAndInputPrivacy.map { TextAndInputPrivacyLevel($0) })
         override(\.imagePrivacyLevel, with: sessionReplay.imagePrivacy.map { ImagePrivacyLevel($0) })
         override(\.touchPrivacyLevel, with: sessionReplay.touchPrivacy.map { TouchPrivacyLevel($0) })

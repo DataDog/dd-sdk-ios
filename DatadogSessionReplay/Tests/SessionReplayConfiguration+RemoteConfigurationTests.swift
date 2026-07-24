@@ -55,7 +55,6 @@ class SessionReplayConfiguration_RemoteConfigurationTests: XCTestCase {
 
             // Then
             XCTAssertEqual(configuration.replaySampleRate, SampleRate(try XCTUnwrap(sessionReplay.sampleRate)))
-            XCTAssertEqual(configuration.startRecordingImmediately, try XCTUnwrap(sessionReplay.startRecordingImmediately))
             XCTAssertEqual(configuration.textAndInputPrivacyLevel, expectedTextAndInputPrivacy(try XCTUnwrap(sessionReplay.textAndInputPrivacy)))
             XCTAssertEqual(configuration.imagePrivacyLevel, expectedImagePrivacy(try XCTUnwrap(sessionReplay.imagePrivacy)))
             XCTAssertEqual(configuration.touchPrivacyLevel, expectedTouchPrivacy(try XCTUnwrap(sessionReplay.touchPrivacy)))

@@ -74,11 +74,9 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
     /// `RUMConfiguration_RemoteConfigurationTests` detect any newly generated schema field.
     public static func mockRandom() -> RemoteConfiguration.RUM {
         .init(
-            appHangThresholdMs: .mockRandom(min: 100, max: 5_000),
+            appHang: .mockRandom(),
             applicationId: .mockRandom(),
-            env: .mockRandom(),
-            longTaskThresholdMs: .mockRandom(min: 100, max: 5_000),
-            service: .mockRandom(),
+            longTask: .mockRandom(),
             telemetrySampleRate: .mockRandom(min: 0, max: 100),
             trackAnonymousUser: .mockRandom(),
             trackBackgroundEvents: .mockRandom(),
@@ -93,11 +91,9 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
     }
 
     public static func mockWith(
-        appHangThresholdMs: Double? = nil,
+        appHang: RemoteConfiguration.RUM.AppHang? = nil,
         applicationId: String = .mockAny(),
-        env: String? = nil,
-        longTaskThresholdMs: Double? = nil,
-        service: String? = nil,
+        longTask: RemoteConfiguration.RUM.LongTask? = nil,
         telemetrySampleRate: Double? = nil,
         trackAnonymousUser: Bool? = nil,
         trackBackgroundEvents: Bool? = nil,
@@ -110,11 +106,9 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
         vitalsUpdateFrequency: RemoteConfiguration.RUM.VitalsUpdateFrequency? = nil
     ) -> RemoteConfiguration.RUM {
         .init(
-            appHangThresholdMs: appHangThresholdMs,
+            appHang: appHang,
             applicationId: applicationId,
-            env: env,
-            longTaskThresholdMs: longTaskThresholdMs,
-            service: service,
+            longTask: longTask,
             telemetrySampleRate: telemetrySampleRate,
             trackAnonymousUser: trackAnonymousUser,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -126,6 +120,44 @@ extension RemoteConfiguration.RUM: AnyMockable, RandomMockable {
             trackWatchdogTerminations: trackWatchdogTerminations,
             vitalsUpdateFrequency: vitalsUpdateFrequency
         )
+    }
+}
+
+extension RemoteConfiguration.RUM.AppHang: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.RUM.AppHang {
+        mockWith()
+    }
+
+    /// `enabled` is fixed to `true` so callers exercising every field (e.g. exhaustiveness checks) can
+    /// rely on `threshold` always taking effect; use `mockWith(enabled:)` to test `enabled == false`.
+    public static func mockRandom() -> RemoteConfiguration.RUM.AppHang {
+        .init(enabled: true, threshold: .mockRandom(min: 100, max: 5_000))
+    }
+
+    public static func mockWith(
+        enabled: Bool? = nil,
+        threshold: Double? = nil
+    ) -> RemoteConfiguration.RUM.AppHang {
+        .init(enabled: enabled, threshold: threshold)
+    }
+}
+
+extension RemoteConfiguration.RUM.LongTask: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.RUM.LongTask {
+        mockWith()
+    }
+
+    /// `enabled` is fixed to `true` so callers exercising every field (e.g. exhaustiveness checks) can
+    /// rely on `threshold` always taking effect; use `mockWith(enabled:)` to test `enabled == false`.
+    public static func mockRandom() -> RemoteConfiguration.RUM.LongTask {
+        .init(enabled: true, threshold: .mockRandom(min: 100, max: 5_000))
+    }
+
+    public static func mockWith(
+        enabled: Bool? = nil,
+        threshold: Double? = nil
+    ) -> RemoteConfiguration.RUM.LongTask {
+        .init(enabled: enabled, threshold: threshold)
     }
 }
 
@@ -148,22 +180,19 @@ extension RemoteConfiguration.Trace: AnyMockable, RandomMockable {
         .init(
             sampleRate: .mockRandom(min: 0, max: 100),
             traceContextInjection: .mockRandom(),
-            tracedHosts: ["api.example.com", "example.com"],
-            tracingHeaderTypes: [.mockRandom()]
+            tracedHosts: [.mockRandom(), .mockRandom()]
         )
     }
 
     public static func mockWith(
         sampleRate: Double? = nil,
         traceContextInjection: RemoteConfiguration.Trace.TraceContextInjection? = nil,
-        tracedHosts: [String]? = nil,
-        tracingHeaderTypes: [RemoteConfiguration.Trace.TracingHeaderTypes]? = nil
+        tracedHosts: [RemoteConfiguration.Trace.TracedHosts]? = nil
     ) -> RemoteConfiguration.Trace {
         .init(
             sampleRate: sampleRate,
             traceContextInjection: traceContextInjection,
-            tracedHosts: tracedHosts,
-            tracingHeaderTypes: tracingHeaderTypes
+            tracedHosts: tracedHosts
         )
     }
 }
@@ -174,8 +203,18 @@ extension RemoteConfiguration.Trace.TraceContextInjection: RandomMockable {
     }
 }
 
-extension RemoteConfiguration.Trace.TracingHeaderTypes: RandomMockable {
-    public static func mockRandom() -> RemoteConfiguration.Trace.TracingHeaderTypes {
+extension RemoteConfiguration.Trace.TracedHosts: AnyMockable, RandomMockable {
+    public static func mockAny() -> RemoteConfiguration.Trace.TracedHosts {
+        .init(host: .mockAny(), propagatorTypes: [.mockRandom()])
+    }
+
+    public static func mockRandom() -> RemoteConfiguration.Trace.TracedHosts {
+        .init(host: .mockRandom(), propagatorTypes: [.mockRandom()])
+    }
+}
+
+extension RemoteConfiguration.Trace.TracedHosts.PropagatorTypes: RandomMockable {
+    public static func mockRandom() -> RemoteConfiguration.Trace.TracedHosts.PropagatorTypes {
         [.datadog, .b3, .b3multi, .tracecontext].randomElement()!
     }
 }
@@ -193,7 +232,6 @@ extension RemoteConfiguration.SessionReplay: AnyMockable, RandomMockable {
         .init(
             imagePrivacy: .mockRandom(),
             sampleRate: .mockRandom(min: 0, max: 100),
-            startRecordingImmediately: .mockRandom(),
             textAndInputPrivacy: .mockRandom(),
             touchPrivacy: .mockRandom()
         )
@@ -202,14 +240,12 @@ extension RemoteConfiguration.SessionReplay: AnyMockable, RandomMockable {
     public static func mockWith(
         imagePrivacy: RemoteConfiguration.SessionReplay.ImagePrivacy? = nil,
         sampleRate: Double? = nil,
-        startRecordingImmediately: Bool? = nil,
         textAndInputPrivacy: RemoteConfiguration.SessionReplay.TextAndInputPrivacy? = nil,
         touchPrivacy: RemoteConfiguration.SessionReplay.TouchPrivacy? = nil
     ) -> RemoteConfiguration.SessionReplay {
         .init(
             imagePrivacy: imagePrivacy,
             sampleRate: sampleRate,
-            startRecordingImmediately: startRecordingImmediately,
             textAndInputPrivacy: textAndInputPrivacy,
             touchPrivacy: touchPrivacy
         )
