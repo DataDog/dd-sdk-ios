@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
@@ -22,6 +23,28 @@ extension CALayer {
         delegate?.isKind(of: Classes.liquidLensView) == true
     }
 
+    var isPortal: Bool {
+        isKind(of: Classes.portalLayer)
+    }
+
+    var isSignedDistanceField: Bool {
+        isKind(of: Classes.sdfLayer) || isKind(of: Classes.sdfElementLayer)
+    }
+
+    var isDestinationOutView: Bool {
+        guard let view = delegate as? UIView else {
+            return false
+        }
+
+        let viewClass = type(of: view)
+        return Bundle(for: viewClass) == Bundle(for: UIView.self)
+            && NSStringFromClass(viewClass).hasSuffix("DestOutView")
+    }
+
+    var isTabBarPlatter: Bool {
+        delegate?.isKind(of: Classes.tabBarPlatterView) == true
+    }
+
     var isVisualEffectBackground: Bool {
         delegate?.isKind(of: Classes.visualEffectBackgroundView) == true
     }
@@ -35,6 +58,10 @@ private enum Classes {
     static let barBackground: AnyClass? = NSClassFromString("_UIBarBackground")
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
+    static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
+    static let sdfLayer: AnyClass? = NSClassFromString("CASDFLayer")
+    static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
+    static let tabBarPlatterView: AnyClass? = NSClassFromString("UIKit._UITabBarPlatterView")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
     static let backdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
 }

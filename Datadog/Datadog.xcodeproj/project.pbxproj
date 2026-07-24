@@ -372,6 +372,10 @@
 		5B7448422EFBB77E003E622C /* ScreenChangeMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */; };
 		5B7448442EFBBF07003E622C /* ScreenChangeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */; };
 		5B7448462EFBC7E5003E622C /* ScreenChangeSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B7448452EFBC7D8003E622C /* ScreenChangeSchedulerTests.swift */; };
+		5B8059023000000100A80590 /* LayerWireframeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8059013000000100A80590 /* LayerWireframeBuilder.swift */; };
+		5B8059043000000100A80590 /* CompositionLayerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8059033000000100A80590 /* CompositionLayerBuilder.swift */; };
+		5B8059063000000100A80590 /* LayerWireframeBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8059053000000100A80590 /* LayerWireframeBuilderTests.swift */; };
+		5B8059083000000100A80590 /* CompositionLayerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8059073000000100A80590 /* CompositionLayerBuilderTests.swift */; };
 		5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */; };
 		5B9B20C52E460A0600C95B6C /* ShapeResourceBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */; };
 		5B9CB9E32E41F6F9005485E6 /* ImageRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */; };
@@ -2184,6 +2188,10 @@
 		5B7448412EFBB777003E622C /* ScreenChangeMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeMonitorTests.swift; sourceTree = "<group>"; };
 		5B7448432EFBBF00003E622C /* ScreenChangeScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeScheduler.swift; sourceTree = "<group>"; };
 		5B7448452EFBC7D8003E622C /* ScreenChangeSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenChangeSchedulerTests.swift; sourceTree = "<group>"; };
+		5B8059013000000100A80590 /* LayerWireframeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerWireframeBuilder.swift; sourceTree = "<group>"; };
+		5B8059033000000100A80590 /* CompositionLayerBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionLayerBuilder.swift; sourceTree = "<group>"; };
+		5B8059053000000100A80590 /* LayerWireframeBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerWireframeBuilderTests.swift; sourceTree = "<group>"; };
+		5B8059073000000100A80590 /* CompositionLayerBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionLayerBuilderTests.swift; sourceTree = "<group>"; };
 		5B9565FB2E86BBF600EAF677 /* FlagDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagDetails.swift; sourceTree = "<group>"; };
 		5B9B20C42E4609FC00C95B6C /* ShapeResourceBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilderTests.swift; sourceTree = "<group>"; };
 		5B9CB9E22E41F6F6005485E6 /* ImageRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRepresentable.swift; sourceTree = "<group>"; };
@@ -4076,6 +4084,8 @@
 				5BF2BC742FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift */,
 				3F2ED47E396E4030BF5D0469 /* OcclusionMapTests.swift */,
 				5BB771AB2FE8769B00C95960 /* CompositionTreeBuilderTests.swift */,
+				5B8059053000000100A80590 /* LayerWireframeBuilderTests.swift */,
+				5B8059073000000100A80590 /* CompositionLayerBuilderTests.swift */,
 				5BB771AD2FE876B000C95960 /* CALayerSnapshotSRCompositionLayerTests.swift */,
 				5BB771AF2FE876D600C95960 /* PathCornerRadiiTests.swift */,
 				5BB771BB2FEF3A6F00C95960 /* LayerRecordBuilderTests.swift */,
@@ -6165,6 +6175,8 @@
 				5BB771A92FE7E84500C95960 /* CALayerSnapshot+SRCompositionLayer.swift */,
 				5BB09C9C2FC89A49003DB9FF /* CATransform3D+AxisAligned.swift */,
 				5BB771A52FE5916E00C95960 /* CompositionTreeBuilder.swift */,
+				5B8059033000000100A80590 /* CompositionLayerBuilder.swift */,
+				5B8059013000000100A80590 /* LayerWireframeBuilder.swift */,
 				5BB771B92FEF3A3E00C95960 /* LayerRecordBuilder.swift */,
 				759302002FF0000100000001 /* LayerSnapshotProcessor.swift */,
 				759200052FD2000100000001 /* ContentSnapshot.swift */,
@@ -8452,8 +8464,10 @@
 				5BF2BC6A2FC085E2000E999C /* CALayerSnapshot+Context.swift in Sources */,
 				D2AD1CC92CE4AE6600106C74 /* SwiftUIWireframesBuilder.swift in Sources */,
 				5BB771A82FE59F9000C95960 /* Path+CornerRadii.swift in Sources */,
+				5B8059043000000100A80590 /* CompositionLayerBuilder.swift in Sources */,
 				969B3B212C33F80500D62400 /* UIActivityIndicatorRecorder.swift in Sources */,
 				5BB771A62FE5917900C95960 /* CompositionTreeBuilder.swift in Sources */,
+				5B8059023000000100A80590 /* LayerWireframeBuilder.swift in Sources */,
 				5B2DFB41300299740042945D /* SemanticObservationMapping+Common.swift in Sources */,
 				5BB771BA2FEF3A3E00C95960 /* LayerRecordBuilder.swift in Sources */,
 				759302012FF0000100000001 /* LayerSnapshotProcessor.swift in Sources */,
@@ -8656,6 +8670,8 @@
 				5BF2BC752FC4D520000E999C /* LayerTreeSnapshotBuilderTests.swift in Sources */,
 				17EFC9D8185942399E05BDB4 /* OcclusionMapTests.swift in Sources */,
 				5BB771AC2FE8769B00C95960 /* CompositionTreeBuilderTests.swift in Sources */,
+				5B8059063000000100A80590 /* LayerWireframeBuilderTests.swift in Sources */,
+				5B8059083000000100A80590 /* CompositionLayerBuilderTests.swift in Sources */,
 				5BB771BC2FEF3A6F00C95960 /* LayerRecordBuilderTests.swift in Sources */,
 				759302032FF0000100000001 /* LayerSnapshotProcessorTests.swift in Sources */,
 				759302052FF0000100000001 /* LayerTreeSnapshotMocks.swift in Sources */,

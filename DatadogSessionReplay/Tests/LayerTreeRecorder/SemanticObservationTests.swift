@@ -17,6 +17,8 @@ import WebKit
 @Suite(.datadogTesting)
 @MainActor
 struct SemanticObservationTests {
+    private final class DestOutView: UIView {}
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
@@ -107,6 +109,183 @@ struct SemanticObservationTests {
             semantics: .visualEffect(.backdrop),
             ignoresSublayers: true
         ))
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records tab bar platter as an automatic capsule and records sublayers")
+    func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let platterView = try #require(
+            tabBarController.tabBar.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "UIKit._UITabBarPlatterView"
+            }
+        )
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(
+            layer: platterView.layer,
+            context: .mockAny()
+        )
+
+        // Then
+        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records portal semantics and collects hidden source replay IDs")
+    func recordsPortalSemanticsAndCollectsHiddenSourceReplayIDs() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let portalLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CAPortalLayer"
+                    && ($0.value(forKey: "hidesSourceLayer") as? Bool) == true
+            }
+        )
+        let sourceLayer = try #require(portalLayer.value(forKey: "sourceLayer") as? CALayer)
+        let sourceRect = sourceLayer.convert(portalLayer.bounds, from: portalLayer)
+        let sourceSublayer = CALayer()
+        sourceSublayer.frame = sourceRect
+        sourceLayer.addSublayer(sourceSublayer)
+        defer { sourceSublayer.removeFromSuperlayer() }
+        let context = CALayerSnapshot.Context.mockAny()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: portalLayer, context: context)
+
+        // Then
+        guard case .visualEffect(.portal(let portal)) = observation.semantics else {
+            Issue.record("Expected portal semantics")
+            return
+        }
+
+        #expect(portal.sourceLayer.matches(sourceLayer))
+        #expect(portal.sourceRect == sourceRect)
+        #expect(portal.isOpaque == sourceLayer.isOpaque)
+        #expect(portal.dependencies.contains(CALayerReference(sourceLayer)))
+        #expect(portal.dependencies.contains(CALayerReference(sourceSublayer)))
+        #expect(observation.ignoresSublayers)
+        #expect(context.hiddenPortalSourceReplayIDs == [sourceLayer.replayID])
+    }
+
+    @available(iOS 26.0, *)
+    @Test("Records tab bar compositor infrastructure as compositor support")
+    func recordsTabBarCompositorInfrastructureAsCompositorSupport() throws {
+        // Given
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = (0..<3).map { index in
+            let viewController = UIViewController()
+            viewController.tabBarItem = UITabBarItem(
+                title: "Tab \(index)",
+                image: UIImage(systemName: "circle"),
+                tag: index
+            )
+            return viewController
+        }
+
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
+        tabBarController.view.layoutIfNeeded()
+        defer { window.isHidden = true }
+
+        let sdfLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CASDFLayer"
+            }
+        )
+        let sdfElementLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CASDFElementLayer"
+            }
+        )
+        let destinationOutLayer = try #require(
+            tabBarController.tabBar.layer.firstDescendant {
+                guard let delegate = $0.delegate else {
+                    return false
+                }
+                return NSStringFromClass(type(of: delegate)).hasSuffix("DestOutView")
+            }
+        )
+        let nonHidingPortalLayer = try #require(
+            window.layer.firstDescendant {
+                NSStringFromClass(type(of: $0)) == "CAPortalLayer"
+                    && ($0.value(forKey: "hidesSourceLayer") as? Bool) != true
+            }
+        )
+
+        // When
+        let sdfObservation = CALayerSnapshot.SemanticObservation(layer: sdfLayer, context: .mockAny())
+        let sdfElementObservation = CALayerSnapshot.SemanticObservation(layer: sdfElementLayer, context: .mockAny())
+        let destinationOutObservation = CALayerSnapshot.SemanticObservation(
+            layer: destinationOutLayer,
+            context: .mockAny()
+        )
+        let nonHidingPortalObservation = CALayerSnapshot.SemanticObservation(
+            layer: nonHidingPortalLayer,
+            context: .mockAny()
+        )
+
+        // Then
+        let expectedSDFObservation = CALayerSnapshot.SemanticObservation(
+            semantics: .visualEffect(.compositorSupport)
+        )
+        #expect(sdfObservation == expectedSDFObservation)
+        #expect(sdfElementObservation == expectedSDFObservation)
+        #expect(destinationOutObservation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
+        #expect(nonHidingPortalObservation == .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        ))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records application DestOutView as plain layer semantics")
+    func recordsApplicationDestOutViewAsPlainLayerSemantics() {
+        // Given
+        let view = DestOutView()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: view.layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(semantics: .layer))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
@@ -547,6 +726,36 @@ struct SemanticObservationTests {
             )
         )
         #expect(webViewCache.allObjects.first === webView)
+    }
+}
+
+@available(iOS 26.0, *)
+private extension UIView {
+    func firstDescendant(where predicate: (UIView) -> Bool) -> UIView? {
+        for subview in subviews {
+            if predicate(subview) {
+                return subview
+            }
+            if let match = subview.firstDescendant(where: predicate) {
+                return match
+            }
+        }
+        return nil
+    }
+}
+
+@available(iOS 26.0, *)
+private extension CALayer {
+    func firstDescendant(where predicate: (CALayer) -> Bool) -> CALayer? {
+        for sublayer in sublayers ?? [] {
+            if predicate(sublayer) {
+                return sublayer
+            }
+            if let match = sublayer.firstDescendant(where: predicate) {
+                return match
+            }
+        }
+        return nil
     }
 }
 

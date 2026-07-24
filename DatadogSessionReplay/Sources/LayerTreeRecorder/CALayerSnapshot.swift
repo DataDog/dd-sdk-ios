@@ -230,7 +230,7 @@ extension CALayer {
     }
 
     @MainActor
-    fileprivate func visibleDependencies(rootLayer: CALayer, visibleBounds: CGRect) -> [CALayer] {
+    func visibleDependencies(rootLayer: CALayer, visibleBounds: CGRect) -> [CALayer] {
         guard !isHidden, opacity > 0 else {
             return []
         }

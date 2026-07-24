@@ -49,4 +49,12 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
             folderPath: snapshotsFolderPath
         )
     }
+
+    func testTab() async throws {
+        try await takeLayerSnapshotFor(
+            TabFixtureView(),
+            shouldRecord: shouldRecord,
+            folderPath: snapshotsFolderPath
+        )
+    }
 }

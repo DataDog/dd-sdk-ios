@@ -211,7 +211,11 @@ internal class LayerSnapshotTestCase: XCTestCase {
             throw LayerSnapshotTestError.missingLayerTreeSnapshot
         }
 
-        guard let optimizedRoot = layerTreeSnapshot.root.removingOccluded() else {
+        guard
+            let optimizedRoot = layerTreeSnapshot.root
+                .removingLayers(withReplayIDs: layerTreeSnapshot.hiddenPortalSourceReplayIDs)?
+                .removingOccluded()
+        else {
             throw LayerSnapshotTestError.missingOptimizedRoot
         }
 

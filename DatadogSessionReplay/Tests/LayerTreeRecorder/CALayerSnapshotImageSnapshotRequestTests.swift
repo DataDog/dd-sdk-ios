@@ -35,6 +35,59 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates content snapshot request for portal source")
+    func createsContentSnapshotRequestForPortalSource() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 402, height: 874)
+        let sourceLayer = CALayer()
+        sourceLayer.frame = CGRect(x: 6, y: 16, width: 108, height: 48)
+        rootLayer.addSublayer(sourceLayer)
+        let sourceRect = CGRect(x: 4, y: 4, width: 100, height: 40)
+        let sourceSublayer = CALayer()
+        sourceSublayer.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        sourceLayer.addSublayer(sourceSublayer)
+        let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        let snapshot = CALayerSnapshot.mockWith(
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.portal(.init(
+                sourceLayer: CALayerReference(sourceLayer),
+                sourceRect: sourceRect,
+                isOpaque: true,
+                dependencies: [
+                    CALayerReference(sourceLayer),
+                    CALayerReference(sourceSublayer)
+                ]
+            ))))
+        )
+        let cache = ImageSnapshotCache()
+        let changeset = CALayerChangeset.mockChange(for: sourceSublayer, aspects: .display)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: changeset, cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        let request = try #require(requests.first?.content)
+        #expect(request.replayID == snapshot.replayID)
+        #expect(request.layer.matches(sourceLayer))
+        #expect(request.bounds == sourceRect)
+        #expect(request.absoluteFrame == frame)
+        #expect(request.isOpaque)
+        #expect(request.dependencies == [
+            CALayerReference(sourceLayer),
+            CALayerReference(sourceSublayer)
+        ])
+        #expect(request.hasChanges)
+
+        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        #expect(resolvedRequest.layer === sourceLayer)
+        #expect(resolvedRequest.renderBounds == sourceRect)
+        #expect(resolvedRequest.localRect == sourceRect)
+        #expect(resolvedRequest.frame == frame)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips content snapshot request for gradient")
     func skipsContentSnapshotRequestForGradient() throws {
         // Given

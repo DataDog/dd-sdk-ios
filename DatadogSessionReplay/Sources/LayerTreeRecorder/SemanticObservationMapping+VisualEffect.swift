@@ -10,6 +10,75 @@ import UIKit
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let signedDistanceField = Self { layer, _, _ in
+        guard layer.isSignedDistanceField else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.compositorSupport))
+    }
+
+    static let destinationOutView = Self { layer, _, _ in
+        guard layer.isDestinationOutView else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
+    }
+
+    static let portal = Self { layer, _, context in
+        guard layer.isPortal else {
+            return nil
+        }
+
+        guard (layer.value(forKey: "hidesSourceLayer") as? Bool) == true else {
+            return .init(
+                semantics: .visualEffect(.compositorSupport),
+                ignoresSublayers: true
+            )
+        }
+
+        guard let sourceLayer = layer.value(forKey: "sourceLayer") as? CALayer else {
+            return .init(
+                semantics: .visualEffect(.compositorSupport),
+                ignoresSublayers: true
+            )
+        }
+
+        context.hiddenPortalSourceReplayIDs.insert(sourceLayer.replayID)
+        let sourceRect = sourceLayer.convert(layer.bounds, from: layer)
+        let dependencies = sourceLayer.visibleDependencies(
+            rootLayer: sourceLayer,
+            visibleBounds: sourceRect
+        )
+        .map(CALayerReference.init)
+
+        return .init(
+            semantics: .visualEffect(
+                .portal(
+                    .init(
+                        sourceLayer: CALayerReference(sourceLayer),
+                        sourceRect: sourceRect,
+                        isOpaque: sourceLayer.isOpaque,
+                        dependencies: dependencies
+                    )
+                )
+            ),
+            ignoresSublayers: true
+        )
+    }
+
+    static let tabBarPlatter = Self { layer, _, _ in
+        guard layer.isTabBarPlatter else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.automaticCapsule))
+    }
+
     static let glassGroup = Self { layer, _, _ in
         guard layer.isGlassGroup else {
             return nil

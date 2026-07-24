@@ -22,7 +22,8 @@ extension LayerTreeSnapshot {
         viewID: String = "view-id",
         viewportSize: CGSize = CGSize(width: 320, height: 640),
         root: CALayerSnapshot = .mockRoot(),
-        webViewSlotIDs: Set<Int> = []
+        webViewSlotIDs: Set<Int> = [],
+        hiddenPortalSourceReplayIDs: Set<Int64> = []
     ) -> LayerTreeSnapshot {
         return LayerTreeSnapshot(
             date: date,
@@ -40,7 +41,8 @@ extension LayerTreeSnapshot {
             ),
             viewportSize: viewportSize,
             root: root,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            hiddenPortalSourceReplayIDs: hiddenPortalSourceReplayIDs
         )
     }
 }
@@ -64,7 +66,10 @@ extension CALayerSnapshot {
         absoluteFrame: CGRect = .zero,
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
         backgroundColor: CGColor? = nil,
+        cornerRadii: CALayerSnapshot.CornerRadii = .zero,
+        filters: [CALayerSnapshot.Filter] = [],
         isPrivate: Bool = false,
+        isOpaque: Bool = false,
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
         let layer = CALayer()
@@ -88,16 +93,16 @@ extension CALayerSnapshot {
             sublayerTransform: CATransform3DIdentity,
             mask: nil,
             masksToBounds: false,
-            isOpaque: false,
+            isOpaque: isOpaque,
             backgroundColor: backgroundColor,
-            cornerRadii: .zero,
+            cornerRadii: cornerRadii,
             cornerCurve: .circular,
             borderWidth: 0,
             borderColor: nil,
             opacity: 1,
             allowsGroupOpacity: true,
             compositingFilter: nil,
-            filters: [],
+            filters: filters,
             shadowColor: nil,
             shadowOpacity: 0,
             shadowOffset: .zero,

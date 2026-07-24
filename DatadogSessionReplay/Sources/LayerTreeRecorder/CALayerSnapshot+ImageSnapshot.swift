@@ -73,6 +73,8 @@ extension CALayerSnapshot {
             return true
         case .image(let image) where imagePrivacyLevel == .maskNonBundledOnly && image.isContextual:
             return true
+        case .visualEffect(.portal):
+            return true
         case .layer:
             return true
         default:
@@ -122,14 +124,32 @@ extension ContentSnapshotRequest {
             return nil
         }
 
+        let layer: CALayerReference
+        let bounds: CGRect
+        let isOpaque: Bool
+        let dependencies: [CALayerReference]
+
+        switch layerSnapshot.observation.semantics {
+        case .visualEffect(.portal(let portal)):
+            layer = portal.sourceLayer
+            bounds = portal.sourceRect
+            isOpaque = portal.isOpaque
+            dependencies = portal.dependencies
+        default:
+            layer = layerSnapshot.layer
+            bounds = layerSnapshot.bounds
+            isOpaque = layerSnapshot.isOpaque
+            dependencies = layerSnapshot.dependencies
+        }
+
         let previousSnapshotData = cache.contentSnapshotData(forReplayID: layerSnapshot.replayID)
-        let hasChanges = changeset.hasContentChanges(for: layerSnapshot.layer)
-            || changeset.hasChanges(for: layerSnapshot.dependencies)
-            || (previousSnapshotData.map { $0.dependencies != layerSnapshot.dependencies } ?? false)
+        let hasChanges = changeset.hasContentChanges(for: layer)
+            || changeset.hasChanges(for: dependencies)
+            || (previousSnapshotData.map { $0.dependencies != dependencies } ?? false)
 
         if layerSnapshot.layerClass == CALayer.self,
            layerSnapshot.contentsClass == nil,
-           layerSnapshot.dependencies.isEmpty,
+           dependencies.isEmpty,
            !hasChanges,
            previousSnapshotData == nil {
             return nil
@@ -137,16 +157,16 @@ extension ContentSnapshotRequest {
 
         self.init(
             replayID: layerSnapshot.replayID,
-            layer: layerSnapshot.layer,
+            layer: layer,
             layerClass: layerSnapshot.layerClass,
             delegateClass: layerSnapshot.delegateClass,
             hasLayerSemantics: layerSnapshot.observation.semantics == .layer,
-            bounds: layerSnapshot.bounds,
+            bounds: bounds,
             absoluteFrame: layerSnapshot.absoluteFrame,
             visibleFrame: visibleFrame,
-            isOpaque: layerSnapshot.isOpaque,
+            isOpaque: isOpaque,
             hasContents: layerSnapshot.contentsClass != nil,
-            dependencies: layerSnapshot.dependencies,
+            dependencies: dependencies,
             hasChanges: hasChanges,
             textAndInputPrivacyLevel: layerSnapshot.textAndInputPrivacyLevel,
             imagePrivacyLevel: layerSnapshot.imagePrivacyLevel,
