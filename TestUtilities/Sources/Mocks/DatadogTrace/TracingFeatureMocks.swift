@@ -107,7 +107,8 @@ extension DatadogTracer {
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
-        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny(),
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) -> DatadogTracer {
         return DatadogTracer(
             core: core,
@@ -117,7 +118,8 @@ extension DatadogTracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 
@@ -129,7 +131,8 @@ extension DatadogTracer {
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
-        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny(),
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) -> DatadogTracer {
         return DatadogTracer(
             featureScope: featureScope,
@@ -139,7 +142,8 @@ extension DatadogTracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 }

@@ -25,3 +25,13 @@ internal extension OTSpan {
 internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }
 }
+
+final class SpanSnapshotCapture: @unchecked Sendable {
+    private(set) var snapshots: [SpanSnapshot] = []
+
+    var snapshot: SpanSnapshot? { snapshots.last }
+
+    func capture(_ snapshot: SpanSnapshot) {
+        snapshots.append(snapshot)
+    }
+}
