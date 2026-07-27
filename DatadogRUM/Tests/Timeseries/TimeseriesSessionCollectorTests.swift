@@ -35,6 +35,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -73,6 +74,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -110,6 +112,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-both", applicationID: "app-both", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -144,6 +147,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-offset", applicationID: "app-offset", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -176,6 +180,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-rn", applicationID: "app-rn", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -205,6 +210,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -234,10 +240,12 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
         collector.start(sessionID: "session-ending-view", applicationID: "app-ending-view", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // The view ends right before the batch is flushed
         scope.contextMock = .mockWith(additionalContext: [])
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
 
         let syncExpectation = self.expectation(description: "stop completed")
         collector.stop()
@@ -294,6 +302,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         firstExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Start session-2 without calling stop() first
@@ -328,6 +337,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
 
         collector.start(sessionID: "session-xyz", applicationID: "app-456", sessionType: .synthetics)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
@@ -361,6 +371,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
 
         collector.start(sessionID: "session-xyz", applicationID: "app-456", sessionType: .ciTest)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
@@ -419,6 +430,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         firstExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Second session — start() resets buffers and updates metadata
@@ -426,6 +438,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         secondExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { secondExpectation.fulfill() }
         collector.start(sessionID: "session-2", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Flush second session
@@ -458,6 +471,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { samplingExpectation.fulfill() }
 
         collector.start(sessionID: "session-pause", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
@@ -490,6 +504,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         )
 
         collector.start(sessionID: "session-resume", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         let pauseExpectation = self.expectation(description: "pause settled")
         collector.pause()
@@ -528,6 +543,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { startExpectation.fulfill() }
 
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
@@ -585,6 +601,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
+        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
