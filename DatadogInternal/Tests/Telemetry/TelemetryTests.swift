@@ -151,6 +151,36 @@ class TelemetryTests: XCTestCase {
         XCTAssertFalse("\(error)".contains(attributeValue), "error must not capture raw attribute values: \(error)")
     }
 
+    // `DecodingError` doesn't conform to `TelemetrySanitizableError`, so it goes through
+    // `sanitizeForTelemetry(_:)`'s dedicated `DecodingError` branch - only `context.debugDescription`/
+    // `codingPath` must be reported, never the raw decoded value.
+    func testSendingErrorTelemetry_withDecodingError() throws {
+        // Given
+        struct Response: Decodable { let count: Int }
+        let sensitiveValue = "sensitive-value-\(String.mockRandom(length: 16))"
+        let json = "{\"count\": \"\(sensitiveValue)\"}".data(using: .utf8)! // `count` should be an `Int`, not a `String`
+
+        let decodingError: DecodingError
+        do {
+            _ = try JSONDecoder().decode(Response.self, from: json)
+            XCTFail("Decoding a type-mismatched value should fail")
+            fatalError("Decoding a type-mismatched value should fail")
+        } catch let error as DecodingError {
+            decodingError = error
+        } catch {
+            XCTFail("Expected a DecodingError, got \(error)")
+            fatalError("Expected a DecodingError, got \(error)")
+        }
+
+        // When
+        telemetry.error("failed to decode response", error: decodingError)
+
+        // Then
+        let error = try XCTUnwrap(telemetry.messages.compactMap({ $0.asError }).first)
+        XCTAssertEqual(error.kind, "DecodingError.typeMismatch")
+        XCTAssertFalse("\(error)".contains(sensitiveValue), "error must not capture raw decoded values: \(error)")
+    }
+
     func testSendingErrorTelemetry_withNSError() throws {
         // Given
         let nsError = NSError(
