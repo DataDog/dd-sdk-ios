@@ -221,6 +221,97 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].view.url, "/view/abc")
     }
 
+    func testWhenActiveViewHasName_itAttachesViewNameToEvent() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let rum: RUMCoreContext = .mockWith(viewID: "view-abc", viewPath: "/view/abc", viewName: "ViewController")
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-view-name", applicationID: "app-view-name", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].view.name, "ViewController")
+    }
+
+    func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let rum: RUMCoreContext = .mockAny()
+        let hasReplay = SessionReplayCoreContext.HasReplay(value: true)
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum, hasReplay]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-has-replay", applicationID: "app-has-replay", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].session.hasReplay, true)
+    }
+
+    func testItPopulatesSessionSampleRateFromConstructorInjectedValue() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            sessionSampleRate: 42
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-sample-rate", applicationID: "app-sample-rate", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].dd.configuration?.sessionSampleRate, 42)
+    }
+
     func testWhenViewEndsRightBeforeFlush_itStillAttachesTheViewSamplesWereCollectedUnder() {
         // Given
         memoryReader.vitalData = 1_000_000
