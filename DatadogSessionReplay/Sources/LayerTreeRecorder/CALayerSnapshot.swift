@@ -40,7 +40,7 @@ internal struct CALayerSnapshot: Sendable {
     /// The layer's frame in the root layer coordinate space.
     var absoluteFrame: CGRect
 
-    /// Geometry used to render the layer content into an image.
+    /// The geometry used to capture this layer's rendered content.
     var contentGeometry: ContentGeometry
 
     var sublayers: [CALayerSnapshot]
@@ -73,17 +73,18 @@ internal struct CALayerSnapshot: Sendable {
 
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
-    /// Geometry captured for rendering the layer content.
+    /// Describes the bounds and placement of a layer's rendered content.
     struct ContentGeometry: Sendable {
-        /// The complete area that can contribute pixels, in the source layer coordinate space.
+        /// The full content bounds in the layer's coordinate space.
         let renderBounds: CGRect
 
-        /// The portion of `renderBounds` captured in the bitmap.
+        /// The captured portion of `renderBounds`, in the layer's coordinate space.
         let localRect: CGRect
 
-        /// The bitmap frame in the root layer coordinate space.
+        /// The captured content frame in the root layer's coordinate space.
         var frame: CGRect
 
+        /// Whether `localRect` contains only part of `renderBounds`.
         var isPartial: Bool {
             !renderBounds.equalTo(localRect)
         }
