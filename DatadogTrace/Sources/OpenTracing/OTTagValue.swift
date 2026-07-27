@@ -71,17 +71,18 @@ internal func flattenedTags(_ tags: [String: OTTagValue]) -> FlattenedTags {
         ["b": ...] entry) — only one of them was kept.
         """
     )
-    var tagsByLeaf: [String: OTTagValue] = [:]
-    var ownerByLeaf: [String: String] = [:]
+    // Last-write-wins per leaf — same rule `Dictionary(pairs, uniquingKeysWith:)` applies below — but keeping
+    // `value` and `owner` together in one dictionary so a leaf's recorded owner can never drift out of sync
+    // with the value that actually won its collision.
+    var winners: [String: (value: OTTagValue, owner: String)] = [:]
     for triple in triples {
-        tagsByLeaf[triple.leaf] = triple.value
-        ownerByLeaf[triple.leaf] = triple.owner
+        winners[triple.leaf] = (triple.value, triple.owner)
     }
     var owners: [String: Set<String>] = [:]
-    for (leaf, owner) in ownerByLeaf {
-        owners[owner, default: []].insert(leaf)
+    for (leaf, winner) in winners {
+        owners[winner.owner, default: []].insert(leaf)
     }
-    return FlattenedTags(tags: tagsByLeaf, owners: owners)
+    return FlattenedTags(tags: winners.mapValues { $0.value }, owners: owners)
 }
 
 /// The result of flattening a group of tags: the flattened leaf tags themselves, plus, for each original
@@ -92,6 +93,15 @@ internal func flattenedTags(_ tags: [String: OTTagValue]) -> FlattenedTags {
 internal struct FlattenedTags {
     let tags: [String: OTTagValue]
     let owners: [String: Set<String>]
+}
+
+/// Removes `leaves` from every owner's set in `owners` — a leaf that just moved to a new owner can no longer be
+/// claimed by whichever key used to own it. Shared by `DDSpan.storeFlattenedTags` (a single key takes over some
+/// leaves) and `mergeTags` (a user tag takes over leaves a global key used to own).
+internal func releaseOwnership(of leaves: Set<String>, in owners: inout [String: Set<String>]) {
+    for key in owners.keys {
+        owners[key]?.subtract(leaves)
+    }
 }
 
 /// Merges tracer-level default tags with per-span user tags, user tags winning on key collision.
@@ -123,14 +133,10 @@ internal func mergeTags(global: FlattenedTags, user: [String: OTTagValue]?) -> F
         reducedTags = reducedTags.filter { $0.key != key && !staleChildren.contains($0.key) }
         reducedOwners[key] = nil
     }
-    // A leaf now (re)produced by one of `user`'s own top-level keys can no longer be owned by an unrelated
-    // global key — e.g. a global `"ctx": ["foo": ...]` (flattened to `"ctx.foo"`) later overridden by a user's
-    // own literal `"ctx.foo"` tag. Without this, "ctx" would still claim "ctx.foo" and a later per-span
-    // `setTag(key: "ctx", ...)` would drop the user's own tag — same cross-owner cleanup as
-    // `DDSpan.storeFlattenedTags`.
-    for otherKey in reducedOwners.keys {
-        reducedOwners[otherKey]?.subtract(newLeafKeys)
-    }
+    // E.g. a global `"ctx": ["foo": ...]` (flattened to `"ctx.foo"`) later overridden by a user's own literal
+    // `"ctx.foo"` tag — without this, "ctx" would still claim "ctx.foo" and a later per-span `setTag(key:
+    // "ctx", ...)` would drop the user's own tag.
+    releaseOwnership(of: newLeafKeys, in: &reducedOwners)
     return FlattenedTags(
         tags: reducedTags.merging(flattenedUser.tags) { _, user in user },
         owners: reducedOwners.merging(flattenedUser.owners) { _, user in user }

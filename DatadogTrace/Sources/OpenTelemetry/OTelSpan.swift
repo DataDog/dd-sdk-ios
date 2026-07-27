@@ -190,10 +190,15 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         // `DatadogTracer.startSpan`'s per-span override does — `mergeTags` is the only place that still knows
         // "context.foo" came from flattening "context", information a leaf-by-leaf `ddSpan.setTag` loop would
         // otherwise lose (see `DDSpan.storeFlattenedTags`, which can only track that provenance itself).
+        //
+        // Stored via `setFlattenedTags`, not `ddSpan.setTag`, since every key here is already a resolved leaf:
+        // replaying one through the scalar `setTag(key:value:)` would run the reserved
+        // `SpanTags.manualKeep`/`manualDrop` sampling-override hook against it, even when the leaf only reached
+        // that literal name by flattening an unrelated nested attribute (e.g. `["manual": ["keep": true]]`) —
+        // OpenTelemetry has no such reserved-key concept, so a customer's arbitrary attribute must never be able
+        // to trigger it.
         let localTags: [String: OTTagValue] = attributes.tags.mapValues { $0 }
-        for (key, value) in mergeTags(global: tracer.tags, user: localTags).tags {
-            ddSpan.setTag(key: key, value: value)
-        }
+        ddSpan.setFlattenedTags(mergeTags(global: tracer.tags, user: localTags))
 
         switch status {
         case .ok, .unset:

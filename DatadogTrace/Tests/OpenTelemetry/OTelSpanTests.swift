@@ -412,6 +412,30 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
+    func testWhenAnAttributeFlattensToTheReservedManualKeepLeaf_itDoesNotOverrideSampling() throws {
+        // Given: a global attribute that's unrelated to sampling from OTel's point of view, but happens to
+        // flatten to the literal leaf "manual.keep" — the exact key `DDSpan`'s reserved-tag hook keys off of.
+        let tracer: DatadogTracer = .mockWith(
+            featureScope: featureScope,
+            tags: ["manual": ["keep": true]]
+        )
+
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+        span.end()
+
+        // Then: the span must not have its sampling forced to "keep" as a side effect of flattening — the tag
+        // is stored like any other, and the span's sampling decision is untouched.
+        let recordedSpans = try featureScope.spanEventsWritten()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        XCTAssertEqual(recordedSpan.tags["manual.keep"], "true")
+        XCTAssertNotEqual(
+            recordedSpan.samplingPriority,
+            .manualKeep,
+            "an attribute that only incidentally flattens to the reserved manual.keep leaf must not force a sampling override"
+        )
+    }
+
     func testStatus_whenStatusIsNotSet() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)

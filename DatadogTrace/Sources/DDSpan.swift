@@ -31,8 +31,13 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     /// the same snapshot of `tags` it was read from — reading `flattenedChildren` and mutating `tags` under two
     /// separate locks let concurrent `setTag` calls on the same key interleave and break replace semantics.
     private struct TagsState {
-        var tags: [String: OTTagValue] = [:]
-        var flattenedChildren: [String: Set<String>] = [:]
+        var tags: [String: OTTagValue]
+        var flattenedChildren: [String: Set<String>]
+
+        init(_ flattened: FlattenedTags) {
+            self.tags = flattened.tags
+            self.flattenedChildren = flattened.owners
+        }
     }
     @ReadWriteLock
     private var tagsState: TagsState
@@ -70,7 +75,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         // `flattenedChildren` from `tags.owners`, instead of starting it empty, means a later `setTag` on this
         // same key correctly clears the leaves a global dictionary tag was merged in as here, not just leaves
         // produced by a subsequent `setTag` call on the live span.
-        self.tagsState = TagsState(tags: tags.tags, flattenedChildren: tags.owners)
+        self.tagsState = TagsState(tags)
         self.logFields = []
         self.isFinished = false
         self.eventBuilder = eventBuilder
@@ -148,15 +153,24 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             let staleChildren = state.flattenedChildren[key] ?? []
             state.tags = state.tags.filter { $0.key != key && !staleChildren.contains($0.key) }
             state.tags.merge(pairs, uniquingKeysWith: { _, new in new })
-            // A leaf now (re)produced by `key` can no longer be owned by any other tracked key — otherwise, if
-            // one of `key`'s own leaves is later reset independently (e.g. `setTag("ctx", ["foo": "old"])` then
-            // `setTag("ctx.foo", "new")`), `flattenedChildren["ctx"]` would keep claiming `"ctx.foo"` and a
-            // subsequent `setTag("ctx", "scalar")` would wrongly drop the independently-reset leaf.
-            for otherKey in state.flattenedChildren.keys where otherKey != key {
-                state.flattenedChildren[otherKey]?.subtract(newLeafKeys)
-            }
+            // E.g. if one of `key`'s own leaves is later reset independently (`setTag("ctx", ["foo": "old"])`
+            // then `setTag("ctx.foo", "new")`), `flattenedChildren["ctx"]` would otherwise keep claiming
+            // `"ctx.foo"` and a subsequent `setTag("ctx", "scalar")` would wrongly drop the independently-reset
+            // leaf.
+            releaseOwnership(of: newLeafKeys, in: &state.flattenedChildren)
             state.flattenedChildren[key] = isContainer ? newLeafKeys : nil
         }
+    }
+
+    /// Replaces this span's tags with `tags`, which are already fully flattened and merged (see `mergeTags`),
+    /// without running the `willSetTagWithKey` reserved-tag hook. By this point every key is a resolved leaf
+    /// that may incidentally collide with `SpanTags.manualKeep`/`manualDrop` purely as a byproduct of flattening
+    /// a nested value (e.g. an OpenTelemetry attribute `["manual": ["keep": true]]`), not a caller invoking the
+    /// reserved key directly — replaying such a leaf through the scalar `setTag(key:value:)` would wrongly
+    /// trigger a sampling override the caller never asked for. A plain replace, same as `init`, is correct here
+    /// because `OTelSpan.end()` is the only caller and it always runs before any other `setTag` call on this span.
+    func setFlattenedTags(_ tags: FlattenedTags) {
+        _tagsState.mutate { $0 = TagsState(tags) }
     }
 
     func setBaggageItem(key: String, value: String) {
