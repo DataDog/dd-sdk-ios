@@ -133,6 +133,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             }
         }()
 
+        let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
+
         let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? vitalsReaders.map {
             TimeseriesSessionCollector(
                 memoryReader: $0.memory,
@@ -140,14 +142,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 batchSize: configuration.timeseriesBatchSize,
                 collectInBackground: configuration.trackBackgroundEvents,
                 ciTest: ciTest,
-                syntheticsTest: syntheticsTest
+                syntheticsTest: syntheticsTest,
+                sessionSampleRate: Double(sessionSampleRate)
             )
         } : nil
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
+            samplingRate: sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
