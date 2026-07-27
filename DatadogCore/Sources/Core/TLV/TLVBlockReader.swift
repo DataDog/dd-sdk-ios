@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// A block reader can read TLV formatted blocks from a data input.
 ///
@@ -148,6 +149,14 @@ internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable
         return try read(length: Int(length))
     }
 }
+extension TLVBlockError: TelemetrySanitizableError {
+    /// Every case only ever describes block types, sizes, limits and stream status codes - never the
+    /// raw bytes or decoded content of a block - so the full description is safe to report as-is.
+    func sanitize() -> TelemetrySanitizedError {
+        TelemetrySanitizedError(kind: "TLVBlockError", message: "\(self)")
+    }
+}
+
 extension TLVBlockError: CustomStringConvertible {
     var description: String {
         switch self {

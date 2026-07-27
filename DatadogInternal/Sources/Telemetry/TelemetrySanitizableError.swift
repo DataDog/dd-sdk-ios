@@ -16,7 +16,7 @@ import Foundation
 ///   protocol - a conformance is a single, global fact about a (Type, Protocol) pair, so a second,
 ///   conflicting conformance declared elsewhere would be silently discarded. For some foreign types
 ///   (e.g. `EncodingError`, `DecodingError`, `NSError`), `Telemetry` instead applies its own internal
-///   sanitization with sensible defaults, handled centrally in `makeTelemetrySafe(_:)`.
+///   sanitization with sensible defaults, handled centrally in `sanitizeForTelemetry(_:)`.
 public protocol TelemetrySanitizableError {
     func sanitize() -> TelemetrySanitizedError
 }
@@ -39,7 +39,7 @@ public struct TelemetrySanitizedError {
 /// If `error` conforms to `TelemetrySanitizableError`, its own `sanitize()` is used as-is. Otherwise, it
 /// falls back to Telemetry's default sanitization: common types (`EncodingError`, `DecodingError`,
 /// `NSError`) get a safe, dedicated summary, while everything else is stripped down to its type name.
-func makeTelemetrySafe(_ error: Error) -> TelemetrySanitizedError {
+public func sanitizeForTelemetry(_ error: Error) -> TelemetrySanitizedError {
     if let sanitizable = error as? TelemetrySanitizableError {
         return sanitizable.sanitize()
     }

@@ -712,7 +712,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 2)
 
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
-        XCTAssertEqual(error.message, #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
+        XCTAssertEqual(error.message, "Data upload finished with error - abc (0)")
 
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["failure"] as? String, "\(nserror.code)")
@@ -753,7 +753,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 2)
 
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
-        XCTAssertEqual(error.message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
+        XCTAssertEqual(error.message, "Failed to initiate 'some-feature' data upload - Unrecognized error type: ErrorMock")
 
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["failure"] as? String, "invalid")

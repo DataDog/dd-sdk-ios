@@ -329,7 +329,7 @@ extension Telemetry {
     ///
     /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
     ///   error description can never reach this sink. Callers should use `error(_ error: Error, ...)`
-    ///   instead, which sanitizes the error via `makeTelemetrySafe(_:)` before forwarding here.
+    ///   instead, which sanitizes the error via `sanitizeForTelemetry(_:)` before forwarding here.
     ///
     /// - Parameters:
     ///   - error: The sanitized error.
@@ -344,7 +344,7 @@ extension Telemetry {
     /// - Note: Not exposed publicly — accepts only `TelemetrySanitizedError`, so a raw, unsanitized
     ///   error description can never reach this sink. Callers should use
     ///   `error(_ message: String, error: Error, ...)` instead, which sanitizes the error via
-    ///   `makeTelemetrySafe(_:)` before forwarding here.
+    ///   `sanitizeForTelemetry(_:)` before forwarding here.
     ///
     /// - Parameters:
     ///   - message: The error message.
@@ -366,7 +366,7 @@ extension Telemetry {
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(makeTelemetrySafe(error), file: file, line: line)
+        self.error(sanitizeForTelemetry(error), file: file, line: line)
     }
 
     /// Collect execution error.
@@ -381,7 +381,7 @@ extension Telemetry {
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
-        self.error(message, error: makeTelemetrySafe(error), file: file, line: line)
+        self.error(message, error: sanitizeForTelemetry(error), file: file, line: line)
     }
 
     /// Report a Configuration Telemetry.
