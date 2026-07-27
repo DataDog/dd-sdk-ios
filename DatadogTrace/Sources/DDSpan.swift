@@ -20,17 +20,25 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
     /// Span operation name.
     @ReadWriteLock
     private var operationName: String
-    /// Span tags.
+    /// Span tags, plus, for each tag `key` last set on this span via a `Dictionary` value, the leaf keys
+    /// (`"key.subKey"`, ...) it flattened into — so a later `setTag` under the same `key` can drop exactly those
+    /// stale leaves, instead of dropping every `"key."`-prefixed tag regardless of origin. The latter would also
+    /// erase an unrelated dotted tag the caller set independently: `setTag(key: "context.foo", value: "x")`
+    /// followed by `setTag(key: "context", value: "y")` must leave `"context.foo"` untouched, since it was never
+    /// a leaf produced by flattening `"context"`.
+    ///
+    /// Both live under one lock, mutated together in `storeFlattenedTags`, so a leaf's ownership always reflects
+    /// the same snapshot of `tags` it was read from — reading `flattenedChildren` and mutating `tags` under two
+    /// separate locks let concurrent `setTag` calls on the same key interleave and break replace semantics.
+    private struct TagsState {
+        var tags: [String: OTTagValue] = [:]
+        var flattenedChildren: [String: Set<String>] = [:]
+    }
     @ReadWriteLock
-    private var tags: [String: OTTagValue]
-    /// For each tag `key` last set on this span via a `Dictionary` value, the leaf keys (`"key.subKey"`, ...)
-    /// it flattened into — so a later `setTag` under the same `key` can drop exactly those stale leaves,
-    /// instead of dropping every `"key."`-prefixed tag regardless of origin. The latter would also erase an
-    /// unrelated dotted tag the caller set independently: `setTag(key: "context.foo", value: "x")` followed by
-    /// `setTag(key: "context", value: "y")` must leave `"context.foo"` untouched, since it was never a leaf
-    /// produced by flattening `"context"`.
-    @ReadWriteLock
-    private var flattenedChildren: [String: Set<String>]
+    private var tagsState: TagsState
+    private var tags: [String: OTTagValue] {
+        tagsState.tags
+    }
     /// Span log fields.
     @ReadWriteLock
     private var logFields: [[String: Encodable & Sendable]]
@@ -62,8 +70,7 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         // `flattenedChildren` from `tags.owners`, instead of starting it empty, means a later `setTag` on this
         // same key correctly clears the leaves a global dictionary tag was merged in as here, not just leaves
         // produced by a subsequent `setTag` call on the live span.
-        self.tags = tags.tags
-        self.flattenedChildren = tags.owners
+        self.tagsState = TagsState(tags: tags.tags, flattenedChildren: tags.owners)
         self.logFields = []
         self.isFinished = false
         self.eventBuilder = eventBuilder
@@ -136,13 +143,19 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         // majority of calls) flattens into exactly one pair keyed `key` itself. That's the only signal available
         // here to tell the two apart, since `flattenedTagPairs` erases whether it recursed into a `Dictionary`.
         let isContainer = pairs.count != 1 || pairs[0].0 != key
-        let staleChildren = flattenedChildren[key] ?? []
-        _tags.mutate { tags in
-            tags = tags.filter { $0.key != key && !staleChildren.contains($0.key) }
-            tags.merge(pairs, uniquingKeysWith: { _, new in new })
-        }
-        _flattenedChildren.mutate { children in
-            children[key] = isContainer ? Set(pairs.map { $0.0 }) : nil
+        let newLeafKeys = Set(pairs.map { $0.0 })
+        _tagsState.mutate { state in
+            let staleChildren = state.flattenedChildren[key] ?? []
+            state.tags = state.tags.filter { $0.key != key && !staleChildren.contains($0.key) }
+            state.tags.merge(pairs, uniquingKeysWith: { _, new in new })
+            // A leaf now (re)produced by `key` can no longer be owned by any other tracked key — otherwise, if
+            // one of `key`'s own leaves is later reset independently (e.g. `setTag("ctx", ["foo": "old"])` then
+            // `setTag("ctx.foo", "new")`), `flattenedChildren["ctx"]` would keep claiming `"ctx.foo"` and a
+            // subsequent `setTag("ctx", "scalar")` would wrongly drop the independently-reset leaf.
+            for otherKey in state.flattenedChildren.keys where otherKey != key {
+                state.flattenedChildren[otherKey]?.subtract(newLeafKeys)
+            }
+            state.flattenedChildren[key] = isContainer ? newLeafKeys : nil
         }
     }
 

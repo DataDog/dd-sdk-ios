@@ -56,21 +56,32 @@ internal func flattenedTagPairs(key: String, dict: [String: OTTagValue]) -> [(St
 /// shape reached via `setTag`) — this function is `DatadogTracer`'s only entry point for flattening global/
 /// initial tags, so it's the only place that could otherwise silently drop one of them with zero diagnostic.
 internal func flattenedTags(_ tags: [String: OTTagValue]) -> FlattenedTags {
-    var owners: [String: Set<String>] = [:]
-    let pairs = tags.sorted { $0.key < $1.key }.flatMap { entry -> [(String, OTTagValue)] in
-        let pairs = flattenedTagPairs(key: entry.key, value: entry.value)
-        owners[entry.key] = Set(pairs.map { $0.0 })
-        return pairs
+    // Each triple keeps the top-level key (`owner`) that produced `leaf`/`value` alongside them, so ownership
+    // can be assigned per surviving leaf below instead of per top-level key up front — otherwise a key that
+    // loses a same-leaf collision (see the warning below) would still wrongly be recorded as that leaf's owner,
+    // and a later `mergeTags` override of the losing key could drop a leaf it never actually produced.
+    let triples = tags.sorted { $0.key < $1.key }.flatMap { entry in
+        flattenedTagPairs(key: entry.key, value: entry.value).map { leaf, value in (leaf: leaf, value: value, owner: entry.key) }
     }
-    let uniqueKeyCount = Set(pairs.map { $0.0 }).count
+    let uniqueKeyCount = Set(triples.map { $0.leaf }).count
     _ = warn(
-        if: uniqueKeyCount != pairs.count,
+        if: uniqueKeyCount != triples.count,
         message: """
         Two configured tags collide once flattened (e.g. a literal "a.b" key alongside a nested "a": \
         ["b": ...] entry) — only one of them was kept.
         """
     )
-    return FlattenedTags(tags: Dictionary(pairs, uniquingKeysWith: { _, new in new }), owners: owners)
+    var tagsByLeaf: [String: OTTagValue] = [:]
+    var ownerByLeaf: [String: String] = [:]
+    for triple in triples {
+        tagsByLeaf[triple.leaf] = triple.value
+        ownerByLeaf[triple.leaf] = triple.owner
+    }
+    var owners: [String: Set<String>] = [:]
+    for (leaf, owner) in ownerByLeaf {
+        owners[owner, default: []].insert(leaf)
+    }
+    return FlattenedTags(tags: tagsByLeaf, owners: owners)
 }
 
 /// The result of flattening a group of tags: the flattened leaf tags themselves, plus, for each original
@@ -104,12 +115,21 @@ internal func mergeTags(global: FlattenedTags, user: [String: OTTagValue]?) -> F
         return global
     }
     let flattenedUser = flattenedTags(user)
+    let newLeafKeys = Set(flattenedUser.tags.keys)
     var reducedTags = global.tags
     var reducedOwners = global.owners
     for key in user.keys {
         let staleChildren = global.owners[key] ?? []
         reducedTags = reducedTags.filter { $0.key != key && !staleChildren.contains($0.key) }
         reducedOwners[key] = nil
+    }
+    // A leaf now (re)produced by one of `user`'s own top-level keys can no longer be owned by an unrelated
+    // global key — e.g. a global `"ctx": ["foo": ...]` (flattened to `"ctx.foo"`) later overridden by a user's
+    // own literal `"ctx.foo"` tag. Without this, "ctx" would still claim "ctx.foo" and a later per-span
+    // `setTag(key: "ctx", ...)` would drop the user's own tag — same cross-owner cleanup as
+    // `DDSpan.storeFlattenedTags`.
+    for otherKey in reducedOwners.keys {
+        reducedOwners[otherKey]?.subtract(newLeafKeys)
     }
     return FlattenedTags(
         tags: reducedTags.merging(flattenedUser.tags) { _, user in user },

@@ -279,6 +279,32 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(tags["context.foo"], "user-value", "user tags must win over global tags even when the collision only appears after flattening")
     }
 
+    func testWhenUserTagTakesOverALeafOwnedByAnUnrelatedGlobalKey_thatGlobalKeyStopsClaimingIt() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given: a global dictionary tag "ctx" flattens to "ctx.foo", and a per-span initial user tag overrides
+        // that exact leaf under its own, unrelated top-level key "ctx.foo" (never itself a leaf of "ctx").
+        let tracer: DatadogTracer = .mockWith(core: core, tags: ["ctx": ["foo": "global"]])
+        let span = tracer.startSpan(operationName: .mockAny(), tags: ["ctx.foo": "user"])
+
+        // When: the span later sets an unrelated scalar for the original container key "ctx".
+        span.setTag(key: "ctx", value: "scalar-value")
+        span.finish()
+
+        // Then: "ctx.foo" (now owned by the user's own tag, not by "ctx") must survive the "ctx" override.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx"], "scalar-value")
+        XCTAssertEqual(
+            tags["ctx.foo"],
+            "user",
+            "a leaf taken over by a user's own tag must stop being claimed by the unrelated global key that used to own it"
+        )
+    }
+
     func testWhenUserOverridesGlobalDictionaryTagWithAScalar_itReplacesTheWholeGlobalNamespace() throws {
         let writeSpansExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock()
@@ -349,6 +375,32 @@ class DDSpanTests: XCTestCase {
         XCTAssertEqual(tags["context.foo"], "global-value", "an unrelated literal global dotted tag must survive a per-span scalar override of a different key")
     }
 
+    func testWhenTwoGlobalTagsCollideAfterFlattening_theSurvivingOneKeepsCorrectOwnership() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given: two global tags that collide once flattened — a literal "ctx.foo" and a nested "ctx": ["foo":
+        // ...]. Sorted key order means "ctx" is flattened first, so "ctx.foo" (the literal) wins the collision.
+        let tracer: DatadogTracer = .mockWith(core: core, tags: ["ctx.foo": "literal", "ctx": ["foo": "nested"]])
+
+        // When: a per-span scalar override targets the unrelated "ctx" key.
+        let span = tracer.startSpan(operationName: .mockAny(), tags: ["ctx": "scalar-value"])
+        span.finish()
+
+        // Then: the surviving "ctx.foo" (owned by the literal key, not by "ctx") must not be dropped by the
+        // override of "ctx" — it was never a leaf "ctx" actually produced.
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx"], "scalar-value")
+        XCTAssertEqual(
+            tags["ctx.foo"],
+            "literal",
+            "ownership of a leaf that wins a flattening collision must not stay claimed by the losing top-level key"
+        )
+    }
+
     func testWhenOverridingADictionaryTagKeyWithAScalar_itReplacesTheWholeNamespace() throws {
         let writeSpansExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock()
@@ -395,6 +447,34 @@ class DDSpanTests: XCTestCase {
         let tags = events[0].spans.first?.tags ?? [:]
         XCTAssertEqual(tags["ctx"], "scalar-value")
         XCTAssertEqual(tags["ctx.foo"], "independent", "a scalar setTag under \"ctx\" must not drop an independently-set \"ctx.foo\" tag that was never a leaf of a \"ctx\" dictionary")
+    }
+
+    func testWhenALeafIsResetIndependently_itDoesNotStayOwnedByItsFormerContainerKey() throws {
+        let writeSpansExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock()
+        core.onEventWriteContext = { _ in writeSpansExpectation.fulfill() }
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: .mockAny())
+
+        // When: "ctx" flattens "ctx.foo" as one of its leaves, then "ctx.foo" is reset independently, then "ctx"
+        // is overridden with an unrelated scalar — "ctx" must not still think it owns "ctx.foo".
+        span.setTag(key: "ctx", value: ["foo": "old"])
+        span.setTag(key: "ctx.foo", value: "independently-reset")
+        span.setTag(key: "ctx", value: "scalar-value")
+        span.finish()
+
+        // Then: the independently-reset "ctx.foo" must survive the later scalar override of "ctx".
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        let tags = events[0].spans.first?.tags ?? [:]
+        XCTAssertEqual(tags["ctx"], "scalar-value")
+        XCTAssertEqual(
+            tags["ctx.foo"],
+            "independently-reset",
+            "a leaf reset via its own setTag call must not stay owned by the key that originally flattened it"
+        )
     }
 
     func testWhenFlattenedDictionaryKeyCollidesWithManualKeepOrDrop_itStoresTheTagInsteadOfOverridingSampling() throws {
