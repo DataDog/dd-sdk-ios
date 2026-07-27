@@ -7,11 +7,13 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import WebKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct LayerTreeSnapshotBuilderTests {
     @available(iOS 13.0, tvOS 13.0, *)

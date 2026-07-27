@@ -7,14 +7,59 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 import WebKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotImageSnapshotRequestTests {
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips content snapshot request for visual effect")
+    func skipsContentSnapshotRequestForVisualEffect() {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .visualEffect(.glassGroup))
+        )
+        let cache = ImageSnapshotCache()
+        cache.setContentSnapshotData(.mockAny(), forReplayID: snapshot.replayID)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.compactMap(\.content).isEmpty)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Skips content snapshot request for gradient")
+    func skipsContentSnapshotRequestForGradient() throws {
+        // Given
+        let gradient = try #require(
+            CALayerSnapshot.SemanticObservation.GradientSemantics(
+                type: .axial,
+                colors: [UIColor.red.cgColor, UIColor.blue.cgColor],
+                locations: nil,
+                startPoint: CGPoint(x: 0.5, y: 0),
+                endPoint: CGPoint(x: 0.5, y: 1)
+            )
+        )
+        let snapshot = CALayerSnapshot.mockWith(
+            observation: .init(semantics: .gradient(gradient))
+        )
+        let cache = ImageSnapshotCache()
+        cache.setContentSnapshotData(.mockAny(), forReplayID: snapshot.replayID)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.compactMap(\.content).isEmpty)
+    }
+
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for plain layer with contents")
     func createsRequestForPlainLayerWithContents() throws {
@@ -686,6 +731,33 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         let request = try #require(requests.first?.content)
         #expect(request.layer.matches(child))
         #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 70, height: 70))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Creates request for visible child of zero-sized non-clipping container")
+    func createsRequestForVisibleChildOfZeroSizedNonClippingContainer() throws {
+        // Given
+        let imageView = UIImageView(image: UIImage())
+        imageView.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+        imageView.layer.contents = NSObject()
+
+        let child = try #require(
+            CALayerSnapshot(from: imageView.layer, in: .mockAny(imagePrivacyLevel: .maskNone))
+        )
+        let container = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: .zero,
+            sublayers: [child]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [container])
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = root.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(requests.count == 1)
+        #expect(requests.first?.content?.layer.matches(imageView.layer) == true)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

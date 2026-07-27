@@ -32,32 +32,35 @@ extension CALayerSnapshot {
     ) {
         let visibleFrame = absoluteFrame.intersection(clipRect)
 
-        guard !visibleFrame.isNull, !visibleFrame.isEmpty else {
+        guard !visibleFrame.isEmpty || !masksToBounds else {
             return
         }
 
-        if let request = MaskSnapshotRequest(layerSnapshot: self, cache: cache, changeset: changeset) {
-            requests.append(.mask(request))
+        if !visibleFrame.isEmpty {
+            if let request = MaskSnapshotRequest(layerSnapshot: self, cache: cache, changeset: changeset) {
+                requests.append(.mask(request))
+            }
+
+            let request = ContentSnapshotRequest(
+                layerSnapshot: self,
+                visibleFrame: visibleFrame,
+                cache: cache,
+                changeset: changeset
+            )
+
+            if let request, observation.ignoresSublayers || sublayers.isEmpty {
+                requests.append(.content(request))
+                return
+            }
         }
 
-        let request = ContentSnapshotRequest(
-            layerSnapshot: self,
-            visibleFrame: visibleFrame,
-            cache: cache,
-            changeset: changeset
-        )
-
-        if let request, observation.ignoresSublayers || sublayers.isEmpty {
-            requests.append(.content(request))
-        } else {
-            for sublayer in sublayers {
-                sublayer.collectImageSnapshotRequests(
-                    clipRect: masksToBounds ? visibleFrame : clipRect,
-                    changeset: changeset,
-                    cache: cache,
-                    in: &requests
-                )
-            }
+        for sublayer in sublayers {
+            sublayer.collectImageSnapshotRequests(
+                clipRect: masksToBounds ? visibleFrame : clipRect,
+                changeset: changeset,
+                cache: cache,
+                in: &requests
+            )
         }
     }
 

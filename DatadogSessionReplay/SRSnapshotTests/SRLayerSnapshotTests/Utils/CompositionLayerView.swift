@@ -11,6 +11,8 @@ import UIKit
 @available(iOS 13.0, *)
 @MainActor
 internal final class CompositionLayerView: UIView {
+    private let contentView = UIView()
+
     init(
         _ layer: SRCompositionLayer,
         identifiedLayers: [Int64: SRCompositionLayer],
@@ -20,6 +22,9 @@ internal final class CompositionLayerView: UIView {
     ) {
         super.init(frame: layer.absoluteFrame.offsetBy(dx: -parentFrame.minX, dy: -parentFrame.minY))
         backgroundColor = .clear
+        contentView.frame = bounds
+        contentView.backgroundColor = .clear
+        addSubview(contentView)
 
         for child in layer.children {
             guard let childView = makeView(
@@ -31,7 +36,7 @@ internal final class CompositionLayerView: UIView {
             ) else {
                 continue
             }
-            addSubview(childView)
+            contentView.addSubview(childView)
         }
 
         applyModifiers(layer.modifiers ?? [], identifiedResources: identifiedResources)
@@ -86,8 +91,6 @@ internal final class CompositionLayerView: UIView {
                 alpha = CGFloat(modifier.value)
             case .compositionLayerColorMatrixModifier(let modifier):
                 applyColorMatrixModifier(modifier)
-            case .compositionLayerBackgroundMaterialModifier(let modifier):
-                applyBackgroundMaterialModifier(modifier)
             case .compositionLayerGaussianBlurModifier(let modifier):
                 applyGaussianBlurModifier(modifier)
             case .compositionLayerShadowModifier(let modifier):
@@ -106,6 +109,8 @@ internal final class CompositionLayerView: UIView {
         switch compositeOperation {
         case .destinationIn:
             layer.compositingFilter = "destIn"
+        case .destinationOut:
+            layer.compositingFilter = "destOut"
         case .plusDarker:
             layer.compositingFilter = "plusD"
         case .sourceOver, nil:
@@ -127,7 +132,7 @@ internal final class CompositionLayerView: UIView {
         case .nonzero, nil:
             mask.fillRule = .nonZero
         }
-        layer.mask = mask
+        contentView.layer.mask = mask
     }
 
     private func applyColorMatrixModifier(_ modifier: SRCompositionLayerColorMatrixModifier) {
@@ -160,19 +165,6 @@ internal final class CompositionLayerView: UIView {
             m45: Float(modifier.matrix[19])
         )
         filter.setValue(matrix.nsValue, forKey: "inputColorMatrix")
-        appendFilter(filter)
-    }
-
-    private func applyBackgroundMaterialModifier(_ modifier: SRCompositionLayerBackgroundMaterialModifier) {
-        let filterType = switch modifier.kind {
-        case .glass:
-            "glassBackground"
-        }
-
-        guard let filter = NSObject.makeCAFilter(type: filterType) else {
-            return
-        }
-
         appendFilter(filter)
     }
 
@@ -227,17 +219,11 @@ internal final class CompositionLayerView: UIView {
         mask.contents = image
         mask.contentsGravity = .resize
 
-        // `CALayer` only supports one mask. Since mask image modifiers are applied last,
-        // preserve any previous mask (for example, clipping) by applying it to the image mask.
-        if let previousMask = layer.mask {
-            mask.mask = previousMask
-        }
-
         layer.mask = mask
     }
 
     private func appendFilter(_ filter: NSObject) {
-        layer.filters = (layer.filters ?? []) + [filter]
+        contentView.layer.filters = (contentView.layer.filters ?? []) + [filter]
     }
 }
 

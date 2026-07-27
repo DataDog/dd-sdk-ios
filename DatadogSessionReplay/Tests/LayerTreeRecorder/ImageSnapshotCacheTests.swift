@@ -5,11 +5,13 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct ImageSnapshotCacheTests {
     @available(iOS 13.0, tvOS 13.0, *)
@@ -21,7 +23,8 @@ struct ImageSnapshotCacheTests {
         let snapshotData = ContentSnapshotData.mockAny(
             snapshot: snapshot,
             localRect: CGRect(x: 1, y: 2, width: 3, height: 4),
-            bounds: CGRect(x: 5, y: 6, width: 7, height: 8)
+            bounds: CGRect(x: 5, y: 6, width: 7, height: 8),
+            renderBounds: CGRect(x: 2, y: 3, width: 5, height: 6)
         )
 
         // When
@@ -31,6 +34,7 @@ struct ImageSnapshotCacheTests {
         // Then
         #expect(cachedSnapshotData.snapshot === snapshot)
         #expect(cachedSnapshotData.localRect == snapshotData.localRect)
+        #expect(cachedSnapshotData.renderBounds == snapshotData.renderBounds)
         #expect(cachedSnapshotData.bounds == snapshotData.bounds)
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }

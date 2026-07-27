@@ -6,10 +6,12 @@
 
 #if os(iOS)
 import CoreGraphics
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct OcclusionMapTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Reports nothing as covered when the map is empty")

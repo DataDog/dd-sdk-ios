@@ -13,7 +13,7 @@ import WebKit
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// State shared by all layers captured in one snapshot.
-    struct Context {
+    final class Context {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         let imagePrivacyLevel: ImagePrivacyLevel
 

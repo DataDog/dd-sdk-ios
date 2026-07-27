@@ -1,6 +1,7 @@
 # Unreleased
 
 - [IMPROVEMENT] `OTSpan.setTag` now flattens `Dictionary` tag values into one tag per leaf field (e.g. `context.foo`) instead of serializing the whole dictionary as a single JSON string tag. See [#3067][]
+- [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
 
 # 3.14.0 / 15-07-2026
 
@@ -1201,6 +1202,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2981]: https://github.com/DataDog/dd-sdk-ios/pull/2981
 [#3067]: https://github.com/DataDog/dd-sdk-ios/pull/3067
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
+[#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

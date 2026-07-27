@@ -7,11 +7,13 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct ContentSnapshotRequestTests {
     @available(iOS 13.0, tvOS 13.0, *)
@@ -166,6 +168,65 @@ struct ContentSnapshotRequestTests {
         // Then
         #expect(resolvedRequest.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Expands render bounds to include dependencies outside the layer bounds")
+    func expandsRenderBoundsToIncludeDependenciesOutsideLayerBounds() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let layer = CALayer()
+        layer.frame = CGRect(x: 50, y: 60, width: 30, height: 30)
+        rootLayer.addSublayer(layer)
+
+        let dependency = CALayer()
+        dependency.frame = CGRect(x: -10, y: -12, width: 50, height: 54)
+        layer.addSublayer(dependency)
+
+        let request = ContentSnapshotRequest.mockAny(
+            layer: layer,
+            dependencies: [CALayerReference(dependency)]
+        )
+
+        // When
+        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+
+        // Then
+        #expect(resolvedRequest.renderBounds == dependency.frame)
+        #expect(resolvedRequest.localRect == dependency.frame)
+        #expect(resolvedRequest.frame == CGRect(x: 40, y: 48, width: 50, height: 54))
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps layer bounds when the layer clips its dependencies")
+    func keepsLayerBoundsWhenLayerClipsDependencies() throws {
+        // Given
+        let rootLayer = CALayer()
+        rootLayer.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let layer = CALayer()
+        layer.frame = CGRect(x: 50, y: 60, width: 30, height: 30)
+        layer.masksToBounds = true
+        rootLayer.addSublayer(layer)
+
+        let dependency = CALayer()
+        dependency.frame = CGRect(x: -10, y: -12, width: 50, height: 54)
+        layer.addSublayer(dependency)
+
+        let request = ContentSnapshotRequest.mockAny(
+            layer: layer,
+            dependencies: [CALayerReference(dependency)]
+        )
+
+        // When
+        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+
+        // Then
+        #expect(resolvedRequest.renderBounds == layer.bounds)
+        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.frame == layer.frame)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

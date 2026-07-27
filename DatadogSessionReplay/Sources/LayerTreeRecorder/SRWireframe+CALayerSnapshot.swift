@@ -26,18 +26,26 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    init?(layerSnapshot: CALayerSnapshot) {
-        guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder else {
+    init?(
+        layerSnapshot: CALayerSnapshot,
+        backgroundGradient: SRShapeGradient? = nil,
+        cornerRadius: CGFloat? = nil
+    ) {
+        guard layerSnapshot.hasBackgroundColor || layerSnapshot.hasBorder || backgroundGradient != nil else {
             return nil
         }
 
         self = .shapeWireframe(
             value: .init(
                 border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                shapeStyle: .init(
+                    layerSnapshot: layerSnapshot,
+                    backgroundGradient: backgroundGradient,
+                    cornerRadius: cornerRadius
+                ),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
             )
@@ -45,13 +53,21 @@ extension SRWireframe {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    init(layerSnapshot: CALayerSnapshot, placeholderColor: UIColor) {
+    init(
+        layerSnapshot: CALayerSnapshot,
+        backgroundColor: UIColor,
+        cornerRadius: CGFloat? = nil
+    ) {
         self = .shapeWireframe(
             value: .init(
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(backgroundColor: hexString(from: placeholderColor.cgColor) ?? .fallbackColor),
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                shapeStyle: .init(
+                    backgroundColor: hexString(from: backgroundColor.cgColor) ?? .fallbackColor,
+                    cornerRadius: (cornerRadius ?? layerSnapshot.cornerRadii.uniformCornerRadius)
+                        .map(Double.init)
+                ),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
             )
@@ -61,7 +77,8 @@ extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
-        label: CALayerSnapshot.SemanticObservation.LabelSemantics
+        label: CALayerSnapshot.SemanticObservation.LabelSemantics,
+        cornerRadius: CGFloat? = nil
     ) {
         let text = layerSnapshot.textAndInputPrivacyLevel.staticTextObfuscator.mask(text: label.text ?? "")
         let hasVisibleText = !text.isEmpty
@@ -74,13 +91,13 @@ extension SRWireframe {
         self = .textWireframe(
             value: .init(
                 border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadius: cornerRadius),
                 text: text,
                 textPosition: .init(label: label),
                 textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
             )
@@ -95,12 +112,12 @@ extension SRWireframe {
     ) {
         self = .imageWireframe(
             value: .init(
-                height: Int64.ddWithNoOverflow(imageSnapshot.frame.height),
+                height: Int64.ddWithNoOverflow(dimension: imageSnapshot.frame.height),
                 id: id,
                 isEmpty: false,
                 mimeType: resource.mimeType,
                 resourceId: resource.calculateIdentifier(),
-                width: Int64.ddWithNoOverflow(imageSnapshot.frame.width),
+                width: Int64.ddWithNoOverflow(dimension: imageSnapshot.frame.width),
                 x: Int64.ddWithNoOverflow(imageSnapshot.frame.minX),
                 y: Int64.ddWithNoOverflow(imageSnapshot.frame.minY)
             )
@@ -114,10 +131,10 @@ extension SRWireframe {
     ) {
         self = .placeholderWireframe(
             value: .init(
-                height: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.height),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
                 id: layerSnapshot.replayID,
                 label: label,
-                width: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.width),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
                 y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
             )
@@ -132,12 +149,12 @@ extension SRWireframe {
         self = .webviewWireframe(
             value: .init(
                 border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(webView.slotFrame.height),
+                height: Int64.ddWithNoOverflow(dimension: webView.slotFrame.height),
                 id: Int64(webView.slotID),
                 isVisible: true,
                 shapeStyle: .init(layerSnapshot: layerSnapshot),
                 slotId: String(webView.slotID),
-                width: Int64.ddWithNoOverflow(webView.slotFrame.width),
+                width: Int64.ddWithNoOverflow(dimension: webView.slotFrame.width),
                 x: Int64.ddWithNoOverflow(webView.slotFrame.minX),
                 y: Int64.ddWithNoOverflow(webView.slotFrame.minY)
             )
@@ -197,19 +214,90 @@ extension SRShapeBorder {
 
 extension SRShapeStyle {
     @available(iOS 13.0, tvOS 13.0, *)
-    fileprivate init?(layerSnapshot: CALayerSnapshot) {
-        guard let backgroundColor = layerSnapshot.backgroundColor else {
+    fileprivate init?(
+        layerSnapshot: CALayerSnapshot,
+        backgroundGradient: SRShapeGradient? = nil,
+        cornerRadius: CGFloat? = nil
+    ) {
+        guard layerSnapshot.backgroundColor != nil || backgroundGradient != nil else {
             return nil
         }
         self.init(
-            backgroundColor: hexString(from: backgroundColor) ?? .fallbackColor,
-            cornerRadius: layerSnapshot.cornerRadii.uniformCornerRadius.map(Double.init)
+            backgroundColor: layerSnapshot.backgroundColor.map {
+                hexString(from: $0) ?? .fallbackColor
+            },
+            backgroundGradient: backgroundGradient,
+            cornerRadius: (cornerRadius ?? layerSnapshot.cornerRadii.uniformCornerRadius)
+                .map(Double.init)
+        )
+    }
+}
+
+extension SRShapeGradient {
+    @available(iOS 13.0, tvOS 13.0, *)
+    init?(
+        gradient: CALayerSnapshot.SemanticObservation.GradientSemantics
+    ) {
+        guard gradient.type == .axial else {
+            return nil
+        }
+
+        let locations = gradient.locations ?? gradient.colors.indices.map {
+            CGFloat($0) / CGFloat(gradient.colors.count - 1)
+        }
+        let stops = zip(gradient.colors, locations).map { color, location in
+            SRShapeGradientStop(
+                color: hexString(from: color) ?? .fallbackColor,
+                position: Double(location)
+            )
+        }
+
+        self = .linear(
+            value: .init(
+                endPoint: .init(
+                    x: Double(gradient.endPoint.x),
+                    y: Double(gradient.endPoint.y)
+                ),
+                startPoint: .init(
+                    x: Double(gradient.startPoint.x),
+                    y: Double(gradient.startPoint.y)
+                ),
+                stops: stops
+            )
+        )
+    }
+
+    init?(scrollPocketEdge edge: UIRectEdge) {
+        let startPoint: SRShapeGradientPoint
+        let endPoint: SRShapeGradientPoint
+
+        switch edge {
+        case .top:
+            startPoint = .init(x: 0.5, y: 0)
+            endPoint = .init(x: 0.5, y: 1)
+        case .bottom:
+            startPoint = .init(x: 0.5, y: 1)
+            endPoint = .init(x: 0.5, y: 0)
+        default:
+            return nil
+        }
+
+        self = .linear(
+            value: .init(
+                endPoint: endPoint,
+                startPoint: startPoint,
+                stops: [
+                    .init(color: "#000000FF", position: 0),
+                    .init(color: "#000000FF", position: 0.35),
+                    .init(color: "#00000000", position: 1)
+                ]
+            )
         )
     }
 }
 
 extension String {
-    fileprivate static let fallbackColor = "#FF0000FF"
+    static let fallbackColor = "#FF0000FF"
     fileprivate static let fallbackFontFamily = "-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif"
 }
 

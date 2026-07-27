@@ -161,7 +161,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                     image: try renderImage(
                         for: resolvedRequest.layer,
                         in: resolvedRequest.localRect,
-                        opaque: request.isOpaque
+                        opaque: request.isOpaque && resolvedRequest.renderBounds.equalTo(request.bounds)
                     ),
                     frame: resolvedRequest.frame,
                     layerClass: request.layerClass,
@@ -176,6 +176,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 .init(
                     snapshot: snapshot,
                     localRect: resolvedRequest.localRect,
+                    renderBounds: resolvedRequest.renderBounds,
                     bounds: request.bounds,
                     dependencies: request.dependencies
                 ),
@@ -241,8 +242,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
     private func renderImage(for layer: CALayer, in rect: CGRect, opaque: Bool) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat.default()
-        format.scale = scale ?? layer.contentsScale
         format.opaque = opaque
+
+        if let scale {
+            format.scale = scale
+        }
 
         let renderer = UIGraphicsImageRenderer(size: rect.size, format: format)
         return try screenChangeFilter.ignoringChanges {
@@ -257,8 +261,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
     private func renderMaskImage(for layer: CALayer, in bounds: CGRect, frame: CGRect) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat.default()
-        format.scale = scale ?? layer.contentsScale
         format.opaque = false
+
+        if let scale {
+            format.scale = scale
+        }
 
         let renderer = UIGraphicsImageRenderer(size: bounds.size, format: format)
         return try screenChangeFilter.ignoringChanges {
