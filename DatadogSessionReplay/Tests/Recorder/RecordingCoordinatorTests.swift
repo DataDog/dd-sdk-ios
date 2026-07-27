@@ -132,9 +132,9 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         let error = telemetry.messages.firstError()
-        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot - snapshot creation error")
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot - Unrecognized error type: ErrorMock")
         XCTAssertEqual(error?.kind, "ErrorMock")
-        XCTAssertEqual(error?.stack, "snapshot creation error")
+        XCTAssertEqual(error?.stack, "DatadogSessionReplay/RecordingCoordinator.swift:176\nImplement TelemetrySanitizableError on ErrorMock to report richer, safe context.")
     }
 
     func test_whenCapturingSnapshotFails_withObjCRuntimeException_itSendsErrorTelemetry() {
@@ -152,9 +152,9 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         let error = telemetry.messages.firstError()
-        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - snapshot creation error")
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - Unrecognized error type: ErrorMock")
         XCTAssertEqual(error?.kind, "ErrorMock")
-        XCTAssertEqual(error?.stack, "snapshot creation error")
+        XCTAssertEqual(error?.stack, "DatadogSessionReplay/RecordingCoordinator.swift:169\nImplement TelemetrySanitizableError on ErrorMock to report richer, safe context.")
         XCTAssertFalse(scheduler.isRunning)
     }
 
