@@ -163,7 +163,7 @@ logger.error(
 - **Logger name**: `name` — reported as `logger.name` on log events.
 - **Network info**: `networkInfoEnabled` (default: `false`) — attaches reachability, connection type, mobile carrier to every log.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — attaches `application_id`, `session_id`, `view.id`, `user_action.id` when a sampled-in RUM session is active.
-- **Trace bundling**: `bundleWithTraceEnabled` (default: `true`) — attaches `dd.trace_id` and `dd.span_id` when an active trace span is present.
+- **Trace bundling**: `bundleWithTraceEnabled` (default: `true`) — attaches `dd.trace_id` and `dd.span_id` when a Datadog span is active (via `span.setActive()` from `Tracer.shared()`). OTel spans activated through `withActiveSpan` do not propagate through this path.
 
 ### Console Output
 - `consoleLogFormat: nil` (default) — no console output.
