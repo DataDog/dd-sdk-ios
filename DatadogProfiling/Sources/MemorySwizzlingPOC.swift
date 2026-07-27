@@ -17,7 +17,7 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 // =====================================================================
-// +allocWithZone: Swizzling Spike — Swift facade
+// +allocWithZone: / -dealloc Swizzling Spike — Swift facade
 //
 // Validates whether method swizzling on NSObject is a viable interception
 // primitive for the iOS memory profiler. Pivot from the malloc_zone
@@ -55,6 +55,9 @@ internal struct MemorySwizzleDiagnostics: Sendable {
     let totalInvocations: UInt64
     let observedAllocations: UInt64
     let skippedDisabled: UInt64
+    let totalDeallocInvocations: UInt64
+    let observedDeallocations: UInt64
+    let skippedDeallocDisabled: UInt64
 }
 
 internal enum MemorySwizzlingPOC {
@@ -78,7 +81,10 @@ internal enum MemorySwizzlingPOC {
         return MemorySwizzleDiagnostics(
             totalInvocations: raw.total_invocations,
             observedAllocations: raw.observed_allocations,
-            skippedDisabled: raw.skipped_disabled
+            skippedDisabled: raw.skipped_disabled,
+            totalDeallocInvocations: raw.total_dealloc_invocations,
+            observedDeallocations: raw.observed_deallocations,
+            skippedDeallocDisabled: raw.skipped_dealloc_disabled
         )
     }
 }

@@ -255,6 +255,7 @@
 		119ABE2A3046EA4D002E68CD /* memory_to_pprof.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE293046EA4D002E68CD /* memory_to_pprof.cpp */; };
 		119ABE2C3046EA52002E68CD /* MemoryToPprofTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */; };
 		119ABE2E3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */; };
+		119ABE303046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */; };
 		11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */; };
 		11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
@@ -2178,6 +2179,7 @@
 		119ABE293046EA4D002E68CD /* memory_to_pprof.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = memory_to_pprof.cpp; sourceTree = "<group>"; };
 		119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryToPprofTests.swift; sourceTree = "<group>"; };
 		119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerMemoryTests.swift; sourceTree = "<group>"; };
+		119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryLiveHeapValidationTests.swift; sourceTree = "<group>"; };
 		119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreAsyncMock.swift; sourceTree = "<group>"; };
 		11A0F1FDC6F852757B99EF56 /* WatchdogTerminationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporterTests.swift; sourceTree = "<group>"; };
 		11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingQuotaChecker.swift; sourceTree = "<group>"; };
@@ -7314,6 +7316,7 @@
 				119ABE253046E9AC002E68CD /* HeapPprofPackerTests.swift */,
 				119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */,
 				119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */,
+				119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -9960,6 +9963,7 @@
 				D2D0E2082E3CEF1200BA4113 /* DDProfilerCAPITests.swift in Sources */,
 				115792EC2F4608A200AEE829 /* BinaryImageResolverTests.swift in Sources */,
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
+				119ABE303046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift in Sources */,
 				119ABE263046E9AC002E68CD /* HeapPprofPackerTests.swift in Sources */,
 				1166C5952F748138008E34BC /* DDProfilerTests.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,

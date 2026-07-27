@@ -20,12 +20,11 @@ extern "C" {
 #endif
 
 // =====================================================================
-// Memory Profiler POC (RUM-16460)
+// Memory Profiler RFC reference implementation (RUM-16460)
 //
-// Validation spike for the iOS Memory Profiling RFC. Not for production
-// use — this is a tool to answer 4 existential questions before the RFC
-// is written. Findings documented in Simao's Brain wiki under
-// wiki/synthesis/ios-memory-profiling-poc-findings.md.
+// The API remains internal while the RFC is under review. The sampling,
+// live-table, snapshot, and lifecycle behavior is implemented with the
+// correctness guarantees expected from the production design.
 // =====================================================================
 
 // MARK: - Configuration
@@ -83,6 +82,8 @@ typedef struct dd_memory_diagnostics {
     uint64_t total_allocations;
     /** Number of allocations actually sampled (subset of total_allocations). */
     uint64_t sampled_allocations;
+    /** Sampled allocations dropped because they could not enter the live table. */
+    uint64_t dropped_samples;
     /** Number of sampled frees recorded. */
     uint64_t sampled_frees;
     /** Number of sampled allocations currently considered live. */
@@ -163,6 +164,16 @@ bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes);
  *                   Pass NULL when no class identity is available.
  */
 void dd_memory_observe_allocation(const void* ptr, uint64_t size, const char* class_name);
+
+/**
+ * Records an externally-observed Objective-C object deallocation.
+ *
+ * If the pointer belongs to a sampled allocation, it is removed from the live
+ * sample table and sampled_frees is incremented. Unsampled pointers are a no-op.
+ *
+ * @param ptr Object pointer before its storage is released; NULL is a no-op.
+ */
+void dd_memory_observe_deallocation(const void* ptr);
 
 /**
  * Disables sampling and removes hooks.

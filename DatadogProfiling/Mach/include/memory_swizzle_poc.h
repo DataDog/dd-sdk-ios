@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 // =====================================================================
-// +allocWithZone: Swizzling Spike (follow-up to RUM-16460)
+// +allocWithZone: / -dealloc Swizzling Spike (follow-up to RUM-16460)
 //
 // Pre-RFC spike that validates whether swizzling +allocWithZone: on
 // NSObject is a viable App Store-safe interception primitive for the
@@ -57,12 +57,19 @@ typedef struct dd_memory_swizzle_diagnostics {
     /// Invocations skipped because the swizzle had been stopped between
     /// the install and the call.
     uint64_t skipped_disabled;
+    /// Total times the swizzled -dealloc was invoked.
+    uint64_t total_dealloc_invocations;
+    /// Deallocations forwarded to the live-sample observer.
+    uint64_t observed_deallocations;
+    /// Deallocations skipped because the swizzle was stopped.
+    uint64_t skipped_dealloc_disabled;
 } dd_memory_swizzle_diagnostics_t;
 
 /**
- * Installs the +allocWithZone: swizzle on NSObject and starts the passive
- * sampler. Subsequent Obj-C/Swift class allocations that route through
- * +allocWithZone: will be observed by the Poisson sampler.
+ * Installs +allocWithZone: and -dealloc swizzles on NSObject and starts the
+ * passive sampler. Subsequent Obj-C/Swift class allocations that route through
+ * +allocWithZone: are observed by the Poisson sampler, and sampled instances
+ * are removed from the live set when they reach NSObject's -dealloc.
  *
  * @param poisson_rate_bytes Mean bytes between samples for the underlying
  *                           sampler. Pass 0 for default (512 KB).
@@ -71,13 +78,15 @@ typedef struct dd_memory_swizzle_diagnostics {
 dd_memory_swizzle_status_t dd_memory_swizzle_start(uint64_t poisson_rate_bytes);
 
 /**
- * Restores NSObject's original +allocWithZone: implementation and disables
- * the sampler. Safe to call multiple times.
+ * Restores NSObject's original +allocWithZone: and -dealloc implementations
+ * when our implementations are still the outermost swizzles, then disables the
+ * sampler. Safe to call multiple times.
  */
 void dd_memory_swizzle_stop(void);
 
 /**
- * Returns true when the swizzle is installed and observing allocations.
+ * Returns true when the swizzles are installed and observing allocations and
+ * deallocations.
  */
 bool dd_memory_swizzle_is_running(void);
 
