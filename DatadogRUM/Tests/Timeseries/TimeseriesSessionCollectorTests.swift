@@ -637,6 +637,36 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.testId, "synthetics-test")
     }
 
+    func testItPopulatesContextFromGlobalAttributesReader() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil }
+        )
+        let attributesReader = GlobalAttributesReaderMock(globalAttributes: ["custom-key": "custom-value"])
+        collector.globalAttributesReader = attributesReader
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-context", applicationID: "app-context", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].context?.contextInfo["custom-key"] as? String, "custom-value")
+    }
+
     // MARK: - Timeseries range
 
     func testTimestampsAreMonotonicallyIncreasing() {
@@ -669,6 +699,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should be monotonically increasing")
         XCTAssertEqual(event.timeseries.start, timestamps.first)
         XCTAssertEqual(event.timeseries.end, timestamps.last)
+    }
+}
+
+private class GlobalAttributesReaderMock: GlobalAttributesReader {
+    let globalAttributes: [AttributeKey: AttributeValue]
+
+    init(globalAttributes: [AttributeKey: AttributeValue]) {
+        self.globalAttributes = globalAttributes
     }
 }
 
