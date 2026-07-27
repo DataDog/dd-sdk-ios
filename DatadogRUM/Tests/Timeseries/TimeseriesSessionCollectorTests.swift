@@ -583,6 +583,60 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten.isEmpty)
     }
 
+    // MARK: - Common schema fields
+
+    func testItPopulatesCommonSchemaFieldsFromContextAndConstructorInjectedDependencies() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let userInfo = UserInfo(id: "user-abc", name: "Jane", email: "jane@example.com", extraInfo: [:])
+        let accountInfo = AccountInfo(id: "account-abc", name: "Acme", extraInfo: [:])
+        let scope = FeatureScopeMock(
+            context: .mockWith(
+                buildNumber: "42",
+                buildId: "build-abc",
+                userInfo: userInfo,
+                accountInfo: accountInfo,
+                additionalContext: [RUMCoreContext.mockAny()]
+            )
+        )
+        let ciTest = RUMCITest(testExecutionId: "ci-exec-abc")
+        let syntheticsTest = RUMSyntheticsTest(injected: nil, resultId: "synthetics-result", testId: "synthetics-test", syntheticsInfo: [:])
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest
+        )
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-common", applicationID: "app-common", sessionType: .user)
+        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        waitForExpectations(timeout: 2)
+        collector.stop()
+
+        // Then
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        let event = events[0]
+        XCTAssertEqual(event.usr?.id, "user-abc")
+        XCTAssertEqual(event.account?.id, "account-abc")
+        XCTAssertNotNil(event.connectivity)
+        XCTAssertNotNil(event.device)
+        XCTAssertNotNil(event.os)
+        XCTAssertEqual(event.buildId, "build-abc")
+        XCTAssertEqual(event.buildVersion, "42")
+        XCTAssertEqual(event.ciTest?.testExecutionId, "ci-exec-abc")
+        XCTAssertEqual(event.synthetics?.testId, "synthetics-test")
+    }
+
     // MARK: - Timeseries range
 
     func testTimestampsAreMonotonicallyIncreasing() {
