@@ -47,6 +47,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let ciTest: RUMCITest?
     private let syntheticsTest: RUMSyntheticsTest?
 
+    /// Provides global custom attributes at flush time. Set by `RUMFeature` once `Monitor` is constructed,
+    /// since the collector is created before it. `Monitor.globalAttributes` is safe to read from any thread.
+    weak var globalAttributesReader: GlobalAttributesReader?
+
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
     private var sessionID: String = ""
@@ -252,6 +256,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
+        let globalAttributes = self.globalAttributesReader?.globalAttributes ?? [:]
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -276,6 +281,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 buildVersion: context.buildNumber,
                 ciTest: ciTest,
                 connectivity: .init(context: context),
+                context: .init(contextInfo: globalAttributes),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 ddtags: context.ddTags,
                 device: context.normalizedDevice(),
@@ -315,6 +321,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
+        let globalAttributes = self.globalAttributesReader?.globalAttributes ?? [:]
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -339,6 +346,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 buildVersion: context.buildNumber,
                 ciTest: ciTest,
                 connectivity: .init(context: context),
+                context: .init(contextInfo: globalAttributes),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 ddtags: context.ddTags,
                 device: context.normalizedDevice(),
