@@ -53,9 +53,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
 
-    /// The most recently known active view, refreshed on every sample tick. Read and written only on `queue`.
-    /// Samples are tagged with this cached value rather than the view at flush time, so a batch collected
-    /// under an active view isn't dropped just because that view happened to end right before it was flushed.
+    /// The most recently known active view, updated from the message bus on every core context change.
+    /// Cached rather than read at flush time so a batch isn't dropped just because its view ended right before flush.
     private var cachedViewID: String?
     private var cachedViewPath: String?
 
@@ -137,6 +136,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.sessionType = sessionType
             self.memoryBuffer = []
             self.cpuBuffer = []
+            self.cachedViewID = nil
+            self.cachedViewPath = nil
             self.isPaused = false
 
             self.timer?.cancel()
@@ -184,6 +185,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+            self.cachedViewID = nil
+            self.cachedViewPath = nil
         }
     }
 
@@ -228,20 +231,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             cpuBuffer.append(CPUSample(timestamp: now, usage: cpuUsage, viewID: viewID, viewPath: viewPath))
             if cpuBuffer.count >= batchSize {
                 flushCPU()
-            }
-        }
-
-        refreshCachedView()
-    }
-
-    /// Fetches the currently active view and caches it for tagging future samples. Runs asynchronously and
-    /// hops back onto `queue` to apply the result, so it never blocks sampling.
-    private func refreshCachedView() {
-        featureScope.context { [weak self] context in
-            let rum = context.additionalContext(ofType: RUMCoreContext.self)
-            self?.queue.async {
-                self?.cachedViewID = rum?.viewID
-                self?.cachedViewPath = rum?.viewPath
             }
         }
     }
@@ -343,5 +332,21 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: event)
         }
+    }
+}
+
+extension TimeseriesSessionCollector: FeatureMessageReceiver {
+    /// Receives the currently active view from the core context message and caches it for tagging future samples.
+    /// - Returns: Always `false`, because it doesn't block message propagation to other receivers.
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case .context(let context) = message else {
+            return false
+        }
+        let rum = context.additionalContext(ofType: RUMCoreContext.self)
+        queue.async { [weak self] in
+            self?.cachedViewID = rum?.viewID
+            self?.cachedViewPath = rum?.viewPath
+        }
+        return false
     }
 }
