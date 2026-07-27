@@ -100,7 +100,7 @@ extension ProfilingHandler {
                 start: Date(timeIntervalSince1970: start),
                 end: Date(timeIntervalSince1970: end),
                 attachments: [
-                    ProfileAttachments.Constants.wallFilename,
+                    ProfileAttachments.Constants.pprofFilename,
                     ProfileAttachments.Constants.rumEventsFilename
                 ],
                 tags: [

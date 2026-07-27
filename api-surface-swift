@@ -1600,4 +1600,12 @@ public enum Profiling
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
         public var continuousSampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5)
+        public var featureFlags: FeatureFlags
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5,featureFlags: FeatureFlags = .defaults)
+[?] extension Profiling.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag: String
+        case cpuTimeSamples
+[?] extension Profiling.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool

@@ -98,13 +98,15 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertNotNil(profile)
 
         let addresses: [UInt64] = [0x100001000, 0x100002000, 0x100003000]
+        let thread1ID = UInt64(UInt32.max) + 1
+        let thread2ID = thread1ID + 1
 
         // When
         // - Add same stack from different threads with different names
         let thread1Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread1Trace.pointee = .mockWith(tid: 1, addresses: addresses, threadName: "Thread1")
+        thread1Trace.pointee = .mockWith(tid: thread1ID, addresses: addresses, threadName: "Thread1")
         let thread2Trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-        thread2Trace.pointee = .mockWith(tid: 2, addresses: addresses, threadName: "Thread2")
+        thread2Trace.pointee = .mockWith(tid: thread2ID, addresses: addresses, threadName: "Thread2")
         defer {
             dd_free(thread1Trace)
             dd_free(thread2Trace)
@@ -152,7 +154,7 @@ final class ProfileCxxTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(receivedTIDs, [1, 2])
+        XCTAssertEqual(receivedTIDs, [Int64(thread1ID), Int64(thread2ID)])
         XCTAssertEqual(receivedThreadNames, ["Thread1", "Thread2"])
     }
 
@@ -221,7 +223,7 @@ final class ProfileCxxTests: XCTestCase {
                 UInt64(0x300000000 + i * 0x1000)
             ]
             let stackTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
-            stackTrace.pointee = .mockWith(tid: UInt32(i % 10), addresses: addresses)
+            stackTrace.pointee = .mockWith(tid: UInt64(i % 10), addresses: addresses)
             dd_pprof_add_samples(profile, stackTrace, 1)
             dd_free(stackTrace)
         }
@@ -371,6 +373,46 @@ final class ProfileCxxTests: XCTestCase {
         XCTAssertGreaterThan(unpackedProfile.pointee.n_location, 0, "Should have locations")
         XCTAssertGreaterThan(unpackedProfile.pointee.n_mapping, 0, "Should have mappings")
         XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 1, "Should have one sample type")
+    }
+
+    func testProfileAggregation_withCPUTimingEnabled_serializesWallAndCPUValues() throws {
+        // Given
+        let profile = try XCTUnwrap(dd_pprof_create_with_cpu_time(10_000_000, true))
+        defer { dd_pprof_destroy(profile) }
+
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000, 0x100002000],
+            samplingIntervalNanos: 10_000_000,
+            cpuTimeNanos: 4_000_000
+        )
+        defer { dd_free(trace) }
+
+        // When
+        dd_pprof_add_samples(profile, trace, 1)
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        // Then
+        let unpackedProfile = try XCTUnwrap(perftools__profiles__profile__unpack(nil, size, data))
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+
+        XCTAssertEqual(unpackedProfile.pointee.n_sample_type, 2, "CPU timing should add a second sample type")
+
+        let wallSampleType = try XCTUnwrap(unpackedProfile.pointee.sample_type[0])
+        let cpuSampleType = try XCTUnwrap(unpackedProfile.pointee.sample_type[1])
+        let wallType = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(wallSampleType.pointee.type)])
+        let cpuType = try XCTUnwrap(unpackedProfile.pointee.string_table[Int(cpuSampleType.pointee.type)])
+        XCTAssertEqual(String(cString: wallType), "wall-time")
+        XCTAssertEqual(String(cString: cpuType), "cpu-time")
+
+        let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
+        XCTAssertEqual(sample.pointee.n_value, 2)
+        XCTAssertEqual(sample.pointee.value[0], 10_000_000)
+        XCTAssertEqual(sample.pointee.value[1], 4_000_000)
     }
 
     func testProfileAggregation_withMissingImageCache_fallsBackToBinaryLookup() throws {
