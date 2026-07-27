@@ -96,6 +96,14 @@ internal enum RUMInternalErrorSource: String, Decodable {
 /// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
+/// Exposes the monitor's global custom attributes for readers that operate outside the `RUMCommand` pipeline
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to `command.globalAttributes`.
+internal protocol GlobalAttributesReader: AnyObject {
+    /// The current global attributes set through `addAttribute(forKey:value:)` / `addAttributes(_:)`.
+    /// Safe to read from any thread.
+    var globalAttributes: [AttributeKey: AttributeValue] { get }
+}
+
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
     let featureScope: FeatureScope
@@ -189,6 +197,10 @@ internal class Monitor: RUMCommandSubscriber {
     private func didUpdateAttributes() {
         fatalErrorContext.globalAttributes = attributes
     }
+}
+
+extension Monitor: GlobalAttributesReader {
+    var globalAttributes: [AttributeKey: AttributeValue] { attributes }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
