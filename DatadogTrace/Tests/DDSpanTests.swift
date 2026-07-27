@@ -273,9 +273,9 @@ class DDSpanTests: XCTestCase {
         let tracer: DatadogTracer = .mockWith(
             core: core,
             samplingProvider: TracerSamplerProviderMock.mockKeepAll(),
-            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper),
+            onSpanFinished: { _ in /* stats hook installed */ }
         )
-        tracer.onSpanFinished = { _ in /* stats hook installed */ }
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
@@ -287,19 +287,18 @@ class DDSpanTests: XCTestCase {
     func testWhenStatsEnabled_eventMapperRunsExactlyOnce_forSampledOutSpan() {
         let invocations = MapperInvocationCounter()
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
-            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper)
+            spanEventBuilder: .mockWith(eventsMapper: invocations.mapper),
+            onSpanFinished: capture.capture
         )
-
-        var snapshotDelivered = false
-        tracer.onSpanFinished = { _ in snapshotDelivered = true }
 
         tracer.startSpan(operationName: .mockAny()).finish()
 
         XCTAssertEqual(invocations.count, 1, "Mapper must run for the snapshot even when sampled out")
-        XCTAssertTrue(snapshotDelivered)
+        XCTAssertNotNil(capture.snapshot)
         let envelopes: [SpanEventsEnvelope] = core.events()
         XCTAssertEqual(envelopes.count, 0, "Sampled-out span must not be uploaded")
     }
