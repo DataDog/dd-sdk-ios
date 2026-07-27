@@ -219,6 +219,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             dateProvider: configuration.dateProvider
         )
 
+        timeseriesCollector?.globalAttributesReader = monitor
+
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
         }
