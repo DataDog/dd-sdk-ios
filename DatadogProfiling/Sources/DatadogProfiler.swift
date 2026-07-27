@@ -603,9 +603,9 @@ private extension DatadogProfiler {
     }
 
     func stopMemoryProfiling() {
-        // dd_memory_swizzle_stop restores the original +allocWithZone: IMP and clears the
-        // sampler's enabled flag (equivalent to calling dd_memory_profiler_stop after the
-        // swizzle is removed). Safe to call even when not running.
+        // dd_memory_swizzle_stop restores the original +allocWithZone: and -dealloc IMPs
+        // when they are still the outermost swizzles, and clears the sampler's enabled flag.
+        // Safe to call even when not running.
         MemorySwizzlingPOC.stop()
     }
 

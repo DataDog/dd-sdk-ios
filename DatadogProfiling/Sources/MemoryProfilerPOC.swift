@@ -58,6 +58,7 @@ internal struct MemoryProfilerDiagnostics: Sendable {
     let totalBytesAllocated: UInt64
     let totalAllocations: UInt64
     let sampledAllocations: UInt64
+    let droppedSamples: UInt64
     let sampledFrees: UInt64
     let liveSampledAllocations: UInt64
     let reentrantSkips: UInt64
@@ -180,6 +181,7 @@ internal enum MemoryProfilerPOC {
             totalBytesAllocated: raw.total_bytes_allocated,
             totalAllocations: raw.total_allocations,
             sampledAllocations: raw.sampled_allocations,
+            droppedSamples: raw.dropped_samples,
             sampledFrees: raw.sampled_frees,
             liveSampledAllocations: raw.live_sampled_allocations,
             reentrantSkips: raw.reentrant_skips,

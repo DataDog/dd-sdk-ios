@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 // =====================================================================
-// Test-only API for the Memory Profiler POC (RUM-16460).
+// Test-only API for the Memory Profiler RFC implementation (RUM-16460).
 // Lets tests inspect internal state and probe failure modes that aren't
 // reachable through the production C API.
 // =====================================================================
@@ -65,6 +65,36 @@ uint64_t dd_memory_test_sampled_count(void);
  * (sampled and not yet freed).
  */
 uint64_t dd_memory_test_live_count(void);
+
+/**
+ * Returns the active profiler session generation.
+ *
+ * Tests use this token to prove that table work captured before a restart
+ * cannot be published into the new session.
+ */
+uint64_t dd_memory_test_session_generation(void);
+
+/**
+ * Returns the table bucket selected for an address.
+ *
+ * Lets collision tests follow the production hash without duplicating its
+ * implementation.
+ */
+size_t dd_memory_test_bucket_for(const void* ptr);
+
+/**
+ * Inserts a deterministic sample directly into the live table.
+ *
+ * This bypasses Poisson selection and backtrace capture while preserving
+ * production insertion, capacity, diagnostics, and session validation.
+ *
+ * @return true if inserted; false for a stale session, duplicate, or full table.
+ */
+bool dd_memory_test_insert_sample(
+    const void* ptr,
+    uint64_t size,
+    uint64_t session_generation
+);
 
 #ifdef __cplusplus
 }

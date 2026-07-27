@@ -72,8 +72,9 @@ final class MemorySwizzlingPOCTests: XCTestCase {
         XCTAssertEqual(status, .ok, "Swizzle must install on a clean test environment")
 
         // Each pattern is forced-sampled so the sampler captures the
-        // instance regardless of the Poisson counter. The pass criterion
-        // is that the live-set delta is non-zero for at least one pattern.
+        // instance regardless of the Poisson counter. The temporary
+        // instances may deallocate before the closure returns, so measure
+        // the swizzle's observed-allocation delta rather than live samples.
         let patterns: [(label: String, exercise: () -> Void)] = [
             ("[NSObject new]", { _ = NSObject() }),
             ("alloc + init",  { _ = ObjCFixture(payload: 1) }),
@@ -85,23 +86,23 @@ final class MemorySwizzlingPOCTests: XCTestCase {
             ("NSUUID()", { _ = NSUUID() }),
         ]
 
-        var firedCounts: [(String, UInt64)] = []
+        var observedCounts: [(String, UInt64)] = []
         for pattern in patterns {
-            let liveBefore = dd_memory_test_live_count()
+            let observedBefore = MemorySwizzlingPOC.diagnostics().observedAllocations
             dd_memory_test_force_next_sample()
             pattern.exercise()
-            let liveAfter = dd_memory_test_live_count()
-            firedCounts.append((pattern.label, liveAfter - liveBefore))
+            let observedAfter = MemorySwizzlingPOC.diagnostics().observedAllocations
+            observedCounts.append((pattern.label, observedAfter - observedBefore))
         }
 
         let diag = MemorySwizzlingPOC.diagnostics()
         print("[Spike Q1] swizzle invocations: total=\(diag.totalInvocations) observed=\(diag.observedAllocations)")
-        for (label, delta) in firedCounts {
-            print("[Spike Q1]   \(label) → live delta = \(delta)")
+        for (label, count) in observedCounts {
+            print("[Spike Q1]   \(label) → observed allocations = \(count)")
         }
 
-        let totalDelta = firedCounts.reduce(0) { $0 + $1.1 }
-        XCTAssertGreaterThan(totalDelta, 0,
+        let totalObserved = observedCounts.reduce(0) { $0 + $1.1 }
+        XCTAssertGreaterThan(totalObserved, 0,
                               "At least one allocation pattern must produce a tracked sample")
         XCTAssertGreaterThan(diag.totalInvocations, 0,
                               "Swizzle trampoline must have been invoked")
