@@ -123,12 +123,24 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
         }
 
+        let ciTest = configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
+        let syntheticsTest: RUMSyntheticsTest? = {
+            if let testId = configuration.syntheticsTestId,
+               let resultId = configuration.syntheticsResultId {
+                return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+            } else {
+                return nil
+            }
+        }()
+
         let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? vitalsReaders.map {
             TimeseriesSessionCollector(
                 memoryReader: $0.memory,
                 featureScope: featureScope,
                 batchSize: configuration.timeseriesBatchSize,
-                collectInBackground: configuration.trackBackgroundEvents
+                collectInBackground: configuration.trackBackgroundEvents,
+                ciTest: ciTest,
+                syntheticsTest: syntheticsTest
             )
         } : nil
 
@@ -146,15 +158,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             backtraceReporter: core.backtraceReporter,
-            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-            syntheticsTest: {
-                if let testId = configuration.syntheticsTestId,
-                   let resultId = configuration.syntheticsResultId {
-                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                } else {
-                    return nil
-                }
-            }(),
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {

@@ -44,6 +44,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let collectInBackground: Bool
     private let featureScope: FeatureScope
     private let totalRAM: Double
+    private let ciTest: RUMCITest?
+    private let syntheticsTest: RUMSyntheticsTest?
 
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
@@ -68,7 +70,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         samplingInterval: TimeInterval = 1,
         collectInBackground: Bool = false,
         cpuUsageProvider: (() -> Double?)? = nil,
-        totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory)
+        totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
+        ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
@@ -76,6 +80,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.collectInBackground = collectInBackground
         self.featureScope = featureScope
         self.totalRAM = totalRAM
+        self.ciTest = ciTest
+        self.syntheticsTest = syntheticsTest
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
     }
 
@@ -244,6 +250,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
+        let ciTest = self.ciTest
+        let syntheticsTest = self.syntheticsTest
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -262,11 +270,20 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let adjustedEnd = end + offsetNs
             let event = RUMTimeseriesMemoryEvent(
                 dd: .init(),
+                account: .init(context: context),
                 application: .init(id: applicationID),
+                buildId: context.buildId,
+                buildVersion: context.buildNumber,
+                ciTest: ciTest,
+                connectivity: .init(context: context),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
+                ddtags: context.ddTags,
+                device: context.normalizedDevice(),
+                os: context.os,
                 service: context.service,
                 session: .init(id: sessionID, type: sessionType),
                 source: .init(rawValue: context.source) ?? .ios,
+                synthetics: syntheticsTest,
                 timeseries: .init(
                     data: .init(
                         timestamps: timestamps,
@@ -279,6 +296,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
+                usr: .init(context: context),
                 version: context.version,
                 view: .init(id: view.id, url: view.path)
             )
@@ -295,6 +313,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionID = self.sessionID
         let applicationID = self.applicationID
         let sessionType = self.sessionType
+        let ciTest = self.ciTest
+        let syntheticsTest = self.syntheticsTest
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -313,11 +333,20 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let adjustedEnd = end + offsetNs
             let event = RUMTimeseriesCpuEvent(
                 dd: .init(),
+                account: .init(context: context),
                 application: .init(id: applicationID),
+                buildId: context.buildId,
+                buildVersion: context.buildNumber,
+                ciTest: ciTest,
+                connectivity: .init(context: context),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
+                ddtags: context.ddTags,
+                device: context.normalizedDevice(),
+                os: context.os,
                 service: context.service,
                 session: .init(id: sessionID, type: sessionType),
                 source: .init(rawValue: context.source) ?? .ios,
+                synthetics: syntheticsTest,
                 timeseries: .init(
                     data: .init(
                         timestamps: timestamps,
@@ -327,6 +356,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
+                usr: .init(context: context),
                 version: context.version,
                 view: .init(id: view.id, url: view.path)
             )
