@@ -17,7 +17,7 @@ extension RemoteConfiguration: AnyMockable, RandomMockable {
             profiling: .mockRandom(),
             rum: .mockRandom(),
             sessionReplay: .mockRandom(),
-            trace: nil
+            trace: .mockRandom()
         )
     }
 
