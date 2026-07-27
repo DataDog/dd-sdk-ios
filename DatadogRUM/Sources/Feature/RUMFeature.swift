@@ -123,6 +123,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
         }
 
+        let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? vitalsReaders.map {
+            TimeseriesSessionCollector(
+                memoryReader: $0.memory,
+                featureScope: featureScope,
+                batchSize: configuration.timeseriesBatchSize,
+                collectInBackground: configuration.trackBackgroundEvents
+            )
+        } : nil
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -197,14 +206,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
-            timeseriesCollector: configuration.enableTimeseries ? vitalsReaders.map {
-                TimeseriesSessionCollector(
-                    memoryReader: $0.memory,
-                    featureScope: featureScope,
-                    batchSize: configuration.timeseriesBatchSize,
-                    collectInBackground: configuration.trackBackgroundEvents
-                )
-            } : nil
+            timeseriesCollector: timeseriesCollector
         )
 
         self.monitor = Monitor(
@@ -316,6 +318,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         if let watchdogTermination = watchdogTermination {
             messageReceivers.append(watchdogTermination)
+        }
+
+        if let timeseriesCollector = timeseriesCollector {
+            messageReceivers.append(timeseriesCollector)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
