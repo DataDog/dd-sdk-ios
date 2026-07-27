@@ -78,7 +78,9 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         let request = try #require(requests.first?.content)
         #expect(request.replayID == snapshot.replayID)
         #expect(request.layer == snapshot.layer)
-        #expect(request.visibleFrame == snapshot.absoluteFrame)
+        #expect(request.geometry.renderBounds == snapshot.contentGeometry.renderBounds)
+        #expect(request.geometry.localRect == snapshot.contentGeometry.localRect)
+        #expect(request.geometry.frame == snapshot.contentGeometry.frame)
         #expect(request.hasChanges == false)
     }
 
@@ -673,64 +675,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
 
         // Then
         #expect(requests.isEmpty)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Clips request visible frame to masking ancestor")
-    func clipsRequestVisibleFrameToMaskingAncestor() throws {
-        // Given
-        let root = CALayer()
-        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
-
-        let clippingLayer = CALayer()
-        clippingLayer.frame = CGRect(x: 10, y: 10, width: 40, height: 40)
-        clippingLayer.masksToBounds = true
-        root.addSublayer(clippingLayer)
-
-        let child = CATextLayer()
-        child.frame = CGRect(x: 20, y: 20, width: 40, height: 40)
-        clippingLayer.addSublayer(child)
-
-        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
-        let cache = ImageSnapshotCache()
-
-        // When
-        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
-
-        // Then
-        #expect(requests.count == 1)
-        let request = try #require(requests.first?.content)
-        #expect(request.layer.matches(child))
-        #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 20, height: 20))
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Does not clip request visible frame to non-masking ancestor")
-    func doesNotClipRequestVisibleFrameToNonMaskingAncestor() throws {
-        // Given
-        let root = CALayer()
-        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
-
-        let container = CALayer()
-        container.frame = CGRect(x: 10, y: 10, width: 40, height: 40)
-        container.masksToBounds = false
-        root.addSublayer(container)
-
-        let child = CATextLayer()
-        child.frame = CGRect(x: 20, y: 20, width: 90, height: 90)
-        container.addSublayer(child)
-
-        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
-        let cache = ImageSnapshotCache()
-
-        // When
-        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
-
-        // Then
-        #expect(requests.count == 1)
-        let request = try #require(requests.first?.content)
-        #expect(request.layer.matches(child))
-        #expect(request.visibleFrame == CGRect(x: 30, y: 30, width: 70, height: 70))
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

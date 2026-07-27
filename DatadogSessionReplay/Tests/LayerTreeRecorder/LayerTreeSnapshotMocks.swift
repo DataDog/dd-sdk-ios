@@ -64,6 +64,7 @@ extension CALayerSnapshot {
         absoluteFrame: CGRect = .zero,
         observation: CALayerSnapshot.SemanticObservation = .init(semantics: .layer),
         bounds: CGRect? = nil,
+        contentGeometry: ContentGeometry? = nil,
         transform: CATransform3D = CATransform3DIdentity,
         backgroundColor: CGColor? = nil,
         cornerRadii: CALayerSnapshot.CornerRadii = .zero,
@@ -75,6 +76,7 @@ extension CALayerSnapshot {
         sublayers: [CALayerSnapshot] = []
     ) -> CALayerSnapshot {
         let layer = CALayer()
+        let bounds = bounds ?? CGRect(origin: .zero, size: absoluteFrame.size)
         return CALayerSnapshot(
             layer: CALayerReference(layer),
             replayID: replayID,
@@ -85,11 +87,16 @@ extension CALayerSnapshot {
             textAndInputPrivacyLevel: .maskSensitiveInputs,
             imagePrivacyLevel: .maskNone,
             isPrivate: isPrivate,
-            bounds: bounds ?? CGRect(origin: .zero, size: absoluteFrame.size),
+            bounds: bounds,
             position: absoluteFrame.origin,
             zPosition: 0,
             transform: transform,
             absoluteFrame: absoluteFrame,
+            contentGeometry: contentGeometry ?? .init(
+                renderBounds: bounds,
+                localRect: bounds,
+                frame: absoluteFrame
+            ),
             sublayers: sublayers,
             dependencies: [],
             sublayerTransform: CATransform3DIdentity,

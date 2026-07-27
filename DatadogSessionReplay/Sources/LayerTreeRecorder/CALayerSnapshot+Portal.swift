@@ -156,6 +156,7 @@ extension CALayerSnapshot {
 
     private mutating func offsetAbsoluteFrames(x: CGFloat, y: CGFloat) {
         absoluteFrame = absoluteFrame.offsetBy(dx: x, dy: y)
+        contentGeometry.frame = contentGeometry.frame.offsetBy(dx: x, dy: y)
 
         if case .webView(let webView) = observation.semantics {
             observation.semantics = .webView(
