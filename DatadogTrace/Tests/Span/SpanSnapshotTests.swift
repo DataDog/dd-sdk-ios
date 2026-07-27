@@ -15,7 +15,8 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotCapturesBasicSpanData() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "network.request",
@@ -25,14 +26,9 @@ class SpanSnapshotTests: XCTestCase {
             ]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { snapshot in
-            capturedSnapshot = snapshot
-        }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.operationName, "network.request")
         XCTAssertEqual(snapshot.resource, "GET /api/users")
         XCTAssertEqual(snapshot.service, "my-service")
@@ -40,61 +36,56 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotCapturesSpanKind() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "rpc.call",
             tags: [SpanTags.kind: "client"]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.spanKind, "client")
     }
 
     func testSnapshotCapturesHTTPStatusCode() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "http.request",
             tags: [OTTags.httpStatusCode: 404]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.httpStatusCode, 404)
     }
 
     func testSnapshotCapturesErrorFromTag() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "failing.op",
             tags: [OTTags.error: true]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertTrue(snapshot.isError)
     }
 
     func testSnapshotCapturesErrorFromLogFields() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(operationName: "error.op") as! DDSpan
         span.log(
@@ -104,27 +95,22 @@ class SpanSnapshotTests: XCTestCase {
             ]
         )
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertTrue(snapshot.isError)
     }
 
     func testSnapshotDefaultsToNoError() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(operationName: "ok.op") as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertFalse(snapshot.isError)
     }
 
@@ -132,23 +118,22 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotIsTopLevel_whenRootSpan() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(operationName: "root.span") as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertTrue(snapshot.isTopLevel)
         XCTAssertNil(snapshot.parentSpanID)
     }
 
     func testSnapshotIsNotTopLevel_whenChildSpan() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let parent = tracer.startSpan(operationName: "parent")
         let child = tracer.startSpan(
@@ -156,33 +141,28 @@ class SpanSnapshotTests: XCTestCase {
             references: [OTReference.child(of: parent.context)]
         )
 
-        var snapshots: [SpanSnapshot] = []
-        tracer.onSpanFinished = { snapshots.append($0) }
-
         child.finish()
         parent.finish()
 
-        XCTAssertEqual(snapshots.count, 2)
-        let childSnapshot = try XCTUnwrap(snapshots.first { $0.operationName == "child" })
+        XCTAssertEqual(capture.snapshots.count, 2)
+        let childSnapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "child" })
         XCTAssertFalse(childSnapshot.isTopLevel)
         XCTAssertNotNil(childSnapshot.parentSpanID)
     }
 
     func testSnapshotIsMeasured_whenTagSet() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "measured.op",
             tags: ["_dd.measured": 1]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertTrue(snapshot.isMeasured)
     }
 
@@ -190,7 +170,8 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotCapturesPeerTags() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "db.call",
@@ -202,12 +183,9 @@ class SpanSnapshotTests: XCTestCase {
             ]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.peerTags["peer.service"], "postgres-primary")
         XCTAssertEqual(snapshot.peerTags["db.instance"], "users_db")
         XCTAssertEqual(snapshot.peerTags["out.host"], "db.internal.io")
@@ -218,34 +196,30 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotCapturesServiceSource() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(
             operationName: "op",
             tags: ["_dd.svc_src": "m"]
         ) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.serviceSource, "m")
     }
 
     func testSnapshotDefaultsToEmptyServiceSource() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(operationName: "op") as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.serviceSource, "")
     }
 
@@ -256,19 +230,18 @@ class SpanSnapshotTests: XCTestCase {
         let finishDate = Date(timeIntervalSince1970: 1_000.5)
 
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
-            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 0)
+            dateProvider: RelativeDateProvider(startingFrom: startDate, advancingBySeconds: 0),
+            onSpanFinished: capture.capture
         )
 
         let span = tracer.startSpan(operationName: "timed.op", startTime: startDate) as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish(at: finishDate)
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.duration, 500_000_000)
         XCTAssertEqual(snapshot.startTime, 1_000_000_000_000)
     }
@@ -277,16 +250,14 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotUsesOperationNameAsResourceFallback() throws {
         let core = PassthroughCoreMock()
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
 
         let span = tracer.startSpan(operationName: "fallback.op") as! DDSpan
 
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
-
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.resource, "fallback.op")
     }
 
@@ -304,18 +275,17 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotIsCapturedEvenForSampledOutSpans() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
-            samplingProvider: TracerSamplerProviderMock.mockRejectAll()
+            samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(operationName: "sampled.out")
         span.finish()
 
-        XCTAssertNotNil(capturedSnapshot, "Snapshot must be captured regardless of sampling decision")
+        XCTAssertNotNil(capture.snapshot, "Snapshot must be captured regardless of sampling decision")
     }
 
     // MARK: - Sanitization Consistency
@@ -377,17 +347,16 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotReflectsMappedResourceName() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.resource = "REDACTED"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(
             operationName: "network.request",
@@ -395,44 +364,42 @@ class SpanSnapshotTests: XCTestCase {
         )
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.resource, "REDACTED")
     }
 
     func testSnapshotReflectsMappedOperationName() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.operationName = "http.request.normalized"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(operationName: "http.request")
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.operationName, "http.request.normalized")
     }
 
     func testSnapshotReflectsMappedPeerTags() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.tags["peer.service"] = "redacted-db"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(
             operationName: "db.query",
@@ -440,23 +407,22 @@ class SpanSnapshotTests: XCTestCase {
         )
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.peerTags["peer.service"], "redacted-db")
     }
 
     func testSnapshotReflectsMapperRemovingPeerTag() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.tags.removeValue(forKey: "peer.service")
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(
             operationName: "db.query",
@@ -464,23 +430,22 @@ class SpanSnapshotTests: XCTestCase {
         )
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertNil(snapshot.peerTags["peer.service"])
     }
 
     func testSnapshotReflectsMappedHTTPStatusCode() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.tags[OTTags.httpStatusCode] = "500"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(
             operationName: "http.request",
@@ -488,7 +453,7 @@ class SpanSnapshotTests: XCTestCase {
         )
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.httpStatusCode, 500)
     }
 
@@ -502,18 +467,17 @@ class SpanSnapshotTests: XCTestCase {
         let serverOffset: TimeInterval = 5
 
         let core = PassthroughCoreMock(context: .mockWith(serverTimeOffset: serverOffset))
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
-            dateProvider: RelativeDateProvider(startingFrom: deviceStartDate, advancingBySeconds: 0)
+            dateProvider: RelativeDateProvider(startingFrom: deviceStartDate, advancingBySeconds: 0),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(operationName: "timed.op", startTime: deviceStartDate)
         span.finish(at: deviceStartDate.addingTimeInterval(0.5))
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.startTime, 1_000_000_000_000, "Snapshot must use device-local start time, not server-adjusted")
 
         // Sanity check: the uploaded SpanEvent applies the offset, confirming the
@@ -528,39 +492,37 @@ class SpanSnapshotTests: XCTestCase {
         // regardless of any `span.type` tag. The snapshot must match so stats and
         // uploads agree on the type dimension.
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.tags["span.type"] = "http"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(operationName: "http.request")
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         XCTAssertEqual(snapshot.type, "custom", "Snapshot type must match the encoder's hardcoded value")
     }
 
     func testSnapshotMatchesUploadedSpanEvent_whenMapperRewritesResource() throws {
         // The strongest guarantee: snapshot and uploaded trace agree on resource name post-mapper.
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
             spanEventBuilder: .mockWith(eventsMapper: { event in
                 var mapped = event
                 mapped.resource = "GET /users/{id}/profile"
                 return mapped
-            })
+            }),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         let span = tracer.startSpan(
             operationName: "network.request",
@@ -568,7 +530,7 @@ class SpanSnapshotTests: XCTestCase {
         )
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         let envelopes: [SpanEventsEnvelope] = core.events()
         let uploadedSpan = try XCTUnwrap(envelopes.first?.spans.first)
 
