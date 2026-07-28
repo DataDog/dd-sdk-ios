@@ -62,7 +62,7 @@ public enum Profiling {
                 "The existing instance will continue to be used."
             )
         }
-        
+
         // Merge remote configuration on top of the in-code configuration. Remote values take
         // precedence for supported behavioral parameters; if no remote configuration is available,
         // the in-code configuration is used unchanged.
