@@ -8,6 +8,12 @@ import XCTest
 import TestUtilities
 @testable import DatadogInternal
 
+private struct ThrowingEncodable: Encodable {
+    func encode(to encoder: Encoder) throws {
+        throw EncodingError.invalidValue(self, .init(codingPath: encoder.codingPath, debugDescription: "intentional failure"))
+    }
+}
+
 class AttributeEncodingTests: XCTestCase {
     private let encoder = JSONEncoder()
 
@@ -78,7 +84,7 @@ class AttributeEncodingTests: XCTestCase {
         XCTAssertEqual(jsonObject["validAttr"] as? String, "valid")
         XCTAssertEqual(jsonObject["nonEncodableAttr"] as? String, "NonEncodableObject()")
 
-        // And a debug log is emitted (not an error — the attribute is not dropped)
+        // And a debug log is emitted
         let debugLog = try XCTUnwrap(dd.logger.debugLog)
         XCTAssertTrue(debugLog.message.contains("It will be encoded as its string description: 'NonEncodableObject()'"))
         XCTAssertNil(dd.logger.errorLog)
@@ -88,13 +94,6 @@ class AttributeEncodingTests: XCTestCase {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
-
-        // An Encodable that always throws — exercises the encodeAttribute error path
-        struct ThrowingEncodable: Encodable {
-            func encode(to encoder: Encoder) throws {
-                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
-            }
-        }
 
         struct TestEvent: Encodable {
             enum CodingKeys: String, CodingKey { case customAttr }
@@ -117,12 +116,6 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        struct ThrowingEncodable: Encodable {
-            func encode(to encoder: Encoder) throws {
-                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
-            }
-        }
-
         struct UserInfoStruct: Encodable {
             enum CodingKeys: String, CodingKey { case customField = "usr.customField" }
             func encode(to encoder: Encoder) throws {
@@ -143,12 +136,6 @@ class AttributeEncodingTests: XCTestCase {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
-
-        struct ThrowingEncodable: Encodable {
-            func encode(to encoder: Encoder) throws {
-                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
-            }
-        }
 
         struct AccountInfoStruct: Encodable {
             enum CodingKeys: String, CodingKey { case accountField = "account.accountField" }
@@ -171,12 +158,6 @@ class AttributeEncodingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        struct ThrowingEncodable: Encodable {
-            func encode(to encoder: Encoder) throws {
-                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
-            }
-        }
-
         struct InternalStruct: Encodable {
             enum CodingKeys: String, CodingKey { case internalField }
             func encode(to encoder: Encoder) throws {
@@ -197,12 +178,6 @@ class AttributeEncodingTests: XCTestCase {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
-
-        struct ThrowingEncodable: Encodable {
-            func encode(to encoder: Encoder) throws {
-                throw EncodingError.invalidValue(self, .init(codingPath: [], debugDescription: "intentional failure"))
-            }
-        }
 
         struct TestEvent: Encodable {
             enum CodingKeys: String, CodingKey { case attr }

@@ -19,7 +19,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
     private var monitor: Monitor! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    // A non-encodable NSObject subclass with a fixed, predictable description
+    // Sample non-Encodable object used in fallback assertions.
     private class DescribableObject: NSObject {
         override var description: String { "DescribableObject()" }
     }
