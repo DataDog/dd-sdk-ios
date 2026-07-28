@@ -48,32 +48,32 @@ internal func flattenedTagPairs(key: String, dict: [String: OTTagValue]) -> [(St
     return pairs
 }
 
-/// Flattens every entry of `tags`, applying the same key-sorted determinism as `flattenedTagPairs(key:dict:)`
-/// at the top level too (e.g. for a same-dictionary collision between a literal `"a.b"` key and an `"a":
-/// ["b": ...]` entry — an unusual input, but not one this function should resolve arbitrarily).
-///
-/// Warns if that collision actually occurs (same mechanism `DDSpan.storeFlattenedTags` uses for the identical
-/// shape reached via `setTag`) — this function is `DatadogTracer`'s only entry point for flattening global/
-/// initial tags, so it's the only place that could otherwise silently drop one of them with zero diagnostic.
+/// Warns when flattening produced two pairs sharing the same leaf key — a collision that silently drops one of
+/// the values. `message` describes the caller's context, since the resolution differs (global config tags vs a
+/// single `setTag` dictionary). Shared by `flattenedTags` and `DDSpan.storeFlattenedTags`.
+internal func warnIfLeafKeysCollide(_ leafKeys: [String], message: String) {
+    _ = warn(if: Set(leafKeys).count != leafKeys.count, message: message)
+}
+
+/// Flattens every entry of `tags` into leaf tags, sorting keys so a collision between two entries landing on the
+/// same leaf (e.g. a literal `"a.b"` key alongside an `"a": ["b": ...]` entry) resolves deterministically rather
+/// than by `Dictionary` iteration order, warning when it drops one of the colliding values.
 internal func flattenedTags(_ tags: [String: OTTagValue]) -> FlattenedTags {
-    // Each triple keeps the top-level key (`owner`) that produced `leaf`/`value` alongside them, so ownership
-    // can be assigned per surviving leaf below instead of per top-level key up front — otherwise a key that
-    // loses a same-leaf collision (see the warning below) would still wrongly be recorded as that leaf's owner,
-    // and a later `mergeTags` override of the losing key could drop a leaf it never actually produced.
+    // Track the top-level key (`owner`) that produced each leaf alongside its value, so ownership is assigned per
+    // surviving leaf below. Assigning it per top-level key up front would let a key that loses a collision keep
+    // claiming a leaf it didn't produce, which a later override of that key would then wrongly drop.
     let triples = tags.sorted { $0.key < $1.key }.flatMap { entry in
         flattenedTagPairs(key: entry.key, value: entry.value).map { leaf, value in (leaf: leaf, value: value, owner: entry.key) }
     }
-    let uniqueKeyCount = Set(triples.map { $0.leaf }).count
-    _ = warn(
-        if: uniqueKeyCount != triples.count,
+    warnIfLeafKeysCollide(
+        triples.map { $0.leaf },
         message: """
         Two configured tags collide once flattened (e.g. a literal "a.b" key alongside a nested "a": \
         ["b": ...] entry) — only one of them was kept.
         """
     )
-    // Last-write-wins per leaf — same rule `Dictionary(pairs, uniquingKeysWith:)` applies below — but keeping
-    // `value` and `owner` together in one dictionary so a leaf's recorded owner can never drift out of sync
-    // with the value that actually won its collision.
+    // Resolve collisions last-write-wins per leaf, keeping each leaf's value and owner together so the recorded
+    // owner can't drift out of sync with the value that actually won.
     var winners: [String: (value: OTTagValue, owner: String)] = [:]
     for triple in triples {
         winners[triple.leaf] = (triple.value, triple.owner)
@@ -119,7 +119,7 @@ internal func releaseOwnership(of leaves: Set<String>, in owners: inout [String:
 /// instead of being replaced by it, unlike before flattening existed (when both were a single literal
 /// `"context"` key). Dropping every tag that merely shares the `"key."` prefix, instead of only tracked
 /// leaves, would also erase an unrelated global tag literally keyed e.g. `"context.foo"` that was never a leaf
-/// of a `"context"` dictionary — the same bug shape fixed in `DDSpan.storeFlattenedTags`.
+/// of a `"context"` dictionary.
 internal func mergeTags(global: FlattenedTags, user: [String: OTTagValue]?) -> FlattenedTags {
     guard let user, !user.isEmpty else {
         return global

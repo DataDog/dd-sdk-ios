@@ -135,9 +135,8 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
         // `setTag(key:value: OTTagValue)` calls this with exactly 1 pair whenever `value` isn't a `Dictionary` —
         // the overwhelming majority of calls — which can never collide with itself; skip the check below for it.
         if pairs.count > 1 {
-            let uniqueKeyCount = Set(pairs.map { $0.0 }).count
-            _ = warn(
-                if: uniqueKeyCount != pairs.count,
+            warnIfLeafKeysCollide(
+                pairs.map { $0.0 },
                 message: """
                 Setting a dictionary tag whose keys collide once flattened (e.g. a literal "a.b" key alongside a \
                 nested "a": ["b": ...] entry) is not supported; only one of the colliding tags was kept.
