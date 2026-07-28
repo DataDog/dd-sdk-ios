@@ -240,6 +240,7 @@ struct HeatmapIdentifierComputationTests {
             case .imageWireframe(let value): return value.permanentId
             case .placeholderWireframe(let value): return value.permanentId
             case .webviewWireframe(let value): return value.permanentId
+            case .embeddedContentWireframe(let value): return value.permanentId
             }
         }
         #expect(permanentId == "abc123")
@@ -295,6 +296,7 @@ struct HeatmapIdentifierComputationTests {
             case .imageWireframe(let value): return value.permanentId
             case .placeholderWireframe(let value): return value.permanentId
             case .webviewWireframe(let value): return value.permanentId
+            case .embeddedContentWireframe(let value): return value.permanentId
             }
         }
         #expect(permanentId == nil)
