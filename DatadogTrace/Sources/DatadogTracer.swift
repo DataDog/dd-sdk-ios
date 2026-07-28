@@ -36,9 +36,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     let spanEventBuilder: SpanEventBuilder
 
     /// Optional callback invoked when any span finishes, regardless of sampling.
-    /// Set by `Trace.enableOrThrow()` when client-side stats is enabled.
-    @ReadWriteLock
-    var onSpanFinished: ((SpanSnapshot) -> Void)?
+    let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
 
     // MARK: - Initialization
 
@@ -50,7 +48,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
-        spanEventBuilder: SpanEventBuilder
+        spanEventBuilder: SpanEventBuilder,
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) {
         self.init(
             featureScope: core.scope(for: TraceFeature.self),
@@ -60,7 +59,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
-            spanEventBuilder: spanEventBuilder
+            spanEventBuilder: spanEventBuilder,
+            onSpanFinished: onSpanFinished
         )
     }
 
@@ -72,7 +72,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
-        spanEventBuilder: SpanEventBuilder
+        spanEventBuilder: SpanEventBuilder,
+        onSpanFinished: (@Sendable (SpanSnapshot) -> Void)? = nil
     ) {
         self.featureScope = featureScope
         self.tags = tags
@@ -82,6 +83,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         self.loggingIntegration = loggingIntegration
         self.samplerProvider = samplingProvider
         self.spanEventBuilder = spanEventBuilder
+        self.onSpanFinished = onSpanFinished
     }
 
     // MARK: - Open Tracing interface
