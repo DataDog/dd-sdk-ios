@@ -201,7 +201,6 @@ private extension DatadogProfiler {
             if !isTrackingConsentAllowed {
                 cleanUpState(preservingOngoingOperations: false)
                 updateProfilerState(canProfile: false)
-                discardCurrentProfile()
                 return
             }
 
@@ -322,6 +321,7 @@ private extension DatadogProfiler {
 
     /// Updates the native profiler lifecycle.
     /// `canProfile` must already account for tracking consent, quota, and runtime conditions.
+    /// Profiles stopped without being sent are discarded.
     func updateProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
         if !canProfile {
             stopTimer()
@@ -337,6 +337,9 @@ private extension DatadogProfiler {
         let shouldSendCurrentProfile = shouldSendProfile || (hasTimedOut && canProfile && !isCustomProfiling)
         if shouldSendCurrentProfile {
             sendProfile()
+        } else if !canProfile {
+            discardCurrentProfile()
+            cleanUpState()
         }
 
         if hasTimedOut && shouldSendCurrentProfile {
@@ -414,6 +417,8 @@ private extension DatadogProfiler {
             return
         }
         hasReceivedAppLaunchVital = true
+        currentServerTimeOffset = message.ttid.serverTimeOffset
+        dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
         queue.async { [weak self] in
             guard let self, isTrackingConsentAllowed else {
@@ -422,16 +427,11 @@ private extension DatadogProfiler {
             let shouldHarvestAppLaunchProfile = shouldHarvestAppLaunchProfileOnTTID
             attributes = message.attributes
             currentRUMVitals[message.ttid.key] = message.ttid
-            currentServerTimeOffset = message.ttid.serverTimeOffset
-            dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
             guard !quotaChecker.isRejectedByQuota else {
                 cleanUpState(preservingOngoingOperations: false)
                 telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
-                stopTimer()
-                dd_profiler_stop()
-                discardCurrentProfile()
-                updateProfilingContext(quotaReason: quotaChecker.quotaResult?.reason)
+                updateProfilerState(canProfile: false)
                 return
             }
 
@@ -500,7 +500,6 @@ private extension DatadogProfiler {
                 cleanUpState(preservingOngoingOperations: false)
                 isStoppedByQuota = true
                 updateProfilerState(canProfile: shouldKeepProfilerRunning())
-                discardCurrentProfile()
             } else if isStoppedByQuota {
                 // A new session clears the previous quota result before the next check completes.
                 isStoppedByQuota = false
