@@ -50,13 +50,12 @@ public func sanitizeForTelemetry(_ error: Error) -> TelemetrySanitizedError {
         return sanitize(decodingError)
     }
     if isNSErrorOrItsSubclass(error) {
-        let nsError = error as NSError
-        return TelemetrySanitizedError(kind: "\(type(of: nsError))", message: "\(nsError.domain) (\(nsError.code))")
+        return sanitize(error as NSError)
     }
     let kind = "\(type(of: error))"
     return TelemetrySanitizedError(
         kind: kind,
-        message: "Unrecognized error type: \(kind)",
+        message: "\(kind) does not conform to TelemetrySanitizableError — reporting type name only",
         stack: "Implement TelemetrySanitizableError on \(kind) to report richer, safe context."
     )
 }
@@ -108,6 +107,12 @@ private func sanitize(_ error: DecodingError) -> TelemetrySanitizedError {
         message: context.debugDescription,
         stack: describe(codingPath: context.codingPath)
     )
+}
+
+/// Sanitizes `NSError` for telemetry - only `domain`/`code`, never `userInfo`, which can carry
+/// customer-supplied data (e.g. `NSLocalizedDescriptionKey`).
+private func sanitize(_ error: NSError) -> TelemetrySanitizedError {
+    TelemetrySanitizedError(kind: "\(type(of: error))", message: "domain: \(error.domain), code: \(error.code)")
 }
 
 private func describe(codingPath: [CodingKey]) -> String? {

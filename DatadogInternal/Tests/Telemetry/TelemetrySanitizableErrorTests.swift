@@ -138,7 +138,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(sanitized.kind, "NSError")
-        XCTAssertEqual(sanitized.message, "custom-domain (10)")
+        XCTAssertEqual(sanitized.message, "domain: custom-domain, code: 10")
         XCTAssertNil(sanitized.stack)
     }
 
@@ -155,7 +155,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(sanitized.kind, "CustomError")
-        XCTAssertEqual(sanitized.message, "Unrecognized error type: CustomError")
+        XCTAssertEqual(sanitized.message, "CustomError does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(sanitized.stack, "Implement TelemetrySanitizableError on CustomError to report richer, safe context.")
     }
 }

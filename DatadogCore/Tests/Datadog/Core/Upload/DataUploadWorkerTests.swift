@@ -753,7 +753,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 2)
 
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
-        XCTAssertEqual(error.message, "Failed to initiate 'some-feature' data upload - Unrecognized error type: ErrorMock")
+        XCTAssertEqual(error.message, "Failed to initiate 'some-feature' data upload - ErrorMock does not conform to TelemetrySanitizableError — reporting type name only")
 
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["failure"] as? String, "invalid")

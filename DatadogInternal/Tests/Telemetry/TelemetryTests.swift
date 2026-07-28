@@ -78,10 +78,10 @@ class TelemetryTests: XCTestCase {
         // so it falls back to the type-name-only default - its raw associated values must never leak into telemetry.
         let errors = telemetry.messages.compactMap({ $0.asError })
         XCTAssertEqual(telemetry.messages.count, 2)
-        XCTAssertEqual(errors[0].message, "Unrecognized error type: SwiftError")
+        XCTAssertEqual(errors[0].message, "SwiftError does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(errors[0].kind, "SwiftError")
         XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1\nImplement TelemetrySanitizableError on SwiftError to report richer, safe context.")
-        XCTAssertEqual(errors[1].message, "custom message - Unrecognized error type: SwiftError")
+        XCTAssertEqual(errors[1].message, "custom message - SwiftError does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(errors[1].kind, "SwiftError")
         XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2\nImplement TelemetrySanitizableError on SwiftError to report richer, safe context.")
     }
@@ -202,10 +202,10 @@ class TelemetryTests: XCTestCase {
         // `"\(file):\(line)"` default - the call site above, not the error's own stack.
         let errors = telemetry.messages.compactMap({ $0.asError })
         XCTAssertEqual(telemetry.messages.count, 2)
-        XCTAssertEqual(errors[0].message, "custom-domain (10)")
+        XCTAssertEqual(errors[0].message, "domain: custom-domain, code: 10")
         XCTAssertEqual(errors[0].kind, "NSError")
         XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1")
-        XCTAssertEqual(errors[1].message, "custom message - custom-domain (10)")
+        XCTAssertEqual(errors[1].message, "custom message - domain: custom-domain, code: 10")
         XCTAssertEqual(errors[1].kind, "NSError")
         XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2")
     }

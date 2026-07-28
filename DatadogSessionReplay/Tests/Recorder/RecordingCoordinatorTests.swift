@@ -132,7 +132,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         let error = telemetry.messages.firstError()
-        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot - Unrecognized error type: ErrorMock")
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot - ErrorMock does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(error?.kind, "ErrorMock")
         XCTAssertEqual(error?.stack, "DatadogSessionReplay/RecordingCoordinator.swift:176\nImplement TelemetrySanitizableError on ErrorMock to report richer, safe context.")
     }
@@ -152,7 +152,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         let error = telemetry.messages.firstError()
-        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - Unrecognized error type: ErrorMock")
+        XCTAssertEqual(error?.message, "[SR] Failed to take snapshot due to Objective-C runtime exception - ErrorMock does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(error?.kind, "ErrorMock")
         XCTAssertEqual(error?.stack, "DatadogSessionReplay/RecordingCoordinator.swift:169\nImplement TelemetrySanitizableError on ErrorMock to report richer, safe context.")
         XCTAssertFalse(scheduler.isRunning)
