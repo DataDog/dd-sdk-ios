@@ -380,6 +380,19 @@ extension RUM {
             /// Default: `.disabled`.
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
 
+            /// URL patterns disallowed from automatic RUM resource tracking.
+            ///
+            /// Requests whose URL matches any of the given patterns will not produce a RUM Resource event.
+            /// This only affects RUM Resource tracking - any associated distributed trace (APM span) for the
+            /// same request is unaffected.
+            ///
+            /// Patterns are plain strings matched against the full resource URL. A pattern containing a single
+            /// `*` wildcard matches any characters in its place (e.g. `"https://example.com/*/private"`);
+            /// a pattern without `*` must match the URL exactly.
+            ///
+            /// Default: `[]`.
+            public var disallowList: [String] = []
+
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
         }
@@ -511,14 +524,17 @@ extension RUM.Configuration.URLSessionTracking {
     ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
     ///   - trackResourceHeaders: Configuration for capturing HTTP headers. Default: `.disabled`.
+    ///   - disallowList: URL patterns disallowed from automatic RUM resource tracking. Default: `[]`.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
         resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        trackResourceHeaders: TrackResourceHeaders = .disabled
+        trackResourceHeaders: TrackResourceHeaders = .disabled,
+        disallowList: [String] = []
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
         self.trackResourceHeaders = trackResourceHeaders
+        self.disallowList = disallowList
     }
 }
 

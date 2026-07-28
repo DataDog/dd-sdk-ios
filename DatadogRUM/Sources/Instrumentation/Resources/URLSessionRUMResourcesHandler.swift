@@ -51,11 +51,15 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     let telemetry: Telemetry
     /// Header processor for capturing HTTP headers.
     let headerProcessor: HeaderProcessor?
+    /// The disallow-list of URLs excluded from RUM resource tracking.
+    let disallowList: DisallowList?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
         distributedTracing?.firstPartyHosts ?? .init()
     }
+
+    private var disallowedInterceptionIDs = Set<UUID>()
 
     // MARK: - Initialization
 
@@ -64,12 +68,14 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?,
         headerProcessor: HeaderProcessor?,
+        disallowList: DisallowList?,
         telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
         self.headerProcessor = headerProcessor
+        self.disallowList = disallowList
         self.telemetry = telemetry
     }
 
@@ -101,6 +107,11 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
+        if disallowList?.isDisallowed(url: interception.request.url) == true {
+            disallowedInterceptionIDs.insert(interception.identifier)
+            return
+        }
+
         // Check if GraphQL was detected in the captured states
         if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
            capturedState.hasGraphQLHeaders {
@@ -121,6 +132,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        if disallowedInterceptionIDs.remove(interception.identifier) != nil {
+            return
+        }
+
         guard let subscriber = subscriber else {
             return DD.logger.warn(
                 """

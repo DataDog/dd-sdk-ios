@@ -17,6 +17,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil,
         headerProcessor: HeaderProcessor? = nil,
+        disallowList: DisallowList? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
@@ -24,6 +25,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             rumAttributesProvider: rumAttributesProvider,
             distributedTracing: distributedTracing,
             headerProcessor: headerProcessor,
+            disallowList: disallowList,
             telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
@@ -1314,6 +1316,53 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
+    }
+
+    // MARK: - Disallow List
+
+    func testGivenDisallowedURL_whenInterceptionStartsAndCompletes_itDoesNotSendAnyRUMCommand() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        commandSubscriber.onCommandReceived = { _ in XCTFail("No RUM command should be sent for a disallowed URL") }
+
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+
+        // When & Then (fails via `onCommandReceived` above if any RUM command is sent)
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidComplete(interception: taskInterception)
+    }
+
+    func testGivenDisallowedURL_whenInterceptionStarts_itStillRegistersRUMOriginOnInterception() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then - `origin` must still be set to "rum" so Trace's automatic instrumentation is unaffected
+        XCTAssertEqual(taskInterception.origin, "rum")
+    }
+
+    func testGivenNonDisallowedURL_whenDisallowListIsConfigured_itStartsRUMResourceAsUsual() throws {
+        let receiveCommand = expectation(description: "Receive RUM command")
+        commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
+
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://allowed.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(commandSubscriber.lastReceivedCommand is RUMStartResourceCommand)
     }
 
     // MARK: - Helper Methods
