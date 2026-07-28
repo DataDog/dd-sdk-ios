@@ -14,6 +14,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let minimumTimeSpentForRates = 1.0 // 1s
         /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
         static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
+        /// Maximum number of consecutive `RUMViewUpdateEvent` deltas sent for a view under the `viewUpdates`
+        /// feature flag before a full `RUMViewEvent` is sent again, so the view state can be fully reconstructed
+        /// even if some update events are lost in transit.
+        static let maxConsecutiveViewUpdates: UInt = 115
     }
 
     // MARK: - Child Scopes
@@ -109,6 +113,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The last full view event sent through the mapper, stored for `viewUpdates` projection.
     /// `nil` until the first event is written; non-`nil` after that.
     private var lastSentViewEvent: RUMViewEvent?
+
+    /// Number of consecutive `RUMViewUpdateEvent` deltas sent since `lastSentViewEvent` was last a full event.
+    /// Reset to `0` whenever a full `RUMViewEvent` is sent.
+    private var consecutiveViewUpdatesCount: UInt = 0
 
     /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
@@ -679,9 +687,12 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if dependencies.featureFlags[.viewUpdates], let previousEvent = lastSentViewEvent {
+            if dependencies.featureFlags[.viewUpdates],
+               let previousEvent = lastSentViewEvent,
+               consecutiveViewUpdatesCount < Constants.maxConsecutiveViewUpdates {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
+                consecutiveViewUpdatesCount += 1
                 writer.write(value: update, completion: completionHandler)
             } else {
                 writer.write(
@@ -697,6 +708,7 @@ extension RUMViewScope {
                 if dependencies.featureFlags[.viewUpdates],
                    viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
                     lastSentViewEvent = event
+                    consecutiveViewUpdatesCount = 0
                 }
             }
 
