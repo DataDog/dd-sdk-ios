@@ -298,13 +298,12 @@ class SpanSnapshotTests: XCTestCase {
 
     func testSnapshotPeerTagsMatchSanitizedUploadedSpan() throws {
         let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
         let tracer: DatadogTracer = .mockWith(
             core: core,
-            samplingProvider: TracerSamplerProviderMock.mockKeepAll()
+            samplingProvider: TracerSamplerProviderMock.mockKeepAll(),
+            onSpanFinished: capture.capture
         )
-
-        var capturedSnapshot: SpanSnapshot?
-        tracer.onSpanFinished = { capturedSnapshot = $0 }
 
         // A span carrying more tags than the sanitizer's attribute limit, including peer tags: the
         // limit drops some tags, and the snapshot must reflect exactly what the upload keeps.
@@ -320,7 +319,7 @@ class SpanSnapshotTests: XCTestCase {
         let span = tracer.startSpan(operationName: "network.request", tags: tags)
         span.finish()
 
-        let snapshot = try XCTUnwrap(capturedSnapshot)
+        let snapshot = try XCTUnwrap(capture.snapshot)
         let uploaded = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first)
         let uploadedSpan = try XCTUnwrap(uploaded.spans.first)
 
