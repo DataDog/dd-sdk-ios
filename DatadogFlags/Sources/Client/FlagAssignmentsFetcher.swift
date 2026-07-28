@@ -24,6 +24,15 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static let decoder = JSONDecoder()
 
+    fileprivate static func logFetchDiagnostic(_ message: String, startedAt: Date) {
+        let now = Date()
+        let elapsedMs = now.timeIntervalSince(startedAt) * 1_000
+        let thread = Thread.isMainThread ? "main" : "background"
+        print(
+            "Datadog Flags assignment fetch \(message) at \(now.timeIntervalSince1970) elapsedMs=\(elapsedMs) thread=\(thread)"
+        )
+    }
+
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
@@ -64,8 +73,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
+        let startedAt = Date()
+        Self.logFetchDiagnostic("start", startedAt: startedAt)
+
         featureScope.context { [weak self] context in
+            Self.logFetchDiagnostic("context received", startedAt: startedAt)
+
             guard let self else {
+                Self.logFetchDiagnostic("failed - client deinitialized", startedAt: startedAt)
                 completion(.failure(.clientNotInitialized))
                 return
             }
@@ -74,6 +89,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 self.fetchAssignments(
                     for: evaluationContext,
                     context: context,
+                    startedAt: startedAt,
                     completion: completion
                 )
             }
@@ -83,25 +99,33 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private func fetchAssignments(
         for evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
+        startedAt: Date,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
         do {
+            Self.logFetchDiagnostic("building request", startedAt: startedAt)
             let request = try URLRequest.flagAssignmentsRequest(
                 url: url(with: context),
                 evaluationContext: evaluationContext,
                 context: context,
                 customHeaders: customHeaders
             )
+            Self.logFetchDiagnostic("request built", startedAt: startedAt)
+            Self.logFetchDiagnostic("starting URLSession fetch", startedAt: startedAt)
             fetch(request) { [assignmentFetchQueue, featureScope] result in
+                Self.logFetchDiagnostic("fetch completion received", startedAt: startedAt)
+
                 assignmentFetchQueue.async {
                     Self.handleFetchResult(
                         result,
                         featureScope: featureScope,
+                        startedAt: startedAt,
                         completion: completion
                     )
                 }
             }
         } catch let error {
+            Self.logFetchDiagnostic("failed - invalid request configuration", startedAt: startedAt)
             DD.logger.error("Failed to encode flag assignments request body.", error: error)
             featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
             completion(.failure(.invalidConfiguration))
@@ -111,12 +135,15 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     private static func handleFetchResult(
         _ result: Result<Data, Error>,
         featureScope: any FeatureScope,
+        startedAt: Date,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
         switch result {
         case .success(let data):
             do {
+                Self.logFetchDiagnostic("decoding response", startedAt: startedAt)
                 let response = try decoder.decode(FlagAssignmentsResponse.self, from: data)
+                Self.logFetchDiagnostic("response decoded", startedAt: startedAt)
 
                 // Log any flags that failed to decode to telemetry
                 if !response.failedFlags.isEmpty {
@@ -136,8 +163,10 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     }
                 }
 
+                Self.logFetchDiagnostic("returning success", startedAt: startedAt)
                 completion(.success(response.flags))
             } catch {
+                Self.logFetchDiagnostic("failed - invalid response", startedAt: startedAt)
                 featureScope.telemetry.error(
                     "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
                     error: error
@@ -145,6 +174,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 completion(.failure(.invalidResponse))
             }
         case .failure(let error):
+            Self.logFetchDiagnostic("failed - network error", startedAt: startedAt)
             DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
             featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
             completion(.failure(.networkError(error)))
@@ -185,8 +215,13 @@ extension URLSession {
         _ request: URLRequest,
         completion: @escaping (Result<Data, Error>) -> Void
     ) {
+        let startedAt = Date()
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask creating", startedAt: startedAt)
         let task = self.dataTask(with: request) { data, response, error in
+            FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completion received", startedAt: startedAt)
+
             if let error {
+                FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with error", startedAt: startedAt)
                 completion(.failure(error))
                 return
             }
@@ -196,12 +231,16 @@ extension URLSession {
                 let httpResponse = response as? HTTPURLResponse,
                 200..<300 ~= httpResponse.statusCode
             else {
+                FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with bad response", startedAt: startedAt)
                 completion(.failure(URLError(.badServerResponse)))
                 return
             }
 
+            FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with success", startedAt: startedAt)
             completion(.success(data))
         }
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resuming", startedAt: startedAt)
         task.resume()
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resumed", startedAt: startedAt)
     }
 }
