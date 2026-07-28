@@ -51,15 +51,23 @@ public enum Trace {
             stats = statsFeature
         }
 
-        // Register Trace feature:
-        let trace = TraceFeature(in: core, configuration: configuration)
-        try core.register(feature: trace)
-
+        let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
         if let stats {
-            trace.tracer.onSpanFinished = { [weak stats] snapshot in
-                stats?.concentrator.add(snapshot)
+            let concentrator = stats.concentrator
+            onSpanFinished = { [weak concentrator] snapshot in
+                concentrator?.add(snapshot)
             }
+        } else {
+            onSpanFinished = nil
         }
+
+        // Register Trace feature:
+        let trace = TraceFeature(
+            in: core,
+            configuration: configuration,
+            onSpanFinished: onSpanFinished
+        )
+        try core.register(feature: trace)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
         if let urlSessionTracking = configuration.urlSessionTracking {
