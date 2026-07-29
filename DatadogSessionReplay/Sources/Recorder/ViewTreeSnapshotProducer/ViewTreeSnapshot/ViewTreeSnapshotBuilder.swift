@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import WebKit
 
+@_spi(Internal)
 import DatadogInternal
 
 /// Builds `ViewTreeSnapshot` for given root view.
@@ -25,6 +26,8 @@ internal struct ViewTreeSnapshotBuilder {
     let featureFlags: SessionReplay.Configuration.FeatureFlags
     /// The webviews cache.
     let webViewCache: NSHashTable<WKWebView> = .weakObjects()
+    /// The embedded content views cache.
+    let embeddedContentViewCache = NSMapTable<UIView, NSNumber>.weakToStrongObjects()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -40,6 +43,7 @@ internal struct ViewTreeSnapshotBuilder {
             coordinateSpace: rootView,
             ids: idsGenerator,
             webViewCache: webViewCache,
+            embeddedContentViewCache: embeddedContentViewCache,
             heatmapCache: heatmapCache,
             clip: rootView.bounds
         )
@@ -49,12 +53,30 @@ internal struct ViewTreeSnapshotBuilder {
             context: recorderContext,
             viewportSize: rootView.bounds.size,
             nodes: nodes,
-            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash)),
+            embeddedContentSlots: embeddedContentSlots()
         )
         if let heatmapCache {
             core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
         }
         return snapshot
+    }
+
+    private func embeddedContentSlots() -> [WireframeID: String] {
+        var result: [WireframeID: String] = [:]
+
+        for key in embeddedContentViewCache.keyEnumerator() {
+            guard
+                let view = key as? UIView,
+                let slotID = view.dd.sessionReplaySlotID,
+                let wireframeID = embeddedContentViewCache.object(forKey: view)?.int64Value
+            else {
+                continue
+            }
+            result[wireframeID] = slotID
+        }
+
+        return result
     }
 }
 
@@ -96,6 +118,7 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
         UIPickerViewRecorder(identifier: UUID()),
         UIDatePickerRecorder(identifier: UUID()),
         WKWebViewRecorder(identifier: UUID()),
+        EmbeddedContentViewRecorder(identifier: UUID()),
         UIProgressViewRecorder(identifier: UUID()),
         UIActivityIndicatorRecorder(identifier: UUID()),
     ]

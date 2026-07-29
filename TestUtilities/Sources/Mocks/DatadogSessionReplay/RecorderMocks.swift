@@ -26,7 +26,8 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
-            webViewSlotIDs: .mockRandom()
+            webViewSlotIDs: .mockRandom(),
+            embeddedContentSlots: [:]
         )
     }
 
@@ -36,14 +37,16 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny(),
-        webViewSlotIDs: Set<Int> = .mockAny()
+        webViewSlotIDs: Set<Int> = .mockAny(),
+        embeddedContentSlots: [WireframeID: String] = [:]
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
             context: context,
             viewportSize: viewportSize,
             nodes: nodes,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            embeddedContentSlots: embeddedContentSlots
         )
     }
 }
@@ -373,6 +376,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             coordinateSpace: view,
             ids: NodeIDGenerator(),
             webViewCache: .weakObjects(),
+            embeddedContentViewCache: .weakToStrongObjects(),
             heatmapCache: .init(),
             clip: view.bounds
         )
@@ -383,6 +387,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
         webViewCache: NSHashTable<WKWebView> = .weakObjects(),
+        embeddedContentViewCache: NSMapTable<UIView, NSNumber> = .weakToStrongObjects(),
         heatmapCache: HeatmapCache? = .init(),
         clip: CGRect? = nil
     ) -> ViewTreeRecordingContext {
@@ -391,6 +396,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             coordinateSpace: coordinateSpace,
             ids: ids,
             webViewCache: webViewCache,
+            embeddedContentViewCache: embeddedContentViewCache,
             heatmapCache: heatmapCache,
             clip: clip ?? coordinateSpace.bounds
         )

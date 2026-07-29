@@ -244,7 +244,8 @@ class SnapshotProcessorTests: XCTestCase {
             ),
             viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
             nodes: [node],
-            webViewSlotIDs: Set([hiddenSlot, visibleSlot])
+            webViewSlotIDs: Set([hiddenSlot, visibleSlot]),
+            embeddedContentSlots: [:]
         )
 
         processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)

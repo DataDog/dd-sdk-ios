@@ -239,6 +239,38 @@ extension SessionReplayWireframesBuilder {
         return .webviewWireframe(value: wireframe)
     }
 
+    func visibleEmbeddedContentWireframe(
+        id: WireframeID,
+        slotID: String,
+        frame: CGRect,
+        clip: CGRect,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SREmbeddedContentWireframe(
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow(frame.height),
+            id: id,
+            isVisible: true,
+            permanentId: heatmapIdentifier?.rawValue,
+            shapeStyle: createShapeStyle(
+                backgroundColor: backgroundColor,
+                cornerRadius: cornerRadius,
+                opacity: opacity
+            ),
+            slotId: slotID,
+            width: Int64.ddWithNoOverflow(frame.width),
+            x: Int64.ddWithNoOverflow(frame.minX),
+            y: Int64.ddWithNoOverflow(frame.minY)
+        )
+
+        return .embeddedContentWireframe(value: wireframe)
+    }
+
     public func hiddenWebViewWireframes() -> [SRWireframe] {
         defer { webViewSlotIDs.removeAll() }
         return webViewSlotIDs.map { id in

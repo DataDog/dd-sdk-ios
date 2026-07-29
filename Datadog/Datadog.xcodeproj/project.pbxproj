@@ -406,6 +406,8 @@
 		5BD25CED3019E3260064A649 /* EmbeddedContentMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD25CEC3019E3260064A649 /* EmbeddedContentMessage.swift */; };
 		5BD25CEF3019E32E0064A649 /* UIView+SessionReplaySlotID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD25CEE3019E32E0064A649 /* UIView+SessionReplaySlotID.swift */; };
 		5BD25CF13019ED900064A649 /* UIViewSessionReplaySlotIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD25CF03019ED900064A649 /* UIViewSessionReplaySlotIDTests.swift */; };
+		5BD25CF33019F6410064A649 /* EmbeddedContentViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD25CF23019F6410064A649 /* EmbeddedContentViewRecorderTests.swift */; };
+		5BD25CF73019F6D00064A649 /* EmbeddedContentViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD25CF63019F6D00064A649 /* EmbeddedContentViewRecorder.swift */; };
 		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
@@ -2229,6 +2231,8 @@
 		5BD25CEC3019E3260064A649 /* EmbeddedContentMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedContentMessage.swift; sourceTree = "<group>"; };
 		5BD25CEE3019E32E0064A649 /* UIView+SessionReplaySlotID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+SessionReplaySlotID.swift"; sourceTree = "<group>"; };
 		5BD25CF03019ED900064A649 /* UIViewSessionReplaySlotIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewSessionReplaySlotIDTests.swift; sourceTree = "<group>"; };
+		5BD25CF23019F6410064A649 /* EmbeddedContentViewRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedContentViewRecorderTests.swift; sourceTree = "<group>"; };
+		5BD25CF63019F6D00064A649 /* EmbeddedContentViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedContentViewRecorder.swift; sourceTree = "<group>"; };
 		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4288,6 +4292,7 @@
 				61054E362A6EE10A00AAA894 /* UnsupportedViewRecorder.swift */,
 				D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */,
 				D2AD1CCB2CE4AE9800106C74 /* UIHostingViewRecorder.swift */,
+				5BD25CF63019F6D00064A649 /* EmbeddedContentViewRecorder.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -4556,6 +4561,7 @@
 				D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */,
 				A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */,
 				D28ABFD22CEB87C600623F27 /* UIHostingViewRecorderTests.swift */,
+				5BD25CF23019F6410064A649 /* EmbeddedContentViewRecorderTests.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -8569,6 +8575,7 @@
 				5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */,
 				5BF2BA9B2FBDBF89000E999C /* CALayerSnapshot.swift in Sources */,
 				759200082FD2000100000001 /* ImageSnapshotCache.swift in Sources */,
+				5BD25CF73019F6D00064A649 /* EmbeddedContentViewRecorder.swift in Sources */,
 				5BF2BA9D2FBDC052000E999C /* SemanticObservation.swift in Sources */,
 				D29A470D2D2ED49F0092BC79 /* Xoshiro.swift in Sources */,
 				5B2DFB3F3002989A0042945D /* SemanticObservationMapping.swift in Sources */,
@@ -8722,6 +8729,7 @@
 				61054FBB2A6EE1BA00AAA894 /* UISwitchRecorderTests.swift in Sources */,
 				A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */,
 				61054F972A6EE1BA00AAA894 /* UIImage+SessionReplayTests.swift in Sources */,
+				5BD25CF33019F6410064A649 /* EmbeddedContentViewRecorderTests.swift in Sources */,
 				5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */,
 				61054FB02A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift in Sources */,
 				5BB09C9F2FC89F0C003DB9FF /* CATransform3DAxisAlignedTests.swift in Sources */,
