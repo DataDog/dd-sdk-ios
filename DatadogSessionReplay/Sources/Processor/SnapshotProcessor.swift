@@ -80,7 +80,10 @@ internal class SnapshotProcessor: SnapshotProcessing {
     }
 
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
-        let builder = WireframesBuilder(webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs)
+        let builder = WireframesBuilder(
+            webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs,
+            embeddedContentSlots: viewTreeSnapshot.embeddedContentSlots
+        )
         let nodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
 
         // build wireframe from nodes
@@ -90,8 +93,8 @@ internal class SnapshotProcessor: SnapshotProcessing {
         }
         builder.heatmapIdentifier = nil
 
-        // build hidden webview wireframes and place them at the beginning
-        wireframes = builder.hiddenWebViewWireframes() + wireframes
+        // Build hidden slot wireframes and place them at the beginning.
+        wireframes = builder.hiddenWebViewWireframes() + builder.hiddenEmbeddedContentWireframes() + wireframes
 
         interceptWireframes?(wireframes)
 
