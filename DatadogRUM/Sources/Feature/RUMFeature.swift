@@ -273,6 +273,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
                 featureScope: featureScope,
+                applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
                 configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)

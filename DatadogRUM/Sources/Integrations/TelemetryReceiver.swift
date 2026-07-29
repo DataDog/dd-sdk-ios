@@ -18,6 +18,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
     /// RUM feature scope.
     let featureScope: FeatureScope
+    /// The RUM application ID. It is known upfront, so telemetry can be attributed to the application
+    /// even when no RUM session exists (e.g. after the session expired or was stopped).
+    let applicationID: String
     let dateProvider: DateProvider
 
     /// Sampler for all telemetry events.
@@ -41,16 +44,19 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///
     /// - Parameters:
     ///   - featureScope: RUM feature scope.
+    ///   - applicationID: The RUM application ID.
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
     init(
         featureScope: FeatureScope,
+        applicationID: String,
         dateProvider: DateProvider,
         sampler: Sampler,
         configurationExtraSampler: Sampler
     ) {
         self.featureScope = featureScope
+        self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
@@ -285,7 +291,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(effectiveSampleRate),
                 experimentalFeatures: nil,
