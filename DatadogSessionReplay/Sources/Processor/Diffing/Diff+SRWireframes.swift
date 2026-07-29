@@ -22,6 +22,8 @@ extension SRWireframe: Diffable {
             return wireframe.id
         case .webviewWireframe(let wireframe):
             return wireframe.id
+        case .embeddedContentWireframe(let wireframe):
+            return wireframe.id
         }
     }
 
@@ -36,6 +38,8 @@ extension SRWireframe: Diffable {
         case let (.placeholderWireframe(this), .placeholderWireframe(other)):
             return this.hashValue != other.hashValue
         case let (.webviewWireframe(this), .webviewWireframe(other)):
+            return this.hashValue != other.hashValue
+        case let (.embeddedContentWireframe(this), .embeddedContentWireframe(other)):
             return this.hashValue != other.hashValue
         default:
             return true
@@ -53,6 +57,8 @@ extension SRWireframe: Diffable {
         case let (.placeholderWireframe(value)):
             return value.type
         case let (.webviewWireframe(value)):
+            return value.type
+        case let (.embeddedContentWireframe(value)):
             return value.type
         }
     }
@@ -102,6 +108,8 @@ extension SRWireframe: MutableWireframe {
         case .placeholderWireframe(let this):
             return try this.mutations(from: otherWireframe)
         case .webviewWireframe(let this):
+            return try this.mutations(from: otherWireframe)
+        case .embeddedContentWireframe(let this):
             return try this.mutations(from: otherWireframe)
         }
     }
@@ -234,6 +242,35 @@ extension SRWebviewWireframe: MutableWireframe {
         }
 
         return .webviewWireframeUpdate(
+            value: .init(
+                border: use(border, ifDifferentThan: other.border),
+                clip: use(clip, ifDifferentThan: other.clip),
+                height: use(height, ifDifferentThan: other.height),
+                id: id,
+                isVisible: use(isVisible, ifDifferentThan: other.isVisible),
+                shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
+                slotId: slotId,
+                width: use(width, ifDifferentThan: other.width),
+                x: use(x, ifDifferentThan: other.x),
+                y: use(y, ifDifferentThan: other.y)
+            )
+        )
+    }
+}
+
+extension SREmbeddedContentWireframe: MutableWireframe {
+    func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
+        guard case .embeddedContentWireframe(let other) = otherWireframe else {
+            throw WireframeMutationError.typeMismatch(
+                fromType: otherWireframe.type,
+                toType: type
+            )
+        }
+        guard other.id == id, other.slotId == slotId else {
+            throw WireframeMutationError.idMismatch
+        }
+
+        return .embeddedContentWireframeUpdate(
             value: .init(
                 border: use(border, ifDifferentThan: other.border),
                 clip: use(clip, ifDifferentThan: other.clip),

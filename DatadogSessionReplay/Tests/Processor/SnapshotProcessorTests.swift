@@ -644,6 +644,8 @@ extension SRWireframe {
             return value.permanentId
         case .webviewWireframe(let value):
             return value.permanentId
+        case .embeddedContentWireframe(let value):
+            return value.permanentId
         }
     }
 }

@@ -649,6 +649,101 @@ public struct SRContentClip: Codable, Hashable {
     }
 }
 
+/// Schema of all properties of an EmbeddedContentWireframe.
+@_spi(Internal)
+public struct SREmbeddedContentWireframe: Codable, Hashable {
+    /// The border properties of this wireframe. The default value is null (no-border).
+    public let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    public let clip: SRContentClip?
+
+    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    public let height: Int64
+
+    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    public let id: Int64
+
+    /// Whether this embedded content is visible or not.
+    public let isVisible: Bool?
+
+    /// A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    public let permanentId: String?
+
+    /// The style of this wireframe.
+    public let shapeStyle: SRShapeStyle?
+
+    /// Unique Id of the slot containing this embedded content.
+    public let slotId: String
+
+    /// The type of the wireframe.
+    public let type: String = "embedded_content"
+
+    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    public let width: Int64
+
+    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let x: Int64
+
+    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let y: Int64
+
+    public enum CodingKeys: String, CodingKey {
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case permanentId = "permanentId"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    }
+
+    /// Schema of all properties of an EmbeddedContentWireframe.
+    ///
+    /// - Parameters:
+    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+    ///   - clip: Schema of clipping information for a Wireframe.
+    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    ///   - isVisible: Whether this embedded content is visible or not.
+    ///   - permanentId: A globally unique and stable identifier for this UI element, computed as the hash of the element's path. Used to correlate wireframes with RUM action events.
+    ///   - shapeStyle: The style of this wireframe.
+    ///   - slotId: Unique Id of the slot containing this embedded content.
+    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public init(
+        border: SRShapeBorder? = nil,
+        clip: SRContentClip? = nil,
+        height: Int64,
+        id: Int64,
+        isVisible: Bool? = nil,
+        permanentId: String? = nil,
+        shapeStyle: SRShapeStyle? = nil,
+        slotId: String,
+        width: Int64,
+        x: Int64,
+        y: Int64
+    ) {
+        self.border = border
+        self.clip = clip
+        self.height = height
+        self.id = id
+        self.isVisible = isVisible
+        self.permanentId = permanentId
+        self.shapeStyle = shapeStyle
+        self.slotId = slotId
+        self.width = width
+        self.x = x
+        self.y = y
+    }
+}
+
 /// Schema of a Record type which contains focus information.
 @_spi(Internal)
 public struct SRFocusRecord: Codable {
@@ -711,6 +806,9 @@ public struct SRFocusRecord: Codable {
 public struct SRFullSnapshotRecord: Codable {
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -719,6 +817,7 @@ public struct SRFullSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -727,12 +826,15 @@ public struct SRFullSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data:
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
@@ -878,6 +980,9 @@ public struct SRIncrementalSnapshotRecord: Codable {
     /// Mobile-specific. Schema of a Session Replay IncrementalData type.
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -886,6 +991,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
 
     public enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -894,12 +1000,15 @@ public struct SRIncrementalSnapshotRecord: Codable {
     ///
     /// - Parameters:
     ///   - data: Mobile-specific. Schema of a Session Replay IncrementalData type.
+    ///   - slotId: Unique ID of the slot that generated this record.
     ///   - timestamp: Defines the UTC time in milliseconds when this Record was performed.
     public init(
         data: Data,
+        slotId: String? = nil,
         timestamp: Int64
     ) {
         self.data = data
+        self.slotId = slotId
         self.timestamp = timestamp
     }
 
@@ -1060,6 +1169,11 @@ public struct SRIncrementalSnapshotRecord: Codable {
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
                 case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                case embeddedContentWireframeUpdate(value: EmbeddedContentWireframeUpdate)
+
+                private enum DiscriminatorCodingKeys: String, CodingKey {
+                    case discriminator = "type"
+                }
 
                 // MARK: - Codable
 
@@ -1078,41 +1192,45 @@ public struct SRIncrementalSnapshotRecord: Codable {
                         try container.encode(value)
                     case .webviewWireframeUpdate(let value):
                         try container.encode(value)
+                    case .embeddedContentWireframeUpdate(let value):
+                        try container.encode(value)
                     }
                 }
 
                 public init(from decoder: Decoder) throws {
-                    // Decode enum case from associated value
+                    // Decode enum case from discriminator
                     let container = try decoder.singleValueContainer()
+                    let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
 
-                    if let value = try? container.decode(TextWireframeUpdate.self) {
-                        self = .textWireframeUpdate(value: value)
+                    switch try discriminatorContainer.decode(String.self, forKey: .discriminator) {
+                    case "text":
+                        self = .textWireframeUpdate(value: try container.decode(TextWireframeUpdate.self))
                         return
-                    }
-                    if let value = try? container.decode(ShapeWireframeUpdate.self) {
-                        self = .shapeWireframeUpdate(value: value)
+                    case "shape":
+                        self = .shapeWireframeUpdate(value: try container.decode(ShapeWireframeUpdate.self))
                         return
-                    }
-                    if let value = try? container.decode(ImageWireframeUpdate.self) {
-                        self = .imageWireframeUpdate(value: value)
+                    case "image":
+                        self = .imageWireframeUpdate(value: try container.decode(ImageWireframeUpdate.self))
                         return
-                    }
-                    if let value = try? container.decode(PlaceholderWireframeUpdate.self) {
-                        self = .placeholderWireframeUpdate(value: value)
+                    case "placeholder":
+                        self = .placeholderWireframeUpdate(value: try container.decode(PlaceholderWireframeUpdate.self))
                         return
-                    }
-                    if let value = try? container.decode(WebviewWireframeUpdate.self) {
-                        self = .webviewWireframeUpdate(value: value)
+                    case "webview":
+                        self = .webviewWireframeUpdate(value: try container.decode(WebviewWireframeUpdate.self))
                         return
+                    case "embedded_content":
+                        self = .embeddedContentWireframeUpdate(value: try container.decode(EmbeddedContentWireframeUpdate.self))
+                        return
+                    default:
+                        let error = DecodingError.Context(
+                            codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                            debugDescription: """
+                            Failed to decode `Updates`.
+                            Discriminator `type` did not match any known case.
+                            """
+                        )
+                        throw DecodingError.dataCorrupted(error)
                     }
-                    let error = DecodingError.Context(
-                        codingPath: container.codingPath,
-                        debugDescription: """
-                        Failed to decode `Updates`.
-                        Ran out of possibilities when trying to decode the value of associated type.
-                        """
-                    )
-                    throw DecodingError.typeMismatch(Updates.self, error)
                 }
 
                 /// Schema of all properties of a TextWireframeUpdate.
@@ -1513,6 +1631,94 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     ///   - isVisible: Whether this webview is visible or not.
                     ///   - shapeStyle: The style of this wireframe.
                     ///   - slotId: Unique Id of the slot containing this webview.
+                    ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public init(
+                        border: SRShapeBorder? = nil,
+                        clip: SRContentClip? = nil,
+                        height: Int64? = nil,
+                        id: Int64,
+                        isVisible: Bool? = nil,
+                        shapeStyle: SRShapeStyle? = nil,
+                        slotId: String,
+                        width: Int64? = nil,
+                        x: Int64? = nil,
+                        y: Int64? = nil
+                    ) {
+                        self.border = border
+                        self.clip = clip
+                        self.height = height
+                        self.id = id
+                        self.isVisible = isVisible
+                        self.shapeStyle = shapeStyle
+                        self.slotId = slotId
+                        self.width = width
+                        self.x = x
+                        self.y = y
+                    }
+                }
+
+                /// Schema of all properties of an EmbeddedContentWireframeUpdate.
+                @_spi(Internal)
+                public struct EmbeddedContentWireframeUpdate: Codable {
+                    /// The border properties of this wireframe. The default value is null (no-border).
+                    public let border: SRShapeBorder?
+
+                    /// Schema of clipping information for a Wireframe.
+                    public let clip: SRContentClip?
+
+                    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    public let height: Int64?
+
+                    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    public let id: Int64
+
+                    /// Whether this embedded content is visible or not.
+                    public let isVisible: Bool?
+
+                    /// The style of this wireframe.
+                    public let shapeStyle: SRShapeStyle?
+
+                    /// Unique Id of the slot containing this embedded content.
+                    public let slotId: String
+
+                    /// The type of the wireframe.
+                    public let type: String = "embedded_content"
+
+                    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    public let width: Int64?
+
+                    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let x: Int64?
+
+                    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let y: Int64?
+
+                    public enum CodingKeys: String, CodingKey {
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+
+                    /// Schema of all properties of an EmbeddedContentWireframeUpdate.
+                    ///
+                    /// - Parameters:
+                    ///   - border: The border properties of this wireframe. The default value is null (no-border).
+                    ///   - clip: Schema of clipping information for a Wireframe.
+                    ///   - height: The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    ///   - id: Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    ///   - isVisible: Whether this embedded content is visible or not.
+                    ///   - shapeStyle: The style of this wireframe.
+                    ///   - slotId: Unique Id of the slot containing this embedded content.
                     ///   - width: The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
                     ///   - x: The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
                     ///   - y: The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
@@ -2863,6 +3069,11 @@ public enum SRWireframe: Codable {
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
+    case embeddedContentWireframe(value: SREmbeddedContentWireframe)
+
+    private enum DiscriminatorCodingKeys: String, CodingKey {
+        case discriminator = "type"
+    }
 
     // MARK: - Codable
 
@@ -2881,42 +3092,46 @@ public enum SRWireframe: Codable {
             try container.encode(value)
         case .webviewWireframe(let value):
             try container.encode(value)
+        case .embeddedContentWireframe(let value):
+            try container.encode(value)
         }
     }
 
     public init(from decoder: Decoder) throws {
-        // Decode enum case from associated value
+        // Decode enum case from discriminator
         let container = try decoder.singleValueContainer()
+        let discriminatorContainer = try decoder.container(keyedBy: DiscriminatorCodingKeys.self)
 
-        if let value = try? container.decode(SRShapeWireframe.self) {
-            self = .shapeWireframe(value: value)
+        switch try discriminatorContainer.decode(String.self, forKey: .discriminator) {
+        case "shape":
+            self = .shapeWireframe(value: try container.decode(SRShapeWireframe.self))
             return
-        }
-        if let value = try? container.decode(SRTextWireframe.self) {
-            self = .textWireframe(value: value)
+        case "text":
+            self = .textWireframe(value: try container.decode(SRTextWireframe.self))
             return
-        }
-        if let value = try? container.decode(SRImageWireframe.self) {
-            self = .imageWireframe(value: value)
+        case "image":
+            self = .imageWireframe(value: try container.decode(SRImageWireframe.self))
             return
-        }
-        if let value = try? container.decode(SRPlaceholderWireframe.self) {
-            self = .placeholderWireframe(value: value)
+        case "placeholder":
+            self = .placeholderWireframe(value: try container.decode(SRPlaceholderWireframe.self))
             return
-        }
-        if let value = try? container.decode(SRWebviewWireframe.self) {
-            self = .webviewWireframe(value: value)
+        case "webview":
+            self = .webviewWireframe(value: try container.decode(SRWebviewWireframe.self))
             return
+        case "embedded_content":
+            self = .embeddedContentWireframe(value: try container.decode(SREmbeddedContentWireframe.self))
+            return
+        default:
+            let error = DecodingError.Context(
+                codingPath: discriminatorContainer.codingPath + [DiscriminatorCodingKeys.discriminator],
+                debugDescription: """
+                Failed to decode `SRWireframe`.
+                Discriminator `type` did not match any known case.
+                """
+            )
+            throw DecodingError.dataCorrupted(error)
         }
-        let error = DecodingError.Context(
-            codingPath: container.codingPath,
-            debugDescription: """
-            Failed to decode `SRWireframe`.
-            Ran out of possibilities when trying to decode the value of associated type.
-            """
-        )
-        throw DecodingError.typeMismatch(SRWireframe.self, error)
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/1886a75e6c9dbc2390d7a4d8fd0ac97aac5de100
+// Generated from https://github.com/DataDog/rum-events-format/tree/d2f86dff0df3336f9b942f680281bd0b6c4d2788
