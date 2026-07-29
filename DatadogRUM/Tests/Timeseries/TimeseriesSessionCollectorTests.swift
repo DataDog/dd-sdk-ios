@@ -28,6 +28,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "memory batch written")
@@ -35,7 +37,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -67,6 +68,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { 42.5 }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "cpu batch written")
@@ -74,7 +77,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -105,6 +107,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { 75.0 },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "both batches written")
@@ -112,7 +116,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-both", applicationID: "app-both", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -140,6 +143,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -147,7 +152,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-offset", applicationID: "app-offset", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -173,6 +177,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -180,7 +186,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-rn", applicationID: "app-rn", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -193,8 +198,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenActiveViewExists_itAttachesViewToEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let rum: RUMCoreContext = .mockWith(viewID: "view-abc", viewPath: "/view/abc")
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -203,6 +207,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-abc", path: "/view/abc", name: nil))
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -210,7 +216,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -224,8 +229,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenActiveViewHasName_itAttachesViewNameToEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let rum: RUMCoreContext = .mockWith(viewID: "view-abc", viewPath: "/view/abc", viewName: "ViewController")
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -234,6 +238,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-abc", path: "/view/abc", name: "ViewController"))
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -241,7 +247,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-view-name", applicationID: "app-view-name", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -254,9 +259,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let rum: RUMCoreContext = .mockAny()
         let hasReplay = SessionReplayCoreContext.HasReplay(value: true)
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum, hasReplay]))
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [hasReplay]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -265,6 +269,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -272,7 +278,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-has-replay", applicationID: "app-has-replay", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -295,6 +300,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             sessionSampleRate: 42
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -302,7 +309,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-sample-rate", applicationID: "app-sample-rate", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -315,8 +321,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenViewEndsRightBeforeFlush_itStillAttachesTheViewSamplesWereCollectedUnder() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let rum: RUMCoreContext = .mockWith(viewID: "view-ending", viewPath: "/view/ending")
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [rum]))
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -325,18 +330,18 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-ending", path: "/view/ending", name: nil))
+        collector.activeContextReader = contextReader
 
         // When — samples are collected while a view is active
         let expectation = self.expectation(description: "samples collected under an active view")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
         collector.start(sessionID: "session-ending-view", applicationID: "app-ending-view", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // The view ends right before the batch is flushed
-        scope.contextMock = .mockWith(additionalContext: [])
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
+        contextReader.activeView = (nil, nil, nil)
 
         let syncExpectation = self.expectation(description: "stop completed")
         collector.stop()
@@ -363,7 +368,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000
         )
 
-        // When
+        // When — no `activeContextReader` set, so there is no active view to report
         let expectation = self.expectation(description: "samples collected")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
@@ -387,13 +392,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // Accumulate some samples in session-1
         let firstExpectation = self.expectation(description: "first session samples")
         firstExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Start session-2 without calling stop() first
@@ -421,6 +427,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When — let a few samples accumulate then stop
         let expectation = self.expectation(description: "samples collected")
@@ -428,7 +436,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
 
         collector.start(sessionID: "session-xyz", applicationID: "app-456", sessionType: .synthetics)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
@@ -456,13 +463,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { 10.0 }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         let expectation = self.expectation(description: "samples collected")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
 
         collector.start(sessionID: "session-xyz", applicationID: "app-456", sessionType: .ciTest)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
@@ -515,13 +523,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // First session
         let firstExpectation = self.expectation(description: "first session samples")
         firstExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Second session — start() resets buffers and updates metadata
@@ -529,7 +538,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         secondExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { secondExpectation.fulfill() }
         collector.start(sessionID: "session-2", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         // Flush second session
@@ -556,13 +564,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         let samplingExpectation = self.expectation(description: "initial samples collected")
         samplingExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { samplingExpectation.fulfill() }
 
         collector.start(sessionID: "session-pause", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
@@ -593,9 +602,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         collector.start(sessionID: "session-resume", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
 
         let pauseExpectation = self.expectation(description: "pause settled")
         collector.pause()
@@ -628,13 +638,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             collectInBackground: true,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         let startExpectation = self.expectation(description: "initial samples")
         startExpectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { startExpectation.fulfill() }
 
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
 
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
@@ -687,7 +698,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
                 buildId: "build-abc",
                 userInfo: userInfo,
                 accountInfo: accountInfo,
-                additionalContext: [RUMCoreContext.mockAny()]
+                additionalContext: []
             )
         )
         let ciTest = RUMCITest(testExecutionId: "ci-exec-abc")
@@ -702,6 +713,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             ciTest: ciTest,
             syntheticsTest: syntheticsTest
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -709,7 +722,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-common", applicationID: "app-common", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -728,10 +740,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.testId, "synthetics-test")
     }
 
-    func testItPopulatesContextFromGlobalAttributesReader() {
+    func testItPopulatesContextFromActiveContextReader() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
@@ -739,8 +751,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
-        let attributesReader = GlobalAttributesReaderMock(globalAttributes: ["custom-key": "custom-value"])
-        collector.globalAttributesReader = attributesReader
+        let contextReader = RUMActiveContextReaderMock(globalAttributes: ["custom-key": "custom-value"])
+        collector.activeContextReader = contextReader
 
         // When
         let expectation = self.expectation(description: "batch written")
@@ -748,7 +760,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-context", applicationID: "app-context", sessionType: .user)
-        _ = collector.receive(message: .context(scope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -770,13 +781,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil }
         )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
 
         let expectation = self.expectation(description: "first batch written")
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
-        _ = collector.receive(message: .context(featureScope.contextMock), from: NOPDatadogCore())
         waitForExpectations(timeout: 2)
         collector.stop()
 
@@ -793,11 +805,16 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     }
 }
 
-private class GlobalAttributesReaderMock: GlobalAttributesReader {
-    let globalAttributes: [AttributeKey: AttributeValue]
+private class RUMActiveContextReaderMock: RUMActiveContextReader {
+    var globalAttributes: [AttributeKey: AttributeValue]
+    var activeView: (id: String?, path: String?, name: String?)
 
-    init(globalAttributes: [AttributeKey: AttributeValue]) {
+    init(
+        globalAttributes: [AttributeKey: AttributeValue] = [:],
+        activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil)
+    ) {
         self.globalAttributes = globalAttributes
+        self.activeView = activeView
     }
 }
 
