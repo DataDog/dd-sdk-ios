@@ -39,7 +39,8 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.messageReceiver = CombinedFeatureMessageReceiver(
             [
                 recordingComponents.messageReceiver,
-                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
+                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self)),
+                EmbeddedContentRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
             ]
         )
         self.performanceOverride = PerformancePresetOverride(
