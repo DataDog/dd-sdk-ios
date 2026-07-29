@@ -222,7 +222,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             dateProvider: configuration.dateProvider
         )
 
-        timeseriesCollector?.globalAttributesReader = monitor
+        timeseriesCollector?.activeContextReader = monitor
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
@@ -328,10 +328,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         if let watchdogTermination = watchdogTermination {
             messageReceivers.append(watchdogTermination)
-        }
-
-        if let timeseriesCollector = timeseriesCollector {
-            messageReceivers.append(timeseriesCollector)
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)

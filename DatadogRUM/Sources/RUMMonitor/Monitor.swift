@@ -96,12 +96,15 @@ internal enum RUMInternalErrorSource: String, Decodable {
 /// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
-/// Exposes the monitor's global custom attributes for readers that operate outside the `RUMCommand` pipeline
-/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to `command.globalAttributes`.
-internal protocol GlobalAttributesReader: AnyObject {
+/// Exposes monitor state for readers that operate outside the `RUMCommand` pipeline
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to
+/// `command.globalAttributes` or the scope tree's active view.
+internal protocol RUMActiveContextReader: AnyObject {
     /// The current global attributes set through `addAttribute(forKey:value:)` / `addAttributes(_:)`.
     /// Safe to read from any thread.
     var globalAttributes: [AttributeKey: AttributeValue] { get }
+    /// The currently active view, if any. Safe to read from any thread.
+    var activeView: (id: String?, path: String?, name: String?) { get }
 }
 
 internal class Monitor: RUMCommandSubscriber {
@@ -115,6 +118,9 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var attributes: [AttributeKey: AttributeValue] = [:]
+
+    @ReadWriteLock
+    private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
 
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
@@ -147,6 +153,17 @@ internal class Monitor: RUMCommandSubscriber {
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
+            }
+
+            if let activeSession = self.applicationScope.activeSession {
+                let viewContext = activeSession.viewScopes.last?.context ?? activeSession.context
+                self.activeViewSnapshot = (
+                    id: viewContext.activeViewID?.toRUMDataFormat,
+                    path: viewContext.activeViewPath,
+                    name: viewContext.activeViewName
+                )
+            } else {
+                self.activeViewSnapshot = (nil, nil, nil)
             }
         }
 
@@ -200,8 +217,9 @@ internal class Monitor: RUMCommandSubscriber {
     }
 }
 
-extension Monitor: GlobalAttributesReader {
+extension Monitor: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue] { attributes }
+    var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
