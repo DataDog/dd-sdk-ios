@@ -153,7 +153,7 @@ extension TLVBlockError: TelemetrySanitizableError {
     /// Every case only ever describes block types, sizes, limits and stream status codes - never the
     /// raw bytes or decoded content of a block - so the full description is safe to report as-is.
     func sanitize() -> TelemetrySanitizedError {
-        TelemetrySanitizedError(kind: "TLVBlockError", message: "\(self)")
+        TelemetrySanitizedError(describing: self)
     }
 }
 

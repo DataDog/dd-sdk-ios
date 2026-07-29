@@ -307,6 +307,6 @@ extension Reflector.Error: TelemetrySanitizableError {
     /// `subjectType`/`paths` only ever reference the SDK's own `Reflection` types and property names,
     /// never user data, so the full description is safe to report as-is.
     public func sanitize() -> TelemetrySanitizedError {
-        TelemetrySanitizedError(kind: "Reflector.Error", message: "\(self)")
+        TelemetrySanitizedError(describing: self)
     }
 }

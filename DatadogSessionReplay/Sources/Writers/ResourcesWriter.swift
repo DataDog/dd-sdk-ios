@@ -116,7 +116,7 @@ extension Data {
 extension Data.SerializationError: TelemetrySanitizableError {
     /// The only case, `invalidData`, carries no associated value, so the full description is safe to report as-is.
     func sanitize() -> TelemetrySanitizedError {
-        TelemetrySanitizedError(kind: "Data.SerializationError", message: "\(self)")
+        TelemetrySanitizedError(describing: self)
     }
 }
 

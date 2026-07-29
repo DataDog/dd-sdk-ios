@@ -32,6 +32,15 @@ public struct TelemetrySanitizedError {
         self.message = message
         self.stack = stack
     }
+
+    /// Describes `error` by its type name and default string interpolation.
+    ///
+    /// - Important: Only use this when `error`'s default `"\(error)"` description is known to be
+    ///   safe - e.g. an enum whose cases carry no customer data. Never use it for a type that might
+    ///   wrap arbitrary or customer-supplied values.
+    public init(describing error: Error) {
+        self.init(kind: "\(type(of: error))", message: "\(error)")
+    }
 }
 
 /// Returns a `TelemetrySanitizedError` describing `error`, safe to forward to internal telemetry.

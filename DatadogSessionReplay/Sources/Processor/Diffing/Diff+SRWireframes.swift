@@ -80,7 +80,7 @@ extension WireframeMutationError: TelemetrySanitizableError {
     /// Both cases only ever describe the SDK's own wireframe kind names (e.g. "shape", "text"),
     /// never customer content, so the full description is safe to report as-is.
     func sanitize() -> TelemetrySanitizedError {
-        TelemetrySanitizedError(kind: "WireframeMutationError", message: "\(self)")
+        TelemetrySanitizedError(describing: self)
     }
 }
 
