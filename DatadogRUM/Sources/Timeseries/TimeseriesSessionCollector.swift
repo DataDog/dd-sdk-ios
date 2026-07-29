@@ -50,9 +50,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let syntheticsTest: RUMSyntheticsTest?
     private let sessionSampleRate: Double
 
-    /// Provides global custom attributes at flush time. Set by `RUMFeature` once `Monitor` is constructed,
-    /// since the collector is created before it. `Monitor.globalAttributes` is safe to read from any thread.
-    weak var globalAttributesReader: GlobalAttributesReader?
+    /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
+    /// is constructed, since the collector is created before it. `Monitor`'s conformance is safe to read from
+    /// any thread.
+    weak var activeContextReader: RUMActiveContextReader?
 
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
@@ -61,12 +62,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-
-    /// The most recently known active view, updated from the message bus on every core context change.
-    /// Cached rather than read at flush time so a batch isn't dropped just because its view ended right before flush.
-    private var cachedViewID: String?
-    private var cachedViewPath: String?
-    private var cachedViewName: String?
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -152,9 +147,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.sessionType = sessionType
             self.memoryBuffer = []
             self.cpuBuffer = []
-            self.cachedViewID = nil
-            self.cachedViewPath = nil
-            self.cachedViewName = nil
             self.isPaused = false
 
             self.timer?.cancel()
@@ -202,9 +194,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
-            self.cachedViewID = nil
-            self.cachedViewPath = nil
-            self.cachedViewName = nil
         }
     }
 
@@ -233,9 +222,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     private func sample() {
         let now = Int64.ddWithNoOverflow(Date().timeIntervalSince1970 * 1_000_000_000)
-        let viewID = cachedViewID
-        let viewPath = cachedViewPath
-        let viewName = cachedViewName
+        let activeView = activeContextReader?.activeView
+        let viewID = activeView?.id
+        let viewPath = activeView?.path
+        let viewName = activeView?.name
 
         if let bytes = memoryReader.readVitalData() {
             let footprintKB = bytes / 1_024
@@ -274,7 +264,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
-        let globalAttributes = self.globalAttributesReader?.globalAttributes ?? [:]
+        let globalAttributes = self.activeContextReader?.globalAttributes ?? [:]
         let sessionSampleRate = self.sessionSampleRate
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
@@ -342,7 +332,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
-        let globalAttributes = self.globalAttributesReader?.globalAttributes ?? [:]
+        let globalAttributes = self.activeContextReader?.globalAttributes ?? [:]
         let sessionSampleRate = self.sessionSampleRate
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
@@ -394,22 +384,5 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             )
             writer.write(value: event)
         }
-    }
-}
-
-extension TimeseriesSessionCollector: FeatureMessageReceiver {
-    /// Receives the currently active view from the core context message and caches it for tagging future samples.
-    /// - Returns: Always `false`, because it doesn't block message propagation to other receivers.
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case .context(let context) = message else {
-            return false
-        }
-        let rum = context.additionalContext(ofType: RUMCoreContext.self)
-        queue.async { [weak self] in
-            self?.cachedViewID = rum?.viewID
-            self?.cachedViewPath = rum?.viewPath
-            self?.cachedViewName = rum?.viewName
-        }
-        return false
     }
 }
