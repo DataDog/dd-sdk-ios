@@ -712,7 +712,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 2)
 
         let error = try XCTUnwrap(telemetry.messages.firstError(), "An error should be send to `telemetry`.")
-        XCTAssertEqual(error.message, "Data upload finished with error - abc (0)")
+        XCTAssertEqual(error.message, "Data upload finished with error - domain: abc, code: 0")
 
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"), "An upload quality metric should be send to `telemetry`.")
         XCTAssertEqual(metric.attributes["failure"] as? String, "\(nserror.code)")
