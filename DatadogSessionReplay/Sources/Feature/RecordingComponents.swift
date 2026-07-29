@@ -14,15 +14,24 @@ internal struct RecordingComponents {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting
     ) throws {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
             // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
             self = try runOnMainThreadSync {
-                try .layerTreeRecordingComponents(core: core, configuration: configuration)
+                try .layerTreeRecordingComponents(
+                    core: core,
+                    configuration: configuration,
+                    resourcesWriter: resourcesWriter
+                )
             }
         } else {
-            self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
+            self = try .viewTreeRecordingComponents(
+                core: core,
+                configuration: configuration,
+                resourcesWriter: resourcesWriter
+            )
         }
     }
 
@@ -36,7 +45,8 @@ internal struct RecordingComponents {
 
     private static func viewTreeRecordingComponents(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
@@ -53,7 +63,7 @@ internal struct RecordingComponents {
 
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+            resourcesWriter: resourcesWriter
         )
 
         let snapshotProcessor = SnapshotProcessor(
@@ -96,7 +106,8 @@ internal struct RecordingComponents {
     @MainActor
     private static func layerTreeRecordingComponents(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
@@ -111,7 +122,7 @@ internal struct RecordingComponents {
         )
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+            resourcesWriter: resourcesWriter
         )
         let snapshotProcessor = LayerSnapshotProcessor(
             queue: processorsQueue,
