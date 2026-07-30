@@ -42,7 +42,9 @@ workflow:
     - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH !~ /^(develop|master|dogfooding|release\/.*|hotfix\/.*)$/'
       auto_cancel:
         on_new_commit: interruptible
-    - when: always
+    - when: always # develop, master, dogfooding, release/*, hotfix/*: never auto-canceled
+      auto_cancel:
+        on_new_commit: none
 
 # ┌───────────────┐
 # │ Utility jobs: │
