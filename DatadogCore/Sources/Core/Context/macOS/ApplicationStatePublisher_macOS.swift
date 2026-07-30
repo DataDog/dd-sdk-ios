@@ -29,8 +29,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     private let applicationStateProvider: MacOSApplicationStateProvider
 
     /// The current application state history.
-    ///
-    /// **Note**: It must be accessed from the main thread.
     @MainActor private var history: AppStateHistory
 
     /// The receiver for publishing the state history.
