@@ -44,6 +44,10 @@ internal struct EmbeddedContentReceiver: FeatureMessageReceiver {
 
             switch embeddedContentMessage {
             case .records(let batch):
+                guard !batch.records.isEmpty else {
+                    return
+                }
+
                 let records = batch.records.map { record in
                     var record = record
                     record["slotId"] = batch.slotID
