@@ -27,7 +27,8 @@ struct EmbeddedContentReceiverTests {
         let resourcesWriter = ResourceWriterMock()
         let receiver = EmbeddedContentReceiver(
             scope: scope,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: SRContextPublisher(core: NOPDatadogCore())
         )
         let message = EmbeddedContentMessage.records(
             .init(
@@ -67,6 +68,46 @@ struct EmbeddedContentReceiverTests {
     }
 
     @available(iOS 13.0, *)
+    @Test("Adds embedded records to the existing native record count")
+    func embeddedRecordsContributeToExistingNativeRecordCount() {
+        // Given
+        let rumContext: RUMCoreContext = .mockWith(
+            applicationID: "native-application-id"
+        )
+        let scope = FeatureScopeMock(
+            context: .mockWith(additionalContext: [rumContext])
+        )
+        let resourcesWriter = ResourceWriterMock()
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        srContextPublisher.incrementRecordCount(by: 3, forViewID: "shared-view-id")
+        let receiver = EmbeddedContentReceiver(
+            scope: scope,
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: srContextPublisher
+        )
+        let message = EmbeddedContentMessage.records(
+            .init(
+                records: [
+                    ["type": 2],
+                    ["type": 10]
+                ],
+                slotID: "slot-id",
+                viewID: "shared-view-id"
+            )
+        )
+
+        // When
+        _ = receiver.receive(message: .embeddedContent(message), from: core)
+
+        // Then
+        let recordsCountByViewID = core.context.additionalContext(
+            ofType: SessionReplayCoreContext.RecordsCount.self
+        )?.value
+        #expect(recordsCountByViewID == ["shared-view-id": 5])
+    }
+
+    @available(iOS 13.0, *)
     @Test("Writes embedded resources using the native application ID")
     func writesEmbeddedResourcesUsingNativeApplicationID() throws {
         // Given
@@ -79,7 +120,8 @@ struct EmbeddedContentReceiverTests {
         let resourcesWriter = ResourceWriterMock()
         let receiver = EmbeddedContentReceiver(
             scope: scope,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: SRContextPublisher(core: NOPDatadogCore())
         )
         let data = Data([0x01, 0x02, 0x03])
         let message = EmbeddedContentMessage.resource(
@@ -114,7 +156,8 @@ struct EmbeddedContentReceiverTests {
         let resourcesWriter = ResourceWriterMock()
         let receiver = EmbeddedContentReceiver(
             scope: scope,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: SRContextPublisher(core: NOPDatadogCore())
         )
         let message = EmbeddedContentMessage.records(
             .init(
@@ -144,7 +187,8 @@ struct EmbeddedContentReceiverTests {
         let resourcesWriter = ResourceWriterMock()
         let receiver = EmbeddedContentReceiver(
             scope: scope,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: SRContextPublisher(core: NOPDatadogCore())
         )
         let message = EmbeddedContentMessage.resource(
             .init(
@@ -171,7 +215,8 @@ struct EmbeddedContentReceiverTests {
         let resourcesWriter = ResourceWriterMock()
         let receiver = EmbeddedContentReceiver(
             scope: scope,
-            resourcesWriter: resourcesWriter
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: SRContextPublisher(core: NOPDatadogCore())
         )
 
         // When

@@ -26,6 +26,9 @@ internal struct EmbeddedContentReceiver: FeatureMessageReceiver {
     /// Shared writer for native and embedded Session Replay resources.
     let resourcesWriter: ResourcesWriting
 
+    /// Shared publisher for native and embedded Session Replay record counts.
+    let srContextPublisher: SRContextPublisher
+
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .embeddedContent(embeddedContentMessage) = message else {
             return false
@@ -54,6 +57,10 @@ internal struct EmbeddedContentReceiver: FeatureMessageReceiver {
                         viewID: batch.viewID,
                         records: records
                     )
+                )
+                srContextPublisher.incrementRecordCount(
+                    by: Int64(records.count),
+                    forViewID: batch.viewID
                 )
             case .resource(let resource):
                 resourcesWriter.write(

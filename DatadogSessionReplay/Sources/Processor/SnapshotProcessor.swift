@@ -54,9 +54,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
     /// Only available in Debug configuration, solely made for testing purpose.
     var interceptWireframes: (([SRWireframe]) -> Void)? = nil
 
-    private var srContextPublisher: SRContextPublisher
-
-    private var recordsCountByViewID: [String: Int64] = [:]
+    private let srContextPublisher: SRContextPublisher
 
     init(
         queue: Queue,
@@ -139,7 +137,10 @@ internal class SnapshotProcessor: SnapshotProcessing {
             // Transform `[SRRecord]` to `EnrichedRecord` so we can write it to `DatadogCore` and
             // later read it back (as `EnrichedRecordJSON`) for preparing upload request(s):
             let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
-            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+            srContextPublisher.incrementRecordCount(
+                by: Int64(records.count),
+                forViewID: enrichedRecord.viewID
+            )
 
             recordWriter.write(nextRecord: enrichedRecord)
         }
@@ -152,11 +153,6 @@ internal class SnapshotProcessor: SnapshotProcessing {
             resources: builder.resources,
             context: .init(viewTreeSnapshot.context.applicationID)
         )
-    }
-
-    private func trackRecord(key: String, value: Int64) {
-        recordsCountByViewID[key, default: 0] += value
-        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }
 #endif
