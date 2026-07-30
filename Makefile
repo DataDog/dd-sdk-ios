@@ -203,6 +203,7 @@ test-macos:
 # Run unit tests for all schemes ready for macOS so far
 test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogInternal"
+	@$(MAKE) test-macos SCHEME="DatadogCore"
 	@$(MAKE) test-macos SCHEME="DatadogLogs"
 	@$(MAKE) test-macos SCHEME="DatadogTrace"
 	@$(MAKE) test-macos SCHEME="DatadogFlags"
