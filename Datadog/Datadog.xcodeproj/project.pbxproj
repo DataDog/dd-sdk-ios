@@ -12222,7 +12222,7 @@
 			repositoryURL = "https://github.com/kstenerud/KSCrash.git";
 			requirement = {
 				kind = exactVersion;
-				version = 2.5.0;
+				version = 2.5.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
