@@ -37,6 +37,11 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let cachePersistenceQueue = DispatchQueue(
+        label: "com.datadoghq.ios-sdk-flags-cache-persistence",
+        autoreleaseFrequency: .workItem,
+        target: .global(qos: .utility)
+    )
 
     @ReadWriteLock
     private var repositoryState = RepositoryState()
@@ -157,8 +162,17 @@ internal final class FlagsRepository {
         }
     }
 
-    private func writeState(_ flagsData: FlagsData) {
-        featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
+    private func writeState(_ flagsData: FlagsData, version: UInt64) {
+        let featureScope = featureScope
+        let clientName = clientName
+
+        cachePersistenceQueue.async { [weak self] in
+            guard self?.repositoryState.flagsDataVersion == version else {
+                return
+            }
+
+            featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
+        }
     }
 
     private func handleFailedContextUpdate(
@@ -247,13 +261,15 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     context: context,
                     date: self.dateProvider.now
                 )
+                var versionAfterSuccess: UInt64 = 0
                 self._repositoryState.mutate { state in
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
+                    versionAfterSuccess = state.flagsDataVersion
                     state.reconcilingContext = nil
                 }
-                self.writeState(flagsData)
+                self.writeState(flagsData, version: versionAfterSuccess)
                 self.stateManager.updateState(.ready)
                 completion(.success(()))
             case .failure(let error):
@@ -282,6 +298,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _repositoryState.mutate { state in
             state.flagsData = nil
             state.cachedFlagsData = nil
+            state.flagsDataVersion += 1
             state.reconcilingContext = nil
         }
         stateManager.updateState(.notReady)

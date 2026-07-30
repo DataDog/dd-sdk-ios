@@ -55,13 +55,18 @@ final class FlagsRepositoryTests: XCTestCase {
         let evaluationContext = FlagsEvaluationContext.mockAny()
         let flags = ["test": FlagAssignment.mockAny()]
         let dateProvider = DateProviderMock(now: .mockAny())
+        let dataStore = WriteObservingDataStore()
+        let cacheWriteCompleted = expectation(description: "cache write completed")
+        dataStore.onSetValue = {
+            cacheWriteCompleted.fulfill()
+        }
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
                 completion(.success(flags))
             },
             dateProvider: dateProvider,
-            featureScope: featureScope
+            featureScope: FeatureScopeMock(dataStore: dataStore)
         )
         let completed = expectation(description: "completed")
 
@@ -73,7 +78,7 @@ final class FlagsRepositoryTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        wait(for: [completed], timeout: 0)
 
         XCTAssertNotNil(capturedResult)
         XCTAssertNoThrow(try capturedResult?.get())
@@ -81,7 +86,9 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.context, .mockAny())
         XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), .mockAny())
 
-        let data = try XCTUnwrap(featureScope.dataStoreMock.storage[.mockAny()]?.data())
+        wait(for: [cacheWriteCompleted], timeout: 1)
+
+        let data = try XCTUnwrap(dataStore.value(forKey: .mockAny())?.data())
         let storedState = try JSONDecoder().decode(FlagsData.self, from: data)
 
         XCTAssertEqual(
@@ -92,6 +99,49 @@ final class FlagsRepositoryTests: XCTestCase {
                 date: dateProvider.now
             )
         )
+    }
+
+    func testSetEvaluationContext_whenCacheWriteIsBlocked_doesNotDelayReadyOrCompletion() {
+        // Given
+        let dataStore = BlockingWriteDataStore()
+        let cacheWriteStarted = expectation(description: "cache write started")
+        dataStore.onSetValueStarted = {
+            cacheWriteStarted.fulfill()
+        }
+        defer {
+            dataStore.resumeWrite()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+
+        let completed = expectation(description: "completed")
+        var stateInCompletion: FlagsClientState?
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.setEvaluationContext(.mockAny()) { _ in
+                stateInCompletion = flagsRepository.state.currentState
+                completed.fulfill()
+            }
+        }
+
+        // Then
+        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(stateInCompletion, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertFalse(dataStore.isWriteFinished)
+
+        wait(for: [cacheWriteStarted], timeout: 1)
+        dataStore.resumeWrite()
+        XCTAssertTrue(dataStore.waitForWriteFinished(timeout: 1))
     }
 
     func testSetEvaluationContext_whenInitialDataStoreReadIsDelayed_startsFetchingAssignmentsWithoutWaitingForRead() {
@@ -763,6 +813,87 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+}
+
+private final class WriteObservingDataStore: DataStore, @unchecked Sendable {
+    @ReadWriteLock
+    private var storage: [String: DataStoreValueResult]
+
+    var onSetValue: (() -> Void)?
+
+    init(storage: [String: DataStoreValueResult] = [:]) {
+        self.storage = storage
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        storage[key] = .value(value, version)
+        onSetValue?()
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(storage[key] ?? .noValue)
+    }
+
+    func value(forKey key: String) -> DataStoreValueResult? {
+        storage[key]
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {}
+}
+
+private final class BlockingWriteDataStore: DataStore, @unchecked Sendable {
+    @ReadWriteLock
+    private var storage: [String: DataStoreValueResult] = [:]
+
+    @ReadWriteLock
+    private var hasFinishedWrite = false
+
+    private let writeSemaphore = DispatchSemaphore(value: 0)
+    private let writeFinishedSemaphore = DispatchSemaphore(value: 0)
+
+    var onSetValueStarted: (() -> Void)?
+
+    var isWriteFinished: Bool {
+        hasFinishedWrite
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        onSetValueStarted?()
+        writeSemaphore.wait()
+        storage[key] = .value(value, version)
+        hasFinishedWrite = true
+        writeFinishedSemaphore.signal()
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(storage[key] ?? .noValue)
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {}
+
+    func resumeWrite() {
+        writeSemaphore.signal()
+    }
+
+    func waitForWriteFinished(timeout: TimeInterval) -> Bool {
+        writeFinishedSemaphore.wait(timeout: .now() + timeout) == .success
     }
 }
 
