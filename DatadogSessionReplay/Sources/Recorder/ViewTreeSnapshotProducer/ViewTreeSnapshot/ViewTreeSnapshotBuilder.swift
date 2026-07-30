@@ -104,6 +104,7 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
             identifier: UUID(),
             featureFlags: featureFlags
         ),
+        EmbeddedContentViewRecorder(identifier: UUID()),
         UIViewRecorder(identifier: UUID()),
         UILabelRecorder(identifier: UUID()),
         UIImageViewRecorder(identifier: UUID()),
@@ -118,7 +119,6 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
         UIPickerViewRecorder(identifier: UUID()),
         UIDatePickerRecorder(identifier: UUID()),
         WKWebViewRecorder(identifier: UUID()),
-        EmbeddedContentViewRecorder(identifier: UUID()),
         UIProgressViewRecorder(identifier: UUID()),
         UIActivityIndicatorRecorder(identifier: UUID()),
     ]

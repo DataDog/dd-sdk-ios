@@ -183,6 +183,28 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(snapshot.embeddedContentSlots.count, 2)
     }
 
+    func testWhenUIKitViewHasSessionReplaySlotID_itIsRecordedAsEmbeddedContent() {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let embeddedContentLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        embeddedContentLabel.text = "Native label"
+        embeddedContentLabel.dd.sessionReplaySlotID = "embedded-slot"
+        rootView.addSubview(embeddedContentLabel)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
+
+        // When
+        let snapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+
+        // Then
+        XCTAssertEqual(Set(snapshot.embeddedContentSlots.values), ["embedded-slot"])
+        XCTAssertTrue(snapshot.nodes.contains { $0.wireframesBuilder is EmbeddedContentWireframesBuilder })
+        XCTAssertFalse(snapshot.nodes.contains { $0.wireframesBuilder is UILabelWireframesBuilder })
+    }
+
     func testDetachedEmbeddedContentViewRemainsCachedWhileAlive() {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
