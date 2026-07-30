@@ -128,13 +128,20 @@ class VitalInfoSamplerTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 1.0) { _ in
-            XCTAssertGreaterThan(sampler.cpu.meanValue!, 0.0)
-            XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
-            XCTAssertGreaterThan(sampler.cpu.greatestDiff!, 0.0)
-            XCTAssertGreaterThan(sampler.memory.meanValue!, 0.0)
-            XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
-            XCTAssertGreaterThan(sampler.refreshRate.meanValue!, 0.0)
-            XCTAssertGreaterThan(sampler.refreshRate.sampleCount, 1)
+            XCTAssertNoThrow {
+                let cpuMeanValue = try XCTUnwrap(sampler.cpu.meanValue)
+                let cpuGreatestDiff = try XCTUnwrap(sampler.cpu.greatestDiff)
+                let memoryMeanValue = try XCTUnwrap(sampler.memory.meanValue)
+                let refreshRateMeanValue = try XCTUnwrap(sampler.refreshRate.meanValue)
+
+                XCTAssertGreaterThan(cpuMeanValue, 0.0)
+                XCTAssertGreaterThan(sampler.cpu.sampleCount, 1)
+                XCTAssertGreaterThan(cpuGreatestDiff, 0.0)
+                XCTAssertGreaterThan(memoryMeanValue, 0.0)
+                XCTAssertGreaterThan(sampler.memory.sampleCount, 1)
+                XCTAssertGreaterThan(refreshRateMeanValue, 0.0)
+                XCTAssertGreaterThan(sampler.refreshRate.sampleCount, 1)
+            }
         }
         // swiftlint:enable implicitly_unwrapped_optional
     }
