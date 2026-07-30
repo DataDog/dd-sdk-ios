@@ -45,6 +45,16 @@ internal final class FlagsRepository {
         target: .global(qos: .utility)
     )
 
+    private static func logRepositoryDiagnostic(_ message: String, startedAt: Date, details: String? = nil) {
+        let now = Date()
+        let elapsedMs = now.timeIntervalSince(startedAt) * 1_000
+        let thread = Thread.isMainThread ? "main" : "background"
+        let details = details.map { " \($0)" } ?? ""
+        print(
+            "Datadog Flags repository \(message)\(details) at \(now.timeIntervalSince1970) elapsedMs=\(elapsedMs) thread=\(thread)"
+        )
+    }
+
     @ReadWriteLock
     private var repositoryState = RepositoryState()
 
@@ -120,37 +130,66 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
+        let startedAt = Date()
+        Self.logRepositoryDiagnostic("initial cache read requested", startedAt: startedAt, details: "clientName=\(clientName)")
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
+            Self.logRepositoryDiagnostic(
+                "initial cache read callback received",
+                startedAt: startedAt,
+                details: "hasData=\(data != nil)"
+            )
             guard let self else {
                 // Signal even if self is nil to unblock any waiting getters
                 DispatchQueue.global(qos: .userInitiated).async {
+                    Self.logRepositoryDiagnostic("initial cache read signaling after repository deinit", startedAt: startedAt)
                     readSemaphore.signal()
                 }
                 return
             }
             var callbacks: [() -> Void] = []
+            Self.logRepositoryDiagnostic("initial cache read applying state start", startedAt: startedAt)
             self._repositoryState.mutate { state in
                 callbacks = state.applyInitialFlagsData(data)
             }
+            Self.logRepositoryDiagnostic(
+                "initial cache read applying state end",
+                startedAt: startedAt,
+                details: "pendingCallbacks=\(callbacks.count)"
+            )
 
             // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
             DispatchQueue.global(qos: .userInitiated).async {
+                Self.logRepositoryDiagnostic("initial cache read signaling getters", startedAt: startedAt)
                 readSemaphore.signal()
             }
 
-            self.executePendingDiskReadCallbacks(callbacks)
+            self.executePendingDiskReadCallbacks(callbacks, diagnosticStartedAt: startedAt)
         }
     }
 
-    private func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
+    private func executePendingDiskReadCallbacks(_ callbacks: [() -> Void], diagnosticStartedAt: Date? = nil) {
         guard !callbacks.isEmpty else {
             return
+        }
+
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "initial cache read dispatching pending callbacks",
+                startedAt: diagnosticStartedAt,
+                details: "count=\(callbacks.count)"
+            )
         }
 
         // The initial disk-read callback runs on DatadogCore's shared read/write queue.
         // Hop off that queue before notifying state listeners or invoking public completions.
         DispatchQueue.global(qos: .utility).async {
+            if let diagnosticStartedAt {
+                Self.logRepositoryDiagnostic("initial cache read invoking pending callbacks start", startedAt: diagnosticStartedAt)
+            }
             callbacks.forEach { $0() }
+            if let diagnosticStartedAt {
+                Self.logRepositoryDiagnostic("initial cache read invoking pending callbacks end", startedAt: diagnosticStartedAt)
+            }
         }
     }
 
@@ -165,10 +204,18 @@ internal final class FlagsRepository {
 
     /// Executes the callback after the initial disk read completes.
     /// Used on fetch failure so cached flags can be used without delaying the network request.
-    private func whenFlagsDataRead(_ callback: @escaping () -> Void) {
+    private func whenFlagsDataRead(_ callback: @escaping () -> Void, diagnosticStartedAt: Date? = nil) {
         var shouldExecuteNow = false
         _repositoryState.mutate { state in
             shouldExecuteNow = state.executeAfterDiskReadCompletes(callback)
+        }
+
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "failure cache-read gate evaluated",
+                startedAt: diagnosticStartedAt,
+                details: "executeNow=\(shouldExecuteNow)"
+            )
         }
 
         if shouldExecuteNow {
@@ -176,24 +223,79 @@ internal final class FlagsRepository {
         }
     }
 
-    private func writeState(_ flagsData: FlagsData, version: UInt64) {
+    private func writeState(_ flagsData: FlagsData, version: UInt64, diagnosticStartedAt: Date? = nil) {
         let flagsDataStore = featureScope.flagsDataStore
         let clientName = clientName
 
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "cache persistence enqueue",
+                startedAt: diagnosticStartedAt,
+                details: "version=\(version)"
+            )
+        }
+
         cachePersistenceQueue.async { [weak self] in
-            guard self?.repositoryState.flagsDataVersion == version else {
+            if let diagnosticStartedAt {
+                Self.logRepositoryDiagnostic(
+                    "cache persistence queue started",
+                    startedAt: diagnosticStartedAt,
+                    details: "version=\(version)"
+                )
+            }
+
+            guard let self else {
+                if let diagnosticStartedAt {
+                    Self.logRepositoryDiagnostic(
+                        "cache persistence skipped",
+                        startedAt: diagnosticStartedAt,
+                        details: "reason=repositoryDeallocated version=\(version)"
+                    )
+                }
                 return
             }
 
-            guard let encodedFlagsData = flagsDataStore.encodeFlagsData(flagsData) else {
+            guard self.repositoryState.flagsDataVersion == version else {
+                if let diagnosticStartedAt {
+                    Self.logRepositoryDiagnostic(
+                        "cache persistence skipped",
+                        startedAt: diagnosticStartedAt,
+                        details: "reason=staleVersionBeforeEncode currentVersion=\(self.repositoryState.flagsDataVersion) expectedVersion=\(version)"
+                    )
+                }
                 return
             }
 
-            guard self?.repositoryState.flagsDataVersion == version else {
+            guard let encodedFlagsData = flagsDataStore.encodeFlagsData(
+                flagsData,
+                diagnosticStartedAt: diagnosticStartedAt
+            ) else {
+                if let diagnosticStartedAt {
+                    Self.logRepositoryDiagnostic(
+                        "cache persistence skipped",
+                        startedAt: diagnosticStartedAt,
+                        details: "reason=encodeFailed version=\(version)"
+                    )
+                }
                 return
             }
 
-            flagsDataStore.setEncodedFlagsData(encodedFlagsData, forClientNamed: clientName)
+            guard self.repositoryState.flagsDataVersion == version else {
+                if let diagnosticStartedAt {
+                    Self.logRepositoryDiagnostic(
+                        "cache persistence skipped",
+                        startedAt: diagnosticStartedAt,
+                        details: "reason=staleVersionAfterEncode currentVersion=\(self.repositoryState.flagsDataVersion) expectedVersion=\(version)"
+                    )
+                }
+                return
+            }
+
+            flagsDataStore.setEncodedFlagsData(
+                encodedFlagsData,
+                forClientNamed: clientName,
+                diagnosticStartedAt: diagnosticStartedAt
+            )
         }
     }
 
@@ -201,12 +303,24 @@ internal final class FlagsRepository {
         error: FlagsError,
         context: FlagsEvaluationContext,
         versionAtStart: UInt64,
-        completion: @escaping (Result<Void, FlagsError>) -> Void
+        completion: @escaping (Result<Void, FlagsError>) -> Void,
+        diagnosticStartedAt: Date? = nil
     ) {
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "failure handling start",
+                startedAt: diagnosticStartedAt,
+                details: "versionAtStart=\(versionAtStart)"
+            )
+        }
+
         // Only update state if no newer request has succeeded.
         // This prevents an older failing request from clearing data
         // written by a newer successful request.
         var stateToUpdate: FlagsClientState?
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic("failure handling state mutate start", startedAt: diagnosticStartedAt)
+        }
         _repositoryState.mutate { state in
             guard state.flagsDataVersion == versionAtStart else {
                 return
@@ -227,16 +341,47 @@ internal final class FlagsRepository {
                 stateToUpdate = .error
             }
         }
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "failure handling state mutate end",
+                startedAt: diagnosticStartedAt,
+                details: "stateToUpdate=\(String(describing: stateToUpdate))"
+            )
+        }
 
         guard let stateToUpdate else {
+            if let diagnosticStartedAt {
+                Self.logRepositoryDiagnostic("failure completion start without state update", startedAt: diagnosticStartedAt)
+            }
             completion(.failure(error))
+            if let diagnosticStartedAt {
+                Self.logRepositoryDiagnostic("failure completion returned without state update", startedAt: diagnosticStartedAt)
+            }
             return
         }
 
         // State must be updated before calling completion —
         // dd-openfeature-provider-swift checks currentState in the callback.
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "failure state update start",
+                startedAt: diagnosticStartedAt,
+                details: "state=\(stateToUpdate)"
+            )
+        }
         stateManager.updateState(stateToUpdate)
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic(
+                "failure state update end",
+                startedAt: diagnosticStartedAt,
+                details: "state=\(stateToUpdate)"
+            )
+            Self.logRepositoryDiagnostic("failure completion start", startedAt: diagnosticStartedAt)
+        }
         completion(.failure(error))
+        if let diagnosticStartedAt {
+            Self.logRepositoryDiagnostic("failure completion returned", startedAt: diagnosticStartedAt)
+        }
     }
 }
 
@@ -262,28 +407,48 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let startedAt = Date()
+        Self.logRepositoryDiagnostic("setEvaluationContext start", startedAt: startedAt)
         var versionAtStart: UInt64 = 0
+        Self.logRepositoryDiagnostic("reconciling state mutate start", startedAt: startedAt)
         _repositoryState.mutate { state in
             state.hasStartedEvaluationContextRequest = true
             state.reconcilingContext = context
             versionAtStart = state.flagsDataVersion
         }
+        Self.logRepositoryDiagnostic(
+            "reconciling state mutate end",
+            startedAt: startedAt,
+            details: "versionAtStart=\(versionAtStart)"
+        )
+        Self.logRepositoryDiagnostic("state update reconciling start", startedAt: startedAt)
         stateManager.updateState(.reconciling)
+        Self.logRepositoryDiagnostic("state update reconciling end", startedAt: startedAt)
 
+        Self.logRepositoryDiagnostic("assignment fetch start", startedAt: startedAt)
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
             guard let self else {
+                Self.logRepositoryDiagnostic("assignment fetch callback failed", startedAt: startedAt, details: "reason=repositoryDeallocated")
                 completion(.failure(.clientNotInitialized))
                 return
             }
 
             switch result {
             case .success(let flags):
+                Self.logRepositoryDiagnostic(
+                    "assignment fetch callback received",
+                    startedAt: startedAt,
+                    details: "result=success flagsCount=\(flags.count)"
+                )
+                Self.logRepositoryDiagnostic("flags data create start", startedAt: startedAt)
                 let flagsData = FlagsData(
                     flags: flags,
                     context: context,
                     date: self.dateProvider.now
                 )
+                Self.logRepositoryDiagnostic("flags data create end", startedAt: startedAt)
                 var versionAfterSuccess: UInt64 = 0
+                Self.logRepositoryDiagnostic("success state mutate start", startedAt: startedAt)
                 self._repositoryState.mutate { state in
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
@@ -291,12 +456,32 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     versionAfterSuccess = state.flagsDataVersion
                     state.reconcilingContext = nil
                 }
-                self.writeState(flagsData, version: versionAfterSuccess)
+                Self.logRepositoryDiagnostic(
+                    "success state mutate end",
+                    startedAt: startedAt,
+                    details: "versionAfterSuccess=\(versionAfterSuccess)"
+                )
+                self.writeState(flagsData, version: versionAfterSuccess, diagnosticStartedAt: startedAt)
+                Self.logRepositoryDiagnostic("state update ready start", startedAt: startedAt)
                 self.stateManager.updateState(.ready)
+                Self.logRepositoryDiagnostic("state update ready end", startedAt: startedAt)
+                Self.logRepositoryDiagnostic("completion success start", startedAt: startedAt)
                 completion(.success(()))
+                Self.logRepositoryDiagnostic("completion success returned", startedAt: startedAt)
             case .failure(let error):
-                self.whenFlagsDataRead { [weak self] in
+                Self.logRepositoryDiagnostic(
+                    "assignment fetch callback received",
+                    startedAt: startedAt,
+                    details: "result=failure error=\(error)"
+                )
+                self.whenFlagsDataRead({ [weak self] in
+                    Self.logRepositoryDiagnostic("failure cache-read gate callback start", startedAt: startedAt)
                     guard let self else {
+                        Self.logRepositoryDiagnostic(
+                            "failure cache-read gate callback failed",
+                            startedAt: startedAt,
+                            details: "reason=repositoryDeallocated"
+                        )
                         completion(.failure(.clientNotInitialized))
                         return
                     }
@@ -305,9 +490,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         error: error,
                         context: context,
                         versionAtStart: versionAtStart,
-                        completion: completion
+                        completion: completion,
+                        diagnosticStartedAt: startedAt
                     )
-                }
+                    Self.logRepositoryDiagnostic("failure cache-read gate callback end", startedAt: startedAt)
+                }, diagnosticStartedAt: startedAt)
             }
         }
     }

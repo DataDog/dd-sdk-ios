@@ -49,6 +49,16 @@ internal final class FlagsStateManager: FlagsStateObservable {
         var listeners: [WeakListener] = []
     }
 
+    private static func logStateDiagnostic(_ message: String, startedAt: Date, details: String? = nil) {
+        let now = Date()
+        let elapsedMs = now.timeIntervalSince(startedAt) * 1_000
+        let thread = Thread.isMainThread ? "main" : "background"
+        let details = details.map { " \($0)" } ?? ""
+        print(
+            "Datadog Flags state manager \(message)\(details) at \(now.timeIntervalSince1970) elapsedMs=\(elapsedMs) thread=\(thread)"
+        )
+    }
+
     @ReadWriteLock
     private var managerState = ManagerState()
 
@@ -57,20 +67,50 @@ internal final class FlagsStateManager: FlagsStateObservable {
     }
 
     func updateState(_ newState: FlagsClientState) {
+        let startedAt = Date()
+        Self.logStateDiagnostic("updateState start", startedAt: startedAt, details: "newState=\(newState)")
+
         // Capture listeners under lock, then notify outside lock to prevent deadlock.
         var listenersToNotify: [WeakListener] = []
+        var previousState: FlagsClientState = .notReady
+        var didUpdate = false
 
         _managerState.mutate { state in
+            previousState = state.clientState
             guard newState != state.clientState else {
                 return
             }
             state.clientState = newState
             listenersToNotify = state.listeners
+            didUpdate = true
         }
 
-        for weakListener in listenersToNotify {
-            weakListener.value?.flagsStateDidChange(newState)
+        Self.logStateDiagnostic(
+            "updateState mutate end",
+            startedAt: startedAt,
+            details: "previousState=\(previousState) newState=\(newState) didUpdate=\(didUpdate) listenerCount=\(listenersToNotify.count)"
+        )
+
+        guard didUpdate else {
+            return
         }
+
+        Self.logStateDiagnostic("updateState listeners notify start", startedAt: startedAt)
+        for (index, weakListener) in listenersToNotify.enumerated() {
+            guard let listener = weakListener.value else {
+                Self.logStateDiagnostic(
+                    "updateState listener skipped",
+                    startedAt: startedAt,
+                    details: "index=\(index) reason=deallocated"
+                )
+                continue
+            }
+
+            Self.logStateDiagnostic("updateState listener notify start", startedAt: startedAt, details: "index=\(index)")
+            listener.flagsStateDidChange(newState)
+            Self.logStateDiagnostic("updateState listener notify end", startedAt: startedAt, details: "index=\(index)")
+        }
+        Self.logStateDiagnostic("updateState listeners notify end", startedAt: startedAt)
     }
 
     func addListener(_ listener: FlagsStateListener) {

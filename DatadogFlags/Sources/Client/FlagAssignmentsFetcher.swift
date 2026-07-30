@@ -24,12 +24,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private static let decoder = JSONDecoder()
 
-    fileprivate static func logFetchDiagnostic(_ message: String, startedAt: Date) {
+    fileprivate static func logFetchDiagnostic(_ message: String, startedAt: Date, details: String? = nil) {
         let now = Date()
         let elapsedMs = now.timeIntervalSince(startedAt) * 1_000
         let thread = Thread.isMainThread ? "main" : "background"
+        let details = details.map { " \($0)" } ?? ""
         print(
-            "Datadog Flags assignment fetch \(message) at \(now.timeIntervalSince1970) elapsedMs=\(elapsedMs) thread=\(thread)"
+            "Datadog Flags assignment fetch \(message)\(details) at \(now.timeIntervalSince1970) elapsedMs=\(elapsedMs) thread=\(thread)"
         )
     }
 
@@ -41,13 +42,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
 
-        let urlSession = URLSession(configuration: configuration)
+        let urlSessionFetcher = FlagAssignmentsURLSessionFetcher(configuration: configuration)
 
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             featureScope: featureScope,
-            fetch: urlSession.fetch
+            fetch: urlSessionFetcher.fetch
         )
     }
 
@@ -110,7 +111,18 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                 context: context,
                 customHeaders: customHeaders
             )
-            Self.logFetchDiagnostic("request built", startedAt: startedAt)
+            let requestDetails = [
+                "method=\(request.httpMethod ?? "nil")",
+                "host=\(request.url?.host ?? "nil")",
+                "path=\(request.url?.path ?? "nil")",
+                "timeout=\(request.timeoutInterval)",
+                "bodyBytes=\(request.httpBody?.count ?? 0)"
+            ].joined(separator: " ")
+            Self.logFetchDiagnostic(
+                "request built",
+                startedAt: startedAt,
+                details: requestDetails
+            )
             Self.logFetchDiagnostic("starting URLSession fetch", startedAt: startedAt)
             fetch(request) { [assignmentFetchQueue, featureScope] result in
                 Self.logFetchDiagnostic("fetch completion received", startedAt: startedAt)
@@ -186,6 +198,127 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     }
 }
 
+private final class FlagAssignmentsURLSessionFetcher {
+    private let session: URLSession
+    private let metricsDelegate = FlagAssignmentsURLSessionDelegate()
+
+    init(configuration: URLSessionConfiguration) {
+        self.session = URLSession(
+            configuration: configuration,
+            delegate: metricsDelegate,
+            delegateQueue: nil
+        )
+    }
+
+    func fetch(
+        _ request: URLRequest,
+        completion: @escaping (Result<Data, Error>) -> Void
+    ) {
+        let startedAt = Date()
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask creating", startedAt: startedAt)
+        let task = session.dataTask(with: request) { data, response, error in
+            let statusCode = (response as? HTTPURLResponse)?.statusCode
+            FlagAssignmentsFetcher.logFetchDiagnostic(
+                "URLSession completion received",
+                startedAt: startedAt,
+                details: "statusCode=\(statusCode.map { String($0) } ?? "nil") dataBytes=\(data?.count ?? 0)"
+            )
+
+            if let error {
+                FlagAssignmentsFetcher.logFetchDiagnostic(
+                    "URLSession completed with error",
+                    startedAt: startedAt,
+                    details: "error=\(error)"
+                )
+                completion(.failure(error))
+                return
+            }
+
+            guard
+                let data,
+                let httpResponse = response as? HTTPURLResponse,
+                200..<300 ~= httpResponse.statusCode
+            else {
+                FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with bad response", startedAt: startedAt)
+                completion(.failure(URLError(.badServerResponse)))
+                return
+            }
+
+            FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with success", startedAt: startedAt)
+            completion(.success(data))
+        }
+        metricsDelegate.register(taskIdentifier: task.taskIdentifier, startedAt: startedAt)
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resuming", startedAt: startedAt)
+        task.resume()
+        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resumed", startedAt: startedAt)
+    }
+}
+
+private final class FlagAssignmentsURLSessionDelegate: NSObject, URLSessionTaskDelegate {
+    @ReadWriteLock
+    private var startedAtByTaskIdentifier: [Int: Date] = [:]
+
+    func register(taskIdentifier: Int, startedAt: Date) {
+        _startedAtByTaskIdentifier.mutate { startedAtByTaskIdentifier in
+            startedAtByTaskIdentifier[taskIdentifier] = startedAt
+        }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        var startedAt: Date?
+        _startedAtByTaskIdentifier.mutate { startedAtByTaskIdentifier in
+            startedAt = startedAtByTaskIdentifier.removeValue(forKey: task.taskIdentifier)
+        }
+
+        guard let startedAt else {
+            return
+        }
+
+        FlagAssignmentsFetcher.logFetchDiagnostic(
+            "URLSession metrics collected",
+            startedAt: startedAt,
+            details: "redirectCount=\(metrics.redirectCount) transactionCount=\(metrics.transactionMetrics.count)"
+        )
+
+        for (index, transaction) in metrics.transactionMetrics.enumerated() {
+            FlagAssignmentsFetcher.logFetchDiagnostic(
+                "URLSession metrics transaction \(index)",
+                startedAt: startedAt,
+                details: details(for: transaction, startedAt: startedAt)
+            )
+        }
+    }
+
+    private func details(for transaction: URLSessionTaskTransactionMetrics, startedAt: Date) -> String {
+        let parts = [
+            "fetchType=\(transaction.resourceFetchType)",
+            "protocol=\(transaction.networkProtocolName ?? "nil")",
+            interval("fetch", from: transaction.fetchStartDate, to: nil, startedAt: startedAt),
+            interval("dns", from: transaction.domainLookupStartDate, to: transaction.domainLookupEndDate, startedAt: startedAt),
+            interval("connect", from: transaction.connectStartDate, to: transaction.connectEndDate, startedAt: startedAt),
+            interval("tls", from: transaction.secureConnectionStartDate, to: transaction.secureConnectionEndDate, startedAt: startedAt),
+            interval("request", from: transaction.requestStartDate, to: transaction.requestEndDate, startedAt: startedAt),
+            interval("response", from: transaction.responseStartDate, to: transaction.responseEndDate, startedAt: startedAt)
+        ].compactMap { $0 }
+
+        return parts.joined(separator: " ")
+    }
+
+    private func interval(_ name: String, from startDate: Date?, to endDate: Date?, startedAt: Date) -> String? {
+        guard let startDate else {
+            return nil
+        }
+
+        let startMs = startDate.timeIntervalSince(startedAt) * 1_000
+        if let endDate {
+            let endMs = endDate.timeIntervalSince(startedAt) * 1_000
+            return "\(name)=\(startMs)-\(endMs)ms"
+        } else {
+            return "\(name)=\(startMs)ms"
+        }
+    }
+}
+
 extension DatadogSite {
     internal func flagsEndpoint(subdomain: String = "preview") -> URL {
         switch self {
@@ -207,40 +340,5 @@ extension DatadogSite {
             return URL(string: "https://\(subdomain).ff-cdn.datadoghq.com")!
         // swiftlint:enable force_unwrapping
         }
-    }
-}
-
-extension URLSession {
-    fileprivate func fetch(
-        _ request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
-    ) {
-        let startedAt = Date()
-        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask creating", startedAt: startedAt)
-        let task = self.dataTask(with: request) { data, response, error in
-            FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completion received", startedAt: startedAt)
-
-            if let error {
-                FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with error", startedAt: startedAt)
-                completion(.failure(error))
-                return
-            }
-
-            guard
-                let data,
-                let httpResponse = response as? HTTPURLResponse,
-                200..<300 ~= httpResponse.statusCode
-            else {
-                FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with bad response", startedAt: startedAt)
-                completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-
-            FlagAssignmentsFetcher.logFetchDiagnostic("URLSession completed with success", startedAt: startedAt)
-            completion(.success(data))
-        }
-        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resuming", startedAt: startedAt)
-        task.resume()
-        FlagAssignmentsFetcher.logFetchDiagnostic("URLSession dataTask resumed", startedAt: startedAt)
     }
 }
