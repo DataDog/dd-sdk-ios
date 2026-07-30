@@ -108,6 +108,47 @@ struct EmbeddedContentViewRecorderTests {
     }
 
     @available(iOS 13.0, *)
+    @Test("Uses the native hidden placeholder without discarding a previously recorded embedded slot")
+    func hiddenEmbeddedContentViewsUseNativePlaceholderAndKeepCachedSlot() throws {
+        // Given
+        let embeddedContentRecorder = EmbeddedContentViewRecorder(identifier: UUID())
+        let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        let context = ViewTreeRecordingContext.mockWith(coordinateSpace: embeddedContentView)
+        _ = embeddedContentRecorder.semantics(
+            of: embeddedContentView,
+            with: .mock(fixture: .visible()),
+            in: context
+        )
+        let cachedWireframeID = try #require(
+            context.embeddedContentViewCache.object(forKey: embeddedContentView)
+        )
+        let viewTreeRecorder = ViewTreeRecorder(
+            nodeRecorders: [
+                embeddedContentRecorder,
+                UIViewRecorder(identifier: UUID())
+            ]
+        )
+
+        // When
+        embeddedContentView.dd.sessionReplayPrivacyOverrides.hide = true
+        let nodes = viewTreeRecorder.record(embeddedContentView, in: context)
+        let wireframe = try #require(
+            nodes.first?.wireframesBuilder.buildWireframes(with: WireframesBuilder()).first
+        )
+
+        // Then
+        guard case let .placeholderWireframe(placeholder) = wireframe else {
+            Issue.record("Hidden embedded content views must produce native placeholder wireframes")
+            return
+        }
+        #expect(placeholder.label == "Hidden")
+        #expect(
+            context.embeddedContentViewCache.object(forKey: embeddedContentView) == cachedWireframeID
+        )
+    }
+
+    @available(iOS 13.0, *)
     @Test("Produces no visible wireframe for invisible embedded content views")
     func invisibleEmbeddedContentViewsProduceNoVisibleWireframe() throws {
         // Given

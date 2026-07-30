@@ -27,6 +27,10 @@ internal final class EmbeddedContentViewRecorder: NodeRecorder {
             return nil
         }
 
+        guard attributes.hide != true else {
+            return nil
+        }
+
         let wireframeID = context.ids.nodeID(view: view, nodeRecorder: self)
         context.embeddedContentViewCache.setObject(NSNumber(value: wireframeID), forKey: view)
 
