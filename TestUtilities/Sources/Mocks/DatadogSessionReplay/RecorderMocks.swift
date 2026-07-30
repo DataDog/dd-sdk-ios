@@ -66,7 +66,6 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 5),
             alpha: .mockRandom(min: 0, max: 1),
             isHidden: .mockRandom(),
-            intrinsicContentSize: .mockRandom(),
             textAndInputPrivacy: .mockRandom(),
             imagePrivacy: .mockRandom(),
             touchPrivacy: .mockRandom(),
@@ -84,7 +83,6 @@ extension ViewAttributes: AnyMockable, RandomMockable {
         layerCornerRadius: CGFloat = .mockAny(),
         alpha: CGFloat = .mockAny(),
         isHidden: Bool = .mockAny(),
-        intrinsicContentSize: CGSize = .mockAny(),
         overrides: PrivacyOverrides = .mockAny()
     ) -> ViewAttributes {
         return .init(
@@ -96,7 +94,6 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: layerCornerRadius,
             alpha: alpha,
             isHidden: isHidden,
-            intrinsicContentSize: intrinsicContentSize,
             textAndInputPrivacy: overrides.textAndInputPrivacy,
             imagePrivacy: overrides.imagePrivacy,
             touchPrivacy: overrides.touchPrivacy,
@@ -186,7 +183,6 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             layerCornerRadius: .mockRandom(min: 0, max: 4),
             alpha: alpha,
             isHidden: isHidden,
-            intrinsicContentSize: frame.size,
             textAndInputPrivacy: nil,
             imagePrivacy: nil,
             touchPrivacy: nil,
