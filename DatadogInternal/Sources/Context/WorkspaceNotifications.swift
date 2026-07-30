@@ -16,22 +16,6 @@ public enum WorkspaceNotifications {
         NSWorkspace.willSleepNotification
     }
 
-    public static var screensDidSleep: Notification.Name {
-        NSWorkspace.screensDidSleepNotification
-    }
-
-    public static var screensDidWake: Notification.Name {
-        NSWorkspace.screensDidWakeNotification
-    }
-
-    public static var sessionDidBecomeActive: Notification.Name {
-        NSWorkspace.sessionDidBecomeActiveNotification
-    }
-
-    public static var sessionDidResignActive: Notification.Name {
-        NSWorkspace.sessionDidResignActiveNotification
-    }
-
     public static var didActivateApplication: Notification.Name {
         NSWorkspace.didActivateApplicationNotification
     }
