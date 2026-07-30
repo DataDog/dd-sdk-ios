@@ -9,9 +9,15 @@ import TestUtilities
 import DatadogInternal
 
 private extension AppState {
+    #if os(macOS)
+    static var randomForeground: AppState {
+        return .active
+    }
+    #else
     static var randomForeground: AppState {
         return [.active, .inactive].randomElement()!
     }
+    #endif
 }
 
 class AppStateHistoryTests: XCTestCase {
