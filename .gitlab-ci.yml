@@ -33,6 +33,18 @@ default:
   tags:
     - macos:sequoia-arm64
     - specific:true
+  interruptible: true # a pending/running job may be canceled by a newer push to the same branch
+
+# On any branch other than a known stable branch, cancel interruptible jobs from
+# the previous pipeline when a new commit is pushed to that branch.
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH !~ /^(develop|master|dogfooding|release\/.*|hotfix\/.*)$/'
+      auto_cancel:
+        on_new_commit: interruptible
+    - when: always # develop, master, dogfooding, release/*, hotfix/*: never auto-canceled
+      auto_cancel:
+        on_new_commit: none
 
 # ┌───────────────┐
 # │ Utility jobs: │
@@ -457,6 +469,7 @@ Benchmark Test (upload to s8s):
 
 Dogfood (Shopist):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -469,6 +482,7 @@ Dogfood (Shopist):
 
 Dogfood (Datadog app):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -492,6 +506,7 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
+  interruptible: false
   rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
@@ -510,7 +525,8 @@ Build Artifacts:
 
 Publish GH Asset:
   stage: release-publish
-  rules: 
+  interruptible: false
+  rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
@@ -524,6 +540,7 @@ Publish GH Asset:
 
 Publish CP podspecs (internal):
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-job, rules]
@@ -537,6 +554,7 @@ Publish CP podspecs (internal):
 
 .publish-dependent-podspec:
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
