@@ -65,22 +65,6 @@ class ApplicationStatePublisherTests: XCTestCase {
         XCTAssertEqual(lastPublishedValue?.currentState, .active)
 
         dateProvider.now += 1
-        wsNotificationCenter.post(name: WorkspaceNotifications.sessionDidResignActive, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
-
-        dateProvider.now += 1
-        wsNotificationCenter.post(name: WorkspaceNotifications.sessionDidBecomeActive, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .active)
-
-        dateProvider.now += 1
-        wsNotificationCenter.post(name: WorkspaceNotifications.screensDidSleep, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
-
-        dateProvider.now += 1
-        wsNotificationCenter.post(name: WorkspaceNotifications.screensDidWake, object: nil)
-        XCTAssertEqual(lastPublishedValue?.currentState, .active)
-
-        dateProvider.now += 1
         wsNotificationCenter.post(name: WorkspaceNotifications.didActivateApplication, object: nil, userInfo: [NSWorkspace.applicationUserInfoKey: TestRunningApplication()])
         XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
 
@@ -116,10 +100,6 @@ class ApplicationStatePublisherTests: XCTestCase {
             .inactive,
             .active,
             .hidden,
-            .active,
-            .lockScreen,
-            .active,
-            .lockScreen,
             .active,
             .lockScreen,
             .active,

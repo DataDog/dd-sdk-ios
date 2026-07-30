@@ -84,6 +84,8 @@ static void recordPreMainDate(void) {
     didFinishLaunchingNotificationName = UIApplicationDidFinishLaunchingNotification;
 #elif TARGET_OS_WATCH
     didFinishLaunchingNotificationName = WKApplicationDidFinishLaunchingNotification;
+#elif TARGET_OS_OSX
+    didFinishLaunchingNotificationName = NSApplicationDidFinishLaunchingNotification;
 #endif
 
     if (didFinishLaunchingNotificationName) {
