@@ -697,7 +697,10 @@ extension RUMViewScope {
             } else {
                 writer.write(
                     value: event,
-                    metadata: event.metadata(viewIndexInSession: viewIndexInSession),
+                    metadata: event.metadata(
+                        viewIndexInSession: viewIndexInSession,
+                        isDeltaBaseline: dependencies.featureFlags[.viewUpdates]
+                    ),
                     completion: completionHandler
                 )
                 // Only promote to baseline if the event will not be dropped by RUMViewEventsFilter.

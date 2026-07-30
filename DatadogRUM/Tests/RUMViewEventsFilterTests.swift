@@ -217,6 +217,39 @@ final class RUMViewEventsFilterTests: XCTestCase {
         XCTAssertTrue(hasB2, "Event B.2 with accessibility should be kept")
     }
 
+    // MARK: - Delta baseline (viewUpdates) filtering
+
+    func testFilterKeepsAllDeltaBaselineEventsForTheSameView() throws {
+        // Two resync full events for the same view within one batch — e.g. the view emitted enough
+        // updates to hit `maxConsecutiveViewUpdates` twice before the batch was uploaded. Both are
+        // required baselines for the deltas computed against them and must NOT be collapsed like
+        // legacy full-event duplicates would be.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: nil), // delta against A.1
+            try Event(data: "A.7", viewMetadata: .mock(id: "A", documentVersion: 7, isDeltaBaseline: true)) // resync
+        ]
+
+        let actual = sut.filter(events: events)
+
+        XCTAssertEqual(actual, events, "Delta baseline events must never be collapsed — each is a required anchor for its own following deltas")
+    }
+
+    func testFilterStillCollapsesRedundantLegacyFullEventsWhenNotDeltaBaseline() throws {
+        // Legacy (non-viewUpdates) full-event snapshots remain subject to redundant-event collapsing.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: false)),
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, isDeltaBaseline: false))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.2", viewMetadata: .mock(id: "A", documentVersion: 2, isDeltaBaseline: false))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
     // MARK: - Error handling and telemetry
 
     func testFilterWhenInvalidMetadata() throws {
@@ -272,9 +305,17 @@ extension RUMViewEvent.Metadata {
         documentVersion: Int64 = .mockAny(),
         duration: Int64? = nil,
         indexInSession: Int? = nil,
-        hasAccessibility: Bool? = nil
+        hasAccessibility: Bool? = nil,
+        isDeltaBaseline: Bool? = nil
     ) -> RUMViewEvent.Metadata {
-        return RUMViewEvent.Metadata(id: id, documentVersion: documentVersion, hasAccessibility: hasAccessibility, duration: duration, indexInSession: indexInSession)
+        return RUMViewEvent.Metadata(
+            id: id,
+            documentVersion: documentVersion,
+            hasAccessibility: hasAccessibility,
+            duration: duration,
+            indexInSession: indexInSession,
+            isDeltaBaseline: isDeltaBaseline
+        )
     }
 }
 
