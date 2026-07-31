@@ -56,4 +56,25 @@ final class FlagsTests: XCTestCase {
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }
+
+    func testFlushFlushesRegisteredClients() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(in: core)
+        let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        let repository = FlagsRepositoryMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: ExposureLoggerMock(),
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+        flags.clientRegistry.register(client, named: "client")
+
+        // When
+        flags.flush()
+
+        // Then
+        XCTAssertEqual(repository.flushCallsCount, 1)
+    }
 }

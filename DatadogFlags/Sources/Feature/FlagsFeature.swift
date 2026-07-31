@@ -91,5 +91,6 @@ internal struct FlagsFeature: DatadogRemoteFeature {
 extension FlagsFeature: Flushable {
     func flush() {
         evaluationAggregator?.sendEvaluations()
+        clientRegistry.flushClients()
     }
 }

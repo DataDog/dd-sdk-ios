@@ -144,6 +144,49 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(dataStore.waitForWriteFinished(timeout: 1))
     }
 
+    func testFlush_whenCacheWriteIsBlocked_waitsForCacheWrite() {
+        // Given
+        let dataStore = BlockingWriteDataStore()
+        let cacheWriteStarted = expectation(description: "cache write started")
+        dataStore.onSetValueStarted = {
+            cacheWriteStarted.fulfill()
+        }
+        defer {
+            dataStore.resumeWrite()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+
+        let setContextCompleted = expectation(description: "set context completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            setContextCompleted.fulfill()
+        }
+        wait(for: [setContextCompleted], timeout: 1)
+
+        let flushSemaphore = DispatchSemaphore(value: 0)
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.flush()
+            flushSemaphore.signal()
+        }
+        wait(for: [cacheWriteStarted], timeout: 1)
+
+        // Then
+        XCTAssertEqual(flushSemaphore.wait(timeout: .now() + 0.05), .timedOut)
+
+        dataStore.resumeWrite()
+        XCTAssertEqual(flushSemaphore.wait(timeout: .now() + 1), .success)
+        XCTAssertTrue(dataStore.isWriteFinished)
+    }
+
     func testReset_whenCacheWriteIsBlocked_doesNotLeaveStaleFlagsOnDisk() {
         // Given
         let clientName = "client"

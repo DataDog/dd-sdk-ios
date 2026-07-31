@@ -24,6 +24,8 @@ internal protocol FlagsRepositoryProtocol {
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
+
+    func flush()
 }
 
 internal final class FlagsRepository {
@@ -326,5 +328,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             flagsDataStore.removeFlagsData(forClientNamed: clientName)
         }
         stateManager.updateState(.notReady)
+    }
+
+    func flush() {
+        cachePersistenceQueue.sync {}
     }
 }
