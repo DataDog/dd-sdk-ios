@@ -102,9 +102,6 @@ public struct SessionReplayViewAttributes: Equatable {
     /// Original view's `.isHidden`.
     var isHidden: Bool
 
-    /// Original view's `.intrinsicContentSize`.
-    var intrinsicContentSize: CGSize
-
     /// Values copied from privacy overrides, if the view has privacy overrides,
     /// which take precedence over global masking privacy levels.
     var textAndInputPrivacy: TextAndInputPrivacyLevel?
@@ -132,7 +129,6 @@ extension ViewAttributes {
         self.layerCornerRadius = view.layer.cornerRadius
         self.alpha = view.alpha
         self.isHidden = view.isHidden
-        self.intrinsicContentSize = view.intrinsicContentSize
         self.textAndInputPrivacy = overrides?.textAndInputPrivacy
         self.imagePrivacy = overrides?.imagePrivacy
         self.touchPrivacy = overrides?.touchPrivacy
