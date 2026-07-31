@@ -8,8 +8,8 @@ import XCTest
 import TestUtilities
 @testable import DatadogInternal
 
-/// Direct unit tests for `sanitizeForTelemetry(_:)` - the central fallback used by `Telemetry.error(_:)`
-/// to sanitize any `Error` before it is forwarded to Datadog's internal telemetry.
+/// Direct unit tests for `TelemetrySanitizedError.init(sanitizing:)` - the central fallback used by
+/// `Telemetry.error(_:)` to sanitize any `Error` before it is forwarded to Datadog's internal telemetry.
 class TelemetrySanitizableErrorTests: XCTestCase {
     // MARK: - `TelemetrySanitizableError` conformance
 
@@ -22,7 +22,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
             }
         }
 
-        let sanitized = sanitizeForTelemetry(SanitizableError())
+        let sanitized = TelemetrySanitizedError(sanitizing: SanitizableError())
 
         XCTAssertEqual(sanitized.kind, "custom-kind")
         XCTAssertEqual(sanitized.message, "custom-message")
@@ -49,7 +49,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeEncodingError(encoding: Double.nan)
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
@@ -63,7 +63,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeEncodingError(encoding: Model(value: .infinity))
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
@@ -78,7 +78,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeEncodingError(encoding: Outer(inner: Inner(value: .infinity)))
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
@@ -114,7 +114,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeDecodingError(decoding: "{\"count\": \"\(sensitiveValue)\"}")
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.typeMismatch")
@@ -130,7 +130,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeDecodingError(decoding: "{\"inner\": {\"count\": \"\(sensitiveValue)\"}}", as: NestedResponse.self)
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.typeMismatch")
@@ -144,7 +144,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeDecodingError(decoding: "{\"count\": null}")
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.valueNotFound")
@@ -157,7 +157,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeDecodingError(decoding: "{}")
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.keyNotFound")
@@ -171,7 +171,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         let error = forgeDecodingError(decoding: "{\"count\": 1, \"extra\": \"\(sensitiveValue)\" not-valid-json-after-this")
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.dataCorrupted")
@@ -191,7 +191,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         )
 
         // When
-        let sanitized = sanitizeForTelemetry(error)
+        let sanitized = TelemetrySanitizedError(sanitizing: error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "NSError")
@@ -208,7 +208,7 @@ class TelemetrySanitizableErrorTests: XCTestCase {
         }
 
         // When
-        let sanitized = sanitizeForTelemetry(CustomError())
+        let sanitized = TelemetrySanitizedError(sanitizing: CustomError())
 
         // Then
         XCTAssertEqual(sanitized.kind, "CustomError")

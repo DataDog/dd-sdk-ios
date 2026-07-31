@@ -16,7 +16,7 @@ import Foundation
 ///   protocol - a conformance is a single, global fact about a (Type, Protocol) pair, so a second,
 ///   conflicting conformance declared elsewhere would be silently discarded. For some foreign types
 ///   (e.g. `EncodingError`, `DecodingError`, `NSError`), `Telemetry` instead applies its own internal
-///   sanitization with sensible defaults, handled centrally in `sanitizeForTelemetry(_:)`.
+///   sanitization with sensible defaults, handled centrally in `TelemetrySanitizedError.init(sanitizing:)`.
 public protocol TelemetrySanitizableError {
     func sanitize() -> TelemetrySanitizedError
 }
@@ -33,40 +33,44 @@ public struct TelemetrySanitizedError {
         self.stack = stack
     }
 
-    /// Describes `error` by its type name and default string interpolation.
+    /// Describes `error` by its type name and default string interpolation, without any sanitization.
     ///
-    /// - Important: Only use this when `error`'s default `"\(error)"` description is known to be
-    ///   safe - e.g. an enum whose cases carry no customer data. Never use it for a type that might
-    ///   wrap arbitrary or customer-supplied values.
-    public init(describing error: Error) {
+    /// - Important: `unsafely` means what it says - only use this when `error`'s default `"\(error)"`
+    ///   description is known to be safe (e.g. an enum whose cases carry no customer data). Never use it
+    ///   for a type that might wrap arbitrary or customer-supplied values; use `init(sanitizing:)` instead.
+    public init(unsafelyDescribing error: Error) {
         self.init(kind: "\(type(of: error))", message: "\(error)")
     }
-}
 
-/// Returns a `TelemetrySanitizedError` describing `error`, safe to forward to internal telemetry.
-///
-/// If `error` conforms to `TelemetrySanitizableError`, its own `sanitize()` is used as-is. Otherwise, it
-/// falls back to Telemetry's default sanitization: common types (`EncodingError`, `DecodingError`,
-/// `NSError`) get a safe, dedicated summary, while everything else is stripped down to its type name.
-public func sanitizeForTelemetry(_ error: Error) -> TelemetrySanitizedError {
-    if let sanitizable = error as? TelemetrySanitizableError {
-        return sanitizable.sanitize()
+    /// Sanitizes `error`, safe to forward to internal telemetry.
+    ///
+    /// If `error` conforms to `TelemetrySanitizableError`, its own `sanitize()` is used as-is. Otherwise, it
+    /// falls back to Telemetry's default sanitization: common types (`EncodingError`, `DecodingError`,
+    /// `NSError`) get a safe, dedicated summary, while everything else is stripped down to its type name.
+    public init(sanitizing error: Error) {
+        if let sanitizable = error as? TelemetrySanitizableError {
+            self = sanitizable.sanitize()
+            return
+        }
+        if let encodingError = error as? EncodingError {
+            self = sanitize(encodingError)
+            return
+        }
+        if let decodingError = error as? DecodingError {
+            self = sanitize(decodingError)
+            return
+        }
+        if isNSErrorOrItsSubclass(error) {
+            self = sanitize(error as NSError)
+            return
+        }
+        let kind = "\(type(of: error))"
+        self.init(
+            kind: kind,
+            message: "\(kind) does not conform to TelemetrySanitizableError — reporting type name only",
+            stack: "Implement TelemetrySanitizableError on \(kind) to report richer, safe context."
+        )
     }
-    if let encodingError = error as? EncodingError {
-        return sanitize(encodingError)
-    }
-    if let decodingError = error as? DecodingError {
-        return sanitize(decodingError)
-    }
-    if isNSErrorOrItsSubclass(error) {
-        return sanitize(error as NSError)
-    }
-    let kind = "\(type(of: error))"
-    return TelemetrySanitizedError(
-        kind: kind,
-        message: "\(kind) does not conform to TelemetrySanitizableError — reporting type name only",
-        stack: "Implement TelemetrySanitizableError on \(kind) to report richer, safe context."
-    )
 }
 
 /// Sanitizes `EncodingError` for telemetry - only the failing case and how deeply nested the offending

@@ -26,7 +26,7 @@ extension DataStoreFileWritingError: TelemetrySanitizableError {
         }
         return TelemetrySanitizedError(
             kind: "DataStoreFileWritingError",
-            message: "\(kind)(\(sanitizeForTelemetry(wrapped).message))"
+            message: "\(kind)(\(TelemetrySanitizedError(sanitizing: wrapped).message))"
         )
     }
 }

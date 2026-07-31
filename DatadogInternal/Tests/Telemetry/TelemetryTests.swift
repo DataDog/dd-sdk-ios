@@ -152,7 +152,7 @@ class TelemetryTests: XCTestCase {
     }
 
     // `DecodingError` doesn't conform to `TelemetrySanitizableError`, so it goes through
-    // `sanitizeForTelemetry(_:)`'s dedicated `DecodingError` branch - only `context.debugDescription`/
+    // `TelemetrySanitizedError.init(sanitizing:)`'s dedicated `DecodingError` branch - only `context.debugDescription`/
     // `codingPath` must be reported, never the raw decoded value.
     func testSendingErrorTelemetry_withDecodingError() throws {
         // Given
