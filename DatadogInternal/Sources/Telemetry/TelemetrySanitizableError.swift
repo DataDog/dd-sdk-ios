@@ -69,8 +69,11 @@ public func sanitizeForTelemetry(_ error: Error) -> TelemetrySanitizedError {
     )
 }
 
-/// Sanitizes `EncodingError` for telemetry - only `context.debugDescription`/`codingPath`, never the raw
-/// offending value that `EncodingError.invalidValue(_:_:)` embeds as its first associated value.
+/// Sanitizes `EncodingError` for telemetry - only the failing case and how deeply nested the offending
+/// value was. Never `context.debugDescription` or `codingPath`: `EncodingError.Context` is a plain struct
+/// that whatever `Encodable` threw the error gets to fill in - including a customer-supplied `Encodable`
+/// wrapped in `AnyEncodable` (e.g. a custom RUM attribute) - so both fields must be treated as untrusted,
+/// not just the value `invalidValue(_:_:)` embeds as its first associated value.
 private func sanitize(_ error: EncodingError) -> TelemetrySanitizedError {
     let context: EncodingError.Context
     let kind: String
@@ -84,38 +87,42 @@ private func sanitize(_ error: EncodingError) -> TelemetrySanitizedError {
     }
     return TelemetrySanitizedError(
         kind: kind,
-        message: context.debugDescription,
-        stack: describe(codingPath: context.codingPath)
+        message: "value could not be encoded",
+        stack: describe(depthOf: context.codingPath)
     )
 }
 
-/// Sanitizes `DecodingError` for telemetry - only `context.debugDescription`/`codingPath`, never the raw
-/// offending value that several `DecodingError` cases embed as their first associated value.
+/// Sanitizes `DecodingError` for telemetry - only the failing case and how deeply nested the offending
+/// value was. Never `context.debugDescription` or `codingPath`: `DecodingError.Context` is a plain struct
+/// that whatever `Decodable` threw the error gets to fill in, so both fields must be treated as untrusted,
+/// not just the raw value some `DecodingError` cases embed as their first associated value.
 private func sanitize(_ error: DecodingError) -> TelemetrySanitizedError {
     let context: DecodingError.Context
     let kind: String
+    let message: String
     switch error {
     case .typeMismatch(_, let ctx):
         context = ctx
         kind = "DecodingError.typeMismatch"
+        message = "decoded value had an unexpected type"
     case .valueNotFound(_, let ctx):
         context = ctx
         kind = "DecodingError.valueNotFound"
+        message = "expected value was missing"
     case .keyNotFound(_, let ctx):
         context = ctx
         kind = "DecodingError.keyNotFound"
+        message = "expected key was missing"
     case .dataCorrupted(let ctx):
         context = ctx
         kind = "DecodingError.dataCorrupted"
+        message = "data was corrupted"
     @unknown default:
         context = DecodingError.Context(codingPath: [], debugDescription: "unknown DecodingError case")
         kind = "DecodingError"
+        message = "unknown decoding failure"
     }
-    return TelemetrySanitizedError(
-        kind: kind,
-        message: context.debugDescription,
-        stack: describe(codingPath: context.codingPath)
-    )
+    return TelemetrySanitizedError(kind: kind, message: message, stack: describe(depthOf: context.codingPath))
 }
 
 /// Sanitizes `NSError` for telemetry - only `domain`/`code`, never `userInfo`, which can carry
@@ -124,6 +131,13 @@ private func sanitize(_ error: NSError) -> TelemetrySanitizedError {
     TelemetrySanitizedError(kind: "\(type(of: error))", message: "domain: \(error.domain), code: \(error.code)")
 }
 
-private func describe(codingPath: [CodingKey]) -> String? {
-    codingPath.isEmpty ? nil : codingPath.map { $0.stringValue }.joined(separator: ".")
+/// Describes how deeply nested the offending value was, without naming any of the coding keys along the
+/// way - a key can be a dynamic, customer-supplied name (e.g. a custom attribute or an HTTP header name
+/// encoded through a `[String: Any]` container), so reporting `codingPath` verbatim would risk the same
+/// class of leak this sanitizer exists to prevent.
+private func describe(depthOf codingPath: [CodingKey]) -> String? {
+    guard !codingPath.isEmpty else {
+        return nil
+    }
+    return codingPath.count == 1 ? "1 level deep" : "\(codingPath.count) levels deep"
 }

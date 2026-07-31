@@ -10,9 +10,6 @@ import TestUtilities
 
 /// Direct unit tests for `sanitizeForTelemetry(_:)` - the central fallback used by `Telemetry.error(_:)`
 /// to sanitize any `Error` before it is forwarded to Datadog's internal telemetry.
-///
-/// These tests construct `EncodingError`/`DecodingError` cases directly rather than forging them through
-/// a real `JSONEncoder`/`JSONDecoder` failure - `TelemetryTests.swift` covers that end-to-end path.
 class TelemetrySanitizableErrorTests: XCTestCase {
     // MARK: - `TelemetrySanitizableError` conformance
 
@@ -34,99 +31,159 @@ class TelemetrySanitizableErrorTests: XCTestCase {
 
     // MARK: - `EncodingError`
 
-    func testSanitizingEncodingErrorInvalidValue_neverReportsTheRawOffendingValue() {
+    private func forgeEncodingError<T: Encodable>(encoding value: T, file: StaticString = #filePath, line: UInt = #line) -> EncodingError {
+        do {
+            _ = try JSONEncoder().encode(value)
+            XCTFail("Expected encoding to fail", file: file, line: line)
+            fatalError("Expected encoding to fail")
+        } catch let error as EncodingError {
+            return error
+        } catch {
+            XCTFail("Expected an EncodingError, got \(error)", file: file, line: line)
+            fatalError("Expected an EncodingError, got \(error)")
+        }
+    }
+
+    func testSanitizingEncodingErrorInvalidValue_forTopLevelNonConformingFloat_neverReportsFoundationsDebugDescription() {
         // Given
-        // The raw offending value is `EncodingError.invalidValue(_:_:)`'s first associated value - the one
-        // that leaks in full when an `EncodingError` is described via `"\(error)"`.
-        let sensitiveValue = "sensitive-value-\(String.mockRandom(length: 16))"
-        let error = EncodingError.invalidValue(
-            sensitiveValue,
-            EncodingError.Context(codingPath: [], debugDescription: "cannot encode value")
-        )
+        let error = forgeEncodingError(encoding: Double.nan)
 
         // When
         let sanitized = sanitizeForTelemetry(error)
 
         // Then
         XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
-        XCTAssertEqual(sanitized.message, "cannot encode value")
+        XCTAssertEqual(sanitized.message, "value could not be encoded")
         XCTAssertNil(sanitized.stack, "stack must be nil when codingPath is empty")
-        XCTAssertFalse(sanitized.message.contains(sensitiveValue))
     }
 
-    func testSanitizingEncodingErrorInvalidValue_withNonEmptyCodingPath_reportsItAsStack() {
+    func testSanitizingEncodingErrorInvalidValue_forNestedNonConformingFloat_reportsCodingPathDepthOnly() {
         // Given
-        let error = EncodingError.invalidValue(
-            "value",
-            EncodingError.Context(codingPath: [DynamicCodingKey("foo"), DynamicCodingKey("bar")], debugDescription: "cannot encode value")
-        )
+        struct Model: Encodable { let value: Double }
+        let error = forgeEncodingError(encoding: Model(value: .infinity))
 
         // When
         let sanitized = sanitizeForTelemetry(error)
 
         // Then
-        XCTAssertEqual(sanitized.stack, "foo.bar")
+        XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
+        XCTAssertEqual(sanitized.message, "value could not be encoded")
+        XCTAssertEqual(sanitized.stack, "1 level deep", "codingPath must be reported as depth, never the literal key name")
+    }
+
+    func testSanitizingEncodingErrorInvalidValue_forDeeplyNestedNonConformingFloat_reportsCodingPathDepthOnly() {
+        // Given
+        struct Inner: Encodable { let value: Double }
+        struct Outer: Encodable { let inner: Inner }
+        let error = forgeEncodingError(encoding: Outer(inner: Inner(value: .infinity)))
+
+        // When
+        let sanitized = sanitizeForTelemetry(error)
+
+        // Then
+        XCTAssertEqual(sanitized.kind, "EncodingError.invalidValue")
+        XCTAssertEqual(sanitized.message, "value could not be encoded")
+        XCTAssertEqual(sanitized.stack, "2 levels deep", "codingPath must be reported as depth, never the literal key names")
     }
 
     // MARK: - `DecodingError`
 
-    func testSanitizingDecodingErrorTypeMismatch() {
-        let error = DecodingError.typeMismatch(
-            Int.self,
-            DecodingError.Context(codingPath: [], debugDescription: "expected Int, found a string")
-        )
+    private struct Response: Decodable { let count: Int }
+    private struct NestedResponse: Decodable { let inner: Response }
 
+    private func forgeDecodingError<T: Decodable>(decoding json: String, as type: T.Type, file: StaticString = #filePath, line: UInt = #line) -> DecodingError {
+        do {
+            _ = try JSONDecoder().decode(type, from: Data(json.utf8))
+            XCTFail("Expected decoding to fail", file: file, line: line)
+            fatalError("Expected decoding to fail")
+        } catch let error as DecodingError {
+            return error
+        } catch {
+            XCTFail("Expected a DecodingError, got \(error)", file: file, line: line)
+            fatalError("Expected a DecodingError, got \(error)")
+        }
+    }
+
+    private func forgeDecodingError(decoding json: String, file: StaticString = #filePath, line: UInt = #line) -> DecodingError {
+        forgeDecodingError(decoding: json, as: Response.self, file: file, line: line)
+    }
+
+    func testSanitizingDecodingErrorTypeMismatch() {
+        // Given
+        let sensitiveValue = "sensitive-value-\(String.mockRandom(length: 16))"
+        let error = forgeDecodingError(decoding: "{\"count\": \"\(sensitiveValue)\"}")
+
+        // When
         let sanitized = sanitizeForTelemetry(error)
 
+        // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.typeMismatch")
-        XCTAssertEqual(sanitized.message, "expected Int, found a string")
-        XCTAssertNil(sanitized.stack)
+        XCTAssertEqual(sanitized.message, "decoded value had an unexpected type")
+        XCTAssertEqual(sanitized.stack, "1 level deep", "codingPath must be reported as depth, never the literal key name")
+        XCTAssertFalse(sanitized.message.contains(sensitiveValue))
+        XCTAssertFalse((sanitized.stack ?? "").contains(sensitiveValue))
+    }
+
+    func testSanitizingDecodingErrorTypeMismatch_whenDeeplyNested_reportsCodingPathDepthOnly() {
+        // Given
+        let sensitiveValue = "sensitive-value-\(String.mockRandom(length: 16))"
+        let error = forgeDecodingError(decoding: "{\"inner\": {\"count\": \"\(sensitiveValue)\"}}", as: NestedResponse.self)
+
+        // When
+        let sanitized = sanitizeForTelemetry(error)
+
+        // Then
+        XCTAssertEqual(sanitized.kind, "DecodingError.typeMismatch")
+        XCTAssertEqual(sanitized.message, "decoded value had an unexpected type")
+        XCTAssertEqual(sanitized.stack, "2 levels deep", "codingPath must be reported as depth, never the literal key names")
+        XCTAssertFalse((sanitized.stack ?? "").contains(sensitiveValue))
     }
 
     func testSanitizingDecodingErrorValueNotFound() {
-        let error = DecodingError.valueNotFound(
-            String.self,
-            DecodingError.Context(codingPath: [DynamicCodingKey("foo")], debugDescription: "expected value, found null")
-        )
+        // Given
+        let error = forgeDecodingError(decoding: "{\"count\": null}")
 
+        // When
         let sanitized = sanitizeForTelemetry(error)
 
+        // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.valueNotFound")
-        XCTAssertEqual(sanitized.message, "expected value, found null")
-        XCTAssertEqual(sanitized.stack, "foo")
+        XCTAssertEqual(sanitized.message, "expected value was missing")
+        XCTAssertEqual(sanitized.stack, "1 level deep")
     }
 
     func testSanitizingDecodingErrorKeyNotFound() {
-        let error = DecodingError.keyNotFound(
-            DynamicCodingKey("foo"),
-            DecodingError.Context(codingPath: [], debugDescription: "key not found")
-        )
+        // Given
+        let error = forgeDecodingError(decoding: "{}")
 
+        // When
         let sanitized = sanitizeForTelemetry(error)
 
+        // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.keyNotFound")
-        XCTAssertEqual(sanitized.message, "key not found")
-        XCTAssertNil(sanitized.stack)
+        XCTAssertEqual(sanitized.message, "expected key was missing")
+        XCTAssertNil(sanitized.stack, "codingPath is empty when the missing key is at the top level")
     }
 
     func testSanitizingDecodingErrorDataCorrupted() {
-        let error = DecodingError.dataCorrupted(
-            DecodingError.Context(codingPath: [DynamicCodingKey("foo"), DynamicCodingKey("bar")], debugDescription: "data corrupted")
-        )
+        // Given
+        let sensitiveValue = "sensitive-payload-\(String.mockRandom(length: 16))"
+        let error = forgeDecodingError(decoding: "{\"count\": 1, \"extra\": \"\(sensitiveValue)\" not-valid-json-after-this")
 
+        // When
         let sanitized = sanitizeForTelemetry(error)
 
+        // Then
         XCTAssertEqual(sanitized.kind, "DecodingError.dataCorrupted")
-        XCTAssertEqual(sanitized.message, "data corrupted")
-        XCTAssertEqual(sanitized.stack, "foo.bar")
+        XCTAssertEqual(sanitized.message, "data was corrupted")
+        XCTAssertNil(sanitized.stack)
+        XCTAssertFalse(sanitized.message.contains(sensitiveValue))
     }
 
     // MARK: - `NSError`
 
     func testSanitizingNSError_reportsOnlyDomainAndCode() {
         // Given
-        // `userInfo` can carry customer-supplied data (e.g. `NSLocalizedDescriptionKey`), so it must
-        // never be reported - only `domain`/`code`.
         let error = NSError(
             domain: "custom-domain",
             code: 10,
