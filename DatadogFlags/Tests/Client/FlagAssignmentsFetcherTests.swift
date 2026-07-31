@@ -37,7 +37,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(
             capturedRequest?.url?.absoluteString,
             "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
@@ -68,7 +68,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
     }
 
     func testFlagAssignmentsInvalidResponse() {
@@ -91,7 +91,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
     }
 
     func testFlagAssignmentsCustomEndpoint() {
@@ -116,9 +116,37 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(capturedRequest?.url, customEndpoint)
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
+    }
+
+    func testFlagAssignmentsFetchRunsOffContextQueue() {
+        // Given
+        let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
+        let assignmentFetchQueue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
+        let featureScope = QueuedFeatureScope(contextQueue: contextQueue)
+        var wasFetchCalledOnContextQueue: Bool?
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: [:],
+            featureScope: featureScope,
+            assignmentFetchQueue: assignmentFetchQueue,
+            fetch: { _, completion in
+                wasFetchCalledOnContextQueue = featureScope.isOnContextQueue
+                completion(.success(.mockAnyFlagAssignmentsResponse()))
+            }
+        )
+        let completed = expectation(description: "completed")
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(wasFetchCalledOnContextQueue, false)
     }
 
     func testFlagsEndpointForAllSites() {
@@ -136,4 +164,38 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
         }
     }
+}
+
+private final class QueuedFeatureScope: FeatureScope, @unchecked Sendable {
+    private let contextQueue: DispatchQueue
+    private let contextQueueKey = DispatchSpecificKey<Void>()
+    private let contextMock: DatadogContext
+
+    var isOnContextQueue: Bool {
+        DispatchQueue.getSpecific(key: contextQueueKey) != nil
+    }
+
+    init(contextQueue: DispatchQueue, context: DatadogContext = .mockAny()) {
+        self.contextQueue = contextQueue
+        self.contextMock = context
+        self.contextQueue.setSpecific(key: contextQueueKey, value: ())
+    }
+
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {}
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        contextQueue.async {
+            block(self.contextMock)
+        }
+    }
+
+    var dataStore: DataStore { NOPDataStore() }
+
+    var telemetry: Telemetry { NOPTelemetry() }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+
+    func set(anonymousId: String?) {}
 }
