@@ -8,6 +8,7 @@ import Foundation
 @testable import DatadogCore
 @testable import DatadogRUM
 
+@MainActor
 extension AppRunStep {
     // MARK: - App Lifecycle
 

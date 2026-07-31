@@ -52,7 +52,7 @@ public typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
 public typealias DDColor = UIColor
 public typealias DDFont = UIFont
 
-#if canImport(SwiftUI)
+#if canImport(SwiftUI) && (os(iOS) || os(tvOS) || os(visionOS))
 import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
