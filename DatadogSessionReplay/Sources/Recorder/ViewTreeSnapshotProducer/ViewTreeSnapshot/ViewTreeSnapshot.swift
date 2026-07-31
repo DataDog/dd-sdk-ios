@@ -28,6 +28,8 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
     /// A set of webview slot IDs recorded for this and past snapshots.
     let webViewSlotIDs: Set<Int>
+    /// Embedded content slots recorded for this and past snapshots.
+    let embeddedContentSlots: [WireframeID: String]
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes

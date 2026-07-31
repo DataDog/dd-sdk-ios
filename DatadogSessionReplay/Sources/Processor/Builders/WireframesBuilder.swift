@@ -26,19 +26,27 @@ public class SessionReplayWireframesBuilder {
     private(set) var resources: [Resource]
     /// The cache of webview slot IDs in memory during snapshot.
     private var webViewSlotIDs: Set<Int>
+    /// The embedded content slots in memory during snapshot.
+    private var embeddedContentSlots: [WireframeID: String]
     /// The heatmap identifier that will be attached to the wireframes.
     var heatmapIdentifier: HeatmapIdentifier?
 
     /// Creates a builder for builder wireframes in snapshot processing.
     ///
-    /// The builder takes optional webview slot IDs in cache that can be updated
+    /// The builder takes optional slot IDs in cache that can be updated
     /// while traversing the node. The cache will be used to create wireframes
-    /// that are not visible be still need to be kept by the player.
+    /// that are not visible but still need to be kept by the player.
     ///
     /// - Parameter webviewSlotIDs: The webview slot IDs in memory during snapshot.
-    init(resources: [Resource] = [], webViewSlotIDs: Set<Int> = []) {
+    /// - Parameter embeddedContentSlots: The embedded content slots in memory during snapshot.
+    init(
+        resources: [Resource] = [],
+        webViewSlotIDs: Set<Int> = [],
+        embeddedContentSlots: [WireframeID: String] = [:]
+    ) {
         self.resources = resources
         self.webViewSlotIDs = webViewSlotIDs
+        self.embeddedContentSlots = embeddedContentSlots
     }
 }
 
@@ -239,6 +247,39 @@ extension SessionReplayWireframesBuilder {
         return .webviewWireframe(value: wireframe)
     }
 
+    func visibleEmbeddedContentWireframe(
+        id: WireframeID,
+        slotID: String,
+        frame: CGRect,
+        clip: CGRect,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SREmbeddedContentWireframe(
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: SRContentClip(frame, intersecting: clip),
+            height: Int64.ddWithNoOverflow(frame.height),
+            id: id,
+            isVisible: true,
+            permanentId: heatmapIdentifier?.rawValue,
+            shapeStyle: createShapeStyle(
+                backgroundColor: backgroundColor,
+                cornerRadius: cornerRadius,
+                opacity: opacity
+            ),
+            slotId: slotID,
+            width: Int64.ddWithNoOverflow(frame.width),
+            x: Int64.ddWithNoOverflow(frame.minX),
+            y: Int64.ddWithNoOverflow(frame.minY)
+        )
+
+        embeddedContentSlots.removeValue(forKey: id)
+        return .embeddedContentWireframe(value: wireframe)
+    }
+
     public func hiddenWebViewWireframes() -> [SRWireframe] {
         defer { webViewSlotIDs.removeAll() }
         return webViewSlotIDs.map { id in
@@ -256,6 +297,23 @@ extension SessionReplayWireframesBuilder {
             )
 
             return .webviewWireframe(value: wireframe)
+        }
+    }
+
+    func hiddenEmbeddedContentWireframes() -> [SRWireframe] {
+        defer { embeddedContentSlots.removeAll() }
+        return embeddedContentSlots.map { wireframeID, slotID in
+            let wireframe = SREmbeddedContentWireframe(
+                height: 0,
+                id: wireframeID,
+                isVisible: false,
+                slotId: slotID,
+                width: 0,
+                x: 0,
+                y: 0
+            )
+
+            return .embeddedContentWireframe(value: wireframe)
         }
     }
 
