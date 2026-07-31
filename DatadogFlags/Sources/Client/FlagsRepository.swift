@@ -163,7 +163,7 @@ internal final class FlagsRepository {
     }
 
     private func writeState(_ flagsData: FlagsData, version: UInt64) {
-        let featureScope = featureScope
+        let flagsDataStore = featureScope.flagsDataStore
         let clientName = clientName
 
         cachePersistenceQueue.async { [weak self] in
@@ -171,7 +171,15 @@ internal final class FlagsRepository {
                 return
             }
 
-            featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
+            guard let encodedFlagsData = flagsDataStore.encodeFlagsData(flagsData) else {
+                return
+            }
+
+            guard self?.repositoryState.flagsDataVersion == version else {
+                return
+            }
+
+            flagsDataStore.setEncodedFlagsData(encodedFlagsData, forClientNamed: clientName)
         }
     }
 
@@ -291,15 +299,19 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     }
 
     func reset() {
-        // Clear disk first, then memory, then update state.
-        // This prevents race conditions where a listener reacts to the state
-        // change and queries the data store before disk is cleared.
-        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+        let flagsDataStore = featureScope.flagsDataStore
+        let clientName = clientName
+
         _repositoryState.mutate { state in
             state.flagsData = nil
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
             state.reconcilingContext = nil
+        }
+        // Enqueue removal after any already-started cache write to avoid
+        // re-persisting stale flags after reset.
+        cachePersistenceQueue.sync {
+            flagsDataStore.removeFlagsData(forClientNamed: clientName)
         }
         stateManager.updateState(.notReady)
     }
