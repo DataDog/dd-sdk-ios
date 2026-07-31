@@ -429,6 +429,57 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
     }
 
+    func testInitialDataStoreRead_whenFetchFailsBeforeReadCompletes_dispatchesFailureCallbacksOffDataStoreQueue() {
+        // Given
+        let dataStore = DelayedReadDataStore()
+        let readStarted = expectation(description: "initial data store read started")
+        dataStore.onReadStarted = {
+            readStarted.fulfill()
+        }
+
+        let flagsRepository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+
+        let errorStateObserved = expectation(description: "error state observed")
+        var wasErrorStateNotifiedOnDataStoreQueue: Bool?
+        let listener = StateChangeListener { state in
+            guard state == .error else {
+                return
+            }
+            wasErrorStateNotifiedOnDataStoreQueue = dataStore.isOnReadQueue
+            errorStateObserved.fulfill()
+        }
+        flagsRepository.state.addListener(listener)
+
+        let completed = expectation(description: "completed")
+        var wasCompletionCalledOnDataStoreQueue: Bool?
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            wasCompletionCalledOnDataStoreQueue = dataStore.isOnReadQueue
+            completed.fulfill()
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        dataStore.resumeRead()
+
+        // Then
+        wait(for: [errorStateObserved, completed], timeout: 1)
+        XCTAssertEqual(wasErrorStateNotifiedOnDataStoreQueue, false)
+        XCTAssertEqual(wasCompletionCalledOnDataStoreQueue, false)
+    }
+
     func testInitialDataStoreRead_whenCompletesAfterFailedContextUpdate_usesMatchingCachedFlags() throws {
         // Given
         let clientName = "client"
@@ -966,12 +1017,18 @@ private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
     private var storage: [String: DataStoreValueResult]
 
     private let queue = DispatchQueue(label: "com.datadoghq.flags-delayed-read-data-store")
+    private let queueKey = DispatchSpecificKey<Void>()
     private let readSemaphore = DispatchSemaphore(value: 0)
 
     var onReadStarted: (() -> Void)?
 
+    var isOnReadQueue: Bool {
+        DispatchQueue.getSpecific(key: queueKey) != nil
+    }
+
     init(storage: [String: DataStoreValueResult] = [:]) {
         self.storage = storage
+        queue.setSpecific(key: queueKey, value: ())
     }
 
     func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
@@ -1001,5 +1058,17 @@ private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
 
     func resumeRead() {
         readSemaphore.signal()
+    }
+}
+
+private final class StateChangeListener: FlagsStateListener {
+    private let onStateChange: (FlagsClientState) -> Void
+
+    init(onStateChange: @escaping (FlagsClientState) -> Void) {
+        self.onStateChange = onStateChange
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        onStateChange(newState)
     }
 }

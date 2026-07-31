@@ -136,6 +136,18 @@ internal final class FlagsRepository {
                 readSemaphore.signal()
             }
 
+            self.executePendingDiskReadCallbacks(callbacks)
+        }
+    }
+
+    private func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
+        guard !callbacks.isEmpty else {
+            return
+        }
+
+        // The initial disk-read callback runs on DatadogCore's shared read/write queue.
+        // Hop off that queue before notifying state listeners or invoking public completions.
+        DispatchQueue.global(qos: .utility).async {
             callbacks.forEach { $0() }
         }
     }
