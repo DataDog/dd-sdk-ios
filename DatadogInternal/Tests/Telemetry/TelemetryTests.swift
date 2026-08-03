@@ -41,7 +41,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(error.id, "\(moduleName())/File.swift:1:error message")
         XCTAssertEqual(error.message, "error message")
         XCTAssertEqual(error.kind, "error.kind")
-        XCTAssertEqual(error.stack, "error.stack")
+        XCTAssertEqual(error.stack, "\(moduleName())/File.swift:1\nerror.stack")
         XCTAssertEqual(telemetry.messages.count, 1)
     }
 
@@ -68,18 +68,117 @@ class TelemetryTests: XCTestCase {
         let swiftError = SwiftError()
 
         // When
+        #sourceLocation(file: "File.swift", line: 1)
         telemetry.error(swiftError)
         telemetry.error("custom message", error: swiftError)
+        #sourceLocation()
 
         // Then
+        // `SwiftError` doesn't conform to `TelemetrySanitizableError`, isn't `EncodingError`/`DecodingError`/`NSError`,
+        // so it falls back to the type-name-only default - its raw associated values must never leak into telemetry.
         let errors = telemetry.messages.compactMap({ $0.asError })
         XCTAssertEqual(telemetry.messages.count, 2)
-        XCTAssertEqual(errors[0].message, #"SwiftError(description: "error description")"#)
+        XCTAssertEqual(errors[0].message, "SwiftError does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(errors[0].kind, "SwiftError")
-        XCTAssertEqual(errors[0].stack, #"SwiftError(description: "error description")"#)
-        XCTAssertEqual(errors[1].message, #"custom message - SwiftError(description: "error description")"#)
+        XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1\nImplement TelemetrySanitizableError on SwiftError to report richer, safe context.")
+        XCTAssertEqual(errors[1].message, "custom message - SwiftError does not conform to TelemetrySanitizableError — reporting type name only")
         XCTAssertEqual(errors[1].kind, "SwiftError")
-        XCTAssertEqual(errors[1].stack, #"SwiftError(description: "error description")"#)
+        XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2\nImplement TelemetrySanitizableError on SwiftError to report richer, safe context.")
+    }
+
+    func testSendingErrorTelemetry_withSanitizableSwiftError() throws {
+        // Given
+        struct SanitizableSwiftError: Error, TelemetrySanitizableError {
+            let secret = "should never reach telemetry"
+
+            func sanitize() -> TelemetrySanitizedError {
+                TelemetrySanitizedError(kind: "SanitizableSwiftError", message: "sanitized message", stack: "sanitized stack")
+            }
+        }
+        let error = SanitizableSwiftError()
+
+        // When
+        #sourceLocation(file: "File.swift", line: 1)
+        telemetry.error(error)
+        telemetry.error("custom message", error: error)
+        #sourceLocation()
+
+        // Then
+        // Conforming to `TelemetrySanitizableError` opts out of the default fallback - `sanitize()`'s
+        // output is reported as-is.
+        let errors = telemetry.messages.compactMap({ $0.asError })
+        XCTAssertEqual(telemetry.messages.count, 2)
+        XCTAssertEqual(errors[0].message, "sanitized message")
+        XCTAssertEqual(errors[0].kind, "SanitizableSwiftError")
+        XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1\nsanitized stack")
+        XCTAssertEqual(errors[1].message, "custom message - sanitized message")
+        XCTAssertEqual(errors[1].kind, "SanitizableSwiftError")
+        XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2\nsanitized stack")
+    }
+
+    // RUM-17396: `AnyEncodable`'s `encode(to:)` falls back to a `default:` branch for values
+    // it cannot cast to a supported shape (e.g. a dictionary with non-`String` keys), throwing
+    // an `EncodingError` whose default Swift description embeds the whole raw offending value.
+    // If such an error reaches `Telemetry.error`, that raw value must be dropped before it is
+    // sent through internal telemetry.
+    func testSendingErrorTelemetry_doesNotCaptureRawAttributeValueFromAnyEncodableEncodingError() throws {
+        // Given
+        // Forge `AnyEncodable`'s encoding error by encoding an unsupported value.
+        func forgeAnyEncodableEncodingError(capturing attributeValue: String) -> Error {
+            struct CustomKey: Hashable {
+                func hash(into hasher: inout Hasher) { hasher.combine(42) }
+            }
+            let unsupportedEncodable = [CustomKey(): attributeValue]
+            let encodable = AnyEncodable(unsupportedEncodable)
+            do {
+                _ = try JSONEncoder().encode(encodable)
+                XCTFail("Encoding with custom key should fail")
+                fatalError("Encoding with custom key should fail")
+            } catch {
+                return error
+            }
+        }
+
+        let attributeValue = "attribute-value-\(String.mockRandom(length: 16))"
+        let encodingError = forgeAnyEncodableEncodingError(capturing: attributeValue)
+        XCTAssertTrue("\(encodingError)".contains(attributeValue), "the forged error captures the raw attribute value")
+
+        // When
+        telemetry.error("failed to encode attribute", error: encodingError)
+
+        // Then
+        let error = try XCTUnwrap(telemetry.messages.compactMap({ $0.asError }).first)
+        XCTAssertFalse("\(error)".contains(attributeValue), "error must not capture raw attribute values: \(error)")
+    }
+
+    // `DecodingError` doesn't conform to `TelemetrySanitizableError`, so it goes through
+    // `TelemetrySanitizedError.init(sanitizing:)`'s dedicated `DecodingError` branch - only `context.debugDescription`/
+    // `codingPath` must be reported, never the raw decoded value.
+    func testSendingErrorTelemetry_withDecodingError() throws {
+        // Given
+        struct Response: Decodable { let count: Int }
+        let sensitiveValue = "sensitive-value-\(String.mockRandom(length: 16))"
+        let json = "{\"count\": \"\(sensitiveValue)\"}".data(using: .utf8)! // `count` should be an `Int`, not a `String`
+
+        let decodingError: DecodingError
+        do {
+            _ = try JSONDecoder().decode(Response.self, from: json)
+            XCTFail("Decoding a type-mismatched value should fail")
+            fatalError("Decoding a type-mismatched value should fail")
+        } catch let error as DecodingError {
+            decodingError = error
+        } catch {
+            XCTFail("Expected a DecodingError, got \(error)")
+            fatalError("Expected a DecodingError, got \(error)")
+        }
+
+        // When
+        telemetry.error("failed to decode response", error: decodingError)
+
+        // Then
+        let error = try XCTUnwrap(telemetry.messages.compactMap({ $0.asError }).first)
+        XCTAssertEqual(error.kind, "DecodingError.typeMismatch")
+        XCTAssertFalse("\(error)".contains(sensitiveValue), "error must not capture raw decoded values: \(error)")
     }
 
     func testSendingErrorTelemetry_withNSError() throws {
@@ -91,18 +190,53 @@ class TelemetryTests: XCTestCase {
         )
 
         // When
+        #sourceLocation(file: "File.swift", line: 1)
         telemetry.error(nsError)
         telemetry.error("custom message", error: nsError)
+        #sourceLocation()
+
+        // Then
+        // `NSError`'s `userInfo` can carry customer-supplied data (e.g. `NSLocalizedDescriptionKey`), so
+        // only its domain/code are reported - never `userInfo` or the default `"\(nsError)"` description.
+        // `TelemetrySanitizedError.stack` is nil here, so `Telemetry.error` falls back to its own
+        // `"\(file):\(line)"` default - the call site above, not the error's own stack.
+        let errors = telemetry.messages.compactMap({ $0.asError })
+        XCTAssertEqual(telemetry.messages.count, 2)
+        XCTAssertEqual(errors[0].message, "domain: custom-domain, code: 10")
+        XCTAssertEqual(errors[0].kind, "NSError")
+        XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1")
+        XCTAssertEqual(errors[1].message, "custom message - domain: custom-domain, code: 10")
+        XCTAssertEqual(errors[1].kind, "NSError")
+        XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2")
+    }
+
+    func testSendingErrorTelemetry_withSanitizableNSError() throws {
+        // Given
+        // A dedicated `NSError` subclass declaring its own `TelemetrySanitizableError` conformance -
+        // not a retroactive `extension NSError: TelemetrySanitizableError`, which the protocol's docs warn
+        // against since it would be a single, global fact about the (NSError, TelemetrySanitizableError) pair.
+        final class SanitizableNSError: NSError, TelemetrySanitizableError {
+            func sanitize() -> TelemetrySanitizedError {
+                TelemetrySanitizedError(kind: "SanitizableNSError", message: "sanitized message", stack: "sanitized stack")
+            }
+        }
+        let error = SanitizableNSError(domain: "custom-domain", code: 10, userInfo: [NSLocalizedDescriptionKey: "error description"])
+
+        // When
+        #sourceLocation(file: "File.swift", line: 1)
+        telemetry.error(error)
+        telemetry.error("custom message", error: error)
+        #sourceLocation()
 
         // Then
         let errors = telemetry.messages.compactMap({ $0.asError })
         XCTAssertEqual(telemetry.messages.count, 2)
-        XCTAssertEqual(errors[0].message, "error description")
-        XCTAssertEqual(errors[0].kind, "custom-domain - 10")
-        XCTAssertEqual(errors[0].stack, #"Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}"#)
-        XCTAssertEqual(errors[1].message, "custom message - error description")
-        XCTAssertEqual(errors[1].kind, "custom-domain - 10")
-        XCTAssertEqual(errors[1].stack, #"Error Domain=custom-domain Code=10 "error description" UserInfo={NSLocalizedDescription=error description}"#)
+        XCTAssertEqual(errors[0].message, "sanitized message")
+        XCTAssertEqual(errors[0].kind, "SanitizableNSError")
+        XCTAssertEqual(errors[0].stack, "\(moduleName())/File.swift:1\nsanitized stack")
+        XCTAssertEqual(errors[1].message, "custom message - sanitized message")
+        XCTAssertEqual(errors[1].kind, "SanitizableNSError")
+        XCTAssertEqual(errors[1].stack, "\(moduleName())/File.swift:2\nsanitized stack")
     }
 
     // MARK: - Configuration Telemetry

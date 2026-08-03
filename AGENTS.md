@@ -20,9 +20,11 @@ CONTRIBUTING.md          ← General contribution guidelines
 
 docs/
 ├── ARCHITECTURE.md      ← Module structure, data flow, key abstractions, protocols,
-│                          error handling, thread safety, HTTP upload, dependencies
+│                          thread safety, HTTP upload, dependencies
 ├── CONVENTIONS.md       ← Naming, SwiftLint rules, conditional compilation,
 │                          generated models, file headers, commit/PR format
+├── ERROR_HANDLING.md    ← Customer-facing error safety + internal telemetry
+│                          error reporting (TelemetrySanitizableError)
 ├── DEVELOPMENT.md       ← Recipes for adding features/commands/providers,
 │                          RFC process, build & test quick reference
 ├── TESTING.md           ← Test conventions, mock infrastructure (.mockAny(),
@@ -50,6 +52,7 @@ Feature-specific docs (in each module directory):
 | Write or fix tests | `docs/TESTING.md` |
 | Check naming, lint, commit format | `docs/CONVENTIONS.md` |
 | Touch swizzling code | `docs/SWIZZLING.md` |
+| Report an error to internal telemetry | `docs/ERROR_HANDLING.md` |
 | Modify a fragile area | `docs/KNOWN_CONCERNS.md` |
 | Work on RUM specifically | `DatadogRUM/RUM_FEATURE.md` |
 | Work on Session Replay specifically | `DatadogSessionReplay/SESSION_REPLAY_FEATURE.md` |
@@ -71,6 +74,7 @@ Feature-specific docs (in each module directory):
 - **Do NOT name branches with `codex`.** Use repo branch naming conventions instead.
 - **Never mention AI assistant names** (Claude, ChatGPT, Cursor, Copilot, etc.) in commit messages, PR descriptions, code comments, or co-author tags.
 - **Never write or modify a swizzle without reading `docs/SWIZZLING.md` first.** Past incidents have caused production crashes.
+- **Never report a raw `Error` to internal telemetry.** `"\(error)"` can embed customer data (e.g. `EncodingError.invalidValue` embeds the offending value). Always go through `Telemetry.error(_:)`, which sanitizes via `TelemetrySanitizableError`; see `docs/ERROR_HANDLING.md`. Past incidents have leaked customer PII and auth tokens this way.
 
 ## Quick Reference
 

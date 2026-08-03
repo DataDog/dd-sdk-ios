@@ -1014,6 +1014,8 @@
 		D23039F8298D5236001A1FA3 /* InternalLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CE298D5235001A1FA3 /* InternalLogger.swift */; };
 		D23039F9298D5236001A1FA3 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CF298D5235001A1FA3 /* CoreLogger.swift */; };
 		D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D0298D5235001A1FA3 /* Telemetry.swift */; };
+		6165D7353013888F0069D0E4 /* TelemetrySanitizableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */; };
+		6165D7373017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */; };
 		D23039FB298D5236001A1FA3 /* URLRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D2298D5235001A1FA3 /* URLRequestBuilder.swift */; };
 		D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D3298D5235001A1FA3 /* DataFormat.swift */; };
 		D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D4298D5235001A1FA3 /* DataCompression.swift */; };
@@ -2975,6 +2977,8 @@
 		D23039CE298D5235001A1FA3 /* InternalLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLogger.swift; sourceTree = "<group>"; };
 		D23039CF298D5235001A1FA3 /* CoreLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreLogger.swift; sourceTree = "<group>"; };
 		D23039D0298D5235001A1FA3 /* Telemetry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
+		6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableError.swift; sourceTree = "<group>"; };
+		6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableErrorTests.swift; sourceTree = "<group>"; };
 		D23039D2298D5235001A1FA3 /* URLRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLRequestBuilder.swift; sourceTree = "<group>"; };
 		D23039D3298D5235001A1FA3 /* DataFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormat.swift; sourceTree = "<group>"; };
 		D23039D4298D5235001A1FA3 /* DataCompression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
@@ -6300,6 +6304,7 @@
 			isa = PBXGroup;
 			children = (
 				D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */,
+				6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */,
 			);
 			path = Telemetry;
 			sourceTree = "<group>";
@@ -6503,6 +6508,7 @@
 				D23039CE298D5235001A1FA3 /* InternalLogger.swift */,
 				11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */,
 				D23039D0298D5235001A1FA3 /* Telemetry.swift */,
+				6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */,
 			);
 			path = Telemetry;
 			sourceTree = "<group>";
@@ -8968,6 +8974,7 @@
 				D23039EE298D5236001A1FA3 /* FeatureMessageReceiver.swift in Sources */,
 				D23039DE298D5235001A1FA3 /* Writer.swift in Sources */,
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
+				6165D7353013888F0069D0E4 /* TelemetrySanitizableError.swift in Sources */,
 				D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */,
 				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
 				1166C5A52F76EC0B008E34BC /* OperationOptions.swift in Sources */,
@@ -9500,6 +9507,7 @@
 				61F3E3662BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */,
 				D2EBEE3C29BA163E00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
 				D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */,
+				6165D7373017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift in Sources */,
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
 				3CCECDAF2BC688120013C125 /* SpanIDGeneratorTests.swift in Sources */,
 				D263BCB429DB014900FA0E21 /* FixedWidthInteger+ConvenienceTests.swift in Sources */,
