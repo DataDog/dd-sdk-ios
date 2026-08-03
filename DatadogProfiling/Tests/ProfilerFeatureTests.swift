@@ -170,6 +170,27 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertNil(ProfilingSamplerProvider(continuousSampleRate: 100).continuousProfilingSampled)
     }
 
+    func testProfilingSamplerProvider_hasNoMemoryProfilingDecision_withoutDeterministicSampler() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 100)
+        XCTAssertTrue(provider.isMemoryProfilingConfigured)
+        XCTAssertFalse(provider.isContinuousProfilingConfigured)
+        XCTAssertNil(provider.memoryProfilingSampled)
+    }
+
+    func testProfilingSamplerProvider_composesMemoryDecisionIndependentlyOfContinuous() {
+        // Same RUM session: continuous configured out (0%), memory configured in (100%).
+        let sessionSampler = DeterministicSampler(
+            uuid: .mockWith("a1b2c3d4-e5f6-7890-abcd-d860b2b9437a"),
+            samplingRate: 100
+        )
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, memorySampleRate: 100)
+
+        provider.updateWith(deterministicSampler: sessionSampler)
+
+        XCTAssertEqual(provider.continuousProfilingSampled, false, "continuous 0% must sample out")
+        XCTAssertEqual(provider.memoryProfilingSampled, true, "memory 100% must sample in — decisions are independent")
+    }
+
     func testProfilingSamplerProvider_appliesChildRateCorrection() {
         // Given
         // seed 0xd860b2b9437a (~68.7% hash): NOT sampled at composed 40%, but sampled at profiling-only 80%.

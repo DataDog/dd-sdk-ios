@@ -204,6 +204,48 @@ extension ProfilingHandler {
         return heapData
     }
 
+    /// Emits a heap-only `ProfileEvent` — used when memory profiling is active but there is no
+    /// writable CPU/wall profile this window (Option B independent emission). The event carries only
+    /// `heap.pprof` (+ an empty rum-events attachment) and no `profile.pprof`; the transport already
+    /// supports a nil CPU pprof. `start`/`end` bound the memory window (device time, adjusted to
+    /// server time via the current offset). No-op when there are no heap samples this window.
+    func writeHeapOnlyProfile(start: Date, end: Date, operation: ProfilingOperation) {
+        let attributes = self.attributes
+        guard let heapPprof = captureHeapPprof(attributes: attributes) else {
+            return
+        }
+
+        let offset = currentServerTimeOffset
+        let serverStart = start.addingTimeInterval(offset)
+        let serverEnd = end.addingTimeInterval(offset)
+        let durationNs = (serverEnd.timeIntervalSince1970 - serverStart.timeIntervalSince1970).dd.toInt64Nanoseconds
+
+        featureScope.eventWriteContext { context, writer in
+            let event = ProfileEvent(
+                family: Constants.family,
+                runtime: Constants.runtime,
+                version: Constants.version,
+                start: serverStart,
+                end: serverEnd,
+                attachments: [
+                    ProfileAttachments.Constants.rumEventsFilename,
+                    ProfileAttachments.Constants.heapFilename
+                ],
+                tags: self.profileTags(context: context, operation: operation),
+                additionalAttributes: attributes
+            )
+            // Heap-only: no profile.pprof; empty RUM-events timeline this window.
+            let rumEventsData = try? self.encoder.encode([RUMEvent]())
+            let attachments = ProfileAttachments(pprof: nil, rumEvents: rumEventsData, heapPprof: heapPprof)
+            writer.write(value: event, metadata: attachments)
+            self.telemetryController.sendProfile(
+                durationNs: durationNs,
+                fileSize: Int64(clamping: heapPprof.count),
+                for: operation
+            )
+        }
+    }
+
     /// Builds the standard comma-separated profiler tag string shared by all event types.
     private func profileTags(context: DatadogContext, operation: ProfilingOperation) -> String {
         [

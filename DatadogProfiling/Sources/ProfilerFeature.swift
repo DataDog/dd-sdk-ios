@@ -52,7 +52,14 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
+        // Memory profiling is opt-in (default 0). In debug builds force it fully sampled-in ONLY when
+        // the customer configured it (> 0), so debugSDK never silently enables an opt-in feature.
+        let memorySampleRate = (configuration.debugSDK && configuration.memorySampleRate > 0)
+            ? .maxSampleRate : configuration.memorySampleRate
+        self.profilingSamplerProvider = ProfilingSamplerProvider(
+            continuousSampleRate: continuousSampleRate,
+            memorySampleRate: memorySampleRate
+        )
 
         let cpuTimeSamplesEnabled = configuration.featureFlags[.cpuTimeSamples]
         Self.setProfilingEnabled(in: userDefaults)
@@ -66,8 +73,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
             minProfileDuration: configuration.minProfileDuration,
-            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0,
-            memorySampleRate: configuration.memorySampleRate
+            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
