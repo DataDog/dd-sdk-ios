@@ -20,6 +20,7 @@ import DatadogInternal
 /// - `false`: the current RUM session samples continuous profiling out
 internal final class ProfilingSamplerProvider: @unchecked Sendable {
     private let continuousSampleRate: SampleRate
+    private let memorySampleRate: SampleRate
 
     /// Session-linked sampling result for continuous profiling.
     ///
@@ -28,17 +29,36 @@ internal final class ProfilingSamplerProvider: @unchecked Sendable {
     @ReadWriteLock
     private(set) var continuousProfilingSampled: Bool?
 
+    /// Session-linked sampling result for memory (heap) profiling.
+    ///
+    /// Mirrors `continuousProfilingSampled`: `nil` until a RUM context provides a `sessionSampler`,
+    /// then the result of composing that sampler with `memorySampleRate`. Memory profiling has its
+    /// own per-session decision so it can run (and emit) independently of continuous CPU profiling.
+    @ReadWriteLock
+    private(set) var memoryProfilingSampled: Bool?
+
     /// `true` when continuous profiling is configured with a sample rate greater than zero.
     let isContinuousProfilingConfigured: Bool
 
-    init(continuousSampleRate: SampleRate) {
+    /// `true` when memory profiling is configured with a sample rate greater than zero.
+    let isMemoryProfilingConfigured: Bool
+
+    init(continuousSampleRate: SampleRate, memorySampleRate: SampleRate = 0) {
         self.continuousSampleRate = continuousSampleRate.normalizedSampleRate
+        self.memorySampleRate = memorySampleRate.normalizedSampleRate
         self.continuousProfilingSampled = nil
+        self.memoryProfilingSampled = nil
         self.isContinuousProfilingConfigured = continuousSampleRate > 0
+        self.isMemoryProfilingConfigured = memorySampleRate > 0
     }
 
-    /// Updates the session-linked sampling result from the current RUM session sampler.
+    /// Updates the session-linked sampling results from the current RUM session sampler.
+    ///
+    /// Continuous and memory each compose the same RUM session sampler with their own configured
+    /// rate, so the two decisions are independent (a session can sample memory in but continuous out,
+    /// or vice-versa).
     func updateWith(deterministicSampler: DeterministicSampler) {
         continuousProfilingSampled = deterministicSampler.combined(with: continuousSampleRate).sample()
+        memoryProfilingSampled = deterministicSampler.combined(with: memorySampleRate).sample()
     }
 }
