@@ -1318,7 +1318,8 @@ extension RUMViewScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
-        viewIndexInSession: Int = 0
+        viewIndexInSession: Int = 0,
+        instrumentationType: InstrumentationType? = nil
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -1331,7 +1332,8 @@ extension RUMViewScope {
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: viewIndexInSession
+            viewIndexInSession: viewIndexInSession,
+            instrumentationType: instrumentationType
         )
     }
 }

@@ -27,6 +27,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         case stopAPI
     }
 
+    /// Snapshot of a manually-tracked view's identity, taken when it gets auto-stopped on `.didEnterBackground`,
+    /// so it can be restarted with the same identity/name/path/attributes on `.willEnterForeground`.
+    private struct SuspendedManualView {
+        let identity: ViewIdentifier
+        let name: String
+        let path: String
+        let attributes: [AttributeKey: AttributeValue]
+    }
+
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
@@ -100,6 +109,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var lastInteractionTime: Date
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
+    /// Identity of a manually-tracked view that this scope auto-stopped on `.didEnterBackground` and that should be
+    /// restarted (with the same identity/name/path/attributes) on `.willEnterForeground`. `nil` if there is no such view.
+    private var suspendedManualView: SuspendedManualView? = nil
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
 
@@ -162,7 +174,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 customTimings: [:],
                 startTime: startTime,
                 serverTimeOffset: viewScope.serverTimeOffset,
-                hasReplay: context.hasReplay
+                hasReplay: context.hasReplay,
+                instrumentationType: viewScope.instrumentationType
             )
         }
 
@@ -204,7 +217,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     startTime: startTime,
                     serverTimeOffset: context.serverTimeOffset,
                     interactionToNextViewMetric: interactionToNextViewMetric,
-                    viewIndexInSession: nextViewIndex
+                    viewIndexInSession: nextViewIndex,
+                    instrumentationType: lastActiveView.instrumentationType
                 )
                 self.viewScopes = [activeView]
                 self.activeView = activeView
@@ -272,12 +286,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+                stopActiveManualViewIfNeeded(on: appLifecycleCommand, context: context, writer: writer)
                 appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
+                restartSuspendedManualViewIfNeeded(on: appLifecycleCommand, context: context)
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager
@@ -341,7 +357,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             customTimings: [:],
             startTime: command.time,
             serverTimeOffset: context.serverTimeOffset,
-            hasReplay: context.hasReplay
+            hasReplay: context.hasReplay,
+            instrumentationType: command.instrumentationType
         )
     }
 
@@ -354,7 +371,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         customTimings: [String: Int64],
         startTime: Date,
         serverTimeOffset: TimeInterval,
-        hasReplay: Bool?
+        hasReplay: Bool?,
+        instrumentationType: InstrumentationType? = nil
     ) {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
@@ -367,7 +385,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: nextViewIndex
+            viewIndexInSession: nextViewIndex,
+            instrumentationType: instrumentationType
         )
         nextViewIndex += 1
 
@@ -421,6 +440,55 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             startTime: startTime,
             serverTimeOffset: context.serverTimeOffset,
             hasReplay: context.hasReplay
+        )
+    }
+
+    /// Stops the currently active manually-tracked view (if any) when the app enters background, mirroring the behavior
+    /// already applied to automatically-tracked (UIKit/SwiftUI) views by `RUMViewsHandler`. The view's identity is
+    /// remembered so it can be restarted on `.willEnterForeground` (see `restartSuspendedManualViewIfNeeded`).
+    ///
+    /// This is a no-op if there is no active view, or if the active view isn't manually-tracked.
+    private func stopActiveManualViewIfNeeded(on command: RUMHandleAppLifecycleEventCommand, context: DatadogContext, writer: Writer) {
+        guard let activeView = activeView, activeView.instrumentationType == .manual else {
+            return
+        }
+
+        suspendedManualView = SuspendedManualView(
+            identity: activeView.identity,
+            name: activeView.viewName,
+            path: activeView.viewPath,
+            attributes: activeView.attributes
+        )
+
+        let stopCommand = RUMStopViewCommand(
+            time: command.time,
+            globalAttributes: command.globalAttributes,
+            attributes: [:],
+            identity: activeView.identity
+        )
+        viewScopes = viewScopes.scopes(byPropagating: stopCommand, context: context, writer: writer)
+    }
+
+    /// Restarts (with the same identity/name/path/attributes) a manually-tracked view that was previously auto-stopped
+    /// by `stopActiveManualViewIfNeeded` when the app entered background. No-op if there is no such view.
+    private func restartSuspendedManualViewIfNeeded(on command: RUMHandleAppLifecycleEventCommand, context: DatadogContext) {
+        guard let suspendedManualView = suspendedManualView else {
+            return
+        }
+
+        self.suspendedManualView = nil
+
+        startView(
+            on: RUMStartViewCommand(
+                time: command.time,
+                identity: suspendedManualView.identity,
+                name: suspendedManualView.name,
+                path: suspendedManualView.path,
+                globalAttributes: command.globalAttributes,
+                attributes: suspendedManualView.attributes,
+                instrumentationType: .manual
+            ),
+            context: context
         )
     }
 

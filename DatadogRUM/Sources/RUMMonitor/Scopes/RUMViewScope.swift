@@ -41,6 +41,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
+    /// The type of instrumentation that started this view, if known.
+    /// `nil` for synthetic views (e.g. "ApplicationLaunch" or "Background") that are not started through a `RUMStartViewCommand`.
+    let instrumentationType: InstrumentationType?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
@@ -138,13 +141,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         interactionToNextViewMetric: INVMetricTracking?,
-        viewIndexInSession: Int
+        viewIndexInSession: Int,
+        instrumentationType: InstrumentationType? = nil
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.hasReplay = false
         self.identity = identity
+        self.instrumentationType = instrumentationType
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
