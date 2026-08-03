@@ -21,18 +21,24 @@ internal struct LayerWireframeBuilder {
     private let contentSnapshots: [Int64: ContentSnapshotResult]
     private let webViewSlotIDs: Set<Int>
     private var pendingWebViewSlotIDs: Set<Int>
+    private let embeddedContentSlots: [Int64: String]
+    private var pendingEmbeddedContentSlots: [Int64: String]
 
     init(
         contentSnapshots: [Int64: ContentSnapshotResult],
-        webViewSlotIDs: Set<Int>
+        webViewSlotIDs: Set<Int>,
+        embeddedContentSlots: [Int64: String] = [:]
     ) {
         self.contentSnapshots = contentSnapshots
         self.webViewSlotIDs = webViewSlotIDs
         self.pendingWebViewSlotIDs = webViewSlotIDs
+        self.embeddedContentSlots = embeddedContentSlots
+        self.pendingEmbeddedContentSlots = embeddedContentSlots
     }
 
     mutating func reset() {
         pendingWebViewSlotIDs = webViewSlotIDs
+        pendingEmbeddedContentSlots = embeddedContentSlots
     }
 
     mutating func build(
@@ -94,6 +100,13 @@ internal struct LayerWireframeBuilder {
                 wireframe: SRWireframe(layerSnapshot: snapshot, webView: webView),
                 resource: nil
             )
+        case (.embeddedContent(let embeddedContent), _):
+            pendingEmbeddedContentSlots.removeValue(forKey: snapshot.replayID)
+            return Output(
+                id: snapshot.replayID,
+                wireframe: SRWireframe(layerSnapshot: snapshot, embeddedContent: embeddedContent),
+                resource: nil
+            )
         case (.visualEffect(.automaticCapsule), _):
             return Output(
                 wireframe: SRWireframe(
@@ -135,6 +148,14 @@ internal struct LayerWireframeBuilder {
     mutating func makeHiddenWebViewWireframes() -> [SRWireframe] {
         let wireframes = pendingWebViewSlotIDs.map(SRWireframe.init(hiddenWebViewSlotID:))
         pendingWebViewSlotIDs.removeAll()
+        return wireframes
+    }
+
+    mutating func makeHiddenEmbeddedContentWireframes() -> [SRWireframe] {
+        let wireframes = pendingEmbeddedContentSlots.map {
+            SRWireframe(hiddenEmbeddedContentWireframeID: $0.key, slotID: $0.value)
+        }
+        pendingEmbeddedContentSlots.removeAll()
         return wireframes
     }
 

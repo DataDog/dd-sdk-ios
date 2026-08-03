@@ -11,6 +11,21 @@ import UIKit
 
 extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
+    init(hiddenEmbeddedContentWireframeID id: Int64, slotID: String) {
+        self = .embeddedContentWireframe(
+            value: .init(
+                height: 0,
+                id: id,
+                isVisible: false,
+                slotId: slotID,
+                width: 0,
+                x: 0,
+                y: 0
+            )
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     init(hiddenWebViewSlotID slotID: Int) {
         self = .webviewWireframe(
             value: .init(
@@ -137,6 +152,26 @@ extension SRWireframe {
                 width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
                 label: label
+            )
+        )
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    init(
+        layerSnapshot: CALayerSnapshot,
+        embeddedContent: CALayerSnapshot.SemanticObservation.EmbeddedContentSemantics
+    ) {
+        self = .embeddedContentWireframe(
+            value: .init(
+                border: .init(layerSnapshot: layerSnapshot),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
+                id: layerSnapshot.replayID,
+                isVisible: true,
+                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                slotId: embeddedContent.slotID,
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
             )
         )
     }
