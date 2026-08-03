@@ -16,7 +16,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
         /// Maximum number of consecutive `RUMViewUpdateEvent` deltas sent for a view under the `viewUpdates`
         /// feature flag before a full `RUMViewEvent` is sent again, so the view state can be fully reconstructed
-        /// even if some update events are lost in transit. Set to 5 to reconcile 50% of views on Org 2 and the Demo org.
+        /// even if some update events are lost in transit. Set to 5 to reconcile 50% of views.
         static let maxConsecutiveViewUpdates: UInt = 5
     }
 
