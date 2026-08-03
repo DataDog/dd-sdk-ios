@@ -48,6 +48,18 @@ extern "C" {
  */
 #define DD_MEMORY_DEFAULT_STACK_DEPTH 64
 
+/**
+ * Origin of a sampled allocation: which interception path recorded it.
+ */
+typedef enum {
+    /// malloc_zone hook (raw C / unclassified allocations).
+    DD_MEMORY_SOURCE_ZONE = 0,
+    /// Objective-C +allocWithZone: swizzle.
+    DD_MEMORY_SOURCE_OBJC = 1,
+    /// Pure-Swift swift_allocObject rebinding.
+    DD_MEMORY_SOURCE_SWIFT = 2
+} dd_memory_source_t;
+
 // MARK: - Status and diagnostics
 
 /**
@@ -84,6 +96,8 @@ typedef struct dd_memory_diagnostics {
     uint64_t sampled_allocations;
     /** Sampled allocations dropped because they could not enter the live table. */
     uint64_t dropped_samples;
+    /** Sampled allocations dropped from the per-window alloc log (window full). */
+    uint64_t dropped_alloc_records;
     /** Number of sampled frees recorded. */
     uint64_t sampled_frees;
     /** Number of sampled allocations currently considered live. */
@@ -107,6 +121,8 @@ typedef struct dd_memory_sample {
     double weight;
     /** Class name for Objective-C/Swift instances; NULL for raw C allocations. */
     const char* class_name;
+    /** Interception path that recorded this sample. */
+    dd_memory_source_t source;
     /** Stack frame instruction pointers, deepest at index 0. */
     uint64_t frames[DD_MEMORY_DEFAULT_STACK_DEPTH];
     /** Number of valid entries in `frames`. */
@@ -166,6 +182,20 @@ bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes);
 void dd_memory_observe_allocation(const void* ptr, uint64_t size, const char* class_name);
 
 /**
+ * Records an externally-observed allocation, tagged with its interception source.
+ * Same machinery as dd_memory_observe_allocation; the source is stored on the
+ * sample and surfaces as a pprof label.
+ *
+ * @param ptr Allocation pointer; NULL is a no-op.
+ * @param size Allocation size in bytes.
+ * @param class_name Optional class name; must outlive the sample. NULL when unavailable.
+ * @param source Interception path recording this allocation.
+ */
+void dd_memory_observe_allocation_with_source(const void* ptr, uint64_t size,
+                                              const char* class_name,
+                                              dd_memory_source_t source);
+
+/**
  * Records an externally-observed Objective-C object deallocation.
  *
  * If the pointer belongs to a sampled allocation, it is removed from the live
@@ -205,6 +235,22 @@ bool dd_memory_profiler_is_running(void);
  *         sample_count == 0 if profiling is disabled.
  */
 dd_memory_snapshot_t dd_memory_snapshot_capture(void);
+
+/**
+ * Captures and RESETS the current window's allocation log, which feeds `alloc_*`.
+ *
+ * Unlike dd_memory_snapshot_capture (a point-in-time view of the live set that
+ * is never reset), this returns every allocation SAMPLED since the last capture
+ * or session start — including ones already freed — and then clears the window
+ * so the next emission accumulates fresh. Pair one call per emission window with
+ * one dd_memory_snapshot_capture, and feed both to dd_memory_snapshots_to_pprof.
+ *
+ * @return Snapshot of this window's sampled allocations (each carries size,
+ *         weight, class_name, source, stack). Caller releases with
+ *         dd_memory_snapshot_destroy. sample_count == 0 if the window was empty
+ *         or profiling is disabled.
+ */
+dd_memory_snapshot_t dd_memory_alloc_window_capture(void);
 
 /**
  * Releases memory owned by a snapshot.

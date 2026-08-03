@@ -256,6 +256,14 @@
 		119ABE2C3046EA52002E68CD /* MemoryToPprofTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */; };
 		119ABE2E3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */; };
 		119ABE303046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */; };
+		119ABE323046EAFC002E68CD /* fishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE313046EAFC002E68CD /* fishhook.c */; };
+		119ABE343046EB00002E68CD /* fishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 119ABE333046EB00002E68CD /* fishhook.h */; };
+		119ABE363046EB05002E68CD /* swift_alloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 119ABE353046EB05002E68CD /* swift_alloc_hook.h */; };
+		119ABE383046EB0B002E68CD /* swift_alloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE373046EB0B002E68CD /* swift_alloc_hook.cpp */; };
+		119ABE3A3046EB0F002E68CD /* SwiftAllocInterception.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE393046EB0F002E68CD /* SwiftAllocInterception.swift */; };
+		119ABE3C3046EB13002E68CD /* SwiftAllocHookSpikeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE3B3046EB13002E68CD /* SwiftAllocHookSpikeTests.swift */; };
+		119ABE3E3046EB18002E68CD /* SwiftAllocInterceptionIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE3D3046EB18002E68CD /* SwiftAllocInterceptionIntegrationTests.swift */; };
+		119ABE403046EB1C002E68CD /* SwiftAllocInterceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119ABE3F3046EB1C002E68CD /* SwiftAllocInterceptionTests.swift */; };
 		11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */; };
 		11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A14A632F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift */; };
 		11A2F24A2E70CC08006EDC52 /* FrameInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A2F2482E70CC08006EDC52 /* FrameInfoProvider.swift */; };
@@ -2180,6 +2188,14 @@
 		119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryToPprofTests.swift; sourceTree = "<group>"; };
 		119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogProfilerMemoryTests.swift; sourceTree = "<group>"; };
 		119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryLiveHeapValidationTests.swift; sourceTree = "<group>"; };
+		119ABE313046EAFC002E68CD /* fishhook.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fishhook.c; sourceTree = "<group>"; };
+		119ABE333046EB00002E68CD /* fishhook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fishhook.h; sourceTree = "<group>"; };
+		119ABE353046EB05002E68CD /* swift_alloc_hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook.h; sourceTree = "<group>"; };
+		119ABE373046EB0B002E68CD /* swift_alloc_hook.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = swift_alloc_hook.cpp; sourceTree = "<group>"; };
+		119ABE393046EB0F002E68CD /* SwiftAllocInterception.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocInterception.swift; sourceTree = "<group>"; };
+		119ABE3B3046EB13002E68CD /* SwiftAllocHookSpikeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocHookSpikeTests.swift; sourceTree = "<group>"; };
+		119ABE3D3046EB18002E68CD /* SwiftAllocInterceptionIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocInterceptionIntegrationTests.swift; sourceTree = "<group>"; };
+		119ABE3F3046EB1C002E68CD /* SwiftAllocInterceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocInterceptionTests.swift; sourceTree = "<group>"; };
 		119F75F32F438C2100845833 /* DataStoreAsyncMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreAsyncMock.swift; sourceTree = "<group>"; };
 		11A0F1FDC6F852757B99EF56 /* WatchdogTerminationReporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchdogTerminationReporterTests.swift; sourceTree = "<group>"; };
 		11A14A612F9B740000B1C0DE /* ProfilingQuotaChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingQuotaChecker.swift; sourceTree = "<group>"; };
@@ -6696,6 +6712,8 @@
 				110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */,
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 				119ABE273046EA49002E68CD /* memory_to_pprof.h */,
+				119ABE333046EB00002E68CD /* fishhook.h */,
+				119ABE353046EB05002E68CD /* swift_alloc_hook.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6717,6 +6735,8 @@
 				A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */,
 				D229FF5A2E3BA298009CCD62 /* include */,
 				119ABE293046EA4D002E68CD /* memory_to_pprof.cpp */,
+				119ABE313046EAFC002E68CD /* fishhook.c */,
+				119ABE373046EB0B002E68CD /* swift_alloc_hook.cpp */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7283,6 +7303,7 @@
 				D229FF5B2E3BA298009CCD62 /* Mach */,
 				11C4E5912F571F86002196F4 /* Models */,
 				1121FCFA2EE305D900297156 /* SDKMetrics */,
+				119ABE393046EB0F002E68CD /* SwiftAllocInterception.swift */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -7317,6 +7338,9 @@
 				119ABE2B3046EA52002E68CD /* MemoryToPprofTests.swift */,
 				119ABE2D3046EA8A002E68CD /* DatadogProfilerMemoryTests.swift */,
 				119ABE2F3046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift */,
+				119ABE3B3046EB13002E68CD /* SwiftAllocHookSpikeTests.swift */,
+				119ABE3D3046EB18002E68CD /* SwiftAllocInterceptionIntegrationTests.swift */,
+				119ABE3F3046EB1C002E68CD /* SwiftAllocInterceptionTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7597,9 +7621,11 @@
 				D229FFA92E3BCA9B009CCD62 /* dd_profiler.h in Headers */,
 				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
 				119ABE283046EA49002E68CD /* memory_to_pprof.h in Headers */,
+				119ABE343046EB00002E68CD /* fishhook.h in Headers */,
 				D2F0E8A52F5C000100E7CFDE /* dd_pprof_testing.h in Headers */,
 				118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */,
 				110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */,
+				119ABE363046EB05002E68CD /* swift_alloc_hook.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9299,6 +9325,7 @@
 				91BAB55D44F69081BA5D712E /* memory_swizzle_poc.cpp in Sources */,
 				5758EA9EBBDBC85CC8E869A0 /* vm_region_walker.cpp in Sources */,
 				E3CEAE0D612BFA0876A576F2 /* MemoryProfilerPOC.swift in Sources */,
+				119ABE323046EAFC002E68CD /* fishhook.c in Sources */,
 				E3CEAE0D612BFA0876A576F3 /* MemorySwizzlingPOC.swift in Sources */,
 				119ABE2A3046EA4D002E68CD /* memory_to_pprof.cpp in Sources */,
 				D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
@@ -9310,9 +9337,11 @@
 				1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */,
 				1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */,
 				1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */,
+				119ABE3A3046EB0F002E68CD /* SwiftAllocInterception.swift in Sources */,
 				D233E8022E4B653F00E7CFDE /* dd_pprof.cpp in Sources */,
 				A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */,
 				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
+				119ABE383046EB0B002E68CD /* swift_alloc_hook.cpp in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
 				11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */,
@@ -9953,10 +9982,13 @@
 				11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */,
 				118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
+				119ABE3C3046EB13002E68CD /* SwiftAllocHookSpikeTests.swift in Sources */,
+				119ABE3E3046EB18002E68CD /* SwiftAllocInterceptionIntegrationTests.swift in Sources */,
 				110DD1B52EEB7090002F3B8B /* ProfilingConfigurationTests.swift in Sources */,
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */,
 				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,
+				119ABE403046EB1C002E68CD /* SwiftAllocInterceptionTests.swift in Sources */,
 				A6DC5EA853D947FA9FEA4743 /* ProfilingConditionsTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				D2D0E20E2E3CFA6500BA4113 /* CCallbackContext.swift in Sources */,

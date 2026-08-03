@@ -33,6 +33,68 @@ final class MemoryProfilerPOCTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - SQ6: source enum threaded through the core
+
+    func testObserveAllocationWithSource_recordsSwiftSource() {
+        dd_memory_test_reset()
+        XCTAssertTrue(dd_memory_profiler_start_passive(UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)))
+        defer { dd_memory_profiler_stop() }
+
+        var box = 0
+        let ptr = withUnsafePointer(to: &box) { UnsafeRawPointer($0) }
+
+        dd_memory_test_force_next_sample()
+        dd_memory_observe_allocation_with_source(ptr, 4096, "MySwiftType", DD_MEMORY_SOURCE_SWIFT)
+
+        XCTAssertEqual(dd_memory_test_live_count(), 1)
+        XCTAssertEqual(dd_memory_test_sample_source(ptr), DD_MEMORY_SOURCE_SWIFT)
+    }
+
+    func testObserveAllocation_defaultsToObjCSource() {
+        dd_memory_test_reset()
+        XCTAssertTrue(dd_memory_profiler_start_passive(UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)))
+        defer { dd_memory_profiler_stop() }
+
+        var box = 0
+        let ptr = withUnsafePointer(to: &box) { UnsafeRawPointer($0) }
+
+        dd_memory_test_force_next_sample()
+        dd_memory_observe_allocation(ptr, 4096, "MyObjCType")
+
+        XCTAssertEqual(dd_memory_test_sample_source(ptr), DD_MEMORY_SOURCE_OBJC)
+    }
+
+    func testAllocWindow_capturesTransientFreedAllocation_whileLiveSetDoesNot() {
+        dd_memory_test_reset()
+        XCTAssertTrue(dd_memory_profiler_start_passive(UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)))
+        defer { dd_memory_profiler_stop() }
+
+        var a = 0
+        var b = 0
+        let retained = withUnsafePointer(to: &a) { UnsafeRawPointer($0) }
+        let transient = withUnsafePointer(to: &b) { UnsafeRawPointer($0) }
+
+        dd_memory_test_force_next_sample()
+        dd_memory_observe_allocation_with_source(retained, 4096, "Retained", DD_MEMORY_SOURCE_SWIFT)
+        dd_memory_test_force_next_sample()
+        dd_memory_observe_allocation_with_source(transient, 4096, "Transient", DD_MEMORY_SOURCE_SWIFT)
+        // Free the transient: it leaves the live set but its alloc contribution stays.
+        dd_memory_observe_deallocation(transient)
+
+        // Live set holds only the retained object.
+        XCTAssertEqual(dd_memory_test_live_count(), 1)
+
+        // The allocation window holds BOTH sampled allocations (incl. the freed one).
+        var alloc = dd_memory_alloc_window_capture()
+        defer { dd_memory_snapshot_destroy(&alloc) }
+        XCTAssertEqual(alloc.sample_count, 2, "alloc window must retain the transient's contribution")
+
+        // Capture resets the window: a second capture is empty.
+        var alloc2 = dd_memory_alloc_window_capture()
+        defer { dd_memory_snapshot_destroy(&alloc2) }
+        XCTAssertEqual(alloc2.sample_count, 0, "alloc window must reset after capture")
+    }
+
     // MARK: - Q1: Are malloc_zone_t hooks safe in release builds?
 
     func test_q1_default_zone_writability_is_probed_without_crashing() {

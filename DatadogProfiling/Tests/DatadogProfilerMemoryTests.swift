@@ -20,6 +20,9 @@ import DatadogMachProfiler.Testing
 ///
 /// The swizzle and the passive profiler are process-global singletons.  Every test must stop them
 /// unconditionally in `tearDown` to avoid leaking state into the rest of the suite.
+/// Pure-Swift class (allocated via swift_allocObject, not +allocWithZone:).
+private final class ProdSwiftFixture { var payload = (0, 0, 0, 0) }
+
 final class DatadogProfilerMemoryTests: XCTestCase {
     private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private let profilerQueue = DispatchQueue(label: "test.profiler.memory")
@@ -86,6 +89,31 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         // Then
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
         XCTAssertFalse(dd_memory_profiler_is_running(), "Memory profiler must NOT start when memorySampleRate == 0")
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testSwiftInterception_isActive_whenMemoryProfilingStarts() {
+        // Given — production start path with memory profiling enabled.
+        let profilingSamplerProvider = makeSamplerProvider()
+        let profiler = makeProfiler(memorySampleRate: 100, profilingSamplerProvider: profilingSamplerProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
+
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory profiler must be running")
+
+        // When — a pure-Swift class is allocated (goes through swift_allocObject,
+        // NOT the +allocWithZone: swizzle). Force sampling so it is deterministic.
+        dd_memory_test_force_next_sample()
+        let before = dd_memory_test_live_count()
+        let obj = ProdSwiftFixture()
+
+        // Then — the pure-Swift allocation must enter the shared live-set, proving
+        // startMemoryProfiling() activated the swift_allocObject interception path.
+        withExtendedLifetime(obj) {
+            XCTAssertEqual(dd_memory_test_live_count(), before + 1,
+                           "pure-Swift alloc must be captured => Swift interception is active in the production start path")
+        }
         withExtendedLifetime(profiler) {}
     }
 
