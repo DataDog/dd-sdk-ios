@@ -43,7 +43,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
     private let samplingInterval: TimeInterval
-    private let collectInBackground: Bool
     private let featureScope: FeatureScope
     private let totalRAM: Double
     private let ciTest: RUMCITest?
@@ -71,7 +70,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 120,
         samplingInterval: TimeInterval = 1,
-        collectInBackground: Bool = false,
         cpuUsageProvider: (() -> Double?)? = nil,
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
         ciTest: RUMCITest? = nil,
@@ -81,13 +79,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
         self.samplingInterval = samplingInterval
-        self.collectInBackground = collectInBackground
         self.featureScope = featureScope
         self.totalRAM = totalRAM
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.sessionSampleRate = sessionSampleRate
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
+    }
+
+    deinit {
+        timer?.cancel()
     }
 
     /// Per-process CPU as a percentage (0–100+), summed across all app threads.
@@ -121,7 +122,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             var info = thread_basic_info()
             var infoCount = mach_msg_type_number_t(THREAD_INFO_MAX)
             let kr = withUnsafeMutablePointer(to: &info) {
-                $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                $0.withMemoryRebound(to: integer_t.self, capacity: Int(infoCount)) {
                     thread_info(threadsList[Int(i)], thread_flavor_t(THREAD_BASIC_INFO), $0, &infoCount)
                 }
             }
@@ -130,7 +131,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             total += Double(info.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
         }
-        return total
+        return min(total, 100.0)
         #endif
     }
 
@@ -155,13 +156,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Suspends sampling and flushes buffered data. Session state is preserved for `resume()`. Idempotent.
-    /// No-op when `collectInBackground` is `true`.
     func pause() {
         queue.async { [weak self] in
             guard let self = self else {
                 return
             }
-            if self.collectInBackground || self.isPaused || self.timer == nil {
+            if self.isPaused || self.timer == nil {
                 return
             }
             self.timer?.cancel()
