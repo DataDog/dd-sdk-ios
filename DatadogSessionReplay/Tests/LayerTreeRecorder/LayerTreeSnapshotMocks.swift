@@ -22,7 +22,8 @@ extension LayerTreeSnapshot {
         viewID: String = "view-id",
         viewportSize: CGSize = CGSize(width: 320, height: 640),
         root: CALayerSnapshot = .mockRoot(),
-        webViewSlotIDs: Set<Int> = []
+        webViewSlotIDs: Set<Int> = [],
+        embeddedContentSlots: [Int64: String] = [:]
     ) -> LayerTreeSnapshot {
         return LayerTreeSnapshot(
             date: date,
@@ -40,7 +41,8 @@ extension LayerTreeSnapshot {
             ),
             viewportSize: viewportSize,
             root: root,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            embeddedContentSlots: embeddedContentSlots
         )
     }
 }
