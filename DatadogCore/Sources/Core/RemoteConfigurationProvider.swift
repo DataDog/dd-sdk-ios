@@ -7,6 +7,38 @@
 import Foundation
 import DatadogInternal
 
+/// CDN response metadata for a remote configuration fetch, used to correlate
+/// configuration propagation telemetry with the CDN version that produced it.
+internal struct RemoteConfigurationMetadata: Codable, Equatable {
+    /// Value of the `etag` response header, sent back as `If-None-Match`.
+    let etag: String?
+    /// Value of the `x-amz-version-id` response header.
+    let versionId: String?
+    /// Parsed value of the `last-modified` response header.
+    let lastModified: Date?
+    /// Date this configuration was fetched and persisted.
+    let lastSynced: Date?
+    /// Identifier of the sync that produced this configuration version, generated the same way
+    /// as the request IDs used for event uploads. Reused by every session running on this
+    /// version, until the next genuine (non-304) sync.
+    let syncId: String?
+    /// Date this configuration version was first observed as applied. Stamped once and reused
+    /// on every subsequent session that runs on the same version.
+    let firstApplied: Date?
+}
+
+extension RemoteConfigurationMetadata {
+    /// Formats and parses the `last-modified` response header (RFC 7231 IMF-fixdate,
+    /// e.g. `Wed, 21 Oct 2015 07:28:00 GMT`).
+    static let httpDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "GMT")
+        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
+        return formatter
+    }()
+}
+
 /// Fetches and caches remote configuration from the Datadog CDN.
 ///
 /// On `start(_:)`, the provider immediately delivers any previously cached configuration
@@ -16,9 +48,10 @@ import DatadogInternal
 ///
 /// ## Caching
 /// A successful fetch is persisted as `<id>.json` inside the supplied `directory`.
-/// The accompanying HTTP ETag is stored in `<id>.etag` and sent back as `If-None-Match`
-/// on subsequent requests, turning unchanged responses into lightweight 304s that skip
-/// body transfer and re-parse entirely.
+/// The accompanying HTTP ETag, and the `x-amz-version-id` / `last-modified` headers
+/// used for propagation telemetry, are stored in `<id>.metadata.json`. The ETag is sent
+/// back as `If-None-Match` on subsequent requests, turning unchanged responses into
+/// lightweight 304s that skip body transfer and re-parse entirely.
 ///
 /// ## Threading
 /// - The synchronous cache read in `start` runs on the caller's thread.
@@ -70,13 +103,25 @@ internal final class RemoteConfigurationProvider {
     /// Each invocation carries the latest result, so callers should replace the previously
     /// delivered value rather than accumulate.
     ///
-    /// - Parameter handler: Called with `.success` when configuration is available
-    ///   (from cache or network), or `.failure` if a read or fetch error occurs.
-    func start(_ handler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
+    /// - Parameters:
+    ///   - handler: Called with the configuration whenever one is available (from cache or
+    ///     network). Read or fetch errors are not surfaced here; they are reported to
+    ///     `telemetry` instead.
+    ///   - telemetry: Reports the propagation of the configuration version delivered from
+    ///     cache (if any) on the once-per-session configuration telemetry, synchronously
+    ///     from the cache read below. Configuration telemetry buffers sends made before a
+    ///     receiver is registered for the session, so reporting this early is safe. A
+    ///     genuinely new fetch (non-304) only updates the persisted metadata; it does not
+    ///     report telemetry on its own, since the fetched version does not take effect
+    ///     until the next application launch. Read and fetch errors are also reported here.
+    func start(
+        _ handler: @escaping (RemoteConfiguration) -> Void,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         // Synchronous read on the caller's thread (main thread during SDK init).
         // Acceptable because the file is small (a single JSON document) and only
         // present after a previous successful fetch — absent on first launch.
-        readCache().map(handler)
+        readCache(telemetry: telemetry).map(handler)
 
 #if canImport(UIKit)
         foregroundObserver = notificationCenter.addObserver(
@@ -93,11 +138,11 @@ internal final class RemoteConfigurationProvider {
                     return
                 }
             }
-            self.sync(handler)
+            self.sync(handler, telemetry: telemetry)
         }
 #endif
 
-        sync(handler)
+        sync(handler, telemetry: telemetry)
     }
 
     deinit {
@@ -123,7 +168,7 @@ internal final class RemoteConfigurationProvider {
 
     // MARK: - Private
 
-    private func readCache() -> Result<RemoteConfiguration, RemoteConfigurationError>? {
+    private func readCache(telemetry: Telemetry) -> RemoteConfiguration? {
         let cacheFilename = "\(id).json"
         guard directory.hasFile(named: cacheFilename) else {
             return nil
@@ -132,18 +177,22 @@ internal final class RemoteConfigurationProvider {
         do {
             let data = try directory.file(named: cacheFilename).read()
             let remoteConfiguration = try JSONDecoder().decode(RemoteConfiguration.self, from: data)
-            return .success(remoteConfiguration)
-        } catch let error as DecodingError {
-            return .failure(.decodingError(error))
+            reportMetadata(to: telemetry)
+            return remoteConfiguration
         } catch {
-            return .failure(.internalError(error))
+            telemetry.error("[RemoteConfig] Failed to read cached remote configuration", error: error)
+            return nil
         }
     }
 
     /// Fires an async CDN fetch and persists the configuration on success.
-    private func sync(_ handler: @escaping (Result<RemoteConfiguration, RemoteConfigurationError>) -> Void) {
+    private func sync(
+        _ handler: @escaping (RemoteConfiguration) -> Void,
+        telemetry: Telemetry
+    ) {
+        let decoder = JSONDecoder()
         let cacheFilename = "\(id).json"
-        let etagFilename = "\(id).etag"
+        let metadataFilename = "\(id).metadata.json"
 
         // Build request with conditional ETag header if a previous ETag is stored.
         var request = URLRequest(
@@ -153,12 +202,12 @@ internal final class RemoteConfigurationProvider {
                 .appendingPathExtension("json")
         )
 
-        if let file = try? directory.file(named: etagFilename) {
+        if let file = try? directory.file(named: metadataFilename) {
             do {
-                try String(data: file.read(), encoding: .utf8)
-                    .map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
+                let metadata = try decoder.decode(RemoteConfigurationMetadata.self, from: file.read())
+                metadata.etag.map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
             } catch {
-                handler(.failure(.etagError(error)))
+                telemetry.error("[RemoteConfig] Failed to read cached metadata etag", error: error)
             }
         }
 
@@ -168,9 +217,7 @@ internal final class RemoteConfigurationProvider {
             }
 
             do {
-                let (http, data) = try result
-                    .mapError { RemoteConfigurationError.networkError($0) }
-                    .get()
+                let (http, data) = try result.get()
 
                 if http.statusCode == 304 {
                     self.lastSyncDate = self.dateProvider.now
@@ -181,25 +228,16 @@ internal final class RemoteConfigurationProvider {
                     throw RemoteConfigurationError.httpError(http.statusCode)
                 }
 
-                do {
-                    // Persist ETag before decoding — the ETag belongs to the HTTP response,
-                    // not to whether we could parse the body. This prevents re-fetching a
-                    // known-bad payload on every sync; we recover when the server updates.
-                    if let etag = http.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String {
-                        try self.write(Data(etag.utf8), to: etagFilename)
-                    } else if let file = try? directory.file(named: etagFilename) {
-                        // Only delete a validator that actually exists; "nothing to delete" is not an error.
-                        try file.delete()
-                    }
-                } catch {
-                    handler(.failure(.etagError(error)))
-                }
+                // Persist metadata before decoding — it belongs to the HTTP response,
+                // not to whether we could parse the body. This prevents re-fetching a
+                // known-bad payload on every sync; we recover when the server updates.
+                self.saveMetadata(from: http, telemetry: telemetry)
 
                 guard let data, !data.isEmpty else {
                     throw RemoteConfigurationError.emptyBody
                 }
 
-                let remoteConfiguration = try JSONDecoder().decode(RemoteConfiguration.self, from: data)
+                let remoteConfiguration = try decoder.decode(RemoteConfiguration.self, from: data)
 
                 // All checks passed — persist to disk.
                 // File.write uses .atomic (write to temp, then rename), so the update is
@@ -207,15 +245,81 @@ internal final class RemoteConfigurationProvider {
                 try self.write(data, to: cacheFilename)
                 self.lastSyncDate = self.dateProvider.now
 
-                handler(.success(remoteConfiguration))
-            } catch let error as RemoteConfigurationError {
-                handler(.failure(error))
-            } catch let error as DecodingError {
-                handler(.failure(.decodingError(error)))
+                handler(remoteConfiguration)
             } catch {
-                handler(.failure(.internalError(error)))
+                telemetry.error("[RemoteConfig] Failed to sync remote configuration", error: error)
             }
         }
+    }
+
+    /// Reports the configuration version applied from cache on the once-per-session
+    /// configuration telemetry. Stamps `firstApplied` the first time this version is
+    /// observed as applied, and persists it back to disk so every later session running
+    /// on the same version reports the same value.
+    private func reportMetadata(to telemetry: Telemetry) {
+        guard let file = try? directory.file(named: "\(id).metadata.json") else {
+            return
+        }
+
+        do {
+            var metadata = try JSONDecoder().decode(RemoteConfigurationMetadata.self, from: file.read())
+
+            if metadata.firstApplied == nil {
+                metadata = RemoteConfigurationMetadata(
+                    etag: metadata.etag,
+                    versionId: metadata.versionId,
+                    lastModified: metadata.lastModified,
+                    lastSynced: metadata.lastSynced,
+                    syncId: metadata.syncId,
+                    firstApplied: dateProvider.now
+                )
+                try write(metadata: metadata)
+            }
+
+            telemetry.configuration(
+                remoteConfiguration: .init(
+                    configId: id,
+                    versionId: metadata.versionId,
+                    lastModified: metadata.lastModified,
+                    lastSynced: metadata.lastSynced,
+                    firstApplied: metadata.firstApplied,
+                    syncId: metadata.syncId
+                )
+            )
+        } catch {
+            telemetry.error("[RemoteConfig] Failed to report applied remote configuration", error: error)
+        }
+    }
+
+    /// Builds and persists metadata from a genuine (non-304) fetch's HTTP response.
+    /// `syncId` and `lastSynced` mark this as a genuine sync, distinct from a 304.
+    /// `firstApplied` is left unset: this version has not been applied yet, since a
+    /// fetch that completes mid-session does not retroactively re-apply already
+    /// initialized features.
+    private func saveMetadata(from response: HTTPURLResponse, telemetry: Telemetry) {
+        let etag = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String
+        let versionId = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "x-amz-version-id" })?.value as? String
+        let lastModifiedHeader = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "last-modified" })?.value as? String
+
+        let metadata = RemoteConfigurationMetadata(
+            etag: etag,
+            versionId: versionId,
+            lastModified: lastModifiedHeader.flatMap { RemoteConfigurationMetadata.httpDateFormatter.date(from: $0) },
+            lastSynced: dateProvider.now,
+            syncId: UUID().uuidString,
+            firstApplied: nil
+        )
+
+        do {
+            try write(metadata: metadata)
+        } catch {
+            telemetry.error("[RemoteConfig] Failed to save remote configuration metadata", error: error)
+        }
+    }
+
+    /// Persists metadata to `<id>.metadata.json`.
+    private func write(metadata: RemoteConfigurationMetadata) throws {
+        try write(JSONEncoder().encode(metadata), to: "\(id).metadata.json")
     }
 
     private func write(_ data: Data, to filename: String) throws {
@@ -227,21 +331,13 @@ internal final class RemoteConfigurationProvider {
 }
 
 internal enum RemoteConfigurationError: Error, LocalizedError {
-    case networkError(Error)
     case httpError(Int)
     case emptyBody
-    case decodingError(DecodingError)
-    case etagError(Error)
-    case internalError(Error)
 
     var errorDescription: String? {
         switch self {
-        case .networkError(let error): return "Network error: \(error.localizedDescription)"
         case .httpError(let code): return "Non-2xx response: HTTP \(code)"
         case .emptyBody: return "Empty response body"
-        case .decodingError(let error): return "Decoding failed: \(error.localizedDescription)"
-        case .etagError(let error): return "Etag storage failed: \(error.localizedDescription)"
-        case .internalError(let error): return "Internal error: \(error.localizedDescription)"
         }
     }
 }
