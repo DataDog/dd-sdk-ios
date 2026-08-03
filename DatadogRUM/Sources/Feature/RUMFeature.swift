@@ -111,12 +111,12 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         }()
 
         let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
+            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
             if let sessionScope {
                 let sessionID = sessionScope.sessionUUID.toRUMDataFormat
                 let isDiscarded = !sessionScope.sampler.isSampled
                 onSessionStart?(sessionID, isDiscarded)
             }
-            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
         }
 
         let dependencies = RUMScopeDependencies(
