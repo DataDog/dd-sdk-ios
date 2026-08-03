@@ -96,6 +96,12 @@ bool dd_memory_test_insert_sample(
     uint64_t session_generation
 );
 
+/**
+ * Returns the recorded source for a live sampled address, or
+ * DD_MEMORY_SOURCE_ZONE if the address is not in the live table.
+ */
+dd_memory_source_t dd_memory_test_sample_source(const void* ptr);
+
 #ifdef __cplusplus
 }
 #endif

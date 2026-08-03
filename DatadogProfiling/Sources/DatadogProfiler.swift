@@ -599,7 +599,18 @@ private extension DatadogProfiler {
         // by the +allocWithZone: trampoline have a live sample table to write into.
         // dd_memory_swizzle_start internally calls dd_memory_profiler_start_passive and
         // installs the swizzle in the correct order, so a single call is sufficient.
-        MemorySwizzlingPOC.start(poissonRateBytes: MemorySwizzlingPOC.defaultPoissonRateBytes)
+        let status = MemorySwizzlingPOC.start(poissonRateBytes: MemorySwizzlingPOC.defaultPoissonRateBytes)
+
+        // Dual interception: also intercept pure-Swift class allocations
+        // (swift_allocObject), which bypass the Obj-C +allocWithZone: swizzle.
+        // start() joins the same passive sampler (idempotent start_passive), so
+        // both paths feed one shared sampler / live-set / encoder. Samples are
+        // tagged source=swift and unioned with the Obj-C path (disjoint, no
+        // double-count).
+        SwiftAllocInterception.start(poissonRateBytes: SwiftAllocInterception.defaultPoissonRateBytes)
+        // TEMP DEBUG — remove before merging. Confirms the swizzle install boundary on device.
+//        print("[PROFILING-DEBUG] mem swizzle start status=\(status) "
+//            + "swizzleRunning=\(MemorySwizzlingPOC.isRunning) samplerRunning=\(MemoryProfilerPOC.isRunning)")
     }
 
     func stopMemoryProfiling() {
@@ -607,6 +618,10 @@ private extension DatadogProfiler {
         // when they are still the outermost swizzles, and clears the sampler's enabled flag.
         // Safe to call even when not running.
         MemorySwizzlingPOC.stop()
+        // Stop recording pure-Swift allocations. Never-restore: the rebound
+        // trampolines stay installed and keep forwarding; they simply stop
+        // observing. Safe to call even when not running.
+        SwiftAllocInterception.stop()
     }
 
     var shouldHarvestAppLaunchProfileOnTTID: Bool {

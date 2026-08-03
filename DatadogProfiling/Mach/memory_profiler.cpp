@@ -81,6 +81,16 @@ static_assert(
 /// public `dd_memory_sample_t::frames` array size.
 constexpr uint32_t SAMPLE_STACK_DEPTH = DD_MEMORY_DEFAULT_STACK_DEPTH;
 
+/// Capacity of the per-window allocation log that feeds `alloc_*`.
+/// One entry per sampled allocation observed during the current emission
+/// window (independent of the live-set table, which tracks `inuse_*`). Sized
+/// like the live table; overflow drops with a counter rather than growing.
+constexpr size_t ALLOC_WINDOW_CAPACITY = 4096;
+static_assert(
+    (ALLOC_WINDOW_CAPACITY & (ALLOC_WINDOW_CAPACITY - 1)) == 0,
+    "The alloc-window capacity must remain a power of two"
+);
+
 // MARK: - Internal sample entry
 
 /// One slot in the live-sample hash table.
@@ -106,6 +116,8 @@ struct sample_entry {
     /// caller's responsibility (Obj-C class names from class_getName are
     /// stable for the life of the class).
     const char* class_name{nullptr};
+    /// Interception path that recorded this sample.
+    dd_memory_source_t source{DD_MEMORY_SOURCE_ZONE};
 };
 
 // MARK: - Global state
@@ -138,6 +150,14 @@ std::atomic<uint64_t> g_session_generation{0};
 /// by other tools after us).
 sample_entry* g_samples = nullptr;
 
+/// Per-window allocation log feeding `alloc_*`. A plain array of public sample
+/// records (no per-entry lock — only ever read/written under `g_insert_lock`),
+/// pre-allocated once with `mmap`. `g_alloc_window_count` is the number of valid
+/// entries in the current window; it is reset to 0 at window capture and at
+/// session start. Overflow increments `g_alloc_window_dropped` instead of growing.
+dd_memory_sample_t* g_alloc_window = nullptr;
+size_t g_alloc_window_count = 0;
+
 /// Mach timebase converted to nanoseconds — cached after first use.
 mach_timebase_info_data_t g_timebase = {};
 
@@ -157,6 +177,7 @@ std::atomic<uint64_t> g_total_bytes_allocated{0};
 std::atomic<uint64_t> g_total_allocations{0};
 std::atomic<uint64_t> g_sampled_allocations{0};
 std::atomic<uint64_t> g_dropped_samples{0};
+std::atomic<uint64_t> g_alloc_window_dropped{0};
 std::atomic<uint64_t> g_sampled_frees{0};
 std::atomic<uint64_t> g_live_sampled_allocations{0};
 std::atomic<uint64_t> g_reentrant_skips{0};
@@ -278,7 +299,8 @@ enum class insert_result {
 /// are already on the sampled slow path.
 insert_result insert_sample(uint64_t addr, uint64_t size, double weight,
                             const uint64_t* frames, uint32_t frame_count,
-                            const char* class_name, uint64_t session_generation) {
+                            const char* class_name, dd_memory_source_t source,
+                            uint64_t session_generation) {
     if (!is_live_address(addr)) {
         return insert_result::rejected_table;
     }
@@ -294,6 +316,30 @@ insert_result insert_sample(uint64_t addr, uint64_t size, double weight,
     // still belongs to the active session. Lifecycle transitions hold the same
     // lock, so diagnostics cannot leak across a reset.
     g_sampled_allocations.fetch_add(1, std::memory_order_relaxed);
+
+    // Record the allocation into the per-window log that feeds `alloc_*`. This
+    // happens BEFORE live-table admission on purpose: a drop-new on the live
+    // table censors `inuse_*` but must never erase the allocation's `alloc_*`
+    // contribution. Guarded by the already-held g_insert_lock (no per-entry lock).
+    if (g_alloc_window != nullptr) {
+        if (g_alloc_window_count < ALLOC_WINDOW_CAPACITY) {
+            dd_memory_sample_t& rec = g_alloc_window[g_alloc_window_count++];
+            rec.addr = addr;
+            rec.size = size;
+            rec.weight = weight;
+            rec.class_name = class_name;
+            rec.source = source;
+            rec.timestamp_ns = monotonic_ns_since_start();
+            const uint32_t n = (frame_count > SAMPLE_STACK_DEPTH) ? SAMPLE_STACK_DEPTH : frame_count;
+            std::memset(rec.frames, 0, sizeof(rec.frames));
+            if (n > 0) {
+                std::memcpy(rec.frames, frames, n * sizeof(uint64_t));
+            }
+            rec.frame_count = n;
+        } else {
+            g_alloc_window_dropped.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
 
     size_t available_idx = SAMPLE_TABLE_CAPACITY;
     const size_t start = bucket_for(addr);
@@ -337,6 +383,7 @@ insert_result insert_sample(uint64_t addr, uint64_t size, double weight,
     }
     entry.frame_count = to_copy;
     entry.class_name = class_name;
+    entry.source = source;
 
     // Count before publishing the address so a concurrent remove can never
     // observe a live key before the corresponding live count exists.
@@ -409,6 +456,7 @@ void clear_sample_table_locked() {
         std::memset(entry.frames, 0, sizeof(entry.frames));
         entry.frame_count = 0;
         entry.class_name = nullptr;
+        entry.source = DD_MEMORY_SOURCE_ZONE;
         os_unfair_lock_unlock(&entry.lock);
     }
     g_live_sampled_allocations.store(0, std::memory_order_release);
@@ -440,7 +488,8 @@ uint32_t capture_backtrace(uint64_t* frames, uint32_t max_frames) {
 /// unchanged so hook wrappers can `return record_allocation(...)`.
 /// @param class_name Optional Obj-C/Swift class name (from class_getName);
 ///                   stored verbatim in the sample. nullptr for zone-hook path.
-void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr) {
+void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr,
+                        dd_memory_source_t source = DD_MEMORY_SOURCE_ZONE) {
     if (ptr == nullptr) {
         return ptr;
     }
@@ -500,6 +549,7 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
         frames,
         frame_count,
         class_name,
+        source,
         session_generation
     );
     tls_in_profiler = false;
@@ -699,6 +749,17 @@ bool ensure_sample_table_allocated() {
     for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
         new (&g_samples[i]) sample_entry();
     }
+
+    // Per-window allocation log. dd_memory_sample_t is a plain C struct, so the
+    // zero-filled mmap pages are already a valid initial state — no placement new.
+    const size_t alloc_bytes = sizeof(dd_memory_sample_t) * ALLOC_WINDOW_CAPACITY;
+    void* alloc_mem = mmap(nullptr, alloc_bytes, PROT_READ | PROT_WRITE,
+                           MAP_ANON | MAP_PRIVATE, -1, 0);
+    if (alloc_mem == MAP_FAILED) {
+        return false;
+    }
+    g_alloc_window = static_cast<dd_memory_sample_t*>(alloc_mem);
+    g_alloc_window_count = 0;
     return true;
 }
 
@@ -707,6 +768,7 @@ void reset_diagnostics() {
     g_total_allocations.store(0, std::memory_order_relaxed);
     g_sampled_allocations.store(0, std::memory_order_relaxed);
     g_dropped_samples.store(0, std::memory_order_relaxed);
+    g_alloc_window_dropped.store(0, std::memory_order_relaxed);
     g_sampled_frees.store(0, std::memory_order_relaxed);
     g_reentrant_skips.store(0, std::memory_order_relaxed);
     g_unsampled_calls.store(0, std::memory_order_relaxed);
@@ -723,6 +785,7 @@ void start_new_session(uint64_t poisson_rate_bytes) {
     g_poisson_rate_bytes.store(normalized_rate, std::memory_order_release);
     g_start_ticks.store(mach_absolute_time(), std::memory_order_release);
     clear_sample_table_locked();
+    g_alloc_window_count = 0;
     reset_diagnostics();
     g_profiler_enabled.store(true, std::memory_order_release);
     os_unfair_lock_unlock(&g_insert_lock);
@@ -846,7 +909,13 @@ extern "C" bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes) {
 }
 
 extern "C" void dd_memory_observe_allocation(const void* ptr, uint64_t size, const char* class_name) {
-    record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size), class_name);
+    record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size), class_name, DD_MEMORY_SOURCE_OBJC);
+}
+
+extern "C" void dd_memory_observe_allocation_with_source(const void* ptr, uint64_t size,
+                                                         const char* class_name,
+                                                         dd_memory_source_t source) {
+    record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size), class_name, source);
 }
 
 extern "C" void dd_memory_observe_deallocation(const void* ptr) {
@@ -944,6 +1013,7 @@ extern "C" dd_memory_snapshot_t dd_memory_snapshot_capture(void) {
             out[written].timestamp_ns = entry.timestamp_ns;
             out[written].frame_count = entry.frame_count;
             out[written].class_name = entry.class_name;
+            out[written].source = entry.source;
             std::memcpy(out[written].frames, entry.frames,
                         sizeof(uint64_t) * SAMPLE_STACK_DEPTH);
             written += 1;
@@ -966,6 +1036,43 @@ extern "C" dd_memory_snapshot_t dd_memory_snapshot_capture(void) {
     }
 }
 
+extern "C" dd_memory_snapshot_t dd_memory_alloc_window_capture(void) {
+    dd_memory_snapshot_t result = {};
+    if (!g_profiler_enabled.load(std::memory_order_acquire)) {
+        return result;
+    }
+
+    os_unfair_lock_lock(&g_insert_lock);
+    const size_t count = g_alloc_window_count;
+    if (g_alloc_window == nullptr || count == 0) {
+        // Nothing this window; still reset so the next window starts clean.
+        g_alloc_window_count = 0;
+        os_unfair_lock_unlock(&g_insert_lock);
+        return result;
+    }
+
+    // Copy the window out, then reset it. Guard reentrancy around calloc in case
+    // the legacy malloc-zone hooks are active (mirrors dd_memory_snapshot_capture).
+    const bool previous_reentrancy = tls_in_profiler;
+    tls_in_profiler = true;
+    dd_memory_sample_t* out = static_cast<dd_memory_sample_t*>(
+        std::calloc(count, sizeof(dd_memory_sample_t))
+    );
+    tls_in_profiler = previous_reentrancy;
+    if (out == nullptr) {
+        os_unfair_lock_unlock(&g_insert_lock);
+        return result;
+    }
+
+    std::memcpy(out, g_alloc_window, count * sizeof(dd_memory_sample_t));
+    g_alloc_window_count = 0;  // window drained; next window accumulates fresh
+    result.samples = out;
+    result.sample_count = count;
+    result.timestamp_ns = monotonic_ns_since_start();
+    os_unfair_lock_unlock(&g_insert_lock);
+    return result;
+}
+
 extern "C" void dd_memory_snapshot_destroy(dd_memory_snapshot_t* snapshot) {
     if (snapshot == nullptr || snapshot->samples == nullptr) {
         return;
@@ -984,6 +1091,7 @@ extern "C" dd_memory_diagnostics_t dd_memory_profiler_diagnostics(void) {
     d.total_allocations = g_total_allocations.load(std::memory_order_relaxed);
     d.sampled_allocations = g_sampled_allocations.load(std::memory_order_relaxed);
     d.dropped_samples = g_dropped_samples.load(std::memory_order_relaxed);
+    d.dropped_alloc_records = g_alloc_window_dropped.load(std::memory_order_relaxed);
     d.sampled_frees = g_sampled_frees.load(std::memory_order_relaxed);
     d.live_sampled_allocations = g_live_sampled_allocations.load(std::memory_order_relaxed);
     d.reentrant_skips = g_reentrant_skips.load(std::memory_order_relaxed);
@@ -1003,6 +1111,7 @@ extern "C" void dd_memory_test_reset(void) {
     g_profiler_enabled.store(false, std::memory_order_release);
     g_session_generation.fetch_add(1, std::memory_order_acq_rel);
     clear_sample_table_locked();
+    g_alloc_window_count = 0;
     reset_diagnostics();
     os_unfair_lock_unlock(&g_insert_lock);
     os_unfair_lock_unlock(&g_lifecycle_lock);
@@ -1045,9 +1154,36 @@ extern "C" bool dd_memory_test_insert_sample(
         nullptr,
         0,
         nullptr,
+        DD_MEMORY_SOURCE_ZONE,
         session_generation
     );
     return result == insert_result::inserted;
+}
+
+extern "C" dd_memory_source_t dd_memory_test_sample_source(const void* ptr) {
+    if (g_samples == nullptr) {
+        return DD_MEMORY_SOURCE_ZONE;
+    }
+    const uint64_t addr = reinterpret_cast<uint64_t>(ptr);
+    if (!is_live_address(addr)) {
+        return DD_MEMORY_SOURCE_ZONE;
+    }
+    const size_t start = bucket_for(addr);
+    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
+        const size_t idx = (start + i) % SAMPLE_TABLE_CAPACITY;
+        sample_entry& entry = g_samples[idx];
+        const uint64_t current = entry.addr.load(std::memory_order_acquire);
+        if (current == EMPTY_SLOT) {
+            return DD_MEMORY_SOURCE_ZONE;
+        }
+        if (current == addr) {
+            os_unfair_lock_lock(&entry.lock);
+            const dd_memory_source_t s = entry.source;
+            os_unfair_lock_unlock(&entry.lock);
+            return s;
+        }
+    }
+    return DD_MEMORY_SOURCE_ZONE;
 }
 
 #endif // defined(__APPLE__) && !TARGET_OS_WATCH

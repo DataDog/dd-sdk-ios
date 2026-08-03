@@ -155,8 +155,25 @@ extension ProfilingHandler {
     /// `view.id` is stored in the attributes dictionary as `[String]` (the RUM SDK wraps it in
     /// an array); we take the first element as the label value.
     private func captureHeapPprof(attributes: [AttributeKey: AttributeValue]) -> Data? {
+        // Live set (inuse_*) — a point-in-time view, never reset.
         var snapshot = dd_memory_snapshot_capture()
         defer { dd_memory_snapshot_destroy(&snapshot) }
+
+        // This window's sampled allocations (alloc_*) — captured-and-reset so the
+        // next window accumulates fresh. Independent of the live set: transient
+        // objects allocated and freed within the window show up here but not in
+        // `snapshot`, which is what makes alloc_* diverge from inuse_*.
+        var allocWindow = dd_memory_alloc_window_capture()
+        defer { dd_memory_snapshot_destroy(&allocWindow) }
+
+        // TEMP DEBUG — remove before merging. Pinpoints which boundary is empty on device.
+        let sw = MemorySwizzlingPOC.diagnostics()
+        let mp = MemoryProfilerPOC.diagnostics()
+//        print("[PROFILING-DEBUG] mem swizzle.totalInvocations=\(sw.totalInvocations) "
+//            + "swizzle.observed=\(sw.observedAllocations) swizzle.skippedDisabled=\(sw.skippedDisabled)")
+//        print("[PROFILING-DEBUG] mem sampler.totalAllocations=\(mp.totalAllocations) "
+//            + "sampled=\(mp.sampledAllocations) live=\(mp.liveSampledAllocations) reentrantSkips=\(mp.reentrantSkips)")
+//        print("[PROFILING-DEBUG] mem snapshot.sampleCount=\(snapshot.sample_count)")
 
         // Extract RUM correlation IDs from attributes using the same keys the wall
         // profiling path receives from the RUM feature message.
@@ -171,13 +188,14 @@ extension ProfilingHandler {
         let size = withOptionalCString(sessionID) { sidPtr in
             withOptionalCString(viewID) { vidPtr in
                 withOptionalCString(applicationID) { aidPtr in
-                    dd_memory_snapshot_to_pprof(&snapshot, sidPtr, vidPtr, aidPtr, &raw)
+                    dd_memory_snapshots_to_pprof(&snapshot, &allocWindow, sidPtr, vidPtr, aidPtr, &raw)
                 }
             }
         }
 
         guard size > 0, let raw else {
-            // No live heap samples this period — nothing to attach.
+            // No heap samples this period (neither live set nor window allocations)
+            // — nothing to attach.
             return nil
         }
 
