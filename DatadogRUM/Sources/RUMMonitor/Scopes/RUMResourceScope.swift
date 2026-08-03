@@ -129,7 +129,7 @@ internal class RUMResourceScope: RUMScope {
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
         let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
-        let localCacheHit: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)?.dd.decode()
+        let localCacheHit: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)?.dd.decode() ?? resourceMetrics?.isLocalCacheHit
 
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
