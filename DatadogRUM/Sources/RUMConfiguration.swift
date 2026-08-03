@@ -334,7 +334,7 @@ extension RUM {
         /// timeseries events scoped to the RUM session. Requires `vitalsUpdateFrequency` to be set.
         ///
         /// Default: `false`.
-        @available(*, message: "This API is experimental and may change in future releases")
+        @_spi(Experimental)
         public var enableTimeseries: Bool
 
         /// The default number of samples collected before a timeseries batch is flushed.
