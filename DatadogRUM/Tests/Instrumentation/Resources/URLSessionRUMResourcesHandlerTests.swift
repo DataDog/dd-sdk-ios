@@ -728,6 +728,32 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(resourceStopCommand.httpStatusCode)
     }
 
+    func testGivenTaskInterceptionWithLocalCacheHitMetricsAndError_whenInterceptionCompletes_itOmitsLocalCacheHitAttributeFromErrorCommand() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        var commandsReceived: [RUMCommand] = []
+        commandSubscriber.onCommandReceived = { command in
+            commandsReceived.append(command)
+            receiveCommands.fulfill()
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
+        let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
+        let resourceMetrics = ResourceMetrics.mockWith(isLocalCacheHit: true)
+        taskInterception.register(metrics: resourceMetrics)
+        taskInterception.register(response: nil, error: taskError)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceWithErrorCommand)
+        XCTAssertNil(resourceStopCommand.attributes[CrossPlatformAttributes.localCacheHit])
+    }
+
     // MARK: - RUM Resource Attributes Provider
 
     func testGivenRUMAttributesProviderRegistered_whenInterceptionCompletesWithResponse_itAddsCustomRUMAttributes() throws {

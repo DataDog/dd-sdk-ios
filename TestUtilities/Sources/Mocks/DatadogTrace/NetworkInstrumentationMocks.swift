@@ -224,7 +224,7 @@ extension ResourceMetrics: AnyMockable {
         download: DateInterval? = nil,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
         requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        isLocalCacheHit: Bool = false
+        isLocalCacheHit: Bool? = nil
     ) -> Self {
         return .init(
             fetch: fetch,

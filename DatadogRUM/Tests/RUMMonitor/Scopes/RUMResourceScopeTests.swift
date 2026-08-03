@@ -1980,6 +1980,49 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.resource.localCacheHit, true)
     }
 
+    func testWhenResourceMetricsHaveNoCacheSignalAndStopCommandHasNoAttribute_itLeavesResourceLocalCacheHitNil() throws {
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            parent: provider,
+            dependencies: dependencies,
+            resourceKey: "/api/data",
+            startTime: .mockDecember15th2019At10AMUTC(),
+            url: "https://api.example.com/data",
+            httpMethod: .get
+        )
+
+        // Mirrors metrics reported via the cross-platform `addResourceMetrics(at:fetch:...)` API,
+        // which has no notion of cache status at all.
+        let metricsCommand = RUMAddResourceMetricsCommand(
+            resourceKey: "/api/data",
+            time: .mockDecember15th2019At10AMUTC(),
+            attributes: [:],
+            metrics: .mockWith(isLocalCacheHit: nil)
+        )
+
+        // When
+        XCTAssertTrue(scope.process(command: metricsCommand, context: context, writer: writer))
+
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/api/data",
+                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
+                    attributes: [:],
+                    kind: .xhr,
+                    httpStatusCode: 200,
+                    size: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertNil(event.resource.localCacheHit)
+    }
+
     func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {
         // Given
         let scope = RUMResourceScope.mockWith(

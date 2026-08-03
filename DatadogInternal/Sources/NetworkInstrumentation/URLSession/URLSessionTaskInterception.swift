@@ -267,7 +267,8 @@ public struct ResourceMetrics {
     public let requestBodySize: (encoded: Int64, decoded: Int64)?
 
     /// Indicates whether the resource was served from the device's local cache.
-    public let isLocalCacheHit: Bool
+    /// `nil` when this signal isn't known, e.g. metrics reported without real `URLSessionTaskMetrics`.
+    public let isLocalCacheHit: Bool?
 
     public init(
         fetch: DateInterval,
@@ -279,7 +280,7 @@ public struct ResourceMetrics {
         download: DateInterval?,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
         requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        isLocalCacheHit: Bool = false
+        isLocalCacheHit: Bool? = nil
     ) {
         self.fetch = fetch
         self.redirection = redirection

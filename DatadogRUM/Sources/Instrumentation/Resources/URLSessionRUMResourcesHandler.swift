@@ -207,6 +207,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         }
 
         if let error = interception.completion?.error {
+            var errorAttributes = combinedAttributes
+            errorAttributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)
             subscriber.process(
                 command: RUMStopResourceWithErrorCommand(
                     resourceKey: interception.identifier.uuidString,
@@ -215,7 +217,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                     source: .network,
                     httpStatusCode: interception.completion?.httpResponse?.statusCode,
                     globalAttributes: [:],
-                    attributes: combinedAttributes
+                    attributes: errorAttributes
                 )
             )
         }
