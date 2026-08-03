@@ -311,7 +311,17 @@ extension ResourceMetrics {
         // * if `200 OK` was preceded by `301` redirection, it will contain 2 transactions.
         let mainTransaction = transactions.last
         let redirectionTransactions = transactions.dropLast()
-        let isLocalCacheHit = taskMetrics.transactionMetrics.last?.resourceFetchType == .localCache
+        let isLocalCacheHit: Bool?
+        switch taskMetrics.transactionMetrics.last?.resourceFetchType {
+        case .some(.localCache):
+            isLocalCacheHit = true
+        case .some(.unknown), .none:
+            // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep it as unknown
+            // rather than asserting a measured cache miss.
+            isLocalCacheHit = nil
+        default:
+            isLocalCacheHit = false
+        }
 
         var redirection: DateInterval? = nil
 

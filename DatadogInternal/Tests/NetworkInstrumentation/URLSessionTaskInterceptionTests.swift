@@ -375,4 +375,32 @@ class ResourceMetricsTests: XCTestCase {
         )
         XCTAssertEqual(resourceMetrics.isLocalCacheHit, true)
     }
+
+    func testWhenTaskFetchTypeIsUnknown_thenLocalCacheHitIsNil() {
+        guard #available(iOS 13, tvOS 13, *) else {
+            return
+        }
+
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+        )
+        // Apple documents `.unknown` as "the fetch manner was not determined" -
+        // it must not be reported as a measured cache miss.
+        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.end,
+            resourceFetchType: .unknown
+        )
+
+        // When
+        let taskMetrics: URLSessionTaskMetrics = .mockWith(
+            taskInterval: taskInterval,
+            transactionMetrics: [taskTransaction]
+        )
+
+        // Then
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertNil(resourceMetrics.isLocalCacheHit)
+    }
 }
