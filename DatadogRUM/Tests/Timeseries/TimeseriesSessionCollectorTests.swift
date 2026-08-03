@@ -627,7 +627,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertGreaterThan(countAfterResume, countAfterPause, "Expected new events after resume")
     }
 
-    func testWhenCollectInBackgroundEnabled_pauseIsNoOp() {
+    func testWhenBackgrounded_pauseAlwaysStopsSampling() {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -635,7 +635,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            collectInBackground: true,
             cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
@@ -651,17 +650,17 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertGreaterThan(countBeforePause, 0)
 
-        // When — pause should be a no-op
-        let afterPauseExpectation = self.expectation(description: "sampling continues after pause")
+        // When — pause on backgrounding
+        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
         afterPauseExpectation.assertForOverFulfill = false
         collector.pause()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
-        collector.stop()
 
-        // Then — events keep accumulating
+        // Then — no new events accumulate while paused
         let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
-        XCTAssertGreaterThan(countAfterPause, countBeforePause, "Sampling should continue when collectInBackground = true")
+        XCTAssertEqual(countAfterPause, countBeforePause, "Sampling should stop while backgrounded, regardless of trackBackgroundEvents")
+        collector.stop()
     }
 
     func testWhenPauseCalledBeforeStart_itIsNoOp() {
