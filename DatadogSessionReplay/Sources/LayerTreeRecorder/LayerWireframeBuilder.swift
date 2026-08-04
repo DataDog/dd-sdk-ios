@@ -103,7 +103,6 @@ internal struct LayerWireframeBuilder {
         case (.embeddedContent(let embeddedContent), _):
             pendingEmbeddedContentSlots.removeValue(forKey: snapshot.replayID)
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(layerSnapshot: snapshot, embeddedContent: embeddedContent),
                 resource: nil
             )
@@ -153,7 +152,7 @@ internal struct LayerWireframeBuilder {
 
     mutating func makeHiddenEmbeddedContentWireframes() -> [SRWireframe] {
         let wireframes = pendingEmbeddedContentSlots.map {
-            SRWireframe(hiddenEmbeddedContentWireframeID: $0.key, slotID: $0.value)
+            SRWireframe(hiddenEmbeddedContentReplayID: $0.key, slotID: $0.value)
         }
         pendingEmbeddedContentSlots.removeAll()
         return wireframes

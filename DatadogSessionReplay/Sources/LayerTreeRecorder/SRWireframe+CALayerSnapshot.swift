@@ -11,16 +11,16 @@ import UIKit
 
 extension SRWireframe {
     @available(iOS 13.0, tvOS 13.0, *)
-    init(hiddenEmbeddedContentWireframeID id: Int64, slotID: String) {
+    init(hiddenEmbeddedContentReplayID replayID: Int64, slotID: String) {
         self = .embeddedContentWireframe(
             value: .init(
-                height: 0,
-                id: id,
-                isVisible: false,
+                replayID: replayID,
                 slotId: slotID,
-                width: 0,
                 x: 0,
-                y: 0
+                y: 0,
+                width: 0,
+                height: 0,
+                isVisible: false
             )
         )
     }
@@ -163,15 +163,15 @@ extension SRWireframe {
     ) {
         self = .embeddedContentWireframe(
             value: .init(
-                border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
-                isVisible: true,
-                shapeStyle: .init(layerSnapshot: layerSnapshot),
+                replayID: layerSnapshot.replayID,
                 slotId: embeddedContent.slotID,
-                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
+                border: .init(layerSnapshot: layerSnapshot),
+                isVisible: true,
+                shapeStyle: .init(layerSnapshot: layerSnapshot)
             )
         )
     }

@@ -350,7 +350,7 @@ struct LayerWireframeBuilderTests {
             return
         }
         #expect(hiddenEmbeddedContentWireframes.count == 1)
-        #expect(hiddenWireframe.id == snapshot.replayID)
+        #expect(hiddenWireframe.id == Int64(namespace: .embeddedContent, replayID: snapshot.replayID))
         #expect(hiddenWireframe.slotId == "embedded-slot")
         #expect(hiddenWireframe.isVisible == false)
     }
@@ -434,12 +434,11 @@ struct LayerWireframeBuilderTests {
             return
         }
 
-        #expect(output.id == replayID)
-        #expect(wireframe.id == replayID)
+        #expect(wireframe.id == Int64(namespace: .embeddedContent, replayID: replayID))
         #expect(wireframe.slotId == slotID)
         #expect(wireframe.isVisible == true)
         #expect(hiddenWireframes.count == 1)
-        #expect(hiddenWireframe.id == hiddenReplayID)
+        #expect(hiddenWireframe.id == Int64(namespace: .embeddedContent, replayID: hiddenReplayID))
         #expect(hiddenWireframe.slotId == hiddenSlotID)
         #expect(hiddenWireframe.isVisible == false)
     }

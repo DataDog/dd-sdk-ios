@@ -208,7 +208,11 @@ struct CompositionTreeBuilderTests {
         let output = builder.build()
 
         // Then
-        #expect(output.compositionTree.root.children == [.init(id: visibleReplayID, type: .wireframe)])
+        let visibleWireframeID = Int64(namespace: .embeddedContent, replayID: visibleReplayID)
+        let hiddenWireframeID = Int64(namespace: .embeddedContent, replayID: hiddenReplayID)
+        #expect(output.compositionTree.root.children == [
+            .init(id: visibleWireframeID, type: .wireframe)
+        ])
         try #require(output.wireframes.count == 2)
 
         guard
@@ -219,10 +223,10 @@ struct CompositionTreeBuilderTests {
             return
         }
 
-        #expect(hiddenWireframe.id == hiddenReplayID)
+        #expect(hiddenWireframe.id == hiddenWireframeID)
         #expect(hiddenWireframe.slotId == "hidden-slot")
         #expect(hiddenWireframe.isVisible == false)
-        #expect(visibleWireframe.id == visibleReplayID)
+        #expect(visibleWireframe.id == visibleWireframeID)
         #expect(visibleWireframe.slotId == "visible-slot")
         #expect(visibleWireframe.isVisible == true)
     }
