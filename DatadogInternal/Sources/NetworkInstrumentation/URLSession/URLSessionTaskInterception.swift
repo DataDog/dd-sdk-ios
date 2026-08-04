@@ -315,12 +315,14 @@ extension ResourceMetrics {
         switch taskMetrics.transactionMetrics.last?.resourceFetchType {
         case .some(.localCache):
             isLocalCacheHit = true
+        case .some(.networkLoad):
+            isLocalCacheHit = false
         case .some(.unknown), .none:
             // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep it as unknown
             // rather than asserting a measured cache miss.
             isLocalCacheHit = nil
         default:
-            isLocalCacheHit = false
+            isLocalCacheHit = nil
         }
 
         var redirection: DateInterval? = nil

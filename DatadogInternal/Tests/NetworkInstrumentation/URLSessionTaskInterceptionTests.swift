@@ -403,4 +403,30 @@ class ResourceMetricsTests: XCTestCase {
         let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
         XCTAssertNil(resourceMetrics.isLocalCacheHit)
     }
+
+    func testWhenTaskFetchTypeIsNetworkLoad_thenLocalCacheHitIsFalse() {
+        guard #available(iOS 13, tvOS 13, *) else {
+            return
+        }
+
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+        )
+        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.end,
+            resourceFetchType: .networkLoad
+        )
+
+        // When
+        let taskMetrics: URLSessionTaskMetrics = .mockWith(
+            taskInterval: taskInterval,
+            transactionMetrics: [taskTransaction]
+        )
+
+        // Then
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertEqual(resourceMetrics.isLocalCacheHit, false)
+    }
 }
