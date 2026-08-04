@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-29
-sdk_version: 3.13.0
-verified_against_commit: 48f0891ec
+last_updated: 2026-08-04
+sdk_version: 3.14.0
+verified_against_commit: cc8c93bb3
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -148,6 +148,8 @@ RUM.enable(
         // Also available: errorEventMapper, actionEventMapper, longTaskEventMapper
         
         // Session start callback
+        // Note: this is a `@Sendable` closure (SessionListener) — it may be
+        // invoked from a background queue, so only capture Sendable state.
         onSessionStart: { sessionId, isDiscarded in
             // `sessionId` matches the emitted RUM event `session.id`
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")
