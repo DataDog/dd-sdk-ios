@@ -391,7 +391,7 @@ public enum RUM
     public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
     public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
     public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
-    public typealias SessionListener = (String, Bool) -> Void
+    public typealias SessionListener = @Sendable (String, Bool) -> Void
     public typealias ResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
     public struct Configuration
         public let applicationID: String
