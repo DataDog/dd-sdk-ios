@@ -3534,7 +3534,7 @@ public class objc_RUMConfiguration: NSObject
     public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?)
     public func setErrorEventMapper(_ mapper: @escaping (objc_RUMErrorEvent) -> objc_RUMErrorEvent?)
     public func setLongTaskEventMapper(_ mapper: @escaping (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?)
-    public var onSessionStart: ((String, Bool) -> Void)?
+    public var onSessionStart: (@Sendable (String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
 public class objc_RUM: NSObject
