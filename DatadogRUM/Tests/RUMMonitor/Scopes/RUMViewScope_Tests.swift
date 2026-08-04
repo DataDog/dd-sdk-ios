@@ -426,6 +426,118 @@ class RUMViewScope_Tests: XCTestCase {
         XCTAssertEqual(lastUpdateFlags.featureFlagsInfo[flagName] as! String, flagFinalValue)
     }
 
+    // MARK: - Periodic Full View Event Resync
+
+    func testWhenConsecutiveUpdatesReachTheLimit_itResendsAFullViewEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        // First write is a full event and becomes the baseline (consecutiveViewUpdatesCount == 0).
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer))
+
+        // Send `maxConsecutiveViewUpdates` updates — all deltas against the baseline.
+        for index in 0..<RUMViewScope.Constants.maxConsecutiveViewUpdates {
+            currentTime.addTimeInterval(1)
+            _ = scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-\(index)"),
+                context: context,
+                writer: writer
+            )
+        }
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 1, "Only the initial write should be a full event so far")
+        XCTAssertEqual(
+            writer.events(ofType: RUMViewUpdateEvent.self).count,
+            Int(RUMViewScope.Constants.maxConsecutiveViewUpdates),
+            "Every update up to the limit should be sent as a delta"
+        )
+
+        // The next update exceeds the limit — a full event should be resent instead of a delta.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-over-limit"),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2, "A full event should be resent once the consecutive update limit is reached")
+        XCTAssertEqual(
+            writer.events(ofType: RUMViewUpdateEvent.self).count,
+            Int(RUMViewScope.Constants.maxConsecutiveViewUpdates),
+            "The resync write must not also be counted as a delta"
+        )
+
+        // The following write should be a delta again, as the counter was reset by the resync.
+        currentTime.addTimeInterval(1)
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-resync"),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2, "No extra full event expected right after a resync")
+        XCTAssertEqual(
+            writer.events(ofType: RUMViewUpdateEvent.self).count,
+            Int(RUMViewScope.Constants.maxConsecutiveViewUpdates) + 1,
+            "The write right after a resync should be a delta again"
+        )
+    }
+
+    func testWhenViewUpdatesIsEnabled_everyFullEventIsMarkedAsDeltaBaseline() throws {
+        // Every full `RUMViewEvent` written under `.viewUpdates` — the initial baseline and any later
+        // resync — must be marked `isDeltaBaseline` so `RUMViewEventsFilter` never collapses it as
+        // redundant, since deltas in the same upload batch may be diffed against it.
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureFlags: ff),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer))
+
+        for index in 0..<RUMViewScope.Constants.maxConsecutiveViewUpdates {
+            currentTime.addTimeInterval(1)
+            _ = scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-\(index)"),
+                context: context,
+                writer: writer
+            )
+        }
+
+        // Triggers the resync (second full event).
+        currentTime.addTimeInterval(1)
+        _ = scope.process(
+            command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-over-limit"),
+            context: context,
+            writer: writer
+        )
+
+        let fullEventMetadata = writer.metadata(ofType: RUMViewEvent.Metadata.self)
+        XCTAssertEqual(fullEventMetadata.count, 2, "Both the initial baseline and the resync should carry metadata")
+        XCTAssertTrue(fullEventMetadata.allSatisfy { $0.isDeltaBaseline == true }, "All full events under viewUpdates must be marked as delta baselines")
+    }
+
     // MARK: - Custom Timings
 
     func testGivenActiveView_whenCustomTimingIsRegistered_itSendsUpdateEvents() throws {
