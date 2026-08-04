@@ -353,6 +353,7 @@
 		5B4F552D2E853B3B00A241C3 /* ExposureLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */; };
 		5B4F552F2E853D7700A241C3 /* FlagsClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */; };
 		5B4F55312E85400000A241C3 /* ExposureTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4F55302E85400000A241C3 /* ExposureTrackerTests.swift */; };
+		5B5522483020ECAF008AC88A /* SRWireframe+ReplayID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5522473020ECA6008AC88A /* SRWireframe+ReplayID.swift */; };
 		5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */; };
 		5B5B8CB92E8BD44700A6740E /* FlagsDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */; };
 		5B5B8CBF2E8BDB1000A6740E /* FlagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */; };
@@ -641,6 +642,8 @@
 		615D52C12C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */; };
 		615E2B8E2D39444300D85243 /* ViewEndedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B8D2D39444300D85243 /* ViewEndedController.swift */; };
 		615E2B952D425F5600D85243 /* ViewEndedMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615E2B942D425F5600D85243 /* ViewEndedMetric.swift */; };
+		6165D7353013888F0069D0E4 /* TelemetrySanitizableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */; };
+		6165D7373017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */; };
 		6167E6D32B7F8B3300C3CA2D /* AppHangsMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D22B7F8B3300C3CA2D /* AppHangsMonitor.swift */; };
 		6167E6D62B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D52B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift */; };
 		6167E6DA2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E6D92B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift */; };
@@ -1014,8 +1017,6 @@
 		D23039F8298D5236001A1FA3 /* InternalLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CE298D5235001A1FA3 /* InternalLogger.swift */; };
 		D23039F9298D5236001A1FA3 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CF298D5235001A1FA3 /* CoreLogger.swift */; };
 		D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D0298D5235001A1FA3 /* Telemetry.swift */; };
-		6165D7353013888F0069D0E4 /* TelemetrySanitizableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */; };
-		6165D7373017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */; };
 		D23039FB298D5236001A1FA3 /* URLRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D2298D5235001A1FA3 /* URLRequestBuilder.swift */; };
 		D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D3298D5235001A1FA3 /* DataFormat.swift */; };
 		D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D4298D5235001A1FA3 /* DataCompression.swift */; };
@@ -2182,6 +2183,7 @@
 		5B4F552B2E853B2E00A241C3 /* ExposureLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureLoggerTests.swift; sourceTree = "<group>"; };
 		5B4F552E2E853D7200A241C3 /* FlagsClientMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientMocks.swift; sourceTree = "<group>"; };
 		5B4F55302E85400000A241C3 /* ExposureTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExposureTrackerTests.swift; sourceTree = "<group>"; };
+		5B5522473020ECA6008AC88A /* SRWireframe+ReplayID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SRWireframe+ReplayID.swift"; sourceTree = "<group>"; };
 		5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepositoryTests.swift; sourceTree = "<group>"; };
 		5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsDataStore.swift; sourceTree = "<group>"; };
 		5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsData.swift; sourceTree = "<group>"; };
@@ -2513,6 +2515,8 @@
 		615E2B942D425F5600D85243 /* ViewEndedMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewEndedMetric.swift; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
 		6161247825CA9CA6009901BE /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
+		6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableError.swift; sourceTree = "<group>"; };
+		6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableErrorTests.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
 		6167E6D22B7F8B3300C3CA2D /* AppHangsMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHangsMonitor.swift; sourceTree = "<group>"; };
 		6167E6D52B7F8C3400C3CA2D /* AppHangsWatchdogThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHangsWatchdogThread.swift; sourceTree = "<group>"; };
@@ -2977,8 +2981,6 @@
 		D23039CE298D5235001A1FA3 /* InternalLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalLogger.swift; sourceTree = "<group>"; };
 		D23039CF298D5235001A1FA3 /* CoreLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreLogger.swift; sourceTree = "<group>"; };
 		D23039D0298D5235001A1FA3 /* Telemetry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
-		6165D7343013888F0069D0E4 /* TelemetrySanitizableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableError.swift; sourceTree = "<group>"; };
-		6165D7363017AA010069D0E4 /* TelemetrySanitizableErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetrySanitizableErrorTests.swift; sourceTree = "<group>"; };
 		D23039D2298D5235001A1FA3 /* URLRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLRequestBuilder.swift; sourceTree = "<group>"; };
 		D23039D3298D5235001A1FA3 /* DataFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormat.swift; sourceTree = "<group>"; };
 		D23039D4298D5235001A1FA3 /* DataCompression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataCompression.swift; sourceTree = "<group>"; };
@@ -6227,6 +6229,7 @@
 				7C61BC8C730F46F1A8EF112E /* OcclusionMap.swift */,
 				5BB771B52FEA7A0E00C95960 /* ImageSnapshotResource.swift */,
 				5BB771B72FEA7A2800C95960 /* SRWireframe+CALayerSnapshot.swift */,
+				5B5522473020ECA6008AC88A /* SRWireframe+ReplayID.swift */,
 			);
 			path = LayerTreeRecorder;
 			sourceTree = "<group>";
@@ -8643,6 +8646,7 @@
 				5BD25CFB301A3BF40064A649 /* EmbeddedContentReceiver.swift in Sources */,
 				5B74482F2EFAB819003E622C /* CALayerSwizzler.swift in Sources */,
 				5B7448302EFAB819003E622C /* CALayerChange.swift in Sources */,
+				5B5522483020ECAF008AC88A /* SRWireframe+ReplayID.swift in Sources */,
 				B73450522F9F240000000001 /* CALayerReference.swift in Sources */,
 				5B23A8AB2FF7A8A800024C6F /* MaskSnapshot.swift in Sources */,
 				5B7448312EFAB819003E622C /* CALayerChangeAggregator.swift in Sources */,

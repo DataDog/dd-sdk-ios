@@ -171,7 +171,7 @@ internal class CompositionTreeBuilder {
         }
 
         wireframes.append(output.wireframe)
-        return SRCompositionLayerChild(id: output.id, type: .wireframe)
+        return SRCompositionLayerChild(id: output.wireframe.id, type: .wireframe)
     }
 }
 

@@ -60,8 +60,8 @@ struct CompositionTreeBuilderTests {
             output.compositionTree.layers?.first { $0.id == containerSnapshot.replayID }
         )
         #expect(layer.children == [
-            .init(id: containerSnapshot.replayID, type: .wireframe),
-            .init(id: contentSnapshot.replayID, type: .wireframe)
+            .init(id: .init(namespace: .shape, replayID: containerSnapshot.replayID), type: .wireframe),
+            .init(id: .init(namespace: .shape, replayID: contentSnapshot.replayID), type: .wireframe)
         ])
         #expect(output.wireframes.count == 2)
         #expect(output.resources.isEmpty)
@@ -97,8 +97,8 @@ struct CompositionTreeBuilderTests {
             output.compositionTree.layers?.first { $0.id == capsuleSnapshot.replayID }
         )
         #expect(layer.children == [
-            .init(id: capsuleSnapshot.replayID, type: .wireframe),
-            .init(id: contentSnapshot.replayID, type: .wireframe)
+            .init(id: .init(namespace: .shape, replayID: capsuleSnapshot.replayID), type: .wireframe),
+            .init(id: .init(namespace: .shape, replayID: contentSnapshot.replayID), type: .wireframe)
         ])
     }
 
@@ -133,7 +133,9 @@ struct CompositionTreeBuilderTests {
 
         let layer = try #require(output.compositionTree.layers?.first)
         #expect(layer.id == leaf.replayID)
-        #expect(layer.children == [.init(id: leaf.replayID, type: .wireframe)])
+        #expect(layer.children == [
+            .init(id: .init(namespace: .shape, replayID: leaf.replayID), type: .wireframe)
+        ])
         #expect(output.wireframes.count == 1)
     }
 
@@ -167,7 +169,7 @@ struct CompositionTreeBuilderTests {
             guard case .shapeWireframe(let shapeWireframe) = wireframe else {
                 return false
             }
-            return shapeWireframe.id == contentSnapshot.replayID
+            return shapeWireframe.id == Int64(namespace: .shape, replayID: contentSnapshot.replayID)
         })
         guard case .shapeWireframe(let shapeWireframe) = wireframe else {
             Issue.record("Expected a shape wireframe")
