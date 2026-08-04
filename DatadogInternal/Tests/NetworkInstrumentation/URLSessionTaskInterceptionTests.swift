@@ -376,57 +376,39 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.isLocalCacheHit, true)
     }
 
-    func testWhenTaskFetchTypeIsUnknown_thenLocalCacheHitIsNil() {
+    func testWhenTaskFetchTypeVaries_thenLocalCacheHitReflectsOnlyKnownSignals() {
         guard #available(iOS 13, tvOS 13, *) else {
             return
         }
 
-        let taskInterval = DateInterval(
-            start: .mockDecember15th2019At10AMUTC(),
-            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
-        )
-        // Apple documents `.unknown` as "the fetch manner was not determined" -
+        // `.unknown` is documented by Apple as "the fetch manner was not determined" -
         // it must not be reported as a measured cache miss.
-        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
-            start: taskInterval.start,
-            end: taskInterval.end,
-            resourceFetchType: .unknown
-        )
+        let cases: [(fetchType: URLSessionTaskMetrics.ResourceFetchType, expected: Bool?)] = [
+            (.localCache, true),
+            (.networkLoad, false),
+            (.serverPush, false),
+            (.unknown, nil)
+        ]
 
-        // When
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            taskInterval: taskInterval,
-            transactionMetrics: [taskTransaction]
-        )
+        for testCase in cases {
+            XCTContext.runActivity(named: "\(testCase.fetchType)") { _ in
+                let taskInterval = DateInterval(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+                )
+                let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+                    start: taskInterval.start,
+                    end: taskInterval.end,
+                    resourceFetchType: testCase.fetchType
+                )
+                let taskMetrics: URLSessionTaskMetrics = .mockWith(
+                    taskInterval: taskInterval,
+                    transactionMetrics: [taskTransaction]
+                )
 
-        // Then
-        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
-        XCTAssertNil(resourceMetrics.isLocalCacheHit)
-    }
-
-    func testWhenTaskFetchTypeIsNetworkLoad_thenLocalCacheHitIsFalse() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
+                let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+                XCTAssertEqual(resourceMetrics.isLocalCacheHit, testCase.expected)
+            }
         }
-
-        let taskInterval = DateInterval(
-            start: .mockDecember15th2019At10AMUTC(),
-            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
-        )
-        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
-            start: taskInterval.start,
-            end: taskInterval.end,
-            resourceFetchType: .networkLoad
-        )
-
-        // When
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            taskInterval: taskInterval,
-            transactionMetrics: [taskTransaction]
-        )
-
-        // Then
-        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
-        XCTAssertEqual(resourceMetrics.isLocalCacheHit, false)
     }
 }
