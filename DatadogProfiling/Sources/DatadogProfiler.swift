@@ -124,9 +124,17 @@ internal final class DatadogProfiler: ProfilingHandler {
             self?.handle(quotaResult: result)
         }
 
+        // Adopt any interception already installed pre-`main` by the native load-time constructor
+        // (`dd_profiler_auto_start`), which starts memory sampling during app launch — before
+        // `Profiling.enable()` runs — so the launch window is covered. Seeding the running flag from
+        // the live native state lets the reconciliation below either keep that sampler running (this
+        // launch re-enabled memory) or tear it down (this launch disabled memory), without a
+        // table-clearing restart that would drop the launch-window live set.
+        isMemoryProfilingRunning = dd_memory_profiler_is_running()
+
         // Memory profiling runs on its own RUM-composed session decision, independent of the
-        // continuous/custom CPU state machine. Start it here — as early as possible, optimistically
-        // during the launch grace — so the first window covers app launch; it is reconciled
+        // continuous/custom CPU state machine. Reconcile it here — as early as possible, optimistically
+        // during the launch grace — so the first window covers app launch; it is reconciled again
         // (started/stopped) as the decision and foreground/background conditions change.
         updateMemoryProfilingState()
 
@@ -511,6 +519,16 @@ private extension DatadogProfiler {
 
     func stopAndWriteAppLaunchProfile() {
         stopTimer()
+        // The app-launch harvest stops the CPU profiler and the emission timer. Memory profiling
+        // emits independently (heap-only) and can be sampled in even when continuous CPU is sampled
+        // out — the only case that reaches this standalone-launch harvest. Restart the timer on every
+        // exit path so heap-only windows keep emitting after launch; the CPU profiler is intentionally
+        // NOT restarted here.
+        defer {
+            if timer == nil, shouldRunMemoryProfiling() {
+                startTimer()
+            }
+        }
         dd_profiler_stop()
         updateProfilingContext()
 
@@ -535,13 +553,26 @@ private extension DatadogProfiler {
             return
         }
 
+        // When memory profiling is running (its own independent decision — it can be sampled in
+        // even when continuous CPU is sampled out), attach the launch heap window to the app-launch
+        // profile: `inuse_*` is the live set at TTID and `alloc_*` covers everything allocated since
+        // the load-time constructor installed the hooks. This is what puts memory profiling in the
+        // app-launch / TTID window. The live set is NOT reset here — capturing the alloc window is
+        // capture-and-reset, but the live set carries forward into the continuous windows.
         write(
             profile: profile,
             operation: .appLaunch,
             rumVitals: Array(currentRUMVitals.values),
             hangs: hangs,
-            longTasks: longTasks
+            longTasks: longTasks,
+            captureHeapProfile: isMemoryProfilingRunning
         )
+
+        if isMemoryProfilingRunning {
+            // The launch allocations were just captured (alloc window reset); advance the memory
+            // window so a subsequent heap-only emission is bounded from TTID, not from launch.
+            memoryWindowStart = dateProvider.now
+        }
     }
 }
 
