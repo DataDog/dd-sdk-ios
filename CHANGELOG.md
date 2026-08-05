@@ -4,6 +4,7 @@
 - [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
+- [IMPROVEMENT] Expose `setConsolePrint` to Objective-C, allowing ObjC client code to redirect SDK console output. See [#3120][]
 
 # 3.14.0 / 15-07-2026
 
