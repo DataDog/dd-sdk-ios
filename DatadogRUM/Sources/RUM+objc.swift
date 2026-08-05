@@ -709,7 +709,7 @@ public class objc_RUMConfiguration: NSObject {
         }
     }
 
-    public var onSessionStart: ((String, Bool) -> Void)? {
+    public var onSessionStart: (@Sendable (String, Bool) -> Void)? {
         set { swiftConfig.onSessionStart = newValue }
         get { swiftConfig.onSessionStart }
     }

@@ -7,18 +7,19 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct ContentSnapshotRequestTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Throws when layer reference is deallocated")
     func throwsWhenLayerReferenceIsDeallocated() {
         // Given
-        let rootLayer = CALayer()
         let request: ContentSnapshotRequest = {
             var layer: CALayer? = CALayer()
             let request = ContentSnapshotRequest.mockAny(layer: layer!)
@@ -28,22 +29,23 @@ struct ContentSnapshotRequestTests {
 
         // When / Then
         #expect(throws: ImageSnapshotRequestResolutionError.missingLayer) {
-            _ = try request.resolved(relativeTo: rootLayer)
+            _ = try request.resolved()
         }
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Throws when visible frame resolves to empty rect")
-    func throwsWhenVisibleFrameResolvesToEmptyRect() {
+    @Test("Throws when local rect is empty")
+    func throwsWhenLocalRectIsEmpty() {
         // Given
-        let rootLayer = CALayer()
         let layer = CALayer()
-        rootLayer.addSublayer(layer)
-        let request = ContentSnapshotRequest.mockAny(layer: layer, visibleFrame: .zero)
+        let request = ContentSnapshotRequest.mockAny(
+            layer: layer,
+            geometry: .init(renderBounds: layer.bounds, localRect: .zero, frame: .zero)
+        )
 
         // When / Then
         #expect(throws: ImageSnapshotRequestResolutionError.invalidRect) {
-            _ = try request.resolved(relativeTo: rootLayer)
+            _ = try request.resolved()
         }
     }
 
@@ -61,11 +63,11 @@ struct ContentSnapshotRequestTests {
         let request = ContentSnapshotRequest.mockAny(layer: layer, hasContents: true)
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
         #expect(resolvedRequest.layer === layer)
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot)
     }
 
@@ -87,10 +89,10 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
@@ -112,10 +114,10 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot)
     }
 
@@ -136,10 +138,10 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
@@ -161,10 +163,10 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot)
     }
 
@@ -186,10 +188,10 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == layer.bounds)
+        #expect(resolvedRequest.geometry.localRect == layer.bounds)
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
@@ -210,15 +212,15 @@ struct ContentSnapshotRequestTests {
         layer.frame = CGRect(x: 30, y: 40, width: 100, height: 40)
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.frame == capturedFrame)
+        #expect(resolvedRequest.geometry.frame == capturedFrame)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Partial snapshot needs snapshot when visible frame changes")
-    func partialSnapshotNeedsSnapshotWhenVisibleFrameChanges() throws {
+    @Test("Partial snapshot needs snapshot when local rect changes")
+    func partialSnapshotNeedsSnapshotWhenLocalRectChanges() throws {
         // Given
         let rootLayer = CALayer()
         rootLayer.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
@@ -228,9 +230,10 @@ struct ContentSnapshotRequestTests {
         layer.position = CGPoint(x: 200, y: 60)
         rootLayer.addSublayer(layer)
 
+        let localRect = CGRect(x: 180, y: 0, width: 20, height: 100)
         let request = ContentSnapshotRequest.mockAny(
             layer: layer,
-            visibleFrame: CGRect(x: 180, y: 0, width: 20, height: 100),
+            geometry: .init(renderBounds: layer.bounds, localRect: localRect, frame: localRect),
             previousSnapshotData: .mockAny(
                 localRect: CGRect(x: 0, y: 0, width: 10, height: 100),
                 bounds: layer.bounds
@@ -238,17 +241,17 @@ struct ContentSnapshotRequestTests {
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == CGRect(x: 180, y: 0, width: 20, height: 100))
-        #expect(resolvedRequest.frame == CGRect(x: 180, y: 0, width: 20, height: 100))
+        #expect(resolvedRequest.geometry.localRect == localRect)
+        #expect(resolvedRequest.geometry.frame == localRect)
         #expect(resolvedRequest.needsSnapshot)
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Partial snapshot does not need snapshot when visible frame is unchanged")
-    func partialSnapshotDoesNotNeedSnapshotWhenVisibleFrameIsUnchanged() throws {
+    @Test("Partial snapshot does not need snapshot when local rect is unchanged")
+    func partialSnapshotDoesNotNeedSnapshotWhenLocalRectIsUnchanged() throws {
         // Given
         let rootLayer = CALayer()
         rootLayer.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
@@ -258,22 +261,22 @@ struct ContentSnapshotRequestTests {
         layer.position = CGPoint(x: 200, y: 60)
         rootLayer.addSublayer(layer)
 
-        let visibleFrame = CGRect(x: 180, y: 0, width: 20, height: 100)
+        let localRect = CGRect(x: 180, y: 0, width: 20, height: 100)
         let request = ContentSnapshotRequest.mockAny(
             layer: layer,
-            visibleFrame: visibleFrame,
+            geometry: .init(renderBounds: layer.bounds, localRect: localRect, frame: localRect),
             previousSnapshotData: .mockAny(
-                localRect: visibleFrame,
+                localRect: localRect,
                 bounds: layer.bounds
             )
         )
 
         // When
-        let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+        let resolvedRequest = try request.resolved()
 
         // Then
-        #expect(resolvedRequest.localRect == visibleFrame)
-        #expect(resolvedRequest.frame == visibleFrame)
+        #expect(resolvedRequest.geometry.localRect == localRect)
+        #expect(resolvedRequest.geometry.frame == localRect)
         #expect(resolvedRequest.needsSnapshot == false)
     }
 }
@@ -283,7 +286,7 @@ extension ContentSnapshotRequest {
     @MainActor
     fileprivate static func mockAny(
         layer: CALayer,
-        visibleFrame: CGRect? = nil,
+        geometry: CALayerSnapshot.ContentGeometry? = nil,
         hasContents: Bool = false,
         dependencies: [CALayerReference] = [],
         hasChanges: Bool = false,
@@ -296,8 +299,11 @@ extension ContentSnapshotRequest {
             delegateClass: layer.delegate.map { type(of: $0) },
             hasLayerSemantics: true,
             bounds: layer.bounds,
-            absoluteFrame: layer.frame,
-            visibleFrame: visibleFrame ?? layer.frame,
+            geometry: geometry ?? .init(
+                renderBounds: layer.bounds,
+                localRect: layer.bounds,
+                frame: layer.frame
+            ),
             isOpaque: layer.isOpaque,
             hasContents: hasContents,
             dependencies: dependencies,

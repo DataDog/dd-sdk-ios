@@ -12,6 +12,25 @@ internal enum DataStoreFileWritingError: Error {
     case failedToEncodeData(Error)
 }
 
+extension DataStoreFileWritingError: TelemetrySanitizableError {
+    func sanitize() -> TelemetrySanitizedError {
+        let kind: String
+        let wrapped: Error
+        switch self {
+        case .failedToEncodeVersion(let error):
+            kind = "failedToEncodeVersion"
+            wrapped = error
+        case .failedToEncodeData(let error):
+            kind = "failedToEncodeData"
+            wrapped = error
+        }
+        return TelemetrySanitizedError(
+            kind: "DataStoreFileWritingError",
+            message: "\(kind)(\(TelemetrySanitizedError(sanitizing: wrapped).message))"
+        )
+    }
+}
+
 internal struct DataStoreFileWriter {
     let file: File
 

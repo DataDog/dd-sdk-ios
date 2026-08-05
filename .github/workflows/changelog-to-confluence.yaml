@@ -9,6 +9,7 @@ on:
             - 'DatadogSessionReplay/SESSION_REPLAY_FEATURE.md'
             - 'DatadogTrace/TRACE_FEATURE.md'
             - 'DatadogProfiling/PROFILING_FEATURE.md'
+            - 'DatadogLogs/LOGS_FEATURE.md'
 permissions:
     contents: read
 jobs:
@@ -16,17 +17,17 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Prepare Changelog and Feature Docs
               run: |
                   mkdir -p publish_folder
                   cp CHANGELOG.md publish_folder/dd-ios-sdk-changelog.md
                   echo "Publishing CHANGELOG.md"
-                  
+
                   cp DatadogRUM/RUM_FEATURE.md publish_folder/dd-sdk-ios-rum-feature.md
                   echo "Publishing RUM_FEATURE.md"
-                  
+
                   cp DatadogSessionReplay/SESSION_REPLAY_FEATURE.md publish_folder/dd-sdk-ios-session-replay-feature.md
                   echo "Publishing SESSION_REPLAY_FEATURE.md"
 
@@ -35,6 +36,9 @@ jobs:
 
                   cp DatadogProfiling/PROFILING_FEATURE.md publish_folder/dd-sdk-ios-profiling-feature.md
                   echo "Publishing PROFILING_FEATURE.md"
+
+                  cp DatadogLogs/LOGS_FEATURE.md publish_folder/dd-sdk-ios-logs-feature.md
+                  echo "Publishing LOGS_FEATURE.md"
 
             - name: Publish Markdown to Confluence
               uses: markdown-confluence/publish-action@7767a0a7f438bb1497ee7ffd7d3d685b81dfe700 # v5

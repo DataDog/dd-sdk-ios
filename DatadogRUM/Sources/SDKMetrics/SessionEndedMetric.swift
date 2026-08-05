@@ -409,6 +409,7 @@ internal class SessionEndedMetric {
                 case timeToSdkInit = "tt_sdk_init"
                 case timeToDidBecomeActive = "tt_become_active"
                 case hasScenesLifecycle = "has_scenes_lifecycle"
+                case appStateAtSdkInit = "app_state_at_sdk_init"
             }
         }
 

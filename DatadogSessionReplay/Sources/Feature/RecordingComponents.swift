@@ -14,15 +14,27 @@ internal struct RecordingComponents {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting,
+        srContextPublisher: SRContextPublisher
     ) throws {
         if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
             // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
             self = try runOnMainThreadSync {
-                try .layerTreeRecordingComponents(core: core, configuration: configuration)
+                try .layerTreeRecordingComponents(
+                    core: core,
+                    configuration: configuration,
+                    resourcesWriter: resourcesWriter,
+                    srContextPublisher: srContextPublisher
+                )
             }
         } else {
-            self = try .viewTreeRecordingComponents(core: core, configuration: configuration)
+            self = try .viewTreeRecordingComponents(
+                core: core,
+                configuration: configuration,
+                resourcesWriter: resourcesWriter,
+                srContextPublisher: srContextPublisher
+            )
         }
     }
 
@@ -36,7 +48,9 @@ internal struct RecordingComponents {
 
     private static func viewTreeRecordingComponents(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting,
+        srContextPublisher: SRContextPublisher
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
@@ -53,14 +67,14 @@ internal struct RecordingComponents {
 
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+            resourcesWriter: resourcesWriter
         )
 
         let snapshotProcessor = SnapshotProcessor(
             queue: processorsQueue,
             recordWriter: RecordWriter(core: core),
             resourceProcessor: resourceProcessor,
-            srContextPublisher: SRContextPublisher(core: core),
+            srContextPublisher: srContextPublisher,
             telemetry: telemetry
         )
 
@@ -79,7 +93,7 @@ internal struct RecordingComponents {
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
             rumContextObserver: contextReceiver,
-            srContextPublisher: SRContextPublisher(core: core),
+            srContextPublisher: srContextPublisher,
             recorder: recorder,
             replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
             telemetry: telemetry,
@@ -96,7 +110,9 @@ internal struct RecordingComponents {
     @MainActor
     private static func layerTreeRecordingComponents(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        configuration: SessionReplay.Configuration,
+        resourcesWriter: any ResourcesWriting,
+        srContextPublisher: SRContextPublisher
     ) throws -> Self {
         let processorsQueue = BackgroundAsyncQueue(label: "com.datadoghq.session-replay.processors", qos: .utility)
         // The telemetry queue targets the processors queue with a lower qos.
@@ -111,13 +127,13 @@ internal struct RecordingComponents {
         )
         let resourceProcessor = ResourceProcessor(
             queue: processorsQueue,
-            resourcesWriter: ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+            resourcesWriter: resourcesWriter
         )
         let snapshotProcessor = LayerSnapshotProcessor(
             queue: processorsQueue,
             recordWriter: RecordWriter(core: core),
             resourceProcessor: resourceProcessor,
-            replayContextPublisher: SRContextPublisher(core: core),
+            replayContextPublisher: srContextPublisher,
             telemetry: telemetry
         )
 
@@ -143,7 +159,7 @@ internal struct RecordingComponents {
             textAndInputPrivacy: configuration.textAndInputPrivacyLevel,
             imagePrivacy: configuration.imagePrivacyLevel,
             touchPrivacy: configuration.touchPrivacyLevel,
-            srContextPublisher: SRContextPublisher(core: core),
+            srContextPublisher: srContextPublisher,
             layerRecording: layerRecorder,
             replaySampleRate: configuration.debugSDK ? 100 : configuration.replaySampleRate,
             telemetry: telemetry,

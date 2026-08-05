@@ -31,7 +31,6 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private var lastSnapshot: LayerTreeSnapshot?
     private var lastCompositionTree: SRCompositionTree?
     private var lastWireframes: [SRWireframe]?
-    private var recordsCountByViewID: [String: Int64] = [:]
 
     init(
         queue: Queue,
@@ -84,7 +83,10 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
         if !records.isEmpty {
             let enrichedRecord = EnrichedRecord(context: layerTreeSnapshot.context, records: records)
-            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+            replayContextPublisher.incrementRecordCount(
+                by: Int64(records.count),
+                forViewID: enrichedRecord.viewID
+            )
             recordWriter.write(nextRecord: enrichedRecord)
         }
 
@@ -167,11 +169,6 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         }
 
         return records
-    }
-
-    private func trackRecord(key: String, value: Int64) {
-        recordsCountByViewID[key, default: 0] += value
-        replayContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }
 

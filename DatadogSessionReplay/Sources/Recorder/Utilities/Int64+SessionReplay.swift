@@ -8,6 +8,16 @@
 
 import Foundation
 
+extension Int64 {
+    static func ddWithNoOverflow<T: BinaryFloatingPoint>(dimension: T) -> Int64 {
+        guard dimension > 0 else {
+            return 0
+        }
+
+        return Swift.max(1, ddWithNoOverflow(dimension))
+    }
+}
+
 @_spi(Internal)
 public extension Int64 {
     static func positiveRandom<T>(using generator: inout T) -> Int64 where T: RandomNumberGenerator {

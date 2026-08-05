@@ -171,14 +171,9 @@ Defined in `DatadogInternal/Sources/Models/RUM/RUMCoreContext.swift`. Key fields
 
 Set by `Monitor.swift` after each command via `featureScope.set(context:)`. Consumed by any receiver that calls `context.additionalContext(ofType: RUMCoreContext.self)`.
 
-## Error Handling Strategy
+## Error Handling
 
-The SDK must **never throw exceptions** to customer code:
-
-- **NOP implementations**: `NOPMonitor`, `NOPDatadogCore` silently accept all API calls when SDK is not initialized or a feature is disabled.
-- **Validation at boundaries**: Invalid input is logged via `DD.logger` and ignored.
-- **Upload backoff**: Upload failures trigger exponential backoff and retry. Network errors are logged but never crash.
-- **User callback safety**: Exceptions in user-provided callbacks (e.g., event mappers) are caught and logged — original event is sent.
+See `docs/ERROR_HANDLING.md` for customer-facing error safety and internal telemetry error reporting conventions.
 
 ## Thread Safety Rules
 

@@ -38,6 +38,7 @@ public final class objc_DatadogSite: NSObject
     public static func eu1() -> objc_DatadogSite
     public static func ap1() -> objc_DatadogSite
     public static func ap2() -> objc_DatadogSite
+    public static func uk1() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
     public static func us2_fed() -> objc_DatadogSite
 public enum objc_BatchSize: Int
@@ -3533,7 +3534,7 @@ public class objc_RUMConfiguration: NSObject
     public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?)
     public func setErrorEventMapper(_ mapper: @escaping (objc_RUMErrorEvent) -> objc_RUMErrorEvent?)
     public func setLongTaskEventMapper(_ mapper: @escaping (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?)
-    public var onSessionStart: ((String, Bool) -> Void)?
+    public var onSessionStart: (@Sendable (String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
 public class objc_RUM: NSObject
