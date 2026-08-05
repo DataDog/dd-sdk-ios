@@ -480,6 +480,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useAllowedTracingOrigins: nil,
             useAllowedTracingUrls: nil,
             useBeforeSend: nil,
+            useClientSideStats: configuration.useClientSideStats,
             useCrossSiteSessionCookie: nil,
             useExcludedActivityUrls: nil,
             useFirstPartyHosts: configuration.useFirstPartyHosts,
