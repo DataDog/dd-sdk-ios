@@ -585,7 +585,6 @@ extension RUM.Configuration {
     ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
-    ///   - enableTimeseries: Enables collection of memory and CPU timeseries events. Default: `false`.
     ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `120`.
     ///   - featureFlags: Experimental feature flags.
     /// 
