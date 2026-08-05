@@ -38,7 +38,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-abc")
 
         // Then
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -78,7 +78,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-abc")
 
         // Then
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self)
@@ -117,7 +117,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-both", applicationID: "app-both", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-both")
 
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events")
@@ -153,7 +153,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-offset", applicationID: "app-offset", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-offset")
 
         // Then — date and data point timestamps are server-adjusted
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -187,7 +187,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-rn", applicationID: "app-rn", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-rn")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -217,7 +217,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-view")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -248,7 +248,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-view-name", applicationID: "app-view-name", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-view-name")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -279,7 +279,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-has-replay", applicationID: "app-has-replay", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-has-replay")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -310,7 +310,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-sample-rate", applicationID: "app-sample-rate", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-sample-rate")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -344,7 +344,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         contextReader.activeView = (nil, nil, nil)
 
         let syncExpectation = self.expectation(description: "stop completed")
-        collector.stop()
+        collector.stop(sessionID: "session-ending-view")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -375,7 +375,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-no-view", applicationID: "app-no-view", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-no-view")
 
         // Then — no view context means the batch is still written, just with `view: nil`, not dropped
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -414,7 +414,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty, "Expected session-1 partial buffer to be flushed on re-start")
         XCTAssertEqual(events[0].session.id, "session-1")
-        collector.stop()
+        collector.stop(sessionID: "session-2")
     }
 
     // MARK: - Flush on stop
@@ -441,7 +441,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
-        collector.stop()
+        collector.stop(sessionID: "session-xyz")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -476,7 +476,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
-        collector.stop()
+        collector.stop(sessionID: "session-xyz")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -506,7 +506,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-abc")
 
         // Then
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
@@ -544,7 +544,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // Flush second session
         let stopExpectation = self.expectation(description: "stop completed")
-        collector.stop()
+        collector.stop(sessionID: "session-2")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { stopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -581,7 +581,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // When — pause and wait for more potential samples
         let pauseExpectation = self.expectation(description: "pause settled")
-        collector.pause()
+        collector.pause(sessionID: "session-pause")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { pauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -591,7 +591,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         let countAfterSettle = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertEqual(countAfterPause, countAfterSettle, "No further events should be written while paused")
-        collector.stop()
+        collector.stop(sessionID: "session-pause")
     }
 
     func testWhenResumedAfterPause_itContinuesSampling() {
@@ -610,7 +610,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.start(sessionID: "session-resume", applicationID: "app-1", sessionType: .user)
 
         let pauseExpectation = self.expectation(description: "pause settled")
-        collector.pause()
+        collector.pause(sessionID: "session-resume")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -619,10 +619,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // When — resume and let samples accumulate
         let resumeExpectation = self.expectation(description: "resumed samples collected")
         resumeExpectation.assertForOverFulfill = false
-        collector.resume()
+        collector.resume(sessionID: "session-resume")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-resume")
 
         // Then — new events were written after resume
         let countAfterResume = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
@@ -655,14 +655,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // When — pause on backgrounding
         let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
         afterPauseExpectation.assertForOverFulfill = false
-        collector.pause()
+        collector.pause(sessionID: "session-bg")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
         // Then — no new events accumulate while paused
         let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertEqual(countAfterPause, countBeforePause, "Sampling should stop while backgrounded, regardless of trackBackgroundEvents")
-        collector.stop()
+        collector.stop(sessionID: "session-bg")
     }
 
     func testWhenPauseCalledBeforeStart_itIsNoOp() {
@@ -676,8 +676,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         )
 
         // When / Then — should not crash
-        collector.pause()
-        collector.resume()
+        collector.pause(sessionID: "")
+        collector.resume(sessionID: "")
 
         let settleExpectation = self.expectation(description: "settle")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { settleExpectation.fulfill() }
@@ -724,7 +724,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-common", applicationID: "app-common", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-common")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -762,7 +762,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-context", applicationID: "app-context", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-context")
 
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -791,7 +791,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         collector.start(sessionID: "session-abc", applicationID: "app-123", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop()
+        collector.stop(sessionID: "session-abc")
 
         // Then
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
@@ -803,6 +803,184 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should be monotonically increasing")
         XCTAssertEqual(event.timeseries.start, timestamps.first)
         XCTAssertEqual(event.timeseries.end, timestamps.last)
+    }
+
+    // MARK: - Session lifetime self-enforcement
+
+    func testWhenSessionExceedsMaxDuration_itSelfStopsAndFlushes() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        let startTime = clock.date
+        collector.start(sessionID: "session-expired", applicationID: "app-1", sessionType: .user, startTime: startTime)
+
+        let beforeExpiryExpectation = self.expectation(description: "samples collected before expiry")
+        beforeExpiryExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { beforeExpiryExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Batch should not be flushed while the session is still within its max duration")
+
+        // When — advance the (injected) clock past the session's max duration, without ever calling stop()
+        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        let selfStopExpectation = self.expectation(description: "self-stop settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the buffered samples were flushed once the session exceeded max duration
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected the collector to self-flush once the session exceeded max duration")
+        let countAfterSelfStop = events.count
+
+        // And — no further samples accumulate afterwards (the timer was cancelled)
+        let settleExpectation = self.expectation(description: "no further samples after self-stop")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settleExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count, countAfterSelfStop, "No further batches should be written after self-stop")
+    }
+
+    func testWhenNoActivityWithinTimeoutWindow_itSelfStopsAndFlushes() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        let startTime = clock.date
+        collector.start(sessionID: "session-idle", applicationID: "app-1", sessionType: .user, startTime: startTime)
+
+        let beforeTimeoutExpectation = self.expectation(description: "samples collected before timeout")
+        beforeTimeoutExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { beforeTimeoutExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+
+        // When — advance the clock past the inactivity timeout without ever calling noteActivity(sessionID:at:)
+        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let selfStopExpectation = self.expectation(description: "self-stop settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected the collector to self-flush once idle past the inactivity timeout")
+    }
+
+    func testNoteActivity_preventsSelfStopWithinTimeoutWindow() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        let startTime = clock.date
+        collector.start(sessionID: "session-active", applicationID: "app-1", sessionType: .user, startTime: startTime)
+
+        // When — activity is reported right before what would have been the inactivity timeout, resetting the clock
+        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        collector.noteActivity(sessionID: "session-active", at: clock.date)
+        clock.date = clock.date.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+
+        let expectation = self.expectation(description: "still sampling")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — sampling continued since activity reset the inactivity clock before it lapsed
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected sampling to continue since activity reset the inactivity clock")
+        collector.stop(sessionID: "session-active")
+    }
+
+    // MARK: - Session-ID guard against stale calls
+
+    func testStaleStopCall_afterNewSessionStarted_doesNotStopNewSession() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        collector.start(sessionID: "session-old", applicationID: "app-1", sessionType: .user)
+        collector.start(sessionID: "session-new", applicationID: "app-1", sessionType: .user)
+
+        // When — a stale stop() call for the already-replaced session arrives
+        collector.stop(sessionID: "session-old")
+
+        // Then — sampling for the new session continues uninterrupted
+        let expectation = self.expectation(description: "new session still sampling")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected the new session to keep sampling despite a stale stop() call for the old session")
+        XCTAssertEqual(events.last?.session.id, "session-new")
+        collector.stop(sessionID: "session-new")
+    }
+
+    func testStalePauseCall_afterNewSessionStarted_doesNotPauseNewSession() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        collector.start(sessionID: "session-old", applicationID: "app-1", sessionType: .user)
+        collector.start(sessionID: "session-new", applicationID: "app-1", sessionType: .user)
+
+        // When — a stale pause() call for the already-replaced session arrives
+        collector.pause(sessionID: "session-old")
+
+        // Then — the new session keeps sampling, unaffected
+        let expectation = self.expectation(description: "new session still sampling despite stale pause")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected sampling to continue since the stale pause() targeted a different session")
+        collector.stop(sessionID: "session-new")
     }
 }
 
@@ -817,6 +995,18 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
         self.globalAttributes = globalAttributes
         self.activeView = activeView
     }
+}
+
+/// A `Date` provider whose current time can be advanced manually, used to deterministically test the
+/// collector's self-enforced session expiry without waiting on real wall-clock durations.
+private class MutableClock {
+    var date: Date
+
+    init(date: Date = Date()) {
+        self.date = date
+    }
+
+    func now() -> Date { date }
 }
 
 #endif
