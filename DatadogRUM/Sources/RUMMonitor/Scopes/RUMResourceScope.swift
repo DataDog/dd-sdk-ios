@@ -291,6 +291,8 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
+        // Never leak the internal cache-hit marker into arbitrary error context.
+        attributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)
         let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
 
         // Trace context from cross-platform attributes or spanContext fallback
