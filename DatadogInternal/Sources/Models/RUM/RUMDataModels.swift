@@ -1071,7 +1071,7 @@ public struct RUMActionEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -1188,7 +1188,7 @@ public struct RUMActionEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -1915,7 +1915,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -2595,7 +2595,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -3356,7 +3356,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -3660,7 +3660,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -4188,7 +4188,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -4292,6 +4292,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// UUID of the resource
         public let id: String?
 
+        /// Whether the resource was served from the device's local cache
+        public let localCacheHit: Bool?
+
         /// HTTP method of the resource
         public let method: RUMMethod?
 
@@ -4345,6 +4348,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case firstByte = "first_byte"
             case graphql = "graphql"
             case id = "id"
+            case localCacheHit = "local_cache_hit"
             case method = "method"
             case `protocol` = "protocol"
             case provider = "provider"
@@ -4374,6 +4378,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
+        ///   - localCacheHit: Whether the resource was served from the device's local cache
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4399,6 +4404,7 @@ public struct RUMResourceEvent: RUMDataModel {
             firstByte: FirstByte? = nil,
             graphql: RUMGraphql? = nil,
             id: String? = nil,
+            localCacheHit: Bool? = nil,
             method: RUMMethod? = nil,
             `protocol`: String? = nil,
             provider: Provider? = nil,
@@ -4424,6 +4430,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.firstByte = firstByte
             self.graphql = graphql
             self.id = id
+            self.localCacheHit = localCacheHit
             self.method = method
             self.`protocol` = `protocol`
             self.provider = provider
@@ -4839,7 +4846,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -5216,7 +5223,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View
+    public var view: View?
 
     public enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -5294,7 +5301,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         timeseries: Timeseries,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View
+        view: View? = nil
     ) {
         self.dd = dd
         self.account = account
@@ -5559,7 +5566,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -5813,7 +5820,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
     public let version: String?
 
     /// View properties
-    public var view: View
+    public var view: View?
 
     public enum CodingKeys: String, CodingKey {
         case dd = "_dd"
@@ -5891,7 +5898,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         timeseries: Timeseries,
         usr: RUMUser? = nil,
         version: String? = nil,
-        view: View
+        view: View? = nil
     ) {
         self.dd = dd
         self.account = account
@@ -6156,7 +6163,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -6939,7 +6946,7 @@ public struct RUMViewEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -7160,7 +7167,7 @@ public struct RUMViewEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -9106,7 +9113,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -9327,7 +9334,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -11134,7 +11141,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -11251,7 +11258,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -11796,7 +11803,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -11913,7 +11920,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -12418,7 +12425,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -12535,7 +12542,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -12878,7 +12885,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -12955,6 +12962,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the beta encode cookie options is enabled
             public var betaEncodeCookieOptions: Bool?
+
+            /// Whether the beta track WebSockets feature is enabled
+            public var betaTrackWebSockets: Bool?
 
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
@@ -13228,6 +13238,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchUploadFrequency = "batch_upload_frequency"
                 case betaEnableViewUpdates = "beta_enable_view_updates"
                 case betaEncodeCookieOptions = "beta_encode_cookie_options"
+                case betaTrackWebSockets = "beta_track_web_sockets"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -13330,6 +13341,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
             ///   - betaEnableViewUpdates: Whether the beta partial view updates feature is enabled
             ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
+            ///   - betaTrackWebSockets: Whether the beta track WebSockets feature is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
             ///   - defaultPrivacyLevel: Session replay default privacy level
@@ -13428,6 +13440,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 batchUploadFrequency: Int64? = nil,
                 betaEnableViewUpdates: Bool? = nil,
                 betaEncodeCookieOptions: Bool? = nil,
+                betaTrackWebSockets: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
                 defaultPrivacyLevel: String? = nil,
@@ -13526,6 +13539,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.batchUploadFrequency = batchUploadFrequency
                 self.betaEnableViewUpdates = betaEnableViewUpdates
                 self.betaEncodeCookieOptions = betaEncodeCookieOptions
+                self.betaTrackWebSockets = betaTrackWebSockets
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
                 self.defaultPrivacyLevel = defaultPrivacyLevel
@@ -14039,7 +14053,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -14329,7 +14343,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -14655,7 +14669,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -15472,4 +15486,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a87e39f98e9b800620cdc6eadaabd14b839f0a06
+// Generated from https://github.com/DataDog/rum-events-format/tree/ece51fc7977b612330049af36095ab2310a001af

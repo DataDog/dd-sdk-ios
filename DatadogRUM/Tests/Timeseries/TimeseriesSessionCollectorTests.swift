@@ -222,8 +222,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view.id, "view-abc")
-        XCTAssertEqual(events[0].view.url, "/view/abc")
+        XCTAssertEqual(events[0].view?.id, "view-abc")
+        XCTAssertEqual(events[0].view?.url, "/view/abc")
     }
 
     func testWhenActiveViewHasName_itAttachesViewNameToEvent() {
@@ -253,7 +253,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view.name, "ViewController")
+        XCTAssertEqual(events[0].view?.name, "ViewController")
     }
 
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
@@ -351,11 +351,11 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then — the batch is still written, attributed to the view it was actually collected under
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty, "Expected the batch collected under an active view to be flushed, not dropped")
-        XCTAssertEqual(events[0].view.id, "view-ending")
-        XCTAssertEqual(events[0].view.url, "/view/ending")
+        XCTAssertEqual(events[0].view?.id, "view-ending")
+        XCTAssertEqual(events[0].view?.url, "/view/ending")
     }
 
-    func testWhenNoActiveView_itDropsEvent() {
+    func testWhenNoActiveView_itWritesEventWithoutView() {
         // Given
         memoryReader.vitalData = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
