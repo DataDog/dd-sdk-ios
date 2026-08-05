@@ -65,9 +65,10 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
             root: root,
             webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash)),
             embeddedContentSlots: Dictionary(
-                uniqueKeysWithValues: embeddedContentViewCache
+                embeddedContentViewCache
                     .allObjects
-                    .compactMap(\.embeddedContentSlot)
+                    .compactMap(\.embeddedContentSlot),
+                uniquingKeysWith: { existing, _ in existing }
             )
         )
     }
