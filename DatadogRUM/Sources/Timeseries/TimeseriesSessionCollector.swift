@@ -272,12 +272,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         // The batch is attributed to the most recently active view among its samples, not the view active
         // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
-        guard let view = Self.lastKnownView(
+        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
+        // (e.g. samples collected before the first view starts), rather than dropping the batch.
+        let view = Self.lastKnownView(
             in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        ) else {
-            return
-        }
+        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -315,7 +314,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 usr: .init(context: context),
                 version: context.version,
-                view: .init(id: view.id, name: view.name, url: view.path)
+                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
             writer.write(value: event)
         }
@@ -340,12 +339,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         // The batch is attributed to the most recently active view among its samples, not the view active
         // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
-        guard let view = Self.lastKnownView(
+        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
+        // (e.g. samples collected before the first view starts), rather than dropping the batch.
+        let view = Self.lastKnownView(
             in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        ) else {
-            return
-        }
+        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -380,7 +378,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 usr: .init(context: context),
                 version: context.version,
-                view: .init(id: view.id, name: view.name, url: view.path)
+                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
             writer.write(value: event)
         }

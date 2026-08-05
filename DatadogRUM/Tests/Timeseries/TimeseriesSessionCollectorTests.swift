@@ -377,8 +377,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
         collector.stop()
 
-        // Then — no view context means no `view.id`/`view.url` to report, so the batch is dropped
-        XCTAssertTrue(scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+        // Then — no view context means the batch is still written, just with `view: nil`, not dropped
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected the batch collected without an active view to be flushed with view: nil, not dropped")
+        XCTAssertNil(events[0].view)
     }
 
     func testWhenStartIsCalledWithoutStop_itFlushesPartialBufferBeforeNewSession() {
