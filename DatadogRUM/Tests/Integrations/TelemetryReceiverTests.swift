@@ -364,6 +364,7 @@ class TelemetryReceiverTests: XCTestCase {
         let unityVersion: String? = .mockRandom()
         let mauiVersion: String? = .mockRandom()
         let unrealVersion: String? = .mockRandom()
+        let useClientSideStats: Bool? = .mockRandom()
         let useFirstPartyHosts: Bool? = .mockRandom()
         let useLocalEncryption: Bool? = .mockRandom()
         let useProxy: Bool? = .mockRandom()
@@ -396,6 +397,7 @@ class TelemetryReceiverTests: XCTestCase {
             unityVersion: unityVersion,
             mauiVersion: mauiVersion,
             unrealVersion: unrealVersion,
+            useClientSideStats: useClientSideStats,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
             useProxy: useProxy,
@@ -436,6 +438,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.unityVersion, unityVersion)
         XCTAssertEqual(event?.telemetry.configuration.mauiVersion, mauiVersion)
         XCTAssertEqual(event?.telemetry.configuration.unrealVersion, unrealVersion)
+        XCTAssertEqual(event?.telemetry.configuration.useClientSideStats, useClientSideStats)
         XCTAssertEqual(event?.telemetry.configuration.useFirstPartyHosts, useFirstPartyHosts)
         XCTAssertEqual(event?.telemetry.configuration.useLocalEncryption, useLocalEncryption)
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)
