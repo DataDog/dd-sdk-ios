@@ -249,6 +249,7 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.responseBodySize?.decoded, taskTransaction.countOfResponseBodyBytesAfterDecoding)
         XCTAssertEqual(resourceMetrics.requestBodySize?.decoded, taskTransaction.countOfRequestBodyBytesBeforeEncoding)
         XCTAssertEqual(resourceMetrics.requestBodySize?.encoded, taskTransaction.countOfRequestBodyBytesSent)
+        XCTAssertEqual(resourceMetrics.isLocalCacheHit, false)
     }
 
     func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
@@ -372,5 +373,42 @@ class ResourceMetricsTests: XCTestCase {
             resourceMetrics.requestBodySize,
             "`requestBodySize` should not be tracked for cache transactions."
         )
+        XCTAssertEqual(resourceMetrics.isLocalCacheHit, true)
+    }
+
+    func testWhenTaskFetchTypeVaries_thenLocalCacheHitReflectsOnlyKnownSignals() {
+        guard #available(iOS 13, tvOS 13, *) else {
+            return
+        }
+
+        // `.unknown` is documented by Apple as "the fetch manner was not determined" -
+        // it must not be reported as a measured cache miss.
+        let cases: [(fetchType: URLSessionTaskMetrics.ResourceFetchType, expected: Bool?)] = [
+            (.localCache, true),
+            (.networkLoad, false),
+            (.serverPush, false),
+            (.unknown, nil)
+        ]
+
+        for testCase in cases {
+            XCTContext.runActivity(named: "\(testCase.fetchType)") { _ in
+                let taskInterval = DateInterval(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+                )
+                let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+                    start: taskInterval.start,
+                    end: taskInterval.end,
+                    resourceFetchType: testCase.fetchType
+                )
+                let taskMetrics: URLSessionTaskMetrics = .mockWith(
+                    taskInterval: taskInterval,
+                    transactionMetrics: [taskTransaction]
+                )
+
+                let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+                XCTAssertEqual(resourceMetrics.isLocalCacheHit, testCase.expected)
+            }
+        }
     }
 }

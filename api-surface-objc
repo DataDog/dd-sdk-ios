@@ -652,6 +652,7 @@ public class objc_RUMErrorEvent: NSObject
 public class objc_RUMErrorEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMErrorEventDDConfiguration?
+    public var debugIds: [objc_RUMErrorEventDDDebugIds]?
     public var formatVersion: NSNumber
     public var parentSpanId: String?
     public var profiling: objc_RUMErrorEventDDProfiling?
@@ -665,6 +666,9 @@ public class objc_RUMErrorEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMErrorEventDDDebugIds: NSObject
+    public var id: String
+    public var url: String
 public class objc_RUMErrorEventDDProfiling: NSObject
     public var errorReason: objc_RUMErrorEventDDProfilingErrorReason
     public var quotaReason: objc_RUMErrorEventDDProfilingQuotaReason
@@ -1035,6 +1039,7 @@ public class objc_RUMLongTaskEvent: NSObject
 public class objc_RUMLongTaskEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMLongTaskEventDDConfiguration?
+    public var debugIds: [objc_RUMLongTaskEventDDDebugIds]?
     public var discarded: NSNumber?
     public var formatVersion: NSNumber
     public var profiling: objc_RUMLongTaskEventDDProfiling?
@@ -1045,6 +1050,9 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
+public class objc_RUMLongTaskEventDDDebugIds: NSObject
+    public var id: String
+    public var url: String
 public class objc_RUMLongTaskEventDDProfiling: NSObject
     public var errorReason: objc_RUMLongTaskEventDDProfilingErrorReason
     public var quotaReason: objc_RUMLongTaskEventDDProfilingQuotaReason
@@ -1426,6 +1434,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var firstByte: objc_RUMResourceEventResourceFirstByte?
     public var graphql: objc_RUMResourceEventResourceRUMGraphql?
     public var id: String?
+    public var localCacheHit: NSNumber?
     public var method: objc_RUMResourceEventResourceRUMMethod
     public var `protocol`: String?
     public var provider: objc_RUMResourceEventResourceProvider?
@@ -1631,6 +1640,7 @@ public class objc_RUMViewEventDDCLS: NSObject
     public var devicePixelRatio: NSNumber?
 public class objc_RUMViewEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var remoteConfigurationId: String?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
@@ -2044,16 +2054,62 @@ public class objc_RUMViewUpdateEvent: NSObject
     public var view: objc_RUMViewUpdateEventView
 public class objc_RUMViewUpdateEventDD: NSObject
     public var browserSdkVersion: String?
+    public var cls: objc_RUMViewUpdateEventDDCLS?
     public var configuration: objc_RUMViewUpdateEventDDConfiguration?
     public var documentVersion: NSNumber
     public var formatVersion: NSNumber
+    public var pageStates: [objc_RUMViewUpdateEventDDPageStates]?
+    public var profiling: objc_RUMViewUpdateEventDDProfiling?
+    public var replayStats: objc_RUMViewUpdateEventDDReplayStats?
     public var sdkName: String?
     public var session: objc_RUMViewUpdateEventDDSession?
+public class objc_RUMViewUpdateEventDDCLS: NSObject
+    public var devicePixelRatio: NSNumber?
 public class objc_RUMViewUpdateEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var remoteConfigurationId: String?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
+    public var startSessionReplayRecordingManually: NSNumber?
     public var traceSampleRate: NSNumber?
+public class objc_RUMViewUpdateEventDDPageStates: NSObject
+    public var start: NSNumber
+    public var state: objc_RUMViewUpdateEventDDPageStatesState
+public enum objc_RUMViewUpdateEventDDPageStatesState: Int
+    case active
+    case passive
+    case hidden
+    case frozen
+    case terminated
+public class objc_RUMViewUpdateEventDDProfiling: NSObject
+    public var errorReason: objc_RUMViewUpdateEventDDProfilingErrorReason
+    public var quotaReason: objc_RUMViewUpdateEventDDProfilingQuotaReason
+    public var status: objc_RUMViewUpdateEventDDProfilingStatus
+public enum objc_RUMViewUpdateEventDDProfilingErrorReason: Int
+    case none
+    case notSupportedByBrowser
+    case failedToLazyLoad
+    case missingDocumentPolicyHeader
+    case unexpectedException
+public enum objc_RUMViewUpdateEventDDProfilingQuotaReason: Int
+    case none
+    case quotaOk
+    case quotaExceeded
+    case orgDisabled
+    case backendUnavailable
+    case undefined
+    case timeout
+    case apiError
+public enum objc_RUMViewUpdateEventDDProfilingStatus: Int
+    case none
+    case starting
+    case running
+    case stopped
+    case error
+public class objc_RUMViewUpdateEventDDReplayStats: NSObject
+    public var recordsCount: NSNumber?
+    public var segmentsCount: NSNumber?
+    public var segmentsTotalRawSize: NSNumber?
 public class objc_RUMViewUpdateEventDDSession: NSObject
     public var plan: objc_RUMViewUpdateEventDDSessionPlan
     public var sessionPrecondition: objc_RUMViewUpdateEventDDSessionRUMSessionPrecondition
@@ -3128,6 +3184,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var batchProcessingLevel: NSNumber?
     public var batchSize: NSNumber?
     public var batchUploadFrequency: NSNumber?
+    public var betaEnableViewUpdates: NSNumber?
     public var betaEncodeCookieOptions: NSNumber?
     public var compressIntakeRequests: NSNumber?
     public var dartVersion: String?

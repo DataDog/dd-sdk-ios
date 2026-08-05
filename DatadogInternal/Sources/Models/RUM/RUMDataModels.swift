@@ -1651,6 +1651,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public let configuration: Configuration?
 
+        /// Mapping of source file URLs to their debug IDs for source map deobfuscation
+        public let debugIds: [DebugIds]?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -1678,6 +1681,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
+            case debugIds = "debug_ids"
             case formatVersion = "format_version"
             case parentSpanId = "parent_span_id"
             case profiling = "profiling"
@@ -1693,6 +1697,7 @@ public struct RUMErrorEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - debugIds: Mapping of source file URLs to their debug IDs for source map deobfuscation
         ///   - parentSpanId: parent span identifier in decimal format
         ///   - profiling: Profiling context
         ///   - rulePsr: trace sample rate in decimal format
@@ -1703,6 +1708,7 @@ public struct RUMErrorEvent: RUMDataModel {
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            debugIds: [DebugIds]? = nil,
             parentSpanId: String? = nil,
             profiling: DDProfiling? = nil,
             rulePsr: Double? = nil,
@@ -1713,6 +1719,7 @@ public struct RUMErrorEvent: RUMDataModel {
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.debugIds = debugIds
             self.parentSpanId = parentSpanId
             self.profiling = profiling
             self.rulePsr = rulePsr
@@ -1760,6 +1767,33 @@ public struct RUMErrorEvent: RUMDataModel {
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
+            }
+        }
+
+        /// Association between a source file URL and its debug ID
+        public struct DebugIds: Codable {
+            /// Debug ID (UUID) for the source file
+            public let id: String
+
+            /// URL of the source file
+            public let url: String
+
+            public enum CodingKeys: String, CodingKey {
+                case id = "id"
+                case url = "url"
+            }
+
+            /// Association between a source file URL and its debug ID
+            ///
+            /// - Parameters:
+            ///   - id: Debug ID (UUID) for the source file
+            ///   - url: URL of the source file
+            public init(
+                id: String,
+                url: String
+            ) {
+                self.id = id
+                self.url = url
             }
         }
 
@@ -3079,6 +3113,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public let configuration: Configuration?
 
+        /// Mapping of source file URLs to their debug IDs for source map deobfuscation
+        public let debugIds: [DebugIds]?
+
         /// Whether the long task should be discarded or indexed
         public let discarded: Bool?
 
@@ -3097,6 +3134,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
             case configuration = "configuration"
+            case debugIds = "debug_ids"
             case discarded = "discarded"
             case formatVersion = "format_version"
             case profiling = "profiling"
@@ -3109,6 +3147,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
         ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - debugIds: Mapping of source file URLs to their debug IDs for source map deobfuscation
         ///   - discarded: Whether the long task should be discarded or indexed
         ///   - profiling: Profiling context
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
@@ -3116,6 +3155,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public init(
             browserSdkVersion: String? = nil,
             configuration: Configuration? = nil,
+            debugIds: [DebugIds]? = nil,
             discarded: Bool? = nil,
             profiling: DDProfiling? = nil,
             sdkName: String? = nil,
@@ -3123,6 +3163,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         ) {
             self.browserSdkVersion = browserSdkVersion
             self.configuration = configuration
+            self.debugIds = debugIds
             self.discarded = discarded
             self.profiling = profiling
             self.sdkName = sdkName
@@ -3167,6 +3208,33 @@ public struct RUMLongTaskEvent: RUMDataModel {
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
+            }
+        }
+
+        /// Association between a source file URL and its debug ID
+        public struct DebugIds: Codable {
+            /// Debug ID (UUID) for the source file
+            public let id: String
+
+            /// URL of the source file
+            public let url: String
+
+            public enum CodingKeys: String, CodingKey {
+                case id = "id"
+                case url = "url"
+            }
+
+            /// Association between a source file URL and its debug ID
+            ///
+            /// - Parameters:
+            ///   - id: Debug ID (UUID) for the source file
+            ///   - url: URL of the source file
+            public init(
+                id: String,
+                url: String
+            ) {
+                self.id = id
+                self.url = url
             }
         }
 
@@ -4224,6 +4292,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// UUID of the resource
         public let id: String?
 
+        /// Whether the resource was served from the device's local cache
+        public let localCacheHit: Bool?
+
         /// HTTP method of the resource
         public let method: RUMMethod?
 
@@ -4277,6 +4348,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case firstByte = "first_byte"
             case graphql = "graphql"
             case id = "id"
+            case localCacheHit = "local_cache_hit"
             case method = "method"
             case `protocol` = "protocol"
             case provider = "provider"
@@ -4306,6 +4378,7 @@ public struct RUMResourceEvent: RUMDataModel {
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
+        ///   - localCacheHit: Whether the resource was served from the device's local cache
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4331,6 +4404,7 @@ public struct RUMResourceEvent: RUMDataModel {
             firstByte: FirstByte? = nil,
             graphql: RUMGraphql? = nil,
             id: String? = nil,
+            localCacheHit: Bool? = nil,
             method: RUMMethod? = nil,
             `protocol`: String? = nil,
             provider: Provider? = nil,
@@ -4356,6 +4430,7 @@ public struct RUMResourceEvent: RUMDataModel {
             self.firstByte = firstByte
             self.graphql = graphql
             self.id = id
+            self.localCacheHit = localCacheHit
             self.method = method
             self.`protocol` = `protocol`
             self.provider = provider
@@ -5452,6 +5527,9 @@ public struct RUMViewEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// The id of the remote configuration applied to the SDK, if any
+            public let remoteConfigurationId: String?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5466,6 +5544,7 @@ public struct RUMViewEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case remoteConfigurationId = "remote_configuration_id"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -5476,18 +5555,21 @@ public struct RUMViewEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                remoteConfigurationId: String? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.remoteConfigurationId = remoteConfigurationId
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -7513,6 +7595,9 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Additional information of the reported Cumulative Layout Shift
+        public let cls: CLS?
+
         /// Subset of the SDK configuration options in use during its execution
         public let configuration: Configuration?
 
@@ -7522,6 +7607,15 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// List of the page states during the view
+        public let pageStates: [PageStates]?
+
+        /// Profiling context
+        public let profiling: DDProfiling?
+
+        /// Debug metadata for Replay Sessions
+        public let replayStats: ReplayStats?
+
         /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         public let sdkName: String?
 
@@ -7530,9 +7624,13 @@ public struct RUMViewUpdateEvent: RUMDataModel {
 
         public enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case cls = "cls"
             case configuration = "configuration"
             case documentVersion = "document_version"
             case formatVersion = "format_version"
+            case pageStates = "page_states"
+            case profiling = "profiling"
+            case replayStats = "replay_stats"
             case sdkName = "sdk_name"
             case session = "session"
         }
@@ -7541,22 +7639,54 @@ public struct RUMViewUpdateEvent: RUMDataModel {
         ///
         /// - Parameters:
         ///   - browserSdkVersion: Browser SDK version
+        ///   - cls: Additional information of the reported Cumulative Layout Shift
         ///   - configuration: Subset of the SDK configuration options in use during its execution
         ///   - documentVersion: Version of the update of the view event
+        ///   - pageStates: List of the page states during the view
+        ///   - profiling: Profiling context
+        ///   - replayStats: Debug metadata for Replay Sessions
         ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
         ///   - session: Session-related internal properties
         public init(
             browserSdkVersion: String? = nil,
+            cls: CLS? = nil,
             configuration: Configuration? = nil,
             documentVersion: Int64,
+            pageStates: [PageStates]? = nil,
+            profiling: DDProfiling? = nil,
+            replayStats: ReplayStats? = nil,
             sdkName: String? = nil,
             session: Session? = nil
         ) {
             self.browserSdkVersion = browserSdkVersion
+            self.cls = cls
             self.configuration = configuration
             self.documentVersion = documentVersion
+            self.pageStates = pageStates
+            self.profiling = profiling
+            self.replayStats = replayStats
             self.sdkName = sdkName
             self.session = session
+        }
+
+        /// Additional information of the reported Cumulative Layout Shift
+        public struct CLS: Codable {
+            /// Pixel ratio of the device where the layout shift was reported
+            public let devicePixelRatio: Double?
+
+            public enum CodingKeys: String, CodingKey {
+                case devicePixelRatio = "device_pixel_ratio"
+            }
+
+            /// Additional information of the reported Cumulative Layout Shift
+            ///
+            /// - Parameters:
+            ///   - devicePixelRatio: Pixel ratio of the device where the layout shift was reported
+            public init(
+                devicePixelRatio: Double? = nil
+            ) {
+                self.devicePixelRatio = devicePixelRatio
+            }
         }
 
         /// Subset of the SDK configuration options in use during its execution
@@ -7564,19 +7694,27 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// The id of the remote configuration applied to the SDK, if any
+            public let remoteConfigurationId: String?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
+            /// Whether session replay recording configured to start manually
+            public let startSessionReplayRecordingManually: Bool?
+
             /// The percentage of sessions with traced resources
             public let traceSampleRate: Double?
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case remoteConfigurationId = "remote_configuration_id"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
+                case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case traceSampleRate = "trace_sample_rate"
             }
 
@@ -7584,19 +7722,95 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
+            ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                remoteConfigurationId: String? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
+                startSessionReplayRecordingManually: Bool? = nil,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.remoteConfigurationId = remoteConfigurationId
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
+                self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
                 self.traceSampleRate = traceSampleRate
+            }
+        }
+
+        /// Properties of the page state
+        public struct PageStates: Codable {
+            /// Duration in ns between start of the view and start of the page state
+            public let start: Int64
+
+            /// Page state name
+            public let state: State
+
+            public enum CodingKeys: String, CodingKey {
+                case start = "start"
+                case state = "state"
+            }
+
+            /// Properties of the page state
+            ///
+            /// - Parameters:
+            ///   - start: Duration in ns between start of the view and start of the page state
+            ///   - state: Page state name
+            public init(
+                start: Int64,
+                state: State
+            ) {
+                self.start = start
+                self.state = state
+            }
+
+            /// Page state name
+            public enum State: String, Codable {
+                case active = "active"
+                case passive = "passive"
+                case hidden = "hidden"
+                case frozen = "frozen"
+                case terminated = "terminated"
+            }
+        }
+
+        /// Debug metadata for Replay Sessions
+        public struct ReplayStats: Codable {
+            /// The number of records produced during this view lifetime
+            public let recordsCount: Int64?
+
+            /// The number of segments sent during this view lifetime
+            public let segmentsCount: Int64?
+
+            /// The total size in bytes of the segments sent during this view lifetime
+            public let segmentsTotalRawSize: Int64?
+
+            public enum CodingKeys: String, CodingKey {
+                case recordsCount = "records_count"
+                case segmentsCount = "segments_count"
+                case segmentsTotalRawSize = "segments_total_raw_size"
+            }
+
+            /// Debug metadata for Replay Sessions
+            ///
+            /// - Parameters:
+            ///   - recordsCount: The number of records produced during this view lifetime
+            ///   - segmentsCount: The number of segments sent during this view lifetime
+            ///   - segmentsTotalRawSize: The total size in bytes of the segments sent during this view lifetime
+            public init(
+                recordsCount: Int64? = nil,
+                segmentsCount: Int64? = nil,
+                segmentsTotalRawSize: Int64? = nil
+            ) {
+                self.recordsCount = recordsCount
+                self.segmentsCount = segmentsCount
+                self.segmentsTotalRawSize = segmentsTotalRawSize
             }
         }
 
@@ -11542,6 +11756,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
+            /// Whether the beta partial view updates feature is enabled
+            public var betaEnableViewUpdates: Bool?
+
             /// Whether the beta encode cookie options is enabled
             public var betaEncodeCookieOptions: Bool?
 
@@ -11815,6 +12032,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case betaEnableViewUpdates = "beta_enable_view_updates"
                 case betaEncodeCookieOptions = "beta_encode_cookie_options"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
@@ -11916,6 +12134,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - batchProcessingLevel: Maximum number of batches processed sequentially without a delay
             ///   - batchSize: The window duration for batches sent by the SDK (in milliseconds)
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
+            ///   - betaEnableViewUpdates: Whether the beta partial view updates feature is enabled
             ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
@@ -12013,6 +12232,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 batchProcessingLevel: Int64? = nil,
                 batchSize: Int64? = nil,
                 batchUploadFrequency: Int64? = nil,
+                betaEnableViewUpdates: Bool? = nil,
                 betaEncodeCookieOptions: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
@@ -12110,6 +12330,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.batchProcessingLevel = batchProcessingLevel
                 self.batchSize = batchSize
                 self.batchUploadFrequency = batchUploadFrequency
+                self.betaEnableViewUpdates = betaEnableViewUpdates
                 self.betaEncodeCookieOptions = betaEncodeCookieOptions
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
@@ -14057,4 +14278,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2e1fe49897be86e72c0c2f0c2ae052c0d5f826eb
+// Generated from https://github.com/DataDog/rum-events-format/tree/543596f0d831ca9ee014cbae23ef4138eb2e0cb7

@@ -3,6 +3,7 @@
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
 - [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
+- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 
 # 3.14.0 / 15-07-2026
 
@@ -1204,6 +1205,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3104]: https://github.com/DataDog/dd-sdk-ios/pull/3104
 [#3106]: https://github.com/DataDog/dd-sdk-ios/pull/3106
+[#3074]: https://github.com/DataDog/dd-sdk-ios/pull/3074
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
