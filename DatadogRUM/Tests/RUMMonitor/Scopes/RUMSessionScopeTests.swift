@@ -870,21 +870,41 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
     var pauseCallCount = 0
     var resumeCallCount = 0
     var stopCallCount = 0
+    var noteActivityCallCount = 0
     var lastStartedSessionID: String?
     var lastStartedApplicationID: String?
     var lastStartedSessionType: RUMSessionType?
+    var lastStartedStartTime: Date?
+    var lastStoppedSessionID: String?
+    var lastPausedSessionID: String?
+    var lastResumedSessionID: String?
+    var lastNoteActivitySessionID: String?
 
-    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date) {
         startCallCount += 1
         lastStartedSessionID = sessionID
         lastStartedApplicationID = applicationID
         lastStartedSessionType = sessionType
+        lastStartedStartTime = startTime
     }
 
-    func pause() { pauseCallCount += 1 }
-    func resume() { resumeCallCount += 1 }
+    func pause(sessionID: String) {
+        pauseCallCount += 1
+        lastPausedSessionID = sessionID
+    }
 
-    func stop() {
+    func resume(sessionID: String) {
+        resumeCallCount += 1
+        lastResumedSessionID = sessionID
+    }
+
+    func stop(sessionID: String) {
         stopCallCount += 1
+        lastStoppedSessionID = sessionID
+    }
+
+    func noteActivity(sessionID: String, at time: Date) {
+        noteActivityCallCount += 1
+        lastNoteActivitySessionID = sessionID
     }
 }
