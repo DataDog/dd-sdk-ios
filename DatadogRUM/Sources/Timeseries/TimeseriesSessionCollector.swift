@@ -9,10 +9,13 @@ import DatadogInternal
 
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
-    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)
-    func pause()
-    func resume()
-    func stop()
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date)
+    func pause(sessionID: String)
+    func resume(sessionID: String)
+    func stop(sessionID: String)
+    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
+    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
+    func noteActivity(sessionID: String, at time: Date)
 }
 
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
@@ -61,6 +64,13 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
+    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
+    private var sessionStartTime: Date = .distantPast
+    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
+    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
+    private var lastActivityTime: Date = .distantPast
+    private let now: () -> Date
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -74,7 +84,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
-        sessionSampleRate: Double = 100
+        sessionSampleRate: Double = 100,
+        now: @escaping () -> Date = Date.init
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
@@ -85,6 +96,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.syntheticsTest = syntheticsTest
         self.sessionSampleRate = sessionSampleRate
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
+        self.now = now
     }
 
     deinit {
@@ -136,7 +148,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Resets state, flips the compression coin, and starts the sampling timer for the new session.
-    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date = Date()) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
@@ -146,6 +158,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.sessionID = sessionID
             self.applicationID = applicationID
             self.sessionType = sessionType
+            self.sessionStartTime = startTime
+            self.lastActivityTime = startTime
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
@@ -156,9 +170,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Suspends sampling and flushes buffered data. Session state is preserved for `resume()`. Idempotent.
-    func pause() {
+    /// No-ops if `sessionID` no longer matches the currently active session (e.g. a call left over from a
+    /// session that has since ended and been replaced — see `RUMSessionScope.Constants` for expiry rules).
+    func pause(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self else {
+            guard let self = self, self.sessionID == sessionID else {
                 return
             }
             if self.isPaused || self.timer == nil {
@@ -173,9 +189,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Resumes sampling after `pause()`. Idempotent — only takes effect if currently paused.
-    func resume() {
+    /// No-ops if `sessionID` no longer matches the currently active session.
+    func resume(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.isPaused else {
+            guard let self = self, self.sessionID == sessionID, self.isPaused else {
                 return
             }
             self.isPaused = false
@@ -184,9 +201,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Stops sampling and flushes any remaining buffered data points.
-    func stop() {
+    /// No-ops if `sessionID` no longer matches the currently active session.
+    func stop(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self else {
+            guard let self = self, self.sessionID == sessionID else {
                 return
             }
             self.timer?.cancel()
@@ -194,6 +212,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+        }
+    }
+
+    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
+    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
+    /// No-ops if `sessionID` no longer matches the currently active session.
+    func noteActivity(sessionID: String, at time: Date) {
+        queue.async { [weak self] in
+            guard let self = self, self.sessionID == sessionID else {
+                return
+            }
+            self.lastActivityTime = time
         }
     }
 
@@ -221,7 +251,23 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     // MARK: - Private
 
     private func sample() {
-        let now = Int64.ddWithNoOverflow(Date().timeIntervalSince1970 * 1_000_000_000)
+        let currentDate = now()
+
+        // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
+        // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
+        // idle with no user interaction). This is a safety net only — it does not affect RUM's own
+        // session state, it just stops this collector from uploading data past session expiry.
+        let sessionExceededMaxDuration = currentDate.timeIntervalSince(sessionStartTime) >= RUMSessionScope.Constants.sessionMaxDuration
+        let sessionExceededInactivityTimeout = currentDate.timeIntervalSince(lastActivityTime) >= RUMSessionScope.Constants.sessionTimeoutDuration
+        if sessionExceededMaxDuration || sessionExceededInactivityTimeout {
+            timer?.cancel()
+            timer = nil
+            flushMemory()
+            flushCPU()
+            return
+        }
+
+        let timestamp = Int64.ddWithNoOverflow(currentDate.timeIntervalSince1970 * 1_000_000_000)
         let activeView = activeContextReader?.activeView
         let viewID = activeView?.id
         let viewPath = activeView?.path
@@ -232,7 +278,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             memoryBuffer.append(
                 MemorySample(
-                    timestamp: now,
+                    timestamp: timestamp,
                     footprintKB: footprintKB,
                     percent: memoryPercent,
                     viewID: viewID,
@@ -246,7 +292,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
 
         if let cpuUsage = cpuUsageProvider() {
-            cpuBuffer.append(CPUSample(timestamp: now, usage: cpuUsage, viewID: viewID, viewPath: viewPath, viewName: viewName))
+            cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage, viewID: viewID, viewPath: viewPath, viewName: viewName))
             if cpuBuffer.count >= batchSize {
                 flushCPU()
             }
