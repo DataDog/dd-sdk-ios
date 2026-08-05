@@ -71,6 +71,26 @@ class DisallowListTests: XCTestCase {
         XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/resourceXjson")))
     }
 
+    func testWhenPatternContainsMultipleWildcards_itDisallowsMatchingURLs() {
+        // Given
+        let disallowList = DisallowList(["https://example.com/*/foo/*"])
+
+        // Then
+        XCTAssertTrue(disallowList.isDisallowed(url: URL(string: "https://example.com/bar/foo/baz")))
+        XCTAssertTrue(disallowList.isDisallowed(url: URL(string: "https://example.com/a/b/foo/c")))
+        XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/bar/baz")))
+    }
+
+    func testWhenPatternMatchesDuplicatedPathSegments_itDisallowsBothVariants() {
+        // Given - e.g. excluding operation endpoints across duplicated /api/v2 and /api/ui paths
+        let disallowList = DisallowList(["https://example.com/api/*/operations/*"])
+
+        // Then
+        XCTAssertTrue(disallowList.isDisallowed(url: URL(string: "https://example.com/api/v2/operations/list")))
+        XCTAssertTrue(disallowList.isDisallowed(url: URL(string: "https://example.com/api/ui/operations/123")))
+        XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/api/v2/users/list")))
+    }
+
     // MARK: - Invalid Patterns
 
     func testWhenPatternIsBareWildcard_itIsIgnoredWithoutMatchingEveryURL() {
@@ -82,13 +102,13 @@ class DisallowListTests: XCTestCase {
         XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/")))
     }
 
-    func testWhenPatternContainsMultipleWildcards_itIsIgnored() {
+    func testWhenPatternIsOnlyWildcards_itIsIgnoredWithoutMatchingEveryURL() {
         // Given
-        let disallowList = DisallowList(["https://example.com/*/foo/*"])
+        let disallowList = DisallowList(["**"])
 
         // Then
         XCTAssertTrue(disallowList.isEmpty)
-        XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/bar/foo/baz")))
+        XCTAssertFalse(disallowList.isDisallowed(url: URL(string: "https://example.com/")))
     }
 
     // MARK: - Multiple Patterns
