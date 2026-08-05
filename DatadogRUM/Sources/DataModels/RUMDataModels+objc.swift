@@ -817,7 +817,7 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -833,7 +833,7 @@ public enum objc_RUMActionEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -847,7 +847,7 @@ public enum objc_RUMActionEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -1111,7 +1111,7 @@ public enum objc_RUMActionEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -1128,7 +1128,7 @@ public enum objc_RUMActionEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -1143,7 +1143,7 @@ public enum objc_RUMActionEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -1977,7 +1977,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -1993,7 +1993,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -2007,7 +2007,7 @@ public enum objc_RUMErrorEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -3056,7 +3056,7 @@ public enum objc_RUMErrorEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -3073,7 +3073,7 @@ public enum objc_RUMErrorEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -3088,7 +3088,7 @@ public enum objc_RUMErrorEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -3902,7 +3902,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -3918,7 +3918,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -3932,7 +3932,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -4363,7 +4363,7 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -4380,7 +4380,7 @@ public enum objc_RUMLongTaskEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -4395,7 +4395,7 @@ public enum objc_RUMLongTaskEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -5071,7 +5071,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -5087,7 +5087,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -5101,7 +5101,7 @@ public enum objc_RUMResourceEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -6045,7 +6045,7 @@ public enum objc_RUMResourceEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -6062,7 +6062,7 @@ public enum objc_RUMResourceEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -6077,7 +6077,7 @@ public enum objc_RUMResourceEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -6198,6 +6198,1852 @@ public class objc_RUMResourceEventView: NSObject {
     public var url: String {
         set { root.swiftModel.view.url = newValue }
         get { root.swiftModel.view.url }
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEvent)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEvent: NSObject {
+    public internal(set) var swiftModel: RUMTimeseriesCpuEvent
+    internal var root: objc_RUMTimeseriesCpuEvent { self }
+
+    public init(swiftModel: RUMTimeseriesCpuEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_RUMTimeseriesCpuEventDD {
+        objc_RUMTimeseriesCpuEventDD(root: root)
+    }
+
+    public var account: objc_RUMTimeseriesCpuEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMTimeseriesCpuEventRUMAccount(root: root) : nil
+    }
+
+    public var application: objc_RUMTimeseriesCpuEventApplication {
+        objc_RUMTimeseriesCpuEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMTimeseriesCpuEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMTimeseriesCpuEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMTimeseriesCpuEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMTimeseriesCpuEventRUMConnectivity(root: root) : nil
+    }
+
+    public var context: objc_RUMTimeseriesCpuEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMTimeseriesCpuEventRUMEventAttributes(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
+    public var device: objc_RUMTimeseriesCpuEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMTimeseriesCpuEventDevice(root: root) : nil
+    }
+
+    public var display: objc_RUMTimeseriesCpuEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMTimeseriesCpuEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMTimeseriesCpuEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMTimeseriesCpuEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
+        root.swiftModel.service
+    }
+
+    public var session: objc_RUMTimeseriesCpuEventSession {
+        objc_RUMTimeseriesCpuEventSession(root: root)
+    }
+
+    public var source: objc_RUMTimeseriesCpuEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMTimeseriesCpuEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMTimeseriesCpuEventStream(root: root) : nil
+    }
+
+    public var synthetics: objc_RUMTimeseriesCpuEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMTimeseriesCpuEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMTimeseriesCpuEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMTimeseriesCpuEventTAB(root: root) : nil
+    }
+
+    public var timeseries: objc_RUMTimeseriesCpuEventTimeseries {
+        objc_RUMTimeseriesCpuEventTimeseries(root: root)
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var usr: objc_RUMTimeseriesCpuEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMTimeseriesCpuEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
+        root.swiftModel.version
+    }
+
+    public var view: objc_RUMTimeseriesCpuEventView? {
+        root.swiftModel.view != nil ? objc_RUMTimeseriesCpuEventView(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDD: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMTimeseriesCpuEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMTimeseriesCpuEventDDConfiguration(root: root) : nil
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMTimeseriesCpuEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMTimeseriesCpuEventDDSession(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDDConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDDSession: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMTimeseriesCpuEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMTimeseriesCpuEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventDDSessionPlan: Int {
+    internal init(swift: RUMTimeseriesCpuEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesCpuEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMTimeseriesCpuEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMAccount: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventApplication: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
+    public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMCITest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMCITest: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMConnectivity)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMTimeseriesCpuEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMTimeseriesCpuEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMTimeseriesCpuEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMTimeseriesCpuEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMTimeseriesCpuEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDevice: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
+    public var brand: String? {
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
+    }
+
+    public var model: String? {
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var totalRam: NSNumber? {
+        root.swiftModel.device!.totalRam as NSNumber?
+    }
+
+    public var type: objc_RUMTimeseriesCpuEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMTimeseriesCpuEventDisplay)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDisplay: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var viewport: objc_RUMTimeseriesCpuEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMTimeseriesCpuEventDisplayViewport(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventDisplayViewport)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventDisplayViewport: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.os!.build
+    }
+
+    public var name: String {
+        root.swiftModel.os!.name
+    }
+
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventSession: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMTimeseriesCpuEventSource)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventSource: Int {
+    internal init(swift: RUMTimeseriesCpuEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        case .electron?: self = .electron
+        case .cpp?: self = .cpp
+        case .maui?: self = .maui
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesCpuEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        case .electron: return .electron
+        case .cpp: return .cpp
+        case .maui: return .maui
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case cpp
+    case maui
+}
+
+@objc(DDRUMTimeseriesCpuEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventStream: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+
+    public var syntheticsInfo: [String: Any] {
+        set { root.swiftModel.synthetics!.syntheticsInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.synthetics!.syntheticsInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventTAB: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventTimeseries)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventTimeseries: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var data: objc_RUMTimeseriesCpuEventTimeseriesData {
+        objc_RUMTimeseriesCpuEventTimeseriesData(root: root)
+    }
+
+    public var end: NSNumber {
+        root.swiftModel.timeseries.end as NSNumber
+    }
+
+    public var id: String {
+        root.swiftModel.timeseries.id
+    }
+
+    public var name: String {
+        root.swiftModel.timeseries.name
+    }
+
+    public var schema: String {
+        root.swiftModel.timeseries.schema
+    }
+
+    public var start: NSNumber {
+        root.swiftModel.timeseries.start as NSNumber
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventTimeseriesData)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventTimeseriesData: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var timestamps: [NSNumber] {
+        root.swiftModel.timeseries.data.timestamps as [NSNumber]
+    }
+
+    public var values: objc_RUMTimeseriesCpuEventTimeseriesDataValues {
+        objc_RUMTimeseriesCpuEventTimeseriesDataValues(root: root)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventTimeseriesDataValues)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventTimeseriesDataValues: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var cpuUsage: [NSNumber] {
+        root.swiftModel.timeseries.data.values.cpuUsage as [NSNumber]
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventRUMUser: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventView: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view!.id
+    }
+
+    public var name: String? {
+        set { root.swiftModel.view!.name = newValue }
+        get { root.swiftModel.view!.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view!.referrer = newValue }
+        get { root.swiftModel.view!.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view!.url = newValue }
+        get { root.swiftModel.view!.url }
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEvent)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEvent: NSObject {
+    public internal(set) var swiftModel: RUMTimeseriesMemoryEvent
+    internal var root: objc_RUMTimeseriesMemoryEvent { self }
+
+    public init(swiftModel: RUMTimeseriesMemoryEvent) {
+        self.swiftModel = swiftModel
+    }
+
+    public var dd: objc_RUMTimeseriesMemoryEventDD {
+        objc_RUMTimeseriesMemoryEventDD(root: root)
+    }
+
+    public var account: objc_RUMTimeseriesMemoryEventRUMAccount? {
+        root.swiftModel.account != nil ? objc_RUMTimeseriesMemoryEventRUMAccount(root: root) : nil
+    }
+
+    public var application: objc_RUMTimeseriesMemoryEventApplication {
+        objc_RUMTimeseriesMemoryEventApplication(root: root)
+    }
+
+    public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
+    public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
+    public var ciTest: objc_RUMTimeseriesMemoryEventRUMCITest? {
+        root.swiftModel.ciTest != nil ? objc_RUMTimeseriesMemoryEventRUMCITest(root: root) : nil
+    }
+
+    public var connectivity: objc_RUMTimeseriesMemoryEventRUMConnectivity? {
+        root.swiftModel.connectivity != nil ? objc_RUMTimeseriesMemoryEventRUMConnectivity(root: root) : nil
+    }
+
+    public var context: objc_RUMTimeseriesMemoryEventRUMEventAttributes? {
+        root.swiftModel.context != nil ? objc_RUMTimeseriesMemoryEventRUMEventAttributes(root: root) : nil
+    }
+
+    public var date: NSNumber {
+        root.swiftModel.date as NSNumber
+    }
+
+    public var ddtags: String? {
+        root.swiftModel.ddtags
+    }
+
+    public var device: objc_RUMTimeseriesMemoryEventDevice? {
+        root.swiftModel.device != nil ? objc_RUMTimeseriesMemoryEventDevice(root: root) : nil
+    }
+
+    public var display: objc_RUMTimeseriesMemoryEventDisplay? {
+        root.swiftModel.display != nil ? objc_RUMTimeseriesMemoryEventDisplay(root: root) : nil
+    }
+
+    public var os: objc_RUMTimeseriesMemoryEventOperatingSystem? {
+        root.swiftModel.os != nil ? objc_RUMTimeseriesMemoryEventOperatingSystem(root: root) : nil
+    }
+
+    public var service: String? {
+        root.swiftModel.service
+    }
+
+    public var session: objc_RUMTimeseriesMemoryEventSession {
+        objc_RUMTimeseriesMemoryEventSession(root: root)
+    }
+
+    public var source: objc_RUMTimeseriesMemoryEventSource {
+        .init(swift: root.swiftModel.source)
+    }
+
+    public var stream: objc_RUMTimeseriesMemoryEventStream? {
+        root.swiftModel.stream != nil ? objc_RUMTimeseriesMemoryEventStream(root: root) : nil
+    }
+
+    public var synthetics: objc_RUMTimeseriesMemoryEventRUMSyntheticsTest? {
+        root.swiftModel.synthetics != nil ? objc_RUMTimeseriesMemoryEventRUMSyntheticsTest(root: root) : nil
+    }
+
+    public var tab: objc_RUMTimeseriesMemoryEventTAB? {
+        root.swiftModel.tab != nil ? objc_RUMTimeseriesMemoryEventTAB(root: root) : nil
+    }
+
+    public var timeseries: objc_RUMTimeseriesMemoryEventTimeseries {
+        objc_RUMTimeseriesMemoryEventTimeseries(root: root)
+    }
+
+    public var type: String {
+        root.swiftModel.type
+    }
+
+    public var usr: objc_RUMTimeseriesMemoryEventRUMUser? {
+        root.swiftModel.usr != nil ? objc_RUMTimeseriesMemoryEventRUMUser(root: root) : nil
+    }
+
+    public var version: String? {
+        root.swiftModel.version
+    }
+
+    public var view: objc_RUMTimeseriesMemoryEventView? {
+        root.swiftModel.view != nil ? objc_RUMTimeseriesMemoryEventView(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDD)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDD: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var browserSdkVersion: String? {
+        root.swiftModel.dd.browserSdkVersion
+    }
+
+    public var configuration: objc_RUMTimeseriesMemoryEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? objc_RUMTimeseriesMemoryEventDDConfiguration(root: root) : nil
+    }
+
+    public var formatVersion: NSNumber {
+        root.swiftModel.dd.formatVersion as NSNumber
+    }
+
+    public var sdkName: String? {
+        root.swiftModel.dd.sdkName
+    }
+
+    public var session: objc_RUMTimeseriesMemoryEventDDSession? {
+        root.swiftModel.dd.session != nil ? objc_RUMTimeseriesMemoryEventDDSession(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDDConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var profilingSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
+    }
+
+    public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
+    }
+
+    public var traceSampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.traceSampleRate as NSNumber?
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDDSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDDSession: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var plan: objc_RUMTimeseriesMemoryEventDDSessionPlan {
+        .init(swift: root.swiftModel.dd.session!.plan)
+    }
+
+    public var sessionPrecondition: objc_RUMTimeseriesMemoryEventDDSessionRUMSessionPrecondition {
+        .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDDSessionPlan)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventDDSessionPlan: Int {
+    internal init(swift: RUMTimeseriesMemoryEvent.DD.Session.Plan?) {
+        switch swift {
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesMemoryEvent.DD.Session.Plan? {
+        switch self {
+        case .none: return nil
+        case .plan1: return .plan1
+        case .plan2: return .plan2
+        }
+    }
+
+    case none
+    case plan1
+    case plan2
+}
+
+@objc(DDRUMTimeseriesMemoryEventDDSessionRUMSessionPrecondition)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
+        switch swift {
+        case nil: self = .none
+        case .userAppLaunch?: self = .userAppLaunch
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .backgroundLaunch?: self = .backgroundLaunch
+        case .prewarm?: self = .prewarm
+        case .fromNonInteractiveSession?: self = .fromNonInteractiveSession
+        case .explicitStop?: self = .explicitStop
+        }
+    }
+
+    internal var toSwift: RUMSessionPrecondition? {
+        switch self {
+        case .none: return nil
+        case .userAppLaunch: return .userAppLaunch
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .backgroundLaunch: return .backgroundLaunch
+        case .prewarm: return .prewarm
+        case .fromNonInteractiveSession: return .fromNonInteractiveSession
+        case .explicitStop: return .explicitStop
+        }
+    }
+
+    case none
+    case userAppLaunch
+    case inactivityTimeout
+    case maxDuration
+    case backgroundLaunch
+    case prewarm
+    case fromNonInteractiveSession
+    case explicitStop
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMAccount)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMAccount: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.account!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.account!.name
+    }
+
+    public var accountInfo: [String: Any] {
+        set { root.swiftModel.account!.accountInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.account!.accountInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventApplication)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventApplication: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var currentLocale: String? {
+        root.swiftModel.application.currentLocale
+    }
+
+    public var id: String {
+        root.swiftModel.application.id
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMCITest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMCITest: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var testExecutionId: String {
+        root.swiftModel.ciTest!.testExecutionId
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMConnectivity)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMConnectivity: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var cellular: objc_RUMTimeseriesMemoryEventRUMConnectivityCellular? {
+        root.swiftModel.connectivity!.cellular != nil ? objc_RUMTimeseriesMemoryEventRUMConnectivityCellular(root: root) : nil
+    }
+
+    public var effectiveType: objc_RUMTimeseriesMemoryEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { objc_RUMTimeseriesMemoryEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    }
+
+    public var status: objc_RUMTimeseriesMemoryEventRUMConnectivityStatus {
+        .init(swift: root.swiftModel.connectivity!.status)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMConnectivityCellular)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMConnectivityCellular: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var carrierName: String? {
+        root.swiftModel.connectivity!.cellular!.carrierName
+    }
+
+    public var technology: String? {
+        root.swiftModel.connectivity!.cellular!.technology
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMConnectivityEffectiveType)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
+        switch swift {
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.EffectiveType? {
+        switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMConnectivityInterfaces)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
+        case .bluetooth: return .bluetooth
+        case .cellular: return .cellular
+        case .ethernet: return .ethernet
+        case .wifi: return .wifi
+        case .wimax: return .wimax
+        case .mixed: return .mixed
+        case .other: return .other
+        case .unknown: return .unknown
+        case .interfacesNone: return .interfacesNone
+        }
+    }
+
+    case none
+    case bluetooth
+    case cellular
+    case ethernet
+    case wifi
+    case wimax
+    case mixed
+    case other
+    case unknown
+    case interfacesNone
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMConnectivityStatus)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventRUMConnectivityStatus: Int {
+    internal init(swift: RUMConnectivity.Status) {
+        switch swift {
+        case .connected: self = .connected
+        case .notConnected: self = .notConnected
+        case .maybe: self = .maybe
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Status {
+        switch self {
+        case .connected: return .connected
+        case .notConnected: return .notConnected
+        case .maybe: return .maybe
+        }
+    }
+
+    case connected
+    case notConnected
+    case maybe
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMEventAttributes)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMEventAttributes: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var contextInfo: [String: Any] {
+        set { root.swiftModel.context!.contextInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.context!.contextInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDevice)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDevice: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var architecture: String? {
+        root.swiftModel.device!.architecture
+    }
+
+    public var batteryLevel: NSNumber? {
+        root.swiftModel.device!.batteryLevel as NSNumber?
+    }
+
+    public var brand: String? {
+        root.swiftModel.device!.brand
+    }
+
+    public var brightnessLevel: NSNumber? {
+        root.swiftModel.device!.brightnessLevel as NSNumber?
+    }
+
+    public var isLowRam: NSNumber? {
+        root.swiftModel.device!.isLowRam as NSNumber?
+    }
+
+    public var locale: String? {
+        root.swiftModel.device!.locale
+    }
+
+    public var locales: [String]? {
+        root.swiftModel.device!.locales
+    }
+
+    public var logicalCpuCount: NSNumber? {
+        root.swiftModel.device!.logicalCpuCount as NSNumber?
+    }
+
+    public var model: String? {
+        root.swiftModel.device!.model
+    }
+
+    public var name: String? {
+        root.swiftModel.device!.name
+    }
+
+    public var powerSavingMode: NSNumber? {
+        root.swiftModel.device!.powerSavingMode as NSNumber?
+    }
+
+    public var timeZone: String? {
+        root.swiftModel.device!.timeZone
+    }
+
+    public var totalRam: NSNumber? {
+        root.swiftModel.device!.totalRam as NSNumber?
+    }
+
+    public var type: objc_RUMTimeseriesMemoryEventDeviceDeviceType {
+        .init(swift: root.swiftModel.device!.type)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDeviceDeviceType)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventDeviceDeviceType: Int {
+    internal init(swift: Device.DeviceType?) {
+        switch swift {
+        case nil: self = .none
+        case .mobile?: self = .mobile
+        case .desktop?: self = .desktop
+        case .tablet?: self = .tablet
+        case .tv?: self = .tv
+        case .gamingConsole?: self = .gamingConsole
+        case .bot?: self = .bot
+        case .other?: self = .other
+        }
+    }
+
+    internal var toSwift: Device.DeviceType? {
+        switch self {
+        case .none: return nil
+        case .mobile: return .mobile
+        case .desktop: return .desktop
+        case .tablet: return .tablet
+        case .tv: return .tv
+        case .gamingConsole: return .gamingConsole
+        case .bot: return .bot
+        case .other: return .other
+        }
+    }
+
+    case none
+    case mobile
+    case desktop
+    case tablet
+    case tv
+    case gamingConsole
+    case bot
+    case other
+}
+
+@objc(DDRUMTimeseriesMemoryEventDisplay)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDisplay: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var viewport: objc_RUMTimeseriesMemoryEventDisplayViewport? {
+        root.swiftModel.display!.viewport != nil ? objc_RUMTimeseriesMemoryEventDisplayViewport(root: root) : nil
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventDisplayViewport)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventDisplayViewport: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var height: NSNumber {
+        root.swiftModel.display!.viewport!.height as NSNumber
+    }
+
+    public var width: NSNumber {
+        root.swiftModel.display!.viewport!.width as NSNumber
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventOperatingSystem)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var build: String? {
+        root.swiftModel.os!.build
+    }
+
+    public var name: String {
+        root.swiftModel.os!.name
+    }
+
+    public var version: String {
+        root.swiftModel.os!.version
+    }
+
+    public var versionMajor: String {
+        root.swiftModel.os!.versionMajor
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventSession)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventSession: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var hasReplay: NSNumber? {
+        root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var id: String {
+        root.swiftModel.session.id
+    }
+
+    public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType {
+        .init(swift: root.swiftModel.session.type)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventSessionRUMSessionType)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
+        switch swift {
+        case .user: self = .user
+        case .synthetics: self = .synthetics
+        case .ciTest: self = .ciTest
+        }
+    }
+
+    internal var toSwift: RUMSessionType {
+        switch self {
+        case .user: return .user
+        case .synthetics: return .synthetics
+        case .ciTest: return .ciTest
+        }
+    }
+
+    case user
+    case synthetics
+    case ciTest
+}
+
+@objc(DDRUMTimeseriesMemoryEventSource)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventSource: Int {
+    internal init(swift: RUMTimeseriesMemoryEvent.Source?) {
+        switch swift {
+        case nil: self = .none
+        case .android?: self = .android
+        case .ios?: self = .ios
+        case .browser?: self = .browser
+        case .flutter?: self = .flutter
+        case .reactNative?: self = .reactNative
+        case .roku?: self = .roku
+        case .unity?: self = .unity
+        case .kotlinMultiplatform?: self = .kotlinMultiplatform
+        case .electron?: self = .electron
+        case .cpp?: self = .cpp
+        case .maui?: self = .maui
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesMemoryEvent.Source? {
+        switch self {
+        case .none: return nil
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        case .unity: return .unity
+        case .kotlinMultiplatform: return .kotlinMultiplatform
+        case .electron: return .electron
+        case .cpp: return .cpp
+        case .maui: return .maui
+        }
+    }
+
+    case none
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+    case unity
+    case kotlinMultiplatform
+    case electron
+    case cpp
+    case maui
+}
+
+@objc(DDRUMTimeseriesMemoryEventStream)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventStream: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.stream!.id
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMSyntheticsTest)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMSyntheticsTest: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var injected: NSNumber? {
+        root.swiftModel.synthetics!.injected as NSNumber?
+    }
+
+    public var resultId: String {
+        root.swiftModel.synthetics!.resultId
+    }
+
+    public var testId: String {
+        root.swiftModel.synthetics!.testId
+    }
+
+    public var syntheticsInfo: [String: Any] {
+        set { root.swiftModel.synthetics!.syntheticsInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.synthetics!.syntheticsInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventTAB)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventTAB: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.tab!.id
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventTimeseries)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventTimeseries: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var data: objc_RUMTimeseriesMemoryEventTimeseriesData {
+        objc_RUMTimeseriesMemoryEventTimeseriesData(root: root)
+    }
+
+    public var end: NSNumber {
+        root.swiftModel.timeseries.end as NSNumber
+    }
+
+    public var id: String {
+        root.swiftModel.timeseries.id
+    }
+
+    public var name: String {
+        root.swiftModel.timeseries.name
+    }
+
+    public var schema: String {
+        root.swiftModel.timeseries.schema
+    }
+
+    public var start: NSNumber {
+        root.swiftModel.timeseries.start as NSNumber
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventTimeseriesData)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventTimeseriesData: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var timestamps: [NSNumber] {
+        root.swiftModel.timeseries.data.timestamps as [NSNumber]
+    }
+
+    public var values: objc_RUMTimeseriesMemoryEventTimeseriesDataValues {
+        objc_RUMTimeseriesMemoryEventTimeseriesDataValues(root: root)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventTimeseriesDataValues)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventTimeseriesDataValues: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var memoryFootprint: [NSNumber] {
+        root.swiftModel.timeseries.data.values.memoryFootprint as [NSNumber]
+    }
+
+    public var memoryPercent: [NSNumber] {
+        root.swiftModel.timeseries.data.values.memoryPercent as [NSNumber]
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventRUMUser)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventRUMUser: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var anonymousId: String? {
+        root.swiftModel.usr!.anonymousId
+    }
+
+    public var email: String? {
+        root.swiftModel.usr!.email
+    }
+
+    public var id: String? {
+        root.swiftModel.usr!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.usr!.name
+    }
+
+    public var usrInfo: [String: Any] {
+        set { root.swiftModel.usr!.usrInfo = newValue.dd.swiftAttributes }
+        get { root.swiftModel.usr!.usrInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventView: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.view!.id
+    }
+
+    public var name: String? {
+        set { root.swiftModel.view!.name = newValue }
+        get { root.swiftModel.view!.name }
+    }
+
+    public var referrer: String? {
+        set { root.swiftModel.view!.referrer = newValue }
+        get { root.swiftModel.view!.referrer }
+    }
+
+    public var url: String {
+        set { root.swiftModel.view!.url = newValue }
+        get { root.swiftModel.view!.url }
     }
 }
 
@@ -6931,7 +8777,7 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -6947,7 +8793,7 @@ public enum objc_RUMViewEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -6961,7 +8807,7 @@ public enum objc_RUMViewEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -7319,7 +9165,7 @@ public enum objc_RUMViewEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -7336,7 +9182,7 @@ public enum objc_RUMViewEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -7351,7 +9197,7 @@ public enum objc_RUMViewEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -9088,7 +10934,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -9104,7 +10950,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -9118,7 +10964,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -9476,7 +11322,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -9493,7 +11339,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -9508,7 +11354,7 @@ public enum objc_RUMViewUpdateEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -11129,7 +12975,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -11145,7 +12991,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -11159,7 +13005,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -11423,7 +13269,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -11440,7 +13286,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -11455,7 +13301,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -12285,7 +14131,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -12301,7 +14147,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -12315,7 +14161,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -12579,7 +14425,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -12596,7 +14442,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -12611,7 +14457,7 @@ public enum objc_RUMVitalDurationEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -13380,7 +15226,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -13396,7 +15242,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -13410,7 +15256,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -13674,7 +15520,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .unity?: self = .unity
         case .kotlinMultiplatform?: self = .kotlinMultiplatform
         case .electron?: self = .electron
-        case .rumCpp?: self = .rumCpp
+        case .cpp?: self = .cpp
         case .maui?: self = .maui
         }
     }
@@ -13691,7 +15537,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -13706,7 +15552,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -14094,7 +15940,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -14109,7 +15955,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -14122,7 +15968,7 @@ public enum objc_TelemetryConfigurationEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -14208,6 +16054,11 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
     public var betaEncodeCookieOptions: NSNumber? {
         set { root.swiftModel.telemetry.configuration.betaEncodeCookieOptions = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.betaEncodeCookieOptions as NSNumber? }
+    }
+
+    public var betaTrackWebSockets: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.betaTrackWebSockets = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.betaTrackWebSockets as NSNumber? }
     }
 
     public var compressIntakeRequests: NSNumber? {
@@ -14542,6 +16393,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     public var useBeforeSend: NSNumber? {
         root.swiftModel.telemetry.configuration.useBeforeSend as NSNumber?
+    }
+
+    public var useClientSideStats: NSNumber? {
+        root.swiftModel.telemetry.configuration.useClientSideStats as NSNumber?
     }
 
     public var useCrossSiteSessionCookie: NSNumber? {
@@ -15117,7 +16972,7 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -15132,7 +16987,7 @@ public enum objc_TelemetryDebugEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -15145,7 +17000,7 @@ public enum objc_TelemetryDebugEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -15429,7 +17284,7 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -15444,7 +17299,7 @@ public enum objc_TelemetryErrorEventSource: Int {
         case .unity: return .unity
         case .kotlinMultiplatform: return .kotlinMultiplatform
         case .electron: return .electron
-        case .rumCpp: return .rumCpp
+        case .cpp: return .cpp
         case .maui: return .maui
         }
     }
@@ -15457,7 +17312,7 @@ public enum objc_TelemetryErrorEventSource: Int {
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 }
 
@@ -15595,4 +17450,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/543596f0d831ca9ee014cbae23ef4138eb2e0cb7
+// Generated from https://github.com/DataDog/rum-events-format/tree/f3006920dbce58ebf21d6299016ffc5805164bbe
