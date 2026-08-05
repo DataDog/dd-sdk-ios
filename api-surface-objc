@@ -536,7 +536,7 @@ public enum objc_RUMActionEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMActionEventContainerView: NSObject
     public var id: String
@@ -595,7 +595,7 @@ public enum objc_RUMActionEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMActionEventStream: NSObject
     public var id: String
@@ -766,7 +766,7 @@ public enum objc_RUMErrorEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMErrorEventContainerView: NSObject
     public var id: String
@@ -984,7 +984,7 @@ public enum objc_RUMErrorEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMErrorEventStream: NSObject
     public var id: String
@@ -1150,7 +1150,7 @@ public enum objc_RUMLongTaskEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMLongTaskEventContainerView: NSObject
     public var id: String
@@ -1244,7 +1244,7 @@ public enum objc_RUMLongTaskEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMLongTaskEventStream: NSObject
     public var id: String
@@ -1383,7 +1383,7 @@ public enum objc_RUMResourceEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMResourceEventContainerView: NSObject
     public var id: String
@@ -1434,6 +1434,7 @@ public class objc_RUMResourceEventResource: NSObject
     public var firstByte: objc_RUMResourceEventResourceFirstByte?
     public var graphql: objc_RUMResourceEventResourceRUMGraphql?
     public var id: String?
+    public var localCacheHit: NSNumber?
     public var method: objc_RUMResourceEventResourceRUMMethod
     public var `protocol`: String?
     public var provider: objc_RUMResourceEventResourceProvider?
@@ -1573,7 +1574,7 @@ public enum objc_RUMResourceEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMResourceEventStream: NSObject
     public var id: String
@@ -1621,7 +1622,7 @@ public class objc_RUMTimeseriesCpuEvent: NSObject
     public var type: String
     public var usr: objc_RUMTimeseriesCpuEventRUMUser?
     public var version: String?
-    public var view: objc_RUMTimeseriesCpuEventView
+    public var view: objc_RUMTimeseriesCpuEventView?
 public class objc_RUMTimeseriesCpuEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMTimeseriesCpuEventDDConfiguration?
@@ -1742,7 +1743,7 @@ public enum objc_RUMTimeseriesCpuEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMTimeseriesCpuEventStream: NSObject
     public var id: String
@@ -1802,7 +1803,7 @@ public class objc_RUMTimeseriesMemoryEvent: NSObject
     public var type: String
     public var usr: objc_RUMTimeseriesMemoryEventRUMUser?
     public var version: String?
-    public var view: objc_RUMTimeseriesMemoryEventView
+    public var view: objc_RUMTimeseriesMemoryEventView?
 public class objc_RUMTimeseriesMemoryEventDD: NSObject
     public var browserSdkVersion: String?
     public var configuration: objc_RUMTimeseriesMemoryEventDDConfiguration?
@@ -1923,7 +1924,7 @@ public enum objc_RUMTimeseriesMemoryEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMTimeseriesMemoryEventStream: NSObject
     public var id: String
@@ -2112,7 +2113,7 @@ public enum objc_RUMViewEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMViewEventContainerView: NSObject
     public var id: String
@@ -2187,7 +2188,7 @@ public enum objc_RUMViewEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMViewEventStream: NSObject
     public var bitrate: NSNumber?
@@ -2539,7 +2540,7 @@ public enum objc_RUMViewUpdateEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMViewUpdateEventContainerView: NSObject
     public var id: String
@@ -2614,7 +2615,7 @@ public enum objc_RUMViewUpdateEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMViewUpdateEventStream: NSObject
     public var bitrate: NSNumber?
@@ -2944,7 +2945,7 @@ public enum objc_RUMVitalAppLaunchEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalAppLaunchEventContainerView: NSObject
     public var id: String
@@ -3003,7 +3004,7 @@ public enum objc_RUMVitalAppLaunchEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalAppLaunchEventStream: NSObject
     public var id: String
@@ -3174,7 +3175,7 @@ public enum objc_RUMVitalDurationEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalDurationEventContainerView: NSObject
     public var id: String
@@ -3233,7 +3234,7 @@ public enum objc_RUMVitalDurationEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalDurationEventStream: NSObject
     public var id: String
@@ -3393,7 +3394,7 @@ public enum objc_RUMVitalOperationStepEventContainerSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalOperationStepEventContainerView: NSObject
     public var id: String
@@ -3452,7 +3453,7 @@ public enum objc_RUMVitalOperationStepEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_RUMVitalOperationStepEventStream: NSObject
     public var id: String
@@ -3529,7 +3530,7 @@ public enum objc_TelemetryConfigurationEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_TelemetryConfigurationEventTelemetry: NSObject
     public var configuration: objc_TelemetryConfigurationEventTelemetryConfiguration
@@ -3548,6 +3549,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var batchUploadFrequency: NSNumber?
     public var betaEnableViewUpdates: NSNumber?
     public var betaEncodeCookieOptions: NSNumber?
+    public var betaTrackWebSockets: NSNumber?
     public var compressIntakeRequests: NSNumber?
     public var dartVersion: String?
     public var defaultPrivacyLevel: String?
@@ -3730,7 +3732,7 @@ public enum objc_TelemetryDebugEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_TelemetryDebugEventTelemetry: NSObject
     public var device: objc_TelemetryDebugEventTelemetryRUMTelemetryDevice?
@@ -3789,7 +3791,7 @@ public enum objc_TelemetryErrorEventSource: Int
     case unity
     case kotlinMultiplatform
     case electron
-    case rumCpp
+    case cpp
     case maui
 public class objc_TelemetryErrorEventTelemetry: NSObject
     public var device: objc_TelemetryErrorEventTelemetryRUMTelemetryDevice?
