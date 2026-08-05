@@ -37,17 +37,17 @@ extension SRWireframe {
 
         self = .shapeWireframe(
             value: .init(
-                border: .init(layerSnapshot: layerSnapshot),
+                replayID: layerSnapshot.replayID,
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
+                border: .init(layerSnapshot: layerSnapshot),
                 shapeStyle: .init(
                     layerSnapshot: layerSnapshot,
                     backgroundGradient: backgroundGradient,
                     cornerRadius: cornerRadius
-                ),
-                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
-                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                )
             )
         )
     }
@@ -60,16 +60,16 @@ extension SRWireframe {
     ) {
         self = .shapeWireframe(
             value: .init(
+                replayID: layerSnapshot.replayID,
+                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
                 height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
                 shapeStyle: .init(
                     backgroundColor: hexString(from: backgroundColor.cgColor) ?? .fallbackColor,
                     cornerRadius: (cornerRadius ?? layerSnapshot.cornerRadii.uniformCornerRadius)
                         .map(Double.init)
-                ),
-                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
-                x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                )
             )
         )
     }
@@ -90,36 +90,36 @@ extension SRWireframe {
 
         self = .textWireframe(
             value: .init(
-                border: .init(layerSnapshot: layerSnapshot),
-                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
-                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadius: cornerRadius),
-                text: text,
-                textPosition: .init(label: label),
-                textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
-                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                replayID: layerSnapshot.replayID,
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                text: text,
+                textStyle: .init(label: label, frame: layerSnapshot.absoluteFrame),
+                border: .init(layerSnapshot: layerSnapshot),
+                shapeStyle: .init(layerSnapshot: layerSnapshot, cornerRadius: cornerRadius),
+                textPosition: .init(label: label)
             )
         )
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
     init(
-        id: Int64,
+        replayID: Int64,
         imageSnapshot: ContentSnapshot,
         resource: Resource
     ) {
         self = .imageWireframe(
             value: .init(
+                replayID: replayID,
+                x: Int64.ddWithNoOverflow(imageSnapshot.frame.minX),
+                y: Int64.ddWithNoOverflow(imageSnapshot.frame.minY),
+                width: Int64.ddWithNoOverflow(dimension: imageSnapshot.frame.width),
                 height: Int64.ddWithNoOverflow(dimension: imageSnapshot.frame.height),
-                id: id,
                 isEmpty: false,
                 mimeType: resource.mimeType,
                 resourceId: resource.calculateIdentifier(),
-                width: Int64.ddWithNoOverflow(dimension: imageSnapshot.frame.width),
-                x: Int64.ddWithNoOverflow(imageSnapshot.frame.minX),
-                y: Int64.ddWithNoOverflow(imageSnapshot.frame.minY)
             )
         )
     }
@@ -131,12 +131,12 @@ extension SRWireframe {
     ) {
         self = .placeholderWireframe(
             value: .init(
-                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
-                id: layerSnapshot.replayID,
-                label: label,
-                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                replayID: layerSnapshot.replayID,
                 x: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minX),
-                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY)
+                y: Int64.ddWithNoOverflow(layerSnapshot.absoluteFrame.minY),
+                width: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.width),
+                height: Int64.ddWithNoOverflow(dimension: layerSnapshot.absoluteFrame.height),
+                label: label
             )
         )
     }

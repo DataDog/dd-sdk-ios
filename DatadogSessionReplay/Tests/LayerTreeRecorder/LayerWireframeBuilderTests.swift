@@ -49,8 +49,7 @@ struct LayerWireframeBuilderTests {
             return
         }
 
-        #expect(output.id == snapshot.replayID)
-        #expect(wireframe.id == snapshot.replayID)
+        #expect(wireframe.id == Int64(namespace: .shape, replayID: snapshot.replayID))
         #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
         #expect(wireframe.shapeStyle?.cornerRadius == 4)
         #expect(output.resource == nil)
@@ -319,7 +318,7 @@ struct LayerWireframeBuilderTests {
             return
         }
 
-        #expect(wireframe.id == snapshot.replayID)
+        #expect(wireframe.id == Int64(namespace: .placeholder, replayID: snapshot.replayID))
         #expect(wireframe.label == "Hidden")
     }
 
@@ -356,7 +355,7 @@ struct LayerWireframeBuilderTests {
             return
         }
 
-        #expect(output.id == Int64(slotID))
+        #expect(wireframe.id == Int64(slotID))
         #expect(wireframe.slotId == String(slotID))
         #expect(wireframe.isVisible == true)
         #expect(hiddenWireframes.count == 1)
@@ -400,7 +399,7 @@ struct LayerWireframeBuilderTests {
         }
 
         let resource = try #require(output.resource)
-        #expect(wireframe.id == snapshot.replayID)
+        #expect(wireframe.id == Int64(namespace: .image, replayID: snapshot.replayID))
         #expect(wireframe.resourceId == resource.calculateIdentifier())
         #expect(resource.calculateData().isEmpty == false)
     }

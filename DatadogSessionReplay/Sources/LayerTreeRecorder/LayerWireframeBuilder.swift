@@ -14,7 +14,6 @@ internal struct LayerWireframeBuilder {
     typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
 
     struct Output {
-        let id: Int64
         let wireframe: SRWireframe
         let resource: Resource?
     }
@@ -43,7 +42,6 @@ internal struct LayerWireframeBuilder {
     ) -> Output? {
         guard !snapshot.isPrivate else {
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(placeholderFor: snapshot, label: .hiddenPlaceholder),
                 resource: nil
             )
@@ -63,22 +61,22 @@ internal struct LayerWireframeBuilder {
             )
         case (.layer, .none):
             return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                .map { Output(wireframe: $0, resource: nil) }
         case (.gradient(let gradient), _):
             return SRWireframe(
                 layerSnapshot: snapshot,
                 backgroundGradient: SRShapeGradient(gradient: gradient),
                 cornerRadius: cornerRadius
-            ).map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            ).map { Output(wireframe: $0, resource: nil) }
         case (.label(let label), _):
             return SRWireframe(
                 layerSnapshot: snapshot,
                 label: label,
                 cornerRadius: cornerRadius
-            ).map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            ).map { Output(wireframe: $0, resource: nil) }
         case (.textInput, .none):
             return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                .map { Output(wireframe: $0, resource: nil) }
         case (.image(let image), .none) where image.hasContent:
             let wireframe = SRWireframe(
                 placeholderFor: snapshot,
@@ -86,20 +84,18 @@ internal struct LayerWireframeBuilder {
                     ? .contentImagePlaceholder
                     : .imagePlaceholder
             )
-            return Output(id: snapshot.replayID, wireframe: wireframe, resource: nil)
+            return Output(wireframe: wireframe, resource: nil)
         case (.image, .none):
             return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                .map { Output(wireframe: $0, resource: nil) }
         case (.webView(let webView), _):
             pendingWebViewSlotIDs.remove(webView.slotID)
             return Output(
-                id: Int64(webView.slotID),
                 wireframe: SRWireframe(layerSnapshot: snapshot, webView: webView),
                 resource: nil
             )
         case (.visualEffect(.automaticCapsule), _):
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
                     backgroundColor: .systemBackground,
@@ -109,19 +105,16 @@ internal struct LayerWireframeBuilder {
             )
         case (.visualEffect(.glassGroup), _) where snapshot.cornerRadii != .zero:
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground),
                 resource: nil
             )
         case (.visualEffect(.backdrop), _):
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground),
                 resource: nil
             )
         case (.visualEffect(.background(let color)), _):
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
                     backgroundColor: color ?? .secondarySystemFill
@@ -133,7 +126,7 @@ internal struct LayerWireframeBuilder {
                 return nil
             }
             return SRWireframe(layerSnapshot: snapshot, backgroundGradient: gradient)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                .map { Output(wireframe: $0, resource: nil) }
         default:
             return nil
         }
@@ -158,9 +151,8 @@ internal struct LayerWireframeBuilder {
                 case .image(let image):
                     let resource = ImageSnapshotResource(image: image)
                     return Output(
-                        id: layerSnapshot.replayID,
                         wireframe: SRWireframe(
-                            id: layerSnapshot.replayID,
+                            replayID: layerSnapshot.replayID,
                             imageSnapshot: imageSnapshot,
                             resource: resource
                         ),
@@ -168,7 +160,6 @@ internal struct LayerWireframeBuilder {
                     )
                 case .placeholder(let color):
                     return Output(
-                        id: layerSnapshot.replayID,
                         wireframe: SRWireframe(
                             layerSnapshot: layerSnapshot,
                             backgroundColor: color,
@@ -179,7 +170,6 @@ internal struct LayerWireframeBuilder {
                 }
             } catch {
                 return Output(
-                    id: layerSnapshot.replayID,
                     wireframe: SRWireframe(
                         placeholderFor: layerSnapshot,
                         label: .redactedPlaceholder
@@ -189,7 +179,6 @@ internal struct LayerWireframeBuilder {
             }
         case .failure(.timedOut):
             return Output(
-                id: layerSnapshot.replayID,
                 wireframe: SRWireframe(
                     placeholderFor: layerSnapshot,
                     label: .timedOutPlaceholder
