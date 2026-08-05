@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Add an overall initialization deadline to `DatadogFlags`, configurable with `initializationTimeout`.
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
 - [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]

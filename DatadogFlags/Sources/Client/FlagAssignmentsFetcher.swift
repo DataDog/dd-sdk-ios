@@ -8,10 +8,11 @@ import Foundation
 import DatadogInternal
 
 internal protocol FlagAssignmentsFetching {
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    )
+    ) -> () -> Void
 }
 
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
@@ -19,7 +20,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customHeaders: [String: String]?
 
     private let featureScope: any FeatureScope
-    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> () -> Void
 
     private static let decoder = JSONDecoder()
 
@@ -45,7 +46,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> () -> Void
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
@@ -53,11 +54,16 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.fetch = fetch
     }
 
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    ) {
+    ) -> () -> Void {
+        let cancellation = Cancellation()
         featureScope.context { [weak self] context in
+            guard !cancellation.isCancelled else {
+                return
+            }
             guard let self else {
                 completion(.failure(.clientNotInitialized))
                 return
@@ -69,7 +75,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                self.fetch(request) { [featureScope] result in
+                let cancelFetch = self.fetch(request) { [featureScope] result in
                     switch result {
                     case .success(let data):
                         do {
@@ -107,16 +113,59 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         completion(.failure(.networkError(error)))
                     }
                 }
+                cancellation.set(cancelFetch)
             } catch let error {
                 DD.logger.error("Failed to encode flag assignments request body.", error: error)
                 featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
                 completion(.failure(.invalidConfiguration))
             }
         }
+        return cancellation.cancel
     }
 
     private func url(with context: DatadogContext) -> URL {
         customEndpoint ?? context.site.flagsEndpoint().appendingPathComponent("precompute-assignments")
+    }
+}
+
+private final class Cancellation {
+    private struct State {
+        var isCancelled = false
+        var cancel: (() -> Void)?
+    }
+
+    @ReadWriteLock
+    private var state = State()
+
+    var isCancelled: Bool {
+        state.isCancelled
+    }
+
+    func set(_ cancel: @escaping () -> Void) {
+        var shouldCancel = false
+        _state.mutate { state in
+            if state.isCancelled {
+                shouldCancel = true
+            } else {
+                state.cancel = cancel
+            }
+        }
+        if shouldCancel {
+            cancel()
+        }
+    }
+
+    func cancel() {
+        var cancellation: (() -> Void)?
+        _state.mutate { state in
+            guard !state.isCancelled else {
+                return
+            }
+            state.isCancelled = true
+            cancellation = state.cancel
+            state.cancel = nil
+        }
+        cancellation?()
     }
 }
 
@@ -148,7 +197,7 @@ extension URLSession {
     fileprivate func fetch(
         _ request: URLRequest,
         completion: @escaping (Result<Data, Error>) -> Void
-    ) {
+    ) -> () -> Void {
         let task = self.dataTask(with: request) { data, response, error in
             if let error {
                 completion(.failure(error))
@@ -167,5 +216,6 @@ extension URLSession {
             completion(.success(data))
         }
         task.resume()
+        return task.cancel
     }
 }

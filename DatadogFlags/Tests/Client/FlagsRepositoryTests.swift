@@ -476,4 +476,153 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
     }
+
+    // MARK: - Initialization Deadline
+
+    func testInitializationTimesOutWhileReadingCache() throws {
+        // Given
+        let dataStore = DelayedReadDataStoreMock()
+        let featureScope = FeatureScopeMock(dataStore: dataStore)
+        var didFetchAssignments = false
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in
+                didFetchAssignments = true
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<Void, FlagsError>?
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertFalse(didFetchAssignments)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        assertTimedOut(capturedResult)
+
+        // A cache result arriving after the deadline must not become visible.
+        let lateCachedData = FlagsData(
+            flags: ["late": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let encodedData = try JSONEncoder().encode(lateCachedData)
+        dataStore.completeRead(with: .value(encodedData, dataStoreDefaultKeyVersion))
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "late"))
+    }
+
+    func testInitializationTimeoutUsesMatchingCachedFlags() throws {
+        // Given
+        let context = FlagsEvaluationContext.mockAny()
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: context,
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<Void, FlagsError>?
+
+        // When
+        flagsRepository.setEvaluationContext(context) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+        assertTimedOut(capturedResult)
+    }
+
+    func testInitializationTimeoutCancelsFetchAndIgnoresLateResponse() {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let cancelled = expectation(description: "cancelled")
+        let fetcher = FlagAssignmentsFetcherMock(
+            flagAssignmentsStub: { _, completion in
+                fetchCompletion = completion
+            },
+            cancellation: {
+                cancelled.fulfill()
+            }
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0.01
+        )
+        let completed = expectation(description: "completed")
+        var completionCount = 0
+        var capturedResult: Result<Void, FlagsError>?
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            completionCount += 1
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        wait(for: [completed, cancelled], timeout: 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        assertTimedOut(capturedResult)
+
+        fetchCompletion?(.success(["late": .mockAny()]))
+        XCTAssertEqual(completionCount, 1)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "late"))
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+    }
+
+    private func assertTimedOut(
+        _ result: Result<Void, FlagsError>?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard case .failure(.networkError(let error)) = result,
+              (error as? URLError)?.code == .timedOut else {
+            XCTFail("Expected a timed-out network error", file: file, line: line)
+            return
+        }
+    }
+}
+
+private final class DelayedReadDataStoreMock: DataStore {
+    private var readCallback: ((DataStoreValueResult) -> Void)?
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        readCallback = callback
+    }
+
+    func removeValue(forKey key: String) {}
+    func clearAllData() {}
+    func flush() {}
+
+    func completeRead(with result: DataStoreValueResult) {
+        readCallback?(result)
+    }
 }
