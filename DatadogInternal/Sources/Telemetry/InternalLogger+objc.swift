@@ -23,6 +23,20 @@ public final class objc_InternalLogger: NSObject {
         DatadogInternal.consolePrint(message, coreLoggerLevel)
     }
 
+    /// Replaces the global `consolePrint` function used by the SDK to emit internal log messages.
+    @objc
+    public static func setConsolePrint(_ block: @escaping (String, objc_CoreLoggerLevel) -> Void) {
+        DatadogInternal.consolePrint = { message, level in
+            let objcLevel: objc_CoreLoggerLevel = switch level {
+            case .debug: .debug
+            case .warn: .warn
+            case .error: .error
+            case .critical: .critical
+            }
+            block(message, objcLevel)
+        }
+    }
+
     @objc
     public static func telemetryDebug(id: String, message: String) {
         CoreRegistry.default.telemetry.debug(id: id, message: message)
