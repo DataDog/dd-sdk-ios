@@ -58,6 +58,17 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// The maximum amount of time allowed for initializing flag assignments.
+        ///
+        /// This deadline covers loading cached assignments, requesting fresh assignments,
+        /// decoding the response, and updating the client state. When the deadline expires,
+        /// the client uses matching cached assignments if available, or coded defaults otherwise.
+        ///
+        /// Values must be finite and greater than zero. Invalid values use the default.
+        ///
+        /// Default: `5.0` seconds.
+        public var initializationTimeout: TimeInterval
+
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
@@ -102,6 +113,7 @@ public enum Flags {
         ///   - gracefulModeEnabled: Controls error handling behavior for API misuse. Default: `true`.
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
+        ///   - initializationTimeout: Maximum time allowed for initializing flag assignments. Default: `5.0` seconds.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
@@ -112,6 +124,7 @@ public enum Flags {
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
+            initializationTimeout: TimeInterval = 5.0,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
@@ -122,6 +135,7 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
+            self.initializationTimeout = initializationTimeout
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint

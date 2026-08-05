@@ -187,6 +187,7 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
             @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
         ) -> Void
     )?
+    var cancellation: () -> Void
 
     init(
         flagAssignmentsStub: (
@@ -194,16 +195,20 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
                 FlagsEvaluationContext,
                 @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
             ) -> Void
-        )? = nil
+        )? = nil,
+        cancellation: @escaping () -> Void = {}
     ) {
         self.flagAssignmentsStub = flagAssignmentsStub
+        self.cancellation = cancellation
     }
 
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    ) {
+    ) -> () -> Void {
         flagAssignmentsStub?(evaluationContext, completion)
+        return cancellation
     }
 }
 

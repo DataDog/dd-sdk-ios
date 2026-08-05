@@ -11,11 +11,13 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     static let name = "flags"
 
     private enum Constants {
+        static let defaultInitializationTimeout: TimeInterval = 5.0
         static let minEvaluationFlushInterval: TimeInterval = 1.0
         static let maxEvaluationFlushInterval: TimeInterval = 60.0
     }
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    let initializationTimeout: TimeInterval
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry
@@ -36,6 +38,15 @@ internal struct FlagsFeature: DatadogRemoteFeature {
             customHeaders: configuration.customFlagsHeaders,
             featureScope: featureScope
         )
+        if configuration.initializationTimeout.isFinite && configuration.initializationTimeout > 0 {
+            initializationTimeout = configuration.initializationTimeout
+        } else {
+            DD.logger.warn(
+                "`Flags.Configuration.initializationTimeout` must be finite and greater than zero. "
+                    + "A value of \(Constants.defaultInitializationTimeout)s will be used."
+            )
+            initializationTimeout = Constants.defaultInitializationTimeout
+        }
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry

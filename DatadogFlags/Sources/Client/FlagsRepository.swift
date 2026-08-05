@@ -37,6 +37,8 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let initializationTimeout: TimeInterval
+    private let timeoutQueue: DispatchQueue
 
     @ReadWriteLock
     private var flagsData: FlagsData?
@@ -54,6 +56,7 @@ internal final class FlagsRepository {
 
     private struct DiskReadState {
         var isComplete = false
+        var shouldIgnoreResult = false
         var pendingCallbacks: [() -> Void] = []
     }
 
@@ -66,12 +69,16 @@ internal final class FlagsRepository {
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        initializationTimeout: TimeInterval = 5.0,
+        timeoutQueue: DispatchQueue = .global(qos: .utility)
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.initializationTimeout = initializationTimeout
+        self.timeoutQueue = timeoutQueue
         readState()
     }
 
@@ -88,10 +95,15 @@ internal final class FlagsRepository {
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
+            var shouldIgnoreResult = false
             self._diskReadState.mutate { state in
+                shouldIgnoreResult = state.shouldIgnoreResult
                 state.isComplete = true
                 callbacks = state.pendingCallbacks
                 state.pendingCallbacks = []
+            }
+            if shouldIgnoreResult {
+                self.flagsData = nil
             }
 
             // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
@@ -132,6 +144,17 @@ internal final class FlagsRepository {
         }
     }
 
+    private func ignorePendingFlagsDataRead() -> Bool {
+        var isComplete = false
+        _diskReadState.mutate { state in
+            isComplete = state.isComplete
+            if !state.isComplete {
+                state.shouldIgnoreResult = true
+            }
+        }
+        return isComplete
+    }
+
     private func writeState() {
         guard let flagsData else {
             return
@@ -162,19 +185,52 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        // Chain after disk read completes to ensure correct hadFlags determination
-        whenFlagsDataRead { [weak self] in
+        let operation = InitializationOperation()
+        let timeout = DispatchWorkItem { [weak self, operation] in
+            guard operation.timeOut() else {
+                return
+            }
             guard let self else {
                 completion(.failure(.clientNotInitialized))
                 return
             }
 
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
+            let canUseCachedAssignments = self.ignorePendingFlagsDataRead()
+            self.completeWithFailure(
+                .networkError(URLError(.timedOut)),
+                for: context,
+                canUseCachedAssignments: canUseCachedAssignments,
+                completion: completion
+            )
+        }
+        timeoutQueue.asyncAfter(
+            deadline: .now() + initializationTimeout,
+            execute: timeout
+        )
+
+        // Chain after disk read completes to ensure correct hadFlags determination
+        whenFlagsDataRead { [weak self] in
+            guard let self else {
+                if operation.complete() {
+                    timeout.cancel()
+                    completion(.failure(.clientNotInitialized))
+                }
+                return
+            }
+
+            guard operation.isPending else {
+                return
+            }
+
             let versionAtStart = self.flagsDataVersion
             self.stateManager.updateState(.reconciling)
 
-            self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+            let cancelFetch = self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+                guard operation.complete() else {
+                    return
+                }
+                timeout.cancel()
+
                 switch result {
                 case .success(let flags):
                     guard let self else {
@@ -198,23 +254,33 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         completion(.failure(error))
                         return
                     }
-                    // State must be updated before calling completion —
-                    // dd-openfeature-provider-swift checks currentState in the callback.
-                    // Only use cached flags if they match the requested context to avoid
-                    // serving flags from a different user/context.
-                    if hadFlags && cachedContext == context {
-                        self?.stateManager.updateState(.stale)
-                    } else {
-                        // Clear cached data to prevent cross-context flag leakage.
-                        // Without this, flagAssignment() could return the previous
-                        // user's flags while in .error state.
-                        self?.flagsData = nil
-                        self?.stateManager.updateState(.error)
-                    }
-                    completion(.failure(error))
+                    self?.completeWithFailure(error, for: context, completion: completion)
                 }
             }
+            operation.setCancellation(cancelFetch)
         }
+    }
+
+    private func completeWithFailure(
+        _ error: FlagsError,
+        for context: FlagsEvaluationContext,
+        canUseCachedAssignments: Bool = true,
+        completion: @escaping (Result<Void, FlagsError>) -> Void
+    ) {
+        // State must be updated before calling completion —
+        // dd-openfeature-provider-swift checks currentState in the callback.
+        // Only use cached flags if they match the requested context to avoid
+        // serving flags from a different user/context.
+        if canUseCachedAssignments && flagsData?.context == context {
+            stateManager.updateState(.stale)
+        } else {
+            // Clear cached data to prevent cross-context flag leakage.
+            // Without this, flagAssignment() could return the previous
+            // user's flags while in .error state.
+            flagsData = nil
+            stateManager.updateState(.error)
+        }
+        completion(.failure(error))
     }
 
     func reset() {
@@ -224,5 +290,64 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
         flagsData = nil
         stateManager.updateState(.notReady)
+    }
+}
+
+private final class InitializationOperation {
+    private struct State {
+        var isComplete = false
+        var shouldCancel = false
+        var cancellation: (() -> Void)?
+    }
+
+    @ReadWriteLock
+    private var state = State()
+
+    var isPending: Bool {
+        !state.isComplete
+    }
+
+    func setCancellation(_ cancellation: @escaping () -> Void) {
+        var shouldCancel = false
+        _state.mutate { state in
+            if state.shouldCancel {
+                shouldCancel = true
+            } else if !state.isComplete {
+                state.cancellation = cancellation
+            }
+        }
+        if shouldCancel {
+            cancellation()
+        }
+    }
+
+    func complete() -> Bool {
+        var didComplete = false
+        _state.mutate { state in
+            guard !state.isComplete else {
+                return
+            }
+            state.isComplete = true
+            state.cancellation = nil
+            didComplete = true
+        }
+        return didComplete
+    }
+
+    func timeOut() -> Bool {
+        var didTimeOut = false
+        var cancellation: (() -> Void)?
+        _state.mutate { state in
+            guard !state.isComplete else {
+                return
+            }
+            state.isComplete = true
+            state.shouldCancel = true
+            cancellation = state.cancellation
+            state.cancellation = nil
+            didTimeOut = true
+        }
+        cancellation?()
+        return didTimeOut
     }
 }

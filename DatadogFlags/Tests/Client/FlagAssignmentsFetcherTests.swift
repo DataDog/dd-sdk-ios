@@ -25,6 +25,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             fetch: { request, completion in
                 capturedRequest = request
                 completion(.success(.mockAnyFlagAssignmentsResponse()))
+                return {}
             }
         )
         let completed = expectation(description: "completed")
@@ -54,6 +55,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             featureScope: featureScope,
             fetch: { _, completion in
                 completion(.failure(URLError(.notConnectedToInternet)))
+                return {}
             }
         )
         let completedWithNetworkError = expectation(description: "completedWithNetworkError")
@@ -79,6 +81,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             featureScope: featureScope,
             fetch: { _, completion in
                 completion(.success(Data()))
+                return {}
             }
         )
         let completedWithInvalidResponseError = expectation(description: "completedWithInvalidResponseError")
@@ -105,6 +108,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             fetch: { request, completion in
                 capturedRequest = request
                 completion(.success(.mockAnyFlagAssignmentsResponse()))
+                return {}
             }
         )
 
@@ -119,6 +123,26 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(capturedRequest?.url, customEndpoint)
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
+    }
+
+    func testCancellationCancelsFetch() {
+        // Given
+        let cancelled = expectation(description: "cancelled")
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: [:],
+            featureScope: featureScope,
+            fetch: { _, _ in
+                return { cancelled.fulfill() }
+            }
+        )
+
+        // When
+        let cancel = fetcher.flagAssignments(for: .mockAny()) { _ in }
+        cancel()
+
+        // Then
+        waitForExpectations(timeout: 0)
     }
 
     func testFlagsEndpointForAllSites() {
