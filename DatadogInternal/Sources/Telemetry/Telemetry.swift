@@ -58,6 +58,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let mauiVersion: String?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
+    public let useClientSideStats: Bool?
     public let useExcludedActivityUrls: Bool?
     public let useFirstPartyHosts: Bool?
     public let useLocalEncryption: Bool?
@@ -479,6 +480,7 @@ extension Telemetry {
         mauiVersion: String? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
+        useClientSideStats: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
         useFirstPartyHosts: Bool? = nil,
         useLocalEncryption: Bool? = nil,
@@ -539,6 +541,7 @@ extension Telemetry {
             mauiVersion: mauiVersion,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
+            useClientSideStats: useClientSideStats,
             useExcludedActivityUrls: useExcludedActivityUrls,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
@@ -684,6 +687,7 @@ extension ConfigurationTelemetry {
             mauiVersion: other.mauiVersion ?? mauiVersion,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
+            useClientSideStats: other.useClientSideStats ?? useClientSideStats,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
             useFirstPartyHosts: other.useFirstPartyHosts ?? useFirstPartyHosts,
             useLocalEncryption: other.useLocalEncryption ?? useLocalEncryption,

@@ -58,6 +58,6 @@ internal final class TraceFeature: DatadogRemoteFeature {
         self.performanceOverride = nil
 
         // Send configuration telemetry:
-        core.telemetry.configuration(useTracing: true)
+        core.telemetry.configuration(useClientSideStats: configuration.statsComputationEnabled, useTracing: true)
     }
 }
