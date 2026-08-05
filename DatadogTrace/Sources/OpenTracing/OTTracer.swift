@@ -13,7 +13,9 @@ public protocol OTTracer: Sendable {
     ///                            reference is provided, and an active span exists in the current execution context
     ///                            the active span will be used as the parent.
     /// - parameter tags:          a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
-    ///                            an empty tag map
+    ///                            an empty tag map. Dictionary values are flattened when they can be typed as
+    ///                            `OTTagValue`; mixed-value dictionaries should be added with
+    ///                            `OTSpan.setTag(key:value: [String: OTTagValue])` after span creation.
     /// - parameter startTime:     an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
     ///                            current walltime
     /// - returns:                 a valid Span instance; it is the caller's responsibility to call `finish()`.
@@ -28,7 +30,9 @@ public protocol OTTracer: Sendable {
     /// - Parameters:
     ///   - operationName:    the operation name for the newly-started span
     ///   - tags:             a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
-    ///                       an empty tag map
+    ///                       an empty tag map. Dictionary values are flattened when they can be typed as
+    ///                       `OTTagValue`; mixed-value dictionaries should be added with
+    ///                       `OTSpan.setTag(key:value: [String: OTTagValue])` after span creation.
     ///   - startTime:        an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
     ///                       current walltime
     ///   - customSampleRate: a sample rate that overrides the general Tracing configuration’s sample rate.
@@ -90,7 +94,9 @@ public extension OTTracer {
     ///                            reference is provided, and an active span exists in the current execution context
     ///                            the active span will be used as the parent.
     /// - parameter tags:          a set of tag keys and values per OTSpan#setTag:value:, or nil to start with
-    ///                            an empty tag map
+    ///                            an empty tag map. Dictionary values are flattened when they can be typed as
+    ///                            `OTTagValue`; mixed-value dictionaries should be added with
+    ///                            `OTSpan.setTag(key:value: [String: OTTagValue])` after span creation.
     /// - parameter startTime:     an explicitly specified start timestamp for the OTSpan, or nil to use the
     ///                            current walltime
     /// - returns:                 a valid Span instance; it is the caller's responsibility to call finish()
@@ -113,7 +119,9 @@ public extension OTTracer {
     /// - Parameters:
     ///   - operationName:    the operation name for the newly-started span
     ///   - tags:             a set of tag keys and values per `OTSpan#setTag:value:`, or `nil` to start with
-    ///                       an empty tag map
+    ///                       an empty tag map. Dictionary values are flattened when they can be typed as
+    ///                       `OTTagValue`; mixed-value dictionaries should be added with
+    ///                       `OTSpan.setTag(key:value: [String: OTTagValue])` after span creation.
     ///   - startTime:        an explicitly specified start timestamp for the `OTSpan`, or `nil` to use the
     ///                       current walltime
     ///   - customSampleRate: a sample rate that overrides the general Tracing configuration’s sample rate.

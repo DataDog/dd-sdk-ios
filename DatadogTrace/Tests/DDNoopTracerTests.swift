@@ -42,4 +42,20 @@ class DDNoopTracerTests: XCTestCase {
             XCTAssertEqual(log.message, expectedWarningMessage)
         }
     }
+
+    func testDDNoopSpanSetTagWithDictionary_isANoopAndDoesNotCrash() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given: real callers always hold a no-op span as the `OTSpan` existential (e.g. via
+        // `DatadogTracer.shared()` before `Trace.enable()`), not the concrete `DDNoopSpan` type — call it that
+        // way so this hits the same dispatch a real caller would.
+        let span: OTSpan = DDNoopSpan()
+
+        // When: the dictionary would flatten into a special tag on a real span.
+        span.setTag(key: "resource", value: ["name": "custom resource", "other": 2])
+
+        // Then: no crash, and no warning was logged — `DDNoopSpan` is a true no-op for both tag overloads.
+        XCTAssertTrue(dd.logger.warnLogs.isEmpty)
+    }
 }

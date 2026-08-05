@@ -14,11 +14,31 @@ public protocol OTSpan: Sendable {
     /// - parameter operationName: The name of the operation this span represents
     func setOperationName(_ operationName: String)
 
-    /// Add a new tag or replace an existing tag key with this value
+    /// Add a new tag or replace an existing tag key with this value. If `value` is a `Dictionary`, it's flattened
+    /// into one tag per leaf field (`"\(key).\(nestedKey)"`), recursively — see `setTag(key:value: [String:
+    /// OTTagValue])` for dictionaries whose values mix concrete types. Structs and arrays are not flattened. See
+    /// RUM-3357 for further discussion of these limitations.
     ///
     /// - parameter key:   Key of the tag to set
     /// - parameter value: Value of the tag to set
     func setTag(key: String, value: OTTagValue)
+
+    /// Add a new tag or replace an existing tag key with this dictionary of values, flattening it the same way as
+    /// `setTag(key:value: OTTagValue)` — this overload exists only so that dictionaries mixing concrete value
+    /// types (e.g. `String` and `Int` in the same literal) compile at all; `setTag(key:value: OTTagValue)` alone
+    /// can't infer a single concrete type for such a literal.
+    ///
+    /// Has a default implementation below — see it for why this is a requirement rather than a plain extension
+    /// method, and when a conformer should override it. Note that Swift picks this overload over
+    /// `setTag(key:value: OTTagValue)` only for dictionaries whose values mix concrete types — a homogeneous
+    /// dictionary literal (e.g. all-`String` values) resolves to the scalar overload instead, even though both
+    /// overloads flatten identically. A conformer with custom (non-flattening) behavior in its scalar `setTag`
+    /// that relies on this default for the dictionary overload will flatten mixed-type dictionaries but not
+    /// homogeneous ones — override both together if that inconsistency matters for your use case.
+    ///
+    /// - parameter key:   Key of the tag to set
+    /// - parameter value: Dictionary of values to set, keyed by their nested tag name
+    func setTag(key: String, value: [String: OTTagValue])
 
     /// Add a new log with the supplied fields and timestamp
     ///
@@ -73,6 +93,20 @@ public extension OTSpan {
     /// Finish the span at the current time
     func finish() {
         self.finish(at: Date())
+    }
+
+    /// Default implementation of `setTag(key:value: [String: OTTagValue])`: flattens `value` fully — recursing
+    /// into any nested dictionary itself, rather than relying on the conformer's own `setTag(key:value:
+    /// OTTagValue)` to detect and recurse into one — then forwards each resulting leaf pair to
+    /// `setTag(key:value: OTTagValue)` once. Conformers whose tag-setting has extra invariants beyond "store this
+    /// key/value" (e.g. side effects triggered by specific keys, or a requirement to warn/log at most once per
+    /// call regardless of how many leaves a dictionary flattens into) should override this with their own
+    /// single-pass implementation instead of relying on this default, since it calls back into the public
+    /// `setTag(key:value: OTTagValue)` once per leaf.
+    func setTag(key: String, value: [String: OTTagValue]) {
+        for (leafKey, leafValue) in flattenedTagPairs(key: key, dict: value) {
+            setTag(key: leafKey, value: leafValue)
+        }
     }
 }
 

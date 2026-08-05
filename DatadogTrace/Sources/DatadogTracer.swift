@@ -12,8 +12,8 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// Trace feature scope.
     let featureScope: FeatureScope
 
-    /// Global tags configured for Trace feature.
-    let tags: [String: OTTagValue]
+    /// Global tags configured for Trace feature, already flattened (see `flattenedTags(_:)`).
+    let tags: FlattenedTags
     /// Integration with Logging.
     let loggingIntegration: TracingWithLoggingIntegration
 
@@ -70,7 +70,9 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         spanEventBuilder: SpanEventBuilder
     ) {
         self.featureScope = featureScope
-        self.tags = tags
+        // Flattened once here, since `tags` never changes afterward — `startSpan` would otherwise redo this
+        // (recursive for any nested dictionary value) on every single span it creates.
+        self.tags = flattenedTags(tags)
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.dateProvider = dateProvider
@@ -144,10 +146,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: OTTagValue]? = nil, startTime: Date? = nil) -> OTSpan {
-        var combinedTags = self.tags
-        if let userTags = tags {
-            combinedTags.merge(userTags) { $1 }
-        }
+        let combinedTags = mergeTags(global: self.tags, user: tags)
 
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
