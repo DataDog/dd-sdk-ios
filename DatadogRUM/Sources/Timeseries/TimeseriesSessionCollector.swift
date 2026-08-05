@@ -43,7 +43,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
     private let samplingInterval: TimeInterval
-    private let collectInBackground: Bool
     private let featureScope: FeatureScope
     private let totalRAM: Double
     private let ciTest: RUMCITest?
@@ -71,7 +70,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         featureScope: FeatureScope,
         batchSize: Int = 120,
         samplingInterval: TimeInterval = 1,
-        collectInBackground: Bool = false,
         cpuUsageProvider: (() -> Double?)? = nil,
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
         ciTest: RUMCITest? = nil,
@@ -81,13 +79,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
         self.samplingInterval = samplingInterval
-        self.collectInBackground = collectInBackground
         self.featureScope = featureScope
         self.totalRAM = totalRAM
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.sessionSampleRate = sessionSampleRate
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
+    }
+
+    deinit {
+        timer?.cancel()
     }
 
     /// Per-process CPU as a percentage (0–100+), summed across all app threads.
@@ -121,7 +122,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             var info = thread_basic_info()
             var infoCount = mach_msg_type_number_t(THREAD_INFO_MAX)
             let kr = withUnsafeMutablePointer(to: &info) {
-                $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                $0.withMemoryRebound(to: integer_t.self, capacity: Int(infoCount)) {
                     thread_info(threadsList[Int(i)], thread_flavor_t(THREAD_BASIC_INFO), $0, &infoCount)
                 }
             }
@@ -130,7 +131,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             total += Double(info.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
         }
-        return total
+        return min(total, 100.0)
         #endif
     }
 
@@ -155,13 +156,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Suspends sampling and flushes buffered data. Session state is preserved for `resume()`. Idempotent.
-    /// No-op when `collectInBackground` is `true`.
     func pause() {
         queue.async { [weak self] in
             guard let self = self else {
                 return
             }
-            if self.collectInBackground || self.isPaused || self.timer == nil {
+            if self.isPaused || self.timer == nil {
                 return
             }
             self.timer?.cancel()
@@ -272,12 +272,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         // The batch is attributed to the most recently active view among its samples, not the view active
         // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
-        guard let view = Self.lastKnownView(
+        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
+        // (e.g. samples collected before the first view starts), rather than dropping the batch.
+        let view = Self.lastKnownView(
             in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        ) else {
-            return
-        }
+        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -315,7 +314,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 usr: .init(context: context),
                 version: context.version,
-                view: .init(id: view.id, name: view.name, url: view.path)
+                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
             writer.write(value: event)
         }
@@ -340,12 +339,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         // The batch is attributed to the most recently active view among its samples, not the view active
         // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. Only dropped if no sample in the batch had a view.
-        guard let view = Self.lastKnownView(
+        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
+        // (e.g. samples collected before the first view starts), rather than dropping the batch.
+        let view = Self.lastKnownView(
             in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        ) else {
-            return
-        }
+        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -380,7 +378,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 ),
                 usr: .init(context: context),
                 version: context.version,
-                view: .init(id: view.id, name: view.name, url: view.path)
+                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
             writer.write(value: event)
         }

@@ -140,7 +140,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 memoryReader: $0.memory,
                 featureScope: featureScope,
                 batchSize: configuration.timeseriesBatchSize,
-                collectInBackground: configuration.trackBackgroundEvents,
                 ciTest: ciTest,
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate)

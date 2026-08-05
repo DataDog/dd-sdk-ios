@@ -222,8 +222,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view.id, "view-abc")
-        XCTAssertEqual(events[0].view.url, "/view/abc")
+        XCTAssertEqual(events[0].view?.id, "view-abc")
+        XCTAssertEqual(events[0].view?.url, "/view/abc")
     }
 
     func testWhenActiveViewHasName_itAttachesViewNameToEvent() {
@@ -253,7 +253,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view.name, "ViewController")
+        XCTAssertEqual(events[0].view?.name, "ViewController")
     }
 
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
@@ -351,11 +351,11 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then — the batch is still written, attributed to the view it was actually collected under
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty, "Expected the batch collected under an active view to be flushed, not dropped")
-        XCTAssertEqual(events[0].view.id, "view-ending")
-        XCTAssertEqual(events[0].view.url, "/view/ending")
+        XCTAssertEqual(events[0].view?.id, "view-ending")
+        XCTAssertEqual(events[0].view?.url, "/view/ending")
     }
 
-    func testWhenNoActiveView_itDropsEvent() {
+    func testWhenNoActiveView_itWritesEventWithoutView() {
         // Given
         memoryReader.vitalData = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
@@ -377,8 +377,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
         collector.stop()
 
-        // Then — no view context means no `view.id`/`view.url` to report, so the batch is dropped
-        XCTAssertTrue(scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
+        // Then — no view context means the batch is still written, just with `view: nil`, not dropped
+        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty, "Expected the batch collected without an active view to be flushed with view: nil, not dropped")
+        XCTAssertNil(events[0].view)
     }
 
     func testWhenStartIsCalledWithoutStop_itFlushesPartialBufferBeforeNewSession() {
@@ -627,7 +629,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertGreaterThan(countAfterResume, countAfterPause, "Expected new events after resume")
     }
 
-    func testWhenCollectInBackgroundEnabled_pauseIsNoOp() {
+    func testWhenBackgrounded_pauseAlwaysStopsSampling() {
         // Given
         memoryReader.vitalData = 1_000_000
         let collector = TimeseriesSessionCollector(
@@ -635,7 +637,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            collectInBackground: true,
             cpuUsageProvider: { nil }
         )
         let contextReader = RUMActiveContextReaderMock()
@@ -651,17 +652,17 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertGreaterThan(countBeforePause, 0)
 
-        // When — pause should be a no-op
-        let afterPauseExpectation = self.expectation(description: "sampling continues after pause")
+        // When — pause on backgrounding
+        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
         afterPauseExpectation.assertForOverFulfill = false
         collector.pause()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
-        collector.stop()
 
-        // Then — events keep accumulating
+        // Then — no new events accumulate while paused
         let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
-        XCTAssertGreaterThan(countAfterPause, countBeforePause, "Sampling should continue when collectInBackground = true")
+        XCTAssertEqual(countAfterPause, countBeforePause, "Sampling should stop while backgrounded, regardless of trackBackgroundEvents")
+        collector.stop()
     }
 
     func testWhenPauseCalledBeforeStart_itIsNoOp() {

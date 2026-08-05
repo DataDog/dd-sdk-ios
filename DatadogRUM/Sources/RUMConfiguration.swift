@@ -334,6 +334,7 @@ extension RUM {
         /// timeseries events scoped to the RUM session. Requires `vitalsUpdateFrequency` to be set.
         ///
         /// Default: `false`.
+        @_spi(Experimental)
         public var enableTimeseries: Bool
 
         /// The default number of samples collected before a timeseries batch is flushed.
@@ -607,7 +608,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        enableTimeseries: Bool = false,
         timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
@@ -638,7 +638,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = enableTimeseries
+        self.enableTimeseries = false
         self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
@@ -666,7 +666,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        enableTimeseries: Bool = false,
         timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
@@ -692,7 +691,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = enableTimeseries
+        self.enableTimeseries = false
         self.timeseriesBatchSize = timeseriesBatchSize
         self.featureFlags = featureFlags
     }
