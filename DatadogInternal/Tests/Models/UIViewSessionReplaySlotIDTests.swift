@@ -56,5 +56,47 @@ struct UIViewSessionReplaySlotIDTests {
         // then
         #expect(view.dd.sessionReplaySlotID == nil)
     }
+
+    @available(iOS 13.0, *)
+    @Test
+    func changingSlotIDMarksTheViewAsNeedingLayout() {
+        // given — a view whose layout is up to date, as after a committed layout pass
+        let view = LayoutSpyView()
+        view.layoutIfNeeded()
+        view.setNeedsLayoutCount = 0
+
+        // when
+        view.dd.sessionReplaySlotID = "renderer-slot"
+
+        // then — Session Replay observes `CALayer.layoutSublayers`, so the slot is published
+        // on the next snapshot instead of waiting for an unrelated screen change
+        #expect(view.setNeedsLayoutCount == 1)
+        #expect(view.layer.needsLayout())
+    }
+
+    @available(iOS 13.0, *)
+    @Test
+    func clearingSlotIDMarksTheViewAsNeedingLayout() {
+        // given
+        let view = LayoutSpyView()
+        view.dd.sessionReplaySlotID = "renderer-slot"
+        view.layoutIfNeeded()
+        view.setNeedsLayoutCount = 0
+
+        // when
+        view.dd.sessionReplaySlotID = nil
+
+        // then — the slot disappearing changes the wireframe tree just as much as it appearing
+        #expect(view.setNeedsLayoutCount == 1)
+    }
+}
+
+private final class LayoutSpyView: UIView {
+    var setNeedsLayoutCount = 0
+
+    override func setNeedsLayout() {
+        setNeedsLayoutCount += 1
+        super.setNeedsLayout()
+    }
 }
 #endif
