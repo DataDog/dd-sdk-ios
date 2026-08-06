@@ -164,6 +164,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             rumApplicationID: configuration.applicationID,
             samplingRate: sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackViewsAutomaticStopOnBackground: configuration.trackViewsAutomaticStopOnBackground,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
             firstPartyHosts: distributedTracing?.0,
