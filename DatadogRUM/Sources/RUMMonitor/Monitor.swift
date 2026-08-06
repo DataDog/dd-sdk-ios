@@ -156,7 +156,7 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             if let activeSession = self.applicationScope.activeSession {
-                let viewContext = activeSession.viewScopes.last?.context ?? activeSession.context
+                let viewContext = activeSession.viewScopes.last(where: { $0.isActiveView })?.context ?? activeSession.context
                 self.activeViewSnapshot = (
                     id: viewContext.activeViewID?.toRUMDataFormat,
                     path: viewContext.activeViewPath,
@@ -178,7 +178,8 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = activeSession.viewScopes.last?.context ?? activeSession.context
+                let activeViewScope = activeSession.viewScopes.last(where: { $0.isActiveView })
+                let context = activeViewScope?.context ?? activeSession.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
@@ -186,7 +187,7 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionSampler: activeSession.sampler,
                     viewID: context.activeViewID?.toRUMDataFormat,
                     userActionID: context.activeUserActionID?.toRUMDataFormat,
-                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset,
+                    viewServerTimeOffset: activeViewScope?.serverTimeOffset,
                     viewPath: context.activeViewPath,
                     viewName: context.activeViewName
                 )
