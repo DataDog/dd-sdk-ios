@@ -919,6 +919,58 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-active")
     }
 
+    func testNoteActivity_resumesSamplingAfterRacingWithSelfStop() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry/explicit flush triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        let startTime = clock.date
+        collector.start(sessionID: "session-race", applicationID: "app-1", sessionType: .user, startTime: startTime)
+
+        let beforeTimeoutExpectation = self.expectation(description: "samples collected before timeout")
+        beforeTimeoutExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { beforeTimeoutExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // When — the session goes idle past the inactivity timeout, so `sample()` self-stops the timer...
+        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let selfStopExpectation = self.expectation(description: "self-stop settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        let countAfterSelfStop = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countAfterSelfStop, 0, "Expected the collector to have self-stopped due to inactivity")
+
+        // ...but a RUM interaction actually happened around the same time: the command pipeline still calls
+        // `noteActivity(sessionID:at:)` even though this collector already self-stopped on stale state — this
+        // is the race between `sample()`'s self-stop check and `noteActivity` enqueued on the same serial queue.
+        collector.noteActivity(sessionID: "session-race", at: clock.date)
+
+        // Then — sampling resumes rather than staying silently stopped for the rest of the (still active) session
+        let resumeExpectation = self.expectation(description: "sampling resumed after race")
+        resumeExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        collector.flush()
+        XCTAssertGreaterThan(
+            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count,
+            countAfterSelfStop,
+            "Expected sampling to resume and produce new batches after noteActivity raced with the self-stop"
+        )
+
+        collector.stop(sessionID: "session-race")
+    }
+
     // MARK: - Session-ID guard against stale calls
 
     func testStaleStopCall_afterNewSessionStarted_doesNotStopNewSession() {

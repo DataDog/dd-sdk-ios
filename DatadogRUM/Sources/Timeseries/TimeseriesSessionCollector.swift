@@ -67,6 +67,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+    /// Set when `sample()` self-stops the timer because it locally observed the session as expired.
+    /// `noteActivity(sessionID:at:)` uses this to distinguish "self-stopped, may need to resume if that
+    /// expiry check raced with a genuine activity update" from an explicit `stop(sessionID:)` call, which
+    /// must never be resumed by a later (possibly stale) `noteActivity` call for the same session.
+    private var selfStoppedDueToExpiry = false
     /// The view ID of the samples currently buffered, so a view change can trigger a flush before
     /// mixing samples from two different views into the same batch. `nil` means either no view was
     /// active yet, or no sample has been buffered since the last flush.
@@ -171,6 +176,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.cpuBuffer = []
             self.isPaused = false
             self.currentBatchViewID = nil
+            self.selfStoppedDueToExpiry = false
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -218,6 +224,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.timer?.cancel()
             self.timer = nil
             self.isPaused = false
+            self.selfStoppedDueToExpiry = false
             self.flushMemory()
             self.flushCPU()
         }
@@ -240,6 +247,15 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 return
             }
             self.lastActivityTime = time
+
+            // This activity update can race with `sample()`'s self-stop check: both run on `queue`, so if a
+            // timer tick was already enqueued when this activity happened, it can self-stop on stale
+            // `lastActivityTime` just before this block runs. Since the session is still genuinely active,
+            // resume sampling now rather than leaving this collector silently stopped until the next session.
+            if self.selfStoppedDueToExpiry && !self.isPaused {
+                self.selfStoppedDueToExpiry = false
+                self.timer = self.makeTimer()
+            }
         }
     }
 
@@ -276,6 +292,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionExceededMaxDuration = currentDate.timeIntervalSince(sessionStartTime) >= RUMSessionScope.Constants.sessionMaxDuration
         let sessionExceededInactivityTimeout = currentDate.timeIntervalSince(lastActivityTime) >= RUMSessionScope.Constants.sessionTimeoutDuration
         if sessionExceededMaxDuration || sessionExceededInactivityTimeout {
+            // Only the inactivity check can race with `noteActivity(sessionID:at:)` (see its comment) — max
+            // duration is a hard cap unrelated to activity timing, so it should never be resumed.
+            selfStoppedDueToExpiry = sessionExceededInactivityTimeout && !sessionExceededMaxDuration
             timer?.cancel()
             timer = nil
             flushMemory()
