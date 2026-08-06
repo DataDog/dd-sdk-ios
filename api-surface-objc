@@ -3947,6 +3947,7 @@ public class objc_RUMConfiguration: NSObject
     public func setURLSessionTracking(_ tracking: objc_URLSessionTracking)
     public var trackFrustrations: Bool
     public var trackBackgroundEvents: Bool
+    public var trackViewsAutomaticStopOnBackground: Bool
     public var trackWatchdogTerminations: Bool
     public var longTaskThreshold: TimeInterval
     public var appHangThreshold: TimeInterval
@@ -3976,6 +3977,7 @@ public class objc_RUMMonitor: NSObject
     public func stopView(viewController: UIViewController,attributes: [String: Any])
     public func startView(key: String,name: String?,attributes: [String: Any])
     public func stopView(key: String,attributes: [String: Any])
+    public func stopView()
     public func addViewLoadingTime(overwrite: Bool)
     public func addTiming(name: String)
     public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
