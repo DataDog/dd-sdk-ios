@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
+
 # 3.15.0 / 05-08-2026
 
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
@@ -8,7 +10,6 @@
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
 - [FIX] Merge WebView RUM `ddtags` by key to avoid duplicate keys. See [#3073][]
 - [IMPROVEMENT] Bump KSCrash to 2.5.1. See [#3102][]
-- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 
 # 3.14.0 / 15-07-2026
 
