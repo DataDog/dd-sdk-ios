@@ -56,5 +56,72 @@ struct UIViewSessionReplaySlotIDTests {
         // then
         #expect(view.dd.sessionReplaySlotID == nil)
     }
+
+    /// Collects `ddSessionReplaySlotIDDidChange` notification objects for the duration of `body`.
+    @available(iOS 13.0, *)
+    private func recordingNotifications(_ body: () -> Void) -> [UIView] {
+        var views: [UIView] = []
+        let observer = NotificationCenter.default.addObserver(
+            forName: .ddSessionReplaySlotIDDidChange,
+            object: nil,
+            queue: nil
+        ) { notification in
+            (notification.object as? UIView).map { views.append($0) }
+        }
+        defer { NotificationCenter.default.removeObserver(observer) }
+        body()
+        return views
+    }
+
+    @available(iOS 13.0, *)
+    @Test
+    func settingSlotIDNotifiesWithTheView() {
+        // given
+        let view = UIView()
+
+        // when
+        let notifiedViews = recordingNotifications {
+            view.dd.sessionReplaySlotID = "renderer-slot"
+        }
+
+        // then — Session Replay only snapshots on CALayer activity, which assigning an associated
+        // object does not produce; without this the slot's placeholder would not be recorded until
+        // some unrelated change happened to trigger the next snapshot
+        #expect(notifiedViews.count == 1)
+        #expect(notifiedViews.first === view)
+    }
+
+    @available(iOS 13.0, *)
+    @Test
+    func settingSlotIDToTheSameValueDoesNotNotify() {
+        // given
+        let view = UIView()
+        view.dd.sessionReplaySlotID = "renderer-slot"
+
+        // when
+        let notifiedViews = recordingNotifications {
+            view.dd.sessionReplaySlotID = "renderer-slot"
+        }
+
+        // then — nothing changed, so scheduling a snapshot for it would be wasted work
+        #expect(notifiedViews.isEmpty)
+    }
+
+    @available(iOS 13.0, *)
+    @Test
+    func clearingSlotIDNotifies() {
+        // given
+        let view = UIView()
+        view.dd.sessionReplaySlotID = "renderer-slot"
+
+        // when
+        let notifiedViews = recordingNotifications {
+            view.dd.sessionReplaySlotID = nil
+        }
+
+        // then — the placeholder must stop being emitted, which also needs a fresh snapshot
+        #expect(notifiedViews.count == 1)
+        #expect(notifiedViews.first === view)
+    }
 }
 #endif
