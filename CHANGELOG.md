@@ -8,6 +8,7 @@
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
 - [FIX] Merge WebView RUM `ddtags` by key to avoid duplicate keys. See [#3073][]
 - [IMPROVEMENT] Bump KSCrash to 2.5.1. See [#3102][]
+- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 
 # 3.14.0 / 15-07-2026
 
@@ -1218,6 +1219,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3104]: https://github.com/DataDog/dd-sdk-ios/pull/3104
 [#3106]: https://github.com/DataDog/dd-sdk-ios/pull/3106
 [#3109]: https://github.com/DataDog/dd-sdk-ios/pull/3109
+[#3074]: https://github.com/DataDog/dd-sdk-ios/pull/3074
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
