@@ -23,6 +23,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
+    /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
+    /// flushed alongside other instrumentation in `flush()`.
+    private let timeseriesCollector: TimeseriesCollecting?
+
     /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
     @ReadWriteLock
     private(set) var rumSessionSampler: DeterministicSampler?
@@ -135,16 +139,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
-        let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? vitalsReaders.map {
-            TimeseriesSessionCollector(
-                memoryReader: $0.memory,
-                featureScope: featureScope,
-                batchSize: configuration.timeseriesBatchSize,
-                ciTest: ciTest,
-                syntheticsTest: syntheticsTest,
-                sessionSampleRate: Double(sessionSampleRate)
-            )
-        } : nil
+        let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? TimeseriesSessionCollector(
+            memoryReader: VitalMemoryReader(),
+            featureScope: featureScope,
+            batchSize: configuration.timeseriesBatchSize,
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
+            sessionSampleRate: Double(sessionSampleRate)
+        ) : nil
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
@@ -222,6 +224,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         )
 
         timeseriesCollector?.activeContextReader = monitor
+        self.timeseriesCollector = timeseriesCollector
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
@@ -421,6 +424,7 @@ extension RUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         instrumentation.appHangs?.flush()
+        timeseriesCollector?.flush()
     }
 }
 

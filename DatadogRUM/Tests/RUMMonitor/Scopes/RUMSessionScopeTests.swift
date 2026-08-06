@@ -907,4 +907,10 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
         noteActivityCallCount += 1
         lastNoteActivitySessionID = sessionID
     }
+
+    var flushCallCount = 0
+
+    func flush() {
+        flushCallCount += 1
+    }
 }
