@@ -16,6 +16,8 @@ internal protocol TimeseriesCollecting: AnyObject {
     /// Reports that a RUM interaction was just processed, so the collector can self-enforce
     /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
     func noteActivity(sessionID: String, at time: Date)
+    /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
+    func flush()
 }
 
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
@@ -51,6 +53,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let ciTest: RUMCITest?
     private let syntheticsTest: RUMSyntheticsTest?
     private let sessionSampleRate: Double
+    private let sanitizer = RUMEventSanitizer()
 
     /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
     /// is constructed, since the collector is created before it. `Monitor`'s conformance is safe to read from
@@ -64,6 +67,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
+    /// The view ID of the samples currently buffered, so a view change can trigger a flush before
+    /// mixing samples from two different views into the same batch. `nil` means either no view was
+    /// active yet, or no sample has been buffered since the last flush.
+    private var currentBatchViewID: String?
     /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
     /// even if the RUM command pipeline never notifies this collector of the session's expiry.
     private var sessionStartTime: Date = .distantPast
@@ -163,6 +170,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
+            self.currentBatchViewID = nil
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -212,6 +220,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+        }
+    }
+
+    /// Synchronously flushes any buffered samples without stopping or pausing sampling. **Blocks the caller thread.**
+    func flush() {
+        queue.sync {
+            flushMemory()
+            flushCPU()
         }
     }
 
@@ -272,6 +288,15 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let viewID = activeView?.id
         let viewPath = activeView?.path
         let viewName = activeView?.name
+
+        // Flush before mixing samples from two different views into the same batch, so each batch
+        // (and the RUM view it's attributed to) reflects a single view rather than whichever view
+        // happened to be active at the last sample or at flush time.
+        if viewID != currentBatchViewID {
+            flushMemory()
+            flushCPU()
+        }
+        currentBatchViewID = viewID
 
         if let bytes = memoryReader.readVitalData() {
             let footprintKB = bytes / 1_024
@@ -362,7 +387,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 version: context.version,
                 view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
-            writer.write(value: event)
+            writer.write(value: self.sanitizer.sanitize(event: event))
         }
     }
 
@@ -426,7 +451,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 version: context.version,
                 view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
             )
-            writer.write(value: event)
+            writer.write(value: self.sanitizer.sanitize(event: event))
         }
     }
 }
