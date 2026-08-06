@@ -18,6 +18,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func pause(sessionID: String)
     func resume(sessionID: String)
     func stop(sessionID: String)
+    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
+    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
+    func noteActivity(sessionID: String, at time: Date)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
 }
@@ -71,6 +74,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// mixing samples from two different views into the same batch. `nil` means either no view was
     /// active yet, or no sample has been buffered since the last flush.
     private var currentBatchViewID: String?
+    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
+    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
+    private var sessionStartTime: Date = .distantPast
+    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
+    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
+    private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
 
     /// All buffer mutations and timer events run on this queue.
@@ -220,6 +229,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         queue.sync {
             flushMemory()
             flushCPU()
+        }
+    }
+
+    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
+    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
+    /// No-ops if `sessionID` no longer matches the currently active session.
+    func noteActivity(sessionID: String, at time: Date) {
+        queue.async { [weak self] in
+            guard let self = self, self.sessionID == sessionID else {
+                return
+            }
+            self.lastActivityTime = time
         }
     }
 
