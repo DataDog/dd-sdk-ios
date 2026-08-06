@@ -165,6 +165,14 @@ extension RUM {
         /// Default: `false`.
         public var trackBackgroundEvents: Bool
 
+        /// Determines whether a manually-tracked RUM view is automatically stopped when the app enters the background,
+        /// and restarted (with the same view identity) when the app returns to the foreground.
+        ///
+        /// This matches the behavior applied to automatically-tracked UIKit and SwiftUI views.
+        ///
+        /// Default: `true`.
+        public var trackViewsAutomaticStopOnBackground: Bool
+
         /// Determines whether the SDK should track application termination by the watchdog.
         ///
         /// Read more about watchdog terminations at https://developer.apple.com/documentation/xcode/addressing-watchdog-terminations
@@ -534,6 +542,7 @@ extension RUM.Configuration {
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+    ///   - trackViewsAutomaticStopOnBackground: Determines whether a manually-tracked view is automatically stopped on backgrounding and restarted on foregrounding. Default: `true`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
     ///   - trackWatchdogTerminations: Determines whether the SDK should track application termination by the watchdog. Default: `false`.
@@ -571,6 +580,7 @@ extension RUM.Configuration {
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
+        trackViewsAutomaticStopOnBackground: Bool = true,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
         trackWatchdogTerminations: Bool = false,
@@ -600,6 +610,7 @@ extension RUM.Configuration {
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
+        self.trackViewsAutomaticStopOnBackground = trackViewsAutomaticStopOnBackground
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
@@ -627,6 +638,7 @@ extension RUM.Configuration {
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
+        trackViewsAutomaticStopOnBackground: Bool = true,
         longTaskThreshold: TimeInterval? = 0.1,
         appHangThreshold: TimeInterval? = nil,
         trackWatchdogTerminations: Bool = false,
@@ -651,6 +663,7 @@ extension RUM.Configuration {
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
+        self.trackViewsAutomaticStopOnBackground = trackViewsAutomaticStopOnBackground
         self.longTaskThreshold = longTaskThreshold
         self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency

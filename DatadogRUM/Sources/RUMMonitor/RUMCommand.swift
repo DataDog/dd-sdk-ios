@@ -219,6 +219,21 @@ internal struct RUMStopViewCommand: RUMCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
+/// Stops whichever RUM View is currently active, without requiring the caller to know its identity.
+/// Issued by the public no-argument `stopView()` API.
+internal struct RUMStopActiveViewCommand: RUMCommand {
+    var time: Date
+    var globalAttributes: [AttributeKey: AttributeValue] = [:]
+    var attributes: [AttributeKey: AttributeValue]
+    var canStartApplicationLaunchView = false
+    let canStartBackgroundView = false
+    let shouldRestartLastViewAfterSessionExpiration = false
+    let shouldRestartLastViewAfterSessionStop = false
+    let canStartBackgroundViewAfterSessionStop = false
+    let isUserInteraction = false
+    let missedEventType: SessionEndedMetric.MissedEventType? = nil
+}
+
 /// Any error command, like exception or App Hang.
 internal protocol RUMErrorCommand: RUMCommand {
     /// The error message.

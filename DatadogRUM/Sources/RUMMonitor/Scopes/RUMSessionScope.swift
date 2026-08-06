@@ -284,9 +284,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
                 appLaunchManager.process(command, context: context, writer: writer)
+            case let stopActiveViewCommand as RUMStopActiveViewCommand:
+                stopActiveView(on: stopActiveViewCommand, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
-                stopActiveManualViewIfNeeded(on: appLifecycleCommand, context: context, writer: writer)
+                if dependencies.trackViewsAutomaticStopOnBackground {
+                    stopActiveManualViewIfNeeded(on: appLifecycleCommand, context: context, writer: writer)
+                }
                 appLaunchManager.process(command, context: context, writer: writer)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
@@ -441,6 +445,23 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             serverTimeOffset: context.serverTimeOffset,
             hasReplay: context.hasReplay
         )
+    }
+
+    /// Stops the currently active view (if any), regardless of its identity. Backs the public no-argument `stopView()` API.
+    ///
+    /// This is a no-op if there is no active view.
+    private func stopActiveView(on command: RUMStopActiveViewCommand, context: DatadogContext, writer: Writer) {
+        guard let activeView = activeView else {
+            return
+        }
+
+        let stopCommand = RUMStopViewCommand(
+            time: command.time,
+            globalAttributes: command.globalAttributes,
+            attributes: command.attributes,
+            identity: activeView.identity
+        )
+        viewScopes = viewScopes.scopes(byPropagating: stopCommand, context: context, writer: writer)
     }
 
     /// Stops the currently active manually-tracked view (if any) when the app enters background, mirroring the behavior

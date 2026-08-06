@@ -654,6 +654,11 @@ public class objc_RUMConfiguration: NSObject {
         get { swiftConfig.trackBackgroundEvents }
     }
 
+    public var trackViewsAutomaticStopOnBackground: Bool {
+        set { swiftConfig.trackViewsAutomaticStopOnBackground = newValue }
+        get { swiftConfig.trackViewsAutomaticStopOnBackground }
+    }
+
     public var trackWatchdogTerminations: Bool {
         set { swiftConfig.trackWatchdogTerminations = newValue }
         get { swiftConfig.trackWatchdogTerminations }
@@ -818,6 +823,10 @@ public class objc_RUMMonitor: NSObject {
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.stopView(key: key, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func stopView() {
+        swiftRUMMonitor.stopView()
     }
 
     @available(*, message: "This API is experimental and may change in future releases")
