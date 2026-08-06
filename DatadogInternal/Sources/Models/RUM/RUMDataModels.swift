@@ -722,6 +722,9 @@ public struct RUMActionEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -733,6 +736,7 @@ public struct RUMActionEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -742,16 +746,19 @@ public struct RUMActionEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -1734,6 +1741,9 @@ public struct RUMErrorEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -1745,6 +1755,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -1754,16 +1765,19 @@ public struct RUMErrorEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -3175,6 +3189,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -3186,6 +3203,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -3195,16 +3213,19 @@ public struct RUMLongTaskEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -4034,6 +4055,9 @@ public struct RUMResourceEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -4045,6 +4069,7 @@ public struct RUMResourceEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -4054,16 +4079,19 @@ public struct RUMResourceEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -5377,6 +5405,9 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5388,6 +5419,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -5397,16 +5429,19 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -5974,6 +6009,9 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5985,6 +6023,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -5994,16 +6033,19 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -6731,6 +6773,9 @@ public struct RUMViewEvent: RUMDataModel {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -6746,6 +6791,7 @@ public struct RUMViewEvent: RUMDataModel {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -6757,6 +6803,7 @@ public struct RUMViewEvent: RUMDataModel {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -6764,6 +6811,7 @@ public struct RUMViewEvent: RUMDataModel {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -6771,6 +6819,7 @@ public struct RUMViewEvent: RUMDataModel {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -8898,6 +8947,9 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -8913,6 +8965,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -8924,6 +8977,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -8931,6 +8985,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -8938,6 +8993,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -11007,6 +11063,9 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -11018,6 +11077,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -11027,16 +11087,19 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -11669,6 +11732,9 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -11680,6 +11746,7 @@ public struct RUMVitalDurationEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -11689,16 +11756,19 @@ public struct RUMVitalDurationEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -12291,6 +12361,9 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -12302,6 +12375,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -12311,16 +12385,19 @@ public struct RUMVitalOperationStepEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -15493,4 +15570,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f3006920dbce58ebf21d6299016ffc5805164bbe
+// Generated from https://github.com/DataDog/rum-events-format/tree/00d5005015e04067bc591e618640de06ecbf7d23

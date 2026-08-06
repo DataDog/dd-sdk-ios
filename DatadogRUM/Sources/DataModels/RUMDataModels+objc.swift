@@ -282,6 +282,10 @@ public class objc_RUMActionEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -1462,6 +1466,10 @@ public class objc_RUMErrorEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -3389,6 +3397,10 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -4698,6 +4710,10 @@ public class objc_RUMResourceEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -6354,6 +6370,10 @@ public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -7273,6 +7293,10 @@ public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -8245,6 +8269,10 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -10404,6 +10432,10 @@ public class objc_RUMViewUpdateEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.remoteConfigurationId
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -12522,6 +12554,10 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -13678,6 +13714,10 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -14771,6 +14811,10 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -17450,4 +17494,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f3006920dbce58ebf21d6299016ffc5805164bbe
+// Generated from https://github.com/DataDog/rum-events-format/tree/00d5005015e04067bc591e618640de06ecbf7d23
