@@ -430,6 +430,7 @@ public class objc_RUMActionEventDDActionTarget: NSObject
     public var width: NSNumber?
 public class objc_RUMActionEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -663,6 +664,7 @@ public class objc_RUMErrorEventDD: NSObject
     public var traceId: String?
 public class objc_RUMErrorEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -1047,6 +1049,7 @@ public class objc_RUMLongTaskEventDD: NSObject
     public var session: objc_RUMLongTaskEventDDSession?
 public class objc_RUMLongTaskEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -1308,6 +1311,7 @@ public class objc_RUMResourceEventDD: NSObject
     public var traceId: String?
 public class objc_RUMResourceEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -1631,6 +1635,7 @@ public class objc_RUMTimeseriesCpuEventDD: NSObject
     public var session: objc_RUMTimeseriesCpuEventDDSession?
 public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -1812,6 +1817,7 @@ public class objc_RUMTimeseriesMemoryEventDD: NSObject
     public var session: objc_RUMTimeseriesMemoryEventDDSession?
 public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -2004,6 +2010,7 @@ public class objc_RUMViewEventDDCLS: NSObject
 public class objc_RUMViewEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var remoteConfigurationId: String?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
@@ -2431,6 +2438,7 @@ public class objc_RUMViewUpdateEventDDCLS: NSObject
 public class objc_RUMViewUpdateEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
     public var remoteConfigurationId: String?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var startSessionReplayRecordingManually: NSNumber?
@@ -2850,6 +2858,7 @@ public class objc_RUMVitalAppLaunchEventDD: NSObject
     public var session: objc_RUMVitalAppLaunchEventDDSession?
 public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -3080,6 +3089,7 @@ public class objc_RUMVitalDurationEventDD: NSObject
     public var session: objc_RUMVitalDurationEventDDSession?
 public class objc_RUMVitalDurationEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
@@ -3299,6 +3309,7 @@ public class objc_RUMVitalOperationStepEventDD: NSObject
     public var session: objc_RUMVitalOperationStepEventDDSession?
 public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject
     public var profilingSampleRate: NSNumber?
+    public var sessionReplayExperimentalFeatures: [String]?
     public var sessionReplaySampleRate: NSNumber?
     public var sessionSampleRate: NSNumber
     public var traceSampleRate: NSNumber?
