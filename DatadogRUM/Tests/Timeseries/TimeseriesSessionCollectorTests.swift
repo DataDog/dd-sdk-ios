@@ -1022,6 +1022,22 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             countAfterSelfStop,
             "Expected sampling to remain stopped since the app was backgrounded, despite the racing noteActivity call"
         )
+
+        // And — a later `willEnterForeground` resume must still be able to restart sampling for this
+        // still-active session, even though the timer was already nil going into `pause(sessionID:)`.
+        collector.resume(sessionID: "session-backgrounded")
+        let resumeExpectation = self.expectation(description: "sampling resumed on foreground")
+        resumeExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        collector.flush()
+        XCTAssertGreaterThan(
+            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count,
+            countAfterSelfStop,
+            "Expected sampling to resume once the app returns to the foreground"
+        )
+
+        collector.stop(sessionID: "session-backgrounded")
     }
 
     // MARK: - Session-ID guard against stale calls
