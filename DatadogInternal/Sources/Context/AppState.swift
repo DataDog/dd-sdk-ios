@@ -67,11 +67,10 @@ public enum AppState: AppStateProtocol {
         }
     }
 
+    /// macOS does not have the same background concept as iOS.
+    /// For the purposes of this method, it should always be true.
     public var isRunningInForeground: Bool {
-        switch self {
-        case .active: true
-        case .inactive, .hidden, .lockScreen, .terminating, .sleeping: false
-        }
+        true
     }
 }
 #else
@@ -308,7 +307,6 @@ public struct DefaultAppStateProvider: AppStateProvider {
         // to running apps and the system is about to go to sleep. It's unlikely that is the case when
         // an application is being launched, assuming Datadog SDK is being initialized at app startup,
         // but it's possible.
-        // This is mitigated by
         let loginWindowActive = NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.loginwindow"
         if loginWindowActive {
             return .lockScreen
