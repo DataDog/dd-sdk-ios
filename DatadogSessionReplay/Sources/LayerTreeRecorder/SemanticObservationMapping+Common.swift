@@ -10,8 +10,27 @@ import QuartzCore
 import UIKit
 import WebKit
 
+@_spi(Internal)
+import DatadogInternal
+
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let embeddedContent = Self { layer, _, context in
+        guard
+            let view = layer.delegate as? UIView,
+            let slotID = view.dd.sessionReplaySlotID
+        else {
+            return nil
+        }
+
+        context.embeddedContentViewCache.add(view)
+
+        return .init(
+            semantics: .embeddedContent(.init(slotID: slotID)),
+            ignoresSublayers: true
+        )
+    }
+
     static let gradient = Self { layer, _, _ in
         guard let gradientLayer = layer as? CAGradientLayer else {
             return nil

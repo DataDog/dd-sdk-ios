@@ -323,6 +323,39 @@ struct LayerWireframeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build hides embedded content for a private layer")
+    func buildHidesEmbeddedContentForPrivateLayer() throws {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            isPrivate: true
+        )
+        var builder = LayerWireframeBuilder(
+            contentSnapshots: [:],
+            webViewSlotIDs: [],
+            embeddedContentSlots: [snapshot.replayID: "embedded-slot"]
+        )
+
+        // When
+        _ = builder.build(
+            from: snapshot,
+            textInput: nil,
+            cornerRadius: nil
+        )
+        let hiddenEmbeddedContentWireframes = builder.makeHiddenEmbeddedContentWireframes()
+
+        // Then
+        guard case .embeddedContentWireframe(let hiddenWireframe) = try #require(hiddenEmbeddedContentWireframes.first) else {
+            Issue.record("Expected a hidden embedded content wireframe")
+            return
+        }
+        #expect(hiddenEmbeddedContentWireframes.count == 1)
+        #expect(hiddenWireframe.id == Int64(namespace: .embeddedContent, replayID: snapshot.replayID))
+        #expect(hiddenWireframe.slotId == "embedded-slot")
+        #expect(hiddenWireframe.isVisible == false)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build tracks visible and hidden webviews")
     func buildTracksVisibleAndHiddenWebViews() throws {
         // Given
@@ -360,6 +393,53 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.isVisible == true)
         #expect(hiddenWireframes.count == 1)
         #expect(hiddenWireframe.slotId == String(hiddenSlotID))
+        #expect(hiddenWireframe.isVisible == false)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build emits embedded content visibility state")
+    func buildEmitsEmbeddedContentVisibilityState() throws {
+        // Given
+        let replayID: Int64 = 42
+        let hiddenReplayID: Int64 = 43
+        let slotID = "visible-slot"
+        let hiddenSlotID = "hidden-slot"
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: replayID,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 60, height: 40),
+            observation: .init(semantics: .embeddedContent(.init(slotID: slotID)))
+        )
+        var builder = LayerWireframeBuilder(
+            contentSnapshots: [:],
+            webViewSlotIDs: [],
+            embeddedContentSlots: [
+                replayID: slotID,
+                hiddenReplayID: hiddenSlotID
+            ]
+        )
+
+        // When
+        let result = builder.build(
+            from: snapshot,
+            textInput: nil,
+            cornerRadius: nil
+        )
+        let output = try #require(result)
+        let hiddenWireframes = builder.makeHiddenEmbeddedContentWireframes()
+
+        // Then
+        guard case .embeddedContentWireframe(let wireframe) = output.wireframe,
+              case .embeddedContentWireframe(let hiddenWireframe) = try #require(hiddenWireframes.first) else {
+            Issue.record("Expected embedded content wireframes")
+            return
+        }
+
+        #expect(wireframe.id == Int64(namespace: .embeddedContent, replayID: replayID))
+        #expect(wireframe.slotId == slotID)
+        #expect(wireframe.isVisible == true)
+        #expect(hiddenWireframes.count == 1)
+        #expect(hiddenWireframe.id == Int64(namespace: .embeddedContent, replayID: hiddenReplayID))
+        #expect(hiddenWireframe.slotId == hiddenSlotID)
         #expect(hiddenWireframe.isVisible == false)
     }
 

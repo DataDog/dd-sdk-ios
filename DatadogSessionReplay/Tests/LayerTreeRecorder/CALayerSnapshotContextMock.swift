@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import DatadogInternal
+import UIKit
 import WebKit
 
 @testable import DatadogSessionReplay
@@ -15,12 +16,14 @@ extension CALayerSnapshot.Context {
     static func mockAny(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
         imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
-        webViewCache: NSHashTable<WKWebView> = .weakObjects()
+        webViewCache: NSHashTable<WKWebView> = .weakObjects(),
+        embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
     ) -> Self {
         .init(
             textAndInputPrivacyLevel: textAndInputPrivacyLevel,
             imagePrivacyLevel: imagePrivacyLevel,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            embeddedContentViewCache: embeddedContentViewCache
         )
     }
 }

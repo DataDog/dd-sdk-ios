@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+@_spi(Internal)
 import DatadogInternal
 import QuartzCore
 import TestUtilities
@@ -150,6 +151,41 @@ struct LayerTreeSnapshotBuilderTests {
         // Then
         #expect(snapshot.root.sublayers.isEmpty)
         #expect(snapshot.webViewSlotIDs == expectedSlots)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Captures embedded content as a leaf and keeps its slot while detached")
+    func capturesEmbeddedContentAsLeafAndKeepsItsSlotWhileDetached() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 640))
+        let embeddedContentView = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 80))
+        embeddedContentView.text = "Native label"
+        embeddedContentView.dd.sessionReplaySlotID = "embedded-slot"
+        embeddedContentView.addSubview(UIView(frame: embeddedContentView.bounds))
+        rootView.addSubview(embeddedContentView)
+
+        let builder = LayerTreeSnapshotBuilder(
+            layerProvider: TestLayerProvider(rootLayer: rootView.layer)
+        )
+
+        // When
+        let initialSnapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
+        embeddedContentView.removeFromSuperview()
+        let detachedSnapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
+
+        // Then
+        let embeddedContentSnapshot = try #require(initialSnapshot.root.sublayers.first)
+        #expect(
+            embeddedContentSnapshot.observation == .init(
+                semantics: .embeddedContent(.init(slotID: "embedded-slot")),
+                ignoresSublayers: true
+            )
+        )
+        #expect(embeddedContentSnapshot.sublayers.isEmpty)
+        #expect(initialSnapshot.embeddedContentSlots == [embeddedContentView.layer.replayID: "embedded-slot"])
+        #expect(detachedSnapshot.root.sublayers.isEmpty)
+        #expect(detachedSnapshot.embeddedContentSlots == initialSnapshot.embeddedContentSlots)
+        withExtendedLifetime(embeddedContentView) {}
     }
 }
 #endif
