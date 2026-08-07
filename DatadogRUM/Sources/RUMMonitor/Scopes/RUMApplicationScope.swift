@@ -113,7 +113,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
             // initial states for starting the initial view.
             let appState = context.applicationStateHistory.currentState
-            let sdkInitInForeground = appState == .inactive || appState == .active
+            let sdkInitInForeground = appState.isRunningInForeground
             let isUserLaunch = context.launchInfo.launchReason == .userLaunch
 
             if sdkInitInForeground || isUserLaunch {
@@ -269,7 +269,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
-        let refreshingInForeground = context.applicationStateHistory.currentState == .active
+        let refreshingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
         let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
             && refreshingInForeground
@@ -312,7 +312,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
-        let startingInForeground = context.applicationStateHistory.currentState == .active
+        let startingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         var resumeViewScope = false
 
         if lastSessionEndReason == .stopAPI {
