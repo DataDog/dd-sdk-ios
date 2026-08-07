@@ -33,7 +33,6 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         super.setUp()
         // Start with a background context so the profiler doesn't auto-start at init.
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         // Ensure the memory interception paths are clean at test start.
@@ -47,7 +46,6 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         MemorySwizzlingPOC.stop()
         SwiftAllocInterception.stop()
         dd_memory_test_reset()
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
@@ -100,10 +98,10 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
-    /// Option B independent EMISSION: with continuous off and memory on, the background transition
-    /// flushes a heap-only `ProfileEvent` (no `profile.pprof`, a `heap.pprof`) — the pre-background
-    /// window is emitted before memory pauses.
-    func testMemoryEmitsHeapOnlyProfile_whenContinuousNotConfigured() throws {
+    /// Option B independent EMISSION, now gated on a RUM event of interest: with continuous off and
+    /// memory on, a window that carries a RUM event (here a long task) flushes a heap-only
+    /// `ProfileEvent` (no `profile.pprof`, a `heap.pprof`) that also carries the correlated event.
+    func testMemoryEmitsHeapOnlyProfile_whenContinuousOff_andRUMEventOfInterest() throws {
         let dateProvider = DateProviderMock()
         let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
         let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
@@ -117,6 +115,14 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         // Produce a live sampled allocation so the heap snapshot is non-empty this window.
         dd_memory_test_force_next_sample()
         let obj = ProdSwiftFixture()
+
+        // A RUM event of interest this window — the gate that now authorizes heap emission.
+        let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+        _ = profiler.receive(
+            message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)),
+            from: core
+        )
+        flushQueue()
 
         try withExtendedLifetime(obj) {
             // Background transition triggers sendProfile() (pre-background flush) before memory pauses.
@@ -133,6 +139,94 @@ final class DatadogProfilerMemoryTests: XCTestCase {
             XCTAssertNotNil(metadata.heapPprof, "heap-only event must carry heap.pprof")
             XCTAssertTrue(event.attachments.contains(ProfileAttachments.Constants.heapFilename))
             XCTAssertFalse(event.attachments.contains(ProfileAttachments.Constants.pprofFilename))
+            // The heap-only event now carries the correlated long task (previously an empty timeline).
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [longTask.id])
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// The gate's resource-saving side: with memory on but NO RUM event of interest this window, the
+    /// background flush emits nothing — the live set carries forward and the alloc window keeps
+    /// accumulating, so no write/upload work is spent on an empty window.
+    func testMemoryDoesNotEmitHeapOnly_whenNoRUMEventOfInterest() throws {
+        let dateProvider = DateProviderMock()
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running())
+
+        // A live sample exists, but no RUM event of interest arrives this window.
+        dd_memory_test_force_next_sample()
+        let obj = ProdSwiftFixture()
+
+        try withExtendedLifetime(obj) {
+            core.context = .mockWith(applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: dateProvider.now.addingTimeInterval(-1),
+                transitions: [(state: .background, date: dateProvider.now)]
+            ))
+            flushQueue()
+
+            XCTAssertTrue(core.events.isEmpty, "no RUM event of interest => no heap profile emitted")
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Sequencing: an empty window (no RUM event) emits nothing, and a later window carrying a RUM
+    /// event still emits — exactly one heap-only profile in total. This asserts a skipped window does
+    /// not block a subsequent emission; it does not assert cross-window allocation carry-forward (a
+    /// background gap tears memory sampling down across the two windows anyway).
+    func testMemorySkipsEmptyWindow_thenEmitsWhenRUMEventArrives() throws {
+        let dateProvider = DateProviderMock()
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running())
+
+        // Window 1: no RUM event of interest → background flush skips (nothing emitted).
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        ))
+        flushQueue()
+        XCTAssertTrue(core.events.isEmpty, "empty window must not emit")
+
+        // Foreground → memory resumes.
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "memory must resume on foreground")
+
+        // Window 2: a live allocation + a long task → background flush now emits exactly one
+        // heap-only event. The sample is forced after the resume so the live set is non-empty
+        // regardless of pause/resume clearing it.
+        dd_memory_test_force_next_sample()
+        let obj = ProdSwiftFixture()
+        try withExtendedLifetime(obj) {
+            let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
+            _ = profiler.receive(
+                message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)),
+                from: core
+            )
+            flushQueue()
+
+            core.context = .mockWith(applicationStateHistory: .mockWith(
+                initialState: .active,
+                date: dateProvider.now.addingTimeInterval(-1),
+                transitions: [(state: .background, date: dateProvider.now)]
+            ))
+            flushQueue()
+
+            XCTAssertEqual(core.events.count, 1, "exactly one heap profile, on the window with the RUM event")
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNil(metadata.pprof)
+            XCTAssertNotNil(metadata.heapPprof)
         }
         withExtendedLifetime(profiler) {}
     }
@@ -183,7 +277,6 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         // holds a strong reference. Drop it first, otherwise `deinit` never runs.
         core.messageReceiver = NOPFeatureMessageReceiver()
         profiler = nil
-        DatadogProfiler.resetActiveInstance()
 
         XCTAssertFalse(dd_memory_profiler_is_running(), "Memory profiler must stop when the profiler is deallocated")
     }
@@ -233,7 +326,7 @@ private extension DatadogProfilerMemoryTests {
             queue: profilerQueue,
             profilingInterval: .infinity,
             dateProvider: dateProvider
-        )! // swiftlint:disable:this force_unwrapping
+        )
     }
 
     func connectMessageReceiver(

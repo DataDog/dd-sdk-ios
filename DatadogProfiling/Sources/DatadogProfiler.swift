@@ -429,18 +429,17 @@ private extension DatadogProfiler {
         let windowStart = memoryWindowStart
         let windowEnd = dateProvider.now
         profileStartDate = windowEnd
-        // Advance the memory window each emission. While memory is paused nothing is sampled, so
-        // this stays aligned with the allocation log's capture-and-reset boundary.
-        memoryWindowStart = windowEnd
 
         let cpuProfile = dd_profiler_flush_and_get_profile()
         defer { if let cpuProfile { dd_pprof_destroy(cpuProfile) } }
 
-        // Emit the heap window that WAS being sampled this cycle (based on the current running
-        // state, not on whether memory should keep running). This matters on a background
-        // transition: `handle(context:)` calls sendProfile() before reconciling memory to paused,
-        // so the pre-background window — the state most relevant to jetsam/OOM — is still flushed.
-        let wantsHeap = isMemoryProfilingRunning
+        // Emit the heap snapshot only when memory sampling is active AND there is a RUM event of
+        // interest to correlate with this window (vital / hang / long task) — the same signal the
+        // CPU `canWriteProfile` gate keys off. On an empty window the snapshot is skipped: the live
+        // set is a point-in-time view that carries forward, and the alloc window keeps accumulating
+        // (its capture-and-reset lives in `captureHeapPprof`, which we don't call here), so the next
+        // window with an event covers the full span. Nothing is lost; write/upload work is saved.
+        let wantsHeap = isMemoryProfilingRunning && hasRUMEventsOfInterest
 
         if let cpuProfile {
             if canWriteProfile {
@@ -454,16 +453,39 @@ private extension DatadogProfiler {
                     captureHeapProfile: wantsHeap
                 )
             } else if wantsHeap {
-                // CPU profile isn't writable this window, but memory is active — emit heap-only.
-                writeHeapOnlyProfile(start: windowStart, end: windowEnd, operation: operation)
+                // CPU profile isn't writable this window, but memory is active with a correlated
+                // event — emit a heap-only profile carrying that event.
+                writeHeapOnlyProfile(
+                    start: windowStart,
+                    end: windowEnd,
+                    operation: operation,
+                    rumVitals: Array(self.currentRUMVitals.values),
+                    hangs: hangs,
+                    longTasks: longTasks
+                )
             } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
                 telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
             }
         } else if wantsHeap {
-            // No CPU profile at all (CPU profiling not running) — independent heap-only emission.
-            writeHeapOnlyProfile(start: windowStart, end: windowEnd, operation: operation)
+            // No CPU profile at all (CPU profiling not running) — independent heap-only emission
+            // carrying the correlated RUM event(s).
+            writeHeapOnlyProfile(
+                start: windowStart,
+                end: windowEnd,
+                operation: operation,
+                rumVitals: Array(self.currentRUMVitals.values),
+                hangs: hangs,
+                longTasks: longTasks
+            )
         } else if shouldReportProfileAbsence {
             telemetryController.sendNoProfile(for: operation)
+        }
+
+        // Advance the memory window only when the heap was actually captured this cycle (the alloc
+        // window is reset inside `captureHeapPprof`). Skipped windows leave `memoryWindowStart`
+        // untouched so the accumulated allocations are attributed to the next emitted window.
+        if wantsHeap {
+            memoryWindowStart = windowEnd
         }
 
         cleanUpState()
@@ -656,6 +678,16 @@ private extension DatadogProfiler {
         // Keep quota fail-open while the check is pending. Only explicit rejection prevents writing.
         return (hasCustomProfilingData || hasContinuousProfilingVitals || hasContinuousProfilingEvents)
             && !quotaChecker.isRejectedByQuota
+    }
+
+    /// Whether there is at least one RUM event of interest this window — a vital (including ongoing
+    /// operations/views), an app hang (error), or a long task. This is the condition under which the
+    /// heap snapshot is emitted, mirroring (and a superset of) the events the CPU `canWriteProfile`
+    /// gate keys off.
+    var hasRUMEventsOfInterest: Bool {
+        currentRUMVitals.isEmpty == false
+            || hangs.isEmpty == false
+            || longTasks.isEmpty == false
     }
 
     /// Whether memory (heap) profiling should currently be sampling — independent of the

@@ -23,6 +23,34 @@ internal protocol ProfilingHandler {
 }
 
 extension ProfilingHandler {
+    /// Merges the RUM correlation IDs (vitals, hangs/errors, long tasks) into the base attributes
+    /// and builds the matching `[RUMEvent]` timeline. Shared by the coupled (`write`) and heap-only
+    /// (`writeHeapOnlyProfile`) paths so both events carry identical RUM correlation.
+    private func rumCorrelation(
+        rumVitals: [Vital],
+        hangs: [DurationEvent]?,
+        longTasks: [DurationEvent]?
+    ) -> (attributes: [AttributeKey: AttributeValue], rumEvents: [RUMEvent]) {
+        var attributes = self.attributes
+
+        if rumVitals.isEmpty == false {
+            attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map(\.id)
+            attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map(\.name)
+        }
+        if let hangs {
+            attributes[RUMCoreContext.IDs.errorID] = hangs.map { $0.id }
+        }
+        if let longTasks {
+            attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
+        }
+
+        let rumEvents: [RUMEvent] = rumVitals.map(RUMEvent.vital)
+            + (hangs?.map(RUMEvent.hang) ?? [])
+            + (longTasks?.map(RUMEvent.longTask) ?? [])
+
+        return (attributes, rumEvents)
+    }
+
     func write(
         profile: OpaquePointer,
         operation: ProfilingOperation,
@@ -31,24 +59,7 @@ extension ProfilingHandler {
         longTasks: [DurationEvent]? = nil,
         captureHeapProfile: Bool = false
     ) {
-        var attributes = self.attributes
-
-        if rumVitals.isEmpty == false {
-            attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map(\.id)
-            attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map(\.name)
-        }
-
-        if let hangs {
-            attributes[RUMCoreContext.IDs.errorID] = hangs.map { $0.id }
-        }
-
-        if let longTasks {
-            attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
-        }
-
-        let rumEvents: [RUMEvent] = rumVitals.map(RUMEvent.vital)
-        + (hangs?.map(RUMEvent.hang) ?? [])
-        + (longTasks?.map(RUMEvent.longTask) ?? [])
+        let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
 
         // When memory profiling is enabled, capture the live-heap snapshot and bundle it as a
         // `heap.pprof` attachment on this same profile event. Go-aligned model: one event carries
@@ -190,12 +201,20 @@ extension ProfilingHandler {
     }
 
     /// Emits a heap-only `ProfileEvent` — used when memory profiling is active but there is no
-    /// writable CPU/wall profile this window (Option B independent emission). The event carries only
-    /// `heap.pprof` (+ an empty rum-events attachment) and no `profile.pprof`; the transport already
-    /// supports a nil CPU pprof. `start`/`end` bound the memory window (device time, adjusted to
-    /// server time via the current offset). No-op when there are no heap samples this window.
-    func writeHeapOnlyProfile(start: Date, end: Date, operation: ProfilingOperation) {
-        let attributes = self.attributes
+    /// writable CPU/wall profile this window (Option B independent emission). The event carries
+    /// `heap.pprof` and the RUM-events timeline for the correlated vitals/hangs/long tasks (no
+    /// `profile.pprof`); the transport already supports a nil CPU pprof. `start`/`end` bound the
+    /// memory window (device time, adjusted to server time via the current offset). No-op when there
+    /// are no heap samples this window.
+    func writeHeapOnlyProfile(
+        start: Date,
+        end: Date,
+        operation: ProfilingOperation,
+        rumVitals: [Vital],
+        hangs: [DurationEvent]? = nil,
+        longTasks: [DurationEvent]? = nil
+    ) {
+        let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
         guard let heapPprof = captureHeapPprof(attributes: attributes) else {
             return
         }
@@ -219,8 +238,7 @@ extension ProfilingHandler {
                 tags: self.profileTags(context: context, operation: operation),
                 additionalAttributes: attributes
             )
-            // Heap-only: no profile.pprof; empty RUM-events timeline this window.
-            let rumEventsData = try? self.encoder.encode([RUMEvent]())
+            let rumEventsData = try? self.encoder.encode(rumEvents)
             let attachments = ProfileAttachments(pprof: nil, rumEvents: rumEventsData, heapPprof: heapPprof)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(
