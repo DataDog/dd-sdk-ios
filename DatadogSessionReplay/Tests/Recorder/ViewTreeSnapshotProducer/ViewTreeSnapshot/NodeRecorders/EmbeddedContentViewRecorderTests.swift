@@ -45,7 +45,7 @@ struct EmbeddedContentViewRecorderTests {
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let embeddedContentView = UIView()
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
 
         // When
         let semantics = try #require(
@@ -94,7 +94,7 @@ struct EmbeddedContentViewRecorderTests {
             )
         })
         let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
         embeddedContentView.addSubview(UIView(frame: embeddedContentView.bounds))
         let context = ViewTreeRecordingContext.mockWith(coordinateSpace: embeddedContentView)
         let viewTreeRecorder = ViewTreeRecorder(nodeRecorders: [recorder, fallbackRecorder])
@@ -113,7 +113,7 @@ struct EmbeddedContentViewRecorderTests {
         // Given
         let embeddedContentRecorder = EmbeddedContentViewRecorder(identifier: UUID())
         let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
         let context = ViewTreeRecordingContext.mockWith(coordinateSpace: embeddedContentView)
         _ = embeddedContentRecorder.semantics(
             of: embeddedContentView,
@@ -155,7 +155,7 @@ struct EmbeddedContentViewRecorderTests {
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let embeddedContentView = UIView()
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
 
         // When
         let semantics = try #require(
@@ -187,9 +187,9 @@ struct EmbeddedContentViewRecorderTests {
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let firstEmbeddedContentView = UIView()
-        firstEmbeddedContentView.dd.sessionReplaySlotID = "first-slot"
+        firstEmbeddedContentView.dd.setSessionReplaySlotID("first-slot")
         let secondEmbeddedContentView = UIView()
-        secondEmbeddedContentView.dd.sessionReplaySlotID = "second-slot"
+        secondEmbeddedContentView.dd.setSessionReplaySlotID("second-slot")
 
         // When
         let firstSemantics = try #require(
