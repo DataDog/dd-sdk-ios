@@ -971,6 +971,59 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-race")
     }
 
+    func testPause_afterSelfStopDueToExpiry_preventsLaterNoteActivityFromResuming() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry/explicit flush triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        let startTime = clock.date
+        collector.start(sessionID: "session-backgrounded", applicationID: "app-1", sessionType: .user, startTime: startTime)
+
+        let beforeTimeoutExpectation = self.expectation(description: "samples collected before timeout")
+        beforeTimeoutExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { beforeTimeoutExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // When — the session goes idle past the inactivity timeout, so `sample()` self-stops the timer
+        // (nil-ing it out) just before the app is backgrounded...
+        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        let selfStopExpectation = self.expectation(description: "self-stop settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        let countAfterSelfStop = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countAfterSelfStop, 0, "Expected the collector to have self-stopped due to inactivity")
+
+        // ...and `didEnterBackground` is processed right after — with the timer already nil from the
+        // self-stop, this must still record the paused state, not silently no-op.
+        collector.pause(sessionID: "session-backgrounded")
+
+        // ...but a stale/racing RUM interaction for the same session still reaches `noteActivity` afterwards.
+        collector.noteActivity(sessionID: "session-backgrounded", at: clock.date)
+
+        // Then — sampling must stay stopped since the app is backgrounded, not resume behind the scenes
+        let settleExpectation = self.expectation(description: "settle after pause + noteActivity")
+        settleExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settleExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        collector.flush()
+        XCTAssertEqual(
+            featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count,
+            countAfterSelfStop,
+            "Expected sampling to remain stopped since the app was backgrounded, despite the racing noteActivity call"
+        )
+    }
+
     // MARK: - Session-ID guard against stale calls
 
     func testStaleStopCall_afterNewSessionStarted_doesNotStopNewSession() {

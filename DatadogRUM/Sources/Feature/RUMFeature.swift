@@ -145,7 +145,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             batchSize: configuration.timeseriesBatchSize,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
-            sessionSampleRate: Double(sessionSampleRate)
+            sessionSampleRate: Double(sessionSampleRate),
+            now: { configuration.dateProvider.now }
         ) : nil
 
         let dependencies = RUMScopeDependencies(
