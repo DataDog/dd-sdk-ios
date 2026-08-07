@@ -114,7 +114,12 @@ extension SessionReplay.Configuration {
         @available(*, deprecated, message: "Screen change scheduling is now the default and always enabled. This flag has no effect.")
         case screenChangeScheduling
 
-        @_spi(Internal)
+        /// Enables the experimental Core Animation recording pipeline.
+        ///
+        /// The default recorder builds replay wireframes from semantic information
+        /// extracted from UIKit and SwiftUI properties. This pipeline uses the rendered
+        /// layer tree as its primary source, preserving its structure and rendering
+        /// effects to improve replay fidelity in UIKit, SwiftUI, and React Native apps.
         @available(iOS 13.0, tvOS 13.0, *)
         case compositionTreeRecording = "composition_tree_recording"
     }
