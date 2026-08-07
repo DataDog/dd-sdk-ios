@@ -29,8 +29,6 @@ final class ScreenChangeMonitorTests: XCTestCase {
     }
 
     override func tearDown() {
-        screenChangeMonitor?.stop()
-        screenChangeMonitor = nil
         changesets.removeAll()
         super.tearDown()
     }
