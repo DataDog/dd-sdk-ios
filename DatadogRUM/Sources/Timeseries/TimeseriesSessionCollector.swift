@@ -191,6 +191,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             guard let self = self, self.sessionID == sessionID else {
                 return
             }
+            // Clear this before the idempotency check below: even if the timer already self-stopped
+            // (so this call is a no-op as far as the timer goes), backgrounding must still prevent a
+            // later `noteActivity` from treating the self-stop as recoverable and resuming the timer.
+            self.selfStoppedDueToExpiry = false
             if self.isPaused || self.timer == nil {
                 return
             }
