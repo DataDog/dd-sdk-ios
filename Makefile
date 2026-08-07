@@ -314,14 +314,14 @@ spm-build-watchos:
 
 # Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
-	# Only compatible schemes for macOS:
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogInternal"
+	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
+	# dependency of these; it is not a package product, so it has no scheme of its own):
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogRUM"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
-	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="WebViewTracking"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogWebViewTracking"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogFlags"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
