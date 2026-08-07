@@ -331,7 +331,7 @@ extension RUM {
         /// Enables collection of memory and CPU timeseries events.
         ///
         /// When enabled, memory footprint and CPU usage are sampled every second and uploaded as
-        /// timeseries events scoped to the RUM session. Requires `vitalsUpdateFrequency` to be set.
+        /// timeseries events scoped to the RUM session.
         ///
         /// Default: `false`.
         @_spi(Experimental)
