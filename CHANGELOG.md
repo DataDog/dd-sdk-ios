@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 
 # 3.15.0 / 05-08-2026
@@ -1221,6 +1222,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3106]: https://github.com/DataDog/dd-sdk-ios/pull/3106
 [#3109]: https://github.com/DataDog/dd-sdk-ios/pull/3109
 [#3074]: https://github.com/DataDog/dd-sdk-ios/pull/3074
+[#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
