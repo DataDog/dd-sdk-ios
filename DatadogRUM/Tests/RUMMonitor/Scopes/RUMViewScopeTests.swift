@@ -116,12 +116,14 @@ class RUMViewScopeTests: XCTestCase {
         let hasReplay: Bool = .mockRandom()
         let sessionReplaySampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let startRecordingManually: Bool = .random()
+        let sessionReplayExperimentalFeatures = ["composition_tree_recording", "swiftui"]
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
         context.set(additionalContext: SessionReplayCoreContext.Configuration(
             sampleRate: sessionReplaySampleRate,
-            startRecordingManually: startRecordingManually
+            startRecordingManually: startRecordingManually,
+            experimentalFeatures: sessionReplayExperimentalFeatures
         ))
 
         _ = scope.process(
@@ -150,6 +152,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1)
         XCTAssertEqual(event.dd.configuration?.traceSampleRate, Double(traceSampleRate))
         XCTAssertEqual(event.dd.configuration?.sessionReplaySampleRate, Double(sessionReplaySampleRate))
+        XCTAssertEqual(event.dd.configuration?.sessionReplayExperimentalFeatures, sessionReplayExperimentalFeatures)
         XCTAssertEqual(event.dd.configuration?.startSessionReplayRecordingManually, startRecordingManually)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
@@ -164,6 +167,38 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
+    }
+
+    func testWhenSessionReplayHasNoExperimentalFeatures_itSendsEmptyExperimentalFeatures() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        var context = self.context
+        context.set(additionalContext: SessionReplayCoreContext.Configuration(
+            sampleRate: .mockRandom(min: 0, max: 100),
+            startRecordingManually: .random()
+        ))
+
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(event.dd.configuration?.sessionReplayExperimentalFeatures, [])
     }
 
     func testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {

@@ -39,13 +39,15 @@
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testDDSiteAPI {
-    [DDSite eu1];
     [DDSite us1];
-    [DDSite us1];
-    [DDSite us1_fed];
-    [DDSite us2_fed];
     [DDSite us3];
     [DDSite us5];
+    [DDSite eu1];
+    [DDSite ap1];
+    [DDSite ap2];
+    [DDSite uk1];
+    [DDSite us1_fed];
+    [DDSite us2_fed];
 }
 
 - (void)testDDBatchSizeAPI {

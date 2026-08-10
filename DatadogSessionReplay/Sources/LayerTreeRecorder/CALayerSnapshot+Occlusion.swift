@@ -131,7 +131,7 @@ extension CALayerSnapshot {
     ) -> CALayerSnapshot? {
         let visibleFrame = absoluteFrame.intersection(clip)
 
-        guard !visibleFrame.isEmpty else {
+        guard !visibleFrame.isEmpty || !masksToBounds else {
             return nil
         }
 
@@ -158,6 +158,10 @@ extension CALayerSnapshot {
         }
 
         if visibleLayers.isEmpty {
+            guard !visibleFrame.isEmpty else {
+                return nil
+            }
+
             if drawsContent {
                 if !hasShadow && occlusionMap.isCovered(visibleFrame) {
                     return nil

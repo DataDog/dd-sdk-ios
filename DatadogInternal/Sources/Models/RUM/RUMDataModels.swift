@@ -728,6 +728,9 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -739,6 +742,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -748,16 +752,19 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -1077,7 +1084,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -1194,7 +1201,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -1740,6 +1747,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -1751,6 +1761,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -1760,16 +1771,19 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -1921,7 +1935,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -2601,7 +2615,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -3189,6 +3203,9 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -3200,6 +3217,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -3209,16 +3227,19 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -3370,7 +3391,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -3674,7 +3695,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -4048,6 +4069,9 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -4059,6 +4083,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -4068,16 +4093,19 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -4202,7 +4230,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -4306,6 +4334,9 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// UUID of the resource
         public let id: String?
 
+        /// Whether the resource was served from the device's local cache
+        public let localCacheHit: Bool?
+
         /// HTTP method of the resource
         public let method: RUMMethod?
 
@@ -4359,6 +4390,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case firstByte = "first_byte"
             case graphql = "graphql"
             case id = "id"
+            case localCacheHit = "local_cache_hit"
             case method = "method"
             case `protocol` = "protocol"
             case provider = "provider"
@@ -4388,6 +4420,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
+        ///   - localCacheHit: Whether the resource was served from the device's local cache
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4413,6 +4446,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             firstByte: FirstByte? = nil,
             graphql: RUMGraphql? = nil,
             id: String? = nil,
+            localCacheHit: Bool? = nil,
             method: RUMMethod? = nil,
             `protocol`: String? = nil,
             provider: Provider? = nil,
@@ -4438,6 +4472,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             self.firstByte = firstByte
             self.graphql = graphql
             self.id = id
+            self.localCacheHit = localCacheHit
             self.method = method
             self.`protocol` = `protocol`
             self.provider = provider
@@ -4853,7 +4888,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -5178,11 +5213,41 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
+    /// Account properties
+    public var account: RUMAccount?
+
     /// Application properties
     public let application: Application
 
+    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    public let buildId: String?
+
+    /// The build version for this application
+    public let buildVersion: String?
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public var context: RUMEventAttributes?
+
     /// Start of the event in ms from epoch
     public let date: Int64
+
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
+    /// Device properties
+    public let device: Device?
+
+    /// Display properties
+    public let display: Display?
+
+    /// Operating system properties
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -5191,7 +5256,16 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
     public let session: Session
 
     /// The source of this event
-    public let source: Source
+    public let source: Source?
+
+    /// Stream properties
+    public let stream: Stream?
+
+    /// Synthetics properties
+    public var synthetics: RUMSyntheticsTest?
+
+    /// Tab properties
+    public let tab: TAB?
 
     /// CPU timeseries properties
     public let timeseries: Timeseries
@@ -5199,87 +5273,323 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
     /// RUM event type
     public let type: String = "timeseries"
 
+    /// User properties
+    public var usr: RUMUser?
+
     /// The version for this application
     public let version: String?
 
+    /// View properties
+    public var view: View?
+
     public enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case application = "application"
+        case buildId = "build_id"
+        case buildVersion = "build_version"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
+        case device = "device"
+        case display = "display"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
+        case stream = "stream"
+        case synthetics = "synthetics"
+        case tab = "tab"
         case timeseries = "timeseries"
         case type = "type"
+        case usr = "usr"
         case version = "version"
+        case view = "view"
     }
 
     /// Schema for a CPU timeseries event.
     ///
     /// - Parameters:
     ///   - dd: Internal properties
+    ///   - account: Account properties
     ///   - application: Application properties
+    ///   - buildId: Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    ///   - buildVersion: The build version for this application
+    ///   - ciTest: CI Visibility properties
+    ///   - connectivity: Device connectivity properties
+    ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    ///   - device: Device properties
+    ///   - display: Display properties
+    ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
     ///   - source: The source of this event
+    ///   - stream: Stream properties
+    ///   - synthetics: Synthetics properties
+    ///   - tab: Tab properties
     ///   - timeseries: CPU timeseries properties
+    ///   - usr: User properties
     ///   - version: The version for this application
+    ///   - view: View properties
     public init(
         dd: DD,
+        account: RUMAccount? = nil,
         application: Application,
+        buildId: String? = nil,
+        buildVersion: String? = nil,
+        ciTest: RUMCITest? = nil,
+        connectivity: RUMConnectivity? = nil,
+        context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
+        device: Device? = nil,
+        display: Display? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
-        source: Source,
+        source: Source? = nil,
+        stream: Stream? = nil,
+        synthetics: RUMSyntheticsTest? = nil,
+        tab: TAB? = nil,
         timeseries: Timeseries,
-        version: String? = nil
+        usr: RUMUser? = nil,
+        version: String? = nil,
+        view: View? = nil
     ) {
         self.dd = dd
+        self.account = account
         self.application = application
+        self.buildId = buildId
+        self.buildVersion = buildVersion
+        self.ciTest = ciTest
+        self.connectivity = connectivity
+        self.context = context
         self.date = date
+        self.ddtags = ddtags
+        self.device = device
+        self.display = display
+        self.os = os
         self.service = service
         self.session = session
         self.source = source
+        self.stream = stream
+        self.synthetics = synthetics
+        self.tab = tab
         self.timeseries = timeseries
+        self.usr = usr
         self.version = version
+        self.view = view
     }
 
     /// Internal properties
     public struct DD: Codable, Equatable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
+        /// Session-related internal properties
+        public let session: Session?
+
         public enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
+            case session = "session"
         }
 
         /// Internal properties
-        public init() { }
+        ///
+        /// - Parameters:
+        ///   - browserSdkVersion: Browser SDK version
+        ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        ///   - session: Session-related internal properties
+        public init(
+            browserSdkVersion: String? = nil,
+            configuration: Configuration? = nil,
+            sdkName: String? = nil,
+            session: Session? = nil
+        ) {
+            self.browserSdkVersion = browserSdkVersion
+            self.configuration = configuration
+            self.sdkName = sdkName
+            self.session = session
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable, Equatable {
+            /// The percentage of sessions profiled
+            public let profilingSampleRate: Double?
+
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            /// The percentage of sessions with traced resources
+            public let traceSampleRate: Double?
+
+            public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+                case traceSampleRate = "trace_sample_rate"
+            }
+
+            /// Subset of the SDK configuration options in use during its execution
+            ///
+            /// - Parameters:
+            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
+            ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
+            ///   - sessionSampleRate: The percentage of sessions tracked
+            ///   - traceSampleRate: The percentage of sessions with traced resources
+            public init(
+                profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
+                sessionReplaySampleRate: Double? = nil,
+                sessionSampleRate: Double,
+                traceSampleRate: Double? = nil
+            ) {
+                self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
+                self.sessionReplaySampleRate = sessionReplaySampleRate
+                self.sessionSampleRate = sessionSampleRate
+                self.traceSampleRate = traceSampleRate
+            }
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable, Equatable {
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
+
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
+            public enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+                case sessionPrecondition = "session_precondition"
+            }
+
+            /// Session-related internal properties
+            ///
+            /// - Parameters:
+            ///   - plan: Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            ///   - sessionPrecondition: The precondition that led to the creation of the session
+            public init(
+                plan: Plan? = nil,
+                sessionPrecondition: RUMSessionPrecondition? = nil
+            ) {
+                self.plan = plan
+                self.sessionPrecondition = sessionPrecondition
+            }
+
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
     }
 
     /// Application properties
     public struct Application: Codable, Equatable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable, Equatable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        public enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// Display properties
+        ///
+        /// - Parameters:
+        ///   - viewport: The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public init(
+            viewport: Viewport? = nil
+        ) {
+            self.viewport = viewport
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable, Equatable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+
+            /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+            ///
+            /// - Parameters:
+            ///   - height: Height of the viewport (in pixels)
+            ///   - width: Width of the viewport (in pixels)
+            public init(
+                height: Double,
+                width: Double
+            ) {
+                self.height = height
+                self.width = width
+            }
         }
     }
 
     /// Session properties
     public struct Session: Codable, Equatable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -5287,6 +5597,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -5294,12 +5605,15 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         /// Session properties
         ///
         /// - Parameters:
+        ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
         ///   - type: Type of the session
         public init(
+            hasReplay: Bool? = nil,
             id: String,
             type: RUMSessionType
         ) {
+            self.hasReplay = hasReplay
             self.id = id
             self.type = type
         }
@@ -5316,7 +5630,48 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
+        case maui = "maui"
+    }
+
+    /// Stream properties
+    public struct Stream: Codable, Equatable {
+        /// UUID of the stream
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Stream properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the stream
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Tab properties
+    public struct TAB: Codable, Equatable {
+        /// UUID of the browser tab
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Tab properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the browser tab
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
     }
 
     /// CPU timeseries properties
@@ -5414,6 +5769,47 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
             }
         }
     }
+
+    /// View properties
+    public struct View: Codable, Equatable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        ///   - name: User defined name of the view
+        ///   - referrer: URL that linked to the initial view of the page
+        ///   - url: URL of the view
+        public init(
+            id: String,
+            name: String? = nil,
+            referrer: String? = nil,
+            url: String
+        ) {
+            self.id = id
+            self.name = name
+            self.referrer = referrer
+            self.url = url
+        }
+    }
 }
 
 /// Schema for a memory timeseries event.
@@ -5421,11 +5817,41 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
     /// Internal properties
     public let dd: DD
 
+    /// Account properties
+    public var account: RUMAccount?
+
     /// Application properties
     public let application: Application
 
+    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    public let buildId: String?
+
+    /// The build version for this application
+    public let buildVersion: String?
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// User provided context
+    public var context: RUMEventAttributes?
+
     /// Start of the event in ms from epoch
     public let date: Int64
+
+    /// Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    public let ddtags: String?
+
+    /// Device properties
+    public let device: Device?
+
+    /// Display properties
+    public let display: Display?
+
+    /// Operating system properties
+    public let os: OperatingSystem?
 
     /// The service name for this application
     public let service: String?
@@ -5434,7 +5860,16 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
     public let session: Session
 
     /// The source of this event
-    public let source: Source
+    public let source: Source?
+
+    /// Stream properties
+    public let stream: Stream?
+
+    /// Synthetics properties
+    public var synthetics: RUMSyntheticsTest?
+
+    /// Tab properties
+    public let tab: TAB?
 
     /// Memory timeseries properties
     public let timeseries: Timeseries
@@ -5442,87 +5877,323 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
     /// RUM event type
     public let type: String = "timeseries"
 
+    /// User properties
+    public var usr: RUMUser?
+
     /// The version for this application
     public let version: String?
 
+    /// View properties
+    public var view: View?
+
     public enum CodingKeys: String, CodingKey {
         case dd = "_dd"
+        case account = "account"
         case application = "application"
+        case buildId = "build_id"
+        case buildVersion = "build_version"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case context = "context"
         case date = "date"
+        case ddtags = "ddtags"
+        case device = "device"
+        case display = "display"
+        case os = "os"
         case service = "service"
         case session = "session"
         case source = "source"
+        case stream = "stream"
+        case synthetics = "synthetics"
+        case tab = "tab"
         case timeseries = "timeseries"
         case type = "type"
+        case usr = "usr"
         case version = "version"
+        case view = "view"
     }
 
     /// Schema for a memory timeseries event.
     ///
     /// - Parameters:
     ///   - dd: Internal properties
+    ///   - account: Account properties
     ///   - application: Application properties
+    ///   - buildId: Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    ///   - buildVersion: The build version for this application
+    ///   - ciTest: CI Visibility properties
+    ///   - connectivity: Device connectivity properties
+    ///   - context: User provided context
     ///   - date: Start of the event in ms from epoch
+    ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
+    ///   - device: Device properties
+    ///   - display: Display properties
+    ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
     ///   - source: The source of this event
+    ///   - stream: Stream properties
+    ///   - synthetics: Synthetics properties
+    ///   - tab: Tab properties
     ///   - timeseries: Memory timeseries properties
+    ///   - usr: User properties
     ///   - version: The version for this application
+    ///   - view: View properties
     public init(
         dd: DD,
+        account: RUMAccount? = nil,
         application: Application,
+        buildId: String? = nil,
+        buildVersion: String? = nil,
+        ciTest: RUMCITest? = nil,
+        connectivity: RUMConnectivity? = nil,
+        context: RUMEventAttributes? = nil,
         date: Int64,
+        ddtags: String? = nil,
+        device: Device? = nil,
+        display: Display? = nil,
+        os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
-        source: Source,
+        source: Source? = nil,
+        stream: Stream? = nil,
+        synthetics: RUMSyntheticsTest? = nil,
+        tab: TAB? = nil,
         timeseries: Timeseries,
-        version: String? = nil
+        usr: RUMUser? = nil,
+        version: String? = nil,
+        view: View? = nil
     ) {
         self.dd = dd
+        self.account = account
         self.application = application
+        self.buildId = buildId
+        self.buildVersion = buildVersion
+        self.ciTest = ciTest
+        self.connectivity = connectivity
+        self.context = context
         self.date = date
+        self.ddtags = ddtags
+        self.device = device
+        self.display = display
+        self.os = os
         self.service = service
         self.session = session
         self.source = source
+        self.stream = stream
+        self.synthetics = synthetics
+        self.tab = tab
         self.timeseries = timeseries
+        self.usr = usr
         self.version = version
+        self.view = view
     }
 
     /// Internal properties
     public struct DD: Codable, Equatable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        public let sdkName: String?
+
+        /// Session-related internal properties
+        public let session: Session?
+
         public enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case formatVersion = "format_version"
+            case sdkName = "sdk_name"
+            case session = "session"
         }
 
         /// Internal properties
-        public init() { }
+        ///
+        /// - Parameters:
+        ///   - browserSdkVersion: Browser SDK version
+        ///   - configuration: Subset of the SDK configuration options in use during its execution
+        ///   - sdkName: SDK name (e.g. 'logs', 'rum', 'rum-slim', etc.)
+        ///   - session: Session-related internal properties
+        public init(
+            browserSdkVersion: String? = nil,
+            configuration: Configuration? = nil,
+            sdkName: String? = nil,
+            session: Session? = nil
+        ) {
+            self.browserSdkVersion = browserSdkVersion
+            self.configuration = configuration
+            self.sdkName = sdkName
+            self.session = session
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable, Equatable {
+            /// The percentage of sessions profiled
+            public let profilingSampleRate: Double?
+
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            /// The percentage of sessions with traced resources
+            public let traceSampleRate: Double?
+
+            public enum CodingKeys: String, CodingKey {
+                case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+                case traceSampleRate = "trace_sample_rate"
+            }
+
+            /// Subset of the SDK configuration options in use during its execution
+            ///
+            /// - Parameters:
+            ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
+            ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
+            ///   - sessionSampleRate: The percentage of sessions tracked
+            ///   - traceSampleRate: The percentage of sessions with traced resources
+            public init(
+                profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
+                sessionReplaySampleRate: Double? = nil,
+                sessionSampleRate: Double,
+                traceSampleRate: Double? = nil
+            ) {
+                self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
+                self.sessionReplaySampleRate = sessionReplaySampleRate
+                self.sessionSampleRate = sessionSampleRate
+                self.traceSampleRate = traceSampleRate
+            }
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable, Equatable {
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
+
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
+            public enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+                case sessionPrecondition = "session_precondition"
+            }
+
+            /// Session-related internal properties
+            ///
+            /// - Parameters:
+            ///   - plan: Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            ///   - sessionPrecondition: The precondition that led to the creation of the session
+            public init(
+                plan: Plan? = nil,
+                sessionPrecondition: RUMSessionPrecondition? = nil
+            ) {
+                self.plan = plan
+                self.sessionPrecondition = sessionPrecondition
+            }
+
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
     }
 
     /// Application properties
     public struct Application: Codable, Equatable {
+        /// The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
+        public let currentLocale: String?
+
         /// UUID of the application
         public let id: String
 
         public enum CodingKeys: String, CodingKey {
+            case currentLocale = "current_locale"
             case id = "id"
         }
 
         /// Application properties
         ///
         /// - Parameters:
+        ///   - currentLocale: The user's current locale as a language tag (language + region), computed from their preferences and the app's supported languages, e.g. 'es-FR'.
         ///   - id: UUID of the application
         public init(
+            currentLocale: String? = nil,
             id: String
         ) {
+            self.currentLocale = currentLocale
             self.id = id
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable, Equatable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        public enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// Display properties
+        ///
+        /// - Parameters:
+        ///   - viewport: The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public init(
+            viewport: Viewport? = nil
+        ) {
+            self.viewport = viewport
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable, Equatable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            public enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+
+            /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+            ///
+            /// - Parameters:
+            ///   - height: Height of the viewport (in pixels)
+            ///   - width: Width of the viewport (in pixels)
+            public init(
+                height: Double,
+                width: Double
+            ) {
+                self.height = height
+                self.width = width
+            }
         }
     }
 
     /// Session properties
     public struct Session: Codable, Equatable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
         /// UUID of the session
         public let id: String
 
@@ -5530,6 +6201,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
         }
@@ -5537,12 +6209,15 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         /// Session properties
         ///
         /// - Parameters:
+        ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
         ///   - type: Type of the session
         public init(
+            hasReplay: Bool? = nil,
             id: String,
             type: RUMSessionType
         ) {
+            self.hasReplay = hasReplay
             self.id = id
             self.type = type
         }
@@ -5559,7 +6234,48 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
+        case maui = "maui"
+    }
+
+    /// Stream properties
+    public struct Stream: Codable, Equatable {
+        /// UUID of the stream
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Stream properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the stream
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
+    }
+
+    /// Tab properties
+    public struct TAB: Codable, Equatable {
+        /// UUID of the browser tab
+        public let id: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+
+        /// Tab properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the browser tab
+        public init(
+            id: String
+        ) {
+            self.id = id
+        }
     }
 
     /// Memory timeseries properties
@@ -5662,6 +6378,47 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
                     self.memoryPercent = memoryPercent
                 }
             }
+        }
+    }
+
+    /// View properties
+    public struct View: Codable, Equatable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+
+        /// View properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the view
+        ///   - name: User defined name of the view
+        ///   - referrer: URL that linked to the initial view of the page
+        ///   - url: URL of the view
+        public init(
+            id: String,
+            name: String? = nil,
+            referrer: String? = nil,
+            url: String
+        ) {
+            self.id = id
+            self.name = name
+            self.referrer = referrer
+            self.url = url
         }
     }
 }
@@ -6053,6 +6810,9 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -6068,6 +6828,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -6079,6 +6840,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -6086,6 +6848,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -6093,6 +6856,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -6268,7 +7032,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -6489,7 +7253,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -8228,6 +8992,9 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -8243,6 +9010,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -8254,6 +9022,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -8261,6 +9030,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -8268,6 +9038,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -8443,7 +9214,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -8664,7 +9435,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -10345,6 +11116,9 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -10356,6 +11130,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -10365,16 +11140,19 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -10479,7 +11257,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -10596,7 +11374,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -11007,6 +11785,9 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -11018,6 +11799,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -11027,16 +11809,19 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -11141,7 +11926,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -11258,7 +12043,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -11629,6 +12414,9 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -11640,6 +12428,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -11649,16 +12438,19 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -11763,7 +12555,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
             case unity = "unity"
             case kotlinMultiplatform = "kotlin-multiplatform"
             case electron = "electron"
-            case rumCpp = "rum-cpp"
+            case cpp = "cpp"
             case maui = "maui"
         }
 
@@ -11880,7 +12672,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -12223,7 +13015,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -12300,6 +13092,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
 
             /// Whether the beta encode cookie options is enabled
             public var betaEncodeCookieOptions: Bool?
+
+            /// Whether the beta track WebSockets feature is enabled
+            public var betaTrackWebSockets: Bool?
 
             /// Whether intake requests are compressed
             public let compressIntakeRequests: Bool?
@@ -12517,6 +13312,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
 
+            /// Whether tracing feature's client-side-stats generation is enabled
+            public let useClientSideStats: Bool?
+
             /// Whether a secure cross-site session cookie is used (deprecated)
             public let useCrossSiteSessionCookie: Bool?
 
@@ -12573,6 +13371,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case batchUploadFrequency = "batch_upload_frequency"
                 case betaEnableViewUpdates = "beta_enable_view_updates"
                 case betaEncodeCookieOptions = "beta_encode_cookie_options"
+                case betaTrackWebSockets = "beta_track_web_sockets"
                 case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
@@ -12645,6 +13444,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useAllowedTrackingOrigins = "use_allowed_tracking_origins"
                 case useBeforeSend = "use_before_send"
+                case useClientSideStats = "use_client_side_stats"
                 case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
                 case useFirstPartyHosts = "use_first_party_hosts"
@@ -12675,6 +13475,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - batchUploadFrequency: The upload frequency of batches (in milliseconds)
             ///   - betaEnableViewUpdates: Whether the beta partial view updates feature is enabled
             ///   - betaEncodeCookieOptions: Whether the beta encode cookie options is enabled
+            ///   - betaTrackWebSockets: Whether the beta track WebSockets feature is enabled
             ///   - compressIntakeRequests: Whether intake requests are compressed
             ///   - dartVersion: The version of Dart used in a Flutter application
             ///   - defaultPrivacyLevel: Session replay default privacy level
@@ -12747,6 +13548,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - useAllowedTracingUrls: Whether the allowed tracing urls list is used
             ///   - useAllowedTrackingOrigins: Whether a list of allowed origins is used to control SDK execution in browser extension contexts. When enabled, the SDK will check if the current origin matches the allowed origins list before running.
             ///   - useBeforeSend: Whether beforeSend callback function is used
+            ///   - useClientSideStats: Whether tracing feature's client-side-stats generation is enabled
             ///   - useCrossSiteSessionCookie: Whether a secure cross-site session cookie is used (deprecated)
             ///   - useExcludedActivityUrls: Whether the request origins list to ignore when computing the page activity is used
             ///   - useFirstPartyHosts: Whether the client has provided a list of first party hosts
@@ -12773,6 +13575,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 batchUploadFrequency: Int64? = nil,
                 betaEnableViewUpdates: Bool? = nil,
                 betaEncodeCookieOptions: Bool? = nil,
+                betaTrackWebSockets: Bool? = nil,
                 compressIntakeRequests: Bool? = nil,
                 dartVersion: String? = nil,
                 defaultPrivacyLevel: String? = nil,
@@ -12845,6 +13648,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 useAllowedTracingUrls: Bool? = nil,
                 useAllowedTrackingOrigins: Bool? = nil,
                 useBeforeSend: Bool? = nil,
+                useClientSideStats: Bool? = nil,
                 useCrossSiteSessionCookie: Bool? = nil,
                 useExcludedActivityUrls: Bool? = nil,
                 useFirstPartyHosts: Bool? = nil,
@@ -12871,6 +13675,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.batchUploadFrequency = batchUploadFrequency
                 self.betaEnableViewUpdates = betaEnableViewUpdates
                 self.betaEncodeCookieOptions = betaEncodeCookieOptions
+                self.betaTrackWebSockets = betaTrackWebSockets
                 self.compressIntakeRequests = compressIntakeRequests
                 self.dartVersion = dartVersion
                 self.defaultPrivacyLevel = defaultPrivacyLevel
@@ -12943,6 +13748,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.useAllowedTracingUrls = useAllowedTracingUrls
                 self.useAllowedTrackingOrigins = useAllowedTrackingOrigins
                 self.useBeforeSend = useBeforeSend
+                self.useClientSideStats = useClientSideStats
                 self.useCrossSiteSessionCookie = useCrossSiteSessionCookie
                 self.useExcludedActivityUrls = useExcludedActivityUrls
                 self.useFirstPartyHosts = useFirstPartyHosts
@@ -13397,7 +14203,7 @@ public struct TelemetryDebugEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -13696,7 +14502,7 @@ public struct TelemetryErrorEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -14032,7 +14838,7 @@ public struct TelemetryUsageEvent: RUMDataModel, Equatable {
         case unity = "unity"
         case kotlinMultiplatform = "kotlin-multiplatform"
         case electron = "electron"
-        case rumCpp = "rum-cpp"
+        case cpp = "cpp"
         case maui = "maui"
     }
 
@@ -14857,4 +15663,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ede4fb476a8293af22e57324ddb32644e040dff3
+// Generated from https://github.com/DataDog/rum-events-format/tree/00d5005015e04067bc591e618640de06ecbf7d23

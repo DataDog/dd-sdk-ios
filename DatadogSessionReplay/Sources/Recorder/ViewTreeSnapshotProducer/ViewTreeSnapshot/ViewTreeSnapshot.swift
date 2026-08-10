@@ -28,6 +28,8 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
     /// A set of webview slot IDs recorded for this and past snapshots.
     let webViewSlotIDs: Set<Int>
+    /// Embedded content slots recorded for this and past snapshots.
+    let embeddedContentSlots: [WireframeID: String]
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes
@@ -102,9 +104,6 @@ public struct SessionReplayViewAttributes: Equatable {
     /// Original view's `.isHidden`.
     var isHidden: Bool
 
-    /// Original view's `.intrinsicContentSize`.
-    var intrinsicContentSize: CGSize
-
     /// Values copied from privacy overrides, if the view has privacy overrides,
     /// which take precedence over global masking privacy levels.
     var textAndInputPrivacy: TextAndInputPrivacyLevel?
@@ -132,7 +131,6 @@ extension ViewAttributes {
         self.layerCornerRadius = view.layer.cornerRadius
         self.alpha = view.alpha
         self.isHidden = view.isHidden
-        self.intrinsicContentSize = view.intrinsicContentSize
         self.textAndInputPrivacy = overrides?.textAndInputPrivacy
         self.imagePrivacy = overrides?.imagePrivacy
         self.touchPrivacy = overrides?.touchPrivacy

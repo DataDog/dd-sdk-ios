@@ -36,6 +36,8 @@ Trace can also connect to automatic `URLSession` network instrumentation; for th
 
 Trace requires initialization via `Datadog.initialize()` before enabling.
 
+**Platform**: iOS, tvOS, watchOS, visionOS
+
 ## Quick Start Example
 
 ```swift
@@ -214,7 +216,9 @@ requestSpan.finish()
 - **`DatadogTrace/Sources/OpenTelemetry/OTelTracerProvider.swift`** — `OTelTracerProvider` to register with `OpenTelemetry.registerTracerProvider(...)` and use the standard OpenTelemetry `Tracer` / `SpanBuilder` API.
 
 ### Public API — Objective-C Bridge
-- **`DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift`** — Objective-C Trace entry point and configuration bridge (`DDTrace`, `DDTraceConfiguration`, `DDTraceURLSessionTracking`, `DDTracer`). Includes multi-instance variants: `+[DDTrace enableWith:instanceName:]` and `+[DDTracer sharedWithInstanceName:]`.
+- **`DatadogTrace/Sources/Objc/Tracing/Trace+objc.swift`** — Objective-C Trace entry point and configuration bridge (`DDTrace`, `DDTraceConfiguration`, `DDTraceURLSessionTracking`, `DDTracer`).
+  - `+[DDTrace enableWith:instanceName:]` — enables Trace in a named SDK instance (mirrors Swift `Trace.enable(with:in:)`).
+  - `+[DDTracer sharedWithInstanceName:]` — retrieves the tracer from a named SDK instance (mirrors Swift `Tracer.shared(in:)`).
 - **`DatadogTrace/Sources/Objc/OpenTracing/OTTracer+objc.swift`**, **`OTSpan+objc.swift`**, **`OTSpanContext+objc.swift`** — Objective-C OpenTracing protocols and constants.
 - **`DatadogTrace/Sources/Objc/Tracing/DDSpan+objc.swift`**, **`DDSpanContext+objc.swift`** — Objective-C wrappers around Datadog span and span context implementations.
 - **`DatadogTrace/Sources/Objc/Tracing/Propagation/*+objc.swift`** — Objective-C wrappers for Datadog, W3C, B3 header writers and trace context injection.

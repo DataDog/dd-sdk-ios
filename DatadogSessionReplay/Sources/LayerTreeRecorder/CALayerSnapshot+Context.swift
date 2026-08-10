@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+import UIKit
 import WebKit
 
 @preconcurrency import DatadogInternal
@@ -13,21 +14,26 @@ import WebKit
 @available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// State shared by all layers captured in one snapshot.
-    struct Context {
+    final class Context {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         let imagePrivacyLevel: ImagePrivacyLevel
 
         /// Weak references to web views found while capturing the layer tree.
         let webViewCache: NSHashTable<WKWebView>
 
+        /// Weak references to embedded content views found while capturing the layer tree.
+        let embeddedContentViewCache: NSHashTable<UIView>
+
         init(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
-            webViewCache: NSHashTable<WKWebView> = .weakObjects()
+            webViewCache: NSHashTable<WKWebView> = .weakObjects(),
+            embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
         ) {
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
             self.webViewCache = webViewCache
+            self.embeddedContentViewCache = embeddedContentViewCache
         }
     }
 }

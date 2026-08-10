@@ -7,11 +7,13 @@
 #if os(iOS)
 import CoreGraphics
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotOcclusionTests {
     @available(iOS 13.0, tvOS 13.0, *)
@@ -513,6 +515,30 @@ struct CALayerSnapshotOcclusionTests {
 
         // Then
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 0, y: 0, width: 100, height: 100)])
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Keeps visible children of a zero-sized container that does not clip")
+    func keepsVisibleChildrenOfZeroSizedNonClippingContainer() throws {
+        // Given
+        let child = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: CGRect(x: 10, y: 10, width: 20, height: 20),
+            backgroundColor: UIColor.red.cgColor
+        )
+        let container = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: .zero,
+            sublayers: [child]
+        )
+        let root = CALayerSnapshot.mockRoot(sublayers: [container])
+
+        // When
+        let result = try #require(root.removingOccluded())
+
+        // Then
+        let visibleContainer = try #require(result.sublayers.first)
+        #expect(visibleContainer.sublayers.map(\.replayID) == [child.replayID])
     }
 
     @available(iOS 13.0, tvOS 13.0, *)

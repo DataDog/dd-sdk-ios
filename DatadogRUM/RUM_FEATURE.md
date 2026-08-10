@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-29
-sdk_version: 3.13.0
-verified_against_commit: 48f0891ec
+last_updated: 2026-08-04
+sdk_version: 3.14.0
+verified_against_commit: cc8c93bb3
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -14,6 +14,11 @@ tracked_files:
 ## Overview
 
 RUM tracks user interactions, views, resources, errors, and performance metrics in iOS applications. It requires initialization via `Datadog.initialize()` before enabling.
+
+**Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
+- **iOS / visionOS**: Full feature set.
+- **tvOS**: UIKit and SwiftUI view tracking, UIKit action tracking (press-based), app hangs, long tasks, vitals, slow frames, memory warnings, watchdog terminations. No `swiftUIActionsPredicate` (tap-gesture path), no scroll/swipe tracking.
+- **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example
 
@@ -143,6 +148,8 @@ RUM.enable(
         // Also available: errorEventMapper, actionEventMapper, longTaskEventMapper
         
         // Session start callback
+        // Note: this is a `@Sendable` closure (SessionListener) — it may be
+        // invoked from a background queue, so only capture Sendable state.
         onSessionStart: { sessionId, isDiscarded in
             // `sessionId` matches the emitted RUM event `session.id`
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")

@@ -1,5 +1,17 @@
 # Unreleased
 
+- [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
+- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
+
+# 3.15.0 / 05-08-2026
+
+- [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
+- [FEATURE] Improve Session Replay capture fidelity for visual effects, embedded content, and gradients. See [#3057][] [#3061][] [#3066][] [#3089][] [#3092][] [#3098][] [#3109][]
+- [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
+- [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
+- [FIX] Merge WebView RUM `ddtags` by key to avoid duplicate keys. See [#3073][]
+- [IMPROVEMENT] Bump KSCrash to 2.5.1. See [#3102][]
+
 # 3.14.0 / 15-07-2026
 
 - [FEATURE] Add Continuous Profiling with RUM correlation for app hangs, long tasks, operations, and app start vitals (TTID/TTFD). See [#3051][]
@@ -1222,6 +1234,20 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2952]: https://github.com/DataDog/dd-sdk-ios/pull/2952
 [#2968]: https://github.com/DataDog/dd-sdk-ios/pull/2968
 [#2969]: https://github.com/DataDog/dd-sdk-ios/pull/2969
+[#3057]: https://github.com/DataDog/dd-sdk-ios/pull/3057
+[#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
+[#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
+[#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
+[#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
+[#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
+[#3098]: https://github.com/DataDog/dd-sdk-ios/pull/3098
+[#3102]: https://github.com/DataDog/dd-sdk-ios/pull/3102
+[#3104]: https://github.com/DataDog/dd-sdk-ios/pull/3104
+[#3106]: https://github.com/DataDog/dd-sdk-ios/pull/3106
+[#3109]: https://github.com/DataDog/dd-sdk-ios/pull/3109
+[#3074]: https://github.com/DataDog/dd-sdk-ios/pull/3074
+[#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

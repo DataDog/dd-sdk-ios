@@ -80,6 +80,8 @@ extension SRCompositionLayerUpdate.CompositeOperation {
             self = .sourceOver
         case .destinationIn:
             self = .destinationIn
+        case .destinationOut:
+            self = .destinationOut
         case .plusDarker:
             self = .plusDarker
         }

@@ -175,7 +175,7 @@ private extension RUMViewEvent.Container.Source {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -248,7 +248,7 @@ private extension RUMViewEvent.Source {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -284,6 +284,7 @@ private extension RUMViewEvent.DD.Configuration {
     init(_ s: RUMViewUpdateEvent.DD.Configuration) {
         self.init(
             profilingSampleRate: s.profilingSampleRate,
+            sessionReplayExperimentalFeatures: s.sessionReplayExperimentalFeatures,
             sessionReplaySampleRate: s.sessionReplaySampleRate,
             sessionSampleRate: s.sessionSampleRate,
             startSessionReplayRecordingManually: s.startSessionReplayRecordingManually,

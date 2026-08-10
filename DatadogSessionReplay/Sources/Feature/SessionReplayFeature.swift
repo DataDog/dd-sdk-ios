@@ -27,9 +27,13 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
+        let resourcesWriter = ResourcesWriter(scope: core.scope(for: ResourcesFeature.self))
+        let srContextPublisher = SRContextPublisher(core: core)
         let recordingComponents = try RecordingComponents(
             core: core,
-            configuration: configuration
+            configuration: configuration,
+            resourcesWriter: resourcesWriter,
+            srContextPublisher: srContextPublisher
         )
 
         self.requestBuilder = SegmentRequestBuilder(
@@ -39,7 +43,12 @@ internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFe
         self.messageReceiver = CombinedFeatureMessageReceiver(
             [
                 recordingComponents.messageReceiver,
-                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self))
+                WebViewRecordReceiver(scope: core.scope(for: SessionReplayFeature.self)),
+                EmbeddedContentReceiver(
+                    scope: core.scope(for: SessionReplayFeature.self),
+                    resourcesWriter: resourcesWriter,
+                    srContextPublisher: srContextPublisher
+                )
             ]
         )
         self.performanceOverride = PerformancePresetOverride(

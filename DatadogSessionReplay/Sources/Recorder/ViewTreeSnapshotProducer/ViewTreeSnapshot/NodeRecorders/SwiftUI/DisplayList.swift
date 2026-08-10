@@ -55,9 +55,6 @@ internal struct DisplayList {
 
             /// Original view's `.isHidden`.
             let isHidden: Bool
-
-            /// Original view's `.intrinsicContentSize`.
-            let intrinsicContentSize: CGSize
         }
 
         let viewCache: ViewCache

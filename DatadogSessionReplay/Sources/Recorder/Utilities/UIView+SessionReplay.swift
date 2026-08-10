@@ -8,8 +8,6 @@
 import UIKit
 import DatadogInternal
 
-extension UIView: DatadogExtended { }
-
 /// Sensitive text content types as defined in Session Replay.
 private let UITextContentSensitiveTypes: Set<UITextContentType> = [
     .password,
