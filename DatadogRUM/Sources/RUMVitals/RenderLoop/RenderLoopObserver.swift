@@ -55,12 +55,21 @@ internal class DisplayLinker {
         self.notificationCenter = notificationCenter
         self.frameInfoProviderFactory = frameInfoProviderFactory
 
+        #if os(macOS)
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(appWillResignActive),
+            name: ApplicationNotifications.didResignActive,
+            object: nil
+        )
+        #else
         notificationCenter.addObserver(
             self,
             selector: #selector(appWillResignActive),
             name: ApplicationNotifications.willResignActive,
             object: nil
         )
+        #endif
         notificationCenter.addObserver(
             self,
             selector: #selector(appDidBecomeActive),
