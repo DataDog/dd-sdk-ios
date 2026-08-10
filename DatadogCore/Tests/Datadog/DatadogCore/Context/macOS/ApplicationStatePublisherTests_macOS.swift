@@ -66,10 +66,22 @@ class ApplicationStatePublisherTests: XCTestCase {
         XCTAssertEqual(lastPublishedValue?.currentState, .active)
 
         dateProvider.now += 1
+        applicationStateProvider.frontmostApplicationIsLoginWindow = true
         wsNotificationCenter.post(name: WorkspaceNotifications.didActivateApplication, object: nil, userInfo: [NSWorkspace.applicationUserInfoKey: TestRunningApplication()])
         XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
 
         dateProvider.now += 1
+        applicationStateProvider.isActive = false
+        appNotificationCenter.post(name: ApplicationNotifications.didResignActive, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
+
+        dateProvider.now += 1
+        applicationStateProvider.isActive = true
+        appNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        XCTAssertEqual(lastPublishedValue?.currentState, .lockScreen)
+
+        dateProvider.now += 1
+        applicationStateProvider.frontmostApplicationIsLoginWindow = false
         wsNotificationCenter.post(name: WorkspaceNotifications.didDeactivateApplication, object: nil, userInfo: [NSWorkspace.applicationUserInfoKey: TestRunningApplication()])
         XCTAssertEqual(lastPublishedValue?.currentState, .active)
 
@@ -103,6 +115,8 @@ class ApplicationStatePublisherTests: XCTestCase {
             .hidden,
             .active,
             .lockScreen,
+            .lockScreen,
+            .lockScreen,
             .active,
             .sleeping,
             .active,
@@ -120,7 +134,7 @@ class ApplicationStatePublisherTests: XCTestCase {
 
             step += 1
         }
-
+        
         XCTAssertNil(history.state(at: date - 1))
         XCTAssertEqual(history.initialState, .active)
         XCTAssertEqual(history.state(at: .distantFuture), .terminating)
