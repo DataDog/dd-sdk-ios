@@ -47,7 +47,7 @@ extension RUM {
 
     /// RUM session listener.
     /// - See: `RUM.Configuration.onSessionStart`.
-    public typealias SessionListener = (String, Bool) -> Void
+    public typealias SessionListener = @Sendable (String, Bool) -> Void
 
     /// RUM resource attributes provider.
     /// - See: `RUM.Configuration.URLSessionTracking.resourceAttributesProvider`.

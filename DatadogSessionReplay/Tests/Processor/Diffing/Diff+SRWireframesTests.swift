@@ -20,7 +20,8 @@ class DiffSRWireframes: XCTestCase {
             .shapeWireframe(value: .mockWith(id: randomID)),
             .textWireframe(value: .mockWith(id: randomID)),
             .imageWireframe(value: .mockWith(id: randomID)),
-            .placeholderWireframe(value: .mockWith(id: randomID))
+            .placeholderWireframe(value: .mockWith(id: randomID)),
+            .embeddedContentWireframe(value: .mockWith(id: randomID))
         ]
 
         wireframes.forEach { XCTAssertEqual($0.id, randomID) }
@@ -86,6 +87,25 @@ class DiffSRWireframes: XCTestCase {
         DDAssertReflectionEqual(result, otherWireframe)
     }
 
+    func testsWhenMergingMutationsToTheOriginalEmbeddedContentWireframe_itShouldProduceTheOtherOne() throws {
+        // Given
+        let slotID: String = .mockRandom()
+        let permanentID: String = .mockRandom()
+        let originalWireframe: SRWireframe = .embeddedContentWireframe(
+            value: .mockWith(id: .mockRandom(), permanentId: permanentID, slotId: slotID)
+        )
+        let otherWireframe: SRWireframe = .embeddedContentWireframe(
+            value: .mockRandomWith(id: originalWireframe.id, slotId: slotID, permanentId: permanentID)
+        )
+
+        // When
+        let mutations = try XCTUnwrap(otherWireframe.mutations(from: originalWireframe), "Failed to compute mutations")
+
+        // Then
+        let result = try XCTUnwrap(originalWireframe.merge(mutation: mutations), "Failed to merge mutations")
+        DDAssertReflectionEqual(result, otherWireframe)
+    }
+
     func testWhenComputingMutationsForWireframesWithDifferentID_itThrows() throws {
         let randomID: WireframeID = .mockRandom()
         let otherID: WireframeID = .mockRandom(otherThan: [randomID])
@@ -94,6 +114,7 @@ class DiffSRWireframes: XCTestCase {
         let wireframes: [(SRWireframe, SRWireframe)] = [
             (.shapeWireframe(value: .mockRandomWith(id: randomID)), .shapeWireframe(value: .mockRandomWith(id: otherID))),
             (.textWireframe(value: .mockRandomWith(id: randomID)), .textWireframe(value: .mockRandomWith(id: otherID))),
+            (.embeddedContentWireframe(value: .mockRandomWith(id: randomID)), .embeddedContentWireframe(value: .mockRandomWith(id: otherID))),
         ]
 
         // When
@@ -112,6 +133,7 @@ class DiffSRWireframes: XCTestCase {
         let wireframes: [(SRWireframe, SRWireframe)] = [
             (.shapeWireframe(value: .mockRandomWith(id: randomID)), .textWireframe(value: .mockRandomWith(id: randomID))),
             (.textWireframe(value: .mockRandomWith(id: randomID)), .shapeWireframe(value: .mockRandomWith(id: randomID))),
+            (.embeddedContentWireframe(value: .mockRandomWith(id: randomID)), .shapeWireframe(value: .mockRandomWith(id: randomID))),
         ]
 
         // When
@@ -126,6 +148,20 @@ class DiffSRWireframes: XCTestCase {
                     )
                 )
             }
+        }
+    }
+
+    func testWhenComputingMutationsForEmbeddedContentWireframesWithDifferentSlotID_itThrows() throws {
+        let randomID: WireframeID = .mockRandom()
+
+        // Given
+        let wireframeA: SRWireframe = .embeddedContentWireframe(value: .mockWith(id: randomID, slotId: "slot-a"))
+        let wireframeB: SRWireframe = .embeddedContentWireframe(value: .mockWith(id: randomID, slotId: "slot-b"))
+
+        // When
+        XCTAssertThrowsError(try wireframeB.mutations(from: wireframeA)) { error in
+            // Then
+            XCTAssertEqual(error as? WireframeMutationError, WireframeMutationError.idMismatch)
         }
     }
 
@@ -221,6 +257,7 @@ private typealias TextWireframeUpdate = SRIncrementalSnapshotRecord.Data.Mutatio
 private typealias ShapeWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate
 private typealias ImageWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.ImageWireframeUpdate
 private typealias PlaceholderWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.PlaceholderWireframeUpdate
+private typealias EmbeddedContentWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.EmbeddedContentWireframeUpdate
 
 extension SRWireframe {
     func merge(mutation: WireframeMutation) -> SRWireframe? {
@@ -233,6 +270,8 @@ extension SRWireframe {
             return .imageWireframe(value: merge(update: update, into: wireframe))
         case let (.placeholderWireframe(wireframe), .placeholderWireframeUpdate(update)):
             return .placeholderWireframe(value: merge(update: update, into: wireframe))
+        case let (.embeddedContentWireframe(wireframe), .embeddedContentWireframeUpdate(update)):
+            return .embeddedContentWireframe(value: merge(update: update, into: wireframe))
         default:
             return nil
         }
@@ -290,6 +329,22 @@ extension SRWireframe {
             height: update.height ?? wireframe.height,
             id: update.id,
             label: update.label ?? wireframe.label,
+            width: update.width ?? wireframe.width,
+            x: update.x ?? wireframe.x,
+            y: update.y ?? wireframe.y
+        )
+    }
+
+    private func merge(update: EmbeddedContentWireframeUpdate, into wireframe: SREmbeddedContentWireframe) -> SREmbeddedContentWireframe {
+        return SREmbeddedContentWireframe(
+            border: update.border ?? wireframe.border,
+            clip: update.clip ?? wireframe.clip,
+            height: update.height ?? wireframe.height,
+            id: update.id,
+            isVisible: update.isVisible ?? wireframe.isVisible,
+            permanentId: wireframe.permanentId,
+            shapeStyle: update.shapeStyle ?? wireframe.shapeStyle,
+            slotId: update.slotId,
             width: update.width ?? wireframe.width,
             x: update.x ?? wireframe.x,
             y: update.y ?? wireframe.y

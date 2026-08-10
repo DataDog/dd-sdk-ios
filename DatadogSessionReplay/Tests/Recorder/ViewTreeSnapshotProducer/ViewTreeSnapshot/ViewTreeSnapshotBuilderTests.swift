@@ -8,10 +8,12 @@
 import XCTest
 @_spi(Internal)
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@MainActor
 class ViewTreeSnapshotBuilderTests: XCTestCase {
     func testWhenQueryingNodeRecorders_itPassesAppropriateContext() throws {
         // Given
@@ -157,6 +159,105 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
 
         // Then
         XCTAssertTrue(registry.identifiers.isEmpty)
+    }
+
+    @available(iOS 13.0, *)
+    func testSnapshotIncludesEveryEmbeddedContentSlot() {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let firstEmbeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        firstEmbeddedContentView.dd.setSessionReplaySlotID("first-slot")
+        let secondEmbeddedContentView = UIView(frame: CGRect(x: 100, y: 0, width: 100, height: 100))
+        secondEmbeddedContentView.dd.setSessionReplaySlotID("second-slot")
+        rootView.addSubview(firstEmbeddedContentView)
+        rootView.addSubview(secondEmbeddedContentView)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
+
+        // When
+        let snapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+
+        // Then
+        XCTAssertEqual(Set(snapshot.embeddedContentSlots.values), ["first-slot", "second-slot"])
+        XCTAssertEqual(snapshot.embeddedContentSlots.count, 2)
+    }
+
+    @available(iOS 13.0, *)
+    func testWhenUIKitViewHasSessionReplaySlotID_itIsRecordedAsEmbeddedContent() {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let embeddedContentLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        embeddedContentLabel.text = "Native label"
+        embeddedContentLabel.dd.setSessionReplaySlotID("embedded-slot")
+        rootView.addSubview(embeddedContentLabel)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
+
+        // When
+        let snapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+
+        // Then
+        XCTAssertEqual(Set(snapshot.embeddedContentSlots.values), ["embedded-slot"])
+        XCTAssertTrue(snapshot.nodes.contains { $0.wireframesBuilder is EmbeddedContentWireframesBuilder })
+        XCTAssertFalse(snapshot.nodes.contains { $0.wireframesBuilder is UILabelWireframesBuilder })
+    }
+
+    @available(iOS 13.0, *)
+    func testDetachedEmbeddedContentViewRemainsCachedWhileAlive() {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        embeddedContentView.dd.setSessionReplaySlotID("retained-slot")
+        rootView.addSubview(embeddedContentView)
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
+        let initialSnapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+        embeddedContentView.removeFromSuperview()
+
+        // When
+        let nextSnapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+
+        // Then
+        XCTAssertEqual(nextSnapshot.embeddedContentSlots, initialSnapshot.embeddedContentSlots)
+        withExtendedLifetime(embeddedContentView) {}
+    }
+
+    @available(iOS 13.0, *)
+    func testSnapshotExcludesDeallocatedEmbeddedContentViews() {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        let builder = ViewTreeSnapshotBuilder(
+            additionalNodeRecorders: [],
+            core: PassthroughCoreMock(),
+            featureFlags: .allEnabled
+        )
+        weak var weakEmbeddedContentView: UIView?
+        var initialSlots: [WireframeID: String] = [:]
+        autoreleasepool {
+            let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+            embeddedContentView.dd.setSessionReplaySlotID("released-slot")
+            weakEmbeddedContentView = embeddedContentView
+            rootView.addSubview(embeddedContentView)
+            initialSlots = builder.createSnapshot(of: rootView, with: .mockAny()).embeddedContentSlots
+            embeddedContentView.removeFromSuperview()
+        }
+
+        // When
+        let nextSnapshot = builder.createSnapshot(of: rootView, with: .mockAny())
+
+        // Then
+        XCTAssertEqual(initialSlots.count, 1)
+        XCTAssertNil(weakEmbeddedContentView)
+        XCTAssertTrue(nextSnapshot.embeddedContentSlots.isEmpty)
     }
 }
 #endif

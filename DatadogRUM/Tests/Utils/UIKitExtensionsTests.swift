@@ -27,6 +27,7 @@ import SwiftUI
 ///
 /// We also want to test the different button styles and alert styles (alert VS action sheet/confirmation dialog) to cover
 /// as many UI variations as possible.
+@Suite(.datadogTesting)
 @MainActor
 struct UIKitExtensionsTests {
     private var mockAppWindow: UIWindow! // swiftlint:disable:this implicitly_unwrapped_optional

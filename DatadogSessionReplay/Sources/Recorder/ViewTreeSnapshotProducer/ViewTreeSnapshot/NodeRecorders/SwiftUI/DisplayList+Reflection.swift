@@ -111,7 +111,6 @@ extension DisplayList.ViewUpdater.ViewInfo: Reflection {
             // This is useful for applying the offset in a scroll-view.
             frame = container.convert(container.bounds, to: view)
             alpha = view.alpha
-            intrinsicContentSize = container.intrinsicContentSize
         } else {
             // In this case 'view' and 'layer' are the same
 
@@ -120,7 +119,6 @@ extension DisplayList.ViewUpdater.ViewInfo: Reflection {
 
             frame = container.convert(container.bounds, to: layer)
             alpha = .init(layer.opacity)
-            intrinsicContentSize = container.preferredFrameSize()
         }
 
         backgroundColor = layer.backgroundColor?.safeCast

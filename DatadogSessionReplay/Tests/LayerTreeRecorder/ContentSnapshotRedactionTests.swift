@@ -13,6 +13,7 @@ import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct ContentSnapshotRedactionTests {
     @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns the original image when no redaction is needed")
@@ -472,4 +473,5 @@ private func textFieldCanvasClass() throws -> AnyClass {
 private func imageLayerClass() throws -> AnyClass {
     try #require(NSClassFromString("SwiftUI.ImageLayer"))
 }
+
 #endif

@@ -760,6 +760,13 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.errors") as Int)
         XCTAssertNotNil(try matcher.value("rse.no_view_events_count.long_tasks") as Int)
         XCTAssertNotNil(try matcher.value("rse.upload_quality.feature.cycle_count") as Int)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.launch_reason") as String)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.task_role") as String)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.prewarmed") as Bool)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.tt_sdk_init") as Int)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.tt_become_active") as Int)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.has_scenes_lifecycle") as Bool)
+        XCTAssertNotNil(try matcher.value("rse.launch_info.app_state_at_sdk_init") as String)
     }
 }
 

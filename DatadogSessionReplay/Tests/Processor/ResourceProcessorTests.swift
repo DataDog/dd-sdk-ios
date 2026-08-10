@@ -12,14 +12,6 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-private class ResourceWriterMock: ResourcesWriting {
-    var resources: [[EnrichedResource]] = []
-
-    func write(resources: [EnrichedResource]) {
-        self.resources.append(resources)
-    }
-}
-
 class ResourceProcessorTests: XCTestCase {
     func testItWritesResources() {
         let writer = ResourceWriterMock()

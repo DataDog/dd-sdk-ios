@@ -27,9 +27,29 @@ class SRContextPublisherTests: XCTestCase {
         let srContextPublisher = SRContextPublisher(core: core)
 
         let recordsCountByViewID: [String: Int64] = ["view-id": 2]
-        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
+        srContextPublisher.incrementRecordCount(by: 2, forViewID: "view-id")
 
         XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
+    }
+
+    func testRecordCountsAccumulateForSameAndDifferentViews() {
+        // Given
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+
+        // When
+        srContextPublisher.incrementRecordCount(by: 3, forViewID: "shared-view-id")
+        srContextPublisher.incrementRecordCount(by: 2, forViewID: "shared-view-id")
+        srContextPublisher.incrementRecordCount(by: 4, forViewID: "embedded-view-id")
+
+        // Then
+        XCTAssertEqual(
+            core.recordsCountByViewID,
+            [
+                "shared-view-id": 5,
+                "embedded-view-id": 4
+            ]
+        )
     }
 
     func testItDoesNotOverridePreviouslySetValue() throws {
@@ -38,7 +58,7 @@ class SRContextPublisherTests: XCTestCase {
         let recordsCountByViewID: [String: Int64] = ["view-id": 2]
 
         srContextPublisher.setHasReplay(true)
-        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
+        srContextPublisher.incrementRecordCount(by: 2, forViewID: "view-id")
 
         XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
         let hasReplay = try XCTUnwrap(core.hasReplay)

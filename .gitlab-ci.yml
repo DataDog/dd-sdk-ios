@@ -33,6 +33,18 @@ default:
   tags:
     - macos:sequoia-arm64
     - specific:true
+  interruptible: true # a pending/running job may be canceled by a newer push to the same branch
+
+# On any branch other than a known stable branch, cancel interruptible jobs from
+# the previous pipeline when a new commit is pushed to that branch.
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH !~ /^(develop|master|dogfooding|release\/.*|hotfix\/.*)$/'
+      auto_cancel:
+        on_new_commit: interruptible
+    - when: always # develop, master, dogfooding, release/*, hotfix/*: never auto-canceled
+      auto_cancel:
+        on_new_commit: none
 
 # ┌───────────────┐
 # │ Utility jobs: │
@@ -161,16 +173,23 @@ Unit Tests (iOS):
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # Job-level timeout below the project's global 1h CI/CD timeout, paired with a shorter
+  # RUNNER_SCRIPT_TIMEOUT, so the runner kills a hung `script:` step early and still has
+  # time to run `after_script` and upload the xcresult artifacts. Hitting the project's
+  # hard timeout instead aborts artifact upload too (gitlab-org/gitlab#284186).
+  timeout: 55m
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (tvOS):
@@ -180,16 +199,21 @@ Unit Tests (tvOS):
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
   variables:
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (watchOS):
@@ -199,16 +223,21 @@ Unit Tests (watchOS):
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
   variables:
     PLATFORM: "watchOS Simulator"
     DEVICE: "Apple Watch Series 11 (46mm)"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 Unit Tests (visionOS):
@@ -218,16 +247,21 @@ Unit Tests (visionOS):
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
   variables:
     PLATFORM: "visionOS Simulator"
     DEVICE: "Apple Vision Pro"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 UI Tests:
@@ -237,9 +271,13 @@ UI Tests:
     - !reference [.release-pipeline-job, rules]
   dependencies:
     - "Build Dependencies"
+  # See "Unit Tests (iOS)" above for why timeout + RUNNER_SCRIPT_TIMEOUT are needed to
+  # capture xcresult artifacts on a hang instead of losing them to the hard job timeout.
+  timeout: 55m
   variables:
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   parallel:
     matrix:
       - TEST_PLAN:
@@ -253,7 +291,8 @@ UI Tests:
     - make ui-test TEST_PLAN="$TEST_PLAN" OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 SR Snapshot Tests:
@@ -263,16 +302,23 @@ SR Snapshot Tests:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
+  # Job-level timeout below the project's global CI/CD timeout, paired with a shorter
+  # RUNNER_SCRIPT_TIMEOUT, so the runner kills the (possibly hung) `script:` step early
+  # and still has time left to run `after_script` and upload the xcresult artifacts.
+  # A plain `artifacts: when: always` is not enough: if the job hits the project's hard
+  # timeout instead, GitLab Runner aborts artifact upload too (gitlab-org/gitlab#284186).
+  timeout: 55m
   variables:
     PLATFORM: "iOS Simulator"
     IOS_OS: "17.5"
     DEVICE: "iPhone 15"
     ARTIFACTS_PATH: "artifacts"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   artifacts:
     paths:
       - artifacts
     expire_in: 1 week
-    when: on_failure
+    when: always
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
@@ -285,16 +331,20 @@ SR Layer Snapshot Tests:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
+  # See the "SR Snapshot Tests" job above for why timeout + RUNNER_SCRIPT_TIMEOUT +
+  # artifacts: when: always are needed together to capture logs on a hang.
+  timeout: 55m
   variables:
     PLATFORM: "iOS Simulator"
     IOS_OS: "26.0.1"
     DEVICE: "iPhone 17"
     ARTIFACTS_PATH: "artifacts"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
   artifacts:
     paths:
       - artifacts
     expire_in: 1 week
-    when: on_failure
+    when: always
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
@@ -419,6 +469,7 @@ Benchmark Test (upload to s8s):
 
 Dogfood (Shopist):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -431,6 +482,7 @@ Dogfood (Shopist):
 
 Dogfood (Datadog app):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -454,6 +506,7 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
+  interruptible: false
   rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
@@ -472,33 +525,36 @@ Build Artifacts:
 
 Publish GH Asset:
   stage: release-publish
-  rules: 
+  interruptible: false
+  rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-github
 
 Publish CP podspecs (internal):
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-job, rules]
   before_script:
     - *export_MAKE_release_params
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-internal-podspecs
 
 .publish-dependent-podspec:
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]
@@ -506,7 +562,7 @@ Publish CP podspecs (internal):
     - *export_MAKE_release_params
   needs: ["Build Artifacts", "Publish CP podspecs (internal)"]
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --datadog-ci --xcode "$DEFAULT_XCODE"
     - make env-check
     - make clean
     - make release-publish-podspec PODSPEC_NAME="$PODSPEC_NAME"

@@ -211,6 +211,7 @@ extension OperatingSystem: AnyMockable, RandomMockable {
 extension RUMViewEvent.DD.Configuration: RandomMockable {
     public static func mockRandom() -> RUMViewEvent.DD.Configuration {
         return .init(
+            sessionReplayExperimentalFeatures: ["composition_tree_recording"],
             sessionReplaySampleRate: .mockRandom(min: 0, max: 100),
             sessionSampleRate: .mockRandom(min: 0, max: 100),
             startSessionReplayRecordingManually: nil
