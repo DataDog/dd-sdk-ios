@@ -15,6 +15,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
+    /// Whether a session is timed out due to inactivity, given the time of its last interaction.
+    /// Shared with `TimeseriesSessionCollector`, which self-enforces this same rule from a live
+    /// `RUMSessionActivityReader` snapshot instead of reacting to `RUMCommand`s.
+    static func hasTimedOut(lastInteractionTime: Date, currentTime: Date) -> Bool {
+        currentTime.timeIntervalSince(lastInteractionTime) >= Constants.sessionTimeoutDuration
+    }
+
+    /// Whether a session has exceeded its maximum duration, given its start time.
+    /// Shared with `TimeseriesSessionCollector`, which self-enforces this same rule from a live
+    /// `RUMSessionActivityReader` snapshot instead of reacting to `RUMCommand`s.
+    static func hasExpired(sessionStartTime: Date, currentTime: Date) -> Bool {
+        currentTime.timeIntervalSince(sessionStartTime) >= Constants.sessionMaxDuration
+    }
+
     /// The reason of ending a session.
     enum EndReason: String {
         /// The session timed out because it received no interaction for x minutes.
@@ -95,9 +109,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
-    private let sessionStartTime: Date
+    /// Exposed internally (not `private`) so `Monitor` can snapshot it for `RUMSessionActivityReader`.
+    let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
-    private var lastInteractionTime: Date
+    /// Exposed internally (not `private`) so `Monitor` can snapshot it for `RUMSessionActivityReader`.
+    private(set) var lastInteractionTime: Date
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
@@ -175,8 +191,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             dependencies.timeseriesCollector?.start(
                 sessionID: sessionUUID.toRUMDataFormat,
                 applicationID: dependencies.rumApplicationID,
-                sessionType: dependencies.sessionType,
-                startTime: startTime
+                sessionType: dependencies.sessionType
             )
             if !context.applicationStateHistory.currentState.isRunningInForeground {
                 dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
@@ -257,7 +272,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if command.isUserInteraction {
             lastInteractionTime = command.time
-            dependencies.timeseriesCollector?.noteActivity(sessionID: sessionUUID.toRUMDataFormat, at: command.time)
         }
 
         if !sampler.isSampled {
@@ -498,12 +512,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func hasTimedOut(currentTime: Date) -> Bool {
-        let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)
-        return timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
+        Self.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: currentTime)
     }
 
     private func hasExpired(currentTime: Date) -> Bool {
-        let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
-        return sessionDuration >= Constants.sessionMaxDuration
+        Self.hasExpired(sessionStartTime: sessionStartTime, currentTime: currentTime)
     }
 }
