@@ -49,9 +49,10 @@ public extension KeyedEncodingContainer {
     ) {
         do {
             // Values that throw mid-encode corrupt the encoder;
-            // Probe on a throwaway encoder before the real one.
-            _ = try JSONEncoder.dd.default().encode([value])
-            try encode(value, forKey: key)
+            // Encode on an isolated encoder, decode the safe result, re-encode
+            let data = try JSONEncoder.dd.default().encode([value])
+            let safe = try JSONDecoder().decode([AnyCodable].self, from: data)
+            try encode(safe[0], forKey: key)
         } catch {
             let contextPrefix = context.errorMessagePrefix
             DD.logger.error(
