@@ -48,6 +48,9 @@ public extension KeyedEncodingContainer {
         context: AttributeEncodingContext = .custom
     ) {
         do {
+            // Values that throw mid-encode corrupt the encoder;
+            // Probe on a throwaway encoder before the real one.
+            _ = try JSONEncoder.dd.default().encode([value])
             try encode(value, forKey: key)
         } catch {
             let contextPrefix = context.errorMessagePrefix

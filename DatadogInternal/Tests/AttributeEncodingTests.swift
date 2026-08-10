@@ -222,6 +222,52 @@ class AttributeEncodingTests: XCTestCase {
         )
     }
 
+    func testEncodeAttributeThrowingAfterPartialEncodeDoesNotAffectSubsequentAttributes() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        struct ThrowingAfterPartialEncode: Encodable {
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(["partial value"])
+                throw EncodingError.invalidValue(
+                    0,
+                    .init(codingPath: encoder.codingPath, debugDescription: "thrown after encoding a value")
+                )
+            }
+        }
+
+        struct TestEvent: Encodable {
+            enum CodingKeys: String, CodingKey {
+                case before
+                case poison
+                case after
+            }
+
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                container.encodeAttribute(AnyEncodable("before"), forKey: .before, attributeName: CodingKeys.before.rawValue)
+                container.encodeAttribute(ThrowingAfterPartialEncode(), forKey: .poison, attributeName: CodingKeys.poison.rawValue)
+                container.encodeAttribute(AnyEncodable("after"), forKey: .after, attributeName: CodingKeys.after.rawValue)
+            }
+        }
+
+        // When
+        let encodedData = try encoder.encode(TestEvent())
+        let jsonObject = try JSONSerialization.jsonObject(with: encodedData) as! [String: Any]
+
+        // Then
+        XCTAssertEqual(jsonObject["before"] as? String, "before")
+        XCTAssertNil(jsonObject["poison"])
+        XCTAssertEqual(jsonObject["after"] as? String, "after")
+
+        let errorLog = try XCTUnwrap(dd.logger.errorLog)
+        XCTAssertTrue(
+            errorLog.message.contains("Failed to encode attribute 'poison'")
+        )
+    }
+
     func testEncodeAttributeErrorMessageIncludesDroppedNotice() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
