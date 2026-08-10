@@ -53,6 +53,7 @@ class LaunchInfoPublisherTests: XCTestCase {
 }
 
 class AppLaunchHandlerLaunchInfoTests: XCTestCase {
+    #if !os(macOS)
     /// The heuristic tested here is explained in https://datadoghq.atlassian.net/wiki/x/eQHZMAE
     func testResolvingLaunchReason() {
         // ProcessInfo env specific to "prewarmed" launch reason:
@@ -97,6 +98,7 @@ class AppLaunchHandlerLaunchInfoTests: XCTestCase {
             XCTAssertEqual(launchReason(for: otherRole, processInfo: prewarmedProcessInfo), .prewarming)
         }
     }
+    #endif
 
     func testAppLaunchDatesForwarding() {
         let processLaunchDate = Date()
