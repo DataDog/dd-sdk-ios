@@ -12,13 +12,14 @@ internal protocol TimeseriesCollecting: AnyObject {
     /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
     /// is constructed, since the collector is created before it.
     var activeContextReader: RUMActiveContextReader? { get set }
-    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date)
+    /// Provides the active session's start time and last-interaction time at sample time, so the collector can
+    /// self-enforce `RUMSessionScope`'s own expiry rules without maintaining a shadow copy of that state.
+    /// Set by `RUMFeature` once `Monitor` is constructed, since the collector is created before it.
+    var sessionActivityReader: RUMSessionActivityReader? { get set }
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)
     func pause(sessionID: String)
     func resume(sessionID: String)
     func stop(sessionID: String)
-    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
-    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
-    func noteActivity(sessionID: String, at time: Date)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
 }
@@ -60,6 +61,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     /// `Monitor`'s conformance is safe to read from any thread.
     weak var activeContextReader: RUMActiveContextReader?
+    /// `Monitor`'s conformance is safe to read from any thread.
+    weak var sessionActivityReader: RUMSessionActivityReader?
 
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
@@ -68,21 +71,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-    /// Set when `sample()` self-stops the timer because it locally observed the session as expired.
-    /// `noteActivity(sessionID:at:)` uses this to distinguish "self-stopped, may need to resume if that
-    /// expiry check raced with a genuine activity update" from an explicit `stop(sessionID:)` call, which
-    /// must never be resumed by a later (possibly stale) `noteActivity` call for the same session.
-    private var selfStoppedDueToExpiry = false
     /// The view ID of the samples currently buffered, so a view change can trigger a flush before
     /// mixing samples from two different views into the same batch. `nil` means either no view was
     /// active yet, or no sample has been buffered since the last flush.
     private var currentBatchViewID: String?
-    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
-    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
-    private var sessionStartTime: Date = .distantPast
-    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
-    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
-    private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
 
     /// All buffer mutations and timer events run on this queue.
@@ -161,7 +153,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Resets state, flips the compression coin, and starts the sampling timer for the new session.
-    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date = Date()) {
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         queue.async { [weak self] in
             guard let self = self else {
                 return
@@ -171,13 +163,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.sessionID = sessionID
             self.applicationID = applicationID
             self.sessionType = sessionType
-            self.sessionStartTime = startTime
-            self.lastActivityTime = startTime
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
             self.currentBatchViewID = nil
-            self.selfStoppedDueToExpiry = false
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -197,12 +186,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             self.timer?.cancel()
             self.timer = nil
-            // Record the paused state even if the timer had already self-stopped (e.g. an inactivity
-            // self-stop racing with this call): `noteActivity` must not treat that self-stop as
-            // recoverable while backgrounded, and `resume(sessionID:)` on foregrounding must still be
-            // able to restart sampling for this still-active session.
             self.isPaused = true
-            self.selfStoppedDueToExpiry = false
             self.flushMemory()
             self.flushCPU()
         }
@@ -230,7 +214,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.timer?.cancel()
             self.timer = nil
             self.isPaused = false
-            self.selfStoppedDueToExpiry = false
             self.flushMemory()
             self.flushCPU()
         }
@@ -241,27 +224,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         queue.sync {
             flushMemory()
             flushCPU()
-        }
-    }
-
-    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
-    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
-    /// No-ops if `sessionID` no longer matches the currently active session.
-    func noteActivity(sessionID: String, at time: Date) {
-        queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID else {
-                return
-            }
-            self.lastActivityTime = time
-
-            // This activity update can race with `sample()`'s self-stop check: both run on `queue`, so if a
-            // timer tick was already enqueued when this activity happened, it can self-stop on stale
-            // `lastActivityTime` just before this block runs. Since the session is still genuinely active,
-            // resume sampling now rather than leaving this collector silently stopped until the next session.
-            if self.selfStoppedDueToExpiry && !self.isPaused {
-                self.selfStoppedDueToExpiry = false
-                self.timer = self.makeTimer()
-            }
         }
     }
 
@@ -295,12 +257,16 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
         // idle with no user interaction). This is a safety net only — it does not affect RUM's own
         // session state, it just stops this collector from uploading data past session expiry.
-        let sessionExceededMaxDuration = currentDate.timeIntervalSince(sessionStartTime) >= RUMSessionScope.Constants.sessionMaxDuration
-        let sessionExceededInactivityTimeout = currentDate.timeIntervalSince(lastActivityTime) >= RUMSessionScope.Constants.sessionTimeoutDuration
-        if sessionExceededMaxDuration || sessionExceededInactivityTimeout {
-            // Only the inactivity check can race with `noteActivity(sessionID:at:)` (see its comment) — max
-            // duration is a hard cap unrelated to activity timing, so it should never be resumed.
-            selfStoppedDueToExpiry = sessionExceededInactivityTimeout && !sessionExceededMaxDuration
+        //
+        // Pulled fresh from `sessionActivityReader` on every tick, rather than from a locally pushed
+        // copy, so there's a single live source of truth and no race with how/when that state is updated.
+        // If the reader's session doesn't match (e.g. a session transition is still propagating), skip
+        // the check for this tick rather than guessing.
+        let activity = sessionActivityReader?.sessionActivity
+        if let activity = activity, activity.sessionID == sessionID,
+           let sessionStartTime = activity.sessionStartTime, let lastInteractionTime = activity.lastInteractionTime,
+           RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: currentDate)
+            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: currentDate) {
             timer?.cancel()
             timer = nil
             flushMemory()
