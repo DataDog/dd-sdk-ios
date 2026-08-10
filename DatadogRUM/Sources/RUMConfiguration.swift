@@ -382,13 +382,11 @@ extension RUM {
 
             /// URL patterns disallowed from automatic RUM resource tracking.
             ///
-            /// Requests whose URL matches any of the given patterns will not produce a RUM Resource event.
-            /// This only affects RUM Resource tracking - any associated distributed trace (APM span) for the
-            /// same request is unaffected.
+            /// Matching requests produce no RUM Resource. For a first-party host, this also drops its APM span,
+            /// which is reconstructed on the backend from the Resource.
             ///
-            /// Patterns are plain strings matched against the full resource URL. A pattern containing a single
-            /// `*` wildcard matches any characters in its place (e.g. `"https://example.com/*/private"`);
-            /// a pattern without `*` must match the URL exactly.
+            /// A pattern matches the full URL: plain strings match exactly, `*` matches any characters (multiple
+            /// allowed). Patterns with no literal (e.g. `"*"`) are ignored.
             ///
             /// Default: `[]`.
             public var disallowList: [String] = []
