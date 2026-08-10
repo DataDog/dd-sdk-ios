@@ -63,6 +63,11 @@ extension AppLaunchHandling {
     }
 
     private func resolveLaunchReason(using processInfo: ProcessInfo) -> LaunchReason {
+        #if os(macOS)
+        // macOS does not have the concepts of prewarming nor background launch in
+        // the same sense as iOS has, so all launches are considered user launches.
+        .userLaunch
+        #else
         let isUserLaunch = taskPolicyRole == TASK_FOREGROUND_APPLICATION.rawValue
         let isUnavailable = taskPolicyRole == __dd_private_TASK_POLICY_UNAVAILABLE
 
@@ -77,6 +82,7 @@ extension AppLaunchHandling {
         } else {
             return .backgroundLaunch
         }
+        #endif
     }
 
     private func isPrewarmed(processInfo: ProcessInfo) -> Bool {
