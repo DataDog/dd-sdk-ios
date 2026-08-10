@@ -174,7 +174,7 @@ internal class AppRunner {
                     return
                 }
 
-                MainActor.assumeIsolated {
+                runOnMainThreadSync {
                     self.appStateProvider.current = .active
 
                     // Simulate the application becoming active in `appLaunchHandler`:
@@ -182,17 +182,17 @@ internal class AppRunner {
                 }
             },
             notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated {
+                runOnMainThreadSync {
                     self?.appStateProvider.current = .inactive
                 }
             },
             notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.didEnterBackground, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated {
+                runOnMainThreadSync {
                     self?.appStateProvider.current = .background
                 }
             },
             notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.willEnterForeground, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated {
+                runOnMainThreadSync {
                     self?.appStateProvider.current = .inactive
                 }
             }
