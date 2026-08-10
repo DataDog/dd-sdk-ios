@@ -15,6 +15,7 @@ class ApplicationStatePublisherTests: XCTestCase {
     private class TestApplicationStateProvider: MacOSApplicationStateProvider {
         var isActive: Bool = true
         var isHidden: Bool = false
+        var frontmostApplicationIsLoginWindow: Bool = false
     }
 
     private class TestRunningApplication: NSRunningApplication, @unchecked Sendable {

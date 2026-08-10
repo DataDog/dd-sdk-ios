@@ -55,7 +55,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// The login window is displayed in many situations. The obvious ones are the lock screen, but it's also displayed (even
     /// if the login prompt is not visible) when the screen saver is active, during display or system sleep. This happens even
     /// if the system is configured to never ask for authentication after waking up.
-    @MainActor private var isLoginWindowProcessActive: Bool = false
+    @MainActor private var isLoginWindowProcessActive: Bool
 
     /// Creates a Application state publisher for publishing application state
     /// history.
@@ -82,6 +82,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         self.applicationNotificationCenter = applicationNotificationCenter
         self.workspaceNotificationCenter = workspaceNotificationCenter
         self.applicationStateProvider = applicationStateProvider
+        self.isLoginWindowProcessActive = applicationStateProvider.frontmostApplicationIsLoginWindow
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
@@ -222,8 +223,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     private func handleWorkspaceActive(_ note: Notification, didBecomeActive: Bool) -> Bool {
         guard let userInfo = note.userInfo,
               let app = userInfo[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-              let bundleIdentifier = app.bundleIdentifier,
-              bundleIdentifier == "com.apple.loginwindow"
+              app.isLoginWindowProcess
         else {
             return false
         }
