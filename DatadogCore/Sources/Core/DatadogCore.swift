@@ -549,10 +549,8 @@ extension DatadogContextProvider {
 
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
 
-        #if !os(macOS)
         subscribe(\.launchInfo, to: LaunchInfoPublisher(handler: appLaunchHandler, initialValue: launchInfo))
-        #endif
-
+        
         subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
 
         #if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
