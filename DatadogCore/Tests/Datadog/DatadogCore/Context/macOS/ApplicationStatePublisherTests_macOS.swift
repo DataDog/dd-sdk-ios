@@ -47,7 +47,7 @@ class ApplicationStatePublisherTests: XCTestCase {
         // When / Then
         dateProvider.now += 1
         applicationStateProvider.isActive = false
-        appNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        appNotificationCenter.post(name: ApplicationNotifications.didResignActive, object: nil)
         XCTAssertEqual(lastPublishedValue?.currentState, .inactive)
 
         dateProvider.now += 1
@@ -87,7 +87,7 @@ class ApplicationStatePublisherTests: XCTestCase {
 
         dateProvider.now += 1
         applicationStateProvider.isActive = false
-        appNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        appNotificationCenter.post(name: ApplicationNotifications.didResignActive, object: nil)
         XCTAssertEqual(lastPublishedValue?.currentState, .terminating)
 
         dateProvider.now += 1
