@@ -160,7 +160,7 @@ struct LayerTreeSnapshotBuilderTests {
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 640))
         let embeddedContentView = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 80))
         embeddedContentView.text = "Native label"
-        embeddedContentView.dd.sessionReplaySlotID = "embedded-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("embedded-slot")
         embeddedContentView.addSubview(UIView(frame: embeddedContentView.bounds))
         rootView.addSubview(embeddedContentView)
 
