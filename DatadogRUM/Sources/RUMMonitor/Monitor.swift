@@ -107,6 +107,15 @@ internal protocol RUMActiveContextReader: AnyObject {
     var activeView: (id: String?, path: String?, name: String?) { get }
 }
 
+/// Exposes the active session's lifetime state for readers that operate outside the `RUMCommand` pipeline
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), so they can evaluate `RUMSessionScope`'s own
+/// expiry rules against a live, single source of truth instead of maintaining a shadow copy of that state.
+internal protocol RUMSessionActivityReader: AnyObject {
+    /// The active session's ID, start time, and time of last RUM interaction, or `nil` values if there is
+    /// no active session. Safe to read from any thread.
+    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) { get }
+}
+
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
     let featureScope: FeatureScope
@@ -121,6 +130,9 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
+
+    @ReadWriteLock
+    private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
 
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
@@ -162,8 +174,14 @@ internal class Monitor: RUMCommandSubscriber {
                     path: viewContext.activeViewPath,
                     name: viewContext.activeViewName
                 )
+                self.sessionActivitySnapshot = (
+                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                    sessionStartTime: activeSession.sessionStartTime,
+                    lastInteractionTime: activeSession.lastInteractionTime
+                )
             } else {
                 self.activeViewSnapshot = (nil, nil, nil)
+                self.sessionActivitySnapshot = (nil, nil, nil)
             }
         }
 
@@ -221,6 +239,10 @@ internal class Monitor: RUMCommandSubscriber {
 extension Monitor: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue] { attributes }
     var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
+}
+
+extension Monitor: RUMSessionActivityReader {
+    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) { sessionActivitySnapshot }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
