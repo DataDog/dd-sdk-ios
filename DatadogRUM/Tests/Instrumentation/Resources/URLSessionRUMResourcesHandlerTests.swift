@@ -1344,7 +1344,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When
         handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
-        // Then - `origin` must still be set to "rum" so Trace's automatic instrumentation is unaffected
+        // Then - `origin` stays "rum" so Trace skips its own span (the backend reconstructs it from the
+        // RUM Resource); since the disallowed Resource is never sent, no span is created for this request.
         XCTAssertEqual(taskInterception.origin, "rum")
     }
 
