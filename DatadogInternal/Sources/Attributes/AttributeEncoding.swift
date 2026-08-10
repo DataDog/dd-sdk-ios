@@ -48,16 +48,34 @@ public extension KeyedEncodingContainer {
         context: AttributeEncodingContext = .custom
     ) {
         do {
-            // Values that throw mid-encode corrupt the encoder;
-            // Encode on an isolated encoder, decode the safe result, re-encode
-            let data = try JSONEncoder.dd.default().encode([value])
-            let safe = try JSONDecoder().decode([AnyCodable].self, from: data)
-            try encode(safe[0], forKey: key)
+            if isPartialEncodeSafe(value) {
+                try encode(value, forKey: key)
+            } else {
+                // Values that throw mid-encode corrupt the encoder;
+                // Encode on an isolated encoder, decode the safe result, re-encode
+                let data = try JSONEncoder.dd.default().encode([value])
+                let safe = try JSONDecoder().decode([AnyCodable].self, from: data)
+                try encode(safe[0], forKey: key)
+            }
         } catch {
             let contextPrefix = context.errorMessagePrefix
             DD.logger.error(
                 "Failed to encode \(contextPrefix)attribute '\(attributeName)': \(error). This attribute will be dropped from the event."
             )
         }
+    }
+}
+
+private func isPartialEncodeSafe(_ value: Any) -> Bool {
+    let value = (value as? _AnyEncodable)?.value ?? value
+    switch value {
+    case is String, is Bool,
+         is Int, is Int8, is Int16, is Int32, is Int64,
+         is UInt, is UInt8, is UInt16, is UInt32, is UInt64,
+         is Float, is Double,
+         is NSNumber, is NSNull, is Date, is URL, is Void:
+        return true
+    default:
+        return false
     }
 }
