@@ -9,6 +9,9 @@ import DatadogInternal
 
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
+    /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
+    /// is constructed, since the collector is created before it.
+    var activeContextReader: RUMActiveContextReader? { get set }
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType, startTime: Date)
     func pause(sessionID: String)
     func resume(sessionID: String)
@@ -55,9 +58,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let sessionSampleRate: Double
     private let sanitizer = RUMEventSanitizer()
 
-    /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
-    /// is constructed, since the collector is created before it. `Monitor`'s conformance is safe to read from
-    /// any thread.
+    /// `Monitor`'s conformance is safe to read from any thread.
     weak var activeContextReader: RUMActiveContextReader?
 
     private var memoryBuffer: [MemorySample] = []
