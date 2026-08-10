@@ -50,17 +50,8 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// However, there is no way to run code while the system is sleeping (as the CPU is off) so this will always be an approximation.
     @MainActor private var isSleeping: Bool = false
 
-    /// `true` if the system is displaying the login window, `false` otherwise.
-    ///
-    /// The login window is displayed in many situations. The obvious ones are the lock screen, but it's also displayed (even
-    /// if the login prompt is not visible) when the screen saver is active, during display or system sleep. This happens even
-    /// if the system is configured to never ask for authentication after waking up.
-    @MainActor private var isLoginWindowProcessActive: Bool
-
     /// Creates a Application state publisher for publishing application state
     /// history.
-    ///
-    /// **Note**: It must be called on the main thread.
     ///
     /// - Parameters:
     ///   - appStateHistory: The history of app state and their transitions over time.
@@ -82,7 +73,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         self.applicationNotificationCenter = applicationNotificationCenter
         self.workspaceNotificationCenter = workspaceNotificationCenter
         self.applicationStateProvider = applicationStateProvider
-        self.isLoginWindowProcessActive = applicationStateProvider.frontmostApplicationIsLoginWindow
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<AppStateHistory>) {
@@ -181,7 +171,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// - Parameters:
     ///   -  note: The notification to handle.
     ///
-    /// - Returns: `true` if the value of `isLoginWindowProcessActive` is changed, and thus `updateState` must be
+    /// - Returns: `true` if the notification was about the login window process, and thus `updateState` must be
     /// called, `false` otherwise.
     @MainActor
     private func handleDidActivateApplication(_ note: Notification) -> Bool {
@@ -196,7 +186,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// - Parameters:
     ///   -  note: The notification to handle.
     ///
-    /// - Returns: `true` if the value of `isLoginWindowProcessActive` is changed, and thus `updateState` must be
+    /// - Returns: `true` if the notification was about the login window process, and thus `updateState` must be
     /// called, `false` otherwise.
     @MainActor
     private func handleDidDeactivateApplication(_ note: Notification) -> Bool {
@@ -208,16 +198,16 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     ///
     /// The only reliable way to know when the login window shows and hides is by listening to all notifications from `NSWorkspace`
     /// regarding application activation and deactivation (aka, applications coming to the foreground, or being sent into background).
-    /// This function processes such notifications and if they refer to the login window process, it updates the value of
-    /// `isLoginWindowProcessActive` and returns `true` signaling `updateState` must be called afterwards. Otherwise,
-    /// if the notification referred to some other process, no updates are done, `false` is returned, and no further processing is required.
+    /// This function processes such notifications and if they refer to the login window process, it returns `true` signaling
+    /// `updateState` must be called afterwards. Otherwise, if the notification referred to some other process, no updates are
+    /// done, `false` is returned, and no further processing is required.
     ///
     /// - Parameters:
     ///   - note: The notification to handle.
     ///   - didBecomeActive: `true` if this was a `didActivateApplicationNotification` notification, false if it was
     ///   a `didDeactivateApplicationNotification`.
     ///
-    /// - Returns: `true` if the value of `isLoginWindowProcessActive` is changed, and thus `updateState` must be
+    /// - Returns: `true` if the notification was about the login window process, and thus `updateState` must be
     /// called, `false` otherwise.
     @MainActor
     private func handleWorkspaceActive(_ note: Notification, didBecomeActive: Bool) -> Bool {
@@ -228,7 +218,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
             return false
         }
 
-        isLoginWindowProcessActive = didBecomeActive
         return true
     }
 
@@ -241,7 +230,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
 
         if isSleeping {
             append(state: .sleeping)
-        } else if isLoginWindowProcessActive {
+        } else if applicationStateProvider.frontmostApplicationIsLoginWindow {
             append(state: .lockScreen)
         } else if applicationStateProvider.isHidden {
             append(state: .hidden)
@@ -252,6 +241,17 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
 
     @MainActor
     private func append(state: AppState) {
+        // In some situations, duplicate states can be generated. For example, when the app is
+        // in foreground and the lock screen kicks in, the notification of login window process
+        // becoming active usually arrives before the didResignActive regarding this app. This
+        // means `append(state:)` is called twice with `.lockScreen`: the first time when the
+        // lock screen becomes active, and the second when the app deactivates.
+        //
+        // This eliminates duplicate states, keeping history clean.
+        guard history.currentState != state else {
+            return
+        }
+        print("Appending: \(state)")
         // This must run on the main thread for two reasons:
         // - For maximum performance, `history` is lock-free and relies on synchronization through a single thread.
         // - `receiver` must be updated from the main thread to ensure the new app state is always available
