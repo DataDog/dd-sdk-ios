@@ -102,7 +102,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason? {
-        didSet { if endReason != nil { dependencies.timeseriesCollector?.stop(sessionID: sessionUUID.rawValue.uuidString.lowercased()) } }
+        didSet { if endReason != nil { dependencies.timeseriesCollector?.stop(sessionID: sessionUUID.toRUMDataFormat) } }
     }
 
     /// Counter to track the index of views in this session. Starts at 0 for the first view.
@@ -173,13 +173,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if sampler.isSampled {
             dependencies.timeseriesCollector?.start(
-                sessionID: sessionUUID.rawValue.uuidString.lowercased(),
+                sessionID: sessionUUID.toRUMDataFormat,
                 applicationID: dependencies.rumApplicationID,
                 sessionType: dependencies.sessionType,
                 startTime: startTime
             )
             if !context.applicationStateHistory.currentState.isRunningInForeground {
-                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.rawValue.uuidString.lowercased())
+                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
             }
         }
     }
@@ -257,7 +257,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if command.isUserInteraction {
             lastInteractionTime = command.time
-            dependencies.timeseriesCollector?.noteActivity(sessionID: sessionUUID.rawValue.uuidString.lowercased(), at: command.time)
+            dependencies.timeseriesCollector?.noteActivity(sessionID: sessionUUID.toRUMDataFormat, at: command.time)
         }
 
         if !sampler.isSampled {
@@ -288,13 +288,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 appLaunchManager.process(command, context: context, writer: writer)
-                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.rawValue.uuidString.lowercased())
+                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
-                dependencies.timeseriesCollector?.resume(sessionID: sessionUUID.rawValue.uuidString.lowercased())
+                dependencies.timeseriesCollector?.resume(sessionID: sessionUUID.toRUMDataFormat)
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager

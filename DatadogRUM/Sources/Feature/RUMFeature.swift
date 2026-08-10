@@ -139,7 +139,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
-        let timeseriesCollector: TimeseriesSessionCollector? = configuration.enableTimeseries ? TimeseriesSessionCollector(
+        let timeseriesCollector: TimeseriesCollecting? = configuration.enableTimeseries ? TimeseriesSessionCollector(
             memoryReader: VitalMemoryReader(),
             featureScope: featureScope,
             batchSize: configuration.timeseriesBatchSize,
