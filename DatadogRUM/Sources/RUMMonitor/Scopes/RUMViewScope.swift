@@ -564,7 +564,7 @@ extension RUMViewScope {
         accessibilityState = currentAccessibilityState
 
         // Retrieve Session Replay config if any
-        let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+        let sessionReplayConfig = context.sessionReplayConfiguration
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         let viewEvent = RUMViewEvent(
@@ -572,6 +572,7 @@ extension RUMViewScope {
                 browserSdkVersion: nil,
                 cls: nil,
                 configuration: .init(
+                    sessionReplayExperimentalFeatures: sessionReplayConfig?.experimentalFeatures,
                     sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
                     sessionSampleRate: Double(dependencies.samplingRate),
                     startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,

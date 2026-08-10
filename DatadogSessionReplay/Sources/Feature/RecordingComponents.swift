@@ -18,7 +18,7 @@ internal struct RecordingComponents {
         resourcesWriter: any ResourcesWriting,
         srContextPublisher: SRContextPublisher
     ) throws {
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
+        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.compositionTreeRecording] {
             // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
             self = try runOnMainThreadSync {
                 try .layerTreeRecordingComponents(

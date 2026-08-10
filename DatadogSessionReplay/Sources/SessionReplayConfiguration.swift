@@ -116,7 +116,7 @@ extension SessionReplay.Configuration {
 
         @_spi(Internal)
         @available(iOS 13.0, tvOS 13.0, *)
-        case layerTreeRecording
+        case compositionTreeRecording = "composition_tree_recording"
     }
 }
 
@@ -126,6 +126,13 @@ extension SessionReplay.Configuration.FeatureFlags {
         [
             .swiftui: false,
         ]
+    }
+
+    /// Enabled feature flag string values reported in RUM events.
+    internal var stringValues: [String] {
+        filter { $0.value }
+            .map { $0.key.rawValue }
+            .sorted()
     }
 
     /// Accesses a feature flag value.
