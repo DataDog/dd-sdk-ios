@@ -6,39 +6,46 @@
 
 import Foundation
 
-#if canImport(AppKit)
-import AppKit
-#endif
-
 #if os(macOS)
+import AppKit
+
 /// Wraps the necessary notification centers used by Core.
-internal struct NotificationCenters {
+public struct NotificationCenters {
     /// Notification centre where application notifications are published.
     ///
     /// Usually `NotificationCenter.default`.
-    let applicationCenter: NotificationCenter
+    public let applicationCenter: NotificationCenter
 
     /// Notification centre where workspace notifications are published.
     ///
     /// Usually `NSWorkspace.shared.notificationCenter`.
-    let workspaceCenter: NotificationCenter
+    public let workspaceCenter: NotificationCenter
 
     /// A `NotificationCenters` instance with the default values used in production.
-    static var `default`: NotificationCenters {
+    public static var `default`: NotificationCenters {
         .init(applicationCenter: .default, workspaceCenter: NSWorkspace.shared.notificationCenter)
+    }
+
+    public init(applicationCenter: NotificationCenter, workspaceCenter: NotificationCenter) {
+        self.applicationCenter = applicationCenter
+        self.workspaceCenter = workspaceCenter
     }
 }
 #else
 /// Wraps the necessary notification centers used by Core.
-internal struct NotificationCenters {
+public struct NotificationCenters {
     /// Notification centre where application notifications are published.
     ///
     /// Usually `NotificationCenter.default`.
-    let applicationCenter: NotificationCenter
+    public let applicationCenter: NotificationCenter
 
     /// A `NotificationCenters` instance with the default values used in production.
-    static var `default`: NotificationCenters {
+    public static var `default`: NotificationCenters {
         .init(applicationCenter: .default)
+    }
+
+    public init(applicationCenter: NotificationCenter) {
+        self.applicationCenter = applicationCenter
     }
 }
 #endif
