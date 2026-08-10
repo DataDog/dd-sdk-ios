@@ -37,8 +37,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// Creates a Application state publisher for publishing application state
     /// history.
     ///
-    /// **Note**: It must be called on the main thread.
-    ///
     /// - Parameters:
     ///   - appStateHistory: The history of app state and their transitions over time.
     ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
