@@ -33,6 +33,7 @@ public enum ApplicationNotifications {
         #endif
     }
 
+    #if !os(macOS)
     public static var willResignActive: Notification.Name {
         #if canImport(WatchKit)
         WKExtension.applicationWillResignActiveNotification
@@ -40,6 +41,7 @@ public enum ApplicationNotifications {
         DDApplication.willResignActiveNotification
         #endif
     }
+    #endif
 
     // macOS has no concept of background apps in the same sense
     // iOS and watchOS do, so these notifications do not exist.
@@ -62,6 +64,10 @@ public enum ApplicationNotifications {
     #endif
 
     #if os(macOS)
+    public static var didResignActive: Notification.Name {
+        DDApplication.didResignActiveNotification
+    }
+
     public static var didHide: Notification.Name {
         NSApplication.didHideNotification
     }

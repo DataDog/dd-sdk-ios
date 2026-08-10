@@ -95,7 +95,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
 
         applicationObservers.append(contentsOf: [
             addApplicationObserver(ApplicationNotifications.didBecomeActive),
-            addApplicationObserver(ApplicationNotifications.willResignActive),
+            addApplicationObserver(ApplicationNotifications.didResignActive),
             addApplicationObserver(ApplicationNotifications.didHide),
             addApplicationObserver(ApplicationNotifications.didUnhide),
             addApplicationObserver(ApplicationNotifications.willTerminate) { [weak self] _ in
