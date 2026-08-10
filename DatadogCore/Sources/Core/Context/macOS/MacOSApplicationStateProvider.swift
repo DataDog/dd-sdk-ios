@@ -17,6 +17,9 @@ internal protocol MacOSApplicationStateProvider {
 
     /// `true` if all the windows applications are hidden, `false` otherwise.
     var isHidden: Bool { get }
+
+    /// `true` is the login window is the active, frontmost process, `false` otherwise.
+    var frontmostApplicationIsLoginWindow: Bool { get }
 }
 
 /// Default implementation of `MacOSApplicationStateProvider`.
@@ -27,6 +30,10 @@ internal struct DefaultMacOSApplicationStateProvider: MacOSApplicationStateProvi
 
     var isHidden: Bool {
         NSApplication.shared.isHidden
+    }
+
+    var frontmostApplicationIsLoginWindow: Bool {
+        NSWorkspace.shared.frontmostApplicationIsLoginWindow
     }
 }
 

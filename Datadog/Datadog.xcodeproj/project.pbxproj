@@ -36,6 +36,8 @@
 		09A936A22F0EB989000B6379 /* SpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9369C2F0EB989000B6379 /* SpanContext.swift */; };
 		09B4B1DC2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */; };
 		09C2D45430063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */; };
+		09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */; };
+		09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */; };
 		09EC863F2FD30D4B00F40087 /* OTTagValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09EC863E2FD30D4B00F40087 /* OTTagValue.swift */; };
 		09F824392FB48F5B005D1DCE /* WebViewSessionRolloverHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F824382FB48F5B005D1DCE /* WebViewSessionRolloverHandlerTests.swift */; };
 		09F8243A2FB48F5B005D1DCE /* WebViewSessionRolloverHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F824382FB48F5B005D1DCE /* WebViewSessionRolloverHandlerTests.swift */; };
@@ -1937,6 +1939,8 @@
 		09A9369C2F0EB989000B6379 /* SpanContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanContext.swift; sourceTree = "<group>"; };
 		09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistributedTracingSampleRateProvider.swift; sourceTree = "<group>"; };
 		09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSApplicationStateProvider.swift; sourceTree = "<group>"; };
+		09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+AppStateUtilities.swift"; sourceTree = "<group>"; };
+		09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09EC863E2FD30D4B00F40087 /* OTTagValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTTagValue.swift; sourceTree = "<group>"; };
 		09F824382FB48F5B005D1DCE /* WebViewSessionRolloverHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSessionRolloverHandlerTests.swift; sourceTree = "<group>"; };
 		09FD5AD230221D0D00570346 /* ApplicationStatePublisherTests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationStatePublisherTests_macOS.swift; sourceTree = "<group>"; };
@@ -3533,6 +3537,8 @@
 		0945381D3000FA2E00BE97B4 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
+				09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */,
+				09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */,
 				094538203000FA5000BE97B4 /* ApplicationStatePublisher_macOS.swift */,
 				09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */,
 			);
@@ -8457,6 +8463,7 @@
 				6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */,
 				3C0D5DE42A543E3400446CF9 /* EventGenerator.swift in Sources */,
 				D2303A0A298D5412001A1FA3 /* AsyncWriter.swift in Sources */,
+				09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */,
 				11F55FCE2DCBB4F600DE4944 /* URLSessionInstrumentation+objc.swift in Sources */,
 				0945381F3000FA4A00BE97B4 /* ApplicationStatePublisher.swift in Sources */,
 				D29CDD3228211A2200F7DAA5 /* TLVBlock.swift in Sources */,
@@ -8482,6 +8489,7 @@
 				11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */,
 				D2FB1254292E0E96005B13F8 /* TrackingConsentPublisher.swift in Sources */,
 				61D3E0D6277B23F1008BE766 /* KronosClock.swift in Sources */,
+				09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */,
 				D2A7841129A53B2F003B03BB /* File.swift in Sources */,
 				D2E6E8FB2D8039BB00FF1398 /* BenchmarkURLSessionTaskDelegate.swift in Sources */,
 				D286626E2A43487500852CE3 /* Datadog.swift in Sources */,
