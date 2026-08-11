@@ -820,12 +820,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let contextReader = RUMActiveContextReaderMock()
-        collector.activeContextReader = contextReader
-
         let startTime = clock.date
-        let activityReader = RUMSessionActivityReaderMock(sessionID: "session-expired", sessionStartTime: startTime, lastInteractionTime: startTime)
-        collector.sessionActivityReader = activityReader
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-expired", sessionStartTime: startTime, lastInteractionTime: startTime)
+        collector.activeContextReader = contextReader
         collector.start(sessionID: "session-expired", applicationID: "app-1", sessionType: .user)
 
         let beforeExpiryExpectation = self.expectation(description: "samples collected before expiry")
@@ -838,7 +835,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // duration, mirroring how `Monitor` refreshes its snapshot on every processed command, without ever
         // calling stop() directly
         clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
-        activityReader.sessionActivity.lastInteractionTime = clock.date
+        contextReader.sessionActivity.lastInteractionTime = clock.date
         let selfStopExpectation = self.expectation(description: "self-stop settled")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
@@ -868,12 +865,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let contextReader = RUMActiveContextReaderMock()
-        collector.activeContextReader = contextReader
-
         let startTime = clock.date
-        let activityReader = RUMSessionActivityReaderMock(sessionID: "session-idle", sessionStartTime: startTime, lastInteractionTime: startTime)
-        collector.sessionActivityReader = activityReader
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-idle", sessionStartTime: startTime, lastInteractionTime: startTime)
+        collector.activeContextReader = contextReader
         collector.start(sessionID: "session-idle", applicationID: "app-1", sessionType: .user)
 
         let beforeTimeoutExpectation = self.expectation(description: "samples collected before timeout")
@@ -906,18 +900,15 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let contextReader = RUMActiveContextReaderMock()
-        collector.activeContextReader = contextReader
-
         let startTime = clock.date
-        let activityReader = RUMSessionActivityReaderMock(sessionID: "session-active", sessionStartTime: startTime, lastInteractionTime: startTime)
-        collector.sessionActivityReader = activityReader
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-active", sessionStartTime: startTime, lastInteractionTime: startTime)
+        collector.activeContextReader = contextReader
         collector.start(sessionID: "session-active", applicationID: "app-1", sessionType: .user)
 
         // When — a RUM interaction is reported right before what would have been the inactivity timeout,
         // resetting the clock the reader exposes to `sample()`
         clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
-        activityReader.sessionActivity.lastInteractionTime = clock.date
+        contextReader.sessionActivity.lastInteractionTime = clock.date
         clock.date = clock.date.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
 
         let expectation = self.expectation(description: "still sampling")
@@ -998,21 +989,28 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 private class RUMActiveContextReaderMock: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue]
     var activeView: (id: String?, path: String?, name: String?)
+    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?)
 
     init(
         globalAttributes: [AttributeKey: AttributeValue] = [:],
-        activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil)
+        activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil),
+        sessionID: String? = nil,
+        sessionStartTime: Date? = nil,
+        lastInteractionTime: Date? = nil
     ) {
         self.globalAttributes = globalAttributes
         self.activeView = activeView
-    }
-}
-
-private class RUMSessionActivityReaderMock: RUMSessionActivityReader {
-    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?)
-
-    init(sessionID: String? = nil, sessionStartTime: Date? = nil, lastInteractionTime: Date? = nil) {
         self.sessionActivity = (sessionID, sessionStartTime, lastInteractionTime)
+    }
+
+    func isSessionExpired(sessionID: String, at date: Date) -> Bool {
+        guard sessionActivity.sessionID == sessionID,
+              let sessionStartTime = sessionActivity.sessionStartTime,
+              let lastInteractionTime = sessionActivity.lastInteractionTime else {
+            return false
+        }
+        return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
+            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
     }
 }
 

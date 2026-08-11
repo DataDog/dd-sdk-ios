@@ -867,7 +867,6 @@ class RUMSessionScopeTests: XCTestCase {
 
 private class TimeseriesCollectorSpy: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
-    weak var sessionActivityReader: RUMSessionActivityReader?
     var startCallCount = 0
     var pauseCallCount = 0
     var resumeCallCount = 0
