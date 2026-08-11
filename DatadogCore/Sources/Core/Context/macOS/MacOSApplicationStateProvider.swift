@@ -11,7 +11,7 @@ import AppKit
 /// Provides information required to calculate `AppStatus` coming from macOS APIs.
 ///
 /// This exists as a separate entity so we can inject a different implementation during testing.
-internal protocol MacOSApplicationStateProvider {
+internal protocol MacOSApplicationStateProvider: Sendable {
     /// `true` if the application is active, `false` otherwise.
     var isActive: Bool { get }
 
