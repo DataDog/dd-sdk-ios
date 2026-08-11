@@ -5,6 +5,7 @@
  */
 
 #if os(macOS)
+import AppKit
 import XCTest
 import DatadogInternal
 import TestUtilities
