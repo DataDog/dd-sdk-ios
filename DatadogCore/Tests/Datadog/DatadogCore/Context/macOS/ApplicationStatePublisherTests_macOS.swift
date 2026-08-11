@@ -12,9 +12,12 @@ import TestUtilities
 
 @MainActor
 class ApplicationStatePublisherTests: XCTestCase {
-    private class TestApplicationStateProvider: MacOSApplicationStateProvider {
+    private class TestApplicationStateProvider: MacOSApplicationStateProvider, @unchecked Sendable {
+        @ReadWriteLock
         var isActive: Bool = true
+        @ReadWriteLock
         var isHidden: Bool = false
+        @ReadWriteLock
         var frontmostApplicationIsLoginWindow: Bool = false
     }
 
@@ -134,7 +137,7 @@ class ApplicationStatePublisherTests: XCTestCase {
 
             step += 1
         }
-        
+
         XCTAssertNil(history.state(at: date - 1))
         XCTAssertEqual(history.initialState, .active)
         XCTAssertEqual(history.state(at: .distantFuture), .terminating)
