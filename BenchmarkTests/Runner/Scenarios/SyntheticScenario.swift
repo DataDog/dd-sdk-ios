@@ -7,13 +7,21 @@
 import Foundation
 import UIKit
 
+/// The Session Replay recording pipeline exercised by a benchmark scenario.
+internal enum SessionReplayRecordingPipeline {
+    case viewTree
+    case compositionTree
+}
+
 /// The Synthetics Scenario reads the `BENCHMARK_SCENARIO` environment
 /// variable to instantiate a `Scenario` compliant object.
 internal struct SyntheticScenario: Scenario {
     /// The Synthetics benchmark scenario value.
     internal enum Name: String, CaseIterable {
         case sessionReplay
+        case sessionReplayCompositionTree
         case sessionReplaySwiftUI
+        case sessionReplaySwiftUICompositionTree
         case logsCustom
         case logsHeavyTraffic
         case trace
@@ -69,9 +77,13 @@ internal struct SyntheticScenario: Scenario {
     init(name: Name) {
         switch name {
         case .sessionReplay:
-            _scenario = SessionReplayScenario()
+            _scenario = SessionReplayScenario(recordingPipeline: .viewTree)
+        case .sessionReplayCompositionTree:
+            _scenario = SessionReplayScenario(recordingPipeline: .compositionTree)
         case .sessionReplaySwiftUI:
-            _scenario = SessionReplaySwiftUIScenario()
+            _scenario = SessionReplaySwiftUIScenario(recordingPipeline: .viewTree)
+        case .sessionReplaySwiftUICompositionTree:
+            _scenario = SessionReplaySwiftUIScenario(recordingPipeline: .compositionTree)
         case .logsCustom:
             _scenario = LogsCustomScenario()
         case .logsHeavyTraffic:
