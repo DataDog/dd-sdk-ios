@@ -16,15 +16,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     /// Whether a session is timed out due to inactivity, given the time of its last interaction.
-    /// Shared with `TimeseriesSessionCollector`, which self-enforces this same rule from a live
-    /// `RUMSessionActivityReader` snapshot instead of reacting to `RUMCommand`s.
     static func hasTimedOut(lastInteractionTime: Date, currentTime: Date) -> Bool {
         currentTime.timeIntervalSince(lastInteractionTime) >= Constants.sessionTimeoutDuration
     }
 
     /// Whether a session has exceeded its maximum duration, given its start time.
-    /// Shared with `TimeseriesSessionCollector`, which self-enforces this same rule from a live
-    /// `RUMSessionActivityReader` snapshot instead of reacting to `RUMCommand`s.
     static func hasExpired(sessionStartTime: Date, currentTime: Date) -> Bool {
         currentTime.timeIntervalSince(sessionStartTime) >= Constants.sessionMaxDuration
     }
@@ -109,10 +105,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
-    /// Exposed internally (not `private`) so `Monitor` can snapshot it for `RUMSessionActivityReader`.
     let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
-    /// Exposed internally (not `private`) so `Monitor` can snapshot it for `RUMSessionActivityReader`.
     private(set) var lastInteractionTime: Date
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil

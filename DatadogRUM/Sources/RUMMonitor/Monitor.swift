@@ -98,22 +98,20 @@ internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 /// Exposes monitor state for readers that operate outside the `RUMCommand` pipeline
 /// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to
-/// `command.globalAttributes` or the scope tree's active view.
+/// `command.globalAttributes`, the scope tree's active view, or `RUMSessionScope`'s own session
+/// lifetime rules.
 internal protocol RUMActiveContextReader: AnyObject {
     /// The current global attributes set through `addAttribute(forKey:value:)` / `addAttributes(_:)`.
-    /// Safe to read from any thread.
+    /// Conformers must guarantee this is safe to read from any thread.
     var globalAttributes: [AttributeKey: AttributeValue] { get }
-    /// The currently active view, if any. Safe to read from any thread.
+    /// The currently active view, if any. Conformers must guarantee this is safe to read from any thread.
     var activeView: (id: String?, path: String?, name: String?) { get }
-}
-
-/// Exposes the active session's lifetime state for readers that operate outside the `RUMCommand` pipeline
-/// (e.g. the timer-driven `TimeseriesSessionCollector`), so they can evaluate `RUMSessionScope`'s own
-/// expiry rules against a live, single source of truth instead of maintaining a shadow copy of that state.
-internal protocol RUMSessionActivityReader: AnyObject {
-    /// The active session's ID, start time, and time of last RUM interaction, or `nil` values if there is
-    /// no active session. Safe to read from any thread.
-    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) { get }
+    /// Whether the session identified by `sessionID` has expired (exceeded its max duration or inactivity
+    /// timeout) as of `date`, evaluated against a live, single source of truth instead of a shadow copy of
+    /// that state. Returns `false` if `sessionID` doesn't match the currently active session (e.g. a session
+    /// transition is still propagating), so callers should treat that as "skip the check for now", not
+    /// "not expired". Conformers must guarantee this is safe to call from any thread.
+    func isSessionExpired(sessionID: String, at date: Date) -> Bool
 }
 
 internal class Monitor: RUMCommandSubscriber {
@@ -239,10 +237,17 @@ internal class Monitor: RUMCommandSubscriber {
 extension Monitor: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue] { attributes }
     var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
-}
 
-extension Monitor: RUMSessionActivityReader {
-    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) { sessionActivitySnapshot }
+    func isSessionExpired(sessionID: String, at date: Date) -> Bool {
+        let activity = sessionActivitySnapshot
+        guard activity.sessionID == sessionID,
+              let sessionStartTime = activity.sessionStartTime,
+              let lastInteractionTime = activity.lastInteractionTime else {
+            return false
+        }
+        return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
+            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
+    }
 }
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
