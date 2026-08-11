@@ -109,7 +109,7 @@ internal final class AppStateManager: AppStateManaging {
         case .inactive, .lockScreen, .sleeping, .hidden:
             // Note: It's debatable if .lockScreen and .sleeping should be here.
             // The app may be in the foreground when the user comes back and logs
-            // in. 
+            // in.
             updateAppState { stateInfo in
                 stateInfo?.isActive = false
             }
