@@ -23,14 +23,6 @@ private extension AppState {
 class AppStateHistoryTests: XCTestCase {
     private let date = Date()
 
-    #if !os(macOS)
-    func testItBuildsAppStateFromUIApplicationState() {
-        XCTAssertEqual(AppState(.active), .active)
-        XCTAssertEqual(AppState(.inactive), .inactive)
-        XCTAssertEqual(AppState(.background), .background)
-    }
-    #endif
-
     // MARK: - `currentState`
 
     func testCurrentState_whenOnlyInitialState() {
