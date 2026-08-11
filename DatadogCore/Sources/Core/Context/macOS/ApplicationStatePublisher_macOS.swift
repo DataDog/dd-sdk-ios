@@ -251,7 +251,6 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         guard history.currentState != state else {
             return
         }
-        print("Appending: \(state)")
         // This must run on the main thread for two reasons:
         // - For maximum performance, `history` is lock-free and relies on synchronization through a single thread.
         // - `receiver` must be updated from the main thread to ensure the new app state is always available
