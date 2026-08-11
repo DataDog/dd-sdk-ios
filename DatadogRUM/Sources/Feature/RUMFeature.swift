@@ -225,7 +225,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         )
 
         timeseriesCollector?.activeContextReader = monitor
-        timeseriesCollector?.sessionActivityReader = monitor
         self.timeseriesCollector = timeseriesCollector
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {

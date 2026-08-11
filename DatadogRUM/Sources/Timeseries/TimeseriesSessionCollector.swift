@@ -9,13 +9,11 @@ import DatadogInternal
 
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
-    /// Provides global custom attributes and the active view at sample time. Set by `RUMFeature` once `Monitor`
-    /// is constructed, since the collector is created before it.
+    /// Provides global custom attributes, the active view, and the active session's expiry state at sample
+    /// time, so the collector can self-enforce `RUMSessionScope`'s own expiry rules without maintaining a
+    /// shadow copy of that state. Set by `RUMFeature` once `Monitor` is constructed, since the collector is
+    /// created before it.
     var activeContextReader: RUMActiveContextReader? { get set }
-    /// Provides the active session's start time and last-interaction time at sample time, so the collector can
-    /// self-enforce `RUMSessionScope`'s own expiry rules without maintaining a shadow copy of that state.
-    /// Set by `RUMFeature` once `Monitor` is constructed, since the collector is created before it.
-    var sessionActivityReader: RUMSessionActivityReader? { get set }
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)
     func pause(sessionID: String)
     func resume(sessionID: String)
@@ -61,8 +59,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
     /// `Monitor`'s conformance is safe to read from any thread.
     weak var activeContextReader: RUMActiveContextReader?
-    /// `Monitor`'s conformance is safe to read from any thread.
-    weak var sessionActivityReader: RUMSessionActivityReader?
 
     private var memoryBuffer: [MemorySample] = []
     private var cpuBuffer: [CPUSample] = []
@@ -258,15 +254,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         // idle with no user interaction). This is a safety net only — it does not affect RUM's own
         // session state, it just stops this collector from uploading data past session expiry.
         //
-        // Pulled fresh from `sessionActivityReader` on every tick, rather than from a locally pushed
+        // Pulled fresh from `activeContextReader` on every tick, rather than from a locally pushed
         // copy, so there's a single live source of truth and no race with how/when that state is updated.
-        // If the reader's session doesn't match (e.g. a session transition is still propagating), skip
-        // the check for this tick rather than guessing.
-        let activity = sessionActivityReader?.sessionActivity
-        if let activity = activity, activity.sessionID == sessionID,
-           let sessionStartTime = activity.sessionStartTime, let lastInteractionTime = activity.lastInteractionTime,
-           RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: currentDate)
-            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: currentDate) {
+        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: currentDate) == true {
             timer?.cancel()
             timer = nil
             flushMemory()
