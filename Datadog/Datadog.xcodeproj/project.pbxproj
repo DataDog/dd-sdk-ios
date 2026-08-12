@@ -193,6 +193,8 @@
 		1182FA712DA2F827007FE71A /* RUMSessionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9CB2DA2F827007FE71A /* RUMSessionMatcher.swift */; };
 		1182FA722DA2F827007FE71A /* BacktraceReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9D12DA2F827007FE71A /* BacktraceReportMocks.swift */; };
 		1182FA732DA2F827007FE71A /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1182F9E12DA2F827007FE71A /* DatadogRemoteFeatureMock.swift */; };
+		1183151F302CA92A006C664A /* LogEventEncodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1183151E302CA92A006C664A /* LogEventEncodingTests.swift */; };
+		11831521302CB93D006C664A /* AttributeEncodingRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11831520302CB93D006C664A /* AttributeEncodingRecovery.swift */; };
 		1188485A2F6C50EC008D2919 /* ProfilingHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118848592F6C50EC008D2919 /* ProfilingHandler.swift */; };
 		118848602F6C5122008D2919 /* ProfilingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188485E2F6C5122008D2919 /* ProfilingOperation.swift */; };
 		1188486C2F717DDE008D2919 /* DatadogProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1188486A2F717DD8008D2919 /* DatadogProfiler.swift */; };
@@ -2031,6 +2033,8 @@
 		1182FA1A2DA2F827007FE71A /* DatadogCoreProxy+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProxy+Utils.swift"; sourceTree = "<group>"; };
 		1182FA1B2DA2F827007FE71A /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
 		1182FA1D2DA2F827007FE71A /* PrintFunctionSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionSpy.swift; sourceTree = "<group>"; };
+		1183151E302CA92A006C664A /* LogEventEncodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventEncodingTests.swift; sourceTree = "<group>"; };
+		11831520302CB93D006C664A /* AttributeEncodingRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeEncodingRecovery.swift; sourceTree = "<group>"; };
 		118848522F6C4E0C008D2919 /* OperationMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationMessage.swift; sourceTree = "<group>"; };
 		118848592F6C50EC008D2919 /* ProfilingHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingHandler.swift; sourceTree = "<group>"; };
 		1188485E2F6C5122008D2919 /* ProfilingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingOperation.swift; sourceTree = "<group>"; };
@@ -4994,6 +4998,7 @@
 				61133C3C2423990D00786299 /* LogSanitizerTests.swift */,
 				615D52BD2C88A98300F8B8FC /* SynchronizedTagsTests.swift */,
 				615D52C02C88AB1E00F8B8FC /* SynchronizedAttributesTests.swift */,
+				1183151E302CA92A006C664A /* LogEventEncodingTests.swift */,
 			);
 			path = Log;
 			sourceTree = "<group>";
@@ -6523,6 +6528,7 @@
 				D23039CB298D5235001A1FA3 /* Attributes.swift */,
 				D23039CC298D5235001A1FA3 /* AttributesSanitizer.swift */,
 				96E746A62F30E317006B3419 /* AttributeEncoding.swift */,
+				11831520302CB93D006C664A /* AttributeEncodingRecovery.swift */,
 			);
 			path = Attributes;
 			sourceTree = "<group>";
@@ -8895,6 +8901,7 @@
 				D2A783E829A53468003B03BB /* ConsoleLoggerTests.swift in Sources */,
 				D2A783EB29A53468003B03BB /* LogSanitizerTests.swift in Sources */,
 				615D52BE2C88A98300F8B8FC /* SynchronizedTagsTests.swift in Sources */,
+				1183151F302CA92A006C664A /* LogEventEncodingTests.swift in Sources */,
 				D2D30E602A40CD310020C553 /* LogsTests.swift in Sources */,
 				D2A783E729A53468003B03BB /* LogEventBuilderTests.swift in Sources */,
 				D242C2A12A14D747004B4980 /* RemoteLoggerTests.swift in Sources */,
@@ -8953,6 +8960,7 @@
 				D263BCAF29DAFFEB00FA0E21 /* PerformancePresetOverride.swift in Sources */,
 				D23039E7298D5236001A1FA3 /* NetworkConnectionInfo.swift in Sources */,
 				D23039E9298D5236001A1FA3 /* TrackingConsent.swift in Sources */,
+				11831521302CB93D006C664A /* AttributeEncodingRecovery.swift in Sources */,
 				D2EBEE2629BA160F00B15732 /* B3HTTPHeaders.swift in Sources */,
 				D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */,
 				D2D7483A2DC2306100C61353 /* TraceID.swift in Sources */,
