@@ -6370,6 +6370,10 @@ public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
     }
 
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
@@ -7289,6 +7293,10 @@ public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -8261,6 +8269,10 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -10418,6 +10430,10 @@ public class objc_RUMViewUpdateEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -16181,6 +16197,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.reactVersion }
     }
 
+    public var remoteConfiguration: objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration? {
+        root.swiftModel.telemetry.configuration.remoteConfiguration != nil ? objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration(root: root) : nil
+    }
+
     public var remoteConfigurationId: String? {
         set { root.swiftModel.telemetry.configuration.remoteConfigurationId = newValue }
         get { root.swiftModel.telemetry.configuration.remoteConfigurationId }
@@ -16561,6 +16581,47 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationPlugins: NSOb
     public var pluginsInfo: [String: Any] {
         set { root.swiftModel.pluginsInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.pluginsInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var configId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.configId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.configId }
+    }
+
+    public var firstApplied: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.firstApplied = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.firstApplied as NSNumber? }
+    }
+
+    public var lastModified: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastModified = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastModified as NSNumber? }
+    }
+
+    public var lastSynced: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastSynced = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastSynced as NSNumber? }
+    }
+
+    public var syncId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.syncId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.syncId }
+    }
+
+    public var versionId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.versionId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.versionId }
     }
 }
 
@@ -17478,4 +17539,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ece51fc7977b612330049af36095ab2310a001af
+// Generated from https://github.com/DataDog/rum-events-format/tree/7e92fa29cb294a0a069e9212bc0f0dd76ec8432d

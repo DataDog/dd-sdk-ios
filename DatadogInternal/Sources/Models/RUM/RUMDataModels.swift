@@ -5455,6 +5455,9 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -5466,6 +5469,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -5475,16 +5479,19 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -5705,7 +5712,6 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
         /// Wire-shape discriminator for the data field
         public let schema: String = "object-v2"
 
-
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
 
@@ -5783,7 +5789,6 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel {
                 }
             }
         }
-
     }
 
     /// View properties
@@ -6054,6 +6059,9 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             /// The percentage of sessions profiled
             public let profilingSampleRate: Double?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -6065,6 +6073,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
 
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -6074,16 +6083,19 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
             ///
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - traceSampleRate: The percentage of sessions with traced resources
             public init(
                 profilingSampleRate: Double? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 traceSampleRate: Double? = nil
             ) {
                 self.profilingSampleRate = profilingSampleRate
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.traceSampleRate = traceSampleRate
@@ -6303,7 +6315,6 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel {
 
         /// Wire-shape discriminator for the data field
         public let schema: String = "object-v2"
-
 
         /// Timestamp of the first sample in nanoseconds from epoch
         public let start: Int64
@@ -9011,6 +9022,9 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// The id of the remote configuration applied to the SDK, if any
             public let remoteConfigurationId: String?
 
+            /// Session Replay experimental features enabled in the SDK configuration
+            public let sessionReplayExperimentalFeatures: [String]?
+
             /// The percentage of sessions with RUM & Session Replay pricing tracked
             public let sessionReplaySampleRate: Double?
 
@@ -9026,6 +9040,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public enum CodingKeys: String, CodingKey {
                 case profilingSampleRate = "profiling_sample_rate"
                 case remoteConfigurationId = "remote_configuration_id"
+                case sessionReplayExperimentalFeatures = "session_replay_experimental_features"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
@@ -9037,6 +9052,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             /// - Parameters:
             ///   - profilingSampleRate: The percentage of sessions profiled
             ///   - remoteConfigurationId: The id of the remote configuration applied to the SDK, if any
+            ///   - sessionReplayExperimentalFeatures: Session Replay experimental features enabled in the SDK configuration
             ///   - sessionReplaySampleRate: The percentage of sessions with RUM & Session Replay pricing tracked
             ///   - sessionSampleRate: The percentage of sessions tracked
             ///   - startSessionReplayRecordingManually: Whether session replay recording configured to start manually
@@ -9044,6 +9060,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             public init(
                 profilingSampleRate: Double? = nil,
                 remoteConfigurationId: String? = nil,
+                sessionReplayExperimentalFeatures: [String]? = nil,
                 sessionReplaySampleRate: Double? = nil,
                 sessionSampleRate: Double,
                 startSessionReplayRecordingManually: Bool? = nil,
@@ -9051,6 +9068,7 @@ public struct RUMViewUpdateEvent: RUMDataModel {
             ) {
                 self.profilingSampleRate = profilingSampleRate
                 self.remoteConfigurationId = remoteConfigurationId
+                self.sessionReplayExperimentalFeatures = sessionReplayExperimentalFeatures
                 self.sessionReplaySampleRate = sessionReplaySampleRate
                 self.sessionSampleRate = sessionSampleRate
                 self.startSessionReplayRecordingManually = startSessionReplayRecordingManually
@@ -13174,6 +13192,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The version of React used in a ReactNative application
             public var reactVersion: String?
 
+            /// Metadata of the remote configuration currently applied for this session
+            public var remoteConfiguration: RemoteConfiguration?
+
             /// The id of the remote configuration
             public var remoteConfigurationId: String?
 
@@ -13410,6 +13431,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case propagateTraceBaggage = "propagate_trace_baggage"
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
+                case remoteConfiguration = "remote_configuration"
                 case remoteConfigurationId = "remote_configuration_id"
                 case replaySampleRate = "replay_sample_rate"
                 case sdkVersion = "sdk_version"
@@ -13514,6 +13536,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - propagateTraceBaggage: Whether trace baggage is propagated to child spans
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
+            ///   - remoteConfiguration: Metadata of the remote configuration currently applied for this session
             ///   - remoteConfigurationId: The id of the remote configuration
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             ///   - sdkVersion: The version of the SDK that is running.
@@ -13614,6 +13637,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 propagateTraceBaggage: Bool? = nil,
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
+                remoteConfiguration: RemoteConfiguration? = nil,
                 remoteConfigurationId: String? = nil,
                 replaySampleRate: Int64? = nil,
                 sdkVersion: String? = nil,
@@ -13714,6 +13738,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.propagateTraceBaggage = propagateTraceBaggage
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
+                self.remoteConfiguration = remoteConfiguration
                 self.remoteConfigurationId = remoteConfigurationId
                 self.replaySampleRate = replaySampleRate
                 self.sdkVersion = sdkVersion
@@ -13888,6 +13913,61 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 ) {
                     self.name = name
                     self.pluginsInfo = pluginsInfo
+                }
+            }
+
+            /// Metadata of the remote configuration currently applied for this session
+            public struct RemoteConfiguration: Codable {
+                /// Identifier of the remote configuration bundle this metadata belongs to
+                public var configId: String?
+
+                /// Timestamp at which this configuration version was first observed as applied by the device, in ms from epoch. Stamped once and reused on every subsequent session that runs on the same version
+                public var firstApplied: Int64?
+
+                /// CDN publish timestamp of the applied configuration, in ms from epoch
+                public var lastModified: Int64?
+
+                /// Timestamp at which the device fetched and cached this configuration version, in ms from epoch
+                public var lastSynced: Int64?
+
+                /// Identifier of the sync that produced this configuration version, used to deduplicate repeat sessions from the same device without a persistent identifier
+                public var syncId: String?
+
+                /// CDN version identifier of the applied configuration
+                public var versionId: String?
+
+                public enum CodingKeys: String, CodingKey {
+                    case configId = "config_id"
+                    case firstApplied = "first_applied"
+                    case lastModified = "last_modified"
+                    case lastSynced = "last_synced"
+                    case syncId = "sync_id"
+                    case versionId = "version_id"
+                }
+
+                /// Metadata of the remote configuration currently applied for this session
+                ///
+                /// - Parameters:
+                ///   - configId: Identifier of the remote configuration bundle this metadata belongs to
+                ///   - firstApplied: Timestamp at which this configuration version was first observed as applied by the device, in ms from epoch. Stamped once and reused on every subsequent session that runs on the same version
+                ///   - lastModified: CDN publish timestamp of the applied configuration, in ms from epoch
+                ///   - lastSynced: Timestamp at which the device fetched and cached this configuration version, in ms from epoch
+                ///   - syncId: Identifier of the sync that produced this configuration version, used to deduplicate repeat sessions from the same device without a persistent identifier
+                ///   - versionId: CDN version identifier of the applied configuration
+                public init(
+                    configId: String? = nil,
+                    firstApplied: Int64? = nil,
+                    lastModified: Int64? = nil,
+                    lastSynced: Int64? = nil,
+                    syncId: String? = nil,
+                    versionId: String? = nil
+                ) {
+                    self.configId = configId
+                    self.firstApplied = firstApplied
+                    self.lastModified = lastModified
+                    self.lastSynced = lastSynced
+                    self.syncId = syncId
+                    self.versionId = versionId
                 }
             }
 
@@ -15696,4 +15776,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/ece51fc7977b612330049af36095ab2310a001af
+// Generated from https://github.com/DataDog/rum-events-format/tree/7e92fa29cb294a0a069e9212bc0f0dd76ec8432d
