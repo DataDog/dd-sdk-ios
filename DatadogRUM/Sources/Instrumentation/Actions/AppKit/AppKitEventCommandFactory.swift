@@ -8,16 +8,25 @@
 import AppKit
 import DatadogInternal
 
-/// Factory responsible for creating RUM user action commands from UIEvents.
-/// This abstraction allows for platform-specific implementations (iOS/tvOS).
+/// Factory responsible for creating RUM Action commands events that are target of `.leftMouseDown` `NSEvent`s,
+/// and selected `NSMenuItem`s.
 internal protocol AppKitEventCommandFactory {
-    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand?
+    /// Creates a RUM command from a `NSEvent` with type of `leftMouseDown` if applicable.
+    ///
+    /// - Parameter event: The `NSEvent` to process.
+    /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked.
     func command(from event: NSEvent) -> RUMAddUserActionCommand?
+
+    /// Creates a RUM command from a menu item selected by the user.
+    ///
+    /// - Parameter menuItem: The `NSMenuItem` to process.
+    /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked.
+    func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand?
 }
 
 // MARK: macOS implementation
 /// macOS-specific implementation that detects user interactions through touches.
-/// Handles both UIKit and SwiftUI components using different detection strategies.
+/// Handles both AppKit and SwiftUI components using different detection strategies.
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     let dateProvider: DateProvider
     let appKitPredicate: AppKitRUMActionsPredicate?
@@ -36,27 +45,31 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         self.swiftUIDetector = swiftUIDetector
     }
 
-    func command(from app: NSApplication, action: Selector?, target: Any?, from: Any?) -> RUMAddUserActionCommand? {
-        if let view = from as? NSView, let rumAction = createAppKitActionCommand(from: view) {
-            return rumAction
-        }
-
-        if let menuItem = from as? NSMenuItem, let rumAction = createAppKitActionCommand(from: menuItem) {
-            return rumAction
-        }
-
-        return nil
-    }
-
     func command(from event: NSEvent) -> RUMAddUserActionCommand? {
         if let rumAction = createAppKitActionCommand(from: event) {
             return rumAction
         }
 
+        // TODO: RUM-16718 Support SwiftUI like on iOS
         return nil
     }
 
-    // MARK: UIKit
+    func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
+        if let rumAction = createAppKitActionCommand(from: menuItem) {
+            return rumAction
+        }
+
+        return nil
+    }
+
+    // MARK: AppKit
+
+    /// Creates a RUM Action command if appropriate based on the given `NSEvent`.
+    ///
+    /// - Parameters:
+    ///   - event: The `NSEvent` being processed. Only `.leftMouseDown` events are supported for now.
+    /// - Returns: A `RUMAddUserActionCommand` if all the conditions for a RUM Action command creation
+    /// are met, `nil` otherwise.
     private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
         guard let appKitPredicate else {
             return nil
@@ -66,27 +79,20 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // Handle mouse down only for now
         }
 
-        guard let clickedView = event.window?.contentView?.hitTest(event.locationInWindow) else {
+        // Run hitTesting on the root view to include toolbar buttons and chrome.
+        guard let clickedView = event.window?.rootView?.hitTest(event.locationInWindow) else {
             return nil // We don't know what was clicked
         }
 
-        return createAppKitActionCommand(from: clickedView)
-    }
-
-    private func createAppKitActionCommand(from view: NSView) -> RUMAddUserActionCommand? {
-        guard let appKitPredicate else {
-            return nil
-        }
-
-        guard view.isSafeForPrivacy else {
+        guard clickedView.isSafeForPrivacy else {
             return nil // no valid view
         }
 
-        guard let targetView = bestActionTargetFor(view: view) else {
-            return nil // Tapped view is not eligible for producing RUM Action
+        guard let targetView = bestActionTargetFor(view: clickedView, event: event) else {
+            return nil // Clicked view is not eligible for producing RUM Action
         }
 
-        guard let action = appKitPredicate.rumAction(targetView: view) else {
+        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
             return nil
         }
 
@@ -99,15 +105,20 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         )
     }
 
+    /// Creates a RUM Action command if appropriate based on the given `NSMenuItem`.
+    ///
+    /// - Parameters:
+    ///   - event: The `NSMenuItem` being processed.
+    /// - Returns: A `RUMAddUserActionCommand` if all the conditions for a RUM Action command creation
+    /// are met, `nil` otherwise.
     private func createAppKitActionCommand(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
         guard let appKitPredicate else {
             return nil
         }
 
-        // TODO: RUM-16659 How to check this?
-//        guard menuItem.isSafeForPrivacy else {
-//            return nil // no valid view
-//        }
+        guard menuItem.isSafeForPrivacy else {
+            return nil // no valid menu item
+        }
 
         guard let action = appKitPredicate.rumAction(targetMenuItem: menuItem) else {
             return nil
@@ -122,37 +133,108 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         )
     }
 
-    private func bestActionTargetFor(control: NSControl) -> NSView? {
+    /// Find the best action target for a given `NSControl`.
+    ///
+    /// If the control is a button inside a toolbar item, this function returns the ancestor `NSToolbarItemViewer` view instead.
+    /// Depending on how toolbars are built, the event target may be `NSToolbarItemViewer` itself or a button inside it. Changing
+    /// it always to the `NSToolbarItemViewer` provides better instrumenting, making it clear this was a click on a toolbar item.
+    ///
+    /// - Parameter control: The target control of the event being processed.
+    /// - Returns: The best target for the event, as described above.
+    private func bestActionTargetFor(control: NSControl, event: NSEvent) -> NSView {
         if let toolbarItemViewer = control.findInParentHierarchy(viewMatching: { $0.className == "NSToolbarItemViewer" }) {
             return toolbarItemViewer
+        }
+
+        if let tableView = control as? NSTableView {
+            return tableRowIn(tableView: tableView, windowCoordinates: event.locationInWindow)
         }
 
         return control
     }
 
-    /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
-    /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
-    /// return the `UITableViewCell` as the best guess of user interaction.
+    /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target.
     ///
     /// May return `nil` if there's no good guess and the RUM Action for given `view` should not be produced.
-    private func bestActionTargetFor(view: DDView) -> DDView? {
-        if let ddControl = view as? DDControl {
-            // If the `view` is a `DDControl` (interactive element), accept it.
-            return ddControl
+    ///
+    /// - parameters:
+    ///   - view: The target view of `event`.
+    ///   - event: The `NSEvent` being processed.
+    ///
+    /// - Returns: The best target for the event being processed, or `nil` if no suitable view is found.
+    private func bestActionTargetFor(view: DDView, event: NSEvent) -> DDView? {
+        // In toolbars, if no button was explicitly attributed to item.view, the
+        // class that returns itself from hitTest is NSToolbarItemViewer, not the
+        // synthesized button inside it (NSToolbarButton instance).
+        if view.className == "NSToolbarItemViewer"
+            // In tables, a click on a header hits a view (not control) of class NSTableHeaderView.
+            // We avoid the path of finding the NSTableView parent and then digging in to look for
+            // the clicked header view since we already know it, so we shortcut it here.
+            || view is NSTableHeaderView {
+            return view
+        } else if let ddControl = view as? DDControl {
+            return bestActionTargetFor(control: ddControl, event: event)
         } else {
             // If the `view` is not an interactive element, check if it's a child of a known view hierarchy
             // which can be considered as interactive.
-            // For now this includes checking if the interacted view is an (in-)direct child of the `DDTableViewCell`
-            // or `DDCollectionViewCell`, which is a common pattern when building list-based navigation on iOS.
             let bestParent = view.findInParentHierarchy { parent in
-                return parent is DDTableViewCell
-                || parent is DDCollectionViewCell
-                || parent is DDControl
-                || parent.isUIAlertActionView
-                || parent.isUIAlertTextField
+                return parent is NSControl
+                    || parent is NSCollectionView
             }
+
+            if let collectionView = bestParent as? NSCollectionView {
+                return collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
+            }
+
+            if let control = bestParent as? NSControl {
+                return bestActionTargetFor(control: control, event: event)
+            }
+
             return bestParent // best parent or `nil`
         }
+    }
+
+    /// Finds the table row the user clicked on, and returns the corresponding `NSTableRowView`.
+    ///
+    /// On macOS, `NSTableView` does not select individual cells, but rows, so we consider the row to be
+    /// the interactive element.
+    ///
+    /// - Parameters:
+    ///   - tableView: The clicked table view.
+    ///   - windowCoordinates: The event window coordinates, obtained from `event.locationInWindow`.
+    ///
+    /// - Returns: If the user clicked on an existing row, the corresponding `NSTableRow` is returned. Otherwise,
+    /// `tableView` itself is returned. This may happen if the user clicked on empty space in a table (the visible area
+    /// is larger than all existing rows) or any other view inside a table.
+    ///
+    /// - Note: If the user clicks on a header view, this is handled directly in `bestActionTargetFor(view:event:)`
+    /// and this method is not invoked.
+    private func tableRowIn(tableView: NSTableView, windowCoordinates: NSPoint) -> NSView {
+        let coordinates = tableView.convert(windowCoordinates, from: nil)
+        let row = tableView.row(at: coordinates)
+
+        guard row >= 0 else {
+            // The coordinate did not hit any cell view, so return the table itself.
+            return tableView
+        }
+
+        return tableView.rowView(atRow: row, makeIfNecessary: false) ?? tableView
+    }
+
+    /// Finds and returns the view of the collection view item the user clicked on.
+    ///
+    /// - Parameters:
+    ///   - collectionView: The clicked table view.
+    ///   - windowCoordinates: The event window coordinates, obtained from `event.locationInWindow`.
+    ///
+    /// - Returns: If the user clicked on an existing collection view item view, that view is returned. Otherwise, if the
+    /// user clicked on the empty space between item views, the collection view itself is returned.
+    private func collectionViewItemView(collectionView: NSCollectionView, windowCoordinates: NSPoint) -> NSView {
+        let coordinates = collectionView.convert(windowCoordinates, from: nil)
+        let itemView = collectionView.indexPathForItem(at: coordinates).flatMap {
+            collectionView.item(at: $0)
+        }?.view
+        return itemView ?? collectionView
     }
 }
 #endif

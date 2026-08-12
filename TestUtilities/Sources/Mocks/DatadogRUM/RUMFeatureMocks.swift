@@ -1636,6 +1636,9 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
 
     public func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?) {
     }
+
+    public func notify_menuItemSelected(_ menuItem: NSMenuItem) {
+    }
     #else
     public func notify_sendEvent(application: UIApplication, event: UIEvent) {
         onSendEvent?(application, event)
