@@ -35,9 +35,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
     let viewControllerSwizzler: DDViewControllerSwizzler?
 
-    /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
-    /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
-    let uiApplicationSwizzler: DDApplicationSwizzler?
+    /// Instruments `UI/NSApplication` for intercepting `UI/NSEvents` passed to the app.
+    /// It is `nil` (no instrumentation) if RUM Action automatic instrumentation is not enabled.
+    private let applicationInstrumentation: DDApplicationInstrumentation?
 
     #if !os(tvOS) && !os(macOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
@@ -135,11 +135,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #endif
         }()
 
-        let uiApplicationSwizzler: DDApplicationSwizzler? = {
+        let uiApplicationSwizzler: DDApplicationInstrumentation? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
                 if rumActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
-                    return try DDApplicationSwizzler(handler: actionsHandler)
+                    return try DDApplicationInstrumentation(handler: actionsHandler)
                 }
             } catch {
                 consolePrint(
@@ -181,7 +181,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewsHandler = viewsHandler
         self.actionsHandler = actionsHandler
         self.viewControllerSwizzler = viewControllerSwizzler
-        self.uiApplicationSwizzler = uiApplicationSwizzler
+        self.applicationInstrumentation = uiApplicationSwizzler
         #if !os(tvOS) && !os(macOS)
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler
@@ -204,7 +204,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
-        self.uiApplicationSwizzler?.swizzle()
+        self.applicationInstrumentation?.install()
         #if !os(tvOS) && !os(macOS)
         self.scrollViewSwizzler?.swizzle()
         #endif
@@ -264,7 +264,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // Disable configured instrumentations:
         #if !os(watchOS)
         viewControllerSwizzler?.unswizzle()
-        uiApplicationSwizzler?.unswizzle()
+        applicationInstrumentation?.uninstall()
         #if !os(tvOS) && !os(macOS)
         scrollViewSwizzler?.unswizzle()
         #endif

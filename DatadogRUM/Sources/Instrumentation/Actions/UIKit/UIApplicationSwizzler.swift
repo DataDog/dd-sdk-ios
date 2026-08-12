@@ -8,18 +8,22 @@
 import UIKit
 import DatadogInternal
 
-internal final class DDApplicationSwizzler {
+internal final class DDApplicationInstrumentation {
     let sendEvent: SendEvent
 
     init(handler: RUMActionsHandling) throws {
         sendEvent = try SendEvent(handler: handler)
     }
 
-    func swizzle() {
+    func install() {
         sendEvent.swizzle()
     }
 
-    internal func unswizzle() {
+    internal func uninstall() {
+        sendEvent.unswizzle()
+    }
+
+    deinit {
         sendEvent.unswizzle()
     }
 
