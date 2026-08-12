@@ -1335,7 +1335,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         handler.interceptionDidComplete(interception: taskInterception)
     }
 
-    func testGivenDisallowedURL_whenInterceptionStarts_itStillRegistersRUMOriginOnInterception() throws {
+    func testGivenDisallowedURL_whenInterceptionStarts_itDoesNotRegisterRUMOriginOnInterception() throws {
         // Given
         let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
         let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
@@ -1344,9 +1344,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When
         handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
 
-        // Then - `origin` stays "rum" so Trace skips its own span (the backend reconstructs it from the
-        // RUM Resource); since the disallowed Resource is never sent, no span is created for this request.
-        XCTAssertEqual(taskInterception.origin, "rum")
+        // Then
+        XCTAssertNil(taskInterception.origin)
     }
 
     func testGivenNonDisallowedURL_whenDisallowListIsConfigured_itStartsRUMResourceAsUsual() throws {

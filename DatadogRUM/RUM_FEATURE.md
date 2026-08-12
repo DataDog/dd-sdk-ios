@@ -1,6 +1,6 @@
 ---
-last_updated: 2026-08-10
-sdk_version: 3.14.0
+last_updated: 2026-08-12
+sdk_version: 3.15.0
 verified_against_commit: c10bc4f57
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
@@ -92,7 +92,6 @@ RUM.enable(
             trackResourceHeaders: .defaults,
             // Optional: Exclude specific URLs from RUM resource tracking.
             // Plain strings match exactly; `*` matches any characters (multiple allowed).
-            // For a first-party host this also drops the APM span.
             disallowList: ["https://api.example.com/health", "https://*.internal.example.com/*"]
         ),
         

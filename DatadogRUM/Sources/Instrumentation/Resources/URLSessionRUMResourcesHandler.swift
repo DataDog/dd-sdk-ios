@@ -59,8 +59,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         distributedTracing?.firstPartyHosts ?? .init()
     }
 
-    private var disallowedInterceptionIDs = Set<UUID>()
-
     // MARK: - Initialization
 
     init(
@@ -90,6 +88,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        guard !isDisallowed(url: request.url) else {
+            return (request, nil, nil)
+        }
+
         let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
@@ -104,13 +106,12 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
-        let url = interception.request.url?.absoluteString ?? "unknown_url"
-        interception.register(origin: "rum")
-
-        if disallowList?.isDisallowed(url: interception.request.url) == true {
-            disallowedInterceptionIDs.insert(interception.identifier)
+        guard !isDisallowed(url: interception.request.url) else {
             return
         }
+
+        let url = interception.request.url?.absoluteString ?? "unknown_url"
+        interception.register(origin: "rum")
 
         // Check if GraphQL was detected in the captured states
         if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
@@ -132,7 +133,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
-        if disallowedInterceptionIDs.remove(interception.identifier) != nil {
+        guard !isDisallowed(url: interception.request.url) else {
             return
         }
 
@@ -236,6 +237,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                 )
             )
         }
+    }
+
+    private func isDisallowed(url: URL?) -> Bool {
+        disallowList?.isDisallowed(url: url) == true
     }
 
     /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.
