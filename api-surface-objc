@@ -3935,6 +3935,7 @@ public class objc_URLSessionTracking: NSObject
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_FirstPartyHostsTracing)
     public func setResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [String: Any]?)
     public func setTrackResourceHeaders(_ trackResourceHeaders: objc_TrackResourceHeaders)
+    public func setDisallowList(_ disallowList: [String])
 public final class objc_HeaderCaptureRule: NSObject
     public static let defaults = objc_HeaderCaptureRule(.defaults)
     public static func matchHeaders(_ names: [String]) -> objc_HeaderCaptureRule

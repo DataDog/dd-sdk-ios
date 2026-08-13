@@ -380,6 +380,17 @@ extension RUM {
             /// Default: `.disabled`.
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
 
+            /// URL patterns disallowed from automatic RUM resource tracking.
+            ///
+            /// Matching requests produce no RUM Resource, and no APM span reconstructed from a RUM Resource.
+            /// The disallow list takes priority over RUM first-party hosts tracing.
+            ///
+            /// A pattern matches the full URL: plain strings match exactly, `*` matches any characters (multiple
+            /// allowed). Patterns with no literal (e.g. `"*"`) are ignored.
+            ///
+            /// Default: `[]`.
+            public var disallowList: [String] = []
+
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
         }
@@ -511,14 +522,17 @@ extension RUM.Configuration.URLSessionTracking {
     ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
     ///   - trackResourceHeaders: Configuration for capturing HTTP headers. Default: `.disabled`.
+    ///   - disallowList: URL patterns disallowed from automatic RUM resource tracking. Default: `[]`.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
         resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        trackResourceHeaders: TrackResourceHeaders = .disabled
+        trackResourceHeaders: TrackResourceHeaders = .disabled,
+        disallowList: [String] = []
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
         self.trackResourceHeaders = trackResourceHeaders
+        self.disallowList = disallowList
     }
 }
 

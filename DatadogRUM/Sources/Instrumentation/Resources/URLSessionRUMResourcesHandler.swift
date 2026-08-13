@@ -51,6 +51,8 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     let telemetry: Telemetry
     /// Header processor for capturing HTTP headers.
     let headerProcessor: HeaderProcessor?
+    /// The disallow-list of URLs excluded from RUM resource tracking.
+    let disallowList: DisallowList?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -64,12 +66,14 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?,
         headerProcessor: HeaderProcessor?,
+        disallowList: DisallowList?,
         telemetry: Telemetry
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider
         self.distributedTracing = distributedTracing
         self.headerProcessor = headerProcessor
+        self.disallowList = disallowList
         self.telemetry = telemetry
     }
 
@@ -84,6 +88,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     // MARK: - DatadogURLSessionHandler
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        guard !isDisallowed(url: request.url) else {
+            return (request, nil, nil)
+        }
+
         let (modifiedRequest, traceContext, _) = distributedTracing?.modify(
             request: request,
             headerTypes: headerTypes,
@@ -98,6 +106,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception, capturedStates: [any URLSessionHandlerCapturedState]) {
+        guard !isDisallowed(url: interception.request.url) else {
+            return
+        }
+
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
@@ -121,6 +133,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        guard !isDisallowed(url: interception.request.url) else {
+            return
+        }
+
         guard let subscriber = subscriber else {
             return DD.logger.warn(
                 """
@@ -221,6 +237,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
                 )
             )
         }
+    }
+
+    private func isDisallowed(url: URL?) -> Bool {
+        disallowList?.isDisallowed(url: url) == true
     }
 
     /// Extracts GraphQL errors from JSON response if present and returns them as a JSON string.

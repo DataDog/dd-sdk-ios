@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-04
-sdk_version: 3.14.0
-verified_against_commit: cc8c93bb3
+last_updated: 2026-08-12
+sdk_version: 3.15.0
+verified_against_commit: dc80cf268
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -89,7 +89,10 @@ RUM.enable(
             //   .disabled - No header capture
             //   .defaults - Capture predefined common headers (cache-control, content-type, etag, etc.)
             //   .custom([rules]) - Capture headers by custom rules
-            trackResourceHeaders: .defaults
+            trackResourceHeaders: .defaults,
+            // Optional: Exclude specific URLs from RUM resource tracking.
+            // Plain strings match exactly; `*` matches any characters (multiple allowed).
+            disallowList: ["https://api.example.com/health", "https://*.internal.example.com/*"]
         ),
         
         // Track user frustrations (error taps following errors)
@@ -243,6 +246,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate` *(SwiftUI: experimental, behavior differs on iOS 17 vs iOS 18+)*
 - **Resource tracking**: `urlSessionTracking` (automatic), optionally call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourSessionDelegate.self))` for detailed timing
 - **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`
+- **Resource disallow list**: `urlSessionTracking.disallowList` — URL patterns excluded from RUM resource tracking (`*` wildcards)
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
