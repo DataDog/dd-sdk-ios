@@ -382,8 +382,8 @@ extension RUM {
 
             /// URL patterns disallowed from automatic RUM resource tracking.
             ///
-            /// Matching requests produce no RUM Resource, and no associated APM span. The disallow list takes
-            /// priority over first-party hosts tracing.
+            /// Matching requests produce no RUM Resource, and no APM span reconstructed from a RUM Resource.
+            /// The disallow list takes priority over RUM first-party hosts tracing.
             ///
             /// A pattern matches the full URL: plain strings match exactly, `*` matches any characters (multiple
             /// allowed). Patterns with no literal (e.g. `"*"`) are ignored.
