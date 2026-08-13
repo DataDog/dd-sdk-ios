@@ -116,6 +116,39 @@ class AppHangsMonitoringTests: XCTestCase {
         #endif
     }
 
+    func testGivenAppHangBacktracesDisabledInCrashReporting_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
+        // Given (initialize SDK on the main thread)
+        let crashReportingConfig = CrashReporting.Configuration(appHangBacktraceEnabled: false)
+        oneOf([ // no matter of RUM or CR initialization order
+            {
+                RUM.enable(with: self.rumConfig, in: self.core)
+                CrashReporting.enable(with: crashReportingConfig, in: self.core)
+            },
+            {
+                CrashReporting.enable(with: crashReportingConfig, in: self.core)
+                RUM.enable(with: self.rumConfig, in: self.core)
+            },
+        ])
+
+        // When
+        mainQueue.sync {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        try flushHangsMonitoring()
+        let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
+        let appHangError = try XCTUnwrap(errors.first)
+
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+        XCTAssertEqual(appHangError.error.source, .source)
+        XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as App Hang backtraces were disabled")
+        XCTAssertNil(appHangError.error.binaryImages, "Binary Images should be unavailable as App Hang backtraces were disabled")
+        XCTAssertNil(appHangError.error.wasTruncated, "Truncation flag should be unavailable as App Hang backtraces were disabled")
+    }
+
     func testGivenOnlyRUMEnabled_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
         // Given
         mainQueue.sync {

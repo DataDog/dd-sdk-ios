@@ -57,6 +57,11 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
     private let dateProvider: DateProvider
     /// Backtrace reporter for hang's stack trace generation.
     private let backtraceReporter: BacktraceReporting
+    /// Tells whether backtraces may be generated for App Hangs.
+    ///
+    /// It is read on each hang instead of once on initialization, because Crash Reporting - which owns this
+    /// setting - can be enabled after RUM.
+    private let isAppHangBacktraceEnabled: @Sendable () -> Bool
     /// The hang's duration threshold to consider it a false-positive.
     private let falsePositiveThreshold: TimeInterval
     /// An identifier of the main thread required for backtrace generation.
@@ -83,19 +88,22 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
     ///   - dateProvider: Date provider.
     ///   - backtraceReporter: Backtrace reporter for hang's stack trace generation.
     ///   - telemetry: The handler to report issues through RUM Telemetry.
+    ///   - isAppHangBacktraceEnabled: Tells whether backtraces may be generated for App Hangs. It is queried on each hang.
     init(
         appHangThreshold: TimeInterval,
         queue: DispatchQueue,
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
         telemetry: Telemetry,
-        falsePositiveThreshold: TimeInterval = Constants.falsePositiveThreshold
+        falsePositiveThreshold: TimeInterval = Constants.falsePositiveThreshold,
+        isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         self.appHangThreshold = appHangThreshold
         self.idleInterval = appHangThreshold * Constants.tolerance
         self.mainQueue = queue
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
+        self.isAppHangBacktraceEnabled = isAppHangBacktraceEnabled
         self.falsePositiveThreshold = falsePositiveThreshold
         self.telemetry = telemetry
 
@@ -158,22 +166,8 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
             }
 
             // Capture the stack trace of all running threads with promoting the main thread stack.
-            guard let mainThreadID = mainThreadID else {
-                telemetry.error("Failed to determine main thread ID for backtrace generation")
+            guard let backtraceResult = generateBacktrace() else {
                 continue // unexpected
-            }
-
-            let backtraceResult: AppHang.BacktraceGenerationResult
-            do {
-                if let backtrace = try backtraceReporter.generateBacktrace(threadID: mainThreadID) {
-                    backtraceResult = .succeeded(backtrace)
-                } else {
-                    backtraceResult = .notAvailable
-                }
-            } catch let error {
-                backtraceResult = .failed
-                DD.logger.error("Encountered an error when generating App Hang backtrace", error: error)
-                telemetry.error("Failed to generate App Hang backtrace", error: error)
             }
 
             let hang = AppHang(
@@ -197,6 +191,34 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
             }
 
             delegate?.hangEnded(hang, duration: hangDuration)
+        }
+    }
+
+    /// Generates the backtrace of all running threads, promoting the main thread stack.
+    ///
+    /// - Returns: The result of generation or `nil` if the hang must be skipped (main thread ID could not be determined).
+    private func generateBacktrace() -> AppHang.BacktraceGenerationResult? {
+        guard isAppHangBacktraceEnabled() else {
+            // Checked before reading `mainThreadID` and before calling the reporter, so no work is done for the
+            // hang and it is still reported when the main thread ID is unknown.
+            return .disabled
+        }
+
+        guard let mainThreadID = mainThreadID else {
+            telemetry.error("Failed to determine main thread ID for backtrace generation")
+            return nil // unexpected
+        }
+
+        do {
+            if let backtrace = try backtraceReporter.generateBacktrace(threadID: mainThreadID) {
+                return .succeeded(backtrace)
+            } else {
+                return .notAvailable
+            }
+        } catch let error {
+            DD.logger.error("Encountered an error when generating App Hang backtrace", error: error)
+            telemetry.error("Failed to generate App Hang backtrace", error: error)
+            return .failed
         }
     }
 

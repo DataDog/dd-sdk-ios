@@ -275,7 +275,9 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
-            heatmapIdentifierRegistry: heatmapIdentifierStore
+            heatmapIdentifierRegistry: heatmapIdentifierStore,
+            // Read on each hang, as Crash Reporting - which owns this setting - can be enabled after RUM:
+            isAppHangBacktraceEnabled: { [weak core] in core?.isAppHangBacktraceEnabled ?? true }
         )
         #else
         self.instrumentation = RUMInstrumentation(
@@ -291,7 +293,9 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
-            uuidGenerator: configuration.uuidGenerator
+            uuidGenerator: configuration.uuidGenerator,
+            // Read on each hang, as Crash Reporting - which owns this setting - can be enabled after RUM:
+            isAppHangBacktraceEnabled: { [weak core] in core?.isAppHangBacktraceEnabled ?? true }
         )
         #endif
         self.requestBuilder = RequestBuilder(

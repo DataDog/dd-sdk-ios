@@ -19,10 +19,42 @@ import DatadogInternal
 ///
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
 public final class CrashReporting {
+    /// The Crash Reporting configuration.
+    public struct Configuration {
+        /// Determines whether backtraces are generated for App Hangs detected by RUM.
+        ///
+        /// Set this to `false` to keep receiving App Hang errors without a stack trace. Crash reports and every other
+        /// stack trace collected by the SDK are unaffected.
+        ///
+        /// Generating the backtrace snapshots all running threads while the main thread is still blocked, so its cost
+        /// adds to the duration of the hang being measured. Turning it off trades stack traces in App Hang errors for a
+        /// smaller footprint, which matters most for apps setting a small `RUM.Configuration.appHangThreshold`.
+        ///
+        /// Default: `true`.
+        public var appHangBacktraceEnabled: Bool
+
+        /// Creates a Crash Reporting configuration object.
+        ///
+        /// - Parameter appHangBacktraceEnabled: Whether backtraces are generated for App Hangs detected by RUM.
+        public init(appHangBacktraceEnabled: Bool = true) {
+            self.appHangBacktraceEnabled = appHangBacktraceEnabled
+        }
+    }
+
     /// Initializes the Datadog Crash Reporter using the default
     /// `KSCrash` plugin.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        enable(with: try KSCrashPlugin(telemetry: core.telemetry), in: core)
+        enable(with: Configuration(), in: core)
+    }
+
+    /// Initializes the Datadog Crash Reporter using the default
+    /// `KSCrash` plugin.
+    ///
+    /// - Parameters:
+    ///   - configuration: The Crash Reporting configuration.
+    ///   - core: The instance of Datadog SDK to enable Crash Reporting in (global instance by default).
+    public static func enable(with configuration: Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        enable(with: try KSCrashPlugin(telemetry: core.telemetry), configuration: configuration, in: core)
     }
 
     /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
@@ -31,19 +63,27 @@ public final class CrashReporting {
     /// - Provide crash report
     /// - Store context data associated with crashes
     /// - Provide backtraces
-    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
+    public static func enable(
+        with plugin: @autoclosure () throws -> CrashReportingPlugin,
+        configuration: Configuration = .init(),
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
         do {
             // To ensure the correct registration order between Core and Features,
             // the entire initialization flow is synchronized on the main thread.
             try runOnMainThreadSync {
-                try enableOrThrow(with: plugin(), in: core)
+                try enableOrThrow(with: plugin(), in: core, configuration: configuration)
             }
         } catch let error {
             consolePrint("\(error)", .error)
         }
     }
 
-    internal static func enableOrThrow(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol) throws {
+    internal static func enableOrThrow(
+        with plugin: CrashReportingPlugin,
+        in core: DatadogCoreProtocol,
+        configuration: Configuration = .init()
+    ) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `CrashReporting.enable()`."
@@ -63,7 +103,10 @@ public final class CrashReporting {
         try core.register(feature: reporter)
 
         if let backtraceReporter = plugin.backtraceReporter {
-            try core.register(backtraceReporter: backtraceReporter)
+            try core.register(
+                backtraceReporter: backtraceReporter,
+                appHangBacktraceEnabled: configuration.appHangBacktraceEnabled
+            )
         }
 
         reporter.sendCrashReportIfFound()
@@ -90,5 +133,36 @@ public final class objc_CrashReporting: NSObject {
     @objc
     public static func enable() {
         CrashReporting.enable()
+    }
+
+    /// Initializes the Datadog Crash Reporter with the given configuration.
+    /// - Parameter configuration: The Crash Reporting configuration.
+    @objc
+    public static func enable(with configuration: objc_CrashReportingConfiguration) {
+        CrashReporting.enable(with: configuration.configuration)
+    }
+}
+
+/// The Crash Reporting configuration.
+@available(swift, obsoleted: 1)
+@objc(DDCrashReporterConfiguration)
+@objcMembers
+public final class objc_CrashReportingConfiguration: NSObject {
+    internal var configuration: CrashReporting.Configuration
+
+    /// Determines whether backtraces are generated for App Hangs detected by RUM.
+    ///
+    /// Set this to `NO` to keep receiving App Hang errors without a stack trace. Crash reports and every other
+    /// stack trace collected by the SDK are unaffected.
+    ///
+    /// Default: `YES`.
+    public var appHangBacktraceEnabled: Bool {
+        get { configuration.appHangBacktraceEnabled }
+        set { configuration.appHangBacktraceEnabled = newValue }
+    }
+
+    /// Creates a Crash Reporting configuration object.
+    override public init() {
+        configuration = .init()
     }
 }

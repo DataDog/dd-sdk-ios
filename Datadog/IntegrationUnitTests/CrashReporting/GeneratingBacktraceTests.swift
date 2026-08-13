@@ -59,6 +59,29 @@ class GeneratingBacktraceTests: XCTestCase {
         )
     }
 
+    func testGivenAppHangBacktracesDisabled_whenGeneratingBacktrace_itStillGeneratesIt() throws {
+        #if os(watchOS)
+        throw XCTSkip("Backtrace generation is not supported on watchOS")
+        #endif
+        // Given
+        CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must still be registered")
+        XCTAssertFalse(core.isAppHangBacktraceEnabled)
+
+        // Only the App Hangs consumer is gated - other consumers must keep working:
+        let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace())
+        XCTAssertGreaterThan(backtrace.threads.count, 0, "Some thread(s) should be recorded")
+        XCTAssertGreaterThan(backtrace.binaryImages.count, 0, "Some binary image(s) should be recorded")
+    }
+
+    func testGivenCrashReportingNotEnabled_thenAppHangBacktracesAreNotDisabled() {
+        // Then (backtrace generation is *unavailable*, not *disabled*)
+        XCTAssertNil(core.get(feature: BacktraceReportingFeature.self))
+        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+    }
+
     func testGeneratingBacktraceOfTheMainThread() throws {
         #if os(watchOS)
         throw XCTSkip("Backtrace generation is not supported on watchOS")

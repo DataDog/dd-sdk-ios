@@ -14,9 +14,18 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     /// A type capable of generating backtrace reports.
     let reporter: BacktraceReporting
 
+    /// Determines whether backtraces may be generated for App Hangs detected by RUM.
+    ///
+    /// It only gates the App Hangs consumer. All other consumers of `reporter` (crash reports, binary images
+    /// attached to logs and RUM view events, the public `backtraceReporter` API) are unaffected by this value.
+    let appHangBacktraceEnabled: Bool
+
     /// Creates `BacktraceReportingFeature`.
-    /// - Parameter reporter: An external implementation of a type capable of generating backtrace reports.
-    init(reporter: BacktraceReporting) {
+    /// - Parameters:
+    ///   - reporter: An external implementation of a type capable of generating backtrace reports.
+    ///   - appHangBacktraceEnabled: Whether backtraces may be generated for App Hangs. Default: `true`.
+    init(reporter: BacktraceReporting, appHangBacktraceEnabled: Bool = true) {
         self.reporter = reporter
+        self.appHangBacktraceEnabled = appHangBacktraceEnabled
     }
 }

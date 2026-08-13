@@ -4,6 +4,7 @@
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
 - [FEATURE] Add `disallowList` to `RUM.Configuration.URLSessionTracking` to exclude URLs from automatic RUM resource tracking, with `*` wildcard support. [#3097][]
+- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled.
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 - [FIX] Fix `EXC_BREAKPOINT` crash when a log or RUM attribute's `encode(to:)` throws after partially encoding a value. [#3134][]
 

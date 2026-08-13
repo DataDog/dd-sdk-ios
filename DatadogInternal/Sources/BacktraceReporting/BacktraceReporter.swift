@@ -86,14 +86,16 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
 /// Adds capability of reporting backtraces.
 extension DatadogCoreProtocol {
     /// Registers backtrace reporter in Core.
-    /// - Parameter backtraceReporter: the implementation of backtrace reporter.
-    public func register(backtraceReporter: BacktraceReporting) throws {
+    /// - Parameters:
+    ///   - backtraceReporter: the implementation of backtrace reporter.
+    ///   - appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM. Default: `true`.
+    public func register(backtraceReporter: BacktraceReporting, appHangBacktraceEnabled: Bool = true) throws {
         guard get(feature: BacktraceReportingFeature.self) == nil else {
             DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
             return
         }
 
-        let feature = BacktraceReportingFeature(reporter: backtraceReporter)
+        let feature = BacktraceReportingFeature(reporter: backtraceReporter, appHangBacktraceEnabled: appHangBacktraceEnabled)
         try register(feature: feature)
     }
 
@@ -101,4 +103,15 @@ extension DatadogCoreProtocol {
     ///
     /// It requires `BacktraceReportingFeature` registered to Datadog core. Otherwise reported backtraces will be `nil`.
     public var backtraceReporter: BacktraceReporting { CoreBacktraceReporter(core: self) }
+
+    /// Whether backtraces may be generated for App Hangs detected by RUM.
+    ///
+    /// It is `false` only when a backtrace reporter was registered with App Hang backtraces turned off. Before any
+    /// reporter is registered it is `true`: in that state backtrace generation is *unavailable* rather than
+    /// *disabled*, and callers must keep distinguishing the two. Read it at the moment a backtrace is needed, as
+    /// the reporter may be registered after the reading Feature was enabled.
+    public var isAppHangBacktraceEnabled: Bool {
+        // `self.` is required: a bare `get(...)` here parses as a `get` accessor.
+        self.get(feature: BacktraceReportingFeature.self)?.appHangBacktraceEnabled ?? true
+    }
 }

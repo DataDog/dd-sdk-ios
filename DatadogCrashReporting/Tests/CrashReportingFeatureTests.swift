@@ -81,6 +81,43 @@ class CrashReportingFeatureTests: XCTestCase {
         XCTAssertTrue(user["invalid"] is NSNull)
     }
 
+    // MARK: - Configuration Tests
+
+    func testByDefault_itRegistersBacktraceReporterWithAppHangBacktracesEnabled() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = BacktraceReporterMock()
+
+        // When
+        try CrashReporting.enableOrThrow(with: plugin, in: core)
+
+        // Then
+        XCTAssertNotNil(try core.backtraceReporter.generateBacktrace(), "Backtrace reporter must be registered")
+        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+    }
+
+    func testWhenAppHangBacktracesAreDisabled_itStillRegistersBacktraceReporter() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = BacktraceReporterMock()
+
+        // When
+        try CrashReporting.enableOrThrow(
+            with: plugin,
+            in: core,
+            configuration: .init(appHangBacktraceEnabled: false)
+        )
+
+        // Then
+        XCTAssertNotNil(
+            try core.backtraceReporter.generateBacktrace(),
+            "Other consumers of backtrace generation must keep working"
+        )
+        XCTAssertFalse(core.isAppHangBacktraceEnabled)
+    }
+
     // MARK: - Crash Report Reading Tests
 
     func testItSendsLaunchReportWhenNoPendingCrash() {

@@ -314,7 +314,7 @@ Event mappers allow modifying or dropping events before upload:
 
 ## Feature Interactions
 
-- **Crash Reporting**: Enhances App Hang monitoring with stack traces
+- **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
 - **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
 - **Session Replay**: RUM must be enabled for Session Replay to work
 - **WebView Tracking**: Enables RUM tracking in web views. Requires:
