@@ -323,6 +323,50 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "the view returned by `viewEventMapper` must be sanitized before writing")
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveView_whenSending_itMapsTheRawRUMViewContextBeforeSanitizing() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        var activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        activeRUMView.context = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        var contextInfoCountSeenByMapper: Int?
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom(),
+            eventsMapper: .mockWith(
+                viewEventMapper: { viewEvent in
+                    contextInfoCountSeenByMapper = viewEvent.context?.contextInfo.count
+                    return viewEvent
+                }
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: .mockWith(date: crashDate), context: .mockWith(
+                    trackingConsent: .granted,
+                    lastRUMViewEvent: activeRUMView
+                ))
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        XCTAssertEqual(
+            contextInfoCountSeenByMapper,
+            numberOfAttributes,
+            "`viewEventMapper` must receive the raw view, before sanitization removes attributes"
+        )
+    }
+
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
