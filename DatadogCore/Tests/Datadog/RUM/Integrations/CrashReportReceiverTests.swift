@@ -280,6 +280,49 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewAndViewEventMapperReintroducingTooManyAttributes_whenSending_itSanitizesTheMappedRUMViewContext() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom(),
+            eventsMapper: .mockWith(
+                viewEventMapper: { viewEvent in
+                    var mappedView = viewEvent
+                    mappedView.context = RUMEventAttributes(
+                        contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+                    )
+                    return mappedView
+                }
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: .mockWith(date: crashDate), context: .mockWith(
+                    trackingConsent: .granted,
+                    lastRUMViewEvent: activeRUMView
+                ))
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "the view returned by `viewEventMapper` must be sanitized before writing")
+    }
+
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()

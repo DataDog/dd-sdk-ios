@@ -282,7 +282,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 writer.write(value: self.sanitizer.sanitize(event: rumError))
             }
             if let mappedView = self.eventsMapper.map(event: sanitizedRUMView) {
-                writer.write(value: self.eventsMapper.map(event: mappedView))
+                writer.write(value: self.sanitizer.sanitize(event: mappedView))
             }
         }
     }
