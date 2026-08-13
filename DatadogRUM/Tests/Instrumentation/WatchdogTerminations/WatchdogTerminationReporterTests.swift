@@ -14,6 +14,7 @@ final class WatchdogTerminationReporterTests: XCTestCase {
 
     func testSend_sanitizesRUMErrorContextBeforeWriting() throws {
         let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
         var viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
@@ -23,13 +24,13 @@ final class WatchdogTerminationReporterTests: XCTestCase {
 
         let reporter = WatchdogTerminationReporter(
             featureScope: featureScope,
-            dateProvider: DateProviderMock(),
+            dateProvider: RelativeDateProvider(using: currentDate),
             uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // When
         reporter.send(
-            date: Date(timeIntervalSinceReferenceDate: TimeInterval(viewEvent.date)),
+            date: currentDate,
             state: .mockWith(trackingConsent: .granted),
             viewEvent: viewEvent
         )
@@ -45,6 +46,7 @@ final class WatchdogTerminationReporterTests: XCTestCase {
 
     func testSend_sanitizesRUMViewContextBeforeWriting() throws {
         let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
         var viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
@@ -54,13 +56,13 @@ final class WatchdogTerminationReporterTests: XCTestCase {
 
         let reporter = WatchdogTerminationReporter(
             featureScope: featureScope,
-            dateProvider: DateProviderMock(),
+            dateProvider: RelativeDateProvider(using: currentDate),
             uuidGenerator: RUMUUIDGeneratorMock()
         )
 
         // When
         reporter.send(
-            date: Date(timeIntervalSinceReferenceDate: TimeInterval(viewEvent.date)),
+            date: currentDate,
             state: .mockWith(trackingConsent: .granted),
             viewEvent: viewEvent
         )
