@@ -114,6 +114,20 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
+    func testFeatureOperationCommand_sanitizesOversizedContextAttributesBeforeWriting() throws {
+        let attributes = [
+            "small": "value",
+            "large": String(repeating: "a", count: RUMEventSanitizer.maxTotalAttributeBytes),
+        ]
+        let command: RUMOperationStepVitalCommand = .mockWith(attributes: attributes)
+
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
+
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.context?.contextInfo["small"] as? String, "value")
+        XCTAssertNil(event.context?.contextInfo["large"])
+    }
+
     func testFeatureOperationCommand_sendsOperationMessageWithServerTimeOffset() throws {
         // Given
         let featureScope = FeatureScopeMock()

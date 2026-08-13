@@ -787,6 +787,11 @@ class CrashReportReceiverTests: XCTestCase {
 
         let modifiedViewName = String.mockRandom()
         let errorFingerprint = String.mockRandom()
+        let oversizedAttributeKey = "oversized"
+        let oversizedAttribute = String(
+            repeating: "a",
+            count: RUMEventSanitizer.maxTotalAttributeBytes
+        )
         let receiver: CrashReportReceiver = .mockWith(
             featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: crashDate),
@@ -796,11 +801,17 @@ class CrashReportReceiverTests: XCTestCase {
                 viewEventMapper: { event in
                     var event = event
                     event.view.name = modifiedViewName
+                    event.context = RUMEventAttributes(
+                        contextInfo: [oversizedAttributeKey: oversizedAttribute]
+                    )
                     return event
                 },
                 errorEventMapper: { event in
                     var event = event
                     event.error.fingerprint = errorFingerprint
+                    event.context = RUMEventAttributes(
+                        contextInfo: [oversizedAttributeKey: oversizedAttribute]
+                    )
                     return event
                 }
             )
@@ -816,9 +827,54 @@ class CrashReportReceiverTests: XCTestCase {
         // Then
         let sendRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
         XCTAssertEqual(sendRUMViewEvent?.view.name, modifiedViewName, "Must send event mapper modified view event")
+        XCTAssertNil(sendRUMViewEvent?.context?.contextInfo[oversizedAttributeKey])
 
         let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
         XCTAssertEqual(sendRUMErrorEvent.error.fingerprint, errorFingerprint, "Must send event mapper modified error event")
+        XCTAssertNil(sendRUMErrorEvent.context?.contextInfo[oversizedAttributeKey])
+    }
+
+    func testGivenStaleCrashWithOversizedLastRUMAttributesAndNilErrorMapper_whenSending_itSanitizesOriginalError() throws {
+        let oversizedAttributeKey = "oversized"
+        let smallAttributeKey = "small"
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let lastRUMAttributes = RUMEventAttributes(
+            contextInfo: [
+                smallAttributeKey: "value",
+                oversizedAttributeKey: String(
+                    repeating: "a",
+                    count: RUMEventSanitizer.maxTotalAttributeBytes
+                ),
+            ]
+        )
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: .mockRandomWith(crashCount: 0),
+            lastRUMAttributes: lastRUMAttributes
+        )
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(
+                using: crashDate.addingTimeInterval(
+                    FatalErrorBuilder.Constants.viewEventAvailabilityThreshold + 1
+                )
+            ),
+            eventsMapper: .mockWith(errorEventMapper: { _ in nil })
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(
+                message: .payload(Crash(report: .mockWith(date: crashDate), context: crashContext)),
+                from: NOPDatadogCore()
+            )
+        )
+
+        // Then
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMViewEvent.self).isEmpty)
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).last)
+        XCTAssertNotNil(sentRUMError.context?.contextInfo[smallAttributeKey])
+        XCTAssertNil(sentRUMError.context?.contextInfo[oversizedAttributeKey])
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenErrorMapperReturnsNull_itSendOriginalError() throws {

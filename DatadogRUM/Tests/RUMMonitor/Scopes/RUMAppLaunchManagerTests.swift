@@ -120,6 +120,22 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
+    func testTTIDCommand_sanitizesOversizedContextAttributesBeforeWriting() throws {
+        let command: RUMTimeToInitialDisplayCommand = .mockWith(
+            time: mockContext.launchInfo.processLaunchDate.addingTimeInterval(1),
+            attributes: [
+                "small": "value",
+                "large": String(repeating: "a", count: RUMEventSanitizer.maxTotalAttributeBytes),
+            ]
+        )
+
+        manager.process(command, context: mockContext, writer: mockWriter)
+
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalAppLaunchEvent.self).first)
+        XCTAssertEqual(event.context?.contextInfo["small"] as? String, "value")
+        XCTAssertNil(event.context?.contextInfo["large"])
+    }
+
     func testTTIDCommand_appliesServerTimeOffsetToAppLaunchEventAndProfilerMessage() throws {
         // Given
         let featureScope = FeatureScopeMock()

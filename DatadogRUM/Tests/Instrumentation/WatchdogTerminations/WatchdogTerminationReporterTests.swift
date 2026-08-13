@@ -75,4 +75,33 @@ final class WatchdogTerminationReporterTests: XCTestCase {
         XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
         XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
     }
+
+    func testSend_sanitizesOversizedRUMErrorAndViewAttributesBeforeWriting() throws {
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        var viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        viewEvent.context = RUMEventAttributes(
+            contextInfo: [
+                "small": "value",
+                "large": String(repeating: "a", count: RUMEventSanitizer.maxTotalAttributeBytes),
+            ]
+        )
+        let reporter = WatchdogTerminationReporter(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
+
+        reporter.send(
+            date: currentDate,
+            state: .mockWith(trackingConsent: .granted),
+            viewEvent: viewEvent
+        )
+
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(sentRUMError.context?.contextInfo["small"] as? String, "value")
+        XCTAssertNil(sentRUMError.context?.contextInfo["large"])
+        XCTAssertEqual(sentRUMView.context?.contextInfo["small"] as? String, "value")
+        XCTAssertNil(sentRUMView.context?.contextInfo["large"])
+    }
 }
