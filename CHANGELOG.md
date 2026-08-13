@@ -4,7 +4,7 @@
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
 - [FEATURE] Add `disallowList` to `RUM.Configuration.URLSessionTracking` to exclude URLs from automatic RUM resource tracking, with `*` wildcard support. [#3097][]
-- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled.
+- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
 - [FIX] Fix `EXC_BREAKPOINT` crash when a log or RUM attribute's `encode(to:)` throws after partially encoding a value. [#3134][]
 
@@ -1230,6 +1230,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 [#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
 [#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
+[#3136]: https://github.com/DataDog/dd-sdk-ios/pull/3136
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
