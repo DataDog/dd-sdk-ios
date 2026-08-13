@@ -42,4 +42,35 @@ final class WatchdogTerminationReporterTests: XCTestCase {
         XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
         XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
     }
+
+    func testSend_sanitizesRUMViewContextBeforeWriting() throws {
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        var viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        viewEvent.context = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        let reporter = WatchdogTerminationReporter(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
+
+        // When
+        reporter.send(
+            date: Date(timeIntervalSinceReferenceDate: TimeInterval(viewEvent.date)),
+            state: .mockWith(trackingConsent: .granted),
+            viewEvent: viewEvent
+        )
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+    }
 }

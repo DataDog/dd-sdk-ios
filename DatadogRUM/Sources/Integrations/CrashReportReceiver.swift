@@ -272,6 +272,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         featureScope.eventWriteContext(bypassConsent: true) { context, writer in
             let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
             let updatedRUMView = builder.updateRUMViewWithError(rumView)
+            let sanitizedRUMView = self.sanitizer.sanitize(event: updatedRUMView)
             let rumError = builder.createRUMError(with: updatedRUMView)
 
             if let mappedError = self.eventsMapper.map(event: rumError) {
@@ -280,7 +281,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
                 writer.write(value: self.sanitizer.sanitize(event: rumError))
             }
-            if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
+            if let mappedView = self.eventsMapper.map(event: sanitizedRUMView) {
                 writer.write(value: self.eventsMapper.map(event: mappedView))
             }
         }

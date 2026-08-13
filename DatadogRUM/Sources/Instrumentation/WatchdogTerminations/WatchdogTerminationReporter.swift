@@ -69,7 +69,7 @@ internal final class WatchdogTerminationReporter: WatchdogTerminationReporting {
                 additionalAttributes: nil
             )
             let error = self.sanitizer.sanitize(event: builder.createRUMError(with: viewEvent))
-            let view = builder.updateRUMViewWithError(viewEvent)
+            let view = self.sanitizer.sanitize(event: builder.updateRUMViewWithError(viewEvent))
 
             if realDateNow.timeIntervalSince(errorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
                 DD.logger.debug("Sending Watchdog Termination as RUM error with issuing RUM view update")
