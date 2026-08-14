@@ -15,6 +15,9 @@
 import UIKit
 #if !os(watchOS)
 
+// MARK: - Application
+internal typealias DDApplication = UIApplication
+
 // MARK: - Views
 public typealias DDView = UIView
 public typealias DDControl = UIControl
@@ -61,6 +64,9 @@ public typealias DDHostingController = UIHostingController
 
 #elseif canImport(AppKit)
 import AppKit
+
+// MARK: - Application
+internal typealias DDApplication = NSApplication
 
 // MARK: - Views
 public typealias DDView = NSView
