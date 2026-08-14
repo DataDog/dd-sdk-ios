@@ -423,12 +423,6 @@ public enum RUM
         public var collectAccessibility: Bool
         public var timeseries: Timeseries?
         public var featureFlags: FeatureFlags
-        public struct Timeseries
-            public var collectOnly: [TimeseriesMetric]?
-            public init(collectOnly: [TimeseriesMetric]? = nil)
-        public enum TimeseriesMetric
-            case memory
-            case cpu
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
@@ -438,6 +432,12 @@ public enum RUM
             case frequent
             case average
             case rare
+        public struct Timeseries
+            public var collectOnly: [TimeseriesMetric]?
+            public init(collectOnly: [TimeseriesMetric]? = nil)
+        public enum TimeseriesMetric
+            case memory
+            case cpu
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
         case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
