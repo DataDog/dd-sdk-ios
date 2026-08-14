@@ -33,25 +33,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let timestamp: Int64
         let footprintKB: Double
         let percent: Double
-        /// The view active when this sample was collected, if any.
-        let viewID: String?
-        let viewPath: String?
-        let viewName: String?
     }
 
     /// A single CPU sample: usage as a percentage (0.0 to 100.0).
     private struct CPUSample {
         let timestamp: Int64
         let usage: Double
-        /// The view active when this sample was collected, if any.
-        let viewID: String?
-        let viewPath: String?
-        let viewName: String?
     }
 
     private let memoryReader: SamplingBasedVitalReader
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
+    private let collectOnly: Set<RUM.Configuration.TimeseriesMetric>?
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
     private let totalRAM: Double
@@ -70,10 +63,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-    /// The view ID of the samples currently buffered, so a view change can trigger a flush before
-    /// mixing samples from two different views into the same batch. `nil` means either no view was
-    /// active yet, or no sample has been buffered since the last flush.
-    private var currentBatchViewID: String?
     /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
     /// even if the RUM command pipeline never notifies this collector of the session's expiry.
     private var sessionStartTime: Date = .distantPast
@@ -89,6 +78,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         memoryReader: SamplingBasedVitalReader,
         featureScope: FeatureScope,
         batchSize: Int = 120,
+        collectOnly: Set<RUM.Configuration.TimeseriesMetric>? = nil,
         samplingInterval: TimeInterval = 1,
         cpuUsageProvider: (() -> Double?)? = nil,
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
@@ -99,6 +89,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
+        self.collectOnly = collectOnly
         self.samplingInterval = samplingInterval
         self.featureScope = featureScope
         self.totalRAM = totalRAM
@@ -171,7 +162,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
-            self.currentBatchViewID = nil
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -244,19 +234,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
-    /// Returns the most recently active view among the given samples, searching from the end of the batch
-    /// backwards, or `nil` if no sample in the batch had a view.
-    private static func lastKnownView(
-        in samples: [(viewID: String?, viewPath: String?, viewName: String?)]
-    ) -> (id: String, path: String, name: String?)? {
-        for sample in samples.reversed() {
-            if let id = sample.viewID {
-                return (id: id, path: sample.viewPath ?? "", name: sample.viewName)
-            }
-        }
-        return nil
-    }
-
     private func makeTimer() -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
@@ -286,40 +263,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
 
         let timestamp = Int64.ddWithNoOverflow(currentDate.timeIntervalSince1970 * 1_000_000_000)
-        let activeView = activeContextReader?.activeView
-        let viewID = activeView?.id
-        let viewPath = activeView?.path
-        let viewName = activeView?.name
 
-        // Flush before mixing samples from two different views into the same batch, so each batch
-        // (and the RUM view it's attributed to) reflects a single view rather than whichever view
-        // happened to be active at the last sample or at flush time.
-        if viewID != currentBatchViewID {
-            flushMemory()
-            flushCPU()
-        }
-        currentBatchViewID = viewID
-
-        if let bytes = memoryReader.readVitalData() {
+        if collectOnly?.contains(.memory) ?? true, let bytes = memoryReader.readVitalData() {
             let footprintKB = bytes / 1_024
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
-            memoryBuffer.append(
-                MemorySample(
-                    timestamp: timestamp,
-                    footprintKB: footprintKB,
-                    percent: memoryPercent,
-                    viewID: viewID,
-                    viewPath: viewPath,
-                    viewName: viewName
-                )
-            )
+            memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
             if memoryBuffer.count >= batchSize {
                 flushMemory()
             }
         }
 
-        if let cpuUsage = cpuUsageProvider() {
-            cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage, viewID: viewID, viewPath: viewPath, viewName: viewName))
+        if collectOnly?.contains(.cpu) ?? true, let cpuUsage = cpuUsageProvider() {
+            cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage))
             if cpuBuffer.count >= batchSize {
                 flushCPU()
             }
@@ -337,19 +292,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
-        let globalAttributes = self.activeContextReader?.globalAttributes ?? [:]
         let sessionSampleRate = self.sessionSampleRate
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
-
-        // The batch is attributed to the most recently active view among its samples, not the view active
-        // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
-        // (e.g. samples collected before the first view starts), rather than dropping the batch.
-        let view = Self.lastKnownView(
-            in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -358,13 +304,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let adjustedEnd = end + offsetNs
             let event = RUMTimeseriesMemoryEvent(
                 dd: .init(configuration: .init(sessionSampleRate: sessionSampleRate)),
-                account: .init(context: context),
                 application: .init(id: applicationID),
                 buildId: context.buildId,
                 buildVersion: context.buildNumber,
                 ciTest: ciTest,
-                connectivity: .init(context: context),
-                context: .init(contextInfo: globalAttributes),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 ddtags: context.ddTags,
                 device: context.normalizedDevice(),
@@ -385,9 +328,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
-                usr: .init(context: context),
-                version: context.version,
-                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
+                version: context.version
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
@@ -404,19 +345,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let sessionType = self.sessionType
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
-        let globalAttributes = self.activeContextReader?.globalAttributes ?? [:]
         let sessionSampleRate = self.sessionSampleRate
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
-
-        // The batch is attributed to the most recently active view among its samples, not the view active
-        // at flush time — a view ending right before a scheduled flush shouldn't drop data that was
-        // genuinely collected while it was active. `view` is left `nil` if no sample in the batch had one
-        // (e.g. samples collected before the first view starts), rather than dropping the batch.
-        let view = Self.lastKnownView(
-            in: batch.map { (viewID: $0.viewID, viewPath: $0.viewPath, viewName: $0.viewName) }
-        )
 
         featureScope.eventWriteContext { context, writer in
             let offsetNs = context.serverTimeOffset.dd.toInt64Nanoseconds
@@ -425,13 +357,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let adjustedEnd = end + offsetNs
             let event = RUMTimeseriesCpuEvent(
                 dd: .init(configuration: .init(sessionSampleRate: sessionSampleRate)),
-                account: .init(context: context),
                 application: .init(id: applicationID),
                 buildId: context.buildId,
                 buildVersion: context.buildNumber,
                 ciTest: ciTest,
-                connectivity: .init(context: context),
-                context: .init(contextInfo: globalAttributes),
                 date: (Double(start) / 1_000_000_000 + context.serverTimeOffset).dd.toInt64Milliseconds,
                 ddtags: context.ddTags,
                 device: context.normalizedDevice(),
@@ -449,9 +378,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                     id: eventID,
                     start: adjustedStart
                 ),
-                usr: .init(context: context),
-                version: context.version,
-                view: view.map { .init(id: $0.id, name: $0.name, url: $0.path) }
+                version: context.version
             )
             writer.write(value: self.sanitizer.sanitize(event: event))
         }
