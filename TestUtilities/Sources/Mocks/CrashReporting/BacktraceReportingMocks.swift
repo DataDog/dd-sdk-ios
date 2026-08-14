@@ -38,7 +38,9 @@ public struct BacktraceReporterMock: BacktraceReporting, @unchecked Sendable {
     }
 
     public func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
-        generateBacktraceCallsCount += 1
+        // `+=` through the wrapper would take the read and the write lock separately, losing increments under
+        // concurrent calls. `mutate` acquires the write lock once.
+        _generateBacktraceCallsCount.mutate { $0 += 1 }
         try throwIfNeeded()
         return backtrace
     }

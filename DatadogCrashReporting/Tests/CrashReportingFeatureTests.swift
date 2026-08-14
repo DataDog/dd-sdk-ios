@@ -118,6 +118,31 @@ class CrashReportingFeatureTests: XCTestCase {
         XCTAssertFalse(core.isAppHangBacktraceEnabled)
     }
 
+    func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreDisabled_itStillRecordsTheOptOut() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = nil
+
+        // When
+        try CrashReporting.enableOrThrow(
+            with: plugin,
+            in: core,
+            configuration: .init(appHangBacktraceEnabled: false)
+        )
+
+        // Then
+        XCTAssertFalse(
+            core.isAppHangBacktraceEnabled,
+            "Opting out must be recorded even when the plugin provides no backtrace reporter, so that App Hangs "
+            + "report the stack trace as disabled rather than as Crash Reporting never having been enabled"
+        )
+        XCTAssertNil(
+            try core.backtraceReporter.generateBacktrace(),
+            "Backtrace generation stays unavailable when the plugin provides no reporter"
+        )
+    }
+
     // MARK: - Crash Report Reading Tests
 
     func testItSendsLaunchReportWhenNoPendingCrash() {

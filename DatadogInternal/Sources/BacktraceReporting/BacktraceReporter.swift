@@ -66,7 +66,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
             return nil
         }
 
-        guard let backtraceFeature = core.get(feature: BacktraceReportingFeature.self) else {
+        guard let reporter = core.get(feature: BacktraceReportingFeature.self)?.reporter else {
             DD.logger.warn(
                 """
                 Backtrace will not be generated as this capability is not available.
@@ -75,11 +75,11 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
             )
             return nil
         }
-        return try backtraceFeature.reporter.generateBacktrace(threadID: threadID)
+        return try reporter.generateBacktrace(threadID: threadID)
     }
 
     func binaryImages() throws -> [BinaryImage]? {
-        try core?.get(feature: BacktraceReportingFeature.self)?.reporter.binaryImages()
+        try core?.get(feature: BacktraceReportingFeature.self)?.reporter?.binaryImages()
     }
 }
 
@@ -96,6 +96,23 @@ extension DatadogCoreProtocol {
         }
 
         let feature = BacktraceReportingFeature(reporter: backtraceReporter, appHangBacktraceEnabled: appHangBacktraceEnabled)
+        try register(feature: feature)
+    }
+
+    /// Registers the App Hang backtrace policy in Core when no backtrace reporter is available.
+    ///
+    /// Use it when Crash Reporting is enabled with a custom plugin that provides no backtrace reporter: backtraces
+    /// cannot be generated at all in that case, but recording the policy keeps "generation was turned off" reportable
+    /// as such instead of being mistaken for "Crash Reporting was never enabled".
+    ///
+    /// - Parameter appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM.
+    public func register(appHangBacktraceEnabled: Bool) throws {
+        guard get(feature: BacktraceReportingFeature.self) == nil else {
+            DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
+            return
+        }
+
+        let feature = BacktraceReportingFeature(reporter: nil, appHangBacktraceEnabled: appHangBacktraceEnabled)
         try register(feature: feature)
     }
 

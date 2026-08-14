@@ -63,9 +63,24 @@ public final class CrashReporting {
     /// - Provide crash report
     /// - Store context data associated with crashes
     /// - Provide backtraces
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        enable(with: try plugin(), configuration: Configuration(), in: core)
+    }
+
+    /// Initializes the Datadog Crash Reporter with a custom Crash Reporting Plugin.
+    ///
+    /// The custom plugin will be responsible for:
+    /// - Provide crash report
+    /// - Store context data associated with crashes
+    /// - Provide backtraces
+    ///
+    /// - Parameters:
+    ///   - plugin: The custom Crash Reporting Plugin.
+    ///   - configuration: The Crash Reporting configuration.
+    ///   - core: The instance of Datadog SDK to enable Crash Reporting in (global instance by default).
     public static func enable(
         with plugin: @autoclosure () throws -> CrashReportingPlugin,
-        configuration: Configuration = .init(),
+        configuration: Configuration,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         do {
@@ -107,6 +122,10 @@ public final class CrashReporting {
                 backtraceReporter: backtraceReporter,
                 appHangBacktraceEnabled: configuration.appHangBacktraceEnabled
             )
+        } else {
+            // A custom plugin may provide no backtrace reporter. Register the policy anyway, so that opting out of
+            // App Hang backtraces stays reportable as such rather than as "Crash Reporting was never enabled".
+            try core.register(appHangBacktraceEnabled: configuration.appHangBacktraceEnabled)
         }
 
         reporter.sendCrashReportIfFound()

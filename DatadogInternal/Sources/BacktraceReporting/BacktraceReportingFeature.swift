@@ -12,7 +12,11 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 
     /// A type capable of generating backtrace reports.
-    let reporter: BacktraceReporting
+    ///
+    /// It is `nil` when Crash Reporting was enabled with a custom plugin that provides no backtrace reporter. The
+    /// Feature is still registered in that case, so that `appHangBacktraceEnabled` is recorded and backtrace
+    /// generation stays distinguishable from Crash Reporting never having been enabled.
+    let reporter: BacktraceReporting?
 
     /// Determines whether backtraces may be generated for App Hangs detected by RUM.
     ///
@@ -22,9 +26,9 @@ internal final class BacktraceReportingFeature: DatadogFeature {
 
     /// Creates `BacktraceReportingFeature`.
     /// - Parameters:
-    ///   - reporter: An external implementation of a type capable of generating backtrace reports.
+    ///   - reporter: An external implementation of a type capable of generating backtrace reports, if any.
     ///   - appHangBacktraceEnabled: Whether backtraces may be generated for App Hangs. Default: `true`.
-    init(reporter: BacktraceReporting, appHangBacktraceEnabled: Bool = true) {
+    init(reporter: BacktraceReporting?, appHangBacktraceEnabled: Bool = true) {
         self.reporter = reporter
         self.appHangBacktraceEnabled = appHangBacktraceEnabled
     }
