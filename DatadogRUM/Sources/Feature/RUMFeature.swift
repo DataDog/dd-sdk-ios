@@ -139,11 +139,20 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
-        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.map { timeseries in
-            TimeseriesSessionCollector(
+        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            var effectiveCollectOnly = timeseries.collectOnly.map(Set.init)
+#if os(watchOS)
+            // CPU usage is unavailable on watchOS, so a `collectOnly: [.cpu]` config would otherwise
+            // start a collector whose sampling timer runs for the whole session without ever flushing.
+            effectiveCollectOnly = effectiveCollectOnly?.subtracting([.cpu])
+            if effectiveCollectOnly?.isEmpty == true {
+                return nil
+            }
+#endif
+            return TimeseriesSessionCollector(
                 memoryReader: VitalMemoryReader(),
                 featureScope: featureScope,
-                collectOnly: timeseries.collectOnly.map(Set.init),
+                collectOnly: effectiveCollectOnly,
                 ciTest: ciTest,
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
