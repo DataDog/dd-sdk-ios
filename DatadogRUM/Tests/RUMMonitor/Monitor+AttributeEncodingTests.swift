@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -19,6 +20,15 @@ class Monitor_AttributeEncodingTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
     private var monitor: Monitor! // swiftlint:disable:this implicitly_unwrapped_optional
 
+    private struct AlwaysFailingAttribute: Encodable {
+        func encode(to encoder: Encoder) throws {
+            throw EncodingError.invalidValue(
+                self,
+                .init(codingPath: encoder.codingPath, debugDescription: "failure")
+            )
+        }
+    }
+
     override func setUp() {
         monitor = Monitor(
             dependencies: .mockWith(featureScope: featureScope),
@@ -32,7 +42,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
     // MARK: - Custom attributes (context.*)
 
-    func testWhenCustomAttributeFailsToEncode_itIsDroppedAndEventIsSent() throws {
+    func testWhenCustomAttributeFailsToEncode_itIsNullAndEventIsSent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -44,51 +54,59 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
-        let jsonData = try JSONEncoder().encode(viewEvent)
+        let jsonData = try encodeForStorage(viewEvent)
         let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let context = json["context"] as? [String: Any]
 
         XCTAssertEqual(context?["valid"] as? String, "test", "Valid attribute should be present in the event")
-        XCTAssertNil(context?["invalid"], "Non-encodable attribute should be dropped")
+        XCTAssertTrue(context?["invalid"] is NSNull, "Non-encodable attribute should be null")
 
         XCTAssertEqual(
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute 'invalid'") }.count,
             1,
-            "One error should be logged for the dropped attribute"
+            "One error should be logged for the null attribute"
         )
     }
 
-    func testWhenOnlyMalformedCustomAttributesAdded_itSendsEventWithoutCustomAttributes() throws {
-        // Given
+    func testWhenCustomAttributeThrowsAfterPartialEncoding_itIsNullAndEventIsSent() throws {
+        final class ThrowingAfterPartialEncode: Encodable {
+            private(set) var encodeCount = 0
+
+            func encode(to encoder: Encoder) throws {
+                encodeCount += 1
+                var container = encoder.singleValueContainer()
+                try container.encode(["partial value"])
+                throw EncodingError.invalidValue(
+                    0,
+                    .init(codingPath: encoder.codingPath, debugDescription: "thrown after encoding a value")
+                )
+            }
+        }
+
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
-        // When
-        monitor.addAttribute(forKey: "invalid1", value: AnyEncodable(NSObject()))
-        let closure: (NSArray) -> Void = { _ in }
-        monitor.addAttribute(forKey: "invalid2", value: AnyEncodable(closure))
+        let poison = ThrowingAfterPartialEncode()
+        monitor.addAttribute(forKey: "before", value: "before")
+        monitor.addAttribute(forKey: "poison", value: poison)
+        monitor.addAttribute(forKey: "after", value: "after")
         monitor.notifySDKInit()
 
-        // Then - event is sent even though all custom attributes are malformed
-        let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
-        XCTAssertEqual(viewEvents.count, 1)
+        let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
+        let jsonData = try encodeForStorage(viewEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let context = try XCTUnwrap(json["context"] as? [String: Any])
 
-        let viewEvent = try XCTUnwrap(viewEvents.first)
-        let jsonData = try JSONEncoder().encode(viewEvent)
-        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
-
-        XCTAssertNil((json["context"] as? [String: Any])?["invalid1"])
-        XCTAssertNil((json["context"] as? [String: Any])?["invalid2"])
-
-        XCTAssertEqual(
-            dd.logger.errorLogs.filter { $0.message.contains("Failed to encode attribute") }.count,
-            2
-        )
+        XCTAssertEqual(context["before"] as? String, "before")
+        XCTAssertTrue(context["poison"] is NSNull)
+        XCTAssertEqual(context["after"] as? String, "after")
+        XCTAssertEqual(poison.encodeCount, 2)
+        XCTAssertTrue(try XCTUnwrap(dd.logger.errorLog).message.contains("attribute 'poison'"))
     }
 
     // MARK: - User info extra attributes (usr.*)
 
-    func testWhenUserInfoExtraAttributeFailsToEncode_itIsDroppedAndEventIsSent() throws {
+    func testWhenUserInfoExtraAttributeFailsToEncode_itIsNullAndEventIsSent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -106,12 +124,12 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
-        let jsonData = try JSONEncoder().encode(viewEvent)
+        let jsonData = try encodeForStorage(viewEvent)
         let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let usr = json["usr"] as? [String: Any]
 
         XCTAssertEqual(usr?["valid_info"] as? String, "test", "Valid user info attribute should be present")
-        XCTAssertNil(usr?["invalid_info"], "Non-encodable user info attribute should be dropped")
+        XCTAssertTrue(usr?["invalid_info"] is NSNull, "Non-encodable user info attribute should be null")
 
         XCTAssertEqual(
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode") && $0.message.contains("invalid_info") }.count,
@@ -121,7 +139,7 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
     // MARK: - Account info extra attributes (account.*)
 
-    func testWhenAccountInfoExtraAttributeFailsToEncode_itIsDroppedAndEventIsSent() throws {
+    func testWhenAccountInfoExtraAttributeFailsToEncode_itIsNullAndEventIsSent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -139,12 +157,12 @@ class Monitor_AttributeEncodingTests: XCTestCase {
 
         // Then
         let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
-        let jsonData = try JSONEncoder().encode(viewEvent)
+        let jsonData = try encodeForStorage(viewEvent)
         let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let account = json["account"] as? [String: Any]
 
         XCTAssertEqual(account?["valid_plan"] as? String, "enterprise", "Valid account info attribute should be present")
-        XCTAssertNil(account?["invalid_plan"], "Non-encodable account info attribute should be dropped")
+        XCTAssertTrue(account?["invalid_plan"] is NSNull, "Non-encodable account info attribute should be null")
 
         XCTAssertEqual(
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode") && $0.message.contains("invalid_plan") }.count,
@@ -152,9 +170,33 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         )
     }
 
+    func testWhenRecoveryAccountAndUserAttributesCollide_itPreservesStaticProperties() throws {
+        featureScope.contextMock = .mockWith(
+            userInfo: UserInfo(
+                id: "user-id",
+                extraInfo: ["id": AlwaysFailingAttribute()]
+            ),
+            accountInfo: AccountInfo(
+                id: "account-id",
+                extraInfo: ["id": AlwaysFailingAttribute()]
+            )
+        )
+
+        monitor.notifySDKInit()
+
+        let viewEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
+        let jsonData = try encodeForStorage(viewEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: jsonData) as? [String: Any])
+        let user = try XCTUnwrap(json["usr"] as? [String: Any])
+        let account = try XCTUnwrap(json["account"] as? [String: Any])
+
+        XCTAssertEqual(user["id"] as? String, "user-id")
+        XCTAssertEqual(account["id"] as? String, "account-id")
+    }
+
     // MARK: - Feature flag values (feature_flags.*)
 
-    func testWhenFeatureFlagValueFailsToEncode_itIsDroppedAndEventIsSent() throws {
+    func testWhenFeatureFlagValueFailsToEncode_itIsNullAndEventIsSent() throws {
         // Given
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -168,16 +210,42 @@ class Monitor_AttributeEncodingTests: XCTestCase {
         // Then
         let viewEvents = featureScope.eventsWritten(ofType: RUMViewEvent.self)
         let viewWithFlags = try XCTUnwrap(viewEvents.last(where: { $0.view.name == "TestView" }))
-        let jsonData = try JSONEncoder().encode(viewWithFlags)
+        let jsonData = try encodeForStorage(viewWithFlags)
         let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: jsonData) as? [String: Any], "Expected encoded RUM view event JSON to be a dictionary")
         let featureFlags = json["feature_flags"] as? [String: Any]
 
         XCTAssertEqual(featureFlags?["valid_flag"] as? String, "enabled", "Valid feature flag should be present")
-        XCTAssertNil(featureFlags?["invalid_flag"], "Non-encodable feature flag should be dropped")
+        XCTAssertTrue(featureFlags?["invalid_flag"] is NSNull, "Non-encodable feature flag should be null")
 
         XCTAssertEqual(
             dd.logger.errorLogs.filter { $0.message.contains("Failed to encode") && $0.message.contains("invalid_flag") }.count,
             1
         )
+    }
+
+    // MARK: - RUM data store
+
+    func testRUMDataStoreRecoversMalformedAttributes() throws {
+        let value = RUMEventAttributes(
+            contextInfo: [
+                "valid": "preserved",
+                "invalid": AlwaysFailingAttribute(),
+            ]
+        )
+
+        featureScope.rumDataStore.setValue(value, forKey: .watchdogRUMViewEvent)
+
+        let storedValue = try XCTUnwrap(
+            featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.watchdogRUMViewEvent.rawValue)
+        )
+        let data = try XCTUnwrap(storedValue.data())
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertEqual(json["valid"] as? String, "preserved")
+        XCTAssertTrue(json["invalid"] is NSNull)
+    }
+
+    private func encodeForStorage<T: Encodable>(_ value: T) throws -> Data {
+        try JSONEncoder.dd.default().dd.encodeWithAttributeRecovery(value)
     }
 }

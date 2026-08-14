@@ -20,6 +20,8 @@ internal struct FeatureStorage {
     let unauthorizedFilesOrchestrator: FilesOrchestratorType
     /// Encryption algorithm applied to persisted data.
     let encryption: DataEncryption?
+    /// JSON encoder reused by writers executing on this storage queue.
+    private let jsonEncoder: JSONEncoder = .dd.default()
     /// Telemetry interface.
     let telemetry: Telemetry
 
@@ -30,7 +32,8 @@ internal struct FeatureStorage {
                 execute: FileWriter(
                     orchestrator: authorizedFilesOrchestrator,
                     encryption: encryption,
-                    telemetry: telemetry
+                    telemetry: telemetry,
+                    jsonEncoder: jsonEncoder
                 ),
                 on: queue
             )
@@ -41,7 +44,8 @@ internal struct FeatureStorage {
                 execute: FileWriter(
                     orchestrator: unauthorizedFilesOrchestrator,
                     encryption: encryption,
-                    telemetry: telemetry
+                    telemetry: telemetry,
+                    jsonEncoder: jsonEncoder
                 ),
                 on: queue
             )
