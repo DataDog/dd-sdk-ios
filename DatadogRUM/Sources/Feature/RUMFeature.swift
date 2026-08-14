@@ -139,15 +139,17 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
-        let timeseriesCollector: TimeseriesCollecting? = configuration.enableTimeseries ? TimeseriesSessionCollector(
-            memoryReader: VitalMemoryReader(),
-            featureScope: featureScope,
-            batchSize: configuration.timeseriesBatchSize,
-            ciTest: ciTest,
-            syntheticsTest: syntheticsTest,
-            sessionSampleRate: Double(sessionSampleRate),
-            now: { configuration.dateProvider.now }
-        ) : nil
+        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.map { timeseries in
+            TimeseriesSessionCollector(
+                memoryReader: VitalMemoryReader(),
+                featureScope: featureScope,
+                collectOnly: timeseries.collectOnly.map(Set.init),
+                ciTest: ciTest,
+                syntheticsTest: syntheticsTest,
+                sessionSampleRate: Double(sessionSampleRate),
+                now: { configuration.dateProvider.now }
+            )
+        }
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,

@@ -330,20 +330,12 @@ extension RUM {
 
         /// Enables collection of memory and CPU timeseries events.
         ///
-        /// When enabled, memory footprint and CPU usage are sampled every second and uploaded as
+        /// When set, memory footprint and CPU usage are sampled every second and uploaded as
         /// timeseries events scoped to the RUM session.
         ///
-        /// Default: `false`.
+        /// Default: `nil` - which means timeseries collection is not enabled by default.
         @_spi(Experimental)
-        public var enableTimeseries: Bool
-
-        /// The default number of samples collected before a timeseries batch is flushed.
-        public static let defaultTimeseriesBatchSize = 120
-
-        /// The number of samples collected before a timeseries batch is flushed.
-        ///
-        /// Default: `120`.
-        public var timeseriesBatchSize: Int
+        public var timeseries: Timeseries?
 
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
@@ -420,6 +412,31 @@ extension RUM {
             case average
             /// Every `1000ms`.
             case rare
+        }
+
+        /// Configuration for collecting memory and CPU timeseries during a RUM session.
+        public struct Timeseries {
+            /// The specific timeseries metrics to collect.
+            ///
+            /// Default: `nil` - which means all available timeseries metrics are collected.
+            public var collectOnly: [TimeseriesMetric]?
+
+            /// Creates a timeseries configuration.
+            /// - Parameters:
+            ///   - collectOnly: The specific timeseries metrics to collect. Default: `nil` - all metrics are collected.
+            public init(
+                collectOnly: [TimeseriesMetric]? = nil
+            ) {
+                self.collectOnly = collectOnly
+            }
+        }
+
+        /// A timeseries metric that can be collected.
+        public enum TimeseriesMetric {
+            /// Memory footprint and percentage of total device RAM.
+            case memory
+            /// CPU usage, as a percentage.
+            case cpu
         }
 
         // MARK: - Internal
@@ -585,7 +602,6 @@ extension RUM.Configuration {
     ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
-    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `120`.
     ///   - featureFlags: Experimental feature flags.
     /// 
     /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
@@ -621,7 +637,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -651,8 +666,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = false
-        self.timeseriesBatchSize = timeseriesBatchSize
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #else
@@ -679,7 +693,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -704,8 +717,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = false
-        self.timeseriesBatchSize = timeseriesBatchSize
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #endif

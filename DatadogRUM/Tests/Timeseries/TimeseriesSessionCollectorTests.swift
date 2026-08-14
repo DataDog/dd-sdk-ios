@@ -131,6 +131,124 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage[0], 75.0)
     }
 
+    // MARK: - collectOnly
+
+    func testWhenCollectOnlyIsNil_itCollectsBothMemoryAndCpu() {
+        // Given
+        memoryReader.vitalData = 1_024_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            collectOnly: nil,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 42.5 },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "both batches written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-collect-all", applicationID: "app-collect-all", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-collect-all")
+
+        // Then
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is nil")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is nil")
+    }
+
+    func testWhenCollectOnlyIsMemory_itCollectsOnlyMemory() {
+        // Given
+        memoryReader.vitalData = 1_024_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            collectOnly: [.memory],
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 42.5 },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "memory batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-collect-memory", applicationID: "app-collect-memory", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-collect-memory")
+
+        // Then
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is [.memory]")
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected no CPU events when collectOnly is [.memory]")
+    }
+
+    func testWhenCollectOnlyIsCpu_itCollectsOnlyCpu() {
+        // Given
+        memoryReader.vitalData = 1_024_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            collectOnly: [.cpu],
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 42.5 },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "cpu batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-collect-cpu", applicationID: "app-collect-cpu", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-collect-cpu")
+
+        // Then
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected no memory events when collectOnly is [.cpu]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is [.cpu]")
+    }
+
+    func testWhenCollectOnlyIsBothMetrics_itCollectsBothMemoryAndCpu() {
+        // Given
+        memoryReader.vitalData = 1_024_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            collectOnly: [.memory, .cpu],
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 42.5 },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "both batches written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-collect-both", applicationID: "app-collect-both", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-collect-both")
+
+        // Then
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is [.memory, .cpu]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is [.memory, .cpu]")
+    }
+
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {
         // Given
         memoryReader.vitalData = 1_000_000
@@ -195,38 +313,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].source, .reactNative)
     }
 
-    func testWhenActiveViewExists_itAttachesViewToEvent() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: scope,
-            batchSize: 2,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
-        )
-        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-abc", path: "/view/abc", name: nil))
-        collector.activeContextReader = contextReader
-
-        // When
-        let expectation = self.expectation(description: "batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-view")
-
-        // Then
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view?.id, "view-abc")
-        XCTAssertEqual(events[0].view?.url, "/view/abc")
-    }
-
-    func testWhenActiveViewHasName_itAttachesViewNameToEvent() {
+    func testWhenActiveViewExists_itStillWritesEventWithoutView() {
         // Given
         memoryReader.vitalData = 1_000_000
         let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
@@ -246,14 +333,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
-        collector.start(sessionID: "session-view-name", applicationID: "app-view-name", sessionType: .user)
+        collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-view-name")
+        collector.stop(sessionID: "session-view")
 
-        // Then
+        // Then — `view` is never populated on timeseries events, even when a view is active
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].view?.name, "ViewController")
+        XCTAssertNil(events[0].view)
     }
 
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
@@ -316,43 +403,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
         XCTAssertEqual(events[0].dd.configuration?.sessionSampleRate, 42)
-    }
-
-    func testWhenViewEndsRightBeforeFlush_itStillAttachesTheViewSamplesWereCollectedUnder() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: scope,
-            batchSize: 100, // won't auto-flush — only the explicit stop() below triggers the flush
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
-        )
-        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-ending", path: "/view/ending", name: nil))
-        collector.activeContextReader = contextReader
-
-        // When — samples are collected while a view is active
-        let expectation = self.expectation(description: "samples collected under an active view")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
-        collector.start(sessionID: "session-ending-view", applicationID: "app-ending-view", sessionType: .user)
-        waitForExpectations(timeout: 2)
-
-        // The view ends right before the batch is flushed
-        contextReader.activeView = (nil, nil, nil)
-
-        let syncExpectation = self.expectation(description: "stop completed")
-        collector.stop(sessionID: "session-ending-view")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
-
-        // Then — the batch is still written, attributed to the view it was actually collected under
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(events.isEmpty, "Expected the batch collected under an active view to be flushed, not dropped")
-        XCTAssertEqual(events[0].view?.id, "view-ending")
-        XCTAssertEqual(events[0].view?.url, "/view/ending")
     }
 
     func testWhenNoActiveView_itWritesEventWithoutView() {
@@ -730,9 +780,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
         let event = events[0]
-        XCTAssertEqual(event.usr?.id, "user-abc")
-        XCTAssertEqual(event.account?.id, "account-abc")
-        XCTAssertNotNil(event.connectivity)
         XCTAssertNotNil(event.device)
         XCTAssertNotNil(event.os)
         XCTAssertEqual(event.buildId, "build-abc")
@@ -741,18 +788,30 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.synthetics?.testId, "synthetics-test")
     }
 
-    func testItPopulatesContextFromActiveContextReader() {
+    func testItNeverPopulatesPrivacySensitiveOrContextualFields() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
+        let userInfo = UserInfo(id: "user-abc", name: "Jane", email: "jane@example.com", extraInfo: [:])
+        let accountInfo = AccountInfo(id: "account-abc", name: "Acme", extraInfo: [:])
+        let scope = FeatureScopeMock(
+            context: .mockWith(
+                userInfo: userInfo,
+                accountInfo: accountInfo,
+                additionalContext: [RUMCoreContext.mockAny()]
+            )
+        )
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: scope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
         )
-        let contextReader = RUMActiveContextReaderMock(globalAttributes: ["custom-key": "custom-value"])
+        let contextReader = RUMActiveContextReaderMock(
+            globalAttributes: ["custom-key": "custom-value"],
+            activeView: (id: "view-abc", path: "/view/abc", name: "ViewController")
+        )
         collector.activeContextReader = contextReader
 
         // When
@@ -760,14 +819,22 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         expectation.assertForOverFulfill = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
 
-        collector.start(sessionID: "session-context", applicationID: "app-context", sessionType: .user)
+        collector.start(sessionID: "session-privacy", applicationID: "app-privacy", sessionType: .user)
         waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-context")
+        collector.stop(sessionID: "session-privacy")
 
-        // Then
+        // Then — these fields are never populated on timeseries events, regardless of available context
         let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
-        XCTAssertEqual(events[0].context?.contextInfo["custom-key"] as? String, "custom-value")
+        let event = events[0]
+        XCTAssertNil(event.usr)
+        XCTAssertNil(event.account)
+        XCTAssertNil(event.context)
+        XCTAssertNil(event.connectivity)
+        XCTAssertNil(event.view)
+        XCTAssertNil(event.tab)
+        XCTAssertNil(event.stream)
+        XCTAssertNil(event.display)
     }
 
     // MARK: - Timeseries range
