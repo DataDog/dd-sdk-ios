@@ -415,6 +415,7 @@ extension RUM {
         }
 
         /// Configuration for collecting memory and CPU timeseries during a RUM session.
+        @_spi(Experimental)
         public struct Timeseries {
             /// The specific timeseries metrics to collect.
             ///
@@ -432,6 +433,7 @@ extension RUM {
         }
 
         /// A timeseries metric that can be collected.
+        @_spi(Experimental)
         public enum TimeseriesMetric {
             /// Memory footprint and percentage of total device RAM.
             case memory
