@@ -250,7 +250,7 @@ Requires configuration to be set, otherwise disabled by default:
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
-- **App hangs**: `appHangThreshold` (default: nil/disabled)
+- **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
