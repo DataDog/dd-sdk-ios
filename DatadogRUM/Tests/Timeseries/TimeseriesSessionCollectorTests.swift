@@ -9,6 +9,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class TimeseriesSessionCollectorTests: XCTestCase {

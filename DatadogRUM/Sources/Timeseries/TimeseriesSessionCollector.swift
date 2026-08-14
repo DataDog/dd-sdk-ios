@@ -80,7 +80,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
+#if os(watchOS)
+        // CPU usage is unavailable on watchOS (`processCPU()` always returns `nil`), so drop `.cpu`
+        // from the effective set to avoid silently accepting a `collectOnly: [.cpu]` config that
+        // would never flush any events.
+        self.collectOnly = collectOnly.map { $0.subtracting([.cpu]) }
+#else
         self.collectOnly = collectOnly
+#endif
         self.samplingInterval = samplingInterval
         self.featureScope = featureScope
         self.totalRAM = totalRAM
