@@ -433,9 +433,9 @@ public enum RUM
             case average
             case rare
         public struct Timeseries
-            public var collectOnly: [TimeseriesMetric]?
-            public init(collectOnly: [TimeseriesMetric]? = nil)
-        public enum TimeseriesMetric
+            public var collectTypes: [TimeseriesType]?
+            public init(collectTypes: [TimeseriesType]? = nil)
+        public enum TimeseriesType
             case memory
             case cpu
 [?] extension RUM.Configuration.URLSessionTracking

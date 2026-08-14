@@ -132,16 +132,16 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(cpuEvent.timeseries.data.values.cpuUsage[0], 75.0)
     }
 
-    // MARK: - collectOnly
+    // MARK: - collectTypes
 
-    func testWhenCollectOnlyIsNil_itCollectsBothMemoryAndCpu() {
+    func testWhenCollectTypesIsNil_itCollectsBothMemoryAndCpu() {
         // Given
         memoryReader.vitalData = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
-            collectOnly: nil,
+            collectTypes: nil,
             samplingInterval: 0.05,
             cpuUsageProvider: { 42.5 },
             totalRAM: 4_000_000_000
@@ -159,18 +159,18 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-collect-all")
 
         // Then
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is nil")
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is nil")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectTypes is nil")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectTypes is nil")
     }
 
-    func testWhenCollectOnlyIsMemory_itCollectsOnlyMemory() {
+    func testWhenCollectTypesIsMemory_itCollectsOnlyMemory() {
         // Given
         memoryReader.vitalData = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
-            collectOnly: [.memory],
+            collectTypes: [.memory],
             samplingInterval: 0.05,
             cpuUsageProvider: { 42.5 },
             totalRAM: 4_000_000_000
@@ -188,18 +188,18 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-collect-memory")
 
         // Then
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is [.memory]")
-        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected no CPU events when collectOnly is [.memory]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectTypes is [.memory]")
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected no CPU events when collectTypes is [.memory]")
     }
 
-    func testWhenCollectOnlyIsCpu_itCollectsOnlyCpu() {
+    func testWhenCollectTypesIsCpu_itCollectsOnlyCpu() {
         // Given
         memoryReader.vitalData = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
-            collectOnly: [.cpu],
+            collectTypes: [.cpu],
             samplingInterval: 0.05,
             cpuUsageProvider: { 42.5 },
             totalRAM: 4_000_000_000
@@ -217,18 +217,18 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-collect-cpu")
 
         // Then
-        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected no memory events when collectOnly is [.cpu]")
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is [.cpu]")
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected no memory events when collectTypes is [.cpu]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectTypes is [.cpu]")
     }
 
-    func testWhenCollectOnlyIsBothMetrics_itCollectsBothMemoryAndCpu() {
+    func testWhenCollectTypesIsBothMetrics_itCollectsBothMemoryAndCpu() {
         // Given
         memoryReader.vitalData = 1_024_000
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
-            collectOnly: [.memory, .cpu],
+            collectTypes: [.memory, .cpu],
             samplingInterval: 0.05,
             cpuUsageProvider: { 42.5 },
             totalRAM: 4_000_000_000
@@ -246,8 +246,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-collect-both")
 
         // Then
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectOnly is [.memory, .cpu]")
-        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectOnly is [.memory, .cpu]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected memory events when collectTypes is [.memory, .cpu]")
+        XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty, "Expected CPU events when collectTypes is [.memory, .cpu]")
     }
 
     func testWhenServerTimeOffsetIsNonZero_itAdjustsEventDate() {

@@ -420,21 +420,21 @@ extension RUM {
             /// The specific timeseries metrics to collect.
             ///
             /// Default: `nil` - which means all available timeseries metrics are collected.
-            public var collectOnly: [TimeseriesMetric]?
+            public var collectTypes: [TimeseriesType]?
 
             /// Creates a timeseries configuration.
             /// - Parameters:
-            ///   - collectOnly: The specific timeseries metrics to collect. Default: `nil` - all metrics are collected.
+            ///   - collectTypes: The specific timeseries metrics to collect. Default: `nil` - all metrics are collected.
             public init(
-                collectOnly: [TimeseriesMetric]? = nil
+                collectTypes: [TimeseriesType]? = nil
             ) {
-                self.collectOnly = collectOnly
+                self.collectTypes = collectTypes
             }
         }
 
         /// A timeseries metric that can be collected.
         @_spi(Experimental)
-        public enum TimeseriesMetric {
+        public enum TimeseriesType {
             /// Memory footprint and percentage of total device RAM.
             case memory
             /// CPU usage, as a percentage.
