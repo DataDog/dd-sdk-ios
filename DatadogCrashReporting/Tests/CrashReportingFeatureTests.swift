@@ -143,6 +143,42 @@ class CrashReportingFeatureTests: XCTestCase {
         )
     }
 
+    func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreEnabled_itLeavesRegistrationOpenForALaterReporter() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = nil
+
+        // When
+        try CrashReporting.enableOrThrow(with: plugin, in: core)
+
+        // Then
+        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+
+        try core.register(backtraceReporter: BacktraceReporterMock())
+        XCTAssertNotNil(
+            try core.backtraceReporter.generateBacktrace(),
+            "Nothing must claim the backtrace reporter registration when there is no opt-out to record, otherwise "
+            + "the `already registered` guard silently drops a reporter registered later"
+        )
+    }
+
+    func testWhenEnablingWithPluginThroughThePublicAPI_itForwardsTheConfiguration() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = BacktraceReporterMock()
+
+        // When (through the public API, so that the overload's own argument forwarding is covered)
+        CrashReporting.enable(with: plugin, configuration: .init(appHangBacktraceEnabled: false), in: core)
+
+        // Then
+        XCTAssertFalse(
+            core.isAppHangBacktraceEnabled,
+            "The public overload must forward its `configuration`, not a default-constructed one"
+        )
+    }
+
     // MARK: - Crash Report Reading Tests
 
     func testItSendsLaunchReportWhenNoPendingCrash() {

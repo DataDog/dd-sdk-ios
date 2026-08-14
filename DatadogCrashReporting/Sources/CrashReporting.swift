@@ -122,10 +122,14 @@ public final class CrashReporting {
                 backtraceReporter: backtraceReporter,
                 appHangBacktraceEnabled: configuration.appHangBacktraceEnabled
             )
-        } else {
-            // A custom plugin may provide no backtrace reporter. Register the policy anyway, so that opting out of
-            // App Hang backtraces stays reportable as such rather than as "Crash Reporting was never enabled".
-            try core.register(appHangBacktraceEnabled: configuration.appHangBacktraceEnabled)
+        } else if !configuration.appHangBacktraceEnabled {
+            // A custom plugin may provide no backtrace reporter. Record the opt-out anyway, so that it stays
+            // reportable as such rather than as "Crash Reporting was never enabled".
+            //
+            // Only when opting out: registering unconditionally would claim the single `BacktraceReportingFeature`
+            // slot with a reporter-less Feature, and the `get(feature:) == nil` guard in `register(backtraceReporter:)`
+            // would then silently drop any reporter registered later.
+            try core.register(appHangBacktraceEnabled: false)
         }
 
         reporter.sendCrashReportIfFound()

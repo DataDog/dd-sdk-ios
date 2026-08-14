@@ -116,19 +116,28 @@ class AppHangsMonitoringTests: XCTestCase {
         #endif
     }
 
-    func testGivenAppHangBacktracesDisabledInCrashReporting_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
+    func testGivenAppHangBacktracesDisabledInCrashReporting_whenRUMIsEnabledFirst_itTracksAppHangWithNoStackTrace() throws {
+        try assertAppHangIsTrackedWithNoStackTrace { crashReportingConfig in
+            RUM.enable(with: self.rumConfig, in: self.core)
+            CrashReporting.enable(with: crashReportingConfig, in: self.core)
+        }
+    }
+
+    func testGivenAppHangBacktracesDisabledInCrashReporting_whenCrashReportingIsEnabledFirst_itTracksAppHangWithNoStackTrace() throws {
+        try assertAppHangIsTrackedWithNoStackTrace { crashReportingConfig in
+            CrashReporting.enable(with: crashReportingConfig, in: self.core)
+            RUM.enable(with: self.rumConfig, in: self.core)
+        }
+    }
+
+    /// Asserts that a hang is tracked with no stack trace, with the SDK enabled by `enableSDK`.
+    ///
+    /// Both enablement orders get their own test rather than being picked at random: only the RUM-first order
+    /// proves that the opt-out is read per hang instead of being captured when RUM is enabled, so randomizing
+    /// would let that regression pass half of the runs.
+    private func assertAppHangIsTrackedWithNoStackTrace(enableSDK: (CrashReporting.Configuration) -> Void) throws {
         // Given (initialize SDK on the main thread)
-        let crashReportingConfig = CrashReporting.Configuration(appHangBacktraceEnabled: false)
-        oneOf([ // no matter of RUM or CR initialization order
-            {
-                RUM.enable(with: self.rumConfig, in: self.core)
-                CrashReporting.enable(with: crashReportingConfig, in: self.core)
-            },
-            {
-                CrashReporting.enable(with: crashReportingConfig, in: self.core)
-                RUM.enable(with: self.rumConfig, in: self.core)
-            },
-        ])
+        enableSDK(CrashReporting.Configuration(appHangBacktraceEnabled: false))
 
         // When
         mainQueue.sync {

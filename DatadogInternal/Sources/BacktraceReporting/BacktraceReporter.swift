@@ -86,10 +86,16 @@ internal struct CoreBacktraceReporter: BacktraceReporting, @unchecked Sendable {
 /// Adds capability of reporting backtraces.
 extension DatadogCoreProtocol {
     /// Registers backtrace reporter in Core.
+    /// - Parameter backtraceReporter: the implementation of backtrace reporter.
+    public func register(backtraceReporter: BacktraceReporting) throws {
+        try register(backtraceReporter: backtraceReporter, appHangBacktraceEnabled: true)
+    }
+
+    /// Registers backtrace reporter in Core.
     /// - Parameters:
     ///   - backtraceReporter: the implementation of backtrace reporter.
-    ///   - appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM. Default: `true`.
-    public func register(backtraceReporter: BacktraceReporting, appHangBacktraceEnabled: Bool = true) throws {
+    ///   - appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM.
+    public func register(backtraceReporter: BacktraceReporting, appHangBacktraceEnabled: Bool) throws {
         guard get(feature: BacktraceReportingFeature.self) == nil else {
             DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
             return
@@ -123,10 +129,10 @@ extension DatadogCoreProtocol {
 
     /// Whether backtraces may be generated for App Hangs detected by RUM.
     ///
-    /// It is `false` only when a backtrace reporter was registered with App Hang backtraces turned off. Before any
-    /// reporter is registered it is `true`: in that state backtrace generation is *unavailable* rather than
-    /// *disabled*, and callers must keep distinguishing the two. Read it at the moment a backtrace is needed, as
-    /// the reporter may be registered after the reading Feature was enabled.
+    /// It is `false` only when Crash Reporting was enabled with App Hang backtraces turned off — whether or not a
+    /// backtrace reporter came with it. Until then it is `true`: in that state backtrace generation may still be
+    /// *unavailable* rather than *disabled*, and callers must keep distinguishing the two. Read it at the moment a
+    /// backtrace is needed, as the reporter may be registered after the reading Feature was enabled.
     public var isAppHangBacktraceEnabled: Bool {
         // `self.` is required: a bare `get(...)` here parses as a `get` accessor.
         self.get(feature: BacktraceReportingFeature.self)?.appHangBacktraceEnabled ?? true
