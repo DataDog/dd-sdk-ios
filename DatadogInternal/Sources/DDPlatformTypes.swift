@@ -10,10 +10,10 @@ import Foundation
 import UIKit
 
 // MARK: - Application
-public typealias DDApplication = UIApplication
+internal typealias DDApplication = UIApplication
 #elseif canImport(AppKit)
 import AppKit
 
 // MARK: - Application
-public typealias DDApplication = NSApplication
+internal typealias DDApplication = NSApplication
 #endif
