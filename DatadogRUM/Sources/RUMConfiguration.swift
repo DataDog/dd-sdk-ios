@@ -417,14 +417,14 @@ extension RUM {
         /// Configuration for collecting memory and CPU timeseries during a RUM session.
         @_spi(Experimental)
         public struct Timeseries {
-            /// The specific timeseries metrics to collect.
+            /// The specific timeseries types to collect.
             ///
-            /// Default: `nil` - which means all available timeseries metrics are collected.
+            /// Default: `nil` - which means all available timeseries types are collected.
             public var collectTypes: [TimeseriesType]?
 
             /// Creates a timeseries configuration.
             /// - Parameters:
-            ///   - collectTypes: The specific timeseries metrics to collect. Default: `nil` - all metrics are collected.
+            ///   - collectTypes: The specific timeseries types to collect. Default: `nil` - all types are collected.
             public init(
                 collectTypes: [TimeseriesType]? = nil
             ) {
@@ -432,12 +432,12 @@ extension RUM {
             }
         }
 
-        /// A timeseries metric that can be collected.
+        /// A timeseries type that can be collected.
         @_spi(Experimental)
         public enum TimeseriesType {
             /// Memory footprint and percentage of total device RAM.
             case memory
-            /// CPU usage, as a percentage.
+            /// CPU usage as a percentage.
             case cpu
         }
 
