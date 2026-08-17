@@ -25,16 +25,16 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     private let telemetry: Telemetry
 
     init(
-        notificationCenters: NotificationCenters,
+        notificationCenterProvider: NotificationCenterProvider,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.telemetry = telemetry
         #if os(macOS)
-        notificationCenters.workspaceCenter.addObserver(self, selector: #selector(appWillResignActive), name: WorkspaceNotifications.willSleep, object: nil)
-        notificationCenters.workspaceCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: WorkspaceNotifications.didWake, object: nil)
+        notificationCenterProvider.workspaceCenter.addObserver(self, selector: #selector(appWillResignActive), name: WorkspaceNotifications.willSleep, object: nil)
+        notificationCenterProvider.workspaceCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: WorkspaceNotifications.didWake, object: nil)
         #else
-        notificationCenters.applicationCenter.addObserver(self, selector: #selector(appWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
-        notificationCenters.applicationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenterProvider.applicationCenter.addObserver(self, selector: #selector(appWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
+        notificationCenterProvider.applicationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
     }
 

@@ -10,11 +10,11 @@ import DatadogInternal
 
 class VitalCPUReaderTest: XCTestCase {
     #if os(macOS)
-    let testNotificationCenters = NotificationCenters(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
+    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
     #else
-    let testNotificationCenters = NotificationCenters(applicationCenter: NotificationCenter())
+    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter())
     #endif
-    lazy var cpuReader = VitalCPUReader(notificationCenters: testNotificationCenters)
+    lazy var cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
 
     func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
         let repetitions = 3
@@ -45,16 +45,16 @@ class VitalCPUReaderTest: XCTestCase {
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
-        testNotificationCenters.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
         #else
-        testNotificationCenters.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         #endif
         heavyLoad()
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
         #if os(macOS)
-        testNotificationCenters.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
         #else
-        testNotificationCenters.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         #endif
         heavyLoad()
         let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
@@ -70,7 +70,7 @@ class VitalCPUReaderTest: XCTestCase {
         let tickWhenResigningActive = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
         let cpuReader = VitalCPUReaderMock(
-            notificationCenters: testNotificationCenters,
+            notificationCenterProvider: testNotificationCenterProvider,
             mockTicks: [
                 tickWhenResigningActive,
                 tickAfterRollover
@@ -78,9 +78,9 @@ class VitalCPUReaderTest: XCTestCase {
         )
 
         #if os(macOS)
-        testNotificationCenters.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
         #else
-        testNotificationCenters.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         #endif
 
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
@@ -91,7 +91,7 @@ class VitalCPUReaderTest: XCTestCase {
         let tickBeforeRollover = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
         let cpuReader = VitalCPUReaderMock(
-            notificationCenters: testNotificationCenters,
+            notificationCenterProvider: testNotificationCenterProvider,
             mockTicks: [
                 tickBeforeRollover,
                 tickAfterRollover
@@ -124,9 +124,9 @@ class VitalCPUReaderTest: XCTestCase {
 private class VitalCPUReaderMock: VitalCPUReader {
     private var mockTicks: [UInt32]
 
-    init(notificationCenters: NotificationCenters, mockTicks: [UInt32]) {
+    init(notificationCenterProvider: NotificationCenterProvider, mockTicks: [UInt32]) {
         self.mockTicks = mockTicks
-        super.init(notificationCenters: notificationCenters)
+        super.init(notificationCenterProvider: notificationCenterProvider)
     }
 
     override func readRawUtilizedTicks() -> UInt32? {

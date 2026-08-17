@@ -8,21 +8,23 @@ import Foundation
 
 #if os(macOS)
 import AppKit
+#endif
 
-/// Wraps the necessary notification centers used by Core.
-public struct NotificationCenters {
+/// Provides notification centers used by Core.
+public struct NotificationCenterProvider {
     /// Notification centre where application notifications are published.
     ///
     /// Usually `NotificationCenter.default`.
     public let applicationCenter: NotificationCenter
 
+    #if os(macOS)
     /// Notification centre where workspace notifications are published.
     ///
     /// Usually `NSWorkspace.shared.notificationCenter`.
     public let workspaceCenter: NotificationCenter
 
-    /// A `NotificationCenters` instance with the default values used in production.
-    public static var `default`: NotificationCenters {
+    /// A `NotificationCenterProvider` instance with the default values used in production.
+    public static var `default`: NotificationCenterProvider {
         .init(applicationCenter: .default, workspaceCenter: NSWorkspace.shared.notificationCenter)
     }
 
@@ -30,22 +32,14 @@ public struct NotificationCenters {
         self.applicationCenter = applicationCenter
         self.workspaceCenter = workspaceCenter
     }
-}
-#else
-/// Wraps the necessary notification centers used by Core.
-public struct NotificationCenters {
-    /// Notification centre where application notifications are published.
-    ///
-    /// Usually `NotificationCenter.default`.
-    public let applicationCenter: NotificationCenter
-
-    /// A `NotificationCenters` instance with the default values used in production.
-    public static var `default`: NotificationCenters {
+    #else
+    /// A `NotificationCenterProvider` instance with the default values used in production.
+    public static var `default`: NotificationCenterProvider {
         .init(applicationCenter: .default)
     }
 
     public init(applicationCenter: NotificationCenter) {
         self.applicationCenter = applicationCenter
     }
+    #endif
 }
-#endif
