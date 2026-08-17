@@ -419,14 +419,14 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     /// - Parameter keys: array of attribute keys that will be removed.
     func removeViewAttributes(forKeys keys: [AttributeKey])
 
-    #if !os(watchOS)
+    #if os(macOS)
     /// Starts RUM view.
     /// - Parameters:
     ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
-        viewController: DDViewController,
+        viewController: NSViewController,
         name: String?,
         attributes: [AttributeKey: AttributeValue]
     )
@@ -436,7 +436,27 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     ///   - viewController: the instance of `DDViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
-        viewController: DDViewController,
+        viewController: NSViewController,
+        attributes: [AttributeKey: AttributeValue]
+    )
+    #elseif !os(watchOS)
+    /// Starts RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
+    ///   - attributes: custom attributes to attach to this view.
+    func startView(
+        viewController: UIViewController,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Stops RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - attributes: custom attributes to attach to this view.
+    func stopView(
+        viewController: UIViewController,
         attributes: [AttributeKey: AttributeValue]
     )
     #endif

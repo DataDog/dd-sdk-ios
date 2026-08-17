@@ -16,7 +16,7 @@ public protocol AppKitRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(targetView: DDView) -> RUMAction?
+    func rumAction(targetView: NSView) -> RUMAction?
 
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction?
 }
@@ -49,7 +49,7 @@ public struct DefaultAppKitRUMActionsPredicate {
 
 // MARK: DefaultAppKitRUMActionsPredicate
 extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
-    public func rumAction(targetView: DDView) -> RUMAction? {
+    public func rumAction(targetView: NSView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
             attributes: [:]
