@@ -124,14 +124,14 @@ internal class AppRunner {
 
     /// Cleans up and resets the test environment.
     func tearDown() {
-        appStateObservers.forEach { notificationCenters.removeObserver($0) }
+        appStateObservers.forEach { notificationCenterProvider.removeObserver($0) }
         appStateObservers = []
 
         DeleteTemporaryDirectory()
 
         appDirectory = nil
         processInfo = nil
-        notificationCenters = nil
+        notificationCenterProvider = nil
         dateProvider = nil
         appStateProvider = nil
         appLaunchHandler = nil
@@ -141,7 +141,7 @@ internal class AppRunner {
     // swiftlint:disable implicitly_unwrapped_optional
     private var appDirectory: (() -> Directory)!
     private var processInfo: ProcessInfoMock!
-    private var notificationCenters: NotificationCenters!
+    private var notificationCenterProvider: NotificationCenterProvider!
     private var dateProvider: DateProviderMock!
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!
@@ -158,7 +158,7 @@ internal class AppRunner {
     func launch(_ launchType: ProcessLaunchType) {
         appDirectory = { Directory(url: temporaryDirectory) }
         processInfo = ProcessInfoMock(environment: launchType.processInfoEnvironment)
-        notificationCenters = Self.makeTestNotificationCenters()
+        notificationCenterProvider = Self.makeTestNotificationCenterProvider()
         dateProvider = DateProviderMock(now: launchType.processLaunchDate)
         appStateProvider = AppStateProviderMock(state: launchType.initialAppState)
         appLaunchHandler = AppLaunchHandlerMock(
@@ -169,7 +169,7 @@ internal class AppRunner {
         )
 
         appStateObservers = [
-            notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.didBecomeActive, object: nil, queue: .main) { [weak self] _ in
+            notificationCenterProvider.applicationCenter.addObserver(forName: ApplicationNotifications.didBecomeActive, object: nil, queue: .main) { [weak self] _ in
                 guard let self else {
                     return
                 }
@@ -181,17 +181,17 @@ internal class AppRunner {
                     self.appLaunchHandler.simulateDidBecomeActive(date: self.dateProvider.now)
                 }
             },
-            notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: .main) { [weak self] _ in
+            notificationCenterProvider.applicationCenter.addObserver(forName: ApplicationNotifications.willResignActive, object: nil, queue: .main) { [weak self] _ in
                 runOnMainThreadSync {
                     self?.appStateProvider.current = .inactive
                 }
             },
-            notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.didEnterBackground, object: nil, queue: .main) { [weak self] _ in
+            notificationCenterProvider.applicationCenter.addObserver(forName: ApplicationNotifications.didEnterBackground, object: nil, queue: .main) { [weak self] _ in
                 runOnMainThreadSync {
                     self?.appStateProvider.current = .background
                 }
             },
-            notificationCenters.applicationCenter.addObserver(forName: ApplicationNotifications.willEnterForeground, object: nil, queue: .main) { [weak self] _ in
+            notificationCenterProvider.applicationCenter.addObserver(forName: ApplicationNotifications.willEnterForeground, object: nil, queue: .main) { [weak self] _ in
                 runOnMainThreadSync {
                     self?.appStateProvider.current = .inactive
                 }
@@ -199,11 +199,11 @@ internal class AppRunner {
         ]
     }
 
-    private static func makeTestNotificationCenters() -> NotificationCenters {
+    private static func makeTestNotificationCenterProvider() -> NotificationCenterProvider {
         #if os(macOS)
-        NotificationCenters(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
+        NotificationCenterProvider(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
         #else
-        NotificationCenters(applicationCenter: NotificationCenter())
+        NotificationCenterProvider(applicationCenter: NotificationCenter())
         #endif
     }
 
@@ -211,18 +211,18 @@ internal class AppRunner {
     func transitionToActive() {
         precondition(currentState != .active, "The app is already ACTIVE")
         if currentState != .inactive { // apps do not send "will enter foreground" when in INACTIVE
-            notificationCenters.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+            notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
         }
-        notificationCenters.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
     }
 
     /// Simulates transition to the background state.
     func transitionToBackground() {
         precondition(currentState != .background, "The app is already in BACKGROUND")
         if currentState != .inactive { // apps do not send "will resign active" when in INACTIVE
-            notificationCenters.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+            notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         }
-        notificationCenters.applicationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
     }
 
     /// Returns the current simulated app state.
@@ -276,7 +276,7 @@ internal class AppRunner {
         config.systemDirectory = appDirectory
         config.processInfo = processInfo
         config.dateProvider = dateProvider
-        config.notificationCenters = notificationCenters
+        config.notificationCenterProvider = notificationCenterProvider
         config.appLaunchHandler = appLaunchHandler
         config.appStateProvider = appStateProvider
         config.serverDateProvider = ServerDateProviderMock()
@@ -300,7 +300,7 @@ internal class AppRunner {
         var config = RUM.Configuration(applicationID: "mock-application-id")
         config.dateProvider = dateProvider
         config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
-        config.notificationCenter = notificationCenters.applicationCenter
+        config.notificationCenter = notificationCenterProvider.applicationCenter
         #if !os(watchOS)
         config.frameInfoProviderFactory = { [weak self] in
             let frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
@@ -329,7 +329,7 @@ internal class AppRunner {
     }
 }
 
-fileprivate extension NotificationCenters {
+fileprivate extension NotificationCenterProvider {
     func removeObserver(_ observer: Any) {
         #if os(macOS)
         applicationCenter.removeObserver(observer)

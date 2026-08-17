@@ -513,7 +513,7 @@ extension DatadogContextProvider {
         processInfo: ProcessInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider,
-        notificationCenters: NotificationCenters,
+        notificationCenterProvider: NotificationCenterProvider,
         appLaunchHandler: AppLaunchHandling,
         appStateProvider: AppStateProvider
     ) {
@@ -561,37 +561,37 @@ extension DatadogContextProvider {
         subscribe(
             \.batteryStatus,
              to: BatteryStatusPublisher(
-                notificationCenter: notificationCenters.applicationCenter,
+                notificationCenter: notificationCenterProvider.applicationCenter,
                 device: .current
              )
         )
         subscribe(
             \.isLowPowerModeEnabled,
              to: LowPowerModePublisher(
-                notificationCenter: notificationCenters.applicationCenter,
+                notificationCenter: notificationCenterProvider.applicationCenter,
                 processInfo: processInfo
              )
         )
         #endif
 
         #if os(iOS)
-        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenters.applicationCenter))
+        subscribe(\.brightnessLevel, to: BrightnessLevelPublisher(notificationCenter: notificationCenterProvider.applicationCenter))
         #endif
 
-        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenters.applicationCenter))
+        subscribe(\.localeInfo, to: LocaleInfoPublisher(initialLocale: locale, notificationCenter: notificationCenterProvider.applicationCenter))
 
         #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         let applicationStatePublisher = ApplicationStatePublisher(
             appStateHistory: appStateHistory,
-            notificationCenter: notificationCenters.applicationCenter,
+            notificationCenter: notificationCenterProvider.applicationCenter,
             dateProvider: dateProvider
         )
         self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         #elseif os(macOS)
         let applicationStatePublisher = ApplicationStatePublisher(
             appStateHistory: appStateHistory,
-            applicationNotificationCenter: notificationCenters.applicationCenter,
-            workspaceNotificationCenter: notificationCenters.workspaceCenter,
+            applicationNotificationCenter: notificationCenterProvider.applicationCenter,
+            workspaceNotificationCenter: notificationCenterProvider.workspaceCenter,
             applicationStateProvider: DefaultMacOSApplicationStateProvider(),
             dateProvider: dateProvider
         )

@@ -107,7 +107,7 @@ class VitalInfoSamplerTests: XCTestCase {
 
             // in real-world scenarios, sampling will be started from background threads
             sampler = VitalInfoSampler(
-                cpuReader: VitalCPUReader(notificationCenters: .default),
+                cpuReader: VitalCPUReader(notificationCenterProvider: .default),
                 memoryReader: VitalMemoryReader(),
                 refreshRateReader: refreshRateReader,
                 frequency: 0.1
