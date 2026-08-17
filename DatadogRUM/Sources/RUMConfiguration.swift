@@ -88,7 +88,7 @@ extension RUM {
         /// You can use `DefaultAppKitRUMActionsPredicate` or create your own predicate by
         /// implementing `AppKitRUMActionsPredicate`.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default. instead.
+        /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default. instead.
         public var appKitActionsPredicate: AppKitRUMActionsPredicate?
         #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
@@ -668,8 +668,8 @@ extension RUM.Configuration {
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
-        uiKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
+        appKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
+        appKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
@@ -697,8 +697,8 @@ extension RUM.Configuration {
     ) {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
-        self.appKitViewsPredicate = uiKitViewsPredicate
-        self.appKitActionsPredicate = uiKitActionsPredicate
+        self.appKitViewsPredicate = appKitViewsPredicate
+        self.appKitActionsPredicate = appKitActionsPredicate
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.swiftUIActionsPredicate = swiftUIActionsPredicate
         self.urlSessionTracking = urlSessionTracking

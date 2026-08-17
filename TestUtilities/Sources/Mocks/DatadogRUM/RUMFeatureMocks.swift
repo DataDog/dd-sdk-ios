@@ -154,8 +154,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
-        uiKitViewsPredicate: DDKitRUMViewsPredicate? = DefaultAppKitRUMViewsPredicate(),
-        uiKitActionsPredicate: DDKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
+        appKitViewsPredicate: DDKitRUMViewsPredicate? = DefaultAppKitRUMViewsPredicate(),
+        appKitActionsPredicate: DDKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = .mockAny(),
@@ -181,8 +181,8 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         .init(
             applicationID: applicationID,
             sessionSampleRate: sessionSampleRate,
-            uiKitViewsPredicate: uiKitViewsPredicate,
-            uiKitActionsPredicate: uiKitActionsPredicate,
+            appKitViewsPredicate: appKitViewsPredicate,
+            appKitActionsPredicate: appKitActionsPredicate,
             swiftUIViewsPredicate: swiftUIViewsPredicate,
             urlSessionTracking: urlSessionTracking,
             trackFrustrations: trackFrustrations,
