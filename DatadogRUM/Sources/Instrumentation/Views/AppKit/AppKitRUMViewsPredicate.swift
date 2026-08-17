@@ -21,7 +21,7 @@ public protocol AppKitRUMViewsPredicate {
     ///
     /// - Parameter viewController: The view controller that has appeared in the UI.
     /// - Returns: RUM view parameters if the view controller should be tracked, or `nil` to ignore it.
-    func rumView(for viewController: DDViewController) -> RUMView?
+    func rumView(for viewController: NSViewController) -> RUMView?
 }
 
 /// Default implementation of `UIKitRUMViewsPredicate`.
@@ -31,7 +31,7 @@ public protocol AppKitRUMViewsPredicate {
 public struct DefaultAppKitRUMViewsPredicate: AppKitRUMViewsPredicate {
     public init () {}
 
-    public func rumView(for viewController: DDViewController) -> RUMView? {
+    public func rumView(for viewController: NSViewController) -> RUMView? {
         guard !Bundle(for: type(of: viewController)).dd.isAppKit || viewController.isUIAlertController else {
             // Part of our heuristic for (auto) tracking view controllers is to ignore
             // container view controllers coming from `UIKit` if they are not subclassed.

@@ -66,7 +66,31 @@ extension RUM {
         /// Default: `100.0`.
         public var sessionSampleRate: Float
 
-        #if !os(watchOS)
+        #if os(macOS)
+        /// The predicate for automatically tracking `NSViewControllers` as RUM views.
+        ///
+        /// RUM will query this predicate for each `NSViewController` presented in the app. The predicate implementation
+        /// should return RUM view parameters if the given controller should start a view, or `nil` to ignore it.
+        ///
+        /// You can use `DefaultAppKitRUMViewsPredicate` or create your own predicate by implementing `AppKitRUMViewsPredicate`.
+        ///
+        /// Note: Automatic RUM views tracking involves swizzling the `NSViewController` lifecycle methods.
+        ///
+        /// Default: `nil` - which means automatic RUM view tracking for AppKit is not enabled by default.
+        public var appKitViewsPredicate: AppKitRUMViewsPredicate?
+
+        /// The predicate for automatically tracking `NSEvents` as RUM actions.
+        ///
+        /// RUM will query this predicate for each `NSView` and `NSMenuItem` that the user interacts with. The predicate
+        /// implementation should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
+        /// Touch events on the keyboard are ignored for privacy reasons.
+        ///
+        /// You can use `DefaultAppKitRUMActionsPredicate` or create your own predicate by
+        /// implementing `AppKitRUMActionsPredicate`.
+        ///
+        /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default. instead.
+        public var appKitActionsPredicate: AppKitRUMActionsPredicate?
+        #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
         ///
         /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
@@ -79,10 +103,8 @@ extension RUM {
         /// Default: `nil` - which means automatic RUM view tracking for UIKit is not enabled by default.
         ///
         /// - Important: This feature is unavailable on watchOS. Use manual view tracking with `startView(key:name:attributes:)` instead.
-        public var uiKitViewsPredicate: DDKitRUMViewsPredicate?
-        #endif
+        public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
 
-        #if !os(watchOS)
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
         ///
         /// RUM will query this predicate for each `UIView` that the user interacts with. The predicate implementation
@@ -97,7 +119,25 @@ extension RUM {
         /// Default: `nil` - which means automatic RUM action tracking for UIKit is not enabled by default.
         ///
         /// - Important: This feature is unavailable on watchOS. Use manual action tracking with `addAction(type:name:attributes:)` instead.
-        public var uiKitActionsPredicate: DDKitRUMActionsPredicate?
+        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        #endif
+
+        #if !os(watchOS)
+        internal var ddKitActionsPredicate: DDKitRUMActionsPredicate? {
+            #if os(macOS)
+            return appKitActionsPredicate
+            #else
+            return uiKitActionsPredicate
+            #endif
+        }
+
+        internal var ddKitViewsPredicate: DDKitRUMViewsPredicate? {
+            #if os(macOS)
+            return appKitViewsPredicate
+            #else
+            return uiKitViewsPredicate
+            #endif
+        }
         #endif
 
         #if !os(watchOS)
@@ -634,12 +674,122 @@ extension RUM.Configuration {
     ///   Use manual tracking APIs instead:
     ///   - `RUMMonitor.shared().startView(key:name:attributes:)` for view tracking
     ///   - `RUMMonitor.shared().addAction(type:name:attributes:)` for action tracking
-    #if !os(watchOS)
+    #if os(watchOS)
     public init(
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
-        uiKitViewsPredicate: DDKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: DDKitRUMActionsPredicate? = nil,
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = true,
+        trackBackgroundEvents: Bool = false,
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = false,
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = nil,
+        trackAnonymousUser: Bool = true,
+        trackSlowFrames: Bool = true,
+        telemetrySampleRate: SampleRate = 20,
+        collectAccessibility: Bool = false,
+        featureFlags: FeatureFlags = .defaults
+    ) {
+        self.applicationID = applicationID
+        self.sessionSampleRate = sessionSampleRate
+        self.urlSessionTracking = urlSessionTracking
+        self.trackFrustrations = trackFrustrations
+        self.trackBackgroundEvents = trackBackgroundEvents
+        self.longTaskThreshold = longTaskThreshold
+        self.appHangThreshold = appHangThreshold
+        self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        self.networkSettledResourcePredicate = networkSettledResourcePredicate
+        self.nextViewActionPredicate = nextViewActionPredicate
+        self.viewEventMapper = viewEventMapper
+        self.resourceEventMapper = resourceEventMapper
+        self.actionEventMapper = actionEventMapper
+        self.errorEventMapper = errorEventMapper
+        self.longTaskEventMapper = longTaskEventMapper
+        self.onSessionStart = onSessionStart
+        self.customEndpoint = customEndpoint
+        self.trackAnonymousUser = trackAnonymousUser
+        self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackSlowFrames = trackSlowFrames
+        self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
+        self.featureFlags = featureFlags
+    }
+    #elseif os(macOS)
+    public init(
+        applicationID: String,
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        uiKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
+        uiKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
+        swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
+        swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = true,
+        trackBackgroundEvents: Bool = false,
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = false,
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = nil,
+        trackAnonymousUser: Bool = true,
+        trackMemoryWarnings: Bool = true,
+        trackSlowFrames: Bool = true,
+        telemetrySampleRate: SampleRate = 20,
+        collectAccessibility: Bool = false,
+        featureFlags: FeatureFlags = .defaults
+    ) {
+        self.applicationID = applicationID
+        self.sessionSampleRate = sessionSampleRate
+        self.appKitViewsPredicate = uiKitViewsPredicate
+        self.appKitActionsPredicate = uiKitActionsPredicate
+        self.swiftUIViewsPredicate = swiftUIViewsPredicate
+        self.swiftUIActionsPredicate = swiftUIActionsPredicate
+        self.urlSessionTracking = urlSessionTracking
+        self.trackFrustrations = trackFrustrations
+        self.trackBackgroundEvents = trackBackgroundEvents
+        self.longTaskThreshold = longTaskThreshold
+        self.appHangThreshold = appHangThreshold
+        self.vitalsUpdateFrequency = vitalsUpdateFrequency
+        self.networkSettledResourcePredicate = networkSettledResourcePredicate
+        self.nextViewActionPredicate = nextViewActionPredicate
+        self.viewEventMapper = viewEventMapper
+        self.resourceEventMapper = resourceEventMapper
+        self.actionEventMapper = actionEventMapper
+        self.errorEventMapper = errorEventMapper
+        self.longTaskEventMapper = longTaskEventMapper
+        self.onSessionStart = onSessionStart
+        self.customEndpoint = customEndpoint
+        self.trackAnonymousUser = trackAnonymousUser
+        self.trackWatchdogTerminations = trackWatchdogTerminations
+        self.trackMemoryWarnings = trackMemoryWarnings
+        self.trackSlowFrames = trackSlowFrames
+        self.telemetrySampleRate = telemetrySampleRate
+        self.collectAccessibility = collectAccessibility
+        self.featureFlags = featureFlags
+    }
+    #else // iOS, everything else
+    public init(
+        applicationID: String,
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
+        uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,

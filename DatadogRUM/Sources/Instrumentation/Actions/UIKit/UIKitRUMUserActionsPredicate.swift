@@ -22,7 +22,7 @@ public protocol UITouchRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(targetView: DDView) -> RUMAction?
+    func rumAction(targetView: UIView) -> RUMAction?
 }
 
 /// The predicate for tvOS interactions deciding if a given RUM Action should be recorded.
@@ -35,7 +35,7 @@ public protocol UIPressRUMActionsPredicate {
     ///   - type: the `UIPress.PressType` which received the action.
     ///   - targetView: an instance of the `DDView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction?
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
 }
 
 /// Default implementation of `UIKitRUMActionsPredicate`.
@@ -62,7 +62,7 @@ public struct DefaultUIKitRUMActionsPredicate {
 
 // MARK: iOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
-    public func rumAction(targetView: DDView) -> RUMAction? {
+    public func rumAction(targetView: UIView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
             attributes: [:]
@@ -72,7 +72,7 @@ extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate {
 
 // MARK: tvOS DefaultUIKitRUMActionsPredicate
 extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
-    public func rumAction(press type: UIPress.PressType, targetView: DDView) -> RUMAction? {
+    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         var name: String
 
         switch type {

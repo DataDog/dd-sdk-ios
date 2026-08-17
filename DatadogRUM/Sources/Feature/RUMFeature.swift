@@ -256,7 +256,48 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 .appHangBacktraceEnabled ?? true
         }
 
-        #if !os(watchOS)
+        #if os(macOS)
+        let heatmapIdentifierStore = HeatmapIdentifierStore()
+        //try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
+
+        self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
+            uiKitRUMViewsPredicate: configuration.appKitViewsPredicate,
+            uiKitRUMActionsPredicate: configuration.appKitActionsPredicate,
+            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
+            swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            longTaskThreshold: configuration.longTaskThreshold,
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID,
+            notificationCenter: configuration.notificationCenter,
+            bundleType: bundleType,
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: nil,
+            uuidGenerator: configuration.uuidGenerator,
+            heatmapIdentifierRegistry: heatmapIdentifierStore
+        )
+        #elseif os(watchOS)
+        self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
+            longTaskThreshold: configuration.longTaskThreshold,
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID,
+            notificationCenter: configuration.notificationCenter,
+            bundleType: bundleType,
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: nil,
+            uuidGenerator: configuration.uuidGenerator
+        )
+        #else
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {
             let memoryWarningReporter = MemoryWarningReporter()
@@ -289,23 +330,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
-            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
-        )
-        #else
-        self.instrumentation = RUMInstrumentation(
-            featureScope: featureScope,
-            longTaskThreshold: configuration.longTaskThreshold,
-            appHangThreshold: configuration.appHangThreshold,
-            mainQueue: configuration.mainQueue,
-            dateProvider: configuration.dateProvider,
-            backtraceReporter: core.backtraceReporter,
-            fatalErrorContext: dependencies.fatalErrorContext,
-            processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
-            bundleType: bundleType,
-            watchdogTermination: watchdogTermination,
-            memoryWarningMonitor: nil,
-            uuidGenerator: configuration.uuidGenerator,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
@@ -376,8 +400,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         #if !os(watchOS)
         let swiftUIViewTrackingEnabled = configuration.swiftUIViewsPredicate != nil
         let swiftUIActionTrackingEnabled = configuration.swiftUIActionsPredicate != nil
-        let trackNativeViews = configuration.uiKitViewsPredicate != nil
-        let trackUserInteractions = configuration.uiKitActionsPredicate != nil
+        let trackNativeViews = configuration.ddKitViewsPredicate != nil
+        let trackUserInteractions = configuration.ddKitActionsPredicate != nil
         #else
         let swiftUIViewTrackingEnabled = false
         let swiftUIActionTrackingEnabled = false

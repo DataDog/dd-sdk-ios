@@ -12,15 +12,6 @@ import AppKit
 import UIKit
 #endif
 
-/// The library name for UIKit framework as it will appear in unsymbolicated stack trace.
-///
-/// This name may differ between OS runtimes.
-public var uiKitLibraryName: String {
-    let uiKitBundleURL = Bundle(for: DDViewController.self).bundleURL
-    let uiKitFrameworkName = uiKitBundleURL.lastPathComponent // 'UIKitCore.framework' on iOS 12+; 'UIKit.framework' on iOS 11
-    return String(uiKitFrameworkName.dropLast(".framework".count))
-}
-
 extension DDView {
     /// Obtains a list of all the subviews, recursively, including `self`, that match a given predicate.
     ///
