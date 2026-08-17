@@ -163,6 +163,52 @@ class CrashReportingFeatureTests: XCTestCase {
         )
     }
 
+    func testGivenBacktraceReporterAlreadyRegistered_whenAppHangBacktracesAreDisabled_itStillRecordsTheOptOut() throws {
+        // Given (a reporter claimed the single registration slot before Crash Reporting was enabled)
+        let core = FeatureRegistrationCoreMock()
+        try core.register(backtraceReporter: BacktraceReporterMock())
+        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = BacktraceReporterMock()
+
+        // When
+        try CrashReporting.enableOrThrow(
+            with: plugin,
+            in: core,
+            configuration: .init(appHangBacktraceEnabled: false)
+        )
+
+        // Then
+        XCTAssertFalse(
+            core.isAppHangBacktraceEnabled,
+            "The opt-out must be applied even though the first reporter keeps the registration, otherwise App Hangs "
+            + "keep snapshotting all threads after the app explicitly asked them not to"
+        )
+    }
+
+    func testGivenAppHangBacktracesDisabled_whenRegisteringAnotherBacktraceReporter_itKeepsTheOptOut() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = BacktraceReporterMock()
+        try CrashReporting.enableOrThrow(
+            with: plugin,
+            in: core,
+            configuration: .init(appHangBacktraceEnabled: false)
+        )
+
+        // When
+        try core.register(backtraceReporter: BacktraceReporterMock())
+
+        // Then
+        XCTAssertFalse(
+            core.isAppHangBacktraceEnabled,
+            "`register(backtraceReporter:)` passes `true` as a compatibility default, not as an explicit request, "
+            + "so it must not revert an opt-out"
+        )
+    }
+
     func testWhenEnablingWithPluginThroughThePublicAPI_itForwardsTheConfiguration() throws {
         // Given
         let core = FeatureRegistrationCoreMock()

@@ -22,7 +22,11 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     ///
     /// It only gates the App Hangs consumer. All other consumers of `reporter` (crash reports, binary images
     /// attached to logs and RUM view events, the public `backtraceReporter` API) are unaffected by this value.
-    let appHangBacktraceEnabled: Bool
+    ///
+    /// Only `disableAppHangBacktrace()` can change it after initialization. It is read from the App Hangs watchdog
+    /// thread, hence the lock.
+    @ReadWriteLock
+    private(set) var appHangBacktraceEnabled: Bool
 
     /// Creates `BacktraceReportingFeature`.
     /// - Parameters:
@@ -31,5 +35,18 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     init(reporter: BacktraceReporting?, appHangBacktraceEnabled: Bool = true) {
         self.reporter = reporter
         self.appHangBacktraceEnabled = appHangBacktraceEnabled
+    }
+
+    /// Turns off backtrace generation for App Hangs.
+    ///
+    /// Needed because only the first registration installs its `reporter`, while an opt-out arriving with a later one
+    /// must still take effect — otherwise an app that registered a backtrace reporter before enabling Crash Reporting
+    /// would keep snapshotting all threads after explicitly asking it not to.
+    ///
+    /// Turning it back on is deliberately not offered: `register(backtraceReporter:)` passes `true` as a compatibility
+    /// default rather than as an explicit request, so honouring it would silently revert an opt-out. Opting out is
+    /// therefore one-way, which also makes the outcome independent of registration order.
+    func disableAppHangBacktrace() {
+        _appHangBacktraceEnabled.mutate { $0 = false }
     }
 }

@@ -96,13 +96,18 @@ extension DatadogCoreProtocol {
     ///   - backtraceReporter: the implementation of backtrace reporter.
     ///   - appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM.
     public func register(backtraceReporter: BacktraceReporting, appHangBacktraceEnabled: Bool) throws {
-        guard get(feature: BacktraceReportingFeature.self) == nil else {
-            DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
-            return
+        guard let registered = get(feature: BacktraceReportingFeature.self) else {
+            let feature = BacktraceReportingFeature(reporter: backtraceReporter, appHangBacktraceEnabled: appHangBacktraceEnabled)
+            return try register(feature: feature)
         }
 
-        let feature = BacktraceReportingFeature(reporter: backtraceReporter, appHangBacktraceEnabled: appHangBacktraceEnabled)
-        try register(feature: feature)
+        DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
+
+        // The first reporter keeps the registration, but an opt-out arriving with a later one must not be dropped
+        // along with it - see `BacktraceReportingFeature.disableAppHangBacktrace()`.
+        if !appHangBacktraceEnabled {
+            registered.disableAppHangBacktrace()
+        }
     }
 
     /// Registers the App Hang backtrace policy in Core when no backtrace reporter is available.
@@ -113,13 +118,15 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM.
     public func register(appHangBacktraceEnabled: Bool) throws {
-        guard get(feature: BacktraceReportingFeature.self) == nil else {
-            DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
-            return
+        guard let registered = get(feature: BacktraceReportingFeature.self) else {
+            let feature = BacktraceReportingFeature(reporter: nil, appHangBacktraceEnabled: appHangBacktraceEnabled)
+            return try register(feature: feature)
         }
 
-        let feature = BacktraceReportingFeature(reporter: nil, appHangBacktraceEnabled: appHangBacktraceEnabled)
-        try register(feature: feature)
+        // A reporter already holds the registration - keep it and only record the policy, as above.
+        if !appHangBacktraceEnabled {
+            registered.disableAppHangBacktrace()
+        }
     }
 
     /// Backtrace reporter. Use it to snapshot all running threads in the current process.
@@ -129,10 +136,11 @@ extension DatadogCoreProtocol {
 
     /// Whether backtraces may be generated for App Hangs detected by RUM.
     ///
-    /// It is `false` only when Crash Reporting was enabled with App Hang backtraces turned off — whether or not a
-    /// backtrace reporter came with it. Until then it is `true`: in that state backtrace generation may still be
-    /// *unavailable* rather than *disabled*, and callers must keep distinguishing the two. Read it at the moment a
-    /// backtrace is needed, as the reporter may be registered after the reading Feature was enabled.
+    /// It is `false` once Crash Reporting was enabled with App Hang backtraces turned off — whether or not a
+    /// backtrace reporter came with it, and whichever order registrations happened in. Until then it is `true`: in
+    /// that state backtrace generation may still be *unavailable* rather than *disabled*, and callers must keep
+    /// distinguishing the two. Read it at the moment a backtrace is needed, as the reporter may be registered after
+    /// the reading Feature was enabled.
     public var isAppHangBacktraceEnabled: Bool {
         // `self.` is required: a bare `get(...)` here parses as a `get` accessor.
         self.get(feature: BacktraceReportingFeature.self)?.appHangBacktraceEnabled ?? true
