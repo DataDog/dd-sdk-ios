@@ -33,7 +33,7 @@ public protocol UIPressRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
     ///   - type: the `UIPress.PressType` which received the action.
-    ///   - targetView: an instance of the `DDView` which received the action.
+    ///   - targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
 }
@@ -43,8 +43,8 @@ public protocol UIPressRUMActionsPredicate {
 public struct DefaultUIKitRUMActionsPredicate {
     public init () {}
 
-    /// Builds the RUM Action's `target` name for given `DDView`.
-    private func targetName(for view: DDView) -> String {
+    /// Builds the RUM Action's `target` name for given `UIView`.
+    private func targetName(for view: UIView) -> String {
         let className = NSStringFromClass(type(of: view))
 
         if let accessibilityIdentifier = view.accessibilityIdentifier {

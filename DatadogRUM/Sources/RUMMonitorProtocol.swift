@@ -422,7 +422,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     #if os(macOS)
     /// Starts RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `NSViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
@@ -433,7 +433,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
 
     /// Stops RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `NSViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
         viewController: NSViewController,
@@ -442,7 +442,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     #elseif !os(watchOS)
     /// Starts RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `UIViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
@@ -453,7 +453,7 @@ public protocol RUMMonitorViewProtocol: AnyObject {
 
     /// Stops RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `UIViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
         viewController: UIViewController,

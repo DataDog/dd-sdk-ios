@@ -723,7 +723,12 @@ public class objc_RUMConfiguration: NSObject {
     }
     #endif
 
-    #if canImport(UIKit)
+    #if os(macOS)
+    public var appKitActionsPredicate: objc_AppKitRUMActionsPredicate? {
+        set { swiftConfig.appKitActionsPredicate = newValue.map { AppKitRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.appKitActionsPredicate as? AppKitRUMActionsPredicateBridge)?.objcPredicate as? objc_AppKitRUMActionsPredicate  }
+    }
+    #elseif canImport(UIKit)
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate? {
         set { swiftConfig.uiKitActionsPredicate = newValue.map { UIKitRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? objc_UIKitRUMActionsPredicate  }
