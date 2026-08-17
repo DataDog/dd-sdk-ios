@@ -156,7 +156,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,
-                    notificationCenters: .default,
+                    notificationCenterProvider: .default,
                     telemetry: core.telemetry,
                 )
             },

@@ -452,7 +452,7 @@ extension DatadogCore {
                 processInfo: configuration.processInfo,
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider,
-                notificationCenters: configuration.notificationCenters,
+                notificationCenterProvider: configuration.notificationCenterProvider,
                 appLaunchHandler: configuration.appLaunchHandler,
                 appStateProvider: configuration.appStateProvider
             ),
