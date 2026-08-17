@@ -101,7 +101,11 @@ extension DatadogCoreProtocol {
             return try register(feature: feature)
         }
 
-        DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
+        // A Feature registered only to record an App Hang opt-out holds no reporter yet, so let this one fill the
+        // empty slot instead of being dropped - see `BacktraceReportingFeature.adoptReporterIfAbsent(_:)`.
+        if !registered.adoptReporterIfAbsent(backtraceReporter) {
+            DD.logger.debug("Backtrace reporter is already registered to this core. Skipping registration of next one.")
+        }
 
         // The first reporter keeps the registration, but an opt-out arriving with a later one must not be dropped
         // along with it - see `BacktraceReportingFeature.disableAppHangBacktrace()`.
@@ -113,8 +117,9 @@ extension DatadogCoreProtocol {
     /// Registers the App Hang backtrace policy in Core when no backtrace reporter is available.
     ///
     /// Use it when Crash Reporting is enabled with a custom plugin that provides no backtrace reporter: backtraces
-    /// cannot be generated at all in that case, but recording the policy keeps "generation was turned off" reportable
-    /// as such instead of being mistaken for "Crash Reporting was never enabled".
+    /// cannot be generated until some other component registers one, but recording the policy keeps "generation was
+    /// turned off" reportable as such instead of being mistaken for "Crash Reporting was never enabled". A reporter
+    /// registered afterwards still installs, through `BacktraceReportingFeature.adoptReporterIfAbsent(_:)`.
     ///
     /// - Parameter appHangBacktraceEnabled: whether backtraces may be generated for App Hangs detected by RUM.
     public func register(appHangBacktraceEnabled: Bool) throws {

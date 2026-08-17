@@ -126,9 +126,9 @@ public final class CrashReporting {
             // A custom plugin may provide no backtrace reporter. Record the opt-out anyway, so that it stays
             // reportable as such rather than as "Crash Reporting was never enabled".
             //
-            // Only when opting out: registering unconditionally would claim the single `BacktraceReportingFeature`
-            // slot with a reporter-less Feature, and the `get(feature:) == nil` guard in `register(backtraceReporter:)`
-            // would then silently drop any reporter registered later.
+            // Only when opting out: with the default there is no policy to record, so a reporter-less
+            // `BacktraceReportingFeature` would carry no information at all. A reporter registered later still
+            // installs either way, through `BacktraceReportingFeature.adoptReporterIfAbsent(_:)`.
             try core.register(appHangBacktraceEnabled: false)
         }
 

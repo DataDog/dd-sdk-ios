@@ -16,7 +16,11 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     /// It is `nil` when Crash Reporting was enabled with a custom plugin that provides no backtrace reporter. The
     /// Feature is still registered in that case, so that `appHangBacktraceEnabled` is recorded and backtrace
     /// generation stays distinguishable from Crash Reporting never having been enabled.
-    let reporter: BacktraceReporting?
+    ///
+    /// Only `adoptReporterIfAbsent(_:)` can change it after initialization. It is read from every thread that
+    /// generates a backtrace, hence the lock.
+    @ReadWriteLock
+    private(set) var reporter: BacktraceReporting?
 
     /// Determines whether backtraces may be generated for App Hangs detected by RUM.
     ///
@@ -35,6 +39,28 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     init(reporter: BacktraceReporting?, appHangBacktraceEnabled: Bool = true) {
         self.reporter = reporter
         self.appHangBacktraceEnabled = appHangBacktraceEnabled
+    }
+
+    /// Installs `reporter` if this Feature does not have one yet.
+    ///
+    /// A Feature registered only to record an App Hang opt-out carries no reporter, yet it occupies the single
+    /// registration slot. Without adoption, a reporter offered afterwards would be dropped by the "already
+    /// registered" rule and crash reports, binary images on logs and RUM view events, and the public
+    /// `backtraceReporter` API would stay unavailable for the rest of the process — none of which the App Hang
+    /// opt-out promises to affect.
+    ///
+    /// - Parameter reporter: The reporter to install.
+    /// - Returns: `true` if it was installed, `false` if one was already present and has been kept.
+    func adoptReporterIfAbsent(_ reporter: BacktraceReporting) -> Bool {
+        var adopted = false
+        _reporter.mutate { current in
+            guard current == nil else {
+                return // the first reporter wins
+            }
+            current = reporter
+            adopted = true
+        }
+        return adopted
     }
 
     /// Turns off backtrace generation for App Hangs.

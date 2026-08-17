@@ -163,6 +163,34 @@ class CrashReportingFeatureTests: XCTestCase {
         )
     }
 
+    func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreDisabled_itStillAcceptsALaterReporter() throws {
+        // Given (the opt-out is recorded by a Feature that carries no reporter)
+        let core = FeatureRegistrationCoreMock()
+        let plugin = CrashReportingPluginMock()
+        plugin.injectedBacktraceReporter = nil
+        try CrashReporting.enableOrThrow(
+            with: plugin,
+            in: core,
+            configuration: .init(appHangBacktraceEnabled: false)
+        )
+        XCTAssertNil(try core.backtraceReporter.generateBacktrace())
+
+        // When
+        try core.register(backtraceReporter: BacktraceReporterMock())
+
+        // Then
+        XCTAssertNotNil(
+            try core.backtraceReporter.generateBacktrace(),
+            "Recording the opt-out must not permanently block backtrace generation for the consumers this "
+            + "configuration promises are unaffected - crash reports, binary images on logs and RUM view events, "
+            + "and the public `backtraceReporter` API"
+        )
+        XCTAssertFalse(
+            core.isAppHangBacktraceEnabled,
+            "Adopting a reporter must not revert the opt-out"
+        )
+    }
+
     func testGivenBacktraceReporterAlreadyRegistered_whenAppHangBacktracesAreDisabled_itStillRecordsTheOptOut() throws {
         // Given (a reporter claimed the single registration slot before Crash Reporting was enabled)
         let core = FeatureRegistrationCoreMock()
