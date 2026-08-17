@@ -24,14 +24,14 @@ import DatadogInternal
 public extension RUMMonitorProtocol {
     // MARK: - views
 
-    #if !os(watchOS)
+    #if os(macOS)
     /// Starts RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `NSViewController` representing this view.
     ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
     ///   - attributes: custom attributes to attach to this view.
     func startView(
-        viewController: DDViewController,
+        viewController: NSViewController,
         name: String? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
@@ -40,10 +40,34 @@ public extension RUMMonitorProtocol {
 
     /// Stops RUM view.
     /// - Parameters:
-    ///   - viewController: the instance of `DDViewController` representing this view.
+    ///   - viewController: the instance of `NSViewController` representing this view.
     ///   - attributes: custom attributes to attach to this view.
     func stopView(
-        viewController: DDViewController,
+        viewController: NSViewController,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        stopView(viewController: viewController, attributes: attributes)
+    }
+    #elseif !os(watchOS)
+    /// Starts RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
+    ///   - attributes: custom attributes to attach to this view.
+    func startView(
+        viewController: UIViewController,
+        name: String? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        startView(viewController: viewController, name: name, attributes: attributes)
+    }
+
+    /// Stops RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `UIViewController` representing this view.
+    ///   - attributes: custom attributes to attach to this view.
+    func stopView(
+        viewController: UIViewController,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         stopView(viewController: viewController, attributes: attributes)

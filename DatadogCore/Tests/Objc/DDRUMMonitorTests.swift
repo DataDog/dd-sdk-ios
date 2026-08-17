@@ -16,7 +16,7 @@ import DatadogInternal
 
 class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: objc_UIKitRUMViewsPredicate {
+        class MockPredicate: objc_ViewsPredicate {
             var didCallRUMView = false
             func rumView(for viewController: DDViewController) -> objc_RUMView? {
                 didCallRUMView = true
@@ -26,7 +26,7 @@ class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
 
         let objcPredicate = MockPredicate()
 
-        let predicateBridge = UIKitRUMViewsPredicateBridge(objcPredicate: objcPredicate)
+        let predicateBridge = ViewsPredicate(objcPredicate: objcPredicate)
         _ = predicateBridge.rumView(for: mockView)
 
         XCTAssertTrue(objcPredicate.didCallRUMView)

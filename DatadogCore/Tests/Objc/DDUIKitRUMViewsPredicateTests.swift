@@ -18,7 +18,7 @@ import SwiftUI
 class DDUIKitRUMViewsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let customViewController = createMockView(viewControllerClassName: "CustomSwiftViewController")
@@ -31,7 +31,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingForCustomObjcViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let customViewController = CustomObjcViewController()
@@ -44,7 +44,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingUIKitViewController_itReturnsNoView() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let uiKitViewController = DDViewController()
@@ -60,7 +60,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
             return
         }
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let swiftUIHostingController = DDHostingController<EmptyView>(rootView: EmptyView())

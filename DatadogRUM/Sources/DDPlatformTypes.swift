@@ -19,47 +19,47 @@ import UIKit
 internal typealias DDApplication = UIApplication
 
 // MARK: - Views
-public typealias DDView = UIView
-public typealias DDControl = UIControl
-public typealias DDLabel = UILabel
-public typealias DDButton = UIButton
-public typealias DDScrollView = UIScrollView
-public typealias DDStackView = UIStackView
-public typealias DDSegmentedControl = UISegmentedControl
-public typealias DDWindow = UIWindow
+internal typealias DDView = UIView
+internal typealias DDControl = UIControl
+internal typealias DDLabel = UILabel
+internal typealias DDButton = UIButton
+internal typealias DDScrollView = UIScrollView
+internal typealias DDStackView = UIStackView
+internal typealias DDSegmentedControl = UISegmentedControl
+internal typealias DDWindow = UIWindow
 #if !os(visionOS)
-public typealias DDScreen = UIScreen
+internal typealias DDScreen = UIScreen
 #endif
 
 // MARK: - View Controllers
-public typealias DDViewController = UIViewController
-public typealias DDNavigationController = UINavigationController
-public typealias DDTabBarController = UITabBarController
+internal typealias DDViewController = UIViewController
+internal typealias DDNavigationController = UINavigationController
+internal typealias DDTabBarController = UITabBarController
 
 // MARK: - Events
-public typealias DDEvent = UIEvent
-public typealias DDTouch = UITouch
+internal typealias DDEvent = UIEvent
+internal typealias DDTouch = UITouch
 
 // MARK: - Collection / Table Cells
-public typealias DDTableViewCell = UITableViewCell
-public typealias DDCollectionViewCell = UICollectionViewCell
+internal typealias DDTableViewCell = UITableViewCell
+internal typealias DDCollectionViewCell = UICollectionViewCell
 
 // MARK: - Accessibility
-public typealias DDAccessibility = UIAccessibility
+internal typealias DDAccessibility = UIAccessibility
 
-public typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
-public typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
+internal typealias DDKitRUMActionsPredicate = UIKitRUMActionsPredicate
+internal typealias DDKitRUMViewsPredicate = UIKitRUMViewsPredicate
 #endif
 
 // MARK: - Appearance
-public typealias DDColor = UIColor
-public typealias DDFont = UIFont
+internal typealias DDColor = UIColor
+internal typealias DDFont = UIFont
 
 #if canImport(SwiftUI) && (os(iOS) || os(tvOS) || os(visionOS))
 import SwiftUI
 
 @available(iOS 13.0, tvOS 13.0, *)
-public typealias DDHostingController = UIHostingController
+internal typealias DDHostingController = UIHostingController
 #endif
 
 #elseif canImport(AppKit)
@@ -69,45 +69,45 @@ import AppKit
 internal typealias DDApplication = NSApplication
 
 // MARK: - Views
-public typealias DDView = NSView
-public typealias DDControl = NSControl
+internal typealias DDView = NSView
+internal typealias DDControl = NSControl
 /// Closest AppKit equivalent; configure with `isEditable = false` / `isBezeled = false` for label behaviour.
-public typealias DDLabel = NSTextField
-public typealias DDButton = NSButton
-public typealias DDScrollView = NSScrollView
-public typealias DDStackView = NSStackView
-public typealias DDSegmentedControl = NSSegmentedControl
-public typealias DDWindow = NSWindow
-public typealias DDScreen = NSScreen
+internal typealias DDLabel = NSTextField
+internal typealias DDButton = NSButton
+internal typealias DDScrollView = NSScrollView
+internal typealias DDStackView = NSStackView
+internal typealias DDSegmentedControl = NSSegmentedControl
+internal typealias DDWindow = NSWindow
+internal typealias DDScreen = NSScreen
 
 // MARK: - View Controllers
-public typealias DDViewController = NSViewController
+internal typealias DDViewController = NSViewController
 /// No direct AppKit equivalent — aliased to `NSViewController` for compilation purposes.
-public typealias DDNavigationController = NSViewController
+internal typealias DDNavigationController = NSViewController
 /// No direct AppKit equivalent — aliased to `NSViewController` for compilation purposes.
-public typealias DDTabBarController = NSViewController
+internal typealias DDTabBarController = NSViewController
 
 // MARK: - Events
 /// `NSEvent` covers all input events on macOS (mouse, keyboard, scroll, etc.).
-public typealias DDEvent = NSEvent
+internal typealias DDEvent = NSEvent
 /// `NSTouch` represents trackpad touches on macOS; semantically different from `UITouch`.
-public typealias DDTouch = NSTouch
+internal typealias DDTouch = NSTouch
 
 // MARK: - Appearance
-public typealias DDColor = NSColor
-public typealias DDFont = NSFont
+internal typealias DDColor = NSColor
+internal typealias DDFont = NSFont
 
 // MARK: - Collection / Table Cells
 /// Closest AppKit equivalent to `UITableViewCell` — an `NSView`-based cell.
-public typealias DDTableViewCell = NSTableCellView
+internal typealias DDTableViewCell = NSTableCellView
 /// `NSCollectionViewItem` is the AppKit equivalent; note it is an `NSViewController` subclass.
-public typealias DDCollectionViewCell = NSCollectionViewItem
+internal typealias DDCollectionViewCell = NSCollectionViewItem
 
 // MARK: - Accessibility
 /// Stub namespace matching `UIAccessibility` API surface used in DatadogRUM.
 /// AppKit exposes accessibility via `NSAccessibility` (a protocol) and top-level functions;
 /// this enum provides a compilation target — actual macOS values are not supported.
-public typealias DDAccessibility = NSAccessibility
+internal typealias DDAccessibility = NSAccessibility
 
 // MARK: - Application lifecycle notifications
 /// Maps `UIApplication.didEnterBackgroundNotification` → `NSApplication.didResignActiveNotification`.
@@ -117,13 +117,13 @@ extension NSApplication {
 }
 
 // MARK: - SDK specific
-public typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
-public typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
+internal typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
+internal typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
 
 #if canImport(SwiftUI)
 import SwiftUI
 
-public typealias DDHostingController = NSHostingController
+internal typealias DDHostingController = NSHostingController
 #endif
 
 #endif
