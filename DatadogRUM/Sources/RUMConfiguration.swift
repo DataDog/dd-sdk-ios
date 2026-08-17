@@ -572,6 +572,31 @@ extension RUM.Configuration.URLSessionTracking {
     }
 }
 
+extension RUM.Configuration.TimeseriesType {
+    /// The timeseries types available for collection on the current platform.
+    internal static var allAvailableOnCurrentPlatform: Set<Self> {
+#if os(watchOS)
+        // CPU usage is unavailable on watchOS (`TimeseriesSessionCollector.processCPU()` always returns `nil`).
+        return [.memory]
+#else
+        return [.memory, .cpu]
+#endif
+    }
+}
+
+extension RUM.Configuration.Timeseries {
+    /// `collectTypes` filtered down to the types actually available on the current platform.
+    ///
+    /// Empty means timeseries collection should be disabled entirely (e.g. `collectTypes: [.cpu]` on watchOS).
+    internal var effectiveCollectTypes: Set<RUM.Configuration.TimeseriesType> {
+        let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
+        guard let collectTypes else {
+            return available
+        }
+        return Set(collectTypes).intersection(available)
+    }
+}
+
 extension RUM.Configuration {
     /// Creates RUM configuration.
     /// - Parameters:

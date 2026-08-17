@@ -44,7 +44,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private let memoryReader: SamplingBasedVitalReader
     private let cpuUsageProvider: () -> Double?
     private let batchSize: Int
-    private let collectTypes: Set<RUM.Configuration.TimeseriesType>?
+    private let collectTypes: Set<RUM.Configuration.TimeseriesType>
     private let samplingInterval: TimeInterval
     private let featureScope: FeatureScope
     private let totalRAM: Double
@@ -78,7 +78,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         memoryReader: SamplingBasedVitalReader,
         featureScope: FeatureScope,
         batchSize: Int = 120,
-        collectTypes: Set<RUM.Configuration.TimeseriesType>? = nil,
+        collectTypes: Set<RUM.Configuration.TimeseriesType> = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform,
         samplingInterval: TimeInterval = 1,
         cpuUsageProvider: (() -> Double?)? = nil,
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
@@ -89,14 +89,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
-#if os(watchOS)
-        // CPU usage is unavailable on watchOS (`processCPU()` always returns `nil`), so drop `.cpu`
-        // from the effective set to avoid silently accepting a `collectTypes: [.cpu]` config that
-        // would never flush any events.
-        self.collectTypes = collectTypes.map { $0.subtracting([.cpu]) }
-#else
         self.collectTypes = collectTypes
-#endif
         self.samplingInterval = samplingInterval
         self.featureScope = featureScope
         self.totalRAM = totalRAM
@@ -271,7 +264,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         let timestamp = Int64.ddWithNoOverflow(currentDate.timeIntervalSince1970 * 1_000_000_000)
 
-        if collectTypes?.contains(.memory) ?? true, let bytes = memoryReader.readVitalData() {
+        if collectTypes.contains(.memory), let bytes = memoryReader.readVitalData() {
             let footprintKB = bytes / 1_024
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
@@ -280,7 +273,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
         }
 
-        if collectTypes?.contains(.cpu) ?? true, let cpuUsage = cpuUsageProvider() {
+        if collectTypes.contains(.cpu), let cpuUsage = cpuUsageProvider() {
             cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage))
             if cpuBuffer.count >= batchSize {
                 flushCPU()

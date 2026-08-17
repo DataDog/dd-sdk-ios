@@ -140,15 +140,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
-            var effectiveCollectTypes = timeseries.collectTypes.map(Set.init)
-#if os(watchOS)
-            // CPU usage is unavailable on watchOS, so a `collectTypes: [.cpu]` config would otherwise
-            // start a collector whose sampling timer runs for the whole session without ever flushing.
-            effectiveCollectTypes = effectiveCollectTypes?.subtracting([.cpu])
-#endif
-            // An explicit empty selection (or one emptied by the watchOS adjustment above) would still
-            // run the sampling timer for the whole session without ever producing events.
-            guard effectiveCollectTypes?.isEmpty != true else {
+            let effectiveCollectTypes = timeseries.effectiveCollectTypes
+            // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
+            // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session
+            // without ever producing events, so skip creating the collector entirely.
+            guard !effectiveCollectTypes.isEmpty else {
                 return nil
             }
             return TimeseriesSessionCollector(
