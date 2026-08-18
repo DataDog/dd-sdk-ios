@@ -435,7 +435,7 @@ public enum RUM
         public struct Timeseries
             public var collectTypes: [TimeseriesType]?
             public init(collectTypes: [TimeseriesType]? = nil)
-        public enum TimeseriesType
+        public enum TimeseriesType: CaseIterable
             case memory
             case cpu
 [?] extension RUM.Configuration.URLSessionTracking
