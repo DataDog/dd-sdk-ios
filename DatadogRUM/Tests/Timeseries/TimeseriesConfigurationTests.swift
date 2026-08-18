@@ -19,7 +19,7 @@ class TimeseriesConfigurationTests: XCTestCase {
 
     func testWhenCollectTypesIsNil_effectiveCollectTypesReturnsAllAvailableOnCurrentPlatform() {
         // Given
-        let timeseries = RUM.Configuration.Timeseries(collectTypes: nil)
+        let timeseries = RUM.Configuration.Timeseries()
 
         // Then
         XCTAssertEqual(timeseries.effectiveCollectTypes, RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform)
