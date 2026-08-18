@@ -25,7 +25,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
     /// flushed alongside other instrumentation in `flush()`.
-    private let timeseriesCollector: TimeseriesCollecting?
+    let timeseriesCollector: TimeseriesCollecting?
 
     /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
     @ReadWriteLock
@@ -139,15 +139,24 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
-        let timeseriesCollector: TimeseriesCollecting? = configuration.enableTimeseries ? TimeseriesSessionCollector(
-            memoryReader: VitalMemoryReader(),
-            featureScope: featureScope,
-            batchSize: configuration.timeseriesBatchSize,
-            ciTest: ciTest,
-            syntheticsTest: syntheticsTest,
-            sessionSampleRate: Double(sessionSampleRate),
-            now: { configuration.dateProvider.now }
-        ) : nil
+        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            let effectiveCollectTypes = timeseries.effectiveCollectTypes
+            // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
+            // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session
+            // without ever producing events, so skip creating the collector entirely.
+            guard !effectiveCollectTypes.isEmpty else {
+                return nil
+            }
+            return TimeseriesSessionCollector(
+                memoryReader: VitalMemoryReader(),
+                featureScope: featureScope,
+                collectTypes: effectiveCollectTypes,
+                ciTest: ciTest,
+                syntheticsTest: syntheticsTest,
+                sessionSampleRate: Double(sessionSampleRate),
+                now: { configuration.dateProvider.now }
+            )
+        }
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,

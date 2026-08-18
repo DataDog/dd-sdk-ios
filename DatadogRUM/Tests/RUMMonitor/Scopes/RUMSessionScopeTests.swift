@@ -905,4 +905,10 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
     func flush() {
         flushCallCount += 1
     }
+
+    var flushCallCount = 0
+
+    func flush() {
+        flushCallCount += 1
+    }
 }
