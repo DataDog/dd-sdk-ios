@@ -434,7 +434,7 @@ extension RUM {
 
         /// A timeseries type that can be collected.
         @_spi(Experimental)
-        public enum TimeseriesType {
+        public enum TimeseriesType: CaseIterable {
             /// Memory footprint and percentage of total device RAM.
             case memory
             /// CPU usage as a percentage.

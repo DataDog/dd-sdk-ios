@@ -78,7 +78,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         memoryReader: SamplingBasedVitalReader,
         featureScope: FeatureScope,
         batchSize: Int = 120,
-        collectTypes: Set<RUM.Configuration.TimeseriesType> = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform,
+        collectTypes: Set<RUM.Configuration.TimeseriesType> = Set(RUM.Configuration.TimeseriesType.allCases),
         samplingInterval: TimeInterval = 1,
         cpuUsageProvider: (() -> Double?)? = nil,
         totalRAM: Double = Double(ProcessInfo.processInfo.physicalMemory),
