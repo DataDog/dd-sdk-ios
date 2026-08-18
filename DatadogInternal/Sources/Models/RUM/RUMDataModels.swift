@@ -15629,6 +15629,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             /// Schema of mobile specific features usage
             public enum TelemetryMobileFeaturesUsage: Codable {
                 case trackWebView(value: TrackWebView)
+                case timeseries(value: Timeseries)
                 case androidNetworkInstrumentation(value: AndroidNetworkInstrumentation)
 
                 // MARK: - Codable
@@ -15639,6 +15640,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     switch self {
                     case .trackWebView(let value):
+                        try container.encode(value)
+                    case .timeseries(let value):
                         try container.encode(value)
                     case .androidNetworkInstrumentation(let value):
                         try container.encode(value)
@@ -15651,6 +15654,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     if let value = try? container.decode(TrackWebView.self) {
                         self = .trackWebView(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(Timeseries.self) {
+                        self = .timeseries(value: value)
                         return
                     }
                     if let value = try? container.decode(AndroidNetworkInstrumentation.self) {
@@ -15670,6 +15677,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 public struct TrackWebView: Codable {
                     /// trackWebView API
                     public let feature: String = "trackWebView"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
+                }
+
+                public struct Timeseries: Codable {
+                    /// Timeseries tracking enabled
+                    public let feature: String = "timeseries"
 
                     public enum CodingKeys: String, CodingKey {
                         case feature = "feature"
@@ -15776,4 +15794,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/7e92fa29cb294a0a069e9212bc0f0dd76ec8432d
+// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a

@@ -147,6 +147,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             guard !effectiveCollectTypes.isEmpty else {
                 return nil
             }
+            core.telemetry.usage(event: .timeseries)
             return TimeseriesSessionCollector(
                 memoryReader: VitalMemoryReader(),
                 featureScope: featureScope,
