@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class RUMTests: XCTestCase {
@@ -406,6 +407,30 @@ class RUMTests: XCTestCase {
     }
 
     // MARK: - Behaviour Tests
+
+    func testWhenEnabledWithTimeseries_itSendsUsageTelemetryOnlyAfterFeatureIsRegistered() throws {
+        // Given
+        weak var core: SingleFeatureCoreMock<RUMFeature>?
+        var featureWasRegisteredWhenTelemetryReceived: Bool?
+        let receiver = FeatureMessageReceiverMock { message in
+            guard case .telemetry(.usage(let usage)) = message, case .timeseries = usage.event else {
+                return
+            }
+            featureWasRegisteredWhenTelemetryReceived = core?.get(feature: RUMFeature.self) != nil
+        }
+        let strongCore = SingleFeatureCoreMock<RUMFeature>(messageReceiver: receiver)
+        // `TimeseriesSessionCollector` keeps a long-lived reference to its feature scope, which would otherwise
+        // create a core -> feature -> collector -> scope -> core retain cycle with the default `self`-as-scope.
+        strongCore.featureScopeOverride = NOPFeatureScope()
+        core = strongCore
+        config.timeseries = .init(collectTypes: [.memory])
+
+        // When
+        RUM.enable(with: config, in: strongCore)
+
+        // Then
+        XCTAssertEqual(featureWasRegisteredWhenTelemetryReceived, true)
+    }
 
     func testWhenEnabled_itSetsRUMContextInCore() throws {
         let core = PassthroughCoreMock()
