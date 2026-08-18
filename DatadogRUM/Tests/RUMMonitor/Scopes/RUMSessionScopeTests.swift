@@ -900,10 +900,14 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
         lastStoppedSessionID = sessionID
     }
 
-    var flushCallCount = 0
+    var noteActivityCallCount = 0
+    var lastActivitySessionID: String?
+    var lastActivityTime: Date?
 
-    func flush() {
-        flushCallCount += 1
+    func noteActivity(sessionID: String, at time: Date) {
+        noteActivityCallCount += 1
+        lastActivitySessionID = sessionID
+        lastActivityTime = time
     }
 
     var flushCallCount = 0
