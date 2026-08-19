@@ -5,10 +5,8 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
-
-/// JSON encoder used to encode data.
-private let jsonEncoder: JSONEncoder = .dd.default()
 
 /// Writes data to files.
 internal struct FileWriter: Writer {
@@ -16,16 +14,20 @@ internal struct FileWriter: Writer {
     let orchestrator: FilesOrchestratorType
     /// Algorithm to encrypt written data.
     let encryption: DataEncryption?
+    /// JSON encoder used to encode data.
+    private let jsonEncoder: JSONEncoder
     /// Telemetry interface.
     let telemetry: Telemetry
 
     init(
         orchestrator: FilesOrchestratorType,
         encryption: DataEncryption?,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        jsonEncoder: JSONEncoder = .dd.default()
     ) {
         self.orchestrator = orchestrator
         self.encryption = encryption
+        self.jsonEncoder = jsonEncoder
         self.telemetry = telemetry
     }
 
@@ -98,7 +100,7 @@ internal struct FileWriter: Writer {
     /// - Parameter event: The value to encode.
     /// - Returns: Data representation of the value.
     private func encode<T: Encodable>(value: T, blockType: BatchBlockType) throws -> Data {
-        let data = try jsonEncoder.encode(value)
+        let data = try jsonEncoder.dd.encodeWithAttributeRecovery(value)
         return try BatchDataBlock(
             type: blockType,
             data: encrypt(data: data)

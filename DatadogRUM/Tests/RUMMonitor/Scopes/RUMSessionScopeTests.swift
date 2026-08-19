@@ -866,6 +866,7 @@ class RUMSessionScopeTests: XCTestCase {
 // MARK: - Test Helpers
 
 private class TimeseriesCollectorSpy: TimeseriesCollecting {
+    weak var activeContextReader: RUMActiveContextReader?
     var startCallCount = 0
     var pauseCallCount = 0
     var resumeCallCount = 0
@@ -873,6 +874,9 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
     var lastStartedSessionID: String?
     var lastStartedApplicationID: String?
     var lastStartedSessionType: RUMSessionType?
+    var lastStoppedSessionID: String?
+    var lastPausedSessionID: String?
+    var lastResumedSessionID: String?
 
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {
         startCallCount += 1
@@ -881,10 +885,34 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
         lastStartedSessionType = sessionType
     }
 
-    func pause() { pauseCallCount += 1 }
-    func resume() { resumeCallCount += 1 }
+    func pause(sessionID: String) {
+        pauseCallCount += 1
+        lastPausedSessionID = sessionID
+    }
 
-    func stop() {
+    func resume(sessionID: String) {
+        resumeCallCount += 1
+        lastResumedSessionID = sessionID
+    }
+
+    func stop(sessionID: String) {
         stopCallCount += 1
+        lastStoppedSessionID = sessionID
+    }
+
+    var noteActivityCallCount = 0
+    var lastActivitySessionID: String?
+    var lastActivityTime: Date?
+
+    func noteActivity(sessionID: String, at time: Date) {
+        noteActivityCallCount += 1
+        lastActivitySessionID = sessionID
+        lastActivityTime = time
+    }
+
+    var flushCallCount = 0
+
+    func flush() {
+        flushCallCount += 1
     }
 }

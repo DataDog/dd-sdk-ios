@@ -1848,7 +1848,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
         serverTimeOffset: TimeInterval = .mockAny(),
-        viewPath: String? = .mockAny()
+        viewPath: String? = .mockAny(),
+        viewName: String? = nil
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -1857,7 +1858,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: viewID,
             userActionID: userActionID,
             viewServerTimeOffset: serverTimeOffset,
-            viewPath: viewPath
+            viewPath: viewPath,
+            viewName: viewName
         )
     }
 
@@ -1868,7 +1870,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
             serverTimeOffset: .mockRandom(),
-            viewPath: .mockRandom()
+            viewPath: .mockRandom(),
+            viewName: .mockRandom()
         )
     }
 }

@@ -330,19 +330,12 @@ extension RUM {
 
         /// Enables collection of memory and CPU timeseries events.
         ///
-        /// When enabled, memory footprint and CPU usage are sampled every second and uploaded as
-        /// timeseries events scoped to the RUM session. Requires `vitalsUpdateFrequency` to be set.
+        /// When set, memory footprint and CPU usage are sampled every second and uploaded as
+        /// timeseries events scoped to the RUM session.
         ///
-        /// Default: `false`.
-        public var enableTimeseries: Bool
-
-        /// The default number of samples collected before a timeseries batch is flushed.
-        public static let defaultTimeseriesBatchSize = 120
-
-        /// The number of samples collected before a timeseries batch is flushed.
-        ///
-        /// Default: `120`.
-        public var timeseriesBatchSize: Int
+        /// Default: `nil` - which means timeseries collection is not enabled by default.
+        @_spi(Experimental)
+        public var timeseries: Timeseries?
 
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
@@ -396,6 +389,17 @@ extension RUM {
             /// Default: `.disabled`.
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
 
+            /// URL patterns disallowed from automatic RUM resource tracking.
+            ///
+            /// Matching requests produce no RUM Resource, and no APM span reconstructed from a RUM Resource.
+            /// The disallow list takes priority over RUM first-party hosts tracing.
+            ///
+            /// A pattern matches the full URL: plain strings match exactly, `*` matches any characters (multiple
+            /// allowed). Patterns with no literal (e.g. `"*"`) are ignored.
+            ///
+            /// Default: `[]`.
+            public var disallowList: [String] = []
+
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
         }
@@ -408,6 +412,33 @@ extension RUM {
             case average
             /// Every `1000ms`.
             case rare
+        }
+
+        /// Configuration for collecting memory and CPU timeseries during a RUM session.
+        @_spi(Experimental)
+        public struct Timeseries {
+            /// The specific timeseries types to collect.
+            ///
+            /// Default: `nil` - which means all available timeseries types are collected.
+            public var collectTypes: [TimeseriesType]?
+
+            /// Creates a timeseries configuration.
+            /// - Parameters:
+            ///   - collectTypes: The specific timeseries types to collect. Default: `nil` - all types are collected.
+            public init(
+                collectTypes: [TimeseriesType]? = nil
+            ) {
+                self.collectTypes = collectTypes
+            }
+        }
+
+        /// A timeseries type that can be collected.
+        @_spi(Experimental)
+        public enum TimeseriesType: CaseIterable {
+            /// Memory footprint and percentage of total device RAM.
+            case memory
+            /// CPU usage as a percentage.
+            case cpu
         }
 
         // MARK: - Internal
@@ -527,14 +558,42 @@ extension RUM.Configuration.URLSessionTracking {
     ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
     ///   - trackResourceHeaders: Configuration for capturing HTTP headers. Default: `.disabled`.
+    ///   - disallowList: URL patterns disallowed from automatic RUM resource tracking. Default: `[]`.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
         resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        trackResourceHeaders: TrackResourceHeaders = .disabled
+        trackResourceHeaders: TrackResourceHeaders = .disabled,
+        disallowList: [String] = []
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
         self.trackResourceHeaders = trackResourceHeaders
+        self.disallowList = disallowList
+    }
+}
+
+extension RUM.Configuration.TimeseriesType {
+    /// The timeseries types available for collection on the current platform.
+    internal static var allAvailableOnCurrentPlatform: Set<Self> {
+#if os(watchOS)
+        // CPU usage is unavailable on watchOS (`TimeseriesSessionCollector.processCPU()` always returns `nil`).
+        return [.memory]
+#else
+        return [.memory, .cpu]
+#endif
+    }
+}
+
+extension RUM.Configuration.Timeseries {
+    /// `collectTypes` filtered down to the types actually available on the current platform.
+    ///
+    /// Empty means timeseries collection should be disabled entirely (e.g. `collectTypes: [.cpu]` on watchOS).
+    internal var effectiveCollectTypes: Set<RUM.Configuration.TimeseriesType> {
+        let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
+        guard let collectTypes else {
+            return available
+        }
+        return Set(collectTypes).intersection(available)
     }
 }
 
@@ -570,8 +629,6 @@ extension RUM.Configuration {
     ///   - trackSlowFrames: Enables the collection of slow frames (view hitches). Default: `true`.
     ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     ///   - collectAccessibility: Determines whether accessibility data should be collected and included in RUM view events. Default: `false`.
-    ///   - enableTimeseries: Enables collection of memory and CPU timeseries events. Default: `false`.
-    ///   - timeseriesBatchSize: The number of samples collected before a timeseries batch is flushed. Default: `120`.
     ///   - featureFlags: Experimental feature flags.
     /// 
     /// - Note: On watchOS, automatic UIKit and SwiftUI view/action tracking is unavailable. The predicate parameters will be ignored.
@@ -607,8 +664,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -638,8 +693,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = enableTimeseries
-        self.timeseriesBatchSize = timeseriesBatchSize
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #else
@@ -666,8 +720,6 @@ extension RUM.Configuration {
         trackSlowFrames: Bool = true,
         telemetrySampleRate: SampleRate = 20,
         collectAccessibility: Bool = false,
-        enableTimeseries: Bool = false,
-        timeseriesBatchSize: Int = RUM.Configuration.defaultTimeseriesBatchSize,
         featureFlags: FeatureFlags = .defaults
     ) {
         self.applicationID = applicationID
@@ -692,8 +744,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
-        self.enableTimeseries = enableTimeseries
-        self.timeseriesBatchSize = timeseriesBatchSize
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #endif

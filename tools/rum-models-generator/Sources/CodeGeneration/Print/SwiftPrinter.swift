@@ -257,9 +257,26 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 default:            context = ".custom"
                 }
                 let encodedValue = value.replacingOccurrences(of: "$1", with: "value")
-                writeLine("\(dynamicProperty.backtickName).forEach { name, value in") // dynamic properties are dictionaries
+                writeLine("let shouldRecover = encoder.shouldRecoverAttributeFailures")
+                writeLine("try \(dynamicProperty.backtickName).forEach { name, value in") // dynamic properties are dictionaries
                 indentRight()
-                    writeLine("dynamicContainer.encodeAttribute(\(encodedValue), forKey: DynamicCodingKey(name), attributeName: name, context: \(context))")
+                    if !staticallyEncodedProperties.isEmpty {
+                        writeLine("if shouldRecover, StaticCodingKeys(stringValue: name) != nil {")
+                        indentRight()
+                            writeLine("return")
+                        indentLeft()
+                        writeLine("}")
+                        writeEmptyLine()
+                    }
+                    writeLine("try dynamicContainer.encodeAttribute(")
+                    indentRight()
+                        writeLine("\(encodedValue),")
+                        writeLine("forKey: DynamicCodingKey(name),")
+                        writeLine("attributeName: name,")
+                        writeLine("context: \(context),")
+                        writeLine("shouldRecover: shouldRecover")
+                    indentLeft()
+                    writeLine(")")
                 indentLeft()
                 writeLine("}")
             }
