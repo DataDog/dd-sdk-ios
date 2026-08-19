@@ -17,17 +17,28 @@ public extension DatadogExtension where ExtendedType: UIView {
     ///
     /// The slot ID is supplied by the embedding SDK and is independent of the view's wireframe ID.
     var sessionReplaySlotID: String? {
-        get {
-            objc_getAssociatedObject(type, &sessionReplaySlotIDKey) as? String
+        objc_getAssociatedObject(type, &sessionReplaySlotIDKey) as? String
+    }
+
+    /// Sets the Session Replay slot ID for this view.
+    ///
+    /// Changing the slot changes the recorded view hierarchy, so this triggers a new snapshot.
+    @available(iOS 13.0, tvOS 13.0, *)
+    @MainActor
+    func setSessionReplaySlotID(_ slotID: String?) {
+        guard slotID != sessionReplaySlotID else {
+            return
         }
-        nonmutating set {
-            objc_setAssociatedObject(
-                type,
-                &sessionReplaySlotIDKey,
-                newValue,
-                .OBJC_ASSOCIATION_COPY_NONATOMIC
-            )
-        }
+
+        objc_setAssociatedObject(
+            type,
+            &sessionReplaySlotIDKey,
+            slotID,
+            .OBJC_ASSOCIATION_COPY_NONATOMIC
+        )
+
+        // Changing the slot changes the recorded view hierarchy, so trigger a new snapshot.
+        type.setNeedsLayout()
     }
 }
 #endif

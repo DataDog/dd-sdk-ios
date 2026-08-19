@@ -68,6 +68,7 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
+            embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
             imageSnapshots: imageSnapshots
         ).build()
 

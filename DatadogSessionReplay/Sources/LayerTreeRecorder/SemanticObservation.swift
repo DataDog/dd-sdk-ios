@@ -56,6 +56,7 @@ extension CALayerSnapshot.SemanticObservation {
         case label(LabelSemantics)
         case image(ImageSemantics)
         case textInput(TextInputSemantics)
+        case embeddedContent(EmbeddedContentSemantics)
         case webView(WebViewSemantics)
     }
 }
@@ -168,6 +169,19 @@ extension CALayerSnapshot.SemanticObservation {
             self.isSensitiveText = isSensitiveText
             self.isEditable = isEditable
             self.isEmpty = isEmpty
+        }
+    }
+}
+
+// MARK: - EmbeddedContentSemantics
+
+@available(iOS 13.0, tvOS 13.0, *)
+extension CALayerSnapshot.SemanticObservation {
+    struct EmbeddedContentSemantics: Sendable, Equatable {
+        let slotID: String
+
+        init(slotID: String) {
+            self.slotID = slotID
         }
     }
 }

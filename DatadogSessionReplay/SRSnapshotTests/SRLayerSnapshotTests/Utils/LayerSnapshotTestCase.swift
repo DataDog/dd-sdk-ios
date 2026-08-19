@@ -231,6 +231,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
+            embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
             imageSnapshots: imageSnapshots
         ).build()
 

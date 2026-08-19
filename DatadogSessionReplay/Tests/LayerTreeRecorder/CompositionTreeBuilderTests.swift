@@ -45,6 +45,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -86,6 +87,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -120,6 +122,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -158,6 +161,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -180,6 +184,54 @@ struct CompositionTreeBuilderTests {
     }
 
     @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build includes embedded content visibility state")
+    func buildIncludesEmbeddedContentVisibilityState() throws {
+        // Given
+        let visibleReplayID: Int64 = 2
+        let hiddenReplayID: Int64 = 3
+        let visibleSnapshot = CALayerSnapshot.mockWith(
+            replayID: visibleReplayID,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 30, height: 40),
+            observation: .init(semantics: .embeddedContent(.init(slotID: "visible-slot")))
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [visibleSnapshot]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [
+                visibleReplayID: "visible-slot",
+                hiddenReplayID: "hidden-slot"
+            ],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let visibleWireframeID = Int64(namespace: .embeddedContent, replayID: visibleReplayID)
+        let hiddenWireframeID = Int64(namespace: .embeddedContent, replayID: hiddenReplayID)
+        #expect(output.compositionTree.root.children == [
+            .init(id: visibleWireframeID, type: .wireframe)
+        ])
+        try #require(output.wireframes.count == 2)
+
+        guard
+            case .embeddedContentWireframe(let hiddenWireframe) = output.wireframes[0],
+            case .embeddedContentWireframe(let visibleWireframe) = output.wireframes[1]
+        else {
+            Issue.record("Expected embedded content wireframes")
+            return
+        }
+
+        #expect(hiddenWireframe.id == hiddenWireframeID)
+        #expect(hiddenWireframe.slotId == "hidden-slot")
+        #expect(hiddenWireframe.isVisible == false)
+        #expect(visibleWireframe.id == visibleWireframeID)
+        #expect(visibleWireframe.slotId == "visible-slot")
+        #expect(visibleWireframe.isVisible == true)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given
@@ -195,6 +247,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [slotID, hiddenSlotID],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 

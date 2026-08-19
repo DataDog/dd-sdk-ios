@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-29
-sdk_version: 3.13.0
-verified_against_commit: 48f0891ec
+last_updated: 2026-08-19
+sdk_version: 3.16.0
+verified_against_commit: fee1ac701
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift
@@ -94,6 +94,7 @@ SessionReplay.enable(
         //   .swiftui                - Enable SwiftUI recording (experimental)
         //   .heatmaps               - Enable heatmap identifier computation (experimental)
         //   .screenChangeScheduling - DEPRECATED: now default and always enabled; setting it has no effect
+        //   .compositionTreeRecording - Enable the Core Animation recording pipeline (experimental, iOS 13+)
         featureFlags: [
             .swiftui: true,   // Enable SwiftUI recording (experimental)
             .heatmaps: false  // Enable heatmap identifier computation (experimental)
@@ -233,6 +234,7 @@ SessionReplayPrivacyView(
 - `.swiftui` — Enable SwiftUI recording (experimental, default: `false`)
 - `.heatmaps` — Enable heatmap identifier computation (experimental, default: `false`)
 - `.screenChangeScheduling` — **Deprecated.** Screen change scheduling is now the default and always enabled; setting this flag has no effect. Kept on the public API for backward compatibility.
+- `.compositionTreeRecording` — Enable the Core Animation recording pipeline (experimental, iOS 13+, default: `false`)
 
 ## Feature Interactions
 

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal final class CrashReportingFeature: DatadogFeature {
@@ -97,7 +98,7 @@ internal final class CrashReportingFeature: DatadogFeature {
     /// Note: this `JSONEncoder` must have the same configuration as the `JSONEncoder` used later for writing payloads to uploadable files.
     /// Otherwise the format of data read and uploaded from crash report context will be different than the format of data retrieved from the user
     /// and written directly to uploadable file.
-    internal static let crashContextEncoder: JSONEncoder = .dd.default()
+    internal static var crashContextEncoder: JSONEncoder { .dd.default() }
     /// JSON decoder used for reading `CrashContext` from JSON `Data` injected to crash report.
     /// Note: it must follow a configuration that enables reading data encoded with `crashContextEncoder`.
     internal static let crashContextDecoder: JSONDecoder = {
@@ -115,7 +116,7 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     private func encode(crashContext: CrashContext) -> Data? {
         do {
-            return try CrashReportingFeature.crashContextEncoder.encode(crashContext)
+            return try CrashReportingFeature.crashContextEncoder.dd.encodeWithAttributeRecovery(crashContext)
         } catch {
             DD.logger.error(
                 """

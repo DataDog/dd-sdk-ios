@@ -58,6 +58,7 @@ internal class CompositionTreeBuilder {
     init(
         root: CALayerSnapshot,
         webViewSlotIDs: Set<Int>,
+        embeddedContentSlots: [Int64: String],
         imageSnapshots: ImageSnapshotBatch
     ) {
         self.root = root
@@ -66,7 +67,8 @@ internal class CompositionTreeBuilder {
         )
         self.layerWireframeBuilder = LayerWireframeBuilder(
             contentSnapshots: imageSnapshots.contentSnapshots,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            embeddedContentSlots: embeddedContentSlots
         )
     }
 
@@ -78,12 +80,13 @@ internal class CompositionTreeBuilder {
 
         let rootLayer = makeCompositionLayer(from: root, context: Context())
         let hiddenWebViewWireframes = layerWireframeBuilder.makeHiddenWebViewWireframes()
+        let hiddenEmbeddedContentWireframes = layerWireframeBuilder.makeHiddenEmbeddedContentWireframes()
         let output = Output(
             compositionTree: SRCompositionTree(
                 layers: layers,
                 root: rootLayer
             ),
-            wireframes: hiddenWebViewWireframes + wireframes,
+            wireframes: hiddenWebViewWireframes + hiddenEmbeddedContentWireframes + wireframes,
             resources: resources
         )
 
