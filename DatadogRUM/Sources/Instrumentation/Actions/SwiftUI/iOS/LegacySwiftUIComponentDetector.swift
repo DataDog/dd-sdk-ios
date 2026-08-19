@@ -4,14 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import Foundation
-#if canImport(UIKit)
 import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 import DatadogInternal
 
 internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
