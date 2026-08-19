@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.16.0 / 19-08-2026
+
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
 - [FEATURE] Add `disallowList` to `RUM.Configuration.URLSessionTracking` to exclude URLs from automatic RUM resource tracking, with `*` wildcard support. [#3097][]
 - [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
