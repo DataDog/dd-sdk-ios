@@ -63,6 +63,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     #if !os(watchOS)
     //swiftlint:disable function_default_parameter_at_end
+    @MainActor
     init(
         featureScope: FeatureScope,
         uiKitRUMViewsPredicate rumViewsPredicate: DDKitRUMViewsPredicate?,
@@ -122,7 +123,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 dateProvider: dateProvider,
                 appKitPredicate: rumActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
-                swiftUIDetector: SwiftUIComponentFactory.createDetector()
+                swiftUIDetector: MacOSSwiftUIComponentDetector()
             )
             #else
             return RUMActionsHandler(

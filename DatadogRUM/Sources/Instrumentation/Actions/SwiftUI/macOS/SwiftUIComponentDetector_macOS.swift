@@ -4,21 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if os(macOS)
 
 import Foundation
-#if canImport(UIKit)
-import UIKit
-#elseif canImport(AppKit)
 import AppKit
-#endif
 import DatadogInternal
-
-internal enum SwiftUIComponentNames {
-    static let button = "SwiftUI_Button"
-    static let navigationLink = "SwiftUI_NavigationLink"
-    static let unidentified = "SwiftUI_Unidentified_Element"
-}
 
 /**
  * SwiftUI component detection relies on internal implementation details that may change
@@ -50,21 +40,10 @@ internal protocol SwiftUIComponentDetector {
     ///   - dateProvider: Provider for current time
     /// - Returns: A RUM action command if one should be created, `nil` otherwise
     func createActionCommand(
-        from touch: DDTouch,
+        from event: NSEvent,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand?
-}
-
-internal enum SwiftUIComponentFactory {
-    /// Factory that creates the appropriate SwiftUI detector based on platform and version.
-    /// Modern detection is only available on iOS 18+ and tvOS 18+.
-    static func createDetector() -> SwiftUIComponentDetector {
-        if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
-            return ModernSwiftUIComponentDetector()
-        }
-        return LegacySwiftUIComponentDetector()
-    }
 }
 
 /// Utility class with static helper methods
