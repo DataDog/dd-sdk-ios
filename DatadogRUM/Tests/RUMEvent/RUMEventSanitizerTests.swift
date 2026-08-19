@@ -19,53 +19,54 @@ class RUMEventSanitizerTests: XCTestCase {
     private let vitalOperationStepEvent: RUMVitalOperationStepEvent = .mockRandom()
 
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
-        var event = viewEvent
-        event.context = RUMEventAttributes(contextInfo: [
-            "attribute-one": mockValue(),
-            "attribute-one.two": mockValue(),
-            "attribute-one.two.three": mockValue(),
-            "attribute-one.two.three.four": mockValue(),
-            "attribute-one.two.three.four.five": mockValue(),
-            "attribute-one.two.three.four.five.six": mockValue(),
-            "attribute-one.two.three.four.five.six.seven": mockValue(),
-            "attribute-one.two.three.four.five.six.seven.eight": mockValue(),
-            "attribute-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-            "attribute-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-            "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-            "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
-        ])
+        func test<Event>(event: Event) where Event: RUMSanitizableEvent {
+            var event = event
+            event.context?.contextInfo = [
+                "attribute-one": mockValue(),
+                "attribute-one.two": mockValue(),
+                "attribute-one.two.three": mockValue(),
+                "attribute-one.two.three.four": mockValue(),
+                "attribute-one.two.three.four.five": mockValue(),
+                "attribute-one.two.three.four.five.six": mockValue(),
+                "attribute-one.two.three.four.five.six.seven": mockValue(),
+                "attribute-one.two.three.four.five.six.seven.eight": mockValue(),
+                "attribute-one.two.three.four.five.six.seven.eight.nine": mockValue(),
+                "attribute-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
+                "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
+                "attribute-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+            ]
 
-        event.usr = RUMUser(usrInfo: [
-            "user-info-one": mockValue(),
-            "user-info-one.two": mockValue(),
-            "user-info-one.two.three": mockValue(),
-            "user-info-one.two.three.four": mockValue(),
-            "user-info-one.two.three.four.five": mockValue(),
-            "user-info-one.two.three.four.five.six": mockValue(),
-            "user-info-one.two.three.four.five.six.seven": mockValue(),
-            "user-info-one.two.three.four.five.six.seven.eight": mockValue(),
-            "user-info-one.two.three.four.five.six.seven.eight.nine": mockValue(),
-            "user-info-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
-            "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
-            "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
-        ])
+            event.usr?.usrInfo = [
+                "user-info-one": mockValue(),
+                "user-info-one.two": mockValue(),
+                "user-info-one.two.three": mockValue(),
+                "user-info-one.two.three.four": mockValue(),
+                "user-info-one.two.three.four.five": mockValue(),
+                "user-info-one.two.three.four.five.six": mockValue(),
+                "user-info-one.two.three.four.five.six.seven": mockValue(),
+                "user-info-one.two.three.four.five.six.seven.eight": mockValue(),
+                "user-info-one.two.three.four.five.six.seven.eight.nine": mockValue(),
+                "user-info-one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
+                "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
+                "user-info-one.two.three.four.five.six.seven.eight.nine.ten.eleven.twelve": mockValue(),
+            ]
 
-        // When
-        let sanitized = RUMEventSanitizer().sanitize(event: event)
+            // When
+            let sanitized = RUMEventSanitizer().sanitize(event: event)
 
-        // Then
-        XCTAssertEqual(sanitized.context?.contextInfo.count, 12)
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
-        XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
+            // Then
+            XCTAssertEqual(sanitized.context?.contextInfo.count, 12)
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
+            XCTAssertNotNil(sanitized.context?.contextInfo["attribute-one.two.three.four.five.six.seven.eight.nine_ten_eleven_twelve"])
 
             XCTAssertEqual(sanitized.usr?.usrInfo.count, 12)
             XCTAssertNotNil(sanitized.usr?.usrInfo["user-info-one"])
