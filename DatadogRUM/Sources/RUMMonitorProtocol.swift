@@ -457,6 +457,11 @@ public protocol RUMMonitorViewProtocol: AnyObject {
         attributes: [AttributeKey: AttributeValue]
     )
 
+    /// Stops whatever RUM view is currently active, without needing to know its `key` or `viewController`.
+    ///
+    /// This is a no-op if there is no active view.
+    func stopView()
+
     /// Records a specific timing within the current RUM view.
     /// The duration of the timing is calculated as the number of nanoseconds elapsed between the start of the view and the addition of the timing.
     /// - Parameters:
@@ -553,6 +558,7 @@ extension NOPMonitor: RUMMonitorViewProtocol {
     #endif
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView() { warn() }
 
     func addTiming(name: String) { warn() }
     func addViewLoadingTime(overwrite: Bool) { warn() }

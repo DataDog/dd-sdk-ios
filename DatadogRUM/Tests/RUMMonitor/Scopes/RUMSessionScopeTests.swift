@@ -319,6 +319,159 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
     }
 
+    // MARK: - Manual Views Auto-Stop on Background
+
+    func testGivenActiveManualView_whenAppEntersBackground_itStopsTheView() throws {
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: sessionStartTime)
+
+        let viewIdentity = ViewIdentifier("manual-view")
+        let startCommandTime = sessionStartTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startCommandTime,
+                identity: viewIdentity,
+                name: "ManualView",
+                path: "ManualViewPath",
+                instrumentationType: .manual
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        let startedView = scope.viewScopes[0]
+        XCTAssertTrue(startedView.isActiveView)
+
+        // When
+        let backgroundCommandTime = startCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: backgroundCommandTime, event: .didEnterBackground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertFalse(startedView.isActiveView, "The manual view should be stopped")
+        XCTAssertTrue(startedView.identity == viewIdentity)
+        // The stopped view has no pending resources, so it completes and is removed from the session's view scopes:
+        XCTAssertTrue(scope.viewScopes.isEmpty, "No new view scope should be created")
+    }
+
+    func testGivenManualViewStoppedOnBackground_whenAppEntersForeground_itRestartsTheViewWithSameIdentity() throws {
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: sessionStartTime)
+
+        let viewIdentity = ViewIdentifier("manual-view")
+        let startCommandTime = sessionStartTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startCommandTime,
+                identity: viewIdentity,
+                name: "ManualView",
+                path: "ManualViewPath",
+                instrumentationType: .manual
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let backgroundCommandTime = startCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: backgroundCommandTime, event: .didEnterBackground),
+            context: context,
+            writer: writer
+        )
+        XCTAssertTrue(scope.viewScopes.isEmpty, "Precondition: the manual view is stopped and completed")
+
+        // When
+        let foregroundCommandTime = backgroundCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: foregroundCommandTime, event: .willEnterForeground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertEqual(scope.viewScopes.count, 1, "A new view scope should be started, restoring the manual view")
+        let restartedView = try XCTUnwrap(scope.viewScopes.last)
+        XCTAssertTrue(restartedView.isActiveView)
+        XCTAssertTrue(restartedView.identity == viewIdentity)
+        XCTAssertEqual(restartedView.viewName, "ManualView")
+        XCTAssertEqual(restartedView.viewPath, "ManualViewPath")
+        XCTAssertEqual(restartedView.viewStartTime, foregroundCommandTime)
+    }
+
+    func testGivenNoActiveView_whenAppEntersBackgroundAndForeground_itDoesNotSendSpuriousViewCommands() {
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: sessionStartTime)
+        XCTAssertTrue(scope.viewScopes.isEmpty, "Precondition: there is no active view")
+
+        // When
+        let backgroundCommandTime = sessionStartTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: backgroundCommandTime, event: .didEnterBackground),
+            context: context,
+            writer: writer
+        )
+        let foregroundCommandTime = backgroundCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: foregroundCommandTime, event: .willEnterForeground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertTrue(scope.viewScopes.isEmpty, "No view scope should be created")
+    }
+
+    func testGivenManualViewAlreadyStoppedBeforeBackgrounding_whenAppEntersBackgroundAndForeground_itDoesNotRestartIt() {
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: sessionStartTime)
+
+        let viewIdentity = ViewIdentifier("manual-view")
+        let startCommandTime = sessionStartTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startCommandTime,
+                identity: viewIdentity,
+                name: "ManualView",
+                path: "ManualViewPath",
+                instrumentationType: .manual
+            ),
+            context: context,
+            writer: writer
+        )
+        let stopCommandTime = startCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: stopCommandTime, identity: viewIdentity),
+            context: context,
+            writer: writer
+        )
+        // The manually-stopped view has no pending resources, so it already completed and got removed:
+        XCTAssertTrue(scope.viewScopes.isEmpty, "Precondition: the manual view is already stopped")
+
+        // When
+        let backgroundCommandTime = stopCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: backgroundCommandTime, event: .didEnterBackground),
+            context: context,
+            writer: writer
+        )
+        let foregroundCommandTime = backgroundCommandTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMHandleAppLifecycleEventCommand(time: foregroundCommandTime, event: .willEnterForeground),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        XCTAssertTrue(scope.viewScopes.isEmpty, "No new view scope should be created")
+    }
+
     // MARK: - Sampling
 
     func testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes() {

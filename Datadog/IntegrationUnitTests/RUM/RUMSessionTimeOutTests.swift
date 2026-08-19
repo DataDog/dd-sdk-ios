@@ -474,12 +474,12 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                     XCTAssertEqual(session.views[1].name, (given == given2) ? automaticViewName : manualViewName)
                     DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
                 } else { // session with manual view
-                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                     XCTAssertEqual(session.views.count, 2)
                     XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                     DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
                     XCTAssertEqual(session.views[1].name, (given == given2) ? automaticViewName : manualViewName)
-                    DDAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+                    DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
                 }
             }
         }
@@ -552,12 +552,12 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                     XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                     DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                 } else { // session with manual view
-                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
+                    DDAssertEqual(session.duration, timeToSDKInit + timeToAppBecomeActive + dt1, accuracy: accuracy)
                     XCTAssertEqual(session.views.count, 2)
                     XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                     DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive, accuracy: accuracy)
                     XCTAssertEqual(session.views[1].name, manualViewName)
-                    DDAssertEqual(session.views[1].duration, 0, accuracy: accuracy)
+                    DDAssertEqual(session.views[1].duration, dt1, accuracy: accuracy)
                 }
             }
         }

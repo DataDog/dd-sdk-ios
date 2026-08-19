@@ -403,6 +403,7 @@ public enum RUM
         public var urlSessionTracking: URLSessionTracking?
         public var trackFrustrations: Bool
         public var trackBackgroundEvents: Bool
+        public var trackViewsAutomaticStopOnBackground: Bool
         public var trackWatchdogTerminations: Bool
         public var longTaskThreshold: TimeInterval?
         public var appHangThreshold: TimeInterval?
@@ -444,7 +445,7 @@ public enum RUM
         case matchHeaders([String])
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled,disallowList: [String] = [])
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
+    public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,trackViewsAutomaticStopOnBackground: Bool = true,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 [?] extension RUM.Configuration
@@ -564,6 +565,7 @@ public protocol RUMMonitorViewProtocol: AnyObject
     func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
     func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
     func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func stopView()
     func addTiming(name: String)
     func addViewLoadingTime(overwrite: Bool)
 public enum PerformanceMetric

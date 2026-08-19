@@ -1134,6 +1134,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String = .mockAny(),
         samplingRate: SampleRate = .maxSampleRate,
         trackBackgroundEvents: Bool = .mockAny(),
+        trackViewsAutomaticStopOnBackground: Bool = true,
         trackFrustrations: Bool = true,
         hasAppHangsEnabled: Bool = true,
         firstPartyHosts: FirstPartyHosts = .init([:]),
@@ -1170,6 +1171,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID,
             samplingRate: samplingRate,
             trackBackgroundEvents: trackBackgroundEvents,
+            trackViewsAutomaticStopOnBackground: trackViewsAutomaticStopOnBackground,
             trackFrustrations: trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts,
@@ -1202,6 +1204,7 @@ extension RUMScopeDependencies {
         rumApplicationID: String? = nil,
         samplingRate: SampleRate? = nil,
         trackBackgroundEvents: Bool? = nil,
+        trackViewsAutomaticStopOnBackground: Bool? = nil,
         trackFrustrations: Bool? = nil,
         hasAppHangsEnabled: Bool? = nil,
         firstPartyHosts: FirstPartyHosts? = nil,
@@ -1232,6 +1235,7 @@ extension RUMScopeDependencies {
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             samplingRate: samplingRate ?? self.samplingRate,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
+            trackViewsAutomaticStopOnBackground: trackViewsAutomaticStopOnBackground ?? self.trackViewsAutomaticStopOnBackground,
             trackFrustrations: trackFrustrations ?? self.trackFrustrations,
             hasAppHangsEnabled: hasAppHangsEnabled ?? self.hasAppHangsEnabled,
             firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
@@ -1318,7 +1322,8 @@ extension RUMViewScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
-        viewIndexInSession: Int = 0
+        viewIndexInSession: Int = 0,
+        instrumentationType: InstrumentationType? = nil
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -1331,7 +1336,8 @@ extension RUMViewScope {
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: viewIndexInSession
+            viewIndexInSession: viewIndexInSession,
+            instrumentationType: instrumentationType
         )
     }
 }
