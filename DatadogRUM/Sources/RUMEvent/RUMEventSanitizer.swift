@@ -37,8 +37,8 @@ internal struct RUMEventSanitizer {
         // Limit the total number and estimated content size of attributes. User and account information take
         // precedence over event context, matching the existing attribute-count policy.
         var limits = Limits()
-        event.usr = sanitize(event.usr, attributesAt: \.usrInfo, limits: &limits)
-        event.account = sanitize(event.account, attributesAt: \.accountInfo, limits: &limits)
+        event.usr = sanitize(event.usr, limits: &limits)
+        event.account = sanitize(event.account, limits: &limits)
         event.context = sanitize(event.context, attributesAt: \.contextInfo, limits: &limits)
 
         if limits.numberOfSizeLimitedAttributes > 0 {
@@ -67,6 +67,55 @@ internal struct RUMEventSanitizer {
             limits: &limits
         )
         return container
+    }
+
+    /// User's static fields (`id`/`name`/`email`/`anonymousId`) are as customer-controlled as `usrInfo` (both are
+    /// set through `Datadog.setUserInfo`), so they must count against the same shared byte budget.
+    private func sanitize(_ usr: RUMUser?, limits: inout Limits) -> RUMUser? {
+        guard let usr else {
+            return nil
+        }
+
+        var sanitized = RUMUser(
+            anonymousId: sanitize(staticField: usr.anonymousId, limits: &limits),
+            email: sanitize(staticField: usr.email, limits: &limits),
+            id: sanitize(staticField: usr.id, limits: &limits),
+            name: sanitize(staticField: usr.name, limits: &limits),
+            usrInfo: usr.usrInfo
+        )
+        sanitized.usrInfo = sanitize(attributes: usr.usrInfo, limits: &limits)
+        return sanitized
+    }
+
+    /// Account's static fields (`id`/`name`) are as customer-controlled as `accountInfo` (both are set through
+    /// `Datadog.setAccountInfo`), so they must count against the same shared byte budget. `id` is not optional on
+    /// `RUMAccount`, so it can't be dropped like the other static fields - it is still charged against the budget.
+    private func sanitize(_ account: RUMAccount?, limits: inout Limits) -> RUMAccount? {
+        guard let account else {
+            return nil
+        }
+
+        limits.remainingAttributeBytes -= min(account.id.utf8.count, max(limits.remainingAttributeBytes, 0))
+
+        var sanitized = RUMAccount(
+            id: account.id,
+            name: sanitize(staticField: account.name, limits: &limits),
+            accountInfo: account.accountInfo
+        )
+        sanitized.accountInfo = sanitize(attributes: account.accountInfo, limits: &limits)
+        return sanitized
+    }
+
+    private func sanitize(staticField value: String?, limits: inout Limits) -> String? {
+        guard let value else {
+            return nil
+        }
+        guard value.utf8.count <= limits.remainingAttributeBytes else {
+            limits.numberOfSizeLimitedAttributes += 1
+            return nil
+        }
+        limits.remainingAttributeBytes -= value.utf8.count
+        return value
     }
 
     private func sanitize(
@@ -332,10 +381,24 @@ private enum JSONAttributeSizeLimiter {
             }
             return .measurable
         case let value as NSNumber:
-            return value.doubleValue.isFinite ? .measurable : .unsupported
+            guard value.doubleValue.isFinite else {
+                return .unsupported
+            }
+            // Charge the number's own encoded size - a large array of small-but-real numbers must not pass the
+            // check cheaply just because the flat per-element charge above only accounts for structural overhead.
+            return inspection.consume(jsonEncodedByteCount(of: value)) ? .measurable : .limitExceeded
         default:
             return .unsupported
         }
+    }
+
+    /// A coarse (but safe) lower bound of the number of bytes `JSONSerialization` will write for this value,
+    /// without actually encoding it.
+    private static func jsonEncodedByteCount(of value: NSNumber) -> Int {
+        if CFGetTypeID(value) == CFBooleanGetTypeID() {
+            return value.boolValue ? 4 : 5 // "true" / "false"
+        }
+        return "\(value)".utf8.count
     }
 
     private static func applySnapshot(

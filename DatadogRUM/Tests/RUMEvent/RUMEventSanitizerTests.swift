@@ -168,6 +168,65 @@ class RUMEventSanitizerTests: XCTestCase {
         XCTAssertLessThan(try JSONEncoder.dd.default().encode(sanitized).count, 1_024 * 1_024)
     }
 
+    func testWhenStaticUserOrAccountFieldExceedsSizeLimit_itDropsOnlyThatField() {
+        let oversizedValue = String(repeating: "a", count: RUMEventSanitizer.maxTotalAttributeBytes + 1)
+        var event = viewEvent
+        event.usr = RUMUser(email: oversizedValue, id: "user-id", usrInfo: ["info": "value"])
+        event.account = RUMAccount(id: "account-id", name: oversizedValue, accountInfo: [:])
+        event.context = RUMEventAttributes(contextInfo: [:])
+
+        // When
+        let sanitized = RUMEventSanitizer().sanitize(event: event)
+
+        // Then
+        XCTAssertNil(sanitized.usr?.email)
+        XCTAssertEqual(sanitized.usr?.id, "user-id")
+        XCTAssertNotNil(sanitized.usr?.usrInfo["info"])
+        XCTAssertEqual(sanitized.account?.id, "account-id", "`id` is not optional on `RUMAccount` so it can never be dropped")
+        XCTAssertNil(sanitized.account?.name)
+    }
+
+    func testWhenStaticUserAndAccountFieldsConsumeBudget_itLeavesLessRoomForOtherAttributes() {
+        // `usr.email` and `account.id` are as customer-controlled as `usrInfo`/`accountInfo`/`contextInfo`, so they
+        // must count against the same 1 MB shared budget - even though `email` is preserved (600 KiB fits) and
+        // `account.id` can never be dropped, both must still shrink the room left for the attributes that follow.
+        let largeValue = String(repeating: "a", count: 600 * 1_024)
+        var event = viewEvent
+        event.usr = RUMUser(email: largeValue, usrInfo: [:])
+        event.account = RUMAccount(id: largeValue, accountInfo: [:])
+        event.context = RUMEventAttributes(contextInfo: ["large": largeValue])
+
+        // When
+        let sanitized = RUMEventSanitizer().sanitize(event: event)
+
+        // Then
+        XCTAssertEqual(sanitized.usr?.email, largeValue)
+        XCTAssertEqual(sanitized.account?.id, largeValue)
+        XCTAssertTrue(sanitized.context?.contextInfo.isEmpty == true)
+    }
+
+    func testWhenNativeArrayContainsManyLargeNumbers_itIsRejectedWithoutExceedingTheByteBudget() {
+        // Charged by element count alone (1 byte/element), 100k numbers would look like ~100 KB - well within
+        // budget - even though each of these 18-digit numbers actually encodes to ~18 bytes, i.e. ~1.8 MB overall.
+        let numbers: [Any?] = Array(repeating: 123_456_789_012_345_678, count: 100_000)
+        var event = viewEvent
+        event.usr = RUMUser(usrInfo: [:])
+        event.account = RUMAccount(id: "account-id", accountInfo: [:])
+        event.context = RUMEventAttributes(
+            contextInfo: [
+                "small": "value",
+                "numbers": AnyEncodable(numbers),
+            ]
+        )
+
+        // When
+        let sanitized = RUMEventSanitizer().sanitize(event: event)
+
+        // Then
+        XCTAssertNotNil(sanitized.context?.contextInfo["small"])
+        XCTAssertNil(sanitized.context?.contextInfo["numbers"])
+    }
+
     func testWhenInspectableNestedAttributeExceedsSizeLimit_itDropsOnlyThatAttributeAndLogsOneWarning() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
