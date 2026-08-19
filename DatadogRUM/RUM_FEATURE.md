@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-12
-sdk_version: 3.15.0
-verified_against_commit: dc80cf268
+last_updated: 2026-08-19
+sdk_version: 3.16.0
+verified_against_commit: fee1ac701
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -272,6 +272,22 @@ Event mappers allow modifying or dropping events before upload:
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
 - `.none`: no-op feature flag case kept in the public enum.
+
+### Timeseries Collection (Experimental)
+- `RUM.Configuration.timeseries` — gated behind `@_spi(Experimental)`; not an init parameter, must be set on the configuration instance before calling `RUM.enable(with:)`. Default: `nil` (disabled).
+- Set it to `RUM.Configuration.Timeseries(collectTypes:)` to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
+  ```swift
+  @_spi(Experimental) import DatadogRUM
+
+  var rumConfig = RUM.Configuration(applicationID: "<rum_application_id>")
+  rumConfig.timeseries = RUM.Configuration.Timeseries(
+      // Default: nil (collects all types available on the current platform)
+      collectTypes: [.memory, .cpu]
+  )
+  RUM.enable(with: rumConfig)
+  ```
+- `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
+- When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Common Troubleshooting Patterns
 
