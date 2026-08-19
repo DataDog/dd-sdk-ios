@@ -21,6 +21,7 @@ public struct FlagAssignment: Equatable {
     public var variation: Variation
     public var reason: String
     public var doLog: Bool
+    public var serialID: Int?
 
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
@@ -39,12 +40,13 @@ public struct FlagAssignment: Equatable {
         }
     }
 
-    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool) {
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil) {
         self.allocationKey = allocationKey
         self.variationKey = variationKey
         self.variation = variation
         self.reason = reason
         self.doLog = doLog
+        self.serialID = serialID
     }
 }
 
@@ -56,6 +58,7 @@ extension FlagAssignment: Codable {
         case variationValue
         case reason
         case doLog
+        case serialID = "serialId"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -65,6 +68,7 @@ extension FlagAssignment: Codable {
         self.variationKey = try container.decode(String.self, forKey: .variationKey)
         self.reason = try container.decode(String.self, forKey: .reason)
         self.doLog = try container.decode(Bool.self, forKey: .doLog)
+        self.serialID = try container.decodeIfPresent(Int.self, forKey: .serialID)
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 
@@ -99,6 +103,7 @@ extension FlagAssignment: Codable {
         try container.encode(variationKey, forKey: .variationKey)
         try container.encode(reason, forKey: .reason)
         try container.encode(doLog, forKey: .doLog)
+        try container.encodeIfPresent(serialID, forKey: .serialID)
 
         switch variation {
         case .boolean(let value):

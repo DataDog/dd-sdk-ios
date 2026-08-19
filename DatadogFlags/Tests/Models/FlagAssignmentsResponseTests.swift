@@ -263,6 +263,56 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertTrue(anotherBrokenFlagError.contains("ANOTHER_NEW_TYPE"), "Error should mention the unknown variant type")
     }
 
+    func testDecodingSerialID() throws {
+        // Given
+        let withSerialIDEntry = { (entry: String) in
+            """
+            {
+              "allocationKey": "allocation-123",
+              "variationKey": "variation-123",
+              "variationType": "string",
+              "variationValue": "red",
+              "doLog": true,
+              "reason": "TARGETING_MATCH"\(entry)
+            }
+            """.data(using: .utf8)!
+        }
+
+        // When
+        let withZero = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 0"#))
+        let withValue = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 340132"#))
+        let withNull = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": null"#))
+        let withoutKey = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(""))
+
+        // Then
+        XCTAssertEqual(withZero.serialID, 0)
+        XCTAssertEqual(withValue.serialID, 340_132)
+        XCTAssertNil(withNull.serialID, "An explicit null must decode as an absent serial id")
+        XCTAssertNil(withoutKey.serialID)
+    }
+
+    func testEncodingSerialID() throws {
+        // Given
+        let assignment = FlagAssignment(
+            allocationKey: "allocation-123",
+            variationKey: "variation-123",
+            variation: .string("red"),
+            reason: "TARGETING_MATCH",
+            doLog: true,
+            serialID: 0
+        )
+        var withoutSerialID = assignment
+        withoutSerialID.serialID = nil
+
+        // When
+        let encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(assignment)) as? [String: Any]
+        let encodedWithoutSerialID = try JSONSerialization.jsonObject(with: JSONEncoder().encode(withoutSerialID)) as? [String: Any]
+
+        // Then
+        XCTAssertEqual(try XCTUnwrap(encoded)["serialId"] as? Int, 0)
+        XCTAssertFalse(try XCTUnwrap(encodedWithoutSerialID).keys.contains("serialId"))
+    }
+
     func testDecodingFlagAssignmentWithUnknownVariationType() throws {
         // Given
         let json = """
