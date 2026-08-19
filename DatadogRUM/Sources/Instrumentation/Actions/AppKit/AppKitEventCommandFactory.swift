@@ -7,6 +7,7 @@
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 import DatadogInternal
+import os.log
 
 /// Factory responsible for creating RUM Action commands events that are target of `.leftMouseDown` `NSEvent`s,
 /// and selected `NSMenuItem`s.
@@ -50,8 +51,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return rumAction
         }
 
-        // TODO: RUM-16718 Support SwiftUI like on iOS
-        return nil
+        return swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider)
     }
 
     func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
@@ -63,6 +63,17 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     }
 
     // MARK: AppKit
+
+    enum BestTarget {
+        case appKit(NSView?)
+        case trySwiftUIFallbackTo(NSView?)
+
+        var view: NSView? {
+            switch self {
+            case .appKit(let view), .trySwiftUIFallbackTo(let view): view
+            }
+        }
+    }
 
     /// Creates a RUM Action command if appropriate based on the given `NSEvent`.
     ///
@@ -84,11 +95,20 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // We don't know what was clicked
         }
 
+        // If it's not safe for privacy, bail out immediately.
         guard clickedView.isSafeForPrivacy else {
             return nil // no valid view
         }
 
-        guard let targetView = bestActionTargetFor(view: clickedView, event: event) else {
+        let bestTarget = bestActionTargetFor(view: clickedView, event: event)
+
+        if case let .trySwiftUIFallbackTo(view) = bestTarget,
+           let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider)
+            {
+            return swiftUIResult
+        }
+
+        guard let targetView = bestTarget.view else {
             return nil // Clicked view is not eligible for producing RUM Action
         }
 
@@ -162,7 +182,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     ///   - event: The `NSEvent` being processed.
     ///
     /// - Returns: The best target for the event being processed, or `nil` if no suitable view is found.
-    private func bestActionTargetFor(view: DDView, event: NSEvent) -> DDView? {
+    private func bestActionTargetFor(view: DDView, event: NSEvent) -> BestTarget {
         // In toolbars, if no button was explicitly attributed to item.view, the
         // class that returns itself from hitTest is NSToolbarItemViewer, not the
         // synthesized button inside it (NSToolbarButton instance).
@@ -171,10 +191,14 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             // We avoid the path of finding the NSTableView parent and then digging in to look for
             // the clicked header view since we already know it, so we shortcut it here.
             || view is NSTableHeaderView {
-            return view
+            return .appKit(view)
         } else if let ddControl = view as? DDControl {
-            return bestActionTargetFor(control: ddControl, event: event)
+            return .appKit(bestActionTargetFor(control: ddControl, event: event))
         } else {
+            let isSwiftUICellView = String(describing: type(of: view)).hasPrefix("CellHostingView")
+
+            var result: NSView?
+
             // If the `view` is not an interactive element, check if it's a child of a known view hierarchy
             // which can be considered as interactive.
             let bestParent = view.findInParentHierarchy { parent in
@@ -183,15 +207,26 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             }
 
             if let collectionView = bestParent as? NSCollectionView {
-                return collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
+                result = collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
+            } else if let control = bestParent as? NSControl {
+                result = bestActionTargetFor(control: control, event: event)
+            } else {
+                result = bestParent
             }
 
-            if let control = bestParent as? NSControl {
-                return bestActionTargetFor(control: control, event: event)
-            }
-
-            return bestParent // best parent or `nil`
+            return isSwiftUICellView ? .trySwiftUIFallbackTo(result) : .appKit(result)
         }
+    }
+
+    private func bestActionTargetFor(accessibilityElement: AnyObject, event: NSEvent) -> AnyObject? {
+        guard let role = accessibilityElement.accessibilityRole() else {
+            return nil
+        }
+
+        let roleString = "\(role)"
+
+        Logger().error("\(roleString, privacy: .public)")
+        return nil
     }
 
     /// Finds the table row the user clicked on, and returns the corresponding `NSTableRowView`.

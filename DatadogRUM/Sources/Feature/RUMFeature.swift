@@ -40,6 +40,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         maxFileAgeForRead: 24.hours // RUM intake can ingest events up to 24hrs old
     )
 
+    @MainActor
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
