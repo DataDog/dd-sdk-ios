@@ -421,6 +421,7 @@ public enum RUM
         public var trackSlowFrames: Bool
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
+        public var timeseries: Timeseries?
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
@@ -431,6 +432,12 @@ public enum RUM
             case frequent
             case average
             case rare
+        public struct Timeseries
+            public var collectTypes: [TimeseriesType]?
+            public init(collectTypes: [TimeseriesType]? = nil)
+        public enum TimeseriesType: CaseIterable
+            case memory
+            case cpu
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
         case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)

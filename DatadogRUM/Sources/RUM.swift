@@ -45,6 +45,10 @@ public enum RUM {
         let rum = try RUMFeature(in: core, configuration: configuration)
         try core.register(feature: rum)
 
+        if rum.timeseriesCollector != nil {
+            core.telemetry.usage(event: .timeseries)
+        }
+
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {
             try RUM._internal.enableURLSessionTracking(with: urlSessionConfig, in: core)

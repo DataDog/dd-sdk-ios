@@ -3581,6 +3581,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var propagateTraceBaggage: NSNumber?
     public var reactNativeVersion: String?
     public var reactVersion: String?
+    public var remoteConfiguration: objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration?
     public var remoteConfigurationId: String?
     public var replaySampleRate: NSNumber?
     public var sdkVersion: String?
@@ -3658,6 +3659,13 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationForwardReport
 public class objc_TelemetryConfigurationEventTelemetryConfigurationPlugins: NSObject
     public var name: String
     public var pluginsInfo: [String: Any]
+public class objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration: NSObject
+    public var configId: String?
+    public var firstApplied: NSNumber?
+    public var lastModified: NSNumber?
+    public var lastSynced: NSNumber?
+    public var syncId: String?
+    public var versionId: String?
 public enum objc_TelemetryConfigurationEventTelemetryConfigurationSelectedTracingPropagators: Int
     case none
     case datadog

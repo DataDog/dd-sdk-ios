@@ -381,6 +381,10 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
             self = .telemetryMobileFeaturesUsage(
                 value: .trackWebView(value: .init())
             )
+        case .timeseries:
+            self = .telemetryMobileFeaturesUsage(
+                value: .timeseries(value: .init())
+            )
         }
     }
 }

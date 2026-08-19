@@ -13192,6 +13192,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The version of React used in a ReactNative application
             public var reactVersion: String?
 
+            /// Metadata of the remote configuration currently applied for this session
+            public var remoteConfiguration: RemoteConfiguration?
+
             /// The id of the remote configuration
             public var remoteConfigurationId: String?
 
@@ -13428,6 +13431,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case propagateTraceBaggage = "propagate_trace_baggage"
                 case reactNativeVersion = "react_native_version"
                 case reactVersion = "react_version"
+                case remoteConfiguration = "remote_configuration"
                 case remoteConfigurationId = "remote_configuration_id"
                 case replaySampleRate = "replay_sample_rate"
                 case sdkVersion = "sdk_version"
@@ -13532,6 +13536,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             ///   - propagateTraceBaggage: Whether trace baggage is propagated to child spans
             ///   - reactNativeVersion: The version of ReactNative used in a ReactNative application
             ///   - reactVersion: The version of React used in a ReactNative application
+            ///   - remoteConfiguration: Metadata of the remote configuration currently applied for this session
             ///   - remoteConfigurationId: The id of the remote configuration
             ///   - replaySampleRate: The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             ///   - sdkVersion: The version of the SDK that is running.
@@ -13632,6 +13637,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 propagateTraceBaggage: Bool? = nil,
                 reactNativeVersion: String? = nil,
                 reactVersion: String? = nil,
+                remoteConfiguration: RemoteConfiguration? = nil,
                 remoteConfigurationId: String? = nil,
                 replaySampleRate: Int64? = nil,
                 sdkVersion: String? = nil,
@@ -13732,6 +13738,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 self.propagateTraceBaggage = propagateTraceBaggage
                 self.reactNativeVersion = reactNativeVersion
                 self.reactVersion = reactVersion
+                self.remoteConfiguration = remoteConfiguration
                 self.remoteConfigurationId = remoteConfigurationId
                 self.replaySampleRate = replaySampleRate
                 self.sdkVersion = sdkVersion
@@ -13906,6 +13913,61 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 ) {
                     self.name = name
                     self.pluginsInfo = pluginsInfo
+                }
+            }
+
+            /// Metadata of the remote configuration currently applied for this session
+            public struct RemoteConfiguration: Codable {
+                /// Identifier of the remote configuration bundle this metadata belongs to
+                public var configId: String?
+
+                /// Timestamp at which this configuration version was first observed as applied by the device, in ms from epoch. Stamped once and reused on every subsequent session that runs on the same version
+                public var firstApplied: Int64?
+
+                /// CDN publish timestamp of the applied configuration, in ms from epoch
+                public var lastModified: Int64?
+
+                /// Timestamp at which the device fetched and cached this configuration version, in ms from epoch
+                public var lastSynced: Int64?
+
+                /// Identifier of the sync that produced this configuration version, used to deduplicate repeat sessions from the same device without a persistent identifier
+                public var syncId: String?
+
+                /// CDN version identifier of the applied configuration
+                public var versionId: String?
+
+                public enum CodingKeys: String, CodingKey {
+                    case configId = "config_id"
+                    case firstApplied = "first_applied"
+                    case lastModified = "last_modified"
+                    case lastSynced = "last_synced"
+                    case syncId = "sync_id"
+                    case versionId = "version_id"
+                }
+
+                /// Metadata of the remote configuration currently applied for this session
+                ///
+                /// - Parameters:
+                ///   - configId: Identifier of the remote configuration bundle this metadata belongs to
+                ///   - firstApplied: Timestamp at which this configuration version was first observed as applied by the device, in ms from epoch. Stamped once and reused on every subsequent session that runs on the same version
+                ///   - lastModified: CDN publish timestamp of the applied configuration, in ms from epoch
+                ///   - lastSynced: Timestamp at which the device fetched and cached this configuration version, in ms from epoch
+                ///   - syncId: Identifier of the sync that produced this configuration version, used to deduplicate repeat sessions from the same device without a persistent identifier
+                ///   - versionId: CDN version identifier of the applied configuration
+                public init(
+                    configId: String? = nil,
+                    firstApplied: Int64? = nil,
+                    lastModified: Int64? = nil,
+                    lastSynced: Int64? = nil,
+                    syncId: String? = nil,
+                    versionId: String? = nil
+                ) {
+                    self.configId = configId
+                    self.firstApplied = firstApplied
+                    self.lastModified = lastModified
+                    self.lastSynced = lastSynced
+                    self.syncId = syncId
+                    self.versionId = versionId
                 }
             }
 
@@ -15567,6 +15629,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             /// Schema of mobile specific features usage
             public enum TelemetryMobileFeaturesUsage: Codable {
                 case trackWebView(value: TrackWebView)
+                case timeseries(value: Timeseries)
                 case androidNetworkInstrumentation(value: AndroidNetworkInstrumentation)
 
                 // MARK: - Codable
@@ -15577,6 +15640,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     switch self {
                     case .trackWebView(let value):
+                        try container.encode(value)
+                    case .timeseries(let value):
                         try container.encode(value)
                     case .androidNetworkInstrumentation(let value):
                         try container.encode(value)
@@ -15589,6 +15654,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     if let value = try? container.decode(TrackWebView.self) {
                         self = .trackWebView(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(Timeseries.self) {
+                        self = .timeseries(value: value)
                         return
                     }
                     if let value = try? container.decode(AndroidNetworkInstrumentation.self) {
@@ -15608,6 +15677,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 public struct TrackWebView: Codable {
                     /// trackWebView API
                     public let feature: String = "trackWebView"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
+                }
+
+                public struct Timeseries: Codable {
+                    /// Timeseries tracking enabled
+                    public let feature: String = "timeseries"
 
                     public enum CodingKeys: String, CodingKey {
                         case feature = "feature"
@@ -15714,4 +15794,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/00d5005015e04067bc591e618640de06ecbf7d23
+// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a

@@ -124,6 +124,8 @@ public struct UsageTelemetry: SampledTelemetry {
         case addGraphQLRequest
         /// trackWebView API
         case trackWebView
+        /// Timeseries tracking enabled
+        case timeseries
 
         /// Describes the properties of `addViewLoadingTime` usage telemetry.
         public struct ViewLoadingTime {

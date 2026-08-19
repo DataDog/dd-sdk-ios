@@ -23,6 +23,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
+    /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
+    /// flushed alongside other instrumentation in `flush()`.
+    let timeseriesCollector: TimeseriesCollecting?
+
     /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
     @ReadWriteLock
     private(set) var rumSessionSampler: DeterministicSampler?
@@ -119,10 +123,45 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             }
         }
 
+        let vitalsReaders = configuration.vitalsUpdateFrequency.map {
+            VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
+        }
+
+        let ciTest = configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
+        let syntheticsTest: RUMSyntheticsTest? = {
+            if let testId = configuration.syntheticsTestId,
+               let resultId = configuration.syntheticsResultId {
+                return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+            } else {
+                return nil
+            }
+        }()
+
+        let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
+
+        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            let effectiveCollectTypes = timeseries.effectiveCollectTypes
+            // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
+            // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session
+            // without ever producing events, so skip creating the collector entirely.
+            guard !effectiveCollectTypes.isEmpty else {
+                return nil
+            }
+            return TimeseriesSessionCollector(
+                memoryReader: VitalMemoryReader(),
+                featureScope: featureScope,
+                collectTypes: effectiveCollectTypes,
+                ciTest: ciTest,
+                syntheticsTest: syntheticsTest,
+                sessionSampleRate: Double(sessionSampleRate),
+                now: { configuration.dateProvider.now }
+            )
+        }
+
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
+            samplingRate: sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
@@ -133,15 +172,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             backtraceReporter: core.backtraceReporter,
-            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-            syntheticsTest: {
-                if let testId = configuration.syntheticsTestId,
-                   let resultId = configuration.syntheticsResultId {
-                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                } else {
-                    return nil
-                }
-            }(),
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
@@ -149,12 +181,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map {
-                VitalsReaders(
-                    frequency: $0.timeInterval,
-                    telemetry: core.telemetry
-                )
-            },
+            vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
@@ -197,13 +224,17 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                     predicate: nextViewActionPredicate
                 )
             },
-            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) }
+            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            timeseriesCollector: timeseriesCollector
         )
 
         self.monitor = Monitor(
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )
+
+        timeseriesCollector?.activeContextReader = monitor
+        self.timeseriesCollector = timeseriesCollector
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
@@ -403,6 +434,7 @@ extension RUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         instrumentation.appHangs?.flush()
+        timeseriesCollector?.flush()
     }
 }
 
