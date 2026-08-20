@@ -722,6 +722,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #elseif os(macOS)
@@ -782,6 +783,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #else // iOS, everything else
@@ -839,57 +841,6 @@ extension RUM.Configuration {
         self.trackAnonymousUser = trackAnonymousUser
         self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackMemoryWarnings = trackMemoryWarnings
-        self.trackSlowFrames = trackSlowFrames
-        self.telemetrySampleRate = telemetrySampleRate
-        self.collectAccessibility = collectAccessibility
-        self.timeseries = nil
-        self.featureFlags = featureFlags
-    }
-    #else
-    public init(
-        applicationID: String,
-        sessionSampleRate: SampleRate = .maxSampleRate,
-        urlSessionTracking: URLSessionTracking? = nil,
-        trackFrustrations: Bool = true,
-        trackBackgroundEvents: Bool = false,
-        longTaskThreshold: TimeInterval? = 0.1,
-        appHangThreshold: TimeInterval? = nil,
-        trackWatchdogTerminations: Bool = false,
-        vitalsUpdateFrequency: VitalsFrequency? = .average,
-        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
-        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
-        viewEventMapper: RUM.ViewEventMapper? = nil,
-        resourceEventMapper: RUM.ResourceEventMapper? = nil,
-        actionEventMapper: RUM.ActionEventMapper? = nil,
-        errorEventMapper: RUM.ErrorEventMapper? = nil,
-        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
-        onSessionStart: RUM.SessionListener? = nil,
-        customEndpoint: URL? = nil,
-        trackAnonymousUser: Bool = true,
-        trackSlowFrames: Bool = true,
-        telemetrySampleRate: SampleRate = 20,
-        collectAccessibility: Bool = false,
-        featureFlags: FeatureFlags = .defaults
-    ) {
-        self.applicationID = applicationID
-        self.sessionSampleRate = sessionSampleRate
-        self.urlSessionTracking = urlSessionTracking
-        self.trackFrustrations = trackFrustrations
-        self.trackBackgroundEvents = trackBackgroundEvents
-        self.longTaskThreshold = longTaskThreshold
-        self.appHangThreshold = appHangThreshold
-        self.vitalsUpdateFrequency = vitalsUpdateFrequency
-        self.networkSettledResourcePredicate = networkSettledResourcePredicate
-        self.nextViewActionPredicate = nextViewActionPredicate
-        self.viewEventMapper = viewEventMapper
-        self.resourceEventMapper = resourceEventMapper
-        self.actionEventMapper = actionEventMapper
-        self.errorEventMapper = errorEventMapper
-        self.longTaskEventMapper = longTaskEventMapper
-        self.onSessionStart = onSessionStart
-        self.customEndpoint = customEndpoint
-        self.trackAnonymousUser = trackAnonymousUser
-        self.trackWatchdogTerminations = trackWatchdogTerminations
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
