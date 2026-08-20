@@ -128,7 +128,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         }
 
         let vitalsReaders = configuration.vitalsUpdateFrequency.map {
-            VitalsReaders(frequency: $0.timeInterval, telemetry: core.telemetry)
+            VitalsReaders(
+                frequency: $0.timeInterval,
+                notificationCenterProvider: .default,
+                telemetry: core.telemetry
+            )
         }
 
         let ciTest = configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }

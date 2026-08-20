@@ -3537,6 +3537,8 @@
 				A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */,
 			);
 			path = Timeseries;
+			sourceTree = "<group>";
+		};
 		0945381C3000FA1A00BE97B4 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
