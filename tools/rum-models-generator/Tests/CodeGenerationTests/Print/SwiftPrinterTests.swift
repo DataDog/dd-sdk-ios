@@ -355,8 +355,15 @@ final class SwiftPrinterTests: XCTestCase {
             public func encode(to encoder: Encoder) throws {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                context.forEach { name, value in
-                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+                let shouldRecover = encoder.shouldRecoverAttributeFailures
+                try context.forEach { name, value in
+                    try dynamicContainer.encodeAttribute(
+                        AnyEncodable(value),
+                        forKey: DynamicCodingKey(name),
+                        attributeName: name,
+                        context: .custom,
+                        shouldRecover: shouldRecover
+                    )
                 }
             }
 
@@ -469,8 +476,19 @@ final class SwiftPrinterTests: XCTestCase {
 
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                context.forEach { name, value in
-                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+                let shouldRecover = encoder.shouldRecoverAttributeFailures
+                try context.forEach { name, value in
+                    if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                        return
+                    }
+
+                    try dynamicContainer.encodeAttribute(
+                        AnyEncodable(value),
+                        forKey: DynamicCodingKey(name),
+                        attributeName: name,
+                        context: .custom,
+                        shouldRecover: shouldRecover
+                    )
                 }
             }
 
@@ -575,8 +593,19 @@ final class SwiftPrinterTests: XCTestCase {
 
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                context.forEach { name, value in
-                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+                let shouldRecover = encoder.shouldRecoverAttributeFailures
+                try context.forEach { name, value in
+                    if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                        return
+                    }
+
+                    try dynamicContainer.encodeAttribute(
+                        AnyEncodable(value),
+                        forKey: DynamicCodingKey(name),
+                        attributeName: name,
+                        context: .custom,
+                        shouldRecover: shouldRecover
+                    )
                 }
             }
 
@@ -902,8 +931,15 @@ final class SwiftPrinterTests: XCTestCase {
             public func encode(to encoder: Encoder) throws {
                 // Encode dynamic properties:
                 var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-                context.forEach { name, value in
-                    dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+                let shouldRecover = encoder.shouldRecoverAttributeFailures
+                try context.forEach { name, value in
+                    try dynamicContainer.encodeAttribute(
+                        AnyEncodable(value),
+                        forKey: DynamicCodingKey(name),
+                        attributeName: name,
+                        context: .custom,
+                        shouldRecover: shouldRecover
+                    )
                 }
             }
 

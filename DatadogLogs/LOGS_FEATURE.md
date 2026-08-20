@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-19
-sdk_version: 3.12.0
-verified_against_commit: 72544f987
+last_updated: 2026-08-19
+sdk_version: 3.16.0
+verified_against_commit: fee1ac701
 tracked_files:
   - DatadogLogs/Sources/Logs.swift
   - DatadogLogs/Sources/Logger.swift

@@ -143,6 +143,24 @@ class DDRUMConfigurationTests: XCTestCase {
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(trackResourceHeaders: .custom([.defaults, .matchHeaders(["x-request-id"])])))
     }
 
+    func testSetDDRUMURLSessionTrackingWithDisallowList() {
+        let tracking = objc_URLSessionTracking()
+
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, RUM.Configuration.URLSessionTracking())
+
+        tracking.setDisallowList(["https://foo.com/"])
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(swift.urlSessionTracking, .init(disallowList: ["https://foo.com/"]))
+
+        tracking.setDisallowList(["https://bar.com/*", "https://*.foo.com/*"])
+        objc.setURLSessionTracking(tracking)
+        DDAssertReflectionEqual(
+            swift.urlSessionTracking,
+            .init(disallowList: ["https://bar.com/*", "https://*.foo.com/*"])
+        )
+    }
+
     func testSetDDRUMURLSessionTrackingWithResourceAttributesProvider() {
         let tracking = objc_URLSessionTracking()
 

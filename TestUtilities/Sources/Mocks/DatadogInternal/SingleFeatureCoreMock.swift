@@ -30,6 +30,12 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock, @uncheck
     /// The single Feature.
     private var feature: Feature?
 
+    /// Overrides the `FeatureScope` returned by `scope(for:)`, instead of the default `self`.
+    ///
+    /// Set to a non-retaining scope (e.g. `NOPFeatureScope()`) to avoid a core -> feature -> scope -> core
+    /// retain cycle if the Feature under test keeps a long-lived reference to its scope.
+    public var featureScopeOverride: FeatureScope?
+
     /// Creates a Single-Feature core mock.
     ///
     /// - Parameters:
@@ -84,6 +90,6 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock, @uncheck
         guard T.name == Feature.name else {
             return NOPFeatureScope()
         }
-        return super.scope(for: featureType)
+        return featureScopeOverride ?? super.scope(for: featureType)
     }
 }
