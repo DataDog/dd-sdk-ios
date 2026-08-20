@@ -88,7 +88,7 @@ extension RUM {
         /// You can use `DefaultAppKitRUMActionsPredicate` or create your own predicate by
         /// implementing `AppKitRUMActionsPredicate`.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default. instead.
+        /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default.
         public var appKitActionsPredicate: AppKitRUMActionsPredicate?
         #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
