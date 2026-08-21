@@ -195,7 +195,10 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         } else if let ddControl = view as? DDControl {
             return .appKit(bestActionTargetFor(control: ddControl, event: event))
         } else {
-            let isSwiftUICellView = String(describing: type(of: view)).hasPrefix("CellHostingView")
+            let classNameFirstElement = String(describing: type(of: view)).prefix { char in
+                char.isLetter || char.isNumber
+            }
+            let isSwiftUICellView = Self.swiftUIContainerViewPrefixes.contains(classNameFirstElement)
 
             var result: NSView?
 
@@ -217,6 +220,12 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return isSwiftUICellView ? .trySwiftUIFallbackTo(result) : .appKit(result)
         }
     }
+
+    private static let swiftUIContainerViewPrefixes: Set<Substring> = [
+        "CellHostingView",
+        "TableCellHostingView",
+        "PlatformGroupContainer"
+    ]
 
     private func bestActionTargetFor(accessibilityElement: AnyObject, event: NSEvent) -> AnyObject? {
         guard let role = accessibilityElement.accessibilityRole() else {
