@@ -20,5 +20,15 @@ internal struct ExposureEvent: Equatable, Codable {
     let allocation: Identifier
     let flag: Identifier
     let variant: Identifier
+    let serialID: Int?
     let subject: Subject
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp
+        case allocation
+        case flag
+        case variant
+        case serialID = "serial_id"
+        case subject
+    }
 }
