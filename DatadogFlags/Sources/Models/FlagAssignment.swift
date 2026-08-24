@@ -68,7 +68,8 @@ extension FlagAssignment: Codable {
         self.variationKey = try container.decode(String.self, forKey: .variationKey)
         self.reason = try container.decode(String.self, forKey: .reason)
         self.doLog = try container.decode(Bool.self, forKey: .doLog)
-        self.serialID = try container.decodeIfPresent(Int.self, forKey: .serialID)
+        // A malformed serial id decodes as absent so it cannot fail the whole response.
+        self.serialID = try? container.decodeIfPresent(Int.self, forKey: .serialID)
 
         let variationType = try container.decode(String.self, forKey: .variationType)
 

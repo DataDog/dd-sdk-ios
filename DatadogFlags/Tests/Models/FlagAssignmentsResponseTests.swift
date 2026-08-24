@@ -283,12 +283,60 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         let withValue = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 340132"#))
         let withNull = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": null"#))
         let withoutKey = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(""))
+        let withString = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": "abc""#))
+        let withFraction = try JSONDecoder().decode(FlagAssignment.self, from: withSerialIDEntry(#", "serialId": 3.7"#))
 
         // Then
         XCTAssertEqual(withZero.serialID, 0)
         XCTAssertEqual(withValue.serialID, 340_132)
         XCTAssertNil(withNull.serialID, "An explicit null must decode as an absent serial id")
         XCTAssertNil(withoutKey.serialID)
+        XCTAssertNil(withString.serialID, "A malformed serial id must decode as absent")
+        XCTAssertNil(withFraction.serialID, "A malformed serial id must decode as absent")
+        XCTAssertEqual(withString.variation, .string("red"), "The rest of the flag must still decode")
+    }
+
+    func testDecodingMalformedSerialIDDoesNotFailSiblingFlags() throws {
+        // Given
+        let json = """
+        {
+          "data": {
+            "id": "test_subject",
+            "type": "precomputed-assignments",
+            "attributes": {
+              "flags": {
+                "broken-serial-id-flag": {
+                  "allocationKey": "allocation-123",
+                  "variationKey": "variation-123",
+                  "variationType": "string",
+                  "variationValue": "red",
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "serialId": "not-an-integer"
+                },
+                "healthy-flag": {
+                  "allocationKey": "allocation-124",
+                  "variationKey": "variation-124",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "serialId": 0
+                }
+              }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        // When
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: json)
+
+        // Then
+        XCTAssertEqual(response.flags.count, 2)
+        XCTAssertNil(try XCTUnwrap(response.flags["broken-serial-id-flag"]).serialID)
+        XCTAssertEqual(try XCTUnwrap(response.flags["healthy-flag"]).serialID, 0)
+        XCTAssertEqual(response.failedFlags, [:])
     }
 
     func testEncodingSerialID() throws {
