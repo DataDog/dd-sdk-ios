@@ -154,7 +154,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ciTest: ciTest,
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
-                now: { configuration.dateProvider.now }
+                now: { configuration.dateProvider.now },
+                mediaTimeProvider: configuration.mediaTimeProvider
             )
         }
 

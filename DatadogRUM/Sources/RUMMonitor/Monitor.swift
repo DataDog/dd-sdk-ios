@@ -106,6 +106,9 @@ internal protocol RUMActiveContextReader: AnyObject {
     var globalAttributes: [AttributeKey: AttributeValue] { get }
     /// The currently active view, if any. Conformers must guarantee this is safe to read from any thread.
     var activeView: (id: String?, path: String?, name: String?) { get }
+    /// The most recently observed `DatadogContext.hasReplay` value, or `nil` if no command has been
+    /// processed yet. Conformers must guarantee this is safe to read from any thread.
+    var hasReplay: Bool? { get }
     /// Whether the session identified by `sessionID` has expired (exceeded its max duration or inactivity
     /// timeout) as of `date`, evaluated against a live, single source of truth instead of a shadow copy of
     /// that state. Returns `false` if `sessionID` doesn't match the currently active session (e.g. a session
@@ -131,6 +134,9 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
+
+    @ReadWriteLock
+    private var hasReplaySnapshot: Bool? = nil
 
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
@@ -160,6 +166,8 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
 
             _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+
+            self.hasReplaySnapshot = context.hasReplay
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
@@ -237,6 +245,7 @@ internal class Monitor: RUMCommandSubscriber {
 extension Monitor: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue] { attributes }
     var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
+    var hasReplay: Bool? { hasReplaySnapshot }
 
     func isSessionExpired(sessionID: String, at date: Date) -> Bool {
         let activity = sessionActivitySnapshot

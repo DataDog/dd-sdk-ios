@@ -70,6 +70,15 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
     private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
+    private let mediaTimeProvider: CACurrentMediaTimeProvider
+    /// The wall-clock date and monotonic media time captured together at the start of the current session,
+    /// used to derive sample timestamps that are immune to wall-clock adjustments (see `sample()`).
+    private var anchorDate: Date = .distantPast
+    private var anchorMediaTime: CFTimeInterval = 0
+    /// Whether replay was reported active by `activeContextReader` at any point during the current session,
+    /// OR-accumulated in `sample()` (mirrors `RUMViewScope`'s per-view `hasReplay` accumulation) so a batch
+    /// still reports `hasReplay: true` even if replay stopped before the batch was flushed.
+    private var hasReplay: Bool = false
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -85,7 +94,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         sessionSampleRate: Double = 100,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
@@ -98,6 +108,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.sessionSampleRate = sessionSampleRate
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
         self.now = now
+        self.mediaTimeProvider = mediaTimeProvider
     }
 
     deinit {
@@ -162,6 +173,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
+            self.hasReplay = false
+            self.anchorDate = self.now()
+            self.anchorMediaTime = self.mediaTimeProvider.current
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -245,7 +259,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     // MARK: - Private
 
     private func sample() {
-        let currentDate = now()
+        // Derived from the monotonic media clock anchored at session start, rather than raw `now()`, so a
+        // backward wall-clock adjustment mid-session (NTP sync, manual clock change) can't produce
+        // out-of-order or inverted (`end < start`) batch timestamps.
+        let currentDate = anchorDate.addingTimeInterval(mediaTimeProvider.current - anchorMediaTime)
+
+        if let hasContextReplay = activeContextReader?.hasReplay {
+            hasReplay = hasReplay || hasContextReplay
+        }
 
         // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
         // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
@@ -293,6 +314,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
         let sessionSampleRate = self.sessionSampleRate
+        let hasReplay = self.hasReplay
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -313,7 +335,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: context.hasReplay, id: sessionID, type: sessionType),
+                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(
@@ -346,6 +368,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let ciTest = self.ciTest
         let syntheticsTest = self.syntheticsTest
         let sessionSampleRate = self.sessionSampleRate
+        let hasReplay = self.hasReplay
         let start = batch[0].timestamp
         let end = batch[batch.count - 1].timestamp
         let eventID = UUID().uuidString.lowercased()
@@ -366,7 +389,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: context.hasReplay, id: sessionID, type: sessionType),
+                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(
