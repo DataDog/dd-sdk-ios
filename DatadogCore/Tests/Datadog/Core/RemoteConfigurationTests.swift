@@ -54,55 +54,43 @@ class RemoteConfigurationTests: XCTestCase {
         return provider
     }
 
+    /// Raw CDN response payload for a remote configuration fetch.
     private func remoteConfigurationData(applicationID: String = "application-id") -> Data {
         Data("{\"rum\":{\"applicationId\":\"\(applicationID)\"}}".utf8)
     }
 
-    private func metadataData(
+    /// Encodes a `RemoteConfigurationCache` as it would be persisted on disk, for pre-seeding
+    /// the cache file in tests.
+    private func cacheData(
         etag: String? = nil,
         versionId: String? = nil,
         lastModified: Date? = nil,
         lastSynced: Date? = nil,
         syncId: String? = nil,
-        firstApplied: Date? = nil
+        firstApplied: Date? = nil,
+        applicationID: String? = nil
     ) -> Data {
-        try! JSONEncoder().encode(
-            RemoteConfigurationMetadata(
-                etag: etag,
-                versionId: versionId,
-                lastModified: lastModified,
-                lastSynced: lastSynced,
-                syncId: syncId,
-                firstApplied: firstApplied
-            )
-        )
+        let metadata: RemoteConfigurationCache.Metadata? = versionId != nil || lastModified != nil || lastSynced != nil || syncId != nil || firstApplied != nil
+            ? RemoteConfigurationCache.Metadata(versionId: versionId, lastModified: lastModified, lastSynced: lastSynced, syncId: syncId, firstApplied: firstApplied)
+            : nil
+        let configuration = applicationID.map { RemoteConfiguration(rum: .init(applicationId: $0)) }
+        return try! JSONEncoder().encode(RemoteConfigurationCache(etag: etag, metadata: metadata, configuration: configuration))
     }
 
-    private func readMetadata(fileName: String = "test-id.metadata.json") -> RemoteConfigurationMetadata? {
+    private func readCache(fileName: String = "test-id.json") -> RemoteConfigurationCache? {
         guard let data = try? Data(contentsOf: coreDir.coreDirectory.url.appendingPathComponent(fileName)) else {
             return nil
         }
-        return try? JSONDecoder().decode(RemoteConfigurationMetadata.self, from: data)
+        return try? JSONDecoder().decode(RemoteConfigurationCache.self, from: data)
     }
 
     private func waitForPersistedConfiguration(
         applicationID: String,
-        fileData: Data? = nil,
         fileName: String = "test-id.json"
     ) {
         let expectation = expectation(description: "remote configuration is persisted")
         wait(until: {
-            let fileURL = self.coreDir.coreDirectory.url.appendingPathComponent(fileName)
-            guard let persistedData = try? Data(contentsOf: fileURL),
-                  (try? JSONDecoder().decode(RemoteConfiguration.self, from: persistedData).rum?.applicationId) == applicationID else {
-                return false
-            }
-
-            guard let fileData else {
-                return true
-            }
-
-            return persistedData == fileData
+            self.readCache(fileName: fileName)?.configuration?.rum?.applicationId == applicationID
         }, andThenFulfill: expectation)
         wait(for: [expectation], timeout: 2)
     }
@@ -167,9 +155,8 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testStartReadsCacheFromPreviousLaunch() throws {
-        let payload = remoteConfigurationData(applicationID: "cached-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try payload.write(to: fileURL, options: .atomic)
+        try cacheData(applicationID: "cached-application-id").write(to: fileURL, options: .atomic)
 
         let rc = makeProvider(httpClient: NeverHTTPClient(), start: false)
         let expectation = expectation(description: "cached remote configuration is returned")
@@ -218,14 +205,14 @@ class RemoteConfigurationTests: XCTestCase {
         let payload = remoteConfigurationData(applicationID: "fetched-application-id")
         let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload))
 
-        waitForPersistedConfiguration(applicationID: "fetched-application-id", fileData: payload)
+        waitForPersistedConfiguration(applicationID: "fetched-application-id")
         withExtendedLifetime(rc) {}
     }
 
     func testInitSyncPersistsConfigurationAcrossInstances() throws {
         let payload = remoteConfigurationData(applicationID: "persisted-application-id")
         let rc = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload))
-        waitForPersistedConfiguration(applicationID: "persisted-application-id", fileData: payload)
+        waitForPersistedConfiguration(applicationID: "persisted-application-id")
 
         let cachedProvider = makeProvider(httpClient: NeverHTTPClient(), start: false)
         let expectation = expectation(description: "persisted remote configuration is returned")
@@ -254,9 +241,8 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncNon2xxReportsTelemetryAndPreservesPersistedConfiguration() throws {
-        let existing = remoteConfigurationData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try existing.write(to: fileURL, options: .atomic)
+        try cacheData(applicationID: "existing-application-id").write(to: fileURL, options: .atomic)
 
         let telemetry = TelemetryMock()
         let rc = makeProvider(httpClient: HTTPClientMock(responseCode: 500), start: false)
@@ -264,7 +250,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "Existing file must be preserved after non-2xx")
+        XCTAssertEqual(readCache()?.configuration?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after non-2xx")
         withExtendedLifetime(rc) {}
     }
 
@@ -276,15 +262,13 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
+        XCTAssertNil(readCache()?.configuration, "An empty response body must never be cached as a configuration")
         withExtendedLifetime(rc) {}
     }
 
     func testInitSyncInvalidJSONBodyReportsTelemetryAndPreservesPersistedConfiguration() throws {
-        let existing = remoteConfigurationData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
-        try existing.write(to: fileURL, options: .atomic)
+        try cacheData(applicationID: "existing-application-id").write(to: fileURL, options: .atomic)
 
         let telemetry = TelemetryMock()
         let nonJSON = Data("this is not json".utf8)
@@ -293,7 +277,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertEqual(try? Data(contentsOf: fileURL), existing, "Existing file must be preserved after decoding error")
+        XCTAssertEqual(readCache()?.configuration?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after decoding error")
         withExtendedLifetime(rc) {}
     }
 
@@ -313,9 +297,9 @@ class RemoteConfigurationTests: XCTestCase {
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
     }
 
-    // MARK: ETag / metadata persistence
+    // MARK: ETag persistence
 
-    func testInitSyncPersistsETagInMetadataAfterSuccessfulFetch() {
+    func testInitSyncPersistsETagAfterSuccessfulFetch() {
         let response = HTTPURLResponse(
             url: URL(string: "https://sdk-configuration.browser-intake-datadoghq.com")!,
             statusCode: 200,
@@ -324,9 +308,9 @@ class RemoteConfigurationTests: XCTestCase {
         )!
         let provider = makeProvider(httpClient: HTTPClientMock(response: response, data: Data("{}".utf8)))
 
-        let expectation = expectation(description: "etag is stored in metadata")
+        let expectation = expectation(description: "etag is stored in cache")
         wait(until: {
-            self.readMetadata()?.etag == "abc123"
+            self.readCache()?.etag == "abc123"
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
@@ -346,14 +330,14 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertEqual(readMetadata()?.etag, "abc123", "ETag must be persisted from the response even when the body cannot be decoded")
+        XCTAssertEqual(readCache()?.etag, "abc123", "ETag must be persisted from the response even when the body cannot be decoded")
         withExtendedLifetime(rc) {}
     }
 
     func testInitSyncOverwritesStaleETagWhenResponseHasNoETag() throws {
         // Given — a stale etag from a previous fetch
-        try metadataData(etag: "old-etag")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"), options: .atomic)
+        try cacheData(etag: "old-etag")
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
 
         // When — server returns 200 with new data but no ETag header
         let provider = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8)))
@@ -361,7 +345,7 @@ class RemoteConfigurationTests: XCTestCase {
         // Then — the stale etag must be overwritten so it is never sent as If-None-Match again
         let expectation = expectation(description: "stale etag is cleared")
         wait(until: {
-            self.readMetadata()?.etag == nil
+            self.readCache()?.etag == nil
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
@@ -369,11 +353,11 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncSendsIfNoneMatchWhenETagStoredEvenWithoutConfiguration() throws {
-        // Given — metadata with an ETag exists but the JSON configuration does not. This happens
-        // when a previous fetch returned a payload we could not decode: we keep its ETag on
-        // purpose so we can skip re-downloading the known-bad payload.
-        try metadataData(etag: "abc123")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"), options: .atomic)
+        // Given — a cache with an ETag but no configuration. This happens when a previous fetch
+        // returned a payload we could not decode: we keep its ETag on purpose so we can skip
+        // re-downloading the known-bad payload.
+        try cacheData(etag: "abc123")
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
 
         let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
         let provider = makeProvider(httpClient: httpClient)
@@ -392,12 +376,8 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testInitSyncSendsIfNoneMatchHeaderWhenETagStored() throws {
-        try metadataData(etag: "abc123")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"), options: .atomic)
-        try Data("{}".utf8).write(
-            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
-            options: .atomic
-        )
+        try cacheData(etag: "abc123")
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
 
         let httpClient = HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: Data("{}".utf8))
         let provider = makeProvider(httpClient: httpClient)
@@ -411,9 +391,9 @@ class RemoteConfigurationTests: XCTestCase {
         withExtendedLifetime(provider) {}
     }
 
-    func testSyncReportsTelemetryErrorWhenCachedMetadataCannotBeRead() throws {
+    func testSyncReportsTelemetryErrorWhenCachedFileCannotBeRead() throws {
         try FileManager.default.createDirectory(
-            at: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"),
+            at: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
             withIntermediateDirectories: false
         )
         let telemetry = TelemetryMock()
@@ -427,7 +407,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func test304ResponsePreservesCache() throws {
         // Given — pre-populate persisted configuration
-        let existing = remoteConfigurationData(applicationID: "existing-application-id")
+        let existing = cacheData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
 
@@ -485,13 +465,13 @@ class RemoteConfigurationTests: XCTestCase {
             return .success((.mockResponseWith(statusCode: 200), payload))
         }
         let rc = makeProvider(httpClient: httpClient, notificationCenter: notificationCenter, dateProvider: dateProvider)
-        waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
+        waitForPersistedConfiguration(applicationID: "initial-application-id")
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
 
-        waitForPersistedConfiguration(applicationID: "foreground-application-id", fileData: foregroundPayload)
+        waitForPersistedConfiguration(applicationID: "foreground-application-id")
         withExtendedLifetime(rc) {}
     }
 
@@ -516,12 +496,12 @@ class RemoteConfigurationTests: XCTestCase {
         rc.start { _ in
             completionExpectation.fulfill()
         }
-        waitForPersistedConfiguration(applicationID: "initial-application-id", fileData: initialPayload)
+        waitForPersistedConfiguration(applicationID: "initial-application-id")
 
         // Advance past TTL so the foreground sync is not suppressed
         dateProvider.advance(bySeconds: 360)
         notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
-        waitForPersistedConfiguration(applicationID: "foreground-application-id", fileData: foregroundPayload)
+        waitForPersistedConfiguration(applicationID: "foreground-application-id")
 
         wait(for: [completionExpectation], timeout: 2)
         withExtendedLifetime(rc) {}
@@ -609,11 +589,8 @@ class RemoteConfigurationTests: XCTestCase {
         // Given — init sync returns 304, TTL not elapsed
         let notificationCenter = NotificationCenter()
         let dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0)
-        let cachedPayload = remoteConfigurationData(applicationID: "cached-application-id")
-        try cachedPayload.write(
-            to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"),
-            options: .atomic
-        )
+        try cacheData(applicationID: "cached-application-id")
+            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
         let httpClient = HTTPClientMock { _ in
             .success((.mockResponseWith(statusCode: 304), nil))
         }
@@ -645,10 +622,10 @@ class RemoteConfigurationTests: XCTestCase {
         let payload2 = remoteConfigurationData(applicationID: "application-id-two")
 
         let rc1 = makeProvider(id: "id-one", httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload1))
-        waitForPersistedConfiguration(applicationID: "application-id-one", fileData: payload1, fileName: "id-one.json")
+        waitForPersistedConfiguration(applicationID: "application-id-one", fileName: "id-one.json")
 
         let rc2 = makeProvider(id: "id-two", httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload2))
-        waitForPersistedConfiguration(applicationID: "application-id-two", fileData: payload2, fileName: "id-two.json")
+        waitForPersistedConfiguration(applicationID: "application-id-two", fileName: "id-two.json")
 
         let cachedProvider1 = makeProvider(id: "id-one", httpClient: NeverHTTPClient(), start: false)
         let cachedProvider2 = makeProvider(id: "id-two", httpClient: NeverHTTPClient(), start: false)
@@ -686,12 +663,12 @@ class RemoteConfigurationTests: XCTestCase {
 
         let expectation = expectation(description: "metadata is persisted with syncId and lastSynced")
         wait(until: {
-            let metadata = self.readMetadata()
+            let metadata = self.readCache()?.metadata
             return metadata?.syncId != nil && metadata?.lastSynced != nil
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 2)
 
-        XCTAssertNil(readMetadata()?.firstApplied, "A freshly fetched version has not been applied yet")
+        XCTAssertNil(readCache()?.metadata?.firstApplied, "A freshly fetched version has not been applied yet")
         withExtendedLifetime(provider) {}
     }
 
@@ -701,7 +678,7 @@ class RemoteConfigurationTests: XCTestCase {
         let provider = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 200), data: payload), start: false)
 
         provider.start({ _ in }, telemetry: telemetry)
-        waitForPersistedConfiguration(applicationID: "fetched-application-id", fileData: payload)
+        waitForPersistedConfiguration(applicationID: "fetched-application-id")
 
         XCTAssertNil(telemetry.messages.firstConfiguration(), "Nothing was applied from cache on first launch, so nothing should be reported")
         withExtendedLifetime(provider) {}
@@ -710,10 +687,14 @@ class RemoteConfigurationTests: XCTestCase {
     func testCachedVersionIsReportedOnConfigurationTelemetryWithFirstAppliedStamped() throws {
         let lastModified = Date(timeIntervalSince1970: 1_767_225_600) // 2026-01-01T00:00:00Z
         let lastSynced = Date(timeIntervalSince1970: 1_767_312_000) // 2026-01-02T00:00:00Z
-        try metadataData(versionId: "v1", lastModified: lastModified, lastSynced: lastSynced, syncId: "sync-1")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"), options: .atomic)
-        try remoteConfigurationData(applicationID: "cached-application-id")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
+        try cacheData(
+            versionId: "v1",
+            lastModified: lastModified,
+            lastSynced: lastSynced,
+            syncId: "sync-1",
+            applicationID: "cached-application-id"
+        )
+        .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
 
         let telemetry = TelemetryMock()
         let provider = makeProvider(httpClient: HTTPClientMock(response: .mockResponseWith(statusCode: 304)), start: false)
@@ -735,9 +716,7 @@ class RemoteConfigurationTests: XCTestCase {
     }
 
     func testFirstAppliedIsStampedOnceAndReusedAcrossSessions() throws {
-        try metadataData(versionId: "v1", syncId: "sync-1")
-            .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.metadata.json"), options: .atomic)
-        try remoteConfigurationData(applicationID: "cached-application-id")
+        try cacheData(versionId: "v1", syncId: "sync-1", applicationID: "cached-application-id")
             .write(to: coreDir.coreDirectory.url.appendingPathComponent("test-id.json"), options: .atomic)
 
         let firstSessionTelemetry = TelemetryMock()

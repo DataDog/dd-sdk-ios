@@ -7,27 +7,39 @@
 import Foundation
 import DatadogInternal
 
-/// CDN response metadata for a remote configuration fetch, used to correlate
-/// configuration propagation telemetry with the CDN version that produced it.
-internal struct RemoteConfigurationMetadata: Codable, Equatable {
+/// On-disk representation of a cached remote configuration.
+///
+/// The HTTP ETag, the propagation metadata, and the configuration payload itself are kept
+/// together and written in a single atomic file, so metadata can never point at a
+/// configuration version that was not durably cached (and vice versa).
+internal struct RemoteConfigurationCache: Codable {
+    /// Propagation metadata for a cached remote configuration, used to correlate configuration
+    /// propagation telemetry with the CDN version that produced it.
+    struct Metadata: Codable, Equatable {
+        /// Value of the `x-amz-version-id` response header.
+        let versionId: String?
+        /// Parsed value of the `last-modified` response header.
+        let lastModified: Date?
+        /// Date this configuration was fetched and persisted.
+        let lastSynced: Date?
+        /// Identifier of the sync that produced this configuration version, generated the same
+        /// way as the request IDs used for event uploads. Reused by every session running on
+        /// this version, until the next genuine (non-304) sync.
+        let syncId: String?
+        /// Date this configuration version was first observed as applied. Stamped once and
+        /// reused on every subsequent session that runs on the same version.
+        let firstApplied: Date?
+    }
+
     /// Value of the `etag` response header, sent back as `If-None-Match`.
     let etag: String?
-    /// Value of the `x-amz-version-id` response header.
-    let versionId: String?
-    /// Parsed value of the `last-modified` response header.
-    let lastModified: Date?
-    /// Date this configuration was fetched and persisted.
-    let lastSynced: Date?
-    /// Identifier of the sync that produced this configuration version, generated the same way
-    /// as the request IDs used for event uploads. Reused by every session running on this
-    /// version, until the next genuine (non-304) sync.
-    let syncId: String?
-    /// Date this configuration version was first observed as applied. Stamped once and reused
-    /// on every subsequent session that runs on the same version.
-    let firstApplied: Date?
+    /// Propagation metadata for `configuration`, if it was successfully cached.
+    let metadata: Metadata?
+    /// The last successfully decoded and cached configuration payload.
+    let configuration: RemoteConfiguration?
 }
 
-extension RemoteConfigurationMetadata {
+extension RemoteConfigurationCache.Metadata {
     /// Formats and parses the `last-modified` response header (RFC 7231 IMF-fixdate,
     /// e.g. `Wed, 21 Oct 2015 07:28:00 GMT`).
     static let httpDateFormatter: DateFormatter = {
@@ -47,11 +59,11 @@ extension RemoteConfigurationMetadata {
 /// converge on the latest configuration without requiring a restart.
 ///
 /// ## Caching
-/// A successful fetch is persisted as `<id>.json` inside the supplied `directory`.
-/// The accompanying HTTP ETag, and the `x-amz-version-id` / `last-modified` headers
-/// used for propagation telemetry, are stored in `<id>.metadata.json`. The ETag is sent
-/// back as `If-None-Match` on subsequent requests, turning unchanged responses into
-/// lightweight 304s that skip body transfer and re-parse entirely.
+/// A successful fetch is persisted as `<id>.json` inside the supplied `directory`, as a single
+/// `RemoteConfigurationCache` document combining the HTTP ETag, the propagation metadata used
+/// for configuration telemetry, and the configuration payload. The ETag is sent back as
+/// `If-None-Match` on subsequent requests, turning unchanged responses into lightweight 304s
+/// that skip body transfer and re-parse entirely.
 ///
 /// ## Threading
 /// - The synchronous cache read in `start` runs on the caller's thread.
@@ -109,11 +121,13 @@ internal final class RemoteConfigurationProvider {
     ///     `telemetry` instead.
     ///   - telemetry: Reports the propagation of the configuration version delivered from
     ///     cache (if any) on the once-per-session configuration telemetry, synchronously
-    ///     from the cache read below. Configuration telemetry buffers sends made before a
-    ///     receiver is registered for the session, so reporting this early is safe. A
-    ///     genuinely new fetch (non-304) only updates the persisted metadata; it does not
-    ///     report telemetry on its own, since the fetched version does not take effect
-    ///     until the next application launch. Read and fetch errors are also reported here.
+    ///     from the cache read below. `MessageBus` accumulates configuration telemetry and
+    ///     flushes it once, 5 seconds after core initialization, to whichever receivers are
+    ///     connected by then — reporting this early is safe as long as the consuming feature
+    ///     (e.g. RUM) is enabled within that window, but telemetry sent before a receiver
+    ///     connects is dropped if that window has already passed. A genuinely new fetch
+    ///     (non-304) is only reported on a later launch's cache read, once it has been
+    ///     applied. Read and fetch errors are also reported here.
     func start(
         _ handler: @escaping (RemoteConfiguration) -> Void,
         telemetry: Telemetry = NOPTelemetry()
@@ -176,9 +190,15 @@ internal final class RemoteConfigurationProvider {
 
         do {
             let data = try directory.file(named: cacheFilename).read()
-            let remoteConfiguration = try JSONDecoder().decode(RemoteConfiguration.self, from: data)
-            reportMetadata(to: telemetry)
-            return remoteConfiguration
+            let cache = try JSONDecoder().decode(RemoteConfigurationCache.self, from: data)
+
+            guard let configuration = cache.configuration else {
+                return nil
+            }
+
+            report(cache: cache, to: telemetry)
+
+            return configuration
         } catch {
             telemetry.error("[RemoteConfig] Failed to read cached remote configuration", error: error)
             return nil
@@ -192,7 +212,6 @@ internal final class RemoteConfigurationProvider {
     ) {
         let decoder = JSONDecoder()
         let cacheFilename = "\(id).json"
-        let metadataFilename = "\(id).metadata.json"
 
         // Build request with conditional ETag header if a previous ETag is stored.
         var request = URLRequest(
@@ -202,10 +221,11 @@ internal final class RemoteConfigurationProvider {
                 .appendingPathExtension("json")
         )
 
-        if let file = try? directory.file(named: metadataFilename) {
+        var cache: RemoteConfigurationCache?
+        if let file = try? directory.file(named: cacheFilename) {
             do {
-                let metadata = try decoder.decode(RemoteConfigurationMetadata.self, from: file.read())
-                metadata.etag.map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
+                cache = try decoder.decode(RemoteConfigurationCache.self, from: file.read())
+                cache?.etag.map { request.setValue($0, forHTTPHeaderField: "If-None-Match") }
             } catch {
                 telemetry.error("[RemoteConfig] Failed to read cached metadata etag", error: error)
             }
@@ -228,21 +248,30 @@ internal final class RemoteConfigurationProvider {
                     throw RemoteConfigurationError.httpError(http.statusCode)
                 }
 
-                // Persist metadata before decoding — it belongs to the HTTP response,
-                // not to whether we could parse the body. This prevents re-fetching a
-                // known-bad payload on every sync; we recover when the server updates.
-                self.saveMetadata(from: http, telemetry: telemetry)
-
                 guard let data, !data.isEmpty else {
+                    // Still update the ETag so a known-bad payload is not re-fetched on every
+                    // sync; we recover once the server publishes an update. Previously cached
+                    // configuration and metadata are left untouched.
+                    self.updateETag(from: http, previous: cache, telemetry: telemetry)
                     throw RemoteConfigurationError.emptyBody
                 }
 
-                let remoteConfiguration = try decoder.decode(RemoteConfiguration.self, from: data)
+                let remoteConfiguration: RemoteConfiguration
+                do {
+                    remoteConfiguration = try decoder.decode(RemoteConfiguration.self, from: data)
+                } catch {
+                    self.updateETag(from: http, previous: cache, telemetry: telemetry)
+                    throw error
+                }
 
-                // All checks passed — persist to disk.
-                // File.write uses .atomic (write to temp, then rename), so the update is
-                // all-or-nothing: the existing file is never left in a truncated state.
-                try self.write(data, to: cacheFilename)
+                // All checks passed — persist configuration, metadata, and etag together in a
+                // single atomic write (File.write uses .atomic: write to temp, then rename), so
+                // a later `readCache()` never reports a version that was never actually written
+                // to disk. If the write fails, the configuration is not durably cached, so it is
+                // not delivered to `handler` either — the outer catch reports the failure and a
+                // later sync will retry.
+                try self.saveCache(remoteConfiguration, from: http)
+
                 self.lastSyncDate = self.dateProvider.now
 
                 handler(remoteConfiguration)
@@ -256,70 +285,94 @@ internal final class RemoteConfigurationProvider {
     /// configuration telemetry. Stamps `firstApplied` the first time this version is
     /// observed as applied, and persists it back to disk so every later session running
     /// on the same version reports the same value.
-    private func reportMetadata(to telemetry: Telemetry) {
-        guard let file = try? directory.file(named: "\(id).metadata.json") else {
+    private func report(cache: RemoteConfigurationCache, to telemetry: Telemetry) {
+        guard var metadata = cache.metadata else {
             return
         }
 
-        do {
-            var metadata = try JSONDecoder().decode(RemoteConfigurationMetadata.self, from: file.read())
-
-            if metadata.firstApplied == nil {
-                metadata = RemoteConfigurationMetadata(
-                    etag: metadata.etag,
-                    versionId: metadata.versionId,
-                    lastModified: metadata.lastModified,
-                    lastSynced: metadata.lastSynced,
-                    syncId: metadata.syncId,
-                    firstApplied: dateProvider.now
-                )
-                try write(metadata: metadata)
-            }
-
-            telemetry.configuration(
-                remoteConfiguration: .init(
-                    configId: id,
-                    versionId: metadata.versionId,
-                    lastModified: metadata.lastModified,
-                    lastSynced: metadata.lastSynced,
-                    firstApplied: metadata.firstApplied,
-                    syncId: metadata.syncId
-                )
+        if metadata.firstApplied == nil {
+            metadata = RemoteConfigurationCache.Metadata(
+                versionId: metadata.versionId,
+                lastModified: metadata.lastModified,
+                lastSynced: metadata.lastSynced,
+                syncId: metadata.syncId,
+                firstApplied: dateProvider.now
             )
-        } catch {
-            telemetry.error("[RemoteConfig] Failed to report applied remote configuration", error: error)
+            do {
+                try write(
+                    cache: RemoteConfigurationCache(etag: cache.etag, metadata: metadata, configuration: cache.configuration)
+                )
+            } catch {
+                telemetry.error("[RemoteConfig] Failed to save remote configuration metadata", error: error)
+            }
         }
+
+        telemetry.configuration(
+            remoteConfiguration: .init(
+                configId: id,
+                versionId: metadata.versionId,
+                lastModified: metadata.lastModified,
+                lastSynced: metadata.lastSynced,
+                firstApplied: metadata.firstApplied,
+                syncId: metadata.syncId
+            )
+        )
     }
 
-    /// Builds and persists metadata from a genuine (non-304) fetch's HTTP response.
-    /// `syncId` and `lastSynced` mark this as a genuine sync, distinct from a 304.
-    /// `firstApplied` is left unset: this version has not been applied yet, since a
-    /// fetch that completes mid-session does not retroactively re-apply already
-    /// initialized features.
-    private func saveMetadata(from response: HTTPURLResponse, telemetry: Telemetry) {
+    /// Builds and persists the cache from a genuine (non-304) fetch's HTTP response, once the
+    /// fetched configuration has been successfully decoded. `syncId` and `lastSynced` mark this
+    /// as a genuine sync, distinct from a 304. `firstApplied` is left unset: this version has
+    /// not been applied yet, since a fetch that completes mid-session does not retroactively
+    /// re-apply already initialized features.
+    ///
+    /// Throws if the write fails, so the caller can treat an undelivered, uncached configuration
+    /// as a failed sync rather than deliver a configuration that was never durably persisted.
+    private func saveCache(_ configuration: RemoteConfiguration, from response: HTTPURLResponse) throws {
         let etag = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String
         let versionId = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "x-amz-version-id" })?.value as? String
         let lastModifiedHeader = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "last-modified" })?.value as? String
 
-        let metadata = RemoteConfigurationMetadata(
+        let cache = RemoteConfigurationCache(
             etag: etag,
-            versionId: versionId,
-            lastModified: lastModifiedHeader.flatMap { RemoteConfigurationMetadata.httpDateFormatter.date(from: $0) },
-            lastSynced: dateProvider.now,
-            syncId: UUID().uuidString,
-            firstApplied: nil
+            metadata: RemoteConfigurationCache.Metadata(
+                versionId: versionId,
+                lastModified: lastModifiedHeader.flatMap { RemoteConfigurationCache.Metadata.httpDateFormatter.date(from: $0) },
+                lastSynced: dateProvider.now,
+                syncId: UUID().uuidString,
+                firstApplied: nil
+            ),
+            configuration: configuration
+        )
+
+        try write(cache: cache)
+    }
+
+    /// Persists only the response's `ETag`, leaving any previously cached configuration and
+    /// metadata untouched.
+    ///
+    /// Called when the response body could not be cached or decoded, so the next sync sends
+    /// `If-None-Match` for this same (still-broken) payload and short-circuits to a lightweight
+    /// 304 instead of re-fetching and re-failing on every sync, without `report(cache:to:)`
+    /// ever reporting this undelivered version as applied.
+    private func updateETag(from response: HTTPURLResponse, previous: RemoteConfigurationCache?, telemetry: Telemetry) {
+        let etag = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String
+
+        let cache = RemoteConfigurationCache(
+            etag: etag,
+            metadata: previous?.metadata,
+            configuration: previous?.configuration
         )
 
         do {
-            try write(metadata: metadata)
+            try write(cache: cache)
         } catch {
             telemetry.error("[RemoteConfig] Failed to save remote configuration metadata", error: error)
         }
     }
 
-    /// Persists metadata to `<id>.metadata.json`.
-    private func write(metadata: RemoteConfigurationMetadata) throws {
-        try write(JSONEncoder().encode(metadata), to: "\(id).metadata.json")
+    /// Persists the cache to `<id>.json`.
+    private func write(cache: RemoteConfigurationCache) throws {
+        try write(JSONEncoder().encode(cache), to: "\(id).json")
     }
 
     private func write(_ data: Data, to filename: String) throws {

@@ -60,7 +60,7 @@ class DatadogCoreTests: XCTestCase {
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {
         // Given
-        try Data(#"{"rum":{"applicationId":"cache-application-id"}}"#.utf8).write(
+        try Data(#"{"configuration":{"rum":{"applicationId":"cache-application-id"}}}"#.utf8).write(
             to: temporaryCoreDirectory.coreDirectory.url.appendingPathComponent("test-id.json"),
             options: .atomic
         )
