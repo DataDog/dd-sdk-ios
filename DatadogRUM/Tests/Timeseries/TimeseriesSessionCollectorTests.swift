@@ -782,7 +782,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-bg")
     }
 
-    func testWhenResumedAfterPauseSpanningDeviceSleep_reanchorsToAvoidTimestampLag() {
+    func testWhenResumedAfterPause_reanchorsToAvoidLagOrPrecedeAlreadyFlushedSamples() {
         // Given — the media clock doesn't advance during real device sleep (unlike the wall clock), so a
         // pause spanning device sleep leaves a growing gap between the two if the anchor isn't refreshed
         memoryReader.vitalData = 1_000_000
@@ -790,7 +790,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
-            batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
+            batchSize: 100, // won't auto-flush — only `pause()`/`stop()` triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000,
@@ -799,36 +799,64 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
-        collector.start(sessionID: "session-sleep", applicationID: "app-1", sessionType: .user)
+        collector.start(sessionID: "session-clock-jumps", applicationID: "app-1", sessionType: .user)
 
         let pauseExpectation = self.expectation(description: "pause settled")
-        collector.pause(sessionID: "session-sleep")
+        collector.pause(sessionID: "session-clock-jumps")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
         // When — simulate a long device sleep: the wall clock jumps forward by an hour, but the monotonic
         // media clock (paused during real sleep) does not advance — then the collector resumes and samples
         clock.date = clock.date.addingTimeInterval(3_600)
-        let resumeExpectation = self.expectation(description: "resumed samples collected")
-        resumeExpectation.assertForOverFulfill = false
-        collector.resume(sessionID: "session-sleep")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
-
-        let syncExpectation = self.expectation(description: "stop completed")
-        collector.stop(sessionID: "session-sleep")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
+        let resumeAfterForwardJumpExpectation = self.expectation(description: "resumed samples collected after forward jump")
+        resumeAfterForwardJumpExpectation.assertForOverFulfill = false
+        collector.resume(sessionID: "session-clock-jumps")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeAfterForwardJumpExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
         // Then — post-resume samples reflect the real (post-sleep) wall-clock time, not the pre-sleep
-        // anchor lagging behind by ~1 hour
-        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        guard let lastEvent = events.last else {
+        // anchor lagging behind by ~1 hour. Pause again (flushing this batch) so we have a known
+        // `flushedAfterForwardJump.timeseries.end` to check the next batch against below.
+        let pauseAfterForwardJumpExpectation = self.expectation(description: "pause after forward jump settled")
+        collector.pause(sessionID: "session-clock-jumps")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseAfterForwardJumpExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let eventsAfterForwardJump = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let flushedAfterForwardJump = eventsAfterForwardJump.last else {
             XCTFail("Expected at least one memory event with a sample after resume")
             return
         }
-        let lastSampleDate = Date(timeIntervalSince1970: Double(lastEvent.timeseries.end) / 1_000_000_000)
+        let lastSampleDate = Date(timeIntervalSince1970: Double(flushedAfterForwardJump.timeseries.end) / 1_000_000_000)
         XCTAssertEqual(lastSampleDate.timeIntervalSince(clock.date), 0, accuracy: 1, "Post-resume sample should be anchored to the real post-sleep wall-clock time, not lag behind by the sleep duration")
+
+        // When — the wall clock then moves backward by an hour while paused/backgrounded (e.g. an NTP
+        // correction), then the collector resumes and samples again
+        clock.date = clock.date.addingTimeInterval(-3_600)
+        let resumeAfterBackwardJumpExpectation = self.expectation(description: "resumed samples collected after backward jump")
+        resumeAfterBackwardJumpExpectation.assertForOverFulfill = false
+        collector.resume(sessionID: "session-clock-jumps")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeAfterBackwardJumpExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let syncExpectation = self.expectation(description: "stop completed")
+        collector.stop(sessionID: "session-clock-jumps")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the post-resume batch must not precede the batch already flushed before the pause,
+        // even though the wall clock moved backward while paused
+        let allEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let resumedBatch = allEvents.last, allEvents.count > eventsAfterForwardJump.count else {
+            XCTFail("Expected an additional memory event flushed after resume")
+            return
+        }
+        XCTAssertGreaterThanOrEqual(
+            resumedBatch.timeseries.start,
+            flushedAfterForwardJump.timeseries.end,
+            "Post-resume batch must not start before the batch already flushed prior to the pause"
+        )
     }
 
     func testWhenPauseCalledBeforeStart_itIsNoOp() {

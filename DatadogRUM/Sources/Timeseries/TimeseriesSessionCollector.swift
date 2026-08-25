@@ -75,6 +75,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// used to derive sample timestamps that are immune to wall-clock adjustments (see `sample()`).
     private var anchorDate: Date = .distantPast
     private var anchorMediaTime: CFTimeInterval = 0
+    /// The date of the most recently emitted sample, used as a floor when re-anchoring in `resume()` so a
+    /// backward wall-clock jump while paused/backgrounded can't make the new anchor precede samples already
+    /// flushed before the pause (see `resume(sessionID:)`).
+    private var lastSampleDate: Date?
     /// Whether replay was reported active by `activeContextReader` at any point during the current session,
     /// OR-accumulated in `sample()` (mirrors `RUMViewScope`'s per-view `hasReplay` accumulation) so a batch
     /// still reports `hasReplay: true` even if replay stopped before the batch was flushed. Stays `nil` until
@@ -178,6 +182,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.hasReplay = nil
             self.anchorDate = self.now()
             self.anchorMediaTime = self.mediaTimeProvider.current
+            self.lastSampleDate = nil
 
             self.timer?.cancel()
             self.timer = self.makeTimer()
@@ -213,9 +218,11 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             // Re-anchor to the current wall/media time pair so a pause spanning real device sleep (during
             // which the monotonic media clock doesn't advance) doesn't offset post-resume sample timestamps
-            // backward by the sleep duration. Safe to do here since no samples are taken while paused, so
-            // this can't reintroduce the out-of-order timestamps `sample()`'s anchoring guards against.
-            self.anchorDate = self.now()
+            // backward by the sleep duration. Clamped to `lastSampleDate` so a wall-clock jump *backward*
+            // while paused can't make the new anchor precede samples already flushed before the pause —
+            // preserving monotonicity across the pause/resume boundary in both directions.
+            let resumeDate = self.now()
+            self.anchorDate = max(resumeDate, self.lastSampleDate ?? resumeDate)
             self.anchorMediaTime = self.mediaTimeProvider.current
             self.timer = self.makeTimer()
         }
@@ -271,6 +278,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         // backward wall-clock adjustment mid-session (NTP sync, manual clock change) can't produce
         // out-of-order or inverted (`end < start`) batch timestamps.
         let currentDate = anchorDate.addingTimeInterval(mediaTimeProvider.current - anchorMediaTime)
+        lastSampleDate = currentDate
 
         if let hasContextReplay = activeContextReader?.hasReplay {
             hasReplay = (hasReplay ?? false) || hasContextReplay
