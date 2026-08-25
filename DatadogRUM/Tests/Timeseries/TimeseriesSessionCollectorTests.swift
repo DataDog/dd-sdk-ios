@@ -372,6 +372,35 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].session.hasReplay, true)
     }
 
+    func testWhenSessionReplayContextNeverObserved_hasReplayStaysNilOnEvent() {
+        // Given — no `hasReplay` value is ever reported by the active context reader (Session Replay not enabled)
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock(hasReplay: nil)
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-no-replay", applicationID: "app-no-replay", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-no-replay")
+
+        // Then — `hasReplay` stays `nil`, not `false`, so the field is omitted rather than misreported
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertNil(events[0].session.hasReplay)
+    }
+
     func testWhenReplayStopsBeforeFlush_hasReplayStaysTrueForTheBatch() {
         // Given
         memoryReader.vitalData = 1_000_000
@@ -753,6 +782,55 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-bg")
     }
 
+    func testWhenResumedAfterPauseSpanningDeviceSleep_reanchorsToAvoidTimestampLag() {
+        // Given — the media clock doesn't advance during real device sleep (unlike the wall clock), so a
+        // pause spanning device sleep leaves a growing gap between the two if the anchor isn't refreshed
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-sleep", applicationID: "app-1", sessionType: .user)
+
+        let pauseExpectation = self.expectation(description: "pause settled")
+        collector.pause(sessionID: "session-sleep")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // When — simulate a long device sleep: the wall clock jumps forward by an hour, but the monotonic
+        // media clock (paused during real sleep) does not advance — then the collector resumes and samples
+        clock.date = clock.date.addingTimeInterval(3_600)
+        let resumeExpectation = self.expectation(description: "resumed samples collected")
+        resumeExpectation.assertForOverFulfill = false
+        collector.resume(sessionID: "session-sleep")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let syncExpectation = self.expectation(description: "stop completed")
+        collector.stop(sessionID: "session-sleep")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — post-resume samples reflect the real (post-sleep) wall-clock time, not the pre-sleep
+        // anchor lagging behind by ~1 hour
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let lastEvent = events.last else {
+            XCTFail("Expected at least one memory event with a sample after resume")
+            return
+        }
+        let lastSampleDate = Date(timeIntervalSince1970: Double(lastEvent.timeseries.end) / 1_000_000_000)
+        XCTAssertEqual(lastSampleDate.timeIntervalSince(clock.date), 0, accuracy: 1, "Post-resume sample should be anchored to the real post-sleep wall-clock time, not lag behind by the sleep duration")
+    }
+
     func testWhenPauseCalledBeforeStart_itIsNoOp() {
         // Given — collector not yet started
         let collector = TimeseriesSessionCollector(
@@ -1040,6 +1118,45 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected the collector to self-flush once idle past the inactivity timeout")
+    }
+
+    func testWhenWallClockJumpsBackwardThenFreshInteractionArrives_doesNotFalselyExpireSession() {
+        // Given — a backward wall-clock jump (e.g. NTP correction) happens mid-session, so the anchored
+        // media-clock-derived date and the raw wall clock diverge
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry or `stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
+        )
+        let startTime = clock.date
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-clock-jump", sessionStartTime: startTime, lastInteractionTime: startTime)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-clock-jump", applicationID: "app-1", sessionType: .user)
+
+        // When — the wall clock jumps backward by more than the inactivity timeout, then a fresh interaction
+        // is processed and reported at the new (earlier) wall-clock time, while the anchored/monotonic date
+        // this collector would otherwise compare against keeps climbing on the old anchor
+        clock.date = clock.date.addingTimeInterval(-RUMSessionScope.Constants.sessionTimeoutDuration - 60)
+        clock.mediaTime.current += 0.2
+        contextReader.sessionActivity.lastInteractionTime = clock.date
+
+        let expectation = self.expectation(description: "still sampling after the jump and fresh interaction")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the session must not be treated as expired: the expiry check compares against `now()`
+        // (the same wall-clock timeline `lastInteractionTime` lives on), not the sleep/adjustment-immune
+        // anchored date, so a fresh interaction on the new wall-clock timeline keeps the session alive
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Session must not be treated as expired by a stale comparison between the anchored date and the fresh wall-clock interaction")
+        collector.stop(sessionID: "session-clock-jump")
     }
 
     func testWhenActivityReaderReportsRecentInteraction_preventsSelfStopWithinTimeoutWindow() {

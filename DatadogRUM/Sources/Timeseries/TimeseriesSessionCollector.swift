@@ -77,8 +77,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var anchorMediaTime: CFTimeInterval = 0
     /// Whether replay was reported active by `activeContextReader` at any point during the current session,
     /// OR-accumulated in `sample()` (mirrors `RUMViewScope`'s per-view `hasReplay` accumulation) so a batch
-    /// still reports `hasReplay: true` even if replay stopped before the batch was flushed.
-    private var hasReplay: Bool = false
+    /// still reports `hasReplay: true` even if replay stopped before the batch was flushed. Stays `nil` until
+    /// a value has actually been observed, so sessions with no Session Replay context still omit the field
+    /// instead of reporting a false `false`.
+    private var hasReplay: Bool? = nil
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -173,7 +175,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.memoryBuffer = []
             self.cpuBuffer = []
             self.isPaused = false
-            self.hasReplay = false
+            self.hasReplay = nil
             self.anchorDate = self.now()
             self.anchorMediaTime = self.mediaTimeProvider.current
 
@@ -209,6 +211,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 return
             }
             self.isPaused = false
+            // Re-anchor to the current wall/media time pair so a pause spanning real device sleep (during
+            // which the monotonic media clock doesn't advance) doesn't offset post-resume sample timestamps
+            // backward by the sleep duration. Safe to do here since no samples are taken while paused, so
+            // this can't reintroduce the out-of-order timestamps `sample()`'s anchoring guards against.
+            self.anchorDate = self.now()
+            self.anchorMediaTime = self.mediaTimeProvider.current
             self.timer = self.makeTimer()
         }
     }
@@ -265,7 +273,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         let currentDate = anchorDate.addingTimeInterval(mediaTimeProvider.current - anchorMediaTime)
 
         if let hasContextReplay = activeContextReader?.hasReplay {
-            hasReplay = hasReplay || hasContextReplay
+            hasReplay = (hasReplay ?? false) || hasContextReplay
         }
 
         // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
@@ -275,7 +283,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         //
         // Pulled fresh from `activeContextReader` on every tick, rather than from a locally pushed
         // copy, so there's a single live source of truth and no race with how/when that state is updated.
-        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: currentDate) == true {
+        //
+        // Compared against `now()`, not the anchored `currentDate`, because `sessionStartTime`/
+        // `lastInteractionTime` on the `Monitor` side are wall-clock `Date`s — comparing them against the
+        // sleep/adjustment-immune anchored date would reintroduce spurious expiry on the very same backward
+        // clock jumps this anchoring is meant to guard against.
+        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: now()) == true {
             timer?.cancel()
             timer = nil
             flushMemory()
