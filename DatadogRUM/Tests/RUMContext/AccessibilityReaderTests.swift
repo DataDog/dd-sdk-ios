@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
- #if !os(watchOS)
+ #if !os(watchOS) && !os(macOS)
 
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -85,8 +85,8 @@ final class AccessibilityReaderTests: XCTestCase {
         let observerNames = mockNotificationCenter.getObserverNames()
 
         // Then
-        XCTAssertTrue(observerNames.contains(NSAccessibility.buttonShapesEnabledStatusDidChangeNotification))
-        XCTAssertTrue(observerNames.contains(NSAccessibility.prefersCrossFadeTransitionsStatusDidChange))
+        XCTAssertTrue(observerNames.contains(UIAccessibility.buttonShapesEnabledStatusDidChangeNotification))
+        XCTAssertTrue(observerNames.contains(UIAccessibility.prefersCrossFadeTransitionsStatusDidChange))
     }
     #endif
 
