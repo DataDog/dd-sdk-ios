@@ -106,6 +106,24 @@ public final class CrashReporting {
             )
         }
 
+        // `register(feature:)` overwrites by name, so enabling Crash Reporting twice replaces this Feature - and with
+        // it the configuration it carries. That is reachable when an app opts out natively and a wrapper SDK later
+        // calls `enable()` with defaults. Last write still wins, as it did before this option existed, but an
+        // opt-out being undone that way is worth saying out loud.
+        //
+        // Only that direction: replacing the default *with* an opt-out ends in the state the app asked for, so
+        // warning about it would report a correct outcome on every launch.
+        if let current = core.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self),
+           !current.appHangBacktraceEnabled, configuration.appHangBacktraceEnabled {
+            consolePrint(
+                "Crash Reporting is being enabled again without `appHangBacktraceEnabled: false`, which undoes the"
+                + " earlier opt-out: App Hang errors will carry stack traces again. Pass the same configuration to"
+                + " every `CrashReporting.enable` call to keep the opt-out.",
+                .warn
+            )
+            core.telemetry.debug("Crash Reporting re-enabled without the earlier appHangBacktraceEnabled opt-out")
+        }
+
         let contextProvider = CrashContextCoreProvider()
 
         let reporter = CrashReportingFeature(
