@@ -75,15 +75,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// used to derive sample timestamps that are immune to wall-clock adjustments (see `sample()`).
     private var anchorDate: Date = .distantPast
     private var anchorMediaTime: CFTimeInterval = 0
-    /// The date of the most recently emitted sample, used as a floor when re-anchoring in `resume()` so a
-    /// backward wall-clock jump while paused/backgrounded can't make the new anchor precede samples already
-    /// flushed before the pause (see `resume(sessionID:)`).
+    /// The date of the most recently emitted sample, used as a floor when re-anchoring in `resume()`.
     private var lastSampleDate: Date?
-    /// Whether replay was reported active by `activeContextReader` at any point during the current session,
-    /// OR-accumulated in `sample()` (mirrors `RUMViewScope`'s per-view `hasReplay` accumulation) so a batch
-    /// still reports `hasReplay: true` even if replay stopped before the batch was flushed. Stays `nil` until
-    /// a value has actually been observed, so sessions with no Session Replay context still omit the field
-    /// instead of reporting a false `false`.
+    /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()`
+    /// (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session Replay omit the field.
     private var hasReplay: Bool? = nil
 
     /// All buffer mutations and timer events run on this queue.
@@ -216,11 +211,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 return
             }
             self.isPaused = false
-            // Re-anchor to the current wall/media time pair so a pause spanning real device sleep (during
-            // which the monotonic media clock doesn't advance) doesn't offset post-resume sample timestamps
-            // backward by the sleep duration. Clamped to `lastSampleDate` so a wall-clock jump *backward*
-            // while paused can't make the new anchor precede samples already flushed before the pause —
-            // preserving monotonicity across the pause/resume boundary in both directions.
+            // Re-anchor so a pause spanning device sleep (media clock frozen) doesn't lag post-resume
+            // samples; clamp to `lastSampleDate` so a backward wall-clock jump while paused can't make
+            // the new anchor precede samples already flushed before the pause.
             let resumeDate = self.now()
             self.anchorDate = max(resumeDate, self.lastSampleDate ?? resumeDate)
             self.anchorMediaTime = self.mediaTimeProvider.current
@@ -274,28 +267,27 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     // MARK: - Private
 
     private func sample() {
-        // Derived from the monotonic media clock anchored at session start, rather than raw `now()`, so a
-        // backward wall-clock adjustment mid-session (NTP sync, manual clock change) can't produce
-        // out-of-order or inverted (`end < start`) batch timestamps.
-        let currentDate = anchorDate.addingTimeInterval(mediaTimeProvider.current - anchorMediaTime)
+        // Anchored to the monotonic media clock so a backward wall-clock adjustment can't invert
+        // timestamps; re-anchored to `now()` when it's ahead so a forward correction isn't stuck lagging.
+        let anchoredDate = anchorDate.addingTimeInterval(mediaTimeProvider.current - anchorMediaTime)
+        let wallClockDate = now()
+        let currentDate: Date
+        if wallClockDate > anchoredDate {
+            currentDate = wallClockDate
+            anchorDate = wallClockDate
+            anchorMediaTime = mediaTimeProvider.current
+        } else {
+            currentDate = anchoredDate
+        }
         lastSampleDate = currentDate
 
         if let hasContextReplay = activeContextReader?.hasReplay {
             hasReplay = (hasReplay ?? false) || hasContextReplay
         }
 
-        // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
-        // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
-        // idle with no user interaction). This is a safety net only — it does not affect RUM's own
-        // session state, it just stops this collector from uploading data past session expiry.
-        //
-        // Pulled fresh from `activeContextReader` on every tick, rather than from a locally pushed
-        // copy, so there's a single live source of truth and no race with how/when that state is updated.
-        //
-        // Compared against `now()`, not the anchored `currentDate`, because `sessionStartTime`/
-        // `lastInteractionTime` on the `Monitor` side are wall-clock `Date`s — comparing them against the
-        // sleep/adjustment-immune anchored date would reintroduce spurious expiry on the very same backward
-        // clock jumps this anchoring is meant to guard against.
+        // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
+        // command arriving to call `stop(sessionID:)`. Compared against `now()`, not the anchored
+        // `currentDate`, since `Monitor`'s expiry state is tracked in wall-clock `Date`s.
         if activeContextReader?.isSessionExpired(sessionID: sessionID, at: now()) == true {
             timer?.cancel()
             timer = nil

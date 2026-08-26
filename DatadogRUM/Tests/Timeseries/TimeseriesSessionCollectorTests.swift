@@ -1016,14 +1016,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.end, timestamps.last)
     }
 
-    func testWhenWallClockJumpsBackwardMidSession_timestampsStayMonotonic() {
+    func testWhenWallClockJumpsMidSession_backwardStaysMonotonicAndForwardIsHonored() {
         // Given
         memoryReader.vitalData = 1_000_000
         let clock = MutableClock()
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
-            batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
+            batchSize: 100, // won't auto-flush — only `flush()`/`stop()` triggers the flush
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             now: clock.now,
@@ -1043,9 +1043,30 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         clock.date = clock.date.addingTimeInterval(-60)
         clock.mediaTime.current += 0.2
 
-        let afterJumpExpectation = self.expectation(description: "more samples collected after the clock jump")
-        afterJumpExpectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { afterJumpExpectation.fulfill() }
+        let afterBackwardJumpExpectation = self.expectation(description: "more samples collected after the backward jump")
+        afterBackwardJumpExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { afterBackwardJumpExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        collector.flush()
+
+        // Then — sample timestamps are unaffected by the backward wall-clock jump and remain monotonically increasing
+        let eventsAfterBackwardJump = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let batchAfterBackwardJump = eventsAfterBackwardJump.first else {
+            XCTFail("Expected at least one memory event")
+            return
+        }
+        let timestamps = batchAfterBackwardJump.timeseries.data.timestamps
+        XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should stay monotonically increasing across a backward wall-clock jump")
+        XCTAssertGreaterThanOrEqual(batchAfterBackwardJump.timeseries.end, batchAfterBackwardJump.timeseries.start, "The batch end must not precede its start")
+
+        // When — the wall clock is then corrected forward by an hour (e.g. NTP sync), while the session
+        // stays foregrounded and never pauses/resumes; the monotonic media clock is left untouched
+        clock.date = clock.date.addingTimeInterval(3_600)
+
+        let afterForwardJumpExpectation = self.expectation(description: "more samples collected after the forward jump")
+        afterForwardJumpExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { afterForwardJumpExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
         let syncExpectation = self.expectation(description: "stop completed")
@@ -1053,15 +1074,15 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
-        // Then — sample timestamps are unaffected by the wall-clock jump and remain monotonically increasing
-        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        guard let event = events.first else {
-            XCTFail("Expected at least one memory event")
+        // Then — the most recent sample reflects the corrected wall-clock time immediately, without
+        // waiting for a pause/resume cycle to refresh the anchor
+        let allEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let batchAfterForwardJump = allEvents.last, allEvents.count > eventsAfterBackwardJump.count else {
+            XCTFail("Expected an additional memory event after the forward jump")
             return
         }
-        let timestamps = event.timeseries.data.timestamps
-        XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should stay monotonically increasing across a backward wall-clock jump")
-        XCTAssertGreaterThanOrEqual(event.timeseries.end, event.timeseries.start, "The batch end must not precede its start")
+        let lastSampleDate = Date(timeIntervalSince1970: Double(batchAfterForwardJump.timeseries.end) / 1_000_000_000)
+        XCTAssertEqual(lastSampleDate.timeIntervalSince(clock.date), 0, accuracy: 1, "Post-correction sample should advance to the corrected wall-clock time, not lag behind by the correction amount")
     }
 
     // MARK: - Session lifetime self-enforcement
@@ -1318,14 +1339,8 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
     }
 }
 
-/// A `Date` provider whose current time can be advanced manually, used to deterministically test the
-/// collector's self-enforced session expiry without waiting on real wall-clock durations.
-///
-/// Carries a paired `mediaTime` (`MediaTimeProviderMock`), settable independently of `date`, since
-/// `TimeseriesSessionCollector` derives sample timestamps from an anchor plus elapsed monotonic media time
-/// (not `now()` directly) after session start — tests that simulate elapsed time must advance `mediaTime`
-/// alongside `date` to keep the two consistent, and tests exercising a wall-clock/media-clock divergence
-/// (e.g. a backward wall-clock jump) can advance them independently.
+/// A manually-advanceable `Date`/`mediaTime` pair, settable independently to simulate wall-clock/media-clock
+/// divergence (e.g. a backward wall-clock jump) or together to simulate normal elapsed time.
 private class MutableClock {
     var date: Date
     let mediaTime = MediaTimeProviderMock()
