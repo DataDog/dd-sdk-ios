@@ -424,6 +424,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             premiumSampleRate: nil,
             reactNativeVersion: nil,
             reactVersion: nil,
+            remoteConfiguration: configuration.remoteConfiguration.map { .init($0) },
             replaySampleRate: nil,
             selectedTracingPropagators: nil,
             sessionPersistence: nil,
@@ -477,6 +478,19 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useTracing: configuration.useTracing,
             useWorkerUrl: nil,
             viewTrackingStrategy: nil
+        )
+    }
+}
+
+private extension TelemetryConfigurationEvent.Telemetry.Configuration.RemoteConfiguration {
+    init(_ remoteConfiguration: DatadogInternal.ConfigurationTelemetry.RemoteConfiguration) {
+        self.init(
+            configId: remoteConfiguration.configId,
+            firstApplied: remoteConfiguration.firstApplied?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            lastModified: remoteConfiguration.lastModified?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            lastSynced: remoteConfiguration.lastSynced?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            syncId: remoteConfiguration.syncId,
+            versionId: remoteConfiguration.versionId
         )
     }
 }

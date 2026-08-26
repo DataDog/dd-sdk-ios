@@ -133,16 +133,12 @@ internal final class DatadogCore {
             self?.send(message: .context(context))
         }
 
-        self.remoteConfigurationProvider?.start { [weak self] result in
-            switch result {
-            case let .success(remoteConfiguration):
+        self.remoteConfigurationProvider?.start(
+            { [weak self] remoteConfiguration in
                 self?.remoteConfiguration = remoteConfiguration
-            case let .failure(.etagError(error)):
-                self?.telemetry.error("[RemoteConfig] ETag caching failed", error: error)
-            case let .failure(error):
-                self?.telemetry.error("[RemoteConfig] Sync failed", error: error)
-            }
-        }
+            },
+            telemetry: telemetry
+        )
     }
 
     /// Sets current user information.
