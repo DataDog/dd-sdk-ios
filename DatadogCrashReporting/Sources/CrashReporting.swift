@@ -26,9 +26,10 @@ public final class CrashReporting {
         /// Set this to `false` to keep receiving App Hang errors without a stack trace. Crash reports and every other
         /// stack trace collected by the SDK are unaffected.
         ///
-        /// Generating the backtrace snapshots all running threads while the main thread is still blocked, so its cost
-        /// adds to the duration of the hang being measured. Turning it off trades stack traces in App Hang errors for a
-        /// smaller footprint, which matters most for apps setting a small `RUM.Configuration.appHangThreshold`.
+        /// The backtrace is generated while the main thread is still blocked, so the cost of walking and symbolicating
+        /// its stack adds to the duration of the hang being measured. Turning it off trades stack traces in App Hang
+        /// errors for a smaller footprint, which matters most for apps setting a small
+        /// `RUM.Configuration.appHangThreshold`.
         ///
         /// Default: `true`.
         public var appHangBacktraceEnabled: Bool
@@ -112,24 +113,17 @@ public final class CrashReporting {
             crashContextProvider: contextProvider,
             sender: MessageBusSender(core: core),
             messageReceiver: contextProvider,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            appHangBacktraceEnabled: configuration.appHangBacktraceEnabled
         )
 
+        // `reporter` carries `appHangBacktraceEnabled` and is registered unconditionally, so the setting reaches RUM
+        // through `CrashReportingConfiguration` whether or not the plugin provides a backtrace reporter, and
+        // regardless of the order the two Features are registered in.
         try core.register(feature: reporter)
 
         if let backtraceReporter = plugin.backtraceReporter {
-            try core.register(
-                backtraceReporter: backtraceReporter,
-                appHangBacktraceEnabled: configuration.appHangBacktraceEnabled
-            )
-        } else if !configuration.appHangBacktraceEnabled {
-            // A custom plugin may provide no backtrace reporter. Record the opt-out anyway, so that it stays
-            // reportable as such rather than as "Crash Reporting was never enabled".
-            //
-            // Only when opting out: with the default there is no policy to record, so a reporter-less
-            // `BacktraceReportingFeature` would carry no information at all. A reporter registered later still
-            // installs either way, through `BacktraceReportingFeature.adoptReporterIfAbsent(_:)`.
-            try core.register(appHangBacktraceEnabled: false)
+            try core.register(backtraceReporter: backtraceReporter)
         }
 
         reporter.sendCrashReportIfFound()

@@ -83,6 +83,25 @@ class CrashReportingFeatureTests: XCTestCase {
 
     // MARK: - Configuration Tests
 
+    /// The setting as RUM resolves it, through `CrashReportingConfiguration` without importing
+    /// `DatadogCrashReporting`. `nil` means Crash Reporting was never enabled, in which case backtrace generation is
+    /// *unavailable* rather than *disabled* and App Hangs report it differently.
+    ///
+    /// Note: `FeatureRegistrationCoreMock` resolves by type and ignores the name, so these tests cannot catch a
+    /// divergence between the registered and the looked-up name - `testFeatureNameMatchesTheSharedConstant()` and the
+    /// real-core tests in `GeneratingBacktraceTests` cover that.
+    private func appHangBacktraceEnabled(in core: DatadogCoreProtocol) -> Bool? {
+        core.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self)?
+            .appHangBacktraceEnabled
+    }
+
+    func testFeatureNameMatchesTheSharedConstant() {
+        // `CrashReportingFeature` declares no `name` of its own - it comes from the `CrashReportingConfiguration`
+        // extension. A local one that diverged from this constant would shadow it and silently break RUM's lookup,
+        // which resolves by the constant.
+        XCTAssertEqual(CrashReportingFeature.name, Feature.crashReporting)
+    }
+
     func testByDefault_itRegistersBacktraceReporterWithAppHangBacktracesEnabled() throws {
         // Given
         let core = FeatureRegistrationCoreMock()
@@ -94,7 +113,12 @@ class CrashReportingFeatureTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(try core.backtraceReporter.generateBacktrace(), "Backtrace reporter must be registered")
-        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+        XCTAssertEqual(
+            appHangBacktraceEnabled(in: core),
+            true,
+            "The default must be published as `true` by a registered Feature. Asserting the resolved `?? true` "
+            + "fallback instead would also pass if nothing were registered at all"
+        )
     }
 
     func testWhenAppHangBacktracesAreDisabled_itStillRegistersBacktraceReporter() throws {
@@ -115,7 +139,7 @@ class CrashReportingFeatureTests: XCTestCase {
             try core.backtraceReporter.generateBacktrace(),
             "Other consumers of backtrace generation must keep working"
         )
-        XCTAssertFalse(core.isAppHangBacktraceEnabled)
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
     }
 
     func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreDisabled_itStillRecordsTheOptOut() throws {
@@ -132,8 +156,9 @@ class CrashReportingFeatureTests: XCTestCase {
         )
 
         // Then
-        XCTAssertFalse(
-            core.isAppHangBacktraceEnabled,
+        XCTAssertEqual(
+            appHangBacktraceEnabled(in: core),
+            false,
             "Opting out must be recorded even when the plugin provides no backtrace reporter, so that App Hangs "
             + "report the stack trace as disabled rather than as Crash Reporting never having been enabled"
         )
@@ -143,28 +168,8 @@ class CrashReportingFeatureTests: XCTestCase {
         )
     }
 
-    func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreEnabled_itLeavesRegistrationOpenForALaterReporter() throws {
-        // Given
-        let core = FeatureRegistrationCoreMock()
-        let plugin = CrashReportingPluginMock()
-        plugin.injectedBacktraceReporter = nil
-
-        // When
-        try CrashReporting.enableOrThrow(with: plugin, in: core)
-
-        // Then
-        XCTAssertTrue(core.isAppHangBacktraceEnabled)
-
-        try core.register(backtraceReporter: BacktraceReporterMock())
-        XCTAssertNotNil(
-            try core.backtraceReporter.generateBacktrace(),
-            "Nothing must claim the backtrace reporter registration when there is no opt-out to record, otherwise "
-            + "the `already registered` guard silently drops a reporter registered later"
-        )
-    }
-
     func testGivenPluginWithNoBacktraceReporter_whenAppHangBacktracesAreDisabled_itStillAcceptsALaterReporter() throws {
-        // Given (the opt-out is recorded by a Feature that carries no reporter)
+        // Given
         let core = FeatureRegistrationCoreMock()
         let plugin = CrashReportingPluginMock()
         plugin.injectedBacktraceReporter = nil
@@ -181,21 +186,22 @@ class CrashReportingFeatureTests: XCTestCase {
         // Then
         XCTAssertNotNil(
             try core.backtraceReporter.generateBacktrace(),
-            "Recording the opt-out must not permanently block backtrace generation for the consumers this "
-            + "configuration promises are unaffected - crash reports, binary images on logs and RUM view events, "
-            + "and the public `backtraceReporter` API"
+            "Recording the opt-out must not block backtrace generation for the consumers this configuration "
+            + "promises are unaffected - crash reports, binary images on logs and RUM view events, and the public "
+            + "`backtraceReporter` API"
         )
-        XCTAssertFalse(
-            core.isAppHangBacktraceEnabled,
-            "Adopting a reporter must not revert the opt-out"
+        XCTAssertEqual(
+            appHangBacktraceEnabled(in: core),
+            false,
+            "Registering a backtrace reporter must not disturb the opt-out - they live on separate Features"
         )
     }
 
     func testGivenBacktraceReporterAlreadyRegistered_whenAppHangBacktracesAreDisabled_itStillRecordsTheOptOut() throws {
-        // Given (a reporter claimed the single registration slot before Crash Reporting was enabled)
+        // Given (a backtrace reporter was registered before Crash Reporting was enabled)
         let core = FeatureRegistrationCoreMock()
         try core.register(backtraceReporter: BacktraceReporterMock())
-        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+        XCTAssertNil(appHangBacktraceEnabled(in: core), "Crash Reporting is not enabled yet")
 
         let plugin = CrashReportingPluginMock()
         plugin.injectedBacktraceReporter = BacktraceReporterMock()
@@ -208,32 +214,11 @@ class CrashReportingFeatureTests: XCTestCase {
         )
 
         // Then
-        XCTAssertFalse(
-            core.isAppHangBacktraceEnabled,
-            "The opt-out must be applied even though the first reporter keeps the registration, otherwise App Hangs "
-            + "keep snapshotting all threads after the app explicitly asked them not to"
-        )
-    }
-
-    func testGivenAppHangBacktracesDisabled_whenRegisteringAnotherBacktraceReporter_itKeepsTheOptOut() throws {
-        // Given
-        let core = FeatureRegistrationCoreMock()
-        let plugin = CrashReportingPluginMock()
-        plugin.injectedBacktraceReporter = BacktraceReporterMock()
-        try CrashReporting.enableOrThrow(
-            with: plugin,
-            in: core,
-            configuration: .init(appHangBacktraceEnabled: false)
-        )
-
-        // When
-        try core.register(backtraceReporter: BacktraceReporterMock())
-
-        // Then
-        XCTAssertFalse(
-            core.isAppHangBacktraceEnabled,
-            "`register(backtraceReporter:)` passes `true` as a compatibility default, not as an explicit request, "
-            + "so it must not revert an opt-out"
+        XCTAssertEqual(
+            appHangBacktraceEnabled(in: core),
+            false,
+            "The opt-out lives on `CrashReportingFeature`, so an already-registered backtrace reporter cannot "
+            + "swallow it - otherwise App Hangs keep collecting stack traces after the app asked them not to"
         )
     }
 
@@ -247,8 +232,9 @@ class CrashReportingFeatureTests: XCTestCase {
         CrashReporting.enable(with: plugin, configuration: .init(appHangBacktraceEnabled: false), in: core)
 
         // Then
-        XCTAssertFalse(
-            core.isAppHangBacktraceEnabled,
+        XCTAssertEqual(
+            appHangBacktraceEnabled(in: core),
+            false,
             "The public overload must forward its `configuration`, not a default-constructed one"
         )
     }

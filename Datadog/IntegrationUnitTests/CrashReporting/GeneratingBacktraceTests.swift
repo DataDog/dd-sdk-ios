@@ -59,6 +59,15 @@ class GeneratingBacktraceTests: XCTestCase {
         )
     }
 
+    /// Reads the setting the way RUM does: by name, through `CrashReportingConfiguration`.
+    ///
+    /// `nil` means Crash Reporting was never enabled. Resolving the `?? true` fallback here instead would make the
+    /// assertions pass even if nothing were registered at all.
+    private func appHangBacktraceEnabled(in core: DatadogCoreProtocol) -> Bool? {
+        core.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self)?
+            .appHangBacktraceEnabled
+    }
+
     func testGivenAppHangBacktracesDisabled_whenGeneratingBacktrace_itStillGeneratesIt() throws {
         #if os(watchOS)
         throw XCTSkip("Backtrace generation is not supported on watchOS")
@@ -67,8 +76,7 @@ class GeneratingBacktraceTests: XCTestCase {
         CrashReporting.enable(with: .init(appHangBacktraceEnabled: false), in: core)
 
         // Then
-        XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must still be registered")
-        XCTAssertFalse(core.isAppHangBacktraceEnabled)
+        XCTAssertEqual(appHangBacktraceEnabled(in: core), false)
 
         // Only the App Hangs consumer is gated - other consumers must keep working:
         let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace())
@@ -76,10 +84,10 @@ class GeneratingBacktraceTests: XCTestCase {
         XCTAssertGreaterThan(backtrace.binaryImages.count, 0, "Some binary image(s) should be recorded")
     }
 
-    func testGivenCrashReportingNotEnabled_thenAppHangBacktracesAreNotDisabled() {
-        // Then (backtrace generation is *unavailable*, not *disabled*)
-        XCTAssertNil(core.get(feature: BacktraceReportingFeature.self))
-        XCTAssertTrue(core.isAppHangBacktraceEnabled)
+    func testGivenCrashReportingNotEnabled_itPublishesNoOptOut() {
+        // Then (nothing is published, so backtrace generation is *unavailable* rather than *disabled* - it is the
+        // `?? true` fallback at the RUM call site, not this Feature, that decides what an absent configuration means)
+        XCTAssertNil(appHangBacktraceEnabled(in: core))
     }
 
     func testGeneratingBacktraceOfTheMainThread() throws {

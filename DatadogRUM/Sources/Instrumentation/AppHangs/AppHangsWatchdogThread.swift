@@ -165,7 +165,7 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
                 continue // ignore likely false-positive
             }
 
-            // Capture the stack trace of all running threads with promoting the main thread stack.
+            // Capture the stack trace of the main thread.
             guard let backtraceResult = generateBacktrace() else {
                 continue // unexpected
             }
@@ -194,19 +194,21 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
         }
     }
 
-    /// Generates the backtrace of all running threads, promoting the main thread stack.
+    /// Generates the backtrace of the main thread.
     ///
     /// - Returns: The result of generation or `nil` if the hang must be skipped (main thread ID could not be determined).
     private func generateBacktrace() -> AppHang.BacktraceGenerationResult? {
-        guard isAppHangBacktraceEnabled() else {
-            // Checked before reading `mainThreadID` and before calling the reporter, so no work is done for the
-            // hang and it is still reported when the main thread ID is unknown.
-            return .disabled
-        }
-
+        // Checked first: an unresolved main thread ID means generation was never possible, whatever the setting
+        // says, so it keeps hitting the telemetry error rather than being reported as an opt-out. `.disabled` is
+        // reserved for hangs where generation would otherwise have been attempted.
         guard let mainThreadID = mainThreadID else {
             telemetry.error("Failed to determine main thread ID for backtrace generation")
             return nil // unexpected
+        }
+
+        // Checked before calling the reporter, so no stack is walked or symbolicated for this hang.
+        guard isAppHangBacktraceEnabled() else {
+            return .disabled
         }
 
         do {

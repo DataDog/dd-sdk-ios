@@ -12,7 +12,7 @@ internal struct AppHang: Codable {
     /// The result of generating backtrace for this hang.
     enum BacktraceGenerationResult: Codable {
         /// Indicates that backtrace generation succeeded.
-        /// The associated `BacktraceReport` includes the snapshot of all running threads during the hang.
+        /// The associated `BacktraceReport` includes the snapshot of the main thread during the hang.
         case succeeded(BacktraceReport)
         /// Indicates that backtrace generation failed due to an internal error.
         case failed

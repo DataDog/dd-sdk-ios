@@ -87,6 +87,15 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(command.isStackTraceTruncated, hang.backtraceResult.wasTruncated)
     }
 
+    func testDisabledAndNotAvailableStackMessagesAreDistinct() {
+        // Each message is otherwise only asserted against its own constant, so copy-pasting them equal would keep
+        // every test green while silently collapsing "Crash Reporting opted out" into "Crash Reporting never enabled".
+        XCTAssertNotEqual(
+            AppHangsMonitor.Constants.appHangStackDisabledErrorMessage,
+            AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage
+        )
+    }
+
     func testWhenAppHangEndsWithBacktraceGenerationDisabled_itSendsAppHangCommandWithNoStackTrace() throws {
         // Given
         let subscriber = RUMCommandSubscriberMock()
