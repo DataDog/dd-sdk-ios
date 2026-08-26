@@ -19,7 +19,7 @@ extension SessionReplay.Configuration.FeatureFlags {
         ]
 
         if #available(iOS 13.0, tvOS 13.0, *) {
-            flags[.layerTreeRecording] = true
+            flags[.compositionTreeRecording] = true
         }
 
         return flags

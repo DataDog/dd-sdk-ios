@@ -25,6 +25,9 @@ public enum DatadogSite: String {
     /// Asia based servers.
     /// Sends data to [ap2.datadoghq.com](https://ap2.datadoghq.com/).
     case ap2
+    /// UK based servers.
+    /// Sends data to [uk1.datadoghq.com](https://uk1.datadoghq.com).
+    case uk1
     /// US based servers, FedRAMP compatible.
     /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
     case us1_fed
@@ -43,6 +46,7 @@ extension DatadogSite {
         case .eu1: return "browser-intake-datadoghq.eu"
         case .ap1: return "browser-intake-ap1-datadoghq.com"
         case .ap2: return "browser-intake-ap2-datadoghq.com"
+        case .uk1: return "browser-intake-uk1-datadoghq.com"
         case .us1_fed: return "browser-intake-ddog-gov.com"
         case .us2_fed: return "browser-intake-us2-ddog-gov.com"
         }

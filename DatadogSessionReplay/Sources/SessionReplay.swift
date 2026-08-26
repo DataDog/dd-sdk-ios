@@ -99,7 +99,8 @@ public enum SessionReplay {
         core.set(
             context: SessionReplayCoreContext.Configuration(
                 sampleRate: configuration.replaySampleRate,
-                startRecordingManually: !configuration.startRecordingImmediately
+                startRecordingManually: !configuration.startRecordingImmediately,
+                experimentalFeatures: configuration.featureFlags.stringValues
             )
         )
 

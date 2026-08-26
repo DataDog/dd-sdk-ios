@@ -44,6 +44,43 @@ class CrashReportingFeatureTests: XCTestCase {
         XCTAssertEqual(decodedContext.env, "test-env")
     }
 
+    func testItRecoversMalformedAttributesWhenInjectingCrashContext() throws {
+        struct AlwaysFailingAttribute: Encodable {
+            func encode(to encoder: Encoder) throws {
+                throw EncodingError.invalidValue(
+                    self,
+                    .init(codingPath: encoder.codingPath, debugDescription: "failure")
+                )
+            }
+        }
+
+        let plugin = CrashReportingPluginMock()
+        let crashContext: CrashContext = .mockWith(
+            userInfo: UserInfo(
+                id: "user-id",
+                extraInfo: [
+                    "valid": "preserved",
+                    "invalid": AlwaysFailingAttribute(),
+                ]
+            )
+        )
+        let feature = CrashReportingFeature.mockWith(
+            integration: CrashReportSenderMock(),
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(initialCrashContext: crashContext)
+        )
+
+        feature.flush()
+
+        let data = try XCTUnwrap(plugin.injectedContextData)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let user = try XCTUnwrap(json["userInfo"] as? [String: Any])
+
+        XCTAssertEqual(user["id"] as? String, "user-id")
+        XCTAssertEqual(user["valid"] as? String, "preserved")
+        XCTAssertTrue(user["invalid"] is NSNull)
+    }
+
     // MARK: - Crash Report Reading Tests
 
     func testItSendsLaunchReportWhenNoPendingCrash() {

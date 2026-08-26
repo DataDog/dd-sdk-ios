@@ -65,6 +65,22 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     /// process-global, so foreign URLSession activity in the test process would otherwise reach
     /// the handler.
     private func scopeHandler(to server: ServerMock) {
+        // When Swift access a member of a value stored as a weak reference (like `server?.isMyRequest(req)`
+        // below), that call is wrapped by a scope that does the equivalent of temporarily holding it by a
+        // strong reference, effectively extending its lifetime.
+        //
+        // The purpose of such mechanism is to prevent the situation where, if this code is running on a
+        // specific thread, and code running on a different thread drops the last strong reference to the
+        // object, the object does not get deallocated while being accessed by the original thread.
+        //
+        // When that happens, the object will be held only by the temporary reference, and as soon as the
+        // call is over, its reference count will be decreased and the object will be released on the
+        // specific thread that was temporarily holding it.
+        //
+        // This happens occasionally in these tests, causing a precondition failure and therefore a crash.
+        // To avoid this, the server mocks need to be created with `skipIsMainThreadCheck` set to true to
+        // bypass this check.
+        XCTAssert(server.skipIsMainThreadCheck, "ServerMocks passed to this method must be created with skipIsMainThreadCheck set to `true`.")
         handler.shouldInterceptRequest = { [weak server] req in server?.isMyRequest(req) ?? false }
     }
 
@@ -110,7 +126,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
-        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockWith(statusCode: 200, mimeType: "application/json"), data: .mock(ofSize: 10)), skipIsMainThreadCheck: true)
 
         handler.onRequestMutation = { _, _, _ in notifyRequestMutation.fulfill() }
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -1637,7 +1653,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
 
         let randomData: Data = .mockRandom()
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData))
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData), skipIsMainThreadCheck: true)
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -2079,7 +2095,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testAutomaticMode_detectsFirstPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)), skipIsMainThreadCheck: true)
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts
@@ -2110,7 +2126,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testAutomaticMode_injectsTraceHeadersForFirstPartyHosts() throws {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)), skipIsMainThreadCheck: true)
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts
@@ -2145,7 +2161,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)), skipIsMainThreadCheck: true)
         scopeHandler(to: server)
 
         // Given - Configure first-party hosts that don't match the request URL

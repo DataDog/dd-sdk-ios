@@ -32,6 +32,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     /// Integration with Synthetics tests. It contains the Synthetics test context when active.
     let syntheticsTest: RUMSyntheticsTest?
     let eventsMapper: RUMEventsMapper
+    private let sanitizer = RUMEventSanitizer()
 
     // MARK: - Initialization
 
@@ -132,10 +133,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
                 if let mappedError = self.eventsMapper.map(event: rumError) {
-                    writer.write(value: mappedError)
+                    writer.write(value: self.sanitizer.sanitize(event: mappedError))
                 } else {
                     DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                    writer.write(value: rumError)
+                    writer.write(value: self.sanitizer.sanitize(event: rumError))
                 }
             }
         }
@@ -274,13 +275,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             let rumError = builder.createRUMError(with: updatedRUMView)
 
             if let mappedError = self.eventsMapper.map(event: rumError) {
-                writer.write(value: mappedError)
+                writer.write(value: self.sanitizer.sanitize(event: mappedError))
             } else {
                 DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
-                writer.write(value: rumError)
+                writer.write(value: self.sanitizer.sanitize(event: rumError))
             }
             if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
-                writer.write(value: self.eventsMapper.map(event: mappedView))
+                writer.write(value: self.sanitizer.sanitize(event: mappedView))
             }
         }
     }

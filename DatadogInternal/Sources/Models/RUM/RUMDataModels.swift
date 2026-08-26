@@ -341,8 +341,19 @@ extension RUMAccount {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        accountInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .accountInfo)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try accountInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .accountInfo,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -2706,8 +2717,15 @@ extension RUMErrorEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        featureFlagsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try featureFlagsInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -2741,8 +2759,15 @@ extension RUMEventAttributes {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        contextInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try contextInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -4964,8 +4989,15 @@ extension RUMResourceEvent.Resource.Request.Headers {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        headersInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try headersInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                value,
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -4984,8 +5016,15 @@ extension RUMResourceEvent.Resource.Response.Headers {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        headersInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try headersInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                value,
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -5067,8 +5106,19 @@ extension RUMSyntheticsTest {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        syntheticsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try syntheticsInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .internal,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -6451,8 +6501,19 @@ extension RUMUser {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        usrInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .userInfo)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try usrInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .userInfo,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -8613,8 +8674,15 @@ extension RUMViewEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        featureFlagsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try featureFlagsInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -8633,8 +8701,15 @@ extension RUMViewEvent.View.CustomTimings {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        customTimingsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try customTimingsInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                value,
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -10787,8 +10862,15 @@ extension RUMViewUpdateEvent.FeatureFlags {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        featureFlagsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try featureFlagsInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -10807,8 +10889,15 @@ extension RUMViewUpdateEvent.View.CustomTimings {
     public func encode(to encoder: Encoder) throws {
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        customTimingsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(value, forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try customTimingsInfo.forEach { name, value in
+            try dynamicContainer.encodeAttribute(
+                value,
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -13964,8 +14053,19 @@ extension TelemetryConfigurationEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        telemetryInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try telemetryInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .internal,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -13995,8 +14095,19 @@ extension TelemetryConfigurationEvent.Telemetry.Configuration.Plugins {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        pluginsInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .custom)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try pluginsInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .custom,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -14283,8 +14394,19 @@ extension TelemetryDebugEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        telemetryInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try telemetryInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .internal,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -14608,8 +14730,19 @@ extension TelemetryErrorEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        telemetryInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try telemetryInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .internal,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -15496,6 +15629,7 @@ public struct TelemetryUsageEvent: RUMDataModel {
             /// Schema of mobile specific features usage
             public enum TelemetryMobileFeaturesUsage: Codable {
                 case trackWebView(value: TrackWebView)
+                case timeseries(value: Timeseries)
                 case androidNetworkInstrumentation(value: AndroidNetworkInstrumentation)
 
                 // MARK: - Codable
@@ -15506,6 +15640,8 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     switch self {
                     case .trackWebView(let value):
+                        try container.encode(value)
+                    case .timeseries(let value):
                         try container.encode(value)
                     case .androidNetworkInstrumentation(let value):
                         try container.encode(value)
@@ -15518,6 +15654,10 @@ public struct TelemetryUsageEvent: RUMDataModel {
 
                     if let value = try? container.decode(TrackWebView.self) {
                         self = .trackWebView(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(Timeseries.self) {
+                        self = .timeseries(value: value)
                         return
                     }
                     if let value = try? container.decode(AndroidNetworkInstrumentation.self) {
@@ -15537,6 +15677,17 @@ public struct TelemetryUsageEvent: RUMDataModel {
                 public struct TrackWebView: Codable {
                     /// trackWebView API
                     public let feature: String = "trackWebView"
+
+                    public enum CodingKeys: String, CodingKey {
+                        case feature = "feature"
+                    }
+
+                    public init() { }
+                }
+
+                public struct Timeseries: Codable {
+                    /// Timeseries tracking enabled
+                    public let feature: String = "timeseries"
 
                     public enum CodingKeys: String, CodingKey {
                         case feature = "feature"
@@ -15609,8 +15760,19 @@ extension TelemetryUsageEvent.Telemetry {
 
         // Encode dynamic properties:
         var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
-        telemetryInfo.forEach { name, value in
-            dynamicContainer.encodeAttribute(AnyEncodable(value), forKey: DynamicCodingKey(name), attributeName: name, context: .internal)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
+        try telemetryInfo.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try dynamicContainer.encodeAttribute(
+                AnyEncodable(value),
+                forKey: DynamicCodingKey(name),
+                attributeName: name,
+                context: .internal,
+                shouldRecover: shouldRecover
+            )
         }
     }
 
@@ -15632,4 +15794,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/0b3c97fd5f99d5bddb6a4ace637aff6a9d85c833
+// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a

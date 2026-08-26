@@ -38,6 +38,7 @@ public final class objc_DatadogSite: NSObject
     public static func eu1() -> objc_DatadogSite
     public static func ap1() -> objc_DatadogSite
     public static func ap2() -> objc_DatadogSite
+    public static func uk1() -> objc_DatadogSite
     public static func us1_fed() -> objc_DatadogSite
     public static func us2_fed() -> objc_DatadogSite
 public enum objc_BatchSize: Int
@@ -3943,6 +3944,7 @@ public class objc_URLSessionTracking: NSObject
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_FirstPartyHostsTracing)
     public func setResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [String: Any]?)
     public func setTrackResourceHeaders(_ trackResourceHeaders: objc_TrackResourceHeaders)
+    public func setDisallowList(_ disallowList: [String])
 public final class objc_HeaderCaptureRule: NSObject
     public static let defaults = objc_HeaderCaptureRule(.defaults)
     public static func matchHeaders(_ names: [String]) -> objc_HeaderCaptureRule
@@ -3975,7 +3977,7 @@ public class objc_RUMConfiguration: NSObject
     public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?)
     public func setErrorEventMapper(_ mapper: @escaping (objc_RUMErrorEvent) -> objc_RUMErrorEvent?)
     public func setLongTaskEventMapper(_ mapper: @escaping (objc_RUMLongTaskEvent) -> objc_RUMLongTaskEvent?)
-    public var onSessionStart: ((String, Bool) -> Void)?
+    public var onSessionStart: (@Sendable (String, Bool) -> Void)?
     public var customEndpoint: URL?
     public var trackAnonymousUser: Bool
 public class objc_RUM: NSObject

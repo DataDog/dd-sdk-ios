@@ -760,9 +760,12 @@ extension RUMVitalOperationStepEvent: RandomMockable {
     public static func mockRandom() -> RUMVitalOperationStepEvent {
         return RUMVitalOperationStepEvent(
             dd: .init(),
+            account: .mockRandom(),
             application: .init(id: .mockRandom()),
+            context: .mockRandom(),
             date: .mockRandom(),
             session: .init(id: .mockRandom(), type: .user),
+            usr: .mockRandom(),
             view: .init(id: .mockRandom(), url: .mockRandom()),
             vital: .mockRandom()
         )
@@ -786,9 +789,12 @@ extension RUMVitalAppLaunchEvent: RandomMockable, AnyMockable {
     public static func mockRandom() -> Self {
         return RUMVitalAppLaunchEvent(
             dd: .init(),
+            account: .mockRandom(),
             application: .init(id: .mockRandom()),
+            context: .mockRandom(),
             date: .mockRandom(),
             session: .init(id: .mockRandom(), type: .user),
+            usr: .mockRandom(),
             view: .init(id: .mockRandom(), url: .mockRandom()),
             vital: .mockRandom()
         )
@@ -798,17 +804,23 @@ extension RUMVitalAppLaunchEvent: RandomMockable, AnyMockable {
 
     public static func mockWith(
         dd: DD = .init(),
+        account: RUMAccount? = .mockRandom(),
         application: Application = .init(id: .mockAny()),
+        context: RUMEventAttributes? = .mockRandom(),
         date: Int64 = .mockAny(),
         session: Session = .init(id: .mockAny(), type: .user),
+        usr: RUMUser? = .mockRandom(),
         view: View = .init(id: .mockAny(), url: .mockAny()),
         vital: Vital = .mockAny()
     ) -> Self {
         .init(
             dd: dd,
+            account: account,
             application: application,
+            context: context,
             date: date,
             session: session,
+            usr: usr,
             view: view,
             vital: vital
         )

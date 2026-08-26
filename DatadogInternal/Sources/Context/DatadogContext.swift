@@ -216,15 +216,6 @@ public struct DatadogContext {
     }
 }
 
-/// Shared key names used in `ddTags` strings across the SDK.
-public enum DDTag {
-    public static let service = "service"
-    public static let version = "version"
-    public static let sdkVersion = "sdk_version"
-    public static let env = "env"
-    public static let variant = "variant"
-}
-
 /// Defines an additional context value type associated to a key.
 public protocol AdditionalContext {
     /// The additional context key.

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogRUM
 
 class RUMConfigurationTests: XCTestCase {
@@ -38,5 +39,28 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.customEndpoint)
         XCTAssertTrue(config.trackAnonymousUser)
         XCTAssertTrue(config.featureFlags[.trackScrollAndSwipeActions])
+    }
+
+    func testDefaultURLSessionTrackingConfiguration() {
+        // When
+        let tracking = RUM.Configuration.URLSessionTracking()
+
+        // Then
+        XCTAssertNil(tracking.firstPartyHostsTracing)
+        XCTAssertNil(tracking.resourceAttributesProvider)
+        DDAssertReflectionEqual(tracking.disallowList, [])
+    }
+
+    func testURLSessionTrackingConfiguration_withDisallowList() {
+        // When
+        let tracking = RUM.Configuration.URLSessionTracking(
+            disallowList: ["https://foo.com/", "https://bar.com/*", "https://*.baz.com/"]
+        )
+
+        // Then
+        DDAssertReflectionEqual(
+            tracking.disallowList,
+            ["https://foo.com/", "https://bar.com/*", "https://*.baz.com/"]
+        )
     }
 }

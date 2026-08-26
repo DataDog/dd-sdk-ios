@@ -266,6 +266,10 @@ public struct ResourceMetrics {
     /// - `decoded`: Size before encoding (original content size).
     public let requestBodySize: (encoded: Int64, decoded: Int64)?
 
+    /// Indicates whether the resource was served from the device's local cache.
+    /// `nil` when this signal isn't known, e.g. metrics reported without real `URLSessionTaskMetrics`.
+    public let isLocalCacheHit: Bool?
+
     public init(
         fetch: DateInterval,
         redirection: DateInterval?,
@@ -275,7 +279,8 @@ public struct ResourceMetrics {
         firstByte: DateInterval?,
         download: DateInterval?,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        requestBodySize: (encoded: Int64, decoded: Int64)? = nil
+        requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
+        isLocalCacheHit: Bool? = nil
     ) {
         self.fetch = fetch
         self.redirection = redirection
@@ -286,6 +291,7 @@ public struct ResourceMetrics {
         self.download = download
         self.responseBodySize = responseBodySize
         self.requestBodySize = requestBodySize
+        self.isLocalCacheHit = isLocalCacheHit
     }
 }
 
@@ -305,6 +311,20 @@ extension ResourceMetrics {
         // * if `200 OK` was preceded by `301` redirection, it will contain 2 transactions.
         let mainTransaction = transactions.last
         let redirectionTransactions = transactions.dropLast()
+        let isLocalCacheHit: Bool?
+        switch taskMetrics.transactionMetrics.last?.resourceFetchType {
+        case .some(.localCache):
+            isLocalCacheHit = true
+        case .some(.networkLoad), .some(.serverPush):
+            isLocalCacheHit = false
+        case .some(.unknown), .none:
+            // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep it as unknown
+            // rather than asserting a measured cache miss.
+            isLocalCacheHit = nil
+        default:
+            // Any fetch type not yet known to this SDK - keep as unknown rather than guessing.
+            isLocalCacheHit = nil
+        }
 
         var redirection: DateInterval? = nil
 
@@ -376,7 +396,8 @@ extension ResourceMetrics {
             firstByte: firstByte,
             download: download,
             responseBodySize: responseBodySize,
-            requestBodySize: requestBodySize
+            requestBodySize: requestBodySize,
+            isLocalCacheHit: isLocalCacheHit
         )
     }
 }

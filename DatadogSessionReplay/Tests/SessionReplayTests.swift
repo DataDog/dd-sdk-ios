@@ -215,6 +215,21 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(config.startRecordingManually, !startRecordingImmediately)
     }
 
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testWhenEnabled_itUpdatesCoreContextWithEnabledFeatureFlags() throws {
+        let core = PassthroughCoreMock()
+        config.featureFlags[.swiftui] = true
+        config.featureFlags[.heatmaps] = true
+        config.featureFlags[.compositionTreeRecording] = true
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        let config = try XCTUnwrap(core.context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self))
+        XCTAssertEqual(config.experimentalFeatures, ["composition_tree_recording", "heatmaps", "swiftui"])
+    }
+
     func testWhenEnabledWithCustomEndpoint() throws {
         let random: URL = .mockRandom()
         config.customEndpoint = random
@@ -255,9 +270,9 @@ class SessionReplayTests: XCTestCase {
     }
 
     @available(iOS 13.0, *)
-    func testWhenEnabledWithLayerTreeRecordingFeatureFlag_itUsesLayerTreeRecordingCoordinator() throws {
+    func testWhenEnabledWithCompositionTreeRecordingFeatureFlag_itUsesLayerTreeRecordingCoordinator() throws {
         // Given
-        config.featureFlags[.layerTreeRecording] = true
+        config.featureFlags[.compositionTreeRecording] = true
 
         // When
         SessionReplay.enable(with: config, in: core)

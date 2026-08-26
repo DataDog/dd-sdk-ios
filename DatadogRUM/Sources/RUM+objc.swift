@@ -527,6 +527,10 @@ public class objc_URLSessionTracking: NSObject {
     public func setTrackResourceHeaders(_ trackResourceHeaders: objc_TrackResourceHeaders) {
         swiftConfig.trackResourceHeaders = trackResourceHeaders.swiftType
     }
+
+    public func setDisallowList(_ disallowList: [String]) {
+        swiftConfig.disallowList = disallowList
+    }
 }
 
 @objc(DDRUMHeaderCaptureRule)
@@ -709,7 +713,7 @@ public class objc_RUMConfiguration: NSObject {
         }
     }
 
-    public var onSessionStart: ((String, Bool) -> Void)? {
+    public var onSessionStart: (@Sendable (String, Bool) -> Void)? {
         set { swiftConfig.onSessionStart = newValue }
         get { swiftConfig.onSessionStart }
     }

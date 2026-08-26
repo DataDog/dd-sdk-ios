@@ -32,7 +32,13 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
 
         // Get single RUM Session with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserEvents)?.views.count == 3
+            guard let session = try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserEvents),
+                  session.views.count == 3 else {
+                return false
+            }
+            // Browser resource events can arrive after the browser view event, so wait for the
+            // resource that is asserted below instead of racing the first 3-view session snapshot.
+            return !session.views[2].resourceEvents.isEmpty
         }
         assertRUM(requests: recordedRUMRequests)
 

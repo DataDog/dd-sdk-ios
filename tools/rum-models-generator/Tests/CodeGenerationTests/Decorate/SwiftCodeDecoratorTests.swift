@@ -314,4 +314,62 @@ final class SwiftCodeDecoratorTests: XCTestCase {
 
         XCTAssertEqual(expected, actual.swiftTypes)
     }
+
+    func testTransformingSharedTypeWithDifferentUseSiteComments() throws {
+        func sharedType(comment: String) -> SwiftStruct {
+            SwiftStruct(
+                name: "sharedType",
+                comment: comment,
+                properties: [
+                    SwiftStruct.Property(
+                        name: "value",
+                        comment: "Description of the shared value.",
+                        type: SwiftPrimitive<String>(),
+                        isOptional: false,
+                        mutability: .immutable,
+                        defaultValue: nil,
+                        codingKey: .static(value: "value")
+                    )
+                ],
+                conformance: []
+            )
+        }
+
+        let root = SwiftStruct(
+            name: "Root",
+            comment: nil,
+            properties: [
+                SwiftStruct.Property(
+                    name: "first",
+                    comment: "Description of the first use site.",
+                    type: sharedType(comment: "First use-site description."),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "first")
+                ),
+                SwiftStruct.Property(
+                    name: "second",
+                    comment: "Description of the second use site.",
+                    type: sharedType(comment: "Second use-site description."),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .static(value: "second")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try SwiftCodeDecorator(sharedTypeNames: ["SharedType"])
+            .decorate(code: GeneratedCode(swiftTypes: [root]))
+
+        let transformedRoot = try XCTUnwrap(actual.swiftTypes.first as? SwiftStruct)
+        XCTAssertEqual(transformedRoot.properties[0].comment, "Description of the first use site.")
+        XCTAssertEqual(transformedRoot.properties[1].comment, "Description of the second use site.")
+
+        let transformedSharedType = try XCTUnwrap(actual.swiftTypes.last as? SwiftStruct)
+        XCTAssertNil(transformedSharedType.comment)
+        XCTAssertEqual(transformedSharedType.properties.first?.comment, "Description of the shared value.")
+    }
 }

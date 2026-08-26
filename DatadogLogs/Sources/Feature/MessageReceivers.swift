@@ -77,11 +77,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
         core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
-            if let tags = event[tagsKey] as? String, !tags.isEmpty {
-                event[tagsKey] = "\(context.ddTags),\(tags)"
-            } else {
-                event[tagsKey] = context.ddTags
-            }
+            event[tagsKey] = DDTag.merge(context.ddTags, with: event[tagsKey] as? String)
 
             if let timestampInMs = event[dateKey] as? Int {
                 let serverTimeOffsetInMs = context.serverTimeOffset.dd.toInt64Milliseconds

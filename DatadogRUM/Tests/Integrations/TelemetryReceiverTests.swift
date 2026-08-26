@@ -73,7 +73,9 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
+        #sourceLocation(file: "File.swift", line: 1)
         TelemetryMock(with: receiver).error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
+        #sourceLocation()
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).first
@@ -83,7 +85,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.source, .ios)
         XCTAssertEqual(event?.telemetry.message, "Oops")
         XCTAssertEqual(event?.telemetry.error?.kind, "OutOfMemory")
-        XCTAssertEqual(event?.telemetry.error?.stack, "a\nhay\nneedle\nstack")
+        XCTAssertEqual(event?.telemetry.error?.stack, "\(moduleName())/File.swift:1\na\nhay\nneedle\nstack")
         XCTAssertEqual(event?.effectiveSampleRate, 100)
     }
 
@@ -620,6 +622,32 @@ class TelemetryReceiverTests: XCTestCase {
         guard case .telemetryMobileFeaturesUsage(let usage) = event?.telemetry.usage,
               case .trackWebView = usage else {
             XCTFail("Expected .telemetryMobileFeaturesUsage(.trackWebView)")
+            return
+        }
+    }
+
+    func testSendTelemetryUsage_timeseries() {
+        // Given
+        featureScope.contextMock = .mockWith(source: "ios", sdkVersion: "sdk-version")
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
+
+        // When
+        let result = receiver.receive(
+            message: .telemetry(.usage(.init(event: .timeseries, sampleRate: 100))),
+            from: NOPDatadogCore()
+        )
+        XCTAssertTrue(result)
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryUsageEvent.self).first
+        XCTAssertNotNil(event)
+        XCTAssertEqual(event?.effectiveSampleRate, 100)
+        XCTAssertEqual(event?.service, "dd-sdk-ios")
+        XCTAssertEqual(event?.source, .ios)
+        XCTAssertEqual(event?.version, "sdk-version")
+        guard case .telemetryMobileFeaturesUsage(let usage) = event?.telemetry.usage,
+              case .timeseries = usage else {
+            XCTFail("Expected .telemetryMobileFeaturesUsage(.timeseries)")
             return
         }
     }

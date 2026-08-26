@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-06-29
-sdk_version: 3.13.0
-verified_against_commit: 48f0891ec
+last_updated: 2026-08-19
+sdk_version: 3.16.0
+verified_against_commit: fee1ac701
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -14,6 +14,11 @@ tracked_files:
 ## Overview
 
 RUM tracks user interactions, views, resources, errors, and performance metrics in iOS applications. It requires initialization via `Datadog.initialize()` before enabling.
+
+**Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
+- **iOS / visionOS**: Full feature set.
+- **tvOS**: UIKit and SwiftUI view tracking, UIKit action tracking (press-based), app hangs, long tasks, vitals, slow frames, memory warnings, watchdog terminations. No `swiftUIActionsPredicate` (tap-gesture path), no scroll/swipe tracking.
+- **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example
 
@@ -84,7 +89,10 @@ RUM.enable(
             //   .disabled - No header capture
             //   .defaults - Capture predefined common headers (cache-control, content-type, etag, etc.)
             //   .custom([rules]) - Capture headers by custom rules
-            trackResourceHeaders: .defaults
+            trackResourceHeaders: .defaults,
+            // Optional: Exclude specific URLs from RUM resource tracking.
+            // Plain strings match exactly; `*` matches any characters (multiple allowed).
+            disallowList: ["https://api.example.com/health", "https://*.internal.example.com/*"]
         ),
         
         // Track user frustrations (error taps following errors)
@@ -143,6 +151,8 @@ RUM.enable(
         // Also available: errorEventMapper, actionEventMapper, longTaskEventMapper
         
         // Session start callback
+        // Note: this is a `@Sendable` closure (SessionListener) — it may be
+        // invoked from a background queue, so only capture Sendable state.
         onSessionStart: { sessionId, isDiscarded in
             // `sessionId` matches the emitted RUM event `session.id`
             print("Session \(sessionId) started, sampled out: \(isDiscarded)")
@@ -236,6 +246,7 @@ Requires configuration to be set, otherwise disabled by default:
 - **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate` *(SwiftUI: experimental, behavior differs on iOS 17 vs iOS 18+)*
 - **Resource tracking**: `urlSessionTracking` (automatic), optionally call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourSessionDelegate.self))` for detailed timing
 - **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`
+- **Resource disallow list**: `urlSessionTracking.disallowList` — URL patterns excluded from RUM resource tracking (`*` wildcards)
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
@@ -261,6 +272,22 @@ Event mappers allow modifying or dropping events before upload:
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
 - `.none`: no-op feature flag case kept in the public enum.
+
+### Timeseries Collection (Experimental)
+- `RUM.Configuration.timeseries` — gated behind `@_spi(Experimental)`; not an init parameter, must be set on the configuration instance before calling `RUM.enable(with:)`. Default: `nil` (disabled).
+- Set it to `RUM.Configuration.Timeseries(collectTypes:)` to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
+  ```swift
+  @_spi(Experimental) import DatadogRUM
+
+  var rumConfig = RUM.Configuration(applicationID: "<rum_application_id>")
+  rumConfig.timeseries = RUM.Configuration.Timeseries(
+      // Default: nil (collects all types available on the current platform)
+      collectTypes: [.memory, .cpu]
+  )
+  RUM.enable(with: rumConfig)
+  ```
+- `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
+- When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
 ## Common Troubleshooting Patterns
 
