@@ -48,7 +48,7 @@ final class AccessibilityReaderTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    #if !os(watchOS)
+    #if !os(watchOS) && !os(macOS)
     func testRegistersAllObservers() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()
@@ -85,8 +85,8 @@ final class AccessibilityReaderTests: XCTestCase {
         let observerNames = mockNotificationCenter.getObserverNames()
 
         // Then
-        XCTAssertTrue(observerNames.contains(UIAccessibility.buttonShapesEnabledStatusDidChangeNotification))
-        XCTAssertTrue(observerNames.contains(UIAccessibility.prefersCrossFadeTransitionsStatusDidChange))
+        XCTAssertTrue(observerNames.contains(NSAccessibility.buttonShapesEnabledStatusDidChangeNotification))
+        XCTAssertTrue(observerNames.contains(NSAccessibility.prefersCrossFadeTransitionsStatusDidChange))
     }
     #endif
 

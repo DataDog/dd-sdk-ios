@@ -60,20 +60,6 @@ internal class SwiftUIComponentHelpers {
     /// Note: We check gestures' names both during the `.began` and `.ended` phases
     /// as we can collect different information.
     static func extractComponentName(touch: DDTouch, defaultName: String) -> String {
-        #if canImport(UIKit)
-        // Check gesture recognizers' names for more specific info
-        if let gestures = touch.gestureRecognizers {
-            for gesture in gestures {
-                if let gestureName = gesture.name {
-                    // E.g., Button<ResolvedButtonStyleBody<BorderlessButtonStyleBase>>
-                    if gestureName.hasPrefix("Button<") {
-                        return SwiftUIComponentNames.button
-                    }
-                }
-            }
-        }
-        #endif
-
         return defaultName
     }
 }
