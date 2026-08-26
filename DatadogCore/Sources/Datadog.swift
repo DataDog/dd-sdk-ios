@@ -435,10 +435,10 @@ extension DatadogCore {
             return RemoteConfigurationProvider(
                 id: remoteConfiguration.id,
                 site: configuration.site,
-                customURL: remoteConfiguration.customURL,
                 directory: persistentDirectory.coreDirectory,
                 httpClient: httpClient,
                 notificationCenter: configuration.notificationCenter,
+                customURL: remoteConfiguration.customURL,
                 dateProvider: configuration.dateProvider
             )
         }

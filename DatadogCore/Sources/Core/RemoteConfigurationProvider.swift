@@ -91,10 +91,10 @@ internal final class RemoteConfigurationProvider {
     init(
         id: String,
         site: DatadogSite,
-        customURL: URL? = nil,
         directory: Directory,
         httpClient: HTTPClient,
         notificationCenter: NotificationCenter,
+        customURL: URL? = nil,
         dateProvider: DateProvider = SystemDateProvider()
     ) {
         self.id = id
