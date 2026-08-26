@@ -58,6 +58,10 @@ public protocol objc_DataEncryption: AnyObject
     func decrypt(data: Data) throws -> Data
 public protocol objc_ServerDateProvider: AnyObject
     func synchronize(update: @escaping (TimeInterval) -> Void)
+public final class objc_RemoteConfiguration: NSObject
+    public var id: String
+    public var customURL: URL?
+    public init(id: String)
 public final class objc_Configuration: NSObject
     public var clientToken: String
     public var env: String
@@ -73,7 +77,7 @@ public final class objc_Configuration: NSObject
     public var bundle: Bundle
     public var additionalConfiguration: [String: Any]
     public var backgroundTasksEnabled: Bool
-    public var remoteConfigurationID: String?
+    public var remoteConfiguration: objc_RemoteConfiguration?
     public init(clientToken: String, env: String)
 public final class objc_URLSessionInstrumentationConfiguration: NSObject
     public init(delegateClass: URLSessionDataDelegate.Type)

@@ -123,17 +123,40 @@ extension Datadog {
         /// `false` by default.
         public var backgroundTasksEnabled: Bool
 
-        /// The remote configuration ID used to fetch SDK settings from the Datadog CDN.
+        /// Identifies and optionally overrides where the SDK fetches its remote configuration from.
+        public struct RemoteConfiguration {
+            /// The remote configuration ID used to fetch SDK settings from the Datadog CDN.
+            public var id: String
+
+            /// A custom URL to fetch the remote configuration document from, overriding the
+            /// default CDN endpoint derived from the resolved `site`.
+            ///
+            /// Default is `nil` — the default `site`-derived endpoint is used.
+            public var customURL: URL?
+
+            /// Creates a remote configuration identifier.
+            ///
+            /// - Parameters:
+            ///   - id: The remote configuration ID used to fetch SDK settings from the Datadog CDN.
+            ///   - customURL: A custom URL to fetch the remote configuration document from,
+            ///                overriding the default CDN endpoint derived from the resolved `site`.
+            public init(id: String, customURL: URL? = nil) {
+                self.id = id
+                self.customURL = customURL
+            }
+        }
+
+        /// The remote configuration used to fetch SDK settings from the Datadog CDN.
         ///
-        /// When non-nil, the SDK constructs a CDN URL from this ID and the resolved `site`,
-        /// fetches the remote config document asynchronously at startup, and caches the
-        /// raw JSON to disk for use on subsequent launches.
+        /// When non-nil, the SDK constructs a CDN URL from its `id` and the resolved `site`
+        /// (or from `customURL`, if set), fetches the remote config document asynchronously
+        /// at startup, and caches the raw JSON to disk for use on subsequent launches.
         ///
         /// Default is `nil` — no fetch is performed.
         ///
         /// RFC also specifies a `requireRemoteConfiguration` flag: when `true` and no cache
         /// exists, `Datadog.initialize` should return without starting the SDK. Not yet implemented.
-        public var remoteConfigurationID: String? = nil
+        public var remoteConfiguration: RemoteConfiguration? = nil
 
         /// Creates a Datadog SDK Configuration object.
         ///
@@ -182,7 +205,7 @@ extension Datadog {
         ///                                 any upload blocker such us no internet connection or low battery.
         ///                                 By default it's set to `false`.
         ///
-        ///   - remoteConfigurationID:      The identifier used to fetch SDK settings from the Datadog CDN.
+        ///   - remoteConfiguration:        The remote configuration used to fetch SDK settings from the Datadog CDN.
         ///                                 When non-nil, the SDK fetches the remote configuration document
         ///                                 asynchronously at startup and caches the raw JSON for subsequent launches.
         ///                                 Default is `nil` — no fetch is performed.
@@ -200,7 +223,7 @@ extension Datadog {
             serverDateProvider: ServerDateProvider? = nil,
             batchProcessingLevel: BatchProcessingLevel = .medium,
             backgroundTasksEnabled: Bool = false,
-            remoteConfigurationID: String? = nil
+            remoteConfiguration: RemoteConfiguration? = nil
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -215,7 +238,7 @@ extension Datadog {
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
             self.batchProcessingLevel = batchProcessingLevel
             self.backgroundTasksEnabled = backgroundTasksEnabled
-            self.remoteConfigurationID = remoteConfigurationID
+            self.remoteConfiguration = remoteConfiguration
         }
 
         // MARK: - Internal

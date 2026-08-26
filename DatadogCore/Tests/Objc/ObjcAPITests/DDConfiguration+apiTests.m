@@ -69,8 +69,8 @@
     configuration.additionalConfiguration = @{@"additional": @"config"};
     [configuration setEncryption:[CustomDDDataEncryption new]];
     configuration.backgroundTasksEnabled = true;
-    configuration.remoteConfigurationID = @"abc-123";
-    configuration.remoteConfigurationID = nil;
+    configuration.remoteConfiguration = [[DDRemoteConfiguration alloc] initWithId:@"abc-123"];
+    configuration.remoteConfiguration = nil;
 }
 
 - (void)testDatadogCrashReporterAPI {
