@@ -155,10 +155,13 @@ public final class Memory: MetricAggregator<Double> {
     }
 }
 
-/// Collect CPU usage metric.
+/// Collect CPU usage metrics.
 ///
-/// Based on a timer, the `CPU` aggregator will periodically record the CPU usage.
-public final class CPU: MetricAggregator<Double> {
+/// Based on a timer, `CPU` periodically records total, main-thread, and background CPU usage.
+public final class CPU {
+    /// Aggregates total CPU usage for the application.
+    public let total = MetricAggregator<Double>()
+
     /// Aggregates CPU usage for the application main thread.
     public let main = MetricAggregator<Double>()
 
@@ -171,7 +174,7 @@ public final class CPU: MetricAggregator<Double> {
     /// Mach port identifying the application main thread.
     private let mainThread: thread_t
 
-    /// Create a `CPU` aggregator to periodically record the CPU usage on the
+    /// Create a `CPU` collector to periodically record CPU usage on the
     /// provided queue.
     ///
     /// By default, the timer is scheduled with 100 ms interval with 10 ms leeway.
@@ -181,21 +184,20 @@ public final class CPU: MetricAggregator<Double> {
     ///   - interval: The timer interval, default to 100 ms.
     ///   - leeway: The timer leeway, default to 10 ms.
     @MainActor
-    public required init(
+    public init(
         queue: DispatchQueue,
         every interval: DispatchTimeInterval = .milliseconds(100),
         leeway: DispatchTimeInterval = .milliseconds(10)
     ) {
         self.timer = DispatchSource.makeTimerSource(queue: queue)
         self.mainThread = pthread_mach_thread_np(pthread_self())
-        super.init()
 
         timer.setEventHandler { [weak self] in
             guard let self, let usage = try? self.usage() else {
                 return
             }
 
-            self.record(value: usage.total)
+            self.total.record(value: usage.total)
             self.main.record(value: usage.main)
             self.background.record(value: usage.total - usage.main)
         }

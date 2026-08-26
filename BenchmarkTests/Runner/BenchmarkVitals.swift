@@ -43,11 +43,11 @@ internal final class Vitals {
 
         let total = meter.gaugeBuilder(name: "ios.benchmark.cpu").buildWithCallback { measurement in
             // report the average cpu usage that was recorded during push interval
-            if let value = cpu.aggregation?.avg {
+            if let value = cpu.total.aggregation?.avg {
                 measurement.record(value: value)
             }
 
-            cpu.reset()
+            cpu.total.reset()
         }
 
         let main = meter.gaugeBuilder(name: "ios.benchmark.cpu.main").buildWithCallback { measurement in
