@@ -66,8 +66,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     @MainActor
     init(
         featureScope: FeatureScope,
-        uiKitRUMViewsPredicate rumViewsPredicate: DDKitRUMViewsPredicate?,
-        uiKitRUMActionsPredicate rumActionsPredicate: DDKitRUMActionsPredicate?,
+        ddKitRUMViewsPredicate rumViewsPredicate: DDKitRUMViewsPredicate?,
+        ddKitRUMActionsPredicate rumActionsPredicate: DDKitRUMActionsPredicate?,
         swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
         trackScrollAndSwipeActions: Bool = true,

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(macOS)
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -754,3 +755,4 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
 }
+#endif
