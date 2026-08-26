@@ -159,8 +159,14 @@ public final class Memory: MetricAggregator<Double> {
 ///
 /// Based on a timer, the `CPU` aggregator will periodically record the CPU usage.
 public final class CPU: MetricAggregator<Double> {
+    /// Aggregates CPU usage for the application main thread.
+    public let main = MetricAggregator<Double>()
+
     /// Dispatch source object for monitoring timer events.
     private let timer: DispatchSourceTimer
+
+    /// Mach port identifying the application main thread.
+    private let mainThread: thread_t
 
     /// Create a `CPU` aggregator to periodically record the CPU usage on the
     /// provided queue.
@@ -171,12 +177,14 @@ public final class CPU: MetricAggregator<Double> {
     ///   - queue: The queue on which to execute the timer handler.
     ///   - interval: The timer interval, default to 100 ms.
     ///   - leeway: The timer leeway, default to 10 ms.
+    @MainActor
     public required init(
         queue: DispatchQueue,
         every interval: DispatchTimeInterval = .milliseconds(100),
         leeway: DispatchTimeInterval = .milliseconds(10)
     ) {
         self.timer = DispatchSource.makeTimerSource(queue: queue)
+        self.mainThread = pthread_mach_thread_np(pthread_self())
         super.init()
 
         timer.setEventHandler { [weak self] in
@@ -184,7 +192,8 @@ public final class CPU: MetricAggregator<Double> {
                 return
             }
 
-            self.record(value: usage)
+            self.record(value: usage.total)
+            self.main.record(value: usage.main)
         }
 
         timer.schedule(deadline: .now(), repeating: interval, leeway: leeway)
@@ -198,10 +207,10 @@ public final class CPU: MetricAggregator<Double> {
     /// Collect single sample of current cpu usage.
     ///
     /// The computation is based on https://gist.github.com/hisui/10004131#file-cpu-usage-cpp
-    /// It reads the `cpu_usage` from all thread to compute the application usage percentage.
+    /// It reads the `cpu_usage` from all threads to compute the application and main-thread usage percentages.
     ///
-    /// - Returns: The cpu usage of all threads.
-    private func usage() throws -> Double {
+    /// - Returns: The CPU usage of all threads and of the main thread.
+    private func usage() throws -> (total: Double, main: Double) {
         var threads_list: thread_act_array_t?
         var threads_count = mach_msg_type_number_t()
         let kr = withUnsafeMutablePointer(to: &threads_list) {
@@ -218,12 +227,16 @@ public final class CPU: MetricAggregator<Double> {
             vm_deallocate(mach_task_self_, vm_address_t(bitPattern: threads_list), vm_size_t(Int(threads_count) * MemoryLayout<thread_t>.stride))
         }
 
-        return try (0..<threads_count).reduce(0) { result, index in
+        var totalUsage = 0.0
+        var mainUsage = 0.0
+
+        for index in 0..<threads_count {
+            let thread = threads_list[Int(index)]
             var basic_info = thread_basic_info()
             var basic_info_count = mach_msg_type_number_t(THREAD_INFO_MAX)
             let kr = withUnsafeMutablePointer(to: &basic_info) {
                 $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-                    thread_info(threads_list[Int(index)], thread_flavor_t(THREAD_BASIC_INFO), $0, &basic_info_count)
+                    thread_info(thread, thread_flavor_t(THREAD_BASIC_INFO), $0, &basic_info_count)
                 }
             }
 
@@ -231,12 +244,21 @@ public final class CPU: MetricAggregator<Double> {
                 throw MachError.thread_info(return: kr)
             }
 
-            guard basic_info.flags != TH_FLAGS_IDLE else {
-                return result
+            let usage: Double
+            if basic_info.flags == TH_FLAGS_IDLE {
+                usage = 0
+            } else {
+                usage = Double(basic_info.cpu_usage) / Double(TH_USAGE_SCALE)
             }
 
-            return result + Double(basic_info.cpu_usage) / Double(TH_USAGE_SCALE)
+            totalUsage += usage
+
+            if thread == mainThread {
+                mainUsage = usage
+            }
         }
+
+        return (total: totalUsage, main: mainUsage)
     }
 }
 
