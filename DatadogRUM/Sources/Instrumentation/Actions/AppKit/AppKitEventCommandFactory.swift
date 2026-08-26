@@ -103,8 +103,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
 
         if case let .trySwiftUIFallbackTo(view) = bestTarget,
-           let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider)
-            {
+           let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider) {
             return swiftUIResult
         }
 

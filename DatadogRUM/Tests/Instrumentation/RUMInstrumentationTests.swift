@@ -85,9 +85,6 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertNil(instrumentation.longTasks)
         }
     }
-    #else
-    // TODO: RUM-16718 macOS testing
-    #endif
 
     func testWhenOnlySwiftUIViewsPredicateIsConfigured_itInstrumentsUIViewController() throws {
         // When
@@ -151,6 +148,9 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertNil(instrumentation.longTasks)
         }
     }
+    #else
+    // TODO: RUM-16718 macOS testing for views predicate if possible
+    #endif
 
     #if !os(tvOS) && !os(macOS)
     func testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView() throws {

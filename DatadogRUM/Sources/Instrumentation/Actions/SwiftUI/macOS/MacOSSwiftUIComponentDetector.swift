@@ -5,18 +5,15 @@
  */
 
 #if os(macOS)
-
 import Foundation
 import AppKit
 import DatadogInternal
 import os.log
 
-struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
-
+internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     typealias AccessibilityElement = AnyObject
 
-    @MainActor
-    private static var axSetupPerformed = false
+    @MainActor private static var axSetupPerformed = false
 
     @MainActor
     private static func setupAxClient() {
@@ -96,7 +93,6 @@ struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     }
 
     private func bestActionTargetFor(accessibilityElement: AccessibilityElement, window: NSWindow, coordinates: NSPoint) -> AccessibilityElement? {
-
         var element: AccessibilityElement? = traverseDownScrollViews(startingAt: accessibilityElement, window: window, coordinates: coordinates)
 
         while let currentElement = element {
@@ -112,7 +108,6 @@ struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     }
 
     private func traverseDownScrollViews(startingAt accessibilityElement: AccessibilityElement, window: NSWindow, coordinates: NSPoint) -> AccessibilityElement {
-
         func isScrollView(_ element: AccessibilityElement) -> Bool {
             String(describing: type(of: element)).contains("HostingScrollView")
         }

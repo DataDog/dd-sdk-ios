@@ -123,7 +123,9 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
+        #if !os(macOS)
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
+        #endif
     }
 
     #if !os(tvOS) && !os(macOS)

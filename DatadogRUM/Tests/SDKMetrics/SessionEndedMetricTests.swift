@@ -332,6 +332,14 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(try encodedValue(.crossPlatform("flutter")) as? String, "flutter")
     }
 
+    private var ddKitName: String {
+        #if os(macOS)
+        "appKit"
+        #else
+        "uikit"
+        #endif
+    }
+
     func testReportingViewsCountByInstrumentationType() throws {
         let manualViewsCount: Int = .mockRandom(min: 1, max: 10)
         let swiftuiViewsCount: Int = .mockRandom(min: 1, max: 10)
@@ -521,7 +529,7 @@ class SessionEndedMetricTests: XCTestCase {
             [
                 "manual": manualActionsCount,
                 "swiftui": swiftuiActionsCount,
-                "uikit": ddkitPredicateActionsCount,
+                ddKitName: ddkitPredicateActionsCount,
                 "swiftuiAutomatic": swiftuiAutomaticPredicateActionsCount
             ]
         )
@@ -797,7 +805,7 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertNotNil(try matcher.value("rse.views_count.app_launch") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.manual") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftui") as Int)
-        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.uikit") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.\(ddKitName)") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.by_instrumentation.swiftuiAutomatic") as Int)
         XCTAssertNotNil(try matcher.value("rse.views_count.with_has_replay") as Int)
         XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
