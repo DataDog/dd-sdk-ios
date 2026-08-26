@@ -162,6 +162,9 @@ public final class CPU: MetricAggregator<Double> {
     /// Aggregates CPU usage for the application main thread.
     public let main = MetricAggregator<Double>()
 
+    /// Aggregates CPU usage for the application background threads.
+    public let background = MetricAggregator<Double>()
+
     /// Dispatch source object for monitoring timer events.
     private let timer: DispatchSourceTimer
 
@@ -194,6 +197,7 @@ public final class CPU: MetricAggregator<Double> {
 
             self.record(value: usage.total)
             self.main.record(value: usage.main)
+            self.background.record(value: usage.total - usage.main)
         }
 
         timer.schedule(deadline: .now(), repeating: interval, leeway: leeway)
