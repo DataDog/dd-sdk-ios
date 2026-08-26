@@ -267,8 +267,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
-            uiKitRUMViewsPredicate: configuration.appKitViewsPredicate,
-            uiKitRUMActionsPredicate: configuration.appKitActionsPredicate,
+            ddKitRUMViewsPredicate: configuration.appKitViewsPredicate,
+            ddKitRUMActionsPredicate: configuration.appKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
@@ -319,8 +319,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
-            uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
-            uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
+            ddKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
+            ddKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
             swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],

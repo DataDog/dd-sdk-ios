@@ -61,21 +61,15 @@ struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     }
 
     func createActionCommand(from event: NSEvent, predicate: (any SwiftUIRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> RUMAddUserActionCommand? {
-
         guard
             let window = event.window,
-            let screen = window.screen,
             case let coordsInScreen = window.convertPoint(toScreen: event.locationInWindow),
-            let accessibilityElement = axHitTesting(window, coordinates: coordsInScreen) as? AccessibilityElement
+            let accessibilityElement = axHitTesting(window, coordinates: coordsInScreen)
         else {
             return nil
         }
 
-        //print(accessibilityElement.accessibilityRole())
-        //print(accessibilityElement.accessibilityRoleDescription())
-
         guard let targetElement = bestActionTargetFor(accessibilityElement: accessibilityElement, window: window, coordinates: coordsInScreen) else {
-            print("targetElement returned nope")
             return nil
         }
 
@@ -86,7 +80,7 @@ struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
-            instrumentation: .appKit,
+            instrumentation: .swiftuiAutomatic,
             actionType: .click,
             name: action.name
         )
@@ -130,7 +124,7 @@ struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
                   let lazyNode = children.first(where: { node in
                       String(describing: type(of: node)).contains("AccessibilityLazyLayoutNode")
                   }) as? AccessibilityElement,
-                  let newElement = axHitTesting(lazyNode, coordinates: coordinates) as? AccessibilityElement
+                  let newElement = axHitTesting(lazyNode, coordinates: coordinates)
             else {
                 return currentElement
             }

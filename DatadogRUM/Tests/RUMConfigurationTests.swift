@@ -18,8 +18,13 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertEqual(config.sessionSampleRate, 100)
         XCTAssertEqual(config.telemetrySampleRate, 20)
         #if !os(watchOS)
+        #if os(macOS)
+        XCTAssertNil(config.appKitViewsPredicate)
+        XCTAssertNil(config.appKitActionsPredicate)
+        #else
         XCTAssertNil(config.uiKitViewsPredicate)
         XCTAssertNil(config.uiKitActionsPredicate)
+        #endif
         XCTAssertNil(config.swiftUIViewsPredicate)
         XCTAssertNil(config.swiftUIActionsPredicate)
         XCTAssertTrue(config.trackMemoryWarnings)

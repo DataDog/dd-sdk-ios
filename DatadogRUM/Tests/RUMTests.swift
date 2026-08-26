@@ -101,8 +101,13 @@ class RUMTests: XCTestCase {
     #if !os(watchOS)
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = UIKitRUMViewsPredicateMock()
+        config.appKitActionsPredicate = AppKitRUMActionsPredicateMock()
+        #else
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        #endif
         config.swiftUIViewsPredicate = SwiftUIRUMViewsPredicateMock()
         config.swiftUIActionsPredicate = SwiftUIRUMActionsPredicateMock()
         config.longTaskThreshold = 0.5
@@ -121,7 +126,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
     }
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(macOS)
     func testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled() throws {
         // Given
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
@@ -140,8 +145,13 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = nil
+        config.appKitActionsPredicate = nil
+        #else
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
+        #endif
         config.swiftUIViewsPredicate = nil
         config.swiftUIActionsPredicate = nil
         config.longTaskThreshold = nil

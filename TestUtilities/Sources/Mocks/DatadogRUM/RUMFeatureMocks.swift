@@ -1600,6 +1600,24 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
         return resultByView[targetView] ?? result
     }
 }
+#else
+public class AppKitRUMActionsPredicateMock: AppKitRUMActionsPredicate {
+    public var resultByView: [NSView: RUMAction] = [:]
+    public var resultByMenuItem: [NSMenuItem: RUMAction] = [:]
+    public var result: RUMAction?
+
+    public init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    public func rumAction(targetView: NSView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+
+    public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
+        return resultByMenuItem[targetMenuItem] ?? result
+    }
+}
 #endif
 
 public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {

@@ -11,15 +11,17 @@ import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogRUM
 
+@MainActor
 class RUMInstrumentationTests: XCTestCase {
     private var config = RUM.Configuration(applicationID: .mockAny())
 
+    #if !os(macOS)
     func testWhenOnlyUIKitViewsPredicateIsConfigured_itInstrumentsUIViewController() throws {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: nil,
@@ -47,12 +49,15 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    // Note: It's not possible to build a macOS equivalent for this test, since we
+    // do not swizzle. Instead, we add a local event monitor and a notification observer.
+    // Apple does not provide APIs to obtain the list of event monitors nor observers.
     func testWhenOnlyUIKitActionsPredicateIsConfigured_itInstrumentsUIApplication() throws {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: nil,
@@ -80,13 +85,16 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertNil(instrumentation.longTasks)
         }
     }
+    #else
+    // TODO: RUM-16718 macOS testing
+    #endif
 
     func testWhenOnlySwiftUIViewsPredicateIsConfigured_itInstrumentsUIViewController() throws {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: nil,
@@ -118,8 +126,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
             longTaskThreshold: nil,
@@ -144,13 +152,13 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(macOS)
     func testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView() throws {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             trackScrollAndSwipeActions: false,
@@ -182,8 +190,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: 0.5,
@@ -215,8 +223,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: .mockRandom(min: -100, max: 0),
@@ -244,8 +252,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: .mockRandom(min: -100, max: 0),
@@ -273,8 +281,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: .mockRandom(min: -100, max: 0),
@@ -302,8 +310,8 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: nil,
+            ddKitRUMViewsPredicate: nil,
+            ddKitRUMActionsPredicate: nil,
             swiftUIRUMViewsPredicate: nil,
             swiftUIRUMActionsPredicate: nil,
             longTaskThreshold: 0.1,
@@ -327,12 +335,13 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    #if !os(macOS)
     func testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers() throws {
         // Given
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
+            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
+            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
             swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
             longTaskThreshold: 0.5,
@@ -362,6 +371,43 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertIdentical(instrumentation.appHangs?.nonFatalHangsHandler.subscriber, subscriber)
         }
     }
+    #else
+    func testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers() throws {
+        // Given
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
+            ddKitRUMActionsPredicate: AppKitRUMActionsPredicateMock(),
+            swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
+            swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
+            longTaskThreshold: 0.5,
+            appHangThreshold: 2,
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenter: .default,
+            bundleType: .iOSApp,
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
+        )
+        let subscriber = RUMCommandSubscriberMock()
+
+        // When
+        instrumentation.publish(to: subscriber)
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            XCTAssertIdentical(instrumentation.viewsHandler.subscriber, subscriber)
+            XCTAssertIdentical((instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber, subscriber)
+            XCTAssertIdentical(instrumentation.longTasks?.subscriber, subscriber)
+            XCTAssertIdentical(instrumentation.appHangs?.nonFatalHangsHandler.subscriber, subscriber)
+        }
+    }
+    #endif
 }
 
 internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], file: StaticString = #fileID, line: UInt = #line) {
