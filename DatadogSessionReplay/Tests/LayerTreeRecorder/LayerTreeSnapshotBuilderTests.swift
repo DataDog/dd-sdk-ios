@@ -17,7 +17,6 @@ import WebKit
 @Suite(.datadogTesting)
 @MainActor
 struct LayerTreeSnapshotBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     enum Fixtures {
         struct NOPTelemetry: Telemetry {
             func send(telemetry: TelemetryMessage) {}
@@ -45,7 +44,6 @@ struct LayerTreeSnapshotBuilderTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     private final class TestLayerProvider: LayerProvider {
         var rootLayer: CALayer?
@@ -55,7 +53,6 @@ struct LayerTreeSnapshotBuilderTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns nil when root layer is unavailable")
     func returnsNilWhenRootLayerIsUnavailable() {
         // Given
@@ -68,7 +65,6 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures snapshot with recording context")
     func capturesSnapshotWithRecordingContext() throws {
         // Given
@@ -103,7 +99,6 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot.root.sublayers.first?.layer.matches(childLayer) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures web view slot IDs from layer tree")
     func capturesWebViewSlotIDsFromLayerTree() throws {
         // Given
@@ -130,7 +125,6 @@ struct LayerTreeSnapshotBuilderTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps detached web view slot while web view is alive")
     func keepsDetachedWebViewSlotWhileWebViewIsAlive() throws {
         // Given
@@ -153,7 +147,6 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot.webViewSlotIDs == expectedSlots)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures embedded content as a leaf and keeps its slot while detached")
     func capturesEmbeddedContentAsLeafAndKeepsItsSlotWhileDetached() throws {
         // Given

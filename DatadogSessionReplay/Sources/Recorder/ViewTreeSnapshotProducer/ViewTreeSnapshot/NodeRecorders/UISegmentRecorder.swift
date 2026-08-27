@@ -36,13 +36,7 @@ internal struct UISegmentRecorder: NodeRecorder {
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },
             selectedSegmentIndex: context.recorder.textAndInputPrivacy.shouldMaskInputElements ? nil : segment.selectedSegmentIndex,
-            selectedSegmentTintColor: {
-                if #available(iOS 13.0, *) {
-                    return segment.selectedSegmentTintColor
-                } else {
-                    return nil
-                }
-            }()
+            selectedSegmentTintColor: segment.selectedSegmentTintColor
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])

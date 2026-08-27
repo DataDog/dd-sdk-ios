@@ -16,7 +16,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures layer identity and visual properties")
     func capturesLayerIdentityAndVisualProperties() throws {
         try CALayer.withReplayIDGenerator(ReplayIDGenerator { 42 }) {
@@ -80,7 +79,6 @@ struct CALayerSnapshotTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Preserves sublayer order")
     func preservesSublayerOrder() throws {
         // Given
@@ -110,7 +108,6 @@ struct CALayerSnapshotTests {
         #expect(capturedLayers.elementsEqual([backLayer, middleLayer, frontLayer]) { $0.matches($1) })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures nested hierarchy with absolute frames")
     func capturesNestedHierarchyWithAbsoluteFrames() throws {
         // Given
@@ -137,7 +134,6 @@ struct CALayerSnapshotTests {
         #expect(childSnapshot.absoluteFrame == CGRect(x: 30, y: 45, width: 20, height: 25))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes hidden and transparent layer trees")
     func prunesHiddenAndTransparentLayerTrees() throws {
         // Given
@@ -180,7 +176,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes layer trees outside visible bounds")
     func prunesLayerTreesOutsideVisibleBounds() throws {
         // Given
@@ -204,7 +199,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes sublayers outside clipping parent bounds")
     func prunesSublayersOutsideClippingParentBounds() throws {
         // Given
@@ -228,7 +222,6 @@ struct CALayerSnapshotTests {
         #expect(parentSnapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes sublayers outside nested clipping bounds")
     func prunesSublayersOutsideNestedClippingBounds() throws {
         // Given
@@ -264,7 +257,6 @@ struct CALayerSnapshotTests {
         #expect(innerSnapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes empty clipping layer trees")
     func prunesEmptyClippingLayerTrees() throws {
         // Given
@@ -283,7 +275,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Applies hide privacy override and ignores private subtree")
     func appliesHidePrivacyOverrideAndIgnoresPrivateSubtree() throws {
         // Given
@@ -308,7 +299,6 @@ struct CALayerSnapshotTests {
         #expect(privateSnapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Propagates privacy overrides to descendants")
     func propagatesPrivacyOverridesToDescendants() throws {
         // Given
@@ -344,7 +334,6 @@ struct CALayerSnapshotTests {
         #expect(childSnapshot.imagePrivacyLevel == .maskNonBundledOnly)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures content geometry")
     func capturesContentGeometry() throws {
         // Given
@@ -365,7 +354,6 @@ struct CALayerSnapshotTests {
         #expect(layerSnapshot.contentGeometry.frame == layer.frame)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Expands content geometry to include ignored sublayers")
     func expandsContentGeometryToIncludeIgnoredSublayers() throws {
         // Given
@@ -389,7 +377,6 @@ struct CALayerSnapshotTests {
         #expect(imageSnapshot.contentGeometry.frame == CGRect(x: 40, y: 48, width: 50, height: 54))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps content geometry within an ignored subtree owner that clips")
     func keepsContentGeometryWithinIgnoredSublayerOwnerThatClips() throws {
         // Given
@@ -414,7 +401,6 @@ struct CALayerSnapshotTests {
         #expect(imageSnapshot.contentGeometry.frame == imageView.layer.frame)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures complete geometry for a non-oversized layer clipped by an ancestor")
     func capturesCompleteGeometryForNonOversizedLayerClippedByAncestor() throws {
         // Given
@@ -441,7 +427,6 @@ struct CALayerSnapshotTests {
         #expect(childSnapshot.contentGeometry.frame == child.convert(child.bounds, to: root))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Crops oversized content geometry to the viewport")
     func cropsOversizedContentGeometryToViewport() throws {
         // Given
@@ -462,7 +447,6 @@ struct CALayerSnapshotTests {
         #expect(oversizedSnapshot.contentGeometry.frame == root.bounds)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures per-corner radii")
     func capturesPerCornerRadii() throws {
         // Given
@@ -485,7 +469,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii == cornerRadii)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures masked corner radii")
     func capturesMaskedCornerRadii() throws {
         // Given
@@ -504,7 +487,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii.bottomRight == CGSize(width: 8, height: 8))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores non-finite corner radius")
     func ignoresNonFiniteCornerRadius() throws {
         // Given
@@ -520,7 +502,6 @@ struct CALayerSnapshotTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.CornerRadii {
     var nsValue: NSValue {
         var value = self

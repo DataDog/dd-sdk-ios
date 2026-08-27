@@ -36,7 +36,6 @@ final class UIImageResourceTests: XCTestCase {
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
-    @available(iOS 13.0, *)
     func testWhenUIImageResourceIsInitializedWithSystemIconWithoutTintColor() {
         let image = UIImage(systemName: "circle.fill")!
         let imageResource = UIImageResource(image: image, tintColor: nil)
@@ -45,7 +44,6 @@ final class UIImageResourceTests: XCTestCase {
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
-    @available(iOS 13.0, *)
     func testWhenUIImageResourceIsInitializedWithSystemIconWithTintColor() {
         let image = UIImage(systemName: "circle.fill")!
         let tintColor = UIColor.red
