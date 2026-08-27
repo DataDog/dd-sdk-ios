@@ -138,6 +138,13 @@ internal class Monitor: RUMCommandSubscriber {
     @ReadWriteLock
     private var hasReplaySnapshot: Bool? = nil
 
+    /// Updates the replay state snapshot exposed through `RUMActiveContextReader`. Called both from
+    /// `process(command:)` and from `HasReplayMessageReceiver`, since Session Replay toggles `hasReplay`
+    /// through the core context bus, not through a `RUMCommand`.
+    func update(hasReplay: Bool?) {
+        hasReplaySnapshot = hasReplay
+    }
+
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
@@ -167,7 +174,7 @@ internal class Monitor: RUMCommandSubscriber {
 
             _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
 
-            self.hasReplaySnapshot = context.hasReplay
+            self.update(hasReplay: context.hasReplay)
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)

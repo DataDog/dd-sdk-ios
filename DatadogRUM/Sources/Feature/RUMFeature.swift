@@ -313,6 +313,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 featureScope: featureScope,
                 monitor: monitor
             ),
+            HasReplayMessageReceiver(monitor: monitor),
             FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(
                 featureScope: featureScope,
