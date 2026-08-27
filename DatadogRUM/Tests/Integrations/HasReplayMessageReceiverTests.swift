@@ -28,29 +28,21 @@ class HasReplayMessageReceiverTests: XCTestCase {
     }
 
     func testWhenContextMessageCarriesHasReplay_itUpdatesMonitorWithoutAnyRUMCommand() throws {
-        // When
-        let context: DatadogContext = .mockWith(
-            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
-        )
-        _ = receiver.receive(message: .context(context), from: NOPDatadogCore())
-
-        // Then
         let activeContextReader: RUMActiveContextReader = monitor
-        XCTAssertEqual(activeContextReader.hasReplay, true)
-    }
 
-    func testWhenContextMessageHasNoReplayBaggage_itClearsMonitorSnapshot() throws {
-        // Given
+        // When — a context message carries replay baggage
         _ = receiver.receive(
             message: .context(.mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true)])),
             from: NOPDatadogCore()
         )
 
-        // When
+        // Then
+        XCTAssertEqual(activeContextReader.hasReplay, true)
+
+        // When — a later context message carries no replay baggage
         _ = receiver.receive(message: .context(.mockAny()), from: NOPDatadogCore())
 
-        // Then
-        let activeContextReader: RUMActiveContextReader = monitor
+        // Then — the snapshot is cleared
         XCTAssertNil(activeContextReader.hasReplay)
     }
 
