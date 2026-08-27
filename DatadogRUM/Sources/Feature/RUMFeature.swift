@@ -93,7 +93,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
         #if !os(watchOS)
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
+        if configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
