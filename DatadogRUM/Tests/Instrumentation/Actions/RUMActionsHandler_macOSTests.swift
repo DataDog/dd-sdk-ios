@@ -120,6 +120,37 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         }
     }
 
+    func testGivenControlInsideTableViewRow_whenLeftMouseDown_itSendsActionForControl() throws {
+        // Given
+        let window = makeWindow()
+        let tableDataSource = TableDataSource()
+        let tableView = makeTableView(dataSource: tableDataSource)
+        window.contentView?.addSubview(tableView.enclosingScrollView!)
+
+        let cellView = try XCTUnwrap(tableView.view(atColumn: 0, row: 0, makeIfNecessary: true))
+        let button = NSButton(frame: .init(x: 10, y: 5, width: 80, height: 20))
+        cellView.addSubview(button)
+
+        let predicate = AppKitRUMActionsPredicateMock()
+        predicate.resultByView[button] = RUMAction(name: "Row Button", attributes: [:])
+        let handler = appKitHandler(appKitPredicate: predicate)
+        let buttonCenterInWindow = button.convert(
+            .init(x: button.bounds.midX, y: button.bounds.midY),
+            to: nil
+        )
+
+        // When
+        handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: buttonCenterInWindow))
+
+        // Then
+        withExtendedLifetime(tableDataSource) {
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+            XCTAssertEqual(command?.name, "Row Button")
+            XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.instrumentation, .appKit)
+        }
+    }
+
     func testGivenCollectionViewItem_whenLeftMouseDown_itSendsActionForItem() throws {
         // Given
         let window = makeWindow()
@@ -142,6 +173,37 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         withExtendedLifetime(collectionDataSource) {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "NSView (Item 0)")
+            XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.instrumentation, .appKit)
+        }
+    }
+
+    func testGivenControlInsideCollectionViewItem_whenLeftMouseDown_itSendsActionForControl() throws {
+        // Given
+        let window = makeWindow()
+        let collectionDataSource = CollectionDataSource()
+        let collectionView = makeCollectionView(dataSource: collectionDataSource)
+        window.contentView?.addSubview(collectionView.enclosingScrollView!)
+
+        let item = try XCTUnwrap(collectionView.item(at: .init(item: 0, section: 0)))
+        let button = NSButton(frame: .init(x: 10, y: 5, width: 60, height: 30))
+        item.view.addSubview(button)
+
+        let predicate = AppKitRUMActionsPredicateMock()
+        predicate.resultByView[button] = RUMAction(name: "Item Button", attributes: [:])
+        let handler = appKitHandler(appKitPredicate: predicate)
+        let buttonCenterInWindow = button.convert(
+            .init(x: button.bounds.midX, y: button.bounds.midY),
+            to: nil
+        )
+
+        // When
+        handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: buttonCenterInWindow))
+
+        // Then
+        withExtendedLifetime(collectionDataSource) {
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+            XCTAssertEqual(command?.name, "Item Button")
             XCTAssertEqual(command?.actionType, .click)
             XCTAssertEqual(command?.instrumentation, .appKit)
         }
