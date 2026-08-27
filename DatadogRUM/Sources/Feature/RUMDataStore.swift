@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal extension FeatureScope {
@@ -35,8 +36,6 @@ internal struct RUMDataStore {
         case anonymousId = "rum-anonymous-id"
     }
 
-    /// Encodes values in RUM data store.
-    private static let encoder = JSONEncoder()
     /// Decodes values in RUM data store.
     private static let decoder = JSONDecoder()
 
@@ -45,7 +44,7 @@ internal struct RUMDataStore {
 
     func setValue<V: Codable>(_ value: V, forKey key: Key, version: DataStoreKeyVersion = dataStoreDefaultKeyVersion) {
         do {
-            let data = try RUMDataStore.encoder.encode(value)
+            let data = try JSONEncoder().dd.encodeWithAttributeRecovery(value)
             featureScope.dataStore.setValue(data, forKey: key.rawValue, version: version)
         } catch let error {
             DD.logger.error("Failed to encode \(type(of: value)) in RUM Data Store", error: error)

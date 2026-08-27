@@ -1164,7 +1164,8 @@ extension RUMScopeDependencies {
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -1195,7 +1196,8 @@ extension RUMScopeDependencies {
             featureFlags: featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            timeseriesCollector: timeseriesCollector
         )
     }
 
@@ -1559,6 +1561,7 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onViewModifierTapped?(actionName, actionAttributes)
     }
 }
+#endif
 
 public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public var vitalData: Double?
@@ -1591,7 +1594,6 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
         }
     }
 }
-#endif
 
 extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
@@ -1846,7 +1848,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
         serverTimeOffset: TimeInterval = .mockAny(),
-        viewPath: String? = .mockAny()
+        viewPath: String? = .mockAny(),
+        viewName: String? = nil
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -1855,7 +1858,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: viewID,
             userActionID: userActionID,
             viewServerTimeOffset: serverTimeOffset,
-            viewPath: viewPath
+            viewPath: viewPath,
+            viewName: viewName
         )
     }
 
@@ -1866,7 +1870,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
             serverTimeOffset: .mockRandom(),
-            viewPath: .mockRandom()
+            viewPath: .mockRandom(),
+            viewName: .mockRandom()
         )
     }
 }

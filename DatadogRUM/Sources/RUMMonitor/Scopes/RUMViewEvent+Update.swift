@@ -73,7 +73,7 @@ private extension RUMViewUpdateEvent.Source {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }
@@ -91,7 +91,7 @@ private extension RUMViewUpdateEvent.Container.Source {
         case .unity: self = .unity
         case .kotlinMultiplatform: self = .kotlinMultiplatform
         case .electron: self = .electron
-        case .rumCpp: self = .rumCpp
+        case .cpp: self = .cpp
         case .maui: self = .maui
         }
     }

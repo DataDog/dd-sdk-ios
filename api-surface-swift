@@ -391,7 +391,7 @@ public enum RUM
     public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
     public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
     public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
-    public typealias SessionListener = (String, Bool) -> Void
+    public typealias SessionListener = @Sendable (String, Bool) -> Void
     public typealias ResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
     public struct Configuration
         public let applicationID: String
@@ -421,15 +421,23 @@ public enum RUM
         public var trackSlowFrames: Bool
         public var telemetrySampleRate: SampleRate
         public var collectAccessibility: Bool
+        public var timeseries: Timeseries?
         public var featureFlags: FeatureFlags
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing?
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
+            public var disallowList: [String] = []
         public enum VitalsFrequency: String
             case frequent
             case average
             case rare
+        public struct Timeseries
+            public var collectTypes: [TimeseriesType]?
+            public init(collectTypes: [TimeseriesType]? = nil)
+        public enum TimeseriesType: CaseIterable
+            case memory
+            case cpu
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
         case trace(hosts: Set<String>,sampleRate: Float = .maxSampleRate,traceControlInjection: TraceContextInjection = .sampled)
@@ -441,7 +449,7 @@ public enum RUM
     public enum HeaderCaptureRule
         case defaults
         case matchHeaders([String])
-    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled)
+    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,trackResourceHeaders: TrackResourceHeaders = .disabled,disallowList: [String] = [])
 [?] extension RUM.Configuration
     public init(applicationID: String,sessionSampleRate: SampleRate = .maxSampleRate,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,trackWatchdogTerminations: Bool = false,vitalsUpdateFrequency: VitalsFrequency? = .average,networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,trackAnonymousUser: Bool = true,trackMemoryWarnings: Bool = true,trackSlowFrames: Bool = true,telemetrySampleRate: SampleRate = 20,collectAccessibility: Bool = false,featureFlags: FeatureFlags = .defaults)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
@@ -624,16 +632,8 @@ public struct SRCompositionLayer: Codable, Hashable
     public enum CompositeOperation: String, Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
-public struct SRCompositionLayerBackgroundMaterialModifier: Codable, Hashable
-    public let kind: Kind
-    public let type: String = "backgroundMaterial"
-    public enum CodingKeys: String, CodingKey
-        case kind = "kind"
-        case type = "type"
-    public init(kind: Kind)
-    public enum Kind: String, Codable
-        case glass = "glass"
 public struct SRCompositionLayerBrightnessBiasModifier: Codable, Hashable
     public let type: String = "brightnessBias"
     public let value: Double
@@ -692,7 +692,6 @@ public enum SRCompositionLayerModifier: Codable, Hashable
     case compositionLayerShadowModifier(value: SRCompositionLayerShadowModifier)
     case compositionLayerBrightnessBiasModifier(value: SRCompositionLayerBrightnessBiasModifier)
     case compositionLayerSaturateModifier(value: SRCompositionLayerSaturateModifier)
-    case compositionLayerBackgroundMaterialModifier(value: SRCompositionLayerBackgroundMaterialModifier)
     case compositionLayerMaskImageModifier(value: SRCompositionLayerMaskImageModifier)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
@@ -747,6 +746,7 @@ public struct SRCompositionLayerUpdate: Codable, Hashable
     public enum CompositeOperation: String, Codable
         case sourceOver = "sourceOver"
         case destinationIn = "destinationIn"
+        case destinationOut = "destinationOut"
         case plusDarker = "plusDarker"
 public struct SRCompositionTree: Codable
     public let layers: [SRCompositionLayer]?
@@ -779,6 +779,33 @@ public struct SRContentClip: Codable, Hashable
         case right = "right"
         case top = "top"
     public init(bottom: Int64? = nil,left: Int64? = nil,right: Int64? = nil,top: Int64? = nil)
+public struct SREmbeddedContentWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let isVisible: Bool?
+    public let permanentId: String?
+    public let shapeStyle: SRShapeStyle?
+    public let slotId: String
+    public let type: String = "embedded_content"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+    public enum CodingKeys: String, CodingKey
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case isVisible = "isVisible"
+        case permanentId = "permanentId"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isVisible: Bool? = nil,permanentId: String? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64,x: Int64,y: Int64)
 public struct SRFocusRecord: Codable
     public let data: Data
     public let slotId: String?
@@ -797,13 +824,15 @@ public struct SRFocusRecord: Codable
         public init(hasFocus: Bool)
 public struct SRFullSnapshotRecord: Codable
     public let data: Data
+    public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 10
     public enum CodingKeys: String, CodingKey
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
-    public init(data: Data,timestamp: Int64)
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public struct Data: Codable
         public let compositionTree: SRCompositionTree?
         public let wireframes: [SRWireframe]
@@ -844,13 +873,15 @@ public struct SRImageWireframe: Codable, Hashable
     public init(base64: String? = nil,border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64,id: Int64,isEmpty: Bool? = nil,mimeType: String? = nil,permanentId: String? = nil,resourceId: String? = nil,shapeStyle: SRShapeStyle? = nil,width: Int64,x: Int64,y: Int64)
 public struct SRIncrementalSnapshotRecord: Codable
     public let data: Data
+    public let slotId: String?
     public let timestamp: Int64
     public let type: Int64 = 11
     public enum CodingKeys: String, CodingKey
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
-    public init(data: Data,timestamp: Int64)
+    public init(data: Data,slotId: String? = nil,timestamp: Int64)
     public enum Data: Codable
         case mutationData(value: MutationData)
         case touchData(value: TouchData)
@@ -888,6 +919,7 @@ public struct SRIncrementalSnapshotRecord: Codable
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
                 case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                case embeddedContentWireframeUpdate(value: EmbeddedContentWireframeUpdate)
                 public func encode(to encoder: Encoder) throws
                 public init(from decoder: Decoder) throws
                 public struct TextWireframeUpdate: Codable
@@ -995,6 +1027,31 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let shapeStyle: SRShapeStyle?
                     public let slotId: String
                     public let type: String = "webview"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                    public enum CodingKeys: String, CodingKey
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case isVisible = "isVisible"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    public init(border: SRShapeBorder? = nil,clip: SRContentClip? = nil,height: Int64? = nil,id: Int64,isVisible: Bool? = nil,shapeStyle: SRShapeStyle? = nil,slotId: String,width: Int64? = nil,x: Int64? = nil,y: Int64? = nil)
+                public struct EmbeddedContentWireframeUpdate: Codable
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public let isVisible: Bool?
+                    public let shapeStyle: SRShapeStyle?
+                    public let slotId: String
+                    public let type: String = "embedded_content"
                     public let width: Int64?
                     public let x: Int64?
                     public let y: Int64?
@@ -1163,15 +1220,46 @@ public struct SRShapeBorder: Codable, Hashable
         case color = "color"
         case width = "width"
     public init(color: String,width: Int64)
+public enum SRShapeGradient: Codable, Hashable
+    case linear(value: SRShapeLinearGradient)
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct SRShapeGradientPoint: Codable, Hashable
+    public let x: Double
+    public let y: Double
+    public enum CodingKeys: String, CodingKey
+        case x = "x"
+        case y = "y"
+    public init(x: Double,y: Double)
+public struct SRShapeGradientStop: Codable, Hashable
+    public let color: String
+    public let position: Double
+    public enum CodingKeys: String, CodingKey
+        case color = "color"
+        case position = "position"
+    public init(color: String,position: Double)
+public struct SRShapeLinearGradient: Codable, Hashable
+    public let endPoint: SRShapeGradientPoint
+    public let startPoint: SRShapeGradientPoint
+    public let stops: [SRShapeGradientStop]
+    public let type: String = "linear"
+    public enum CodingKeys: String, CodingKey
+        case endPoint = "endPoint"
+        case startPoint = "startPoint"
+        case stops = "stops"
+        case type = "type"
+    public init(endPoint: SRShapeGradientPoint,startPoint: SRShapeGradientPoint,stops: [SRShapeGradientStop])
 public struct SRShapeStyle: Codable, Hashable
     public let backgroundColor: String?
+    public let backgroundGradient: SRShapeGradient?
     public let cornerRadius: Double?
     public let opacity: Double?
     public enum CodingKeys: String, CodingKey
         case backgroundColor = "backgroundColor"
+        case backgroundGradient = "backgroundGradient"
         case cornerRadius = "cornerRadius"
         case opacity = "opacity"
-    public init(backgroundColor: String? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
+    public init(backgroundColor: String? = nil,backgroundGradient: SRShapeGradient? = nil,cornerRadius: Double? = nil,opacity: Double? = nil)
 public struct SRShapeWireframe: Codable, Hashable
     public let border: SRShapeBorder?
     public let clip: SRContentClip?
@@ -1343,6 +1431,7 @@ public enum SRWireframe: Codable
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
+    case embeddedContentWireframe(value: SREmbeddedContentWireframe)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
 public typealias WireframeID = NodeID
@@ -1444,7 +1533,7 @@ public enum SessionReplay
         case swiftui
         case heatmaps
         case screenChangeScheduling
-        case layerTreeRecording
+        case compositionTreeRecording = "composition_tree_recording"
 [?] extension SessionReplay.Configuration.FeatureFlags
     public static var defaults: Self
     public subscript(flag: Key) -> Bool
@@ -1556,7 +1645,8 @@ public struct FlagAssignment: Equatable
     public var variation: Variation
     public var reason: String
     public var doLog: Bool
-    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool)
+    public var serialID: Int?
+    public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil)
     public init(from decoder: any Decoder) throws
     public func encode(to encoder: any Encoder) throws
 public enum FlagEvaluationError: Error

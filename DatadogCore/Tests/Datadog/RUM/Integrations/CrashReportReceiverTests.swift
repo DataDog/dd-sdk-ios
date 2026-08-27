@@ -154,6 +154,219 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoAndTooManyAttributes_whenSending_itSanitizesRUMErrorContext() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        let lastRUMAttributes = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: activeRUMView,
+            lastRUMAttributes: lastRUMAttributes
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom()
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+    }
+
+    func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgoAndTooManyAttributes_whenSending_itSanitizesRUMErrorContext() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: secondsIn4Hours..<TimeInterval.greatestFiniteMagnitude))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        let lastRUMAttributes = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: activeRUMView,
+            lastRUMAttributes: lastRUMAttributes
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom()
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+    }
+
+    func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoAndTooManyAttributes_whenSending_itSanitizesRUMViewContext() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        let lastRUMAttributes = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: activeRUMView,
+            lastRUMAttributes: lastRUMAttributes
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom()
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+    }
+
+    func testGivenCrashDuringRUMSessionWithActiveViewAndViewEventMapperReintroducingTooManyAttributes_whenSending_itSanitizesTheMappedRUMViewContext() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom(),
+            eventsMapper: .mockWith(
+                viewEventMapper: { viewEvent in
+                    var mappedView = viewEvent
+                    mappedView.context = RUMEventAttributes(
+                        contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+                    )
+                    return mappedView
+                }
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: .mockWith(date: crashDate), context: .mockWith(
+                    trackingConsent: .granted,
+                    lastRUMViewEvent: activeRUMView
+                ))
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "the view returned by `viewEventMapper` must be sanitized before writing")
+    }
+
+    func testGivenCrashDuringRUMSessionWithActiveView_whenSending_itMapsTheRawRUMViewContextBeforeSanitizing() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        var activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        activeRUMView.context = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+
+        var contextInfoCountSeenByMapper: Int?
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: .mockKeepAll(),
+            trackBackgroundEvents: .mockRandom(),
+            eventsMapper: .mockWith(
+                viewEventMapper: { viewEvent in
+                    contextInfoCountSeenByMapper = viewEvent.context?.contextInfo.count
+                    return viewEvent
+                }
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .payload(
+                Crash(report: .mockWith(date: crashDate), context: .mockWith(
+                    trackingConsent: .granted,
+                    lastRUMViewEvent: activeRUMView
+                ))
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        XCTAssertEqual(
+            contextInfoCountSeenByMapper,
+            numberOfAttributes,
+            "`viewEventMapper` must receive the raw view, before sanitization removes attributes"
+        )
+    }
+
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()

@@ -27,6 +27,7 @@ internal final class ImageSnapshotCache {
 
     private struct ContentMetadata {
         let localRect: CGRect
+        let renderBounds: CGRect
         let bounds: CGRect
         let dependencies: [CALayerReference]
         var lastFrameNumber: UInt64
@@ -90,6 +91,7 @@ internal final class ImageSnapshotCache {
         return .init(
             snapshot: snapshot,
             localRect: metadata.localRect,
+            renderBounds: metadata.renderBounds,
             bounds: metadata.bounds,
             dependencies: metadata.dependencies
         )
@@ -102,6 +104,7 @@ internal final class ImageSnapshotCache {
         contentSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
         contentMetadata[replayID] = .init(
             localRect: snapshotData.localRect,
+            renderBounds: snapshotData.renderBounds,
             bounds: snapshotData.bounds,
             dependencies: snapshotData.dependencies,
             lastFrameNumber: frameNumber

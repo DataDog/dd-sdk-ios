@@ -79,11 +79,16 @@ extension InternalExtension where ExtendedType == RUM {
             }
         }()
 
+        let disallowList: DisallowList? = configuration.disallowList.isEmpty
+            ? nil
+            : DisallowList(configuration.disallowList)
+
         let urlSessionHandler = URLSessionRUMResourcesHandler(
             dateProvider: rumConfiguration.dateProvider,
             rumAttributesProvider: configuration.resourceAttributesProvider,
             distributedTracing: distributedTracing,
             headerProcessor: headerProcessor,
+            disallowList: disallowList,
             telemetry: core.telemetry
         )
 

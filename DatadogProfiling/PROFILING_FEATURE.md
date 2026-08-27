@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-07-06
-sdk_version: 3.12.0
-verified_against_commit: 64e66698c
+last_updated: 2026-08-19
+sdk_version: 3.16.0
+verified_against_commit: fee1ac701
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -12,17 +12,16 @@ tracked_files:
 
 ## Overview
 
-Profiling captures pprof wall-time samples from Apple application processes and correlates them with RUM context. It supports three profiling paths:
+Profiling captures pprof wall-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
 
 - **Application launch profiling**: captures process startup and writes the launch profile when RUM emits the TTID app-launch vital.
 - **Continuous Profiling**: periodically records profiles for sampled-in RUM sessions and links long tasks and app hangs.
-- **Custom Profiling**: starts around sampled RUM operations created with `ProfilingOptions`.
 
 Profiling requires `Datadog.initialize()` before `Profiling.enable()`. RUM is not a compile-time module dependency, but the feature depends on RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
 
 **Platform**: iOS, tvOS, visionOS. The Swift sources and Mach profiler are compiled out on watchOS with `#if !os(watchOS)`.
 
-**API status**: `Profiling.enable(with:in:)` is experimental. RUM operation APIs used for custom profiling are in preview.
+**API status**: `Profiling.enable(with:in:)` is experimental.
 
 ## Quick Start Example
 
@@ -82,7 +81,9 @@ let monitor = RUMMonitor.shared()
 // 4. (Optional) Report TTFD so continuous profiles can correlate with full-display timing
 monitor.reportAppFullyDisplayed()
 
-// 5. (Optional) Custom Profiling around a RUM operation
+// 5. (Optional) Correlate a RUM operation with the continuous profile.
+// Sampled operation steps are attached only while Continuous Profiling is running;
+// they do not start a standalone profile on their own.
 monitor.startOperation(
     name: "checkout_flow",
     operationKey: "cart-123",
@@ -136,13 +137,13 @@ flowchart TD
 ### Runtime Orchestration
 - **`DatadogProfiling/Sources/ProfilerFeature.swift`** - Internal feature composition. Registers message receivers, configures app-launch UserDefaults, creates samplers and quota checks.
 - **`DatadogProfiling/Sources/AppLaunchProfiler.swift`** - Handles app-launch profiles and flushes them when TTID arrives.
-- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - Main Continuous and Custom Profiling state machine. Starts/stops native profiling, handles RUM operation/app hang/long task messages, and flushes profiles.
+- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - Main Continuous Profiling state machine. Starts/stops native profiling, handles RUM operation/app hang/long task messages, and flushes profiles.
 - **`DatadogProfiling/Sources/ProfilingSamplerProvider.swift`** - Stores continuous profiling configuration and session-linked sampling decisions.
 - **`DatadogProfiling/Sources/ProfilingQuotaChecker.swift`** - Checks session-scoped profiling quota admission.
 - **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** - Blocks profiling in low battery, Low Power Mode, or background conditions.
 
 ### Event Writing and Upload
-- **`DatadogProfiling/Sources/ProfilingHandler.swift`** - Shared write path for app-launch, continuous, and custom profiles. Serializes pprof data and RUM events into a profile event.
+- **`DatadogProfiling/Sources/ProfilingHandler.swift`** - Shared write path for app-launch and continuous profiles. Serializes pprof data and RUM events into a profile event.
 - **`DatadogProfiling/Sources/RequestBuilder.swift`** - Builds the multipart upload to `/api/v2/profile`.
 - **`DatadogProfiling/Sources/ProfileEvent.swift`** - JSON event metadata for a profile.
 - **`DatadogProfiling/Sources/Models/ProfileAttachments.swift`** - pprof and RUM event attachments.
@@ -158,7 +159,7 @@ flowchart TD
 ### Sampling
 - **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch. If multiple SDK instances set it, the native side uses the lowest sample rate.
 - **Continuous Profiling**: `continuousSampleRate` default is `5.0`. A value above zero configures continuous profiling. The final decision is composed with the current RUM session sampler via `RUMCoreContext.sessionSampler.combined(with: continuousSampleRate)`.
-- **Custom Profiling**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Operation-based custom profiling controls the profiling window only when Continuous Profiling is disabled or sampled out; otherwise sampled operation steps are attached to the continuous profile.
+- **Operations**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Sampled operation steps are attached to the continuous profile while Continuous Profiling is running.
 
 ### Runtime Conditions
 Profiling is suspended when `ProfilingConditions` sees any blocker:
@@ -166,7 +167,7 @@ Profiling is suspended when `ProfilingConditions` sees any blocker:
 - Low Power Mode is enabled.
 - The app is in the background.
 
-Continuous profiles are also flushed when the app backgrounds after foreground activity. Custom profiling keeps the native profiler alive while sampled operations are ongoing.
+Continuous profiles are also flushed when the app backgrounds after foreground activity.
 
 ### Quota
 `ProfilingQuotaChecker` checks whether the active RUM session is allowed to write profiles after Profiling has RUM session context and granted consent. Temporary quota lookup failures do not block profiling, while explicit quota rejection stops profiling for that session. A new RUM session triggers a fresh quota decision.
@@ -179,7 +180,7 @@ Profile uploads are multipart/form-data requests that include profile metadata, 
 ### "No profiles appear"
 1. Verify `Datadog.initialize()` and `Profiling.enable()` were called.
 2. Verify RUM is enabled and tracking consent is `.granted`; Profiling relies on RUM context for session-linked sampling and quota.
-3. Check `applicationLaunchSampleRate`, `continuousSampleRate`, or operation `ProfilingOptions(sampleRate:)` are greater than zero.
+3. Check `applicationLaunchSampleRate` or `continuousSampleRate` are greater than zero.
 4. Confirm the app is not on watchOS, in Low Power Mode, below the battery threshold, or running only in background.
 5. Ensure the session was not rejected by the profiling quota API.
 
@@ -187,13 +188,6 @@ Profile uploads are multipart/form-data requests that include profile metadata, 
 1. Continuous profiles are written only when the RUM session samples continuous profiling in.
 2. A continuous profile needs correlated RUM data currently collected by Profiling: RUM vitals such as TTFD or sampled operation steps, app hangs, or long tasks.
 3. Report TTFD with `monitor.reportAppFullyDisplayed()`, use sampled RUM operation steps, or enable RUM long tasks (`longTaskThreshold`) and app hangs (`appHangThreshold`) if those correlations are expected.
-
-### "Custom operation profiles are missing"
-1. Use `startOperation(name:operationKey:attributes:options:)` with `ProfilingOptions(sampleRate:)`. Deprecated `startFeatureOperation` does not accept profiling options.
-2. Use matching `name` and `operationKey` in `succeedOperation` or `failOperation`.
-3. Keep the operation active long enough for the native profiler to collect useful samples.
-4. Remember that the operation sample rate is composed with the RUM session sampler.
-5. Operation-based custom profiling takes over only when Continuous Profiling is disabled or sampled out. If Continuous Profiling is sampled in, sampled operation steps are attached to the continuous profile instead of creating a separate custom profile.
 
 ### "App launch profile is missing"
 1. Ensure RUM is enabled early enough to emit the TTID message consumed by `AppLaunchProfiler`.
