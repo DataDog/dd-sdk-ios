@@ -16,6 +16,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     private let featureScope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
     private let memoryReader = SamplingBasedVitalReaderMock()
 
+    /// Blocks the test until `duration` has elapsed on a background queue, giving the collector's sampling
+    /// timer time to fire before assertions run.
+    private func settle(_ duration: TimeInterval = 0.1) {
+        let expectation = self.expectation(description: "settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + duration) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+    }
+
     // MARK: - Memory events
 
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
@@ -801,27 +809,20 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.activeContextReader = contextReader
         collector.start(sessionID: "session-clock-jumps", applicationID: "app-1", sessionType: .user)
 
-        let pauseExpectation = self.expectation(description: "pause settled")
         collector.pause(sessionID: "session-clock-jumps")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.1)
 
         // When — simulate a long device sleep: the wall clock jumps forward by an hour, but the monotonic
         // media clock (paused during real sleep) does not advance — then the collector resumes and samples
         clock.date = clock.date.addingTimeInterval(3_600)
-        let resumeAfterForwardJumpExpectation = self.expectation(description: "resumed samples collected after forward jump")
-        resumeAfterForwardJumpExpectation.assertForOverFulfill = false
         collector.resume(sessionID: "session-clock-jumps")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeAfterForwardJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.3)
 
         // Then — post-resume samples reflect the real (post-sleep) wall-clock time, not the pre-sleep
         // anchor lagging behind by ~1 hour. Pause again (flushing this batch) so we have a known
         // `flushedAfterForwardJump.timeseries.end` to check the next batch against below.
-        let pauseAfterForwardJumpExpectation = self.expectation(description: "pause after forward jump settled")
         collector.pause(sessionID: "session-clock-jumps")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.1) { pauseAfterForwardJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.1)
 
         let eventsAfterForwardJump = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         guard let flushedAfterForwardJump = eventsAfterForwardJump.last else {
@@ -834,16 +835,11 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // When — the wall clock then moves backward by an hour while paused/backgrounded (e.g. an NTP
         // correction), then the collector resumes and samples again
         clock.date = clock.date.addingTimeInterval(-3_600)
-        let resumeAfterBackwardJumpExpectation = self.expectation(description: "resumed samples collected after backward jump")
-        resumeAfterBackwardJumpExpectation.assertForOverFulfill = false
         collector.resume(sessionID: "session-clock-jumps")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { resumeAfterBackwardJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.3)
 
-        let syncExpectation = self.expectation(description: "stop completed")
         collector.stop(sessionID: "session-clock-jumps")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.2)
 
         // Then — the post-resume batch must not precede the batch already flushed before the pause,
         // even though the wall clock moved backward while paused
@@ -1033,20 +1029,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.activeContextReader = contextReader
         collector.start(sessionID: "session-clock-jump", applicationID: "app-1", sessionType: .user)
 
-        let beforeJumpExpectation = self.expectation(description: "samples collected before the clock jump")
-        beforeJumpExpectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { beforeJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.2)
 
         // When — the wall clock jumps backward (e.g. an NTP correction), but real time (and thus the
         // monotonic media clock the collector now anchors to) keeps moving forward normally
         clock.date = clock.date.addingTimeInterval(-60)
         clock.mediaTime.current += 0.2
 
-        let afterBackwardJumpExpectation = self.expectation(description: "more samples collected after the backward jump")
-        afterBackwardJumpExpectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { afterBackwardJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.2)
 
         collector.flush()
 
@@ -1064,15 +1054,10 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // stays foregrounded and never pauses/resumes; the monotonic media clock is left untouched
         clock.date = clock.date.addingTimeInterval(3_600)
 
-        let afterForwardJumpExpectation = self.expectation(description: "more samples collected after the forward jump")
-        afterForwardJumpExpectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { afterForwardJumpExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.2)
 
-        let syncExpectation = self.expectation(description: "stop completed")
         collector.stop(sessionID: "session-clock-jump")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        settle(0.2)
 
         // Then — the most recent sample reflects the corrected wall-clock time immediately, without
         // waiting for a pause/resume cycle to refresh the anchor
