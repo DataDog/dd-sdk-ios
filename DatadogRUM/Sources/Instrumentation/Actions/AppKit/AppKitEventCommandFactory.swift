@@ -102,7 +102,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
 
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
 
-        if case let .trySwiftUIFallbackTo(view) = bestTarget,
+        if case .trySwiftUIFallbackTo(_) = bestTarget,
            let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider) {
             return swiftUIResult
         }
@@ -158,6 +158,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     /// Depending on how toolbars are built, the event target may be `NSToolbarItemViewer` itself or a button inside it. Changing
     /// it always to the `NSToolbarItemViewer` provides better instrumenting, making it clear this was a click on a toolbar item.
     ///
+    /// If the control is a `NSTableView`, this method obtains the row the user clicked in, if any. Otherwise, the `NSTableView`
+    /// itself is returned. See the documentation of `tableRowIn(tableView:windowCoordinates:)` for details.
+    ///
     /// - Parameter control: The target control of the event being processed.
     /// - Returns: The best target for the event, as described above.
     private func bestActionTargetFor(control: NSControl, event: NSEvent) -> NSView {
@@ -192,6 +195,10 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             || view is NSTableHeaderView {
             return .appKit(view)
         } else if let ddControl = view as? DDControl {
+            // NSTableView interactive element is the row, not the cell. If the click hits a row,
+            // outside of a specific control present in a table cell, it's caught here, as a click
+            // on the NSTableView itself (NSTableView extends NSControl). The bestActionTargetFor(control:event:)
+            // method digs in to find the clicked row.
             return .appKit(bestActionTargetFor(control: ddControl, event: event))
         } else {
             let classNameFirstElement = String(describing: type(of: view)).prefix { char in
@@ -209,6 +216,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             }
 
             if let collectionView = bestParent as? NSCollectionView {
+                // If the user clicked on a collection view outside of a control in a collection view item,
+                // look for the collection view item the user clicked on. If the click was outside of any
+                // item, return the collection view itself.
                 result = collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
             } else if let control = bestParent as? NSControl {
                 result = bestActionTargetFor(control: control, event: event)
