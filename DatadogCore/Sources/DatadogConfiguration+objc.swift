@@ -303,13 +303,12 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration.backgroundTasksEnabled = newValue }
     }
 
-    /// The remote configuration used to fetch SDK settings from the Datadog CDN at startup.
+    /// Sets the remote configuration used to fetch SDK settings from the Datadog CDN at startup.
     ///
-    /// When non-nil, the SDK asynchronously fetches and caches the remote configuration document.
-    /// Default is `nil` — no fetch is performed.
-    public var remoteConfiguration: objc_RemoteConfiguration? {
-        get { sdkConfiguration.remoteConfiguration.map { objc_RemoteConfiguration(swiftType: $0) } }
-        set { sdkConfiguration.remoteConfiguration = newValue?.swiftType }
+    /// When set, the SDK asynchronously fetches and caches the remote configuration document.
+    /// By default, no remote configuration is set and no fetch is performed.
+    public func setRemoteConfiguration(_ remoteConfiguration: objc_RemoteConfiguration?) {
+        sdkConfiguration.remoteConfiguration = remoteConfiguration?.swiftType
     }
 
     /// Creates a Datadog SDK Configuration object.
