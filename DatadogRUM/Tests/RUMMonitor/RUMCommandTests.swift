@@ -90,24 +90,16 @@ class RUMCommandTests: XCTestCase {
 
     func testWhenRUMStartViewCommand_isPassedInstrumentationTypeAttribute() {
         let flutter: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "flutter"])
-        XCTAssertEqual(flutter.instrumentationType, .flutter)
+        XCTAssertEqual(flutter.instrumentationType, .crossPlatform("flutter"))
         XCTAssertTrue(flutter.attributes.isEmpty)
 
-        let reactNative: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "react-native"])
-        XCTAssertEqual(reactNative.instrumentationType, .reactNative)
-        XCTAssertTrue(reactNative.attributes.isEmpty)
+        let anyFutureCPSDK: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "some-future-cp-sdk"])
+        XCTAssertEqual(anyFutureCPSDK.instrumentationType, .crossPlatform("some-future-cp-sdk"))
+        XCTAssertTrue(anyFutureCPSDK.attributes.isEmpty)
 
-        let unity: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "unity"])
-        XCTAssertEqual(unity.instrumentationType, .unity)
-        XCTAssertTrue(unity.attributes.isEmpty)
-
-        let kmp: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "kotlin-multiplatform"])
-        XCTAssertEqual(kmp.instrumentationType, .kotlinMultiplatform)
-        XCTAssertTrue(kmp.attributes.isEmpty)
-
-        let unknown: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "some-future-cp-sdk"], instrumentationType: .manual)
-        XCTAssertEqual(unknown.instrumentationType, .manual)
-        XCTAssertTrue(unknown.attributes.isEmpty)
+        let empty: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: ""], instrumentationType: .manual)
+        XCTAssertEqual(empty.instrumentationType, .manual)
+        XCTAssertTrue(empty.attributes.isEmpty)
 
         let missing: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .manual)
         XCTAssertEqual(missing.instrumentationType, .manual)

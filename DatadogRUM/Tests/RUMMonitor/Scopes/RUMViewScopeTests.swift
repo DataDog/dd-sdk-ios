@@ -2050,10 +2050,7 @@ class RUMViewScopeTests: XCTestCase {
             case .uikit: return "UIKit action"
             case .swiftuiAutomatic: return "Automatic SwiftUI action"
             case .swiftui: return "SwiftUI action"
-            case .flutter: return "Flutter action"
-            case .reactNative: return "React Native action"
-            case .unity: return "Unity action"
-            case .kotlinMultiplatform: return "Kotlin Multiplatform action"
+            case .crossPlatform(let value): return "\(value) action"
             }
         }
 

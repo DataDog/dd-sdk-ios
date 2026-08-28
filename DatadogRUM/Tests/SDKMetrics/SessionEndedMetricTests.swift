@@ -342,7 +342,7 @@ class SessionEndedMetricTests: XCTestCase {
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftuiAutomatic\(idx)"), instrumentationType: .swiftuiAutomatic)
         }
         try (0..<flutterViewsCount).forEach { idx in
-            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "flutter\(idx)"), instrumentationType: .flutter)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "flutter\(idx)"), instrumentationType: .crossPlatform("flutter"))
         }
         try (0..<unknownViewsCount).forEach { idx in
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "unknown\(idx)"), instrumentationType: nil)

@@ -108,7 +108,7 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         // Then
         let metrics = try XCTUnwrap(core.waitAndReturnViewEndedMetricEvents())
         XCTAssertEqual(metrics.count, 2)
-        XCTAssertEqual(metrics[1].attributes?.instrumentationType, .flutter)
+        XCTAssertEqual(metrics[1].attributes?.instrumentationType, .crossPlatform("flutter"))
     }
 
     func testReportingTNSValue() throws {

@@ -604,16 +604,18 @@ private extension Int64 {
 }
 
 extension InstrumentationType: Encodable {
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(metricKey)
+    }
+
     var metricKey: String {
         switch self {
         case .uikit: return "uikit"
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"
-        case .flutter: return "flutter"
-        case .reactNative: return "react-native"
-        case .unity: return "unity"
-        case .kotlinMultiplatform: return "kotlin-multiplatform"
+        case .crossPlatform(let value): return value
         }
     }
 }
