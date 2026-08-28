@@ -828,6 +828,40 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         #endif
     }
 
+    func testGivenPrewarmedSession_whenItTimesOutSilently_andViewIsTrackedInForeground() throws {
+        #if os(tvOS) || os(watchOS)
+        throw XCTSkip("This test is not available on tvOS nor watchOS")
+        #else
+        // Given
+        // - The SDK is initialized while the prewarmed app is in background, with no RUM events tracked.
+        let given = prewarmedSession()
+
+        // When
+        // - The initial session times out silently before the app enters foreground and tracks its first view.
+        let when = given
+            .when(.timeoutSession())
+            .and(.appBecomesActive(after: dt1))
+            .and(.startManualView(after: dt2, viewName: manualViewName))
+            .and(.stopManualView(after: dt3))
+
+        // Then
+        // - The empty prewarm session is skipped and the view belongs to a new session starting at the event time.
+        let session = try when.then().takeSingle()
+        XCTAssertNil(session.ttidEvent)
+        XCTAssertNil(session.timeToInitialDisplay)
+        DDAssertEqual(
+            session.sessionStartDate,
+            processLaunchDate + timeToSDKInit + sessionTimeoutDuration + dt1 + dt2,
+            accuracy: accuracy
+        )
+        DDAssertEqual(session.duration, dt3, accuracy: accuracy)
+        XCTAssertEqual(session.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(session.views.count, 1)
+        XCTAssertEqual(session.views[0].name, manualViewName)
+        DDAssertEqual(session.views[0].duration, dt3, accuracy: accuracy)
+        #endif
+    }
+
     func testGivenBackgroundSession_andBETEnabled_whenItTimesOut_andNextEventIsTrackedInForeground() throws {
         #if os(tvOS) || os(watchOS)
         throw XCTSkip("This test is not available on tvOS nor watchOS")
