@@ -88,6 +88,34 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
     }
 
+    func testWhenRUMStartViewCommand_isPassedInstrumentationTypeAttribute() {
+        let flutter: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "flutter"])
+        XCTAssertEqual(flutter.instrumentationType, .flutter)
+        XCTAssertTrue(flutter.attributes.isEmpty)
+
+        let reactNative: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "react-native"])
+        XCTAssertEqual(reactNative.instrumentationType, .reactNative)
+        XCTAssertTrue(reactNative.attributes.isEmpty)
+
+        let unity: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "unity"])
+        XCTAssertEqual(unity.instrumentationType, .unity)
+        XCTAssertTrue(unity.attributes.isEmpty)
+
+        let kmp: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "kotlin-multiplatform"])
+        XCTAssertEqual(kmp.instrumentationType, .kotlinMultiplatform)
+        XCTAssertTrue(kmp.attributes.isEmpty)
+
+        let unknown: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "some-future-cp-sdk"], instrumentationType: .manual)
+        XCTAssertEqual(unknown.instrumentationType, .manual)
+        XCTAssertTrue(unknown.attributes.isEmpty)
+
+        let missing: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .manual)
+        XCTAssertEqual(missing.instrumentationType, .manual)
+
+        let uikit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .uikit)
+        XCTAssertEqual(uikit.instrumentationType, .uikit)
+    }
+
     func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorIsCrashAttribute() {
         let command1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorIsCrash: true])
 

@@ -322,6 +322,7 @@ class SessionEndedMetricTests: XCTestCase {
         let swiftuiViewsCount: Int = .mockRandom(min: 1, max: 10)
         let uikitPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
         let swiftuiAutomaticPredicateViewsCount: Int = .mockRandom(min: 1, max: 10)
+        let flutterViewsCount: Int = .mockRandom(min: 1, max: 10)
         let unknownViewsCount: Int = .mockRandom(min: 1, max: 10)
 
         // Given
@@ -340,6 +341,9 @@ class SessionEndedMetricTests: XCTestCase {
         try (0..<swiftuiAutomaticPredicateViewsCount).forEach { idx in
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "swiftuiAutomatic\(idx)"), instrumentationType: .swiftuiAutomatic)
         }
+        try (0..<flutterViewsCount).forEach { idx in
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "flutter\(idx)"), instrumentationType: .flutter)
+        }
         try (0..<unknownViewsCount).forEach { idx in
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "unknown\(idx)"), instrumentationType: nil)
         }
@@ -347,14 +351,18 @@ class SessionEndedMetricTests: XCTestCase {
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.viewsCount.total, manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + unknownViewsCount)
+        XCTAssertEqual(
+            rse.viewsCount.total,
+            manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + flutterViewsCount + unknownViewsCount
+        )
         XCTAssertEqual(
             rse.viewsCount.byInstrumentation,
             [
                 "manual": manualViewsCount,
                 "swiftui": swiftuiViewsCount,
                 "uikit": uikitPredicateViewsCount,
-                "swiftuiAutomatic": swiftuiAutomaticPredicateViewsCount
+                "swiftuiAutomatic": swiftuiAutomaticPredicateViewsCount,
+                "flutter": flutterViewsCount
             ]
         )
     }

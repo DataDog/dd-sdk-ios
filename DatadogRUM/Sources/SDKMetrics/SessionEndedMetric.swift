@@ -610,6 +610,10 @@ extension InstrumentationType: Encodable {
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"
+        case .flutter: return "flutter"
+        case .reactNative: return "react-native"
+        case .unity: return "unity"
+        case .kotlinMultiplatform: return "kotlin-multiplatform"
         }
     }
 }
