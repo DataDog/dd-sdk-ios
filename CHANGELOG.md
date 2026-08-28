@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
+- [IMPROVEMENT] Return `nil` carrier info on iOS 16+ since `CTCarrier` is deprecated with no replacement. See [#3164][]
 
 # 3.16.0 / 19-08-2026
 
@@ -1232,6 +1233,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
 [#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
 [#3136]: https://github.com/DataDog/dd-sdk-ios/pull/3136
+[#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
