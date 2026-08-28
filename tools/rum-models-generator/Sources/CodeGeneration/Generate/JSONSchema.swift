@@ -220,8 +220,11 @@ internal class JSONSchema: Decodable {
     func resolveReferences(in directory: URL, using reader: JSONSchemaReader, root: JSONSchema? = nil) throws {
         let effectiveRoot = root ?? self
 
-        // resolve `$defs` entries first so they're ready as resolution targets
+        // resolve `$defs` / `definitions` entries first so they're ready as resolution targets
         try self.defs?.values.forEach {
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
+        }
+        try self.definitions?.values.forEach {
             try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 

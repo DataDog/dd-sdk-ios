@@ -139,6 +139,20 @@ final class JSONSchemaReaderTests: XCTestCase {
         XCTAssertEqual(name.type, .string)
     }
 
+    func testResolvingNestedDefinitionsRef() throws {
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-nested-definitions-ref", withExtension: "json")!
+
+        let schema = try JSONSchemaReader().read(file)
+
+        let status = try XCTUnwrap(schema.properties?["status"])
+        XCTAssertEqual(status.type, .string)
+        XCTAssertEqual(status.description, "The status")
+        XCTAssertEqual(status.enum, [.string("pending"), .string("active"), .string("closed")])
+
+        let name = try XCTUnwrap(schema.properties?["name"])
+        XCTAssertEqual(name.type, .string)
+    }
+
     func testResolvingAnyOfRef() throws {
         let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-anyof-ref", withExtension: "json")!
 
