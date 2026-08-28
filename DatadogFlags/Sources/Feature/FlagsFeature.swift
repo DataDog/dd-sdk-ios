@@ -11,6 +11,9 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     static let name = "flags"
 
     private enum Constants {
+        static let disabledAssignmentRequestTimeout: TimeInterval = 0
+        static let maxAssignmentRequestTimeout = FlagAssignmentsRequestOperation.maximumSupportedTimeout
+        static let maxAssignmentRequestRetryCount = FlagAssignmentsRequestOperation.maximumRetryCount
         static let minEvaluationFlushInterval: TimeInterval = 1.0
         static let maxEvaluationFlushInterval: TimeInterval = 60.0
     }
@@ -31,11 +34,55 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         featureScope: FeatureScope,
         core: DatadogCoreProtocol
     ) {
-        flagAssignmentsFetcher = FlagAssignmentsFetcher(
-            customEndpoint: configuration.customFlagsEndpoint,
-            customHeaders: configuration.customFlagsHeaders,
-            featureScope: featureScope
-        )
+        if let assignmentRequestFetch = configuration.assignmentRequestFetch {
+            flagAssignmentsFetcher = FlagAssignmentsFetcher(
+                customEndpoint: configuration.customFlagsEndpoint,
+                customHeaders: configuration.customFlagsHeaders,
+                featureScope: featureScope,
+                assignmentRequestFetch: assignmentRequestFetch
+            )
+        } else {
+            let assignmentRequestTimeout: TimeInterval
+            if configuration.assignmentRequestTimeout.isFinite && configuration.assignmentRequestTimeout >= 0 {
+                assignmentRequestTimeout = min(
+                    configuration.assignmentRequestTimeout,
+                    Constants.maxAssignmentRequestTimeout
+                )
+                if assignmentRequestTimeout != configuration.assignmentRequestTimeout {
+                    DD.logger.warn(
+                        "`Flags.Configuration.assignmentRequestTimeout` cannot exceed "
+                            + "\(Constants.maxAssignmentRequestTimeout)s. "
+                            + "A value of \(assignmentRequestTimeout)s will be used."
+                    )
+                }
+            } else {
+                DD.logger.warn(
+                    "`Flags.Configuration.assignmentRequestTimeout` must be finite and non-negative. "
+                        + "The assignment request timeout will be disabled."
+                )
+                assignmentRequestTimeout = Constants.disabledAssignmentRequestTimeout
+            }
+
+            let assignmentRequestRetryCount = min(
+                max(configuration.assignmentRequestRetryCount, 0),
+                Constants.maxAssignmentRequestRetryCount
+            )
+            if assignmentRequestRetryCount != configuration.assignmentRequestRetryCount {
+                DD.logger.warn(
+                    "`Flags.Configuration.assignmentRequestRetryCount` must be between 0 and "
+                        + "\(Constants.maxAssignmentRequestRetryCount). "
+                        + "A value of \(assignmentRequestRetryCount) will be used."
+                )
+            }
+
+            flagAssignmentsFetcher = FlagAssignmentsFetcher(
+                customEndpoint: configuration.customFlagsEndpoint,
+                customHeaders: configuration.customFlagsHeaders,
+                featureScope: featureScope,
+                assignmentRequestTimeout: assignmentRequestTimeout,
+                assignmentRequestRetryCount: assignmentRequestRetryCount
+            )
+        }
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry

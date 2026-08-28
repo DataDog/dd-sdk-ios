@@ -345,6 +345,10 @@
 		5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
 		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
 		5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */; };
+		A1B2C3D4E5F60718293A4B5D /* FlagAssignmentsRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */; };
+		A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */; };
+		A1B2C3D4E5F60718293A4B5F /* FlagAssignmentsRequestOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */; };
+		A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */; };
 		5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */; };
 		5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
 		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
@@ -2188,6 +2192,10 @@
 		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
 		5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequest.swift; sourceTree = "<group>"; };
 		5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperation.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetch.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperationTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetchTests.swift; sourceTree = "<group>"; };
 		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
 		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
@@ -4049,6 +4057,8 @@
 				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
+				A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */,
+				A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
 				BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */,
 				5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */,
@@ -4135,6 +4145,8 @@
 				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
+				A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */,
+				A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */,
 				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
 				5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */,
@@ -8299,6 +8311,8 @@
 				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
+				A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5D /* FlagAssignmentsRequestOperation.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
 				27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */,
@@ -8324,6 +8338,8 @@
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
 				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
+				A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5F /* FlagAssignmentsRequestOperationTests.swift in Sources */,
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,

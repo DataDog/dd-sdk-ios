@@ -17,27 +17,31 @@ internal protocol FlagAssignmentsFetching {
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
+    let assignmentRequestTimeout: TimeInterval?
+    let assignmentRequestRetryCount: Int?
 
     private let featureScope: any FeatureScope
-    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+    private let fetch: FlagAssignmentsFetch
 
     private static let decoder = JSONDecoder()
 
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        assignmentRequestTimeout: TimeInterval,
+        assignmentRequestRetryCount: Int
     ) {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-
-        let urlSession = URLSession(configuration: configuration)
-
+        let assignmentRequestFetch = Flags.AssignmentRequestFetch.urlSession()
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             featureScope: featureScope,
-            fetch: urlSession.fetch
+            fetch: { request, completion in
+                assignmentRequestFetch(request, completion: completion)
+            },
+            assignmentRequestTimeout: assignmentRequestTimeout,
+            assignmentRequestRetryCount: assignmentRequestRetryCount
         )
     }
 
@@ -45,12 +49,52 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        fetch: @escaping FlagAssignmentsFetch,
+        assignmentRequestTimeout: TimeInterval = 0,
+        assignmentRequestRetryCount: Int = 0,
+        schedule: @escaping FlagAssignmentsSchedule = FlagAssignmentsRequestOperation.schedule,
+        jitter: @escaping (TimeInterval) -> TimeInterval = { upperBound in Double.random(in: 0..<upperBound) },
+        now: @escaping () -> Date = Date.init
+    ) {
+        let policyFetch: FlagAssignmentsFetch
+        if assignmentRequestTimeout == 0, assignmentRequestRetryCount == 0 {
+            policyFetch = fetch
+        } else {
+            let composedFetch = Flags.AssignmentRequestFetch(fetch)
+                .withTimeout(assignmentRequestTimeout, schedule: schedule)
+                .withRetry(
+                    assignmentRequestRetryCount,
+                    schedule: schedule,
+                    jitter: jitter,
+                    now: now
+                )
+            policyFetch = { request, completion in
+                composedFetch(request, completion: completion)
+            }
+        }
+
+        self.customEndpoint = customEndpoint
+        self.customHeaders = customHeaders
+        self.featureScope = featureScope
+        self.assignmentRequestTimeout = assignmentRequestTimeout
+        self.assignmentRequestRetryCount = assignmentRequestRetryCount
+        self.fetch = policyFetch
+    }
+
+    init(
+        customEndpoint: URL?,
+        customHeaders: [String: String]?,
+        featureScope: any FeatureScope,
+        assignmentRequestFetch: Flags.AssignmentRequestFetch
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
-        self.fetch = fetch
+        self.assignmentRequestTimeout = nil
+        self.assignmentRequestRetryCount = nil
+        self.fetch = { request, completion in
+            assignmentRequestFetch(request, completion: completion)
+        }
     }
 
     func flagAssignments(
@@ -69,11 +113,30 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                self.fetch(request) { [featureScope] result in
+                let operation = FlagAssignmentsRequestOperation(
+                    request: request,
+                    timeout: 0,
+                    retryCount: 0,
+                    fetch: self.fetch,
+                    schedule: FlagAssignmentsRequestOperation.schedule,
+                    jitter: { _ in 0 },
+                    now: Date.init
+                )
+                operation.start { [featureScope] result in
                     switch result {
-                    case .success(let data):
+                    case .success(let response):
+                        guard (200..<300).contains(response.httpResponse.statusCode) else {
+                            let error = URLError(.badServerResponse)
+                            DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
+                            featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
+                            completion(.failure(.networkError(error)))
+                            return
+                        }
                         do {
-                            let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
+                            let response = try Self.decoder.decode(
+                                FlagAssignmentsResponse.self,
+                                from: response.data
+                            )
 
                             // Log any flags that failed to decode to telemetry
                             if !response.failedFlags.isEmpty {
@@ -141,31 +204,5 @@ extension DatadogSite {
             return URL(string: "https://\(subdomain).ff-cdn.datadoghq.com")!
         // swiftlint:enable force_unwrapping
         }
-    }
-}
-
-extension URLSession {
-    fileprivate func fetch(
-        _ request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
-    ) {
-        let task = self.dataTask(with: request) { data, response, error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-
-            guard
-                let data,
-                let httpResponse = response as? HTTPURLResponse,
-                200..<300 ~= httpResponse.statusCode
-            else {
-                completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-
-            completion(.success(data))
-        }
-        task.resume()
     }
 }

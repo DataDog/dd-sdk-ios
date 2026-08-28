@@ -15,6 +15,9 @@ final class FlagsTests: XCTestCase {
 
         // Then
         XCTAssertNil(config.customExposureEndpoint)
+        XCTAssertNil(config.assignmentRequestFetch)
+        XCTAssertEqual(config.assignmentRequestTimeout, 0)
+        XCTAssertEqual(config.assignmentRequestRetryCount, 0)
     }
 
     func testWhenNotEnabled() {
@@ -41,6 +44,8 @@ final class FlagsTests: XCTestCase {
         var config = Flags.Configuration()
         config.customFlagsEndpoint = .mockRandom()
         config.customFlagsHeaders = .mockRandom()
+        config.assignmentRequestTimeout = 2.5
+        config.assignmentRequestRetryCount = 3
         config.customExposureEndpoint = .mockRandom()
         let core = FeatureRegistrationCoreMock()
 
@@ -53,7 +58,99 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.performanceOverride?.maxObjectsInFile, 50)
         XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
         XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
+        XCTAssertEqual(flagAssignmentFetcher.assignmentRequestTimeout, Optional(2.5))
+        XCTAssertEqual(flagAssignmentFetcher.assignmentRequestRetryCount, Optional(3))
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
+    }
+
+    func testInvalidAssignmentRequestConfigurationIsBounded() throws {
+        let configurations: [(Flags.Configuration, TimeInterval, Int)] = [
+            (
+                Flags.Configuration(
+                    assignmentRequestTimeout: -.infinity,
+                    assignmentRequestRetryCount: -1
+                ),
+                0,
+                0
+            ),
+            (
+                Flags.Configuration(
+                    assignmentRequestTimeout: .nan,
+                    assignmentRequestRetryCount: 11
+                ),
+                0,
+                10
+            ),
+            (
+                Flags.Configuration(
+                    assignmentRequestTimeout: .greatestFiniteMagnitude,
+                    assignmentRequestRetryCount: 1
+                ),
+                2_147_483.647,
+                1
+            ),
+        ]
+
+        for (configuration, expectedTimeout, expectedRetryCount) in configurations {
+            let core = FeatureRegistrationCoreMock()
+
+            Flags.enable(with: configuration, in: core)
+
+            let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+            let fetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+            XCTAssertEqual(fetcher.assignmentRequestTimeout, Optional(expectedTimeout))
+            XCTAssertEqual(fetcher.assignmentRequestRetryCount, Optional(expectedRetryCount))
+        }
+    }
+
+    func testZeroAssignmentRequestTimeoutAndRetryCountAreAccepted() throws {
+        let configuration = Flags.Configuration(
+            assignmentRequestTimeout: 0,
+            assignmentRequestRetryCount: 0
+        )
+        let core = FeatureRegistrationCoreMock()
+
+        Flags.enable(with: configuration, in: core)
+
+        let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        let fetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+        XCTAssertEqual(fetcher.assignmentRequestTimeout, Optional(0))
+        XCTAssertEqual(fetcher.assignmentRequestRetryCount, Optional(0))
+    }
+
+    func testCustomAssignmentRequestFetchBypassesScalarPolicy() throws {
+        // Given
+        var fetchCount = 0
+        let expectedError = URLError(.notConnectedToInternet)
+        let customFetch = Flags.AssignmentRequestFetch { _, completion in
+            fetchCount += 1
+            completion(.failure(expectedError))
+            return {}
+        }
+        var configuration = Flags.Configuration(
+            assignmentRequestTimeout: 0.000001,
+            assignmentRequestRetryCount: 10
+        )
+        configuration.assignmentRequestFetch = customFetch
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
+
+        // When
+        Flags.enable(with: configuration, in: core)
+        let feature = try XCTUnwrap(core.get(feature: FlagsFeature.self))
+        feature.flagAssignmentsFetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+
+        // Then
+        XCTAssertEqual(fetchCount, 1, "scalar retries must not wrap a custom transport")
+        let fetcher = try XCTUnwrap(feature.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
+        XCTAssertNil(fetcher.assignmentRequestTimeout)
+        XCTAssertNil(fetcher.assignmentRequestRetryCount)
+        guard
+            case .failure(.networkError(let error)) = capturedResult,
+            (error as? URLError)?.code == expectedError.code
+        else {
+            return XCTFail("Expected the custom transport failure without scalar policy")
+        }
     }
 }

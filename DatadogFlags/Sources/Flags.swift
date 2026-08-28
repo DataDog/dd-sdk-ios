@@ -58,6 +58,49 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// A custom transport used only to retrieve precomputed flag assignments.
+        ///
+        /// The SDK passes a complete `URLRequest` containing its endpoint, authentication, configured headers,
+        /// and encoded evaluation context to this transport. Exposure and evaluation uploads do not use it.
+        /// Compose `Flags.AssignmentRequestFetch.urlSession()` with `withTimeout(_:)` and `withRetry(_:)`
+        /// to build a custom request policy.
+        ///
+        /// ```swift
+        /// let assignmentFetch = Flags.AssignmentRequestFetch
+        ///     .urlSession()
+        ///     .withTimeout(5)
+        ///     .withRetry(1)
+        ///
+        /// var configuration = Flags.Configuration()
+        /// configuration.assignmentRequestFetch = assignmentFetch
+        /// ```
+        ///
+        /// When set, this transport is used verbatim and `assignmentRequestTimeout` and
+        /// `assignmentRequestRetryCount` are ignored.
+        ///
+        /// Default: `nil` (use the SDK transport and scalar timeout/retry settings).
+        public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
+
+        /// The timeout for each request that retrieves precomputed flag assignments.
+        ///
+        /// The timeout includes downloading the complete response body. Set to `0` to disable this SDK timeout.
+        /// It does not apply to loading cached assignments or sending exposure and evaluation data.
+        /// Ignored when `assignmentRequestFetch` is set.
+        /// Values are limited to the range `0...2_147_483.647` seconds.
+        ///
+        /// Default: `0` (disabled).
+        public var assignmentRequestTimeout: TimeInterval
+
+        /// The number of times to retry a failed request for precomputed flag assignments.
+        ///
+        /// This is the number of retries after the initial request. The SDK retries URL transport errors,
+        /// timeouts, HTTP `408`, and HTTP `5xx` responses with randomized exponential backoff. HTTP `429`
+        /// responses are not retried. Ignored when `assignmentRequestFetch` is set. Values are limited to
+        /// the range `0...10`.
+        ///
+        /// Default: `0` retries (one initial request only).
+        public var assignmentRequestRetryCount: Int
+
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
@@ -102,6 +145,8 @@ public enum Flags {
         ///   - gracefulModeEnabled: Controls error handling behavior for API misuse. Default: `true`.
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
+        ///   - assignmentRequestTimeout: Timeout for each precomputed assignment request. Default: `0` (disabled).
+        ///   - assignmentRequestRetryCount: Number of retries after the initial assignment request. Default: `0`.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
@@ -112,6 +157,8 @@ public enum Flags {
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
+            assignmentRequestTimeout: TimeInterval = 0,
+            assignmentRequestRetryCount: Int = 0,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
@@ -122,6 +169,9 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
+            self.assignmentRequestFetch = nil
+            self.assignmentRequestTimeout = assignmentRequestTimeout
+            self.assignmentRequestRetryCount = assignmentRequestRetryCount
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint

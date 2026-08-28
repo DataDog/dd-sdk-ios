@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Add opt-in retries and per-attempt timeouts, plus composable custom transports for `DatadogFlags` assignment requests.
+
 # 3.16.0 / 19-08-2026
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
