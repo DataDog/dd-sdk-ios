@@ -185,7 +185,6 @@ public struct CrossPlatformAttributes {
     public static let localCacheHit = "_dd.local_cache_hit"
 
     /// Instrumentation type passed from a CP SDK to identify which cross-platform framework started this view (e.g. `"flutter"`, `"react-native"`).
-    /// Used internally to report a more specific instrumentation type in "RUM Session Ended" / "RUM View Ended" SDK telemetry.
     /// Expects `String` value.
     public static let instrumentationType = "_dd.instrumentation_type"
 }
