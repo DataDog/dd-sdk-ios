@@ -76,6 +76,7 @@ extension RemoteConfigurationCache.Metadata {
 internal final class RemoteConfigurationProvider {
     let id: String
     let site: DatadogSite
+    let customURL: URL?
     let directory: Directory
     let httpClient: HTTPClient
 
@@ -93,10 +94,12 @@ internal final class RemoteConfigurationProvider {
         directory: Directory,
         httpClient: HTTPClient,
         notificationCenter: NotificationCenter,
+        customURL: URL? = nil,
         dateProvider: DateProvider = SystemDateProvider()
     ) {
         self.id = id
         self.site = site
+        self.customURL = customURL
         self.directory = directory
         self.httpClient = httpClient
         self.notificationCenter = notificationCenter
@@ -215,7 +218,7 @@ internal final class RemoteConfigurationProvider {
 
         // Build request with conditional ETag header if a previous ETag is stored.
         var request = URLRequest(
-            url: site.remoteConfigurationEndpoint
+            url: customURL ?? site.remoteConfigurationEndpoint
                 .appendingPathComponent("v1")
                 .appendingPathComponent(id)
                 .appendingPathExtension("json")

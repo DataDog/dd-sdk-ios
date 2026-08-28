@@ -538,7 +538,7 @@ class DatadogTests: XCTestCase {
     func testGivenRemoteConfigurationID_remoteConfigurationIsCreated() throws {
         // Given
         var config = defaultConfig
-        config.remoteConfigurationID = "test-id"
+        config.remoteConfiguration = .init(id: "test-id")
 
         // When
         Datadog.initialize(with: config, trackingConsent: .granted)
@@ -556,7 +556,7 @@ class DatadogTests: XCTestCase {
         let cachesDirectory = Directory(url: obtainUniqueTemporaryDirectory())
         let persistentDirectory = Directory(url: obtainUniqueTemporaryDirectory())
         var config = defaultConfig
-        config.remoteConfigurationID = "test-id"
+        config.remoteConfiguration = .init(id: "test-id")
         config.systemDirectory = { cachesDirectory }
         config.persistentDirectory = { persistentDirectory }
         config.httpClientFactory = { _ in HTTPClientMock() }

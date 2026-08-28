@@ -160,6 +160,34 @@ internal struct DDServerDateProviderBridge: ServerDateProvider {
     }
 }
 
+@objc(DDRemoteConfiguration)
+@objcMembers
+@_spi(objc)
+public final class objc_RemoteConfiguration: NSObject {
+    internal var swiftType: Datadog.Configuration.RemoteConfiguration
+
+    /// The remote configuration ID used to fetch SDK settings from the Datadog CDN.
+    public var id: String {
+        get { swiftType.id }
+        set { swiftType.id = newValue }
+    }
+
+    /// A custom URL to fetch the remote configuration document from, overriding the
+    /// default CDN endpoint derived from the resolved `site`.
+    public var customURL: URL? {
+        get { swiftType.customURL }
+        set { swiftType.customURL = newValue }
+    }
+
+    public init(id: String) {
+        swiftType = .init(id: id)
+    }
+
+    internal init(swiftType: Datadog.Configuration.RemoteConfiguration) {
+        self.swiftType = swiftType
+    }
+}
+
 @objc(DDConfiguration)
 @objcMembers
 @_spi(objc)
@@ -275,13 +303,12 @@ public final class objc_Configuration: NSObject {
         set { sdkConfiguration.backgroundTasksEnabled = newValue }
     }
 
-    /// The remote configuration ID used to fetch SDK settings from the Datadog CDN at startup.
+    /// Sets the remote configuration used to fetch SDK settings from the Datadog CDN at startup.
     ///
-    /// When non-nil, the SDK asynchronously fetches and caches the remote configuration document.
-    /// Default is `nil` — no fetch is performed.
-    public var remoteConfigurationID: String? {
-        get { sdkConfiguration.remoteConfigurationID }
-        set { sdkConfiguration.remoteConfigurationID = newValue }
+    /// When set, the SDK asynchronously fetches and caches the remote configuration document.
+    /// By default, no remote configuration is set and no fetch is performed.
+    public func setRemoteConfiguration(_ remoteConfiguration: objc_RemoteConfiguration?) {
+        sdkConfiguration.remoteConfiguration = remoteConfiguration?.swiftType
     }
 
     /// Creates a Datadog SDK Configuration object.
