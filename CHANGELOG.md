@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Add `remoteConfigurationID` to `Datadog.Configuration` to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
+
 # 3.16.0 / 19-08-2026
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
@@ -52,7 +54,6 @@
 # 3.11.0 / 12-05-2026
 
 - [IMPROVEMENT] Add support for `maui` source for cross-platform RUM events from .NET MAUI applications. See [#2891][]
-- [FEATURE] Add `remoteConfigurationID` to `Datadog.Configuration` to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
 - [FEATURE] Add client state management to `DatadogFlags` module. See [#2719][]
 - [IMPROVEMENT] Skip malformed RUM attributes individually instead of dropping the entire event, and log clear error messages. See [#2844][]
 - [FIX] Propagate native `anonymous_id` to WebView RUM and Log events. See [#2847][]
