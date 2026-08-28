@@ -313,7 +313,6 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 featureScope: featureScope,
                 monitor: monitor
             ),
-            HasReplayMessageReceiver(monitor: monitor),
             FlagEvaluationReceiver(monitor: monitor),
             WebViewEventReceiver(
                 featureScope: featureScope,
@@ -342,6 +341,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         if let watchdogTermination = watchdogTermination {
             messageReceivers.append(watchdogTermination)
+        }
+
+        if timeseriesCollector != nil {
+            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)

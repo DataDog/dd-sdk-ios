@@ -171,10 +171,18 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             let transformedCommand = self.transform(command: command)
+            let previousSessionID = self.sessionActivitySnapshot.sessionID
 
             _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
 
-            self.update(hasReplay: context.hasReplay)
+            if self.applicationScope.dependencies.timeseriesCollector != nil {
+                let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
+                // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
+                // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
+                // carrying it over would leak stale replay state into the new session.
+                let didStartNewSession = previousSessionID != nil && currentSessionID != previousSessionID
+                self.update(hasReplay: didStartNewSession ? nil : context.hasReplay)
+            }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
