@@ -44,8 +44,6 @@ internal struct CarrierInfoPublisher: ContextValuePublisher {
             }
             return
         }
-
-        // Nothing meaningful to subscribe to on iOS 16+ — `initialValue` (`nil`) is final.
     }
 
     func cancel() {
