@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-28
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: 257e79d0b
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -132,7 +132,7 @@ flowchart TD
 - **`DatadogProfiling/Sources/Profiling.swift`** - Main entry point. Call `Profiling.enable(with:in:)` to register the feature with core.
 
 ### Configuration
-- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`.
+- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`. Also defines `apply(remoteConfiguration:)` (see [Remote Configuration](#remote-configuration)).
 
 ### Runtime Orchestration
 - **`DatadogProfiling/Sources/ProfilerFeature.swift`** - Internal feature composition. Registers message receivers, configures app-launch UserDefaults, creates samplers and quota checks.
@@ -175,6 +175,14 @@ Continuous profiles are also flushed when the app backgrounds after foreground a
 ### Upload Format
 Profile uploads are multipart/form-data requests that include profile metadata, serialized pprof data, and correlated RUM events when present.
 
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `Profiling.enable(with:)` runs, it is merged onto the in-code `Profiling.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- The `profiling` namespace overrides `applicationLaunchSampleRate`. A `nil`/omitted value keeps the in-code value; passing `nil` for the whole remote configuration (none fetched) leaves the configuration unchanged.
+- `continuousSampleRate` has no remote-configuration equivalent yet — the remote value is not consumed. It will be wired once continuous profiling becomes remotely configurable in-code.
+- See `ProfilingConfiguration.swift`'s `apply(remoteConfiguration:)` for the merge logic.
+
 ## Common Troubleshooting Patterns
 
 ### "No profiles appear"
@@ -202,6 +210,7 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 ## Feature Interactions
 
 - **RUM**: Profiling reads RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
+- **Remote Configuration**: overrides `applicationLaunchSampleRate` — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 

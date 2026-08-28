@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-28
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: 257e79d0b
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
+  - DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift
   - DatadogTrace/Sources/Tracer.swift
   - DatadogTrace/Sources/OpenTracing/OTTracer.swift
   - DatadogTrace/Sources/OpenTracing/OTSpan.swift
@@ -190,6 +191,7 @@ requestSpan.finish()
   - Automatic `URLSession` instrumentation and distributed tracing (`urlSessionTracking`)
   - RUM and network-info enrichment
   - Span event mapper, custom endpoint
+- **`DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift`** — Applies Datadog Remote Configuration on top of the in-code `Trace.Configuration`, once, at `Trace.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API — Manual Instrumentation
 - **`DatadogTrace/Sources/Tracer.swift`** — Access point: `Tracer.shared(in:)` returns an `OTTracer`. Also defines `SpanTags` (`resource`, `operation`, `service`, `manualKeep`, `manualDrop`).
@@ -257,6 +259,14 @@ For non-`URLSession` HTTP clients, build headers yourself:
 - `B3HTTPHeadersWriter(injectEncoding:)` — B3 single or multi
 - Pass a writer to `tracer.inject(spanContext:writer:)`, then read `writer.traceHeaderFields` and copy them into your request.
 
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `Trace.enable(with:)` runs, it is merged onto the in-code `Trace.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- Trace's remote configuration only overrides `sampleRate`, the default tracer's span sample rate. A parameter the remote configuration omits (or `nil`, when none was fetched) keeps its in-code value.
+- Distributed-tracing enablement (first-party hosts, `firstPartyHostsTracing`, header/propagator types, injection strategy) is **not** owned by Trace's remote configuration — it is owned by RUM's, to avoid registering overlapping URLSession handlers when both modules are enabled. See `DatadogRUM/RUM_FEATURE.md#remote-configuration` and `RUMConfiguration+RemoteConfiguration.swift`.
+- See `TraceConfiguration+RemoteConfiguration.swift` for the merge logic.
+
 ## Common Troubleshooting Patterns
 
 ### "No traces appearing"
@@ -294,6 +304,7 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - **Crash Reporting**: Independent — crashes do not require Trace.
 - **WebView Tracking**: Independent — see `DatadogWebViewTracking/Sources/WebViewTracking.swift`.
 - **OpenTelemetry**: Use `OTelTracerProvider` to drive the standard OpenTelemetry API on top of Datadog Trace.
+- **Remote Configuration**: only overrides the default tracer's `sampleRate`; distributed-tracing enablement via remote config is owned by RUM — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 
