@@ -574,6 +574,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(metric.attributes["blockers"] as? [String], ["offline", "low_battery"])
         #endif
         XCTAssertEqual(metric.attributes["track"] as? String, featureName)
+        XCTAssertEqual(metric.sampleRate, .maxSampleRate, "Upload quality metrics must always reach TelemetryInterceptor for Session Ended aggregation")
     }
 
     func testWhenDataIsUploadedWithServerError_itDoesNotSendErrorTelemetry() throws {
@@ -1005,6 +1006,32 @@ class DataUploadWorkerTests: XCTestCase {
         withExtendedLifetime(worker) {
             wait(for: [expectImmediateUpload], timeout: 0.5)
         }
+    }
+
+    func testUploadQualityMetricHasMaxSampleRate() throws {
+        // Upload quality metrics must always reach TelemetryInterceptor for Session Ended aggregation,
+        // so their sampleRate must be .maxSampleRate — never filtered at call site.
+        let telemetry = TelemetryMock()
+
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockRandom()),
+            contextProvider: .mockWith(context: .mockWith(networkConnectionInfo: .mockWith(reachability: .no))),
+            uploadConditions: .neverUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockRandom(),
+            telemetry: telemetry,
+            maxBatchesPerUpload: 1
+        )
+
+        let uploadExpectation = expectation(description: "Upload cycle ran")
+        uploadExpectation.isInverted = true
+        wait(for: [uploadExpectation], timeout: 0.5)
+        worker.cancelSynchronously()
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "upload_quality"))
+        XCTAssertEqual(metric.sampleRate, .maxSampleRate)
     }
 }
 
