@@ -4,11 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
-import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 import DatadogInternal
 
 /// Predicate determining which SwiftUI component interactions should be recorded as RUM actions.
@@ -18,32 +13,4 @@ public protocol SwiftUIRUMActionsPredicate {
     /// - Parameter componentName: The name of the SwiftUI component that received the action
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(with componentName: String) -> RUMAction?
-}
-
-/// Default implementations of `SwiftUIRUMActionsPredicate`
-public struct DefaultSwiftUIRUMActionsPredicate {
-    /// Whether to enable SwiftUI action detection on iOS 17 and below.
-    /// When set to `false`, actions will only be detected on iOS 18+ where the detection is more reliable.
-    /// Defaults to `true` for backward compatibility.
-    private let isLegacyDetectionEnabled: Bool
-
-    /// Creates a default SwiftUI RUM actions predicate.
-    /// - Parameter isLegacyDetectionEnabled: Whether to enable SwiftUI action detection on iOS 17 and below.
-    ///     Set to `true` to enable legacy detection, which may capture more actions but with less reliability.
-    ///     Set to `false` to only use the more reliable iOS 18+ detection.
-    public init(isLegacyDetectionEnabled: Bool) {
-        self.isLegacyDetectionEnabled = isLegacyDetectionEnabled
-    }
-}
-
-// MARK: DefaultSwiftUIRUMActionsPredicate
-extension DefaultSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
-    public func rumAction(with componentName: String) -> RUMAction? {
-        if #available(iOS 18.0, *) {
-            return RUMAction(name: componentName, attributes: [:])
-        } else if isLegacyDetectionEnabled {
-            return RUMAction(name: componentName, attributes: [:])
-        }
-        return nil
-    }
 }
