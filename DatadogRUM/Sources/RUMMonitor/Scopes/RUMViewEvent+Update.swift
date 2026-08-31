@@ -12,7 +12,7 @@ import Foundation
 extension RUMViewEvent {
     /// Produces a `RUMViewUpdateEvent` that contains only the fields that changed.
     ///
-    /// - `self` is the previously sent `RUMViewEvent` (stored in `RUMViewScope_.viewEvent`).
+    /// - `self` is the previously sent `RUMViewEvent` (stored in `RUMViewScope.lastSentViewEvent`).
     /// - `event` is the newly built `RUMViewEvent` (post-mapper). Its values win.
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
     ///   `dd` is always forwarded wholesale from `event`.
