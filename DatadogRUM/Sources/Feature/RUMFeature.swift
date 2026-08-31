@@ -154,7 +154,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ciTest: ciTest,
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
-                now: { configuration.dateProvider.now }
+                now: { configuration.dateProvider.now },
+                mediaTimeProvider: configuration.mediaTimeProvider
             )
         }
 
@@ -350,6 +351,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         if let watchdogTermination = watchdogTermination {
             messageReceivers.append(watchdogTermination)
+        }
+
+        if timeseriesCollector != nil {
+            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
