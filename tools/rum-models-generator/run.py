@@ -10,6 +10,7 @@
 import os
 import re
 import sys
+import shlex
 import argparse
 import traceback
 import subprocess
@@ -249,7 +250,7 @@ def clone_rc_schema_repo(git_ref: str):
     # or `shell_output`'s failure output (which echoes the command it ran).
     credential_helper = '!f() { echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
     shell_output('rm -rf dd-go')
-    shell_output(f'git -c credential.helper="{credential_helper}" clone --depth=1 --filter=blob:none --sparse {DD_GO_REPO}')
+    shell_output(f'git -c credential.helper={shlex.quote(credential_helper)} clone --depth=1 --filter=blob:none --sparse {DD_GO_REPO}')
     shell_output(f'cd dd-go && git sparse-checkout set {RC_SCHEMA_SPARSE_DIR}')
     shell_output(f'cd dd-go && git fetch origin {git_ref} && git checkout FETCH_HEAD')
     sha = shell_output('cd dd-go && git rev-parse HEAD').strip()
