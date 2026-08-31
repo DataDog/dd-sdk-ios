@@ -420,17 +420,21 @@ extension RUM {
         public struct Timeseries {
             /// The specific timeseries types to collect.
             ///
-            /// Default: `nil` - which means all available timeseries types are collected.
+            /// Default: `nil` - which means no timeseries types are collected. Use `.defaultTimeseries` for the
+            /// standard set (memory and CPU).
             public var collectTypes: [TimeseriesType]?
 
             /// Creates a timeseries configuration.
             /// - Parameters:
-            ///   - collectTypes: The specific timeseries types to collect. Default: `nil` - all types are collected.
+            ///   - collectTypes: The specific timeseries types to collect. Default: `nil` - no types are collected.
             public init(
                 collectTypes: [TimeseriesType]? = nil
             ) {
                 self.collectTypes = collectTypes
             }
+
+            /// The default timeseries configuration: memory and CPU.
+            public static let defaultTimeseries = Timeseries(collectTypes: [.memory, .cpu])
         }
 
         /// A timeseries type that can be collected.
@@ -590,10 +594,10 @@ extension RUM.Configuration.Timeseries {
     ///
     /// Empty means timeseries collection should be disabled entirely (e.g. `collectTypes: [.cpu]` on watchOS).
     internal var effectiveCollectTypes: Set<RUM.Configuration.TimeseriesType> {
-        let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
         guard let collectTypes else {
-            return available
+            return []
         }
+        let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
         return Set(collectTypes).intersection(available)
     }
 }
