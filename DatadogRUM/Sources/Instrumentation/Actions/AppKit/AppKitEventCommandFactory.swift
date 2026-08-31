@@ -51,6 +51,15 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return rumAction
         }
 
+        // In some situations (see the documentation of`createAppKitActionCommand(from:)`),
+        // `createAppKitActionCommand` will use the SwiftUI Detector to obtain an action,
+        // if possible.
+        //
+        // Here, the detector covers situations not handled by `createAppKitActionCommand`.
+        // These are situations where a SwiftUI interactive view (like a button) is on a window,
+        // either in a fully native SwiftUI window, or a NSHostingView in an AppKit window,
+        // but not inside an AppKit container (like a NSTableRowView or NSCollectionView) that
+        // would otherwise be detected by `createAppKitActionCommand`.
         return swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider)
     }
 
@@ -64,13 +73,36 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
 
     // MARK: AppKit
 
-    enum BestTarget {
+    /// Result from `bestActionTargetFor(view:event:)` function.
+    private enum BestTarget {
+        /// The best target is a possible view in the AppKit domain.
+        ///
+        /// If the associated optional has a value, it means this is the view that should be used as the target
+        /// of the event. If `nil`, it means the function determined this cannot be a SwiftUI view, and the
+        /// event happened at a location where there is no interactive element throughout the entire hierarchy.
         case appKit(NSView?)
-        case trySwiftUIFallbackTo(NSView?)
 
+        /// The best target is a SwiftUI view inside an AppView container, and the SwiftUI detector should
+        /// be called to try to obtain a RUM action out of the SwiftUI view hierarchy.
+        ///
+        /// If no action is obtained from the SwiftUI detector, then the view in the associated value, if any,
+        /// should be used as the best target. This happens in situations where the clicked SwiftUI view is
+        /// inside a traditional AppKit container like an `NSTableView` or `NSCollectionView` (but
+        /// **not** a view whose single purpose is to host SwiftUI views, like `NSHostingView`). Usually
+        /// the associated view is the container or one of its subviews, like `NSTableRowView`.
+        ///
+        /// If the associated view is `nil`, it usually means the container is not an interactive element. In
+        /// this case, the code should follow the same path as the `.appKit` case.
+        case trySwiftUIWithFallbackTo(NSView?)
+
+        /// Obtains the view from either case above.
+        ///
+        /// If not `nil`, this is the best target to use if either the target is `.appKit` or if the SwiftUI
+        /// Detector failed to create an action. If `nil`, there is no suitable view in the AppKit hierarchy
+        /// we are interested in.
         var view: NSView? {
             switch self {
-            case .appKit(let view), .trySwiftUIFallbackTo(let view): view
+            case .appKit(let view), .trySwiftUIWithFallbackTo(let view): view
             }
         }
     }
@@ -102,16 +134,25 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
 
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
 
-        if case .trySwiftUIFallbackTo = bestTarget,
+        // If the best target is determined to be a possible SwiftUI view, `swiftUIDetector`
+        // is called to obtain an actin from the SwiftUI hierarchy.
+        //
+        // The reason it's important to do it here instead of falling back to the
+        // `swiftUIDetector.createActionCommand(…)` call in `AppKitCommandFactory.command(from:)`
+        // is we may have a fallback container view, present in the `.trySwiftUIFallback` associated
+        // value. This happens in situations like a SwiftUI Table that, on macOS, is implemented
+        // by a NSTableView, with SwiftUI views inside cells. If there is no interesting SwiftUI
+        // view to be used as target, we fallback to the container view. If we just returned `nil`
+        // and relied on `swiftUIDetector.createActionCommand(…)`, the container view context would
+        // be lost and no action would be returned.
+        if case .trySwiftUIWithFallbackTo = bestTarget,
            let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider) {
             return swiftUIResult
         }
 
-        guard let targetView = bestTarget.view else {
-            return nil // Clicked view is not eligible for producing RUM Action
-        }
-
-        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
+        guard let targetView = bestTarget.view,
+              let action = appKitPredicate.rumAction(targetView: targetView)
+        else {
             return nil
         }
 
@@ -175,15 +216,17 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         return control
     }
 
-    /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target.
+    /// Based on the given view, obtain the most appropriate view to be used as the target of a RUM event, if any.
     ///
-    /// May return `nil` if there's no good guess and the RUM Action for given `view` should not be produced.
+    /// Read the inline comments to understand how this function works.
     ///
     /// - parameters:
     ///   - view: The target view of `event`.
     ///   - event: The `NSEvent` being processed.
     ///
-    /// - Returns: The best target for the event being processed, or `nil` if no suitable view is found.
+    /// - Returns: As instance of `BestTarget` indicating if this is a pure AppKit view or if the SwiftUI detector should
+    /// try to obtain the target view. If AppKit, also provides the target view, if any. For SwiftUI, it provides the fallback target view
+    /// to be used if the SwiftUI Detector fails to generate a RUM action.
     private func bestActionTargetFor(view: DDView, event: NSEvent) -> BestTarget {
         // In toolbars, if no button was explicitly attributed to item.view, the
         // class that returns itself from hitTest is NSToolbarItemViewer, not the
@@ -201,51 +244,53 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             // method digs in to find the clicked row.
             return .appKit(bestActionTargetFor(control: ddControl, event: event))
         } else {
+            // If the `view` is not an interactive element, check if it's a child of a known view
+            // hierarchy which can be considered as interactive.
+            //
+            // First, check if the target is actually a SwiftUI container. This happens in
+            // situations like a SwiftUI Table, that, in macOS, is implemented by a NSTableView
+            // with possible SwiftUI views inside the cells.
             let classNameFirstElement = String(describing: type(of: view)).prefix { char in
                 char.isLetter || char.isNumber
             }
-            let isSwiftUICellView = Self.swiftUIContainerViewPrefixes.contains(classNameFirstElement)
+            let isSwiftUIContainerView = Self.swiftUIContainerViewPrefixes.contains(classNameFirstElement)
 
             var result: NSView?
 
-            // If the `view` is not an interactive element, check if it's a child of a known view hierarchy
-            // which can be considered as interactive.
+            // Second, look up the hierarchy for the first interactive element.
+            // Note NSTableView and NSTableRowView extend NSControl so there is no need to test
+            // for those specifically.
+            //
+            // In case `isSwiftUIContainerView` is true, this (plus the processing below) will
+            // be just the fallback view if the SwiftUI Detector cannot create an action.
             let bestParent = view.findInParentHierarchy { parent in
                 return parent is NSControl
                     || parent is NSCollectionView
             }
 
             if let collectionView = bestParent as? NSCollectionView {
-                // If the user clicked on a collection view outside of a control in a collection view item,
-                // look for the collection view item the user clicked on. If the click was outside of any
-                // item, return the collection view itself.
+                // If the user clicked on a collection view outside of a control in a collection
+                // view item, look for the collection view item the user clicked on. If the click
+                // was outside of any item, return the collection view itself.
                 result = collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
             } else if let control = bestParent as? NSControl {
+                // If the view is inside a control, process that control.
+                // As stated above, this includes NSTableView and NSTableRowView.
                 result = bestActionTargetFor(control: control, event: event)
             } else {
                 result = bestParent
             }
 
-            return isSwiftUICellView ? .trySwiftUIFallbackTo(result) : .appKit(result)
+            return isSwiftUIContainerView ? .trySwiftUIWithFallbackTo(result) : .appKit(result)
         }
     }
 
+    /// Names of private views that act as SwiftUI containers.
     private static let swiftUIContainerViewPrefixes: Set<Substring> = [
         "CellHostingView",
         "TableCellHostingView",
         "PlatformGroupContainer"
     ]
-
-    private func bestActionTargetFor(accessibilityElement: AnyObject, event: NSEvent) -> AnyObject? {
-        guard let role = accessibilityElement.accessibilityRole() else {
-            return nil
-        }
-
-        let roleString = "\(role)"
-
-        Logger().error("\(roleString, privacy: .public)")
-        return nil
-    }
 
     /// Finds the table row the user clicked on, and returns the corresponding `NSTableRowView`.
     ///
