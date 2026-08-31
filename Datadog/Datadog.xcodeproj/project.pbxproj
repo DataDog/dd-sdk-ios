@@ -41,6 +41,8 @@
 		09ACCD343036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD303036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift */; };
 		09B4B1DC2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */; };
 		09C2D45430063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */; };
+		09C637E63045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C637E53045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift */; };
+		09C637E83045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C637E73045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift */; };
 		09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */; };
 		09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */; };
 		09E5009E30333743003E67A6 /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E5009D30333743003E67A6 /* DDPlatformTypes.swift */; };
@@ -1954,6 +1956,8 @@
 		09ACCD313036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIComponentDetector_macOS.swift; sourceTree = "<group>"; };
 		09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistributedTracingSampleRateProvider.swift; sourceTree = "<group>"; };
 		09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSApplicationStateProvider.swift; sourceTree = "<group>"; };
+		09C637E53045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate_macOS.swift; sourceTree = "<group>"; };
+		09C637E73045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate_iOS.swift; sourceTree = "<group>"; };
 		09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09E5009D30333743003E67A6 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
@@ -3567,6 +3571,7 @@
 				09ACCD29303607FA00DEBDF3 /* LegacySwiftUIComponentDetector.swift */,
 				09ACCD2A303607FA00DEBDF3 /* ModernSwiftUIComponentDetector.swift */,
 				09ACCD2B303607FA00DEBDF3 /* SwiftUIComponentDetector.swift */,
+				09C637E73045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -3576,6 +3581,7 @@
 			children = (
 				09ACCD303036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift */,
 				09ACCD313036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift */,
+				09C637E53045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -9565,6 +9571,7 @@
 				61C713B92A3C935C00FA735A /* RUM.swift in Sources */,
 				3C0CB3452C19A1ED003B0E9B /* WatchdogTerminationReporter.swift in Sources */,
 				D29A9F7929DD85BB005C54A4 /* RequestBuilder.swift in Sources */,
+				09C637E63045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift in Sources */,
 				9629FFE22D81C348008DFE39 /* SwiftUIControllerType.swift in Sources */,
 				1124D5382EA6D4390002E053 /* RUMAppLaunchManager.swift in Sources */,
 				1124D5392EA6D4390002E053 /* RUMFeatureOperationManager.swift in Sources */,
@@ -9630,6 +9637,7 @@
 				D29A9F5C29DD85BB005C54A4 /* RUMSessionScope.swift in Sources */,
 				A7E6EA822D3146AD00997201 /* AnonymousIdentifierManager.swift in Sources */,
 				D29A9F6629DD85BB005C54A4 /* RUMUser.swift in Sources */,
+				09C637E83045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift in Sources */,
 				968A6CA02FBF2EBD00B87826 /* DDForwardingProxyBase.m in Sources */,
 				D29A9F8229DD85BB005C54A4 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				3C5CD8CD2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
