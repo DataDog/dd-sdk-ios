@@ -35,8 +35,19 @@ internal struct RemoteConfigurationCache: Codable {
     let etag: String?
     /// Propagation metadata for `configuration`, if it was successfully cached.
     let metadata: Metadata?
-    /// The last successfully decoded and cached configuration payload.
-    let configuration: RemoteConfiguration?
+    /// The raw response body of the last cached (or attempted) fetch, cached alongside `etag`
+    /// even when decoding fails or the current SDK does not recognize every key. Decoding this
+    /// fresh on every read (rather than persisting an already-decoded payload) lets an SDK
+    /// upgrade that adds support for a previously-unknown key recover it from a payload cached
+    /// before the upgrade, instead of waiting for the server document to change and bust the
+    /// `ETag`.
+    let configurationData: Data?
+
+    init(etag: String?, metadata: Metadata?, configurationData: Data?) {
+        self.etag = etag
+        self.metadata = metadata
+        self.configurationData = configurationData
+    }
 }
 
 extension RemoteConfigurationCache.Metadata {
@@ -192,10 +203,14 @@ internal final class RemoteConfigurationProvider {
         }
 
         do {
+            let decoder = JSONDecoder()
             let data = try directory.file(named: cacheFilename).read()
-            let cache = try JSONDecoder().decode(RemoteConfigurationCache.self, from: data)
+            let cache = try decoder.decode(RemoteConfigurationCache.self, from: data)
 
-            guard let configuration = cache.configuration else {
+            // Decode fresh from `configurationData` on every read rather than persisting an
+            // already-decoded payload — see its doc comment.
+            guard let configurationData = cache.configurationData,
+                  let configuration = try? decoder.decode(RemoteConfiguration.self, from: configurationData) else {
                 return nil
             }
 
@@ -263,6 +278,9 @@ internal final class RemoteConfigurationProvider {
                 do {
                     remoteConfiguration = try decoder.decode(RemoteConfiguration.self, from: data)
                 } catch {
+                    // Still update the ETag so this known-bad payload is not re-fetched on every
+                    // sync; the previously cached configuration keeps being served in the
+                    // meantime, untouched, rather than losing it to this fetch's decode failure.
                     self.updateETag(from: http, previous: cache, telemetry: telemetry)
                     throw error
                 }
@@ -273,7 +291,7 @@ internal final class RemoteConfigurationProvider {
                 // to disk. If the write fails, the configuration is not durably cached, so it is
                 // not delivered to `handler` either — the outer catch reports the failure and a
                 // later sync will retry.
-                try self.saveCache(remoteConfiguration, from: http)
+                try self.saveCache(data: data, from: http)
 
                 self.lastSyncDate = self.dateProvider.now
 
@@ -303,7 +321,11 @@ internal final class RemoteConfigurationProvider {
             )
             do {
                 try write(
-                    cache: RemoteConfigurationCache(etag: cache.etag, metadata: metadata, configuration: cache.configuration)
+                    cache: RemoteConfigurationCache(
+                        etag: cache.etag,
+                        metadata: metadata,
+                        configurationData: cache.configurationData
+                    )
                 )
             } catch {
                 telemetry.error("[RemoteConfig] Failed to save remote configuration metadata", error: error)
@@ -330,7 +352,7 @@ internal final class RemoteConfigurationProvider {
     ///
     /// Throws if the write fails, so the caller can treat an undelivered, uncached configuration
     /// as a failed sync rather than deliver a configuration that was never durably persisted.
-    private func saveCache(_ configuration: RemoteConfiguration, from response: HTTPURLResponse) throws {
+    private func saveCache(data: Data, from response: HTTPURLResponse) throws {
         let etag = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "etag" })?.value as? String
         let versionId = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "x-amz-version-id" })?.value as? String
         let lastModifiedHeader = response.allHeaderFields.first(where: { ($0.key as? String)?.lowercased() == "last-modified" })?.value as? String
@@ -344,7 +366,7 @@ internal final class RemoteConfigurationProvider {
                 syncId: UUID().uuidString,
                 firstApplied: nil
             ),
-            configuration: configuration
+            configurationData: data
         )
 
         try write(cache: cache)
@@ -363,7 +385,7 @@ internal final class RemoteConfigurationProvider {
         let cache = RemoteConfigurationCache(
             etag: etag,
             metadata: previous?.metadata,
-            configuration: previous?.configuration
+            configurationData: previous?.configurationData
         )
 
         do {

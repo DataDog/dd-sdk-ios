@@ -69,12 +69,12 @@ class RemoteConfigurationTests: XCTestCase {
         syncId: String? = nil,
         firstApplied: Date? = nil,
         applicationID: String? = nil
-    ) -> Data {
+    ) throws -> Data {
         let metadata: RemoteConfigurationCache.Metadata? = versionId != nil || lastModified != nil || lastSynced != nil || syncId != nil || firstApplied != nil
             ? RemoteConfigurationCache.Metadata(versionId: versionId, lastModified: lastModified, lastSynced: lastSynced, syncId: syncId, firstApplied: firstApplied)
             : nil
-        let configuration = applicationID.map { RemoteConfiguration(rum: .init(applicationId: $0)) }
-        return try! JSONEncoder().encode(RemoteConfigurationCache(etag: etag, metadata: metadata, configuration: configuration))
+        let configurationData = try applicationID.map { try JSONEncoder().encode(RemoteConfiguration(rum: .init(applicationId: $0))) }
+        return try JSONEncoder().encode(RemoteConfigurationCache(etag: etag, metadata: metadata, configurationData: configurationData))
     }
 
     private func readCache(fileName: String = "test-id.json") -> RemoteConfigurationCache? {
@@ -84,13 +84,22 @@ class RemoteConfigurationTests: XCTestCase {
         return try? JSONDecoder().decode(RemoteConfigurationCache.self, from: data)
     }
 
+    /// Decodes the `RemoteConfiguration` cached under `fileName`, re-decoding `configurationData`
+    /// fresh on every call, matching how `RemoteConfigurationProvider.readCache` reads the cache.
+    private func readConfiguration(fileName: String = "test-id.json") -> RemoteConfiguration? {
+        guard let data = readCache(fileName: fileName)?.configurationData else {
+            return nil
+        }
+        return try? JSONDecoder().decode(RemoteConfiguration.self, from: data)
+    }
+
     private func waitForPersistedConfiguration(
         applicationID: String,
         fileName: String = "test-id.json"
     ) {
         let expectation = expectation(description: "remote configuration is persisted")
         wait(until: {
-            self.readCache(fileName: fileName)?.configuration?.rum?.applicationId == applicationID
+            self.readConfiguration(fileName: fileName)?.rum?.applicationId == applicationID
         }, andThenFulfill: expectation)
         wait(for: [expectation], timeout: 2)
     }
@@ -250,7 +259,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertEqual(readCache()?.configuration?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after non-2xx")
+        XCTAssertEqual(readConfiguration()?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after non-2xx")
         withExtendedLifetime(rc) {}
     }
 
@@ -262,7 +271,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertNil(readCache()?.configuration, "An empty response body must never be cached as a configuration")
+        XCTAssertNil(readCache()?.configurationData, "An empty response body must never be cached as a configuration")
         withExtendedLifetime(rc) {}
     }
 
@@ -277,7 +286,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
 
-        XCTAssertEqual(readCache()?.configuration?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after decoding error")
+        XCTAssertEqual(readConfiguration()?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after decoding error")
         withExtendedLifetime(rc) {}
     }
 
@@ -407,7 +416,7 @@ class RemoteConfigurationTests: XCTestCase {
 
     func test304ResponsePreservesCache() throws {
         // Given — pre-populate persisted configuration
-        let existing = cacheData(applicationID: "existing-application-id")
+        let existing = try cacheData(applicationID: "existing-application-id")
         let fileURL = coreDir.coreDirectory.url.appendingPathComponent("test-id.json")
         try existing.write(to: fileURL, options: .atomic)
 

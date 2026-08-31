@@ -60,7 +60,9 @@ class DatadogCoreTests: XCTestCase {
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {
         // Given
-        try Data(#"{"configuration":{"rum":{"applicationId":"cache-application-id"}}}"#.utf8).write(
+        let configurationData = try JSONEncoder().encode(RemoteConfiguration(rum: .init(applicationId: "cache-application-id")))
+        let cache = RemoteConfigurationCache(etag: nil, metadata: nil, configurationData: configurationData)
+        try JSONEncoder().encode(cache).write(
             to: temporaryCoreDirectory.coreDirectory.url.appendingPathComponent("test-id.json"),
             options: .atomic
         )
