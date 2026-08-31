@@ -32,9 +32,6 @@
 		1019DFD92FB1BB2E006599B4 /* DatadogSiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1019DFD82FB1BB23006599B4 /* DatadogSiteTests.swift */; };
 		10E9062A2FBDB81A002D5F45 /* RemoteConfigurationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E906292FBDB818002D5F45 /* RemoteConfigurationProvider.swift */; };
 		10E9062C2FBDBA4B002D5F45 /* RemoteConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10E9062B2FBDBA3C002D5F45 /* RemoteConfigurationTests.swift */; };
-		09D2B7EB2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
-		09D2B7EC2EF4258D0089F05B /* SamplingDecision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2B7EA2EF4258D0089F05B /* SamplingDecision.swift */; };
-		0B7CE56228CC4BF2BD63701E /* ContinuousProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D651561D944759B5DFD2E0 /* ContinuousProfilerTests.swift */; };
 		0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD6D5C2849404C4EAD7FF7E3 /* ProfilingHandlerTests.swift */; };
 		11030D5F2D959EAD00732D5F /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		11030D6D2D95A48B00732D5F /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
