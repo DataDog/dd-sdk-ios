@@ -243,6 +243,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         firstFrameReader.publish(to: monitor)
         dependencies.renderLoopObserver?.register(firstFrameReader)
 
+        // Resolved on each hang rather than captured here, as Crash Reporting - which owns this setting - can be
+        // enabled after RUM. A missing Crash Reporting Feature means backtrace generation is *unavailable* rather
+        // than *disabled*, which the App Hangs monitor reports differently, hence the `true` default.
+        let isAppHangBacktraceEnabled: @Sendable () -> Bool = { [weak core] in
+            core?.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self)?
+                .appHangBacktraceEnabled ?? true
+        }
+
         #if !os(watchOS)
         var memoryWarningMonitor: MemoryWarningMonitor?
         if configuration.trackMemoryWarnings {
@@ -275,7 +283,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
-            heatmapIdentifierRegistry: heatmapIdentifierStore
+            heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #else
         self.instrumentation = RUMInstrumentation(
@@ -291,7 +300,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
-            uuidGenerator: configuration.uuidGenerator
+            uuidGenerator: configuration.uuidGenerator,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
         self.requestBuilder = RequestBuilder(

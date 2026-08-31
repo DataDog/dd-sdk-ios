@@ -75,6 +75,13 @@
 
 - (void)testDatadogCrashReporterAPI {
     [DDCrashReporter enable];
+
+    DDCrashReporterConfiguration *configuration = [DDCrashReporterConfiguration new];
+    XCTAssertTrue(configuration.appHangBacktraceEnabled, @"App Hang backtraces are enabled by default");
+    configuration.appHangBacktraceEnabled = NO;
+    XCTAssertFalse(configuration.appHangBacktraceEnabled, @"The setter must write through to the wrapped configuration");
+
+    [DDCrashReporter enableWith:configuration];
 }
 
 #pragma clang diagnostic pop

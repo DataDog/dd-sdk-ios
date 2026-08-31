@@ -252,7 +252,7 @@ Requires configuration to be set, otherwise disabled by default:
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
-- **App hangs**: `appHangThreshold` (default: nil/disabled)
+- **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
@@ -325,7 +325,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 
 ## Feature Interactions
 
-- **Crash Reporting**: Enhances App Hang monitoring with stack traces
+- **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
 - **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
 - **Remote Configuration**: when configured, drives RUM's distributed-tracing enablement (`trace` namespace) instead of Trace's own remote configuration — see [Remote Configuration](#remote-configuration)
 - **Session Replay**: RUM must be enabled for Session Replay to work
