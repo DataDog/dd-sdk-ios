@@ -65,9 +65,9 @@ extension Profiling {
                 self.applicationLaunchSampleRate = SampleRate(applicationLaunchSampleRate)
             }
 
-            // `continuousSampleRate` has no in-code equivalent in `Profiling.Configuration` yet, so the
-            // remote value is intentionally not consumed. Wire it once continuous profiling becomes
-            // configurable in-code.
+            if let continuousSampleRate = remoteConfiguration?.profiling?.continuousSampleRate {
+                self.continuousSampleRate = SampleRate(continuousSampleRate)
+            }
         }
     }
 }

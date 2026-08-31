@@ -53,15 +53,24 @@ class ProfilingConfiguration_RemoteConfigurationTests: XCTestCase {
         }
     }
 
-    /// `continuousSampleRate` has no in-code equivalent, so providing it must not change the
-    /// configuration.
-    func testWhenRemoteProvidesOnlyContinuousSampleRate_itLeavesConfigurationUnchanged() {
-        let baseline = Profiling.Configuration(applicationLaunchSampleRate: 42)
+    /// A remote `continuousSampleRate` overrides the in-code value, regardless of the baseline.
+    func testItOverridesContinuousSampleRateFromRemoteValue() throws {
+        for _ in 0..<100 {
+            // Given
+            let profiling: RemoteConfiguration.Profiling = .mockRandom()
+            var configuration = Profiling.Configuration(
+                continuousSampleRate: .mockRandom(min: 0, max: 100)
+            )
 
-        var configuration = baseline
-        configuration.apply(remoteConfiguration: .mockWith(profiling: .mockWith(continuousSampleRate: 99)))
+            // When
+            configuration.apply(remoteConfiguration: .mockWith(profiling: profiling))
 
-        DDAssertReflectionEqual(configuration, baseline)
+            // Then
+            XCTAssertEqual(
+                configuration.continuousSampleRate,
+                SampleRate(try XCTUnwrap(profiling.continuousSampleRate))
+            )
+        }
     }
 }
 
