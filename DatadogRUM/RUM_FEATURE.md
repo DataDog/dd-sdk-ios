@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-26
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: 5d65cab08
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -250,7 +250,7 @@ Requires configuration to be set, otherwise disabled by default:
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
-- **App hangs**: `appHangThreshold` (default: nil/disabled)
+- **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
@@ -314,7 +314,7 @@ Event mappers allow modifying or dropping events before upload:
 
 ## Feature Interactions
 
-- **Crash Reporting**: Enhances App Hang monitoring with stack traces
+- **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
 - **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
 - **Session Replay**: RUM must be enabled for Session Replay to work
 - **WebView Tracking**: Enables RUM tracking in web views. Requires:
