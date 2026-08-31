@@ -1,7 +1,7 @@
 ---
 last_updated: 2026-08-31
 sdk_version: 3.16.0
-verified_against_commit: b9103bfe1
+verified_against_commit: 271bd5ddb
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -179,8 +179,7 @@ Profile uploads are multipart/form-data requests that include profile metadata, 
 
 When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `Profiling.enable(with:)` runs, it is merged onto the in-code `Profiling.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
 
-- The `profiling` namespace overrides `applicationLaunchSampleRate`. A `nil`/omitted value keeps the in-code value; passing `nil` for the whole remote configuration (none fetched) leaves the configuration unchanged.
-- `continuousSampleRate` has no remote-configuration equivalent yet — the remote value is not consumed. It will be wired once continuous profiling becomes remotely configurable in-code.
+- The `profiling` namespace overrides `applicationLaunchSampleRate` and `continuousSampleRate`. A `nil`/omitted value keeps the in-code value; passing `nil` for the whole remote configuration (none fetched) leaves the configuration unchanged.
 - See `ProfilingConfiguration.swift`'s `apply(remoteConfiguration:)` for the merge logic.
 
 ## Common Troubleshooting Patterns
