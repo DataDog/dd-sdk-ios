@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FEATURE] Add `remoteConfigurationID` to `Datadog.Configuration` to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
+- [FEATURE] Add `remoteConfiguration` to `Datadog.Configuration`, set with `RemoteConfiguration(id:)`, to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
 - [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
 
 # 3.16.0 / 19-08-2026
