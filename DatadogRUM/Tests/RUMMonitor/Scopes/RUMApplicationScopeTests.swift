@@ -723,14 +723,28 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Lifecycle event (willEnterForeground) — still before any view
         currentTime.addTimeInterval(1)
+        let foregroundContext: DatadogContext = .mockWith(
+            sdkInitDate: prewarmContext.sdkInitDate,
+            launchInfo: prewarmContext.launchInfo,
+            applicationStateHistory: .mockWith(
+                initialState: .background,
+                date: prewarmContext.sdkInitDate,
+                transitions: [(state: .inactive, date: currentTime)]
+            )
+        )
         let lifecycleCommand = RUMHandleAppLifecycleEventCommand(time: currentTime, event: .willEnterForeground)
-        _ = scope.process(command: lifecycleCommand, context: prewarmContext, writer: writer)
+        _ = scope.process(command: lifecycleCommand, context: foregroundContext, writer: writer)
+
+        let applicationLaunchView = try XCTUnwrap(scope.activeSession?.viewScopes.first)
+        XCTAssertEqual(applicationLaunchView.viewName, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
+        XCTAssertEqual(applicationLaunchView.viewStartTime, currentTime)
+        XCTAssertTrue(scope.applicationActive)
 
         // JS navigation fires startView — within timeout window
         currentTime.addTimeInterval(1)
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
-            context: prewarmContext,
+            context: foregroundContext,
             writer: writer
         )
 
@@ -780,6 +794,12 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertNotEqual(sessionA.sessionUUID, sessionB.sessionUUID)
         XCTAssertEqual(sessionB.context.sessionPrecondition, .inactivityTimeout)
         XCTAssertTrue(scope.applicationActive, "applicationActive must be true once a session renewal occurs")
+        XCTAssertTrue(
+            writer.events(ofType: RUMViewEvent.self).contains {
+                $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+            },
+            "The foreground retry must start ApplicationLaunch before the requested view"
+        )
         XCTAssertNil(featureScope.telemetryMock.messages.firstError(), "No spurious telemetry error must be fired")
     }
 
@@ -827,7 +847,50 @@ class RUMApplicationScopeTests: XCTestCase {
         let sessionB = try XCTUnwrap(scope.activeSession)
         XCTAssertEqual(sessionB.context.sessionPrecondition, .inactivityTimeout)
         XCTAssertTrue(scope.applicationActive)
+        XCTAssertTrue(
+            writer.events(ofType: RUMViewEvent.self).contains {
+                $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+            },
+            "The foreground retry must start ApplicationLaunch before the requested view"
+        )
         XCTAssertNil(featureScope.telemetryMock.messages.firstError(), "Secondary fix must prevent spurious 'Creating initial session extra time' error")
+    }
+
+    func testGivenNoSDKInitCommand_whenStartViewLazilyCreatesUserLaunchSession_itStartsApplicationLaunchViewFirst() throws {
+        // Given - RUM receives a view before the SDK-init notification reaches the monitor.
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let context: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(
+                launchReason: .userLaunch,
+                processLaunchDate: currentTime
+            ),
+            applicationStateHistory: .mockAppInForeground(since: currentTime)
+        )
+        let scope = RUMApplicationScope(dependencies: .mockWith(samplingRate: 100))
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: currentTime,
+                identity: .mockViewIdentifier(),
+                name: "RequestedView"
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let session = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(session.context.sessionPrecondition, .userAppLaunch)
+        XCTAssertEqual(session.viewScopes.first?.viewName, "RequestedView")
+        XCTAssertTrue(scope.applicationActive)
+        XCTAssertTrue(
+            writer.events(ofType: RUMViewEvent.self).contains {
+                $0.view.name == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+            },
+            "ApplicationLaunch must be started before the requested view"
+        )
     }
 
     func testGivenUserLaunchedApp_applicationLaunchViewCreatedImmediately() throws {

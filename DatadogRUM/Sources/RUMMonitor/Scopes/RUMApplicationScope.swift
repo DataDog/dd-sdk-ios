@@ -13,8 +13,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Child Scopes
 
-    // Whether the application is already active. Set to true
-    // when the first session starts.
+    // Whether application-launch handling has completed. While false, deferred prewarm and background launches
+    // keep retrying the ApplicationLaunch view when new commands arrive.
     private(set) var applicationActive = false
 
     /// Session scope. It gets created with the first event.
@@ -130,7 +130,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // This flow is likely stale code as`RUMSDKInitCommand` should already start the session before reaching this point
             dependencies.telemetry.debug("Starting initial session from lazy flow")
             createInitialSession(with: context, on: command)
-            applicationActive = true
         }
 
         // Create the application launch view on any command
@@ -194,6 +193,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 return nil
             }
         })
+
+        // Once any non-launch view has been tracked, ApplicationLaunch must not be started by a later foreground retry.
+        // This preserves background-view sessions while keeping empty prewarm/background sessions eligible for deferral.
+        if applicationState.numberOfNonApplicationLaunchViewsCreated > 0 {
+            applicationActive = true
+        }
 
         // Sanity telemetry, only end up with one active session
         let activeSessions = sessionScopes.filter { $0.isActive }
@@ -343,14 +348,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Forces the `ApplicationLaunchView` to be started.
     /// Added as part of https://github.com/DataDog/dd-sdk-ios/pull/1290 to separate creation of first view
     /// from creation of initial session due to receiving `RUMSDKInitCommand`. Starting from RUM-1649 the "application launch" view
-    /// is started on SDK init only when the app is launched by user with no prewarming or when app was prewarmed but SDK was initialized
-    /// after it became active.
+    /// is started immediately for a user launch, or deferred until the app enters foreground for prewarm and background launches.
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let isUserLaunch = context.launchInfo.launchReason == .userLaunch
         let isPrewarmed = context.launchInfo.launchReason == .prewarming
         let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
-        let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
-        guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
+        let isInForeground = context.applicationStateHistory.currentState != .background
+        guard isUserLaunch || (isPrewarmed && isInForeground) || (isBackgroundLaunch && isInForeground) else {
             // applicationActive stays false so _process retries on the next command (prewarm/background launch deferral)
             return
         }
