@@ -119,11 +119,15 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 uiKitPredicate: rumActionsPredicate
             )
             #elseif os(macOS)
+            // MacOSSwiftUIComponentDetector.init method makes the current app be an accessibility
+            // client of itself. If swiftUIRUMActionsPredicate is nil, the detector will never do
+            // any useful work, so it's not created. This avoids the accessibility client creation
+            // as well, saving CPU time across the app on unnecessary accessibility hierarchy management.
             return RUMActionsHandler(
                 dateProvider: dateProvider,
                 appKitPredicate: rumActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
-                swiftUIDetector: MacOSSwiftUIComponentDetector()
+                swiftUIDetector: swiftUIRUMActionsPredicate != nil ? MacOSSwiftUIComponentDetector() : nil
             )
             #else
             return RUMActionsHandler(
