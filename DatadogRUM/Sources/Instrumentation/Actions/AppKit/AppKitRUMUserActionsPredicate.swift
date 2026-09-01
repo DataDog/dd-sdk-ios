@@ -54,8 +54,30 @@ public struct DefaultAppKitRUMActionsPredicate {
     /// - Parameter view: The action target view.
     /// - Returns: The name of the target view to use in the RUM Action.
     private func targetName(for view: DDView) -> String {
-        if view.accessibilityIdentifier().isEmpty == false {
-            return "\(baseName(for: view)) (\(view.accessibilityIdentifier()))"
+        // In some situations, including when an interface is de-serialized from a XIB,
+        // the accessibility identifier of some controls is associated to the control cell
+        // instead. In other situations, like programmatically assigning an identifier to
+        // a control, the identifier is only on the control. Therefore, in controls, both
+        // are checked.
+        let identifier: String? = {
+            if let identifier = axIdentifier(view), identifier.isEmpty == false {
+                return identifier
+            }
+
+            guard
+                let control = view as? NSControl,
+                let cell = control.cell
+            else { return nil }
+
+            if let cellIdentifier = axIdentifier(cell), cellIdentifier.isEmpty == false {
+                return cellIdentifier
+            }
+
+            return nil
+        }()
+
+        if let identifier {
+            return "\(baseName(for: view)) (\(identifier))"
         // Some SwiftUI components are UIKit under the hood,
         // but need to clean up tangled SwiftUI name
         // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
