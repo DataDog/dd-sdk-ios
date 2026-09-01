@@ -140,7 +140,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// If `accessibilityElement` is a scroll area, this method starts by traversing *down* the hierarchy looking for
     /// the first element that is not a scroll area. This supports nested scroll areas. After obtaining such element (or using
     /// `accessibilityElement` directly if it's not a scroll area), it traverses the hierarchy *up* looking for the first
-    /// interactive element.
+    /// interactive, enabled element.
     ///
     /// - Parameters:
     ///   - accessibilityElement: The initial element returned by `window.accessibilityHitTest` for
@@ -152,7 +152,8 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         var element: AccessibilityElement? = traverseDownScrollViews(startingAt: accessibilityElement, coordinates: coordinates)
 
         while let currentElement = element {
-            if let role = axRole(currentElement),
+            if (axIsEnabled(currentElement).map { $0 } ?? true),
+               let role = axRole(currentElement),
                Self.interestingAccessibilityRoles.contains(role.rawValue) {
                 return currentElement
             }
