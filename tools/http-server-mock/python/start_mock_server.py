@@ -29,6 +29,17 @@ class HTTPMockServer(BaseHTTPRequestHandler):
 
     GET /inspect
     - Endpoint listing the history of recorded generic requests.
+
+    GET /cache-test/<resource_id>
+    - Endpoint simulating a cacheable resource with ETag-based revalidation
+      (`Cache-Control: no-cache` + `ETag`, i.e. cacheable but must always revalidate).
+      Responds `200` with a small JSON body on the first request for a given
+      `resource_id`, then `304` (no body) on subsequent requests carrying a
+      matching `If-None-Match` header.
+
+    GET /cache-test-stale/<resource_id>
+    - Endpoint simulating a resource that never revalidates as fresh: it always
+      responds `200` with a different body/ETag, regardless of `If-None-Match`.
     """
 
     def do_POST(self):
@@ -43,6 +54,16 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         """
         Routes all incoming GET requests
         """
+        cache_test_match = re.search(r"/cache-test/([^/?]+)", self.path)
+        if cache_test_match is not None:
+            self.__GET_cache_test(cache_test_match.group(1))
+            return
+
+        cache_test_stale_match = re.search(r"/cache-test-stale/([^/?]+)", self.path)
+        if cache_test_stale_match is not None:
+            self.__GET_cache_test_stale(cache_test_stale_match.group(1))
+            return
+
         self.__route([
             (r"/inspect$", self.__GET_inspect),
         ])
@@ -91,6 +112,53 @@ class HTTPMockServer(BaseHTTPRequestHandler):
             })
 
         return json.dumps(inspection_info).encode("utf-8")
+
+    def __GET_cache_test(self, resource_id):
+        """
+        GET /cache-test/<resource_id>
+
+        Simulates a cacheable resource with ETag-based revalidation:
+        - 1st request for `resource_id` -> `200` with a JSON body and an `ETag`.
+        - subsequent requests sending `If-None-Match` matching that `ETag` -> `304`, no body.
+        """
+        global cache_test_registry
+        etag = cache_test_registry.etag(resource_id)
+        if_none_match = self.headers.get('If-None-Match')
+
+        if if_none_match is not None and if_none_match == etag:
+            self.send_response(304) # not modified
+            self.send_header('Cache-Control', 'no-cache')
+            self.send_header('ETag', etag)
+            self.end_headers()
+            return
+
+        body = json.dumps({"id": resource_id}).encode('utf-8')
+        self.send_response(200) # ok
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Cache-Control', 'no-cache')
+        self.send_header('ETag', etag)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def __GET_cache_test_stale(self, resource_id):
+        """
+        GET /cache-test-stale/<resource_id>
+
+        Simulates a resource that always misses the cache: every request gets a fresh
+        `200` response with a different body and `ETag`, regardless of `If-None-Match`.
+        """
+        global cache_test_registry
+        etag = cache_test_registry.next_stale_etag(resource_id)
+
+        body = json.dumps({"id": resource_id, "etag": etag}).encode('utf-8')
+        self.send_response(200) # ok
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Cache-Control', 'max-age=3600')
+        self.send_header('ETag', etag)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def __DELETE_requests(self, parameters):
         """
@@ -153,12 +221,33 @@ class GenericRequestsHistory:
     def clear(self):
         self.__requests.clear()
 
+class CacheTestRegistry:
+    """
+    Stores per-`resource_id` state for the `/cache-test/*` and `/cache-test-stale/*` endpoints:
+    - a fixed `ETag` used for revalidation on `/cache-test/<resource_id>`,
+    - a request counter used to produce an always-different `ETag` on `/cache-test-stale/<resource_id>`.
+    """
+
+    __etags = {}
+    __stale_counters = {}
+
+    def etag(self, resource_id):
+        if resource_id not in self.__etags:
+            self.__etags[resource_id] = f'"{resource_id}-etag"'
+        return self.__etags[resource_id]
+
+    def next_stale_etag(self, resource_id):
+        count = self.__stale_counters.get(resource_id, 0) + 1
+        self.__stale_counters[resource_id] = count
+        return f'"{resource_id}-stale-etag-{count}"'
+
 # If any previous instance of this server is running - kill it
 os.system('pkill -f start_mock_server.py')
 time.sleep(1) # wait a bit until socket is eventually released
 
 # Configure the server
 history = GenericRequestsHistory()
+cache_test_registry = CacheTestRegistry()
 address = get_localhost() if prefer_localhost_flag is True else get_best_server_address()
 httpd = HTTPServer((address.ip, address.port), HTTPMockServer)
 
