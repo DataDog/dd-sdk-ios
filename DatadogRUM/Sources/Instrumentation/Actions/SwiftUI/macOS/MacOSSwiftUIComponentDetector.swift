@@ -65,7 +65,8 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         kAXSliderRole,
         kAXIncrementorRole,
         kAXTextFieldRole,
-        kAXTextAreaRole
+        kAXTextAreaRole,
+        NSAccessibility.Role.link.rawValue
     ]
 
     @MainActor
@@ -91,6 +92,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// this event.
     func createActionCommand(from event: NSEvent, predicate: (any SwiftUIRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> RUMAddUserActionCommand? {
         guard
+            let predicate,
             let window = event.window,
             case let coordsInScreen = window.convertPoint(toScreen: event.locationInWindow),
             let accessibilityElement = axHitTesting(window, coordinates: coordsInScreen)
@@ -102,7 +104,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
             return nil
         }
 
-        guard let action = predicate?.rumAction(with: targetName(for: targetElement)) else {
+        guard let action = predicate.rumAction(with: targetName(for: targetElement)) else {
             return nil
         }
 
@@ -126,7 +128,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// - Returns: The name of the target represented by `accessibilityElement`.
     private func targetName(for accessibilityElement: AccessibilityElement) -> String {
         let roleString = accessibilityElement.accessibilityRole().map { $0.rawValue } ?? "<unknown>"
-        if let identifier = accessibilityElement.accessibilityIdentifier(), identifier.isEmpty == false {
+        if let identifier = axIdentifier(accessibilityElement), identifier.isEmpty == false {
             return "\(roleString) (\(identifier))"
         } else {
             return roleString
@@ -234,7 +236,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// Obtains the accessibility parent of a given accessibility element.
     ///
     /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityParent()` on a given object and avoid a crash is by making sure the object responds
+    /// `accessibilityParent()` method on a given object and avoid a crash is by making sure the object responds
     /// to that selector. This method wraps that complexity.
     ///
     /// - Parameters:
@@ -255,7 +257,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// Obtains the result of calling `accessibilityHitTest` for the given coordinates on the given element.
     ///
     /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityHitTest(coords:)` on a given object and avoid a crash is by making sure the object
+    /// `accessibilityHitTest(coords:)` method on a given object and avoid a crash is by making sure the object
     /// responds to that selector. This method wraps that complexity.
     ///
     /// - Parameters:
@@ -273,6 +275,26 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         }
 
         return element
+    }
+
+    /// Obtains the accessibility identifier of a given element.
+    ///
+    /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
+    /// `accessibilityIdentifier()` method on a given object and avoid a crash is by making sure the object
+    /// responds to that selector. This method wraps that complexity.
+    ///
+    /// - Parameters:
+    ///   - element: The accessibility element the caller wants to call `accessibilityIdentifier` on.
+    ///
+    /// - returns: The element's accessibility identifier, or `nil` if it does not have an accessibility identifier.
+    private func axIdentifier(_ element: AccessibilityElement) -> String? {
+        guard element.responds(to: #selector(NSAccessibilityElementProtocol.accessibilityIdentifier)),
+              let identifier = element.accessibilityIdentifier()
+        else {
+            return nil
+        }
+
+        return identifier
     }
 }
 
