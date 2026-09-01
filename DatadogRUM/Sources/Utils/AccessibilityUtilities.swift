@@ -115,4 +115,23 @@ internal func axIdentifier(_ element: AccessibilityElement) -> String? {
     return identifier
 }
 
+/// `true` if the accessibility element responds to user events, `false` otherwise.
+///
+/// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
+/// `isAccessibilityEnabled()` method on a given object and avoid a crash is by making sure the object
+/// responds to that selector. This method wraps that complexity.
+///
+/// - Parameters:
+///   - element: The accessibility element the caller wants to call `isAccessibilityEnabled()` on.
+///
+/// - returns: A boolean indicating if the accessibility element responds to user events, or `nil` if it does
+/// not respond to `isAccessibilityEnabled()`.
+internal func axIsEnabled(_ element: AccessibilityElement) -> Bool? {
+    guard element.responds(to: #selector(NSAccessibilityProtocol.isAccessibilityEnabled)) else {
+        return nil
+    }
+
+    return element.isAccessibilityEnabled()
+}
+
 #endif
