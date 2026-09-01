@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @_spi(objc)
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class DDRUMConfigurationTests: XCTestCase {
@@ -212,6 +213,31 @@ class DDRUMConfigurationTests: XCTestCase {
 
         objc.vitalsUpdateFrequency = .never
         XCTAssertNil(swift.vitalsUpdateFrequency)
+    }
+
+func testTimeseriesConfigurationWithAllTypes() {
+    objc.setTimeseriesConfiguration(.init(collectTypes: nil))
+
+    XCTAssertNotNil(swift.timeseries)
+    XCTAssertNil(swift.timeseries?.collectTypes)
+}
+
+    func testTimeseriesConfigurationWithMemoryType() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.memory]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory])
+    }
+
+    func testTimeseriesConfigurationWithCPUType() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.cpu]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.cpu])
+    }
+
+    func testTimeseriesConfigurationWithMemoryAndCPUTypes() {
+        objc.setTimeseriesConfiguration(.init(collectTypes: [.memory, .cpu]))
+
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory, .cpu])
     }
 
     func testEventMappers() {

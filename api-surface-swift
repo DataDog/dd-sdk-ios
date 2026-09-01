@@ -584,9 +584,17 @@ public enum PerformanceMetric
 # ----------------------------------
 
 public final class CrashReporting
+    public struct Configuration
+        public var appHangBacktraceEnabled: Bool
+        public init(appHangBacktraceEnabled: Bool = true)
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with configuration: Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func enable(with plugin: @autoclosure () throws -> CrashReportingPlugin,configuration: Configuration,in core: DatadogCoreProtocol = CoreRegistry.default)
 public static func enable()
+public static func enable(with configuration: objc_CrashReportingConfiguration)
+public var appHangBacktraceEnabled: Bool
+override public init()
 public protocol CrashReportingPlugin: AnyObject
     func readPendingCrashReport(completion: @escaping (DDCrashReport?) -> Bool)
     func inject(context: Data)

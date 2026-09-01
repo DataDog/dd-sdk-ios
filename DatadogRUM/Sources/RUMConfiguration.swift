@@ -190,6 +190,7 @@ extension RUM {
         ///         some hangs lasting very close to this threshold may not be reported.
         ///
         /// - Note: App Hangs monitoring requires Datadog Crash Reporting to be enabled. Otherwise stack trace will be not reported in App Hang errors.
+        ///         Stack traces can also be opted out of while keeping Crash Reporting enabled, with `CrashReporting.Configuration.appHangBacktraceEnabled`.
         ///
         /// - Default: `nil` (hangs monitoring disabled).
         public var appHangThreshold: TimeInterval?

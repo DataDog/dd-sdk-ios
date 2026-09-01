@@ -17,6 +17,8 @@ internal final class AppHangsMonitor {
         static let appHangStackNotAvailableErrorMessage = "Stack trace was not collected because `DatadogCrashReporting` had not been enabled."
         /// The standardized `error.stack` when backtrace generation failed due to an internal error.
         static let appHangStackGenerationFailedErrorMessage = "Failed to collect the stack trace."
+        /// The standardized `error.stack` when backtrace generation was turned off in `CrashReporting.Configuration`.
+        static let appHangStackDisabledErrorMessage = "Stack trace was not collected because backtrace generation for App Hangs was disabled."
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
@@ -34,7 +36,8 @@ internal final class AppHangsMonitor {
         fatalErrorContext: FatalErrorContextNotifying,
         dateProvider: DateProvider,
         uuidGenerator: RUMUUIDGenerator,
-        processID: UUID
+        processID: UUID,
+        isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         self.init(
             featureScope: featureScope,
@@ -43,7 +46,8 @@ internal final class AppHangsMonitor {
                 queue: observedQueue,
                 dateProvider: dateProvider,
                 backtraceReporter: backtraceReporter,
-                telemetry: featureScope.telemetry
+                telemetry: featureScope.telemetry,
+                isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
             ),
             fatalErrorContext: fatalErrorContext,
             processID: processID,
