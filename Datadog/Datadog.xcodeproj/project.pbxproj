@@ -43,6 +43,7 @@
 		09C2D45430063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */; };
 		09C637E63045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C637E53045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift */; };
 		09C637E83045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C637E73045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift */; };
+		09C638563046E7AF00874FA6 /* AccessibilityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */; };
 		09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */; };
 		09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */; };
 		09E5009E30333743003E67A6 /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E5009D30333743003E67A6 /* DDPlatformTypes.swift */; };
@@ -1958,6 +1959,7 @@
 		09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSApplicationStateProvider.swift; sourceTree = "<group>"; };
 		09C637E53045D10E00874FA6 /* SwiftUIRUMActionsPredicate_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate_macOS.swift; sourceTree = "<group>"; };
 		09C637E73045D11500874FA6 /* SwiftUIRUMActionsPredicate_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate_iOS.swift; sourceTree = "<group>"; };
+		09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUtilities.swift; sourceTree = "<group>"; };
 		09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09E5009D30333743003E67A6 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
@@ -6991,6 +6993,7 @@
 		D29A9F8B29DD860A005C54A4 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */,
 				095858D22FDABBB6005BBEAC /* AppKitExtensions.swift */,
 				615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */,
 				D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */,
@@ -9580,10 +9583,9 @@
 				965497052D761FCB006428EE /* SwiftUIViewNameExtractor.swift in Sources */,
 				09FF0AEF2FD31D8F000D63F8 /* AppKitViewControllerSwizzler.swift in Sources */,
 				09FF0AF02FD31D8F000D63F8 /* AppKitViewControllerHandler.swift in Sources */,
-				09FF0AEF2FD31D8F000D63F8 /* AppKitViewControllerSwizzler.swift in Sources */,
-				09FF0AF02FD31D8F000D63F8 /* AppKitViewControllerHandler.swift in Sources */,
 				09FF0AF12FD31D8F000D63F8 /* AppKitRUMViewsPredicate.swift in Sources */,
 				095858D32FDABBB6005BBEAC /* AppKitExtensions.swift in Sources */,
+				09C638563046E7AF00874FA6 /* AccessibilityUtilities.swift in Sources */,
 				11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D29A9F7C29DD85BB005C54A4 /* RUMEventBuilder.swift in Sources */,
 				09ACCD333036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift in Sources */,

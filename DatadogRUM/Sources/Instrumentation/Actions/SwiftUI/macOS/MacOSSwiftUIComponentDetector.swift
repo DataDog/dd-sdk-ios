@@ -11,8 +11,6 @@ import DatadogInternal
 import os.log
 
 internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
-    typealias AccessibilityElement = AnyObject
-
     /// Used to make sure `setupAxClient()` runs only once.
     @MainActor private static var axSetupPerformed = false
 
@@ -193,7 +191,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         var currentElement = accessibilityElement
 
         while isScrollView(currentElement) {
-            guard let children = currentElement.accessibilityChildren(),
+            guard let children = axChildren(currentElement),
                   let lazyNode = children.first(where: { node in
                       String(describing: type(of: node)).contains("AccessibilityLazyLayoutNode")
                   }) as? AccessibilityElement,
@@ -210,91 +208,6 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
         }
 
         return currentElement
-    }
-
-    /// Obtains the accessibility role of a given accessibility element.
-    ///
-    /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityRole()` on a given object and avoid a crash is by making sure the object responds
-    /// to that selector. This method wraps that complexity.
-    ///
-    /// - Parameters:
-    ///   - element: The accessibility element the caller wants the role of.
-    ///
-    /// - returns: The accessibility role of the given element, or `nil` if the given element has no role, or
-    /// does not respond to `accessibilityRole()`.
-    private func axRole(_ element: AccessibilityElement) -> NSAccessibility.Role? {
-        guard element.responds(to: #selector(NSAccessibilityProtocol.accessibilityRole)),
-              let role = element.accessibilityRole()
-        else {
-            return nil
-        }
-
-        return role
-    }
-
-    /// Obtains the accessibility parent of a given accessibility element.
-    ///
-    /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityParent()` method on a given object and avoid a crash is by making sure the object responds
-    /// to that selector. This method wraps that complexity.
-    ///
-    /// - Parameters:
-    ///   - element: The accessibility element the caller wants the parent of.
-    ///
-    /// - returns: The accessibility parent of the given element, or `nil` if the given element has no parent, or
-    /// does not respond to `accessibilityParent()`.
-    private func axParent(_ element: AccessibilityElement) -> AccessibilityElement? {
-        guard element.responds(to: #selector(NSAccessibilityProtocol.accessibilityParent)),
-              let parent = element.accessibilityParent() as? AccessibilityElement
-        else {
-            return nil
-        }
-
-        return parent
-    }
-
-    /// Obtains the result of calling `accessibilityHitTest` for the given coordinates on the given element.
-    ///
-    /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityHitTest(coords:)` method on a given object and avoid a crash is by making sure the object
-    /// responds to that selector. This method wraps that complexity.
-    ///
-    /// - Parameters:
-    ///   - element: The accessibility element the caller wants to call `accessibilityHitTest` on.
-    ///   - coordinates: The coordinates to test, in the accessibility coordinate space.
-    ///
-    /// - returns: The result of calling `accessibilityHitTest` on the given element with the given
-    /// coordinates, or `nil` if `element` does not consider `coordinates` to be inside itself, or does not
-    /// respond to `accessibilityHitTest(coords:)`.
-    private func axHitTesting(_ element: AccessibilityElement, coordinates: CGPoint) -> AccessibilityElement? {
-        guard element.responds(to: #selector(NSObject.accessibilityHitTest)),
-              let element = element.accessibilityHitTest(coordinates) as? AccessibilityElement
-        else {
-            return nil
-        }
-
-        return element
-    }
-
-    /// Obtains the accessibility identifier of a given element.
-    ///
-    /// - Note: Given how the informal accessibility protocols work, the only fully reliable way to safely call the
-    /// `accessibilityIdentifier()` method on a given object and avoid a crash is by making sure the object
-    /// responds to that selector. This method wraps that complexity.
-    ///
-    /// - Parameters:
-    ///   - element: The accessibility element the caller wants to call `accessibilityIdentifier` on.
-    ///
-    /// - returns: The element's accessibility identifier, or `nil` if it does not have an accessibility identifier.
-    private func axIdentifier(_ element: AccessibilityElement) -> String? {
-        guard element.responds(to: #selector(NSAccessibilityElementProtocol.accessibilityIdentifier)),
-              let identifier = element.accessibilityIdentifier()
-        else {
-            return nil
-        }
-
-        return identifier
     }
 }
 

@@ -54,6 +54,41 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertEqual(command.attributes.count, 0)
     }
 
+    func testGivenAppKitControlWithAccessibilityIdentifierOnlyOnCell_whenLeftMouseDown_itUsesCellIdentifier() throws {
+        // Given
+        let window = makeWindow()
+        let button = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        let cell = try XCTUnwrap(button.cell)
+        cell.setAccessibilityIdentifier("Cell Identifier")
+        window.contentView?.addSubview(button)
+        let handler = appKitHandler()
+
+        // When
+        handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
+
+        // Then
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.name, "NSButton (Cell Identifier)")
+    }
+
+    func testGivenAppKitControlWithAccessibilityIdentifiersOnViewAndCell_whenLeftMouseDown_itUsesViewIdentifier() throws {
+        // Given
+        let window = makeWindow()
+        let button = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        button.setAccessibilityIdentifier("View Identifier")
+        let cell = try XCTUnwrap(button.cell)
+        cell.setAccessibilityIdentifier("Cell Identifier")
+        window.contentView?.addSubview(button)
+        let handler = appKitHandler()
+
+        // When
+        handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
+
+        // Then
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.name, "NSButton (View Identifier)")
+    }
+
     func testGivenAppKitControlWithNoAccessibilityIdentifier_whenLeftMouseDown_itSendsRUMAction() throws {
         // Given
         let window = makeWindow()
