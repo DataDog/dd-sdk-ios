@@ -264,6 +264,7 @@
 		267134902D688D280048CB54 /* AccountInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2671348F2D688D230048CB54 /* AccountInfo.swift */; };
 		269035A22E41F94800F1A830 /* UserConfigurationContextMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269035A12E41F93F00F1A830 /* UserConfigurationContextMocks.swift */; };
 		269035A62E41FAAC00F1A830 /* AccountConfigurationContextMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */; };
+		26D89095303F398E00B5C5D0 /* CrashReportingConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */; };
 		27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63A979F48771C3277A41396 /* EvaluationLogger.swift */; };
 		319A8FF248543C79F2980418 /* DatadogCoreProtocol+Heatmaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C1B70A65975B9FEDEDA74E /* DatadogCoreProtocol+Heatmaps.swift */; };
 		3AFF4EF865EAECBA7BEDABDA /* FlagEvaluationEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D115C155135BEF011C5D0A3F /* FlagEvaluationEvent.swift */; };
@@ -1182,6 +1183,7 @@
 		D29A9F8629DD85BB005C54A4 /* SessionReplayDependency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615950ED291C058F00470E0C /* SessionReplayDependency.swift */; };
 		D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */; };
 		D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */; };
+		3FFF03CB7F99425AA2C13764 /* HasReplayMessageReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F35629D12B41C7BD33C5F7 /* HasReplayMessageReceiver.swift */; };
 		D29A9F8C29DD861C005C54A4 /* ValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611529A425E3DD51004F740E /* ValuePublisher.swift */; };
 		D29A9F8D29DD8665005C54A4 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
 		D29A9F8E29DD8665005C54A4 /* SwiftUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */; };
@@ -1204,6 +1206,7 @@
 		D29A9FB829DDB483005C54A4 /* RUMViewScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6198D27024C6E3B700493501 /* RUMViewScopeTests.swift */; };
 		D29A9FB929DDB483005C54A4 /* RUMEventsMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613E81F625A743600084B751 /* RUMEventsMapperTests.swift */; };
 		D29A9FBB29DDB483005C54A4 /* ErrorMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */; };
+		4BDA9ACABD194508802E4600 /* HasReplayMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5720D67B13FE4984A00AE45A /* HasReplayMessageReceiverTests.swift */; };
 		D29A9FBC29DDB483005C54A4 /* RUMResourceScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61494CB424C864680082C633 /* RUMResourceScopeTests.swift */; };
 		D29A9FBD29DDB483005C54A4 /* RUMSessionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C20824C0C75500C0321C /* RUMSessionScopeTests.swift */; };
 		D29A9FBE29DDB483005C54A4 /* RUMEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282024B8981D000B3D9B /* RUMEventBuilderTests.swift */; };
@@ -2109,6 +2112,7 @@
 		2671348F2D688D230048CB54 /* AccountInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInfo.swift; sourceTree = "<group>"; };
 		269035A12E41F93F00F1A830 /* UserConfigurationContextMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserConfigurationContextMocks.swift; sourceTree = "<group>"; };
 		269035A42E41FAA500F1A830 /* AccountConfigurationContextMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountConfigurationContextMocks.swift; sourceTree = "<group>"; };
+		26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingConfiguration.swift; sourceTree = "<group>"; };
 		2B6A3B154836FEB32C07EB50 /* EvaluationAggregator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationAggregator.swift; sourceTree = "<group>"; };
 		333D0D8EAED64F559835F384 /* RecordingComponents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordingComponents.swift; sourceTree = "<group>"; };
 		3C08F9CF2C2D652D002B0FF2 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
@@ -2930,6 +2934,7 @@
 		D214DAA429E072D7004D0AE8 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiver.swift; sourceTree = "<group>"; };
 		D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiver.swift; sourceTree = "<group>"; };
+		E6F35629D12B41C7BD33C5F7 /* HasReplayMessageReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HasReplayMessageReceiver.swift; sourceTree = "<group>"; };
 		D215F0932F6D5DE000E86466 /* ThirdPartyDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThirdPartyDelegateProxy.swift; sourceTree = "<group>"; };
 		D2160C9429C0DE5600FAA9A5 /* FirstPartyHosts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirstPartyHosts.swift; sourceTree = "<group>"; };
 		D2160C9629C0DE5600FAA9A5 /* TracingHeaderType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TracingHeaderType.swift; sourceTree = "<group>"; };
@@ -2954,6 +2959,7 @@
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
+		5720D67B13FE4984A00AE45A /* HasReplayMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HasReplayMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D22442C42CA301DA002E71E4 /* UIColor+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+SessionReplay.swift"; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22689C22EB12D3D00875E44 /* KSCrashPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KSCrashPlugin.swift; sourceTree = "<group>"; };
@@ -5325,6 +5331,7 @@
 				D2CBC26A294383F200134409 /* WebViewEventReceiver.swift */,
 				D236BE2729520FED00676E67 /* CrashReportReceiver.swift */,
 				D215ED6A29D2E1080046B721 /* ErrorMessageReceiver.swift */,
+				E6F35629D12B41C7BD33C5F7 /* HasReplayMessageReceiver.swift */,
 				D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */,
 				61DCC84D2C071DCD00CB59E5 /* TelemetryInterceptor.swift */,
 				D2D748222DC0FF7E00C61353 /* FatalErrorContextNotifier.swift */,
@@ -5379,6 +5386,7 @@
 				6167E6F52B81E94C00C3CA2D /* DDThread.swift */,
 				6167E6F82B81E95900C3CA2D /* BinaryImage.swift */,
 				3C3EF2AF2C1AEBAB009E9E57 /* LaunchReport.swift */,
+				26D89094303F398E00B5C5D0 /* CrashReportingConfiguration.swift */,
 			);
 			path = CrashReporting;
 			sourceTree = "<group>";
@@ -6623,6 +6631,7 @@
 				A7E6EA832D314A9900997201 /* AnonymousIdentifierManagerTests.swift */,
 				615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */,
 				D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */,
+				5720D67B13FE4984A00AE45A /* HasReplayMessageReceiverTests.swift */,
 				9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */,
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 				61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */,
@@ -9000,6 +9009,7 @@
 				D2D7483A2DC2306100C61353 /* TraceID.swift in Sources */,
 				D2D7483B2DC2306100C61353 /* SpanID.swift in Sources */,
 				D2671944300A662E002B90AD /* DDTag.swift in Sources */,
+				26D89095303F398E00B5C5D0 /* CrashReportingConfiguration.swift in Sources */,
 				D23039F3298D5236001A1FA3 /* DynamicCodingKey.swift in Sources */,
 				D2BEEDB22B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift in Sources */,
 				D23039FE298D5236001A1FA3 /* FeatureRequestBuilder.swift in Sources */,
@@ -9406,6 +9416,7 @@
 				118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
 				118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
+				3FFF03CB7F99425AA2C13764 /* HasReplayMessageReceiver.swift in Sources */,
 				96F70D452DD793C400D3736B /* RUMAction.swift in Sources */,
 				D29A9F8729DD85BB005C54A4 /* SwiftUIActionModifier.swift in Sources */,
 				D29A9F5D29DD85BB005C54A4 /* RUMCommandSubscriber.swift in Sources */,
@@ -9515,6 +9526,7 @@
 				61181CDC2BF35BC000632A7A /* FatalErrorContextNotifierTests.swift in Sources */,
 				61C713BC2A3C95AD00FA735A /* RUMInstrumentationTests.swift in Sources */,
 				D29A9FBB29DDB483005C54A4 /* ErrorMessageReceiverTests.swift in Sources */,
+				4BDA9ACABD194508802E4600 /* HasReplayMessageReceiverTests.swift in Sources */,
 				A1B2C3E72F92000100ABCDEF /* ProfilingContextRUMTests.swift in Sources */,
 				61C713C02A3C9DAD00FA735A /* RequestBuilderTests.swift in Sources */,
 				D29A9F9F29DDB483005C54A4 /* RUMApplicationScopeTests.swift in Sources */,
