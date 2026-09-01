@@ -317,6 +317,21 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.viewsCount.applicationLaunch, appLaunchViewIDs.count)
     }
 
+    func testInstrumentationTypeEncoding() throws {
+        func encodedValue(_ type: InstrumentationType) throws -> Any {
+            let data = try JSONEncoder().encode(type)
+            return try JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])
+        }
+
+        // native instrumentation types must keep encoding as their original Int wire values
+        XCTAssertEqual(try encodedValue(.uikit) as? Int, 0)
+        XCTAssertEqual(try encodedValue(.swiftuiAutomatic) as? Int, 1)
+        XCTAssertEqual(try encodedValue(.swiftui) as? Int, 2)
+        XCTAssertEqual(try encodedValue(.manual) as? Int, 3)
+        // cross-platform instrumentation types encode as the raw string reported by the CP SDK
+        XCTAssertEqual(try encodedValue(.crossPlatform("flutter")) as? String, "flutter")
+    }
+
     func testReportingViewsCountByInstrumentationType() throws {
         let manualViewsCount: Int = .mockRandom(min: 1, max: 10)
         let swiftuiViewsCount: Int = .mockRandom(min: 1, max: 10)
