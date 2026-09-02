@@ -21,7 +21,8 @@ class RUMResourceCacheStatusScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // A resource that supports ETag-based revalidation: the mock server responds `200` on the 1st request
         // and `304` (no body) on the 2nd request, once the device's local HTTP cache sends `If-None-Match`.
-        let cacheableResourceURL = server.obtainUniqueRecordingSession()
+        let cacheServerSession = server.obtainUniqueRecordingSession()
+        let cacheableResourceURL = cacheServerSession
             .recordingURL
             .appendingPathComponent("cache-test/resource-1")
 
@@ -42,6 +43,17 @@ class RUMResourceCacheStatusScenarioTests: IntegrationTests, RUMCommonAsserts {
         }
 
         assertRUM(requests: rumRequests)
+
+        // Prove that the mock server actually took its `304` branch for the 2nd request - otherwise the
+        // status-code assertions below would pass just the same even if revalidation never happened.
+        let cacheRequests = try cacheServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            requests.count == 2
+        }
+        let cacheResponseStatuses = try cacheRequests.map { request -> Int in
+            let json = try JSONSerialization.jsonObject(with: request.httpBody) as? [String: Int]
+            return try XCTUnwrap(json?["response_status"])
+        }
+        XCTAssertEqual(cacheResponseStatuses, [200, 304], "The mock server must serve `200` for the 'prime' request and `304` for the 'revalidate' request")
 
         let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
         sendCIAppLog(session)

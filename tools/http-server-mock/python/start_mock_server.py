@@ -120,18 +120,24 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         Simulates a cacheable resource with ETag-based revalidation:
         - 1st request for `resource_id` -> `200` with a JSON body and an `ETag`.
         - subsequent requests sending `If-None-Match` matching that `ETag` -> `304`, no body.
+
+        Each request is also recorded into `history`, with the response status it was
+        actually served, so tests can prove which branch (`200` or `304`) was taken.
         """
-        global cache_test_registry
+        global cache_test_registry, history
         etag = cache_test_registry.etag(resource_id)
         if_none_match = self.headers.get('If-None-Match')
+        request_headers = '\n'.join([ f'{field}: {self.headers[field]}' for field in self.headers ]).encode('utf-8')
 
         if if_none_match is not None and if_none_match == etag:
+            history.add_request(GenericRequest("GET", self.path, request_headers, json.dumps({"response_status": 304}).encode('utf-8')))
             self.send_response(304) # not modified
             self.send_header('Cache-Control', 'no-cache')
             self.send_header('ETag', etag)
             self.end_headers()
             return
 
+        history.add_request(GenericRequest("GET", self.path, request_headers, json.dumps({"response_status": 200}).encode('utf-8')))
         body = json.dumps({"id": resource_id}).encode('utf-8')
         self.send_response(200) # ok
         self.send_header('Content-Type', 'application/json')
@@ -154,7 +160,7 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         body = json.dumps({"id": resource_id, "etag": etag}).encode('utf-8')
         self.send_response(200) # ok
         self.send_header('Content-Type', 'application/json')
-        self.send_header('Cache-Control', 'max-age=3600')
+        self.send_header('Cache-Control', 'no-cache')
         self.send_header('ETag', etag)
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()

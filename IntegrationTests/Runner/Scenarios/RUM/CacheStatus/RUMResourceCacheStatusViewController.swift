@@ -26,9 +26,9 @@ internal class RUMResourceCacheStatusViewController: UIViewController {
 
     /// Sends the 1st ("prime") request, populating the device's local HTTP cache.
     private func sendPrimeRequest() {
-        let task = session.dataTask(with: testScenario.cacheableResourceURL) { [weak self] _, _, error in
+        let task = session.dataTask(with: testScenario.cacheableResourceURL) { _, _, error in
             assert(error == nil)
-            self?.sendRevalidateRequest()
+            self.sendRevalidateRequest()
         }
         task.resume()
     }
