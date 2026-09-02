@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// A Boolean value indicating whether the layer draws any content.
     var drawsContent: Bool {
@@ -49,7 +48,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.CornerRadii {
     /// Returns the rectangles that cover the rounded shape, excluding the corner caps.
     ///
@@ -95,7 +93,6 @@ extension CALayerSnapshot.CornerRadii {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     var hasBackgroundColor: Bool {
         guard let backgroundColor else {
@@ -184,7 +181,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.Filter {
     fileprivate var preservesOpacity: Bool {
         switch self {

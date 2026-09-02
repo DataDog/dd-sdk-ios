@@ -14,7 +14,6 @@ import TestUtilities
 
 @Suite(.datadogTesting)
 struct EmbeddedContentReceiverTests {
-    @available(iOS 13.0, *)
     @Test("Writes embedded records using native session context and embedded view ID")
     func writesEmbeddedRecordsUsingNativeSessionContextAndEmbeddedViewID() throws {
         // Given
@@ -67,7 +66,6 @@ struct EmbeddedContentReceiverTests {
         #expect(resourcesWriter.resources.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     @Test("Adds embedded records to the existing native record count")
     func embeddedRecordsContributeToExistingNativeRecordCount() {
         // Given
@@ -107,7 +105,6 @@ struct EmbeddedContentReceiverTests {
         #expect(recordsCountByViewID == ["shared-view-id": 5])
     }
 
-    @available(iOS 13.0, *)
     @Test("Writes embedded resources using the native application ID")
     func writesEmbeddedResourcesUsingNativeApplicationID() throws {
         // Given
@@ -148,7 +145,6 @@ struct EmbeddedContentReceiverTests {
         #expect(resource.context == .init(rumContext.applicationID))
     }
 
-    @available(iOS 13.0, *)
     @Test("Drops embedded messages when RUM context is unavailable")
     func dropsEmbeddedMessagesWhenRUMContextIsUnavailable() {
         // Given
@@ -176,7 +172,6 @@ struct EmbeddedContentReceiverTests {
         #expect(resourcesWriter.resources.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     @Test("Drops embedded messages when the native RUM session is not sampled")
     func dropsEmbeddedMessagesWhenNativeRUMSessionIsNotSampled() {
         // Given
@@ -207,7 +202,6 @@ struct EmbeddedContentReceiverTests {
         #expect(resourcesWriter.resources.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     @Test("Rejects messages for other receivers")
     func rejectsMessagesForOtherReceivers() {
         // Given
