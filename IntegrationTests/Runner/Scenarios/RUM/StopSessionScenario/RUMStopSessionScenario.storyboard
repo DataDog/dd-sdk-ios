@@ -100,16 +100,14 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vRT-VQ-kyZ">
                                 <rect key="frame" x="108.66666666666669" y="483" width="176" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Download Resource"/>
+                                <state key="normal" title="Download Resource"/>
                                 <connections>
                                     <action selector="didTapDownloadResourceButton:" destination="E9R-Yv-ijK" eventType="touchUpInside" id="Sf0-mT-jSL"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ct0-mj-IY6">
                                 <rect key="frame" x="164" y="526" width="65" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Done"/>
+                                <state key="normal" title="Done"/>
                                 <connections>
                                     <action selector="didTapDownloadResourceButton:" destination="E9R-Yv-ijK" eventType="touchUpInside" id="9pg-vJ-m5U"/>
                                 </connections>
@@ -151,8 +149,7 @@
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Grp-kd-Mwq">
                                 <rect key="frame" x="108.66666666666669" y="483" width="176" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Download Resource"/>
+                                <state key="normal" title="Download Resource"/>
                                 <connections>
                                     <action selector="didTapDownloadResourceButton:" destination="bOA-4i-jjr" eventType="touchUpInside" id="wY5-mb-InR"/>
                                 </connections>
