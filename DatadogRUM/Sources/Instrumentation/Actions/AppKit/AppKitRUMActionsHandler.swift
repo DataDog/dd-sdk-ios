@@ -52,7 +52,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             eventCommandsFactory: AppKitCommandFactory(
                 dateProvider: dateProvider,
                 macOSPredicate: macOSPredicate,
-                accessibilityHierarchyDetector: MacOSAccessibilityHierarchyDetector()
+                accessibilityHierarchyDetectorCreator: { MacOSAccessibilityHierarchyDetector() }
             )
         )
     }
