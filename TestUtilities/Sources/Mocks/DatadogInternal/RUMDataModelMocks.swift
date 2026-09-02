@@ -208,6 +208,113 @@ extension OperatingSystem: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMCITest: RandomMockable {
+    public static func mockRandom() -> RUMCITest {
+        return .init(testExecutionId: .mockRandom())
+    }
+}
+
+extension RUMSyntheticsTest: RandomMockable {
+    public static func mockRandom() -> RUMSyntheticsTest {
+        return .init(
+            injected: .mockRandom(),
+            resultId: .mockRandom(),
+            testId: .mockRandom(),
+            syntheticsInfo: [:]
+        )
+    }
+}
+
+extension DDProfiling: RandomMockable {
+    public static func mockRandom() -> DDProfiling {
+        return .init(
+            errorReason: .mockRandom(),
+            quotaReason: .mockRandom(),
+            status: .mockRandom()
+        )
+    }
+}
+
+extension DDProfiling.ErrorReason: RandomMockable {
+    public static func mockRandom() -> DDProfiling.ErrorReason {
+        [.notSupportedByBrowser, .failedToLazyLoad, .missingDocumentPolicyHeader, .unexpectedException].randomElement()!
+    }
+}
+
+extension DDProfiling.Status: RandomMockable {
+    public static func mockRandom() -> DDProfiling.Status {
+        [.starting, .running, .stopped, .error].randomElement()!
+    }
+}
+
+extension RUMViewEvent.View.Accessibility: RandomMockable {
+    public static func mockRandom() -> RUMViewEvent.View.Accessibility {
+        return .init(
+            assistiveSwitchEnabled: .mockRandom(),
+            assistiveTouchEnabled: .mockRandom(),
+            boldTextEnabled: .mockRandom(),
+            buttonShapesEnabled: .mockRandom(),
+            closedCaptioningEnabled: .mockRandom(),
+            grayscaleEnabled: .mockRandom(),
+            increaseContrastEnabled: .mockRandom(),
+            invertColorsEnabled: .mockRandom(),
+            monoAudioEnabled: .mockRandom(),
+            onOffSwitchLabelsEnabled: .mockRandom(),
+            reduceMotionEnabled: .mockRandom(),
+            reduceTransparencyEnabled: .mockRandom(),
+            reducedAnimationsEnabled: .mockRandom(),
+            rtlEnabled: .mockRandom(),
+            screenReaderEnabled: .mockRandom(),
+            shakeToUndoEnabled: .mockRandom(),
+            shouldDifferentiateWithoutColor: .mockRandom(),
+            singleAppModeEnabled: .mockRandom(),
+            speakScreenEnabled: .mockRandom(),
+            speakSelectionEnabled: .mockRandom(),
+            textSize: .mockRandom(),
+            videoAutoplayEnabled: .mockRandom()
+        )
+    }
+}
+
+extension RUMViewEvent.View.Performance: RandomMockable {
+    public static func mockRandom() -> RUMViewEvent.View.Performance {
+        return .init(
+            cls: .mockRandom(),
+            fbc: .init(timestamp: .mockRandom()),
+            fcp: .init(timestamp: .mockRandom()),
+            fid: .init(duration: .mockRandom(), targetSelector: .mockRandom(), timestamp: .mockRandom()),
+            inp: .init(
+                duration: .mockRandom(),
+                subParts: .init(
+                    inputDelay: .mockRandom(),
+                    presentationDelay: .mockRandom(),
+                    processingDuration: .mockRandom()
+                ),
+                targetSelector: .mockRandom(),
+                timestamp: .mockRandom()
+            ),
+            lcp: .init(
+                resourceUrl: .mockRandom(),
+                subParts: .init(loadDelay: .mockRandom(), loadTime: .mockRandom(), renderDelay: .mockRandom()),
+                targetSelector: .mockRandom(),
+                timestamp: .mockRandom()
+            )
+        )
+    }
+}
+
+extension RUMViewEvent.View.Performance.CLS: RandomMockable {
+    public static func mockRandom() -> RUMViewEvent.View.Performance.CLS {
+        return .init(
+            currentRect: .init(height: .mockRandom(), width: .mockRandom(), x: .mockRandom(), y: .mockRandom()),
+            previousRect: .init(height: .mockRandom(), width: .mockRandom(), x: .mockRandom(), y: .mockRandom()),
+            score: .mockRandom(),
+            targetSelector: .mockRandom(),
+            timestamp: .mockRandom()
+        )
+    }
+}
+
 extension RUMViewEvent.DD.Configuration: RandomMockable {
     public static func mockRandom() -> RUMViewEvent.DD.Configuration {
         return .init(
@@ -243,18 +350,20 @@ extension RUMViewEvent: RandomMockable {
         viewIsActive: Bool? = .random(),
         viewTimeSpent: Int64 = .mockRandom(),
         viewURL: String = .mockRandom(),
-        crashCount: Int64? = nil,
-        hasReplay: Bool? = nil,
-        featureFlags: RUMViewEvent.FeatureFlags? = nil
+        crashCount: Int64? = Int64.mockRandom(),
+        hasReplay: Bool? = Bool.random(),
+        featureFlags: RUMViewEvent.FeatureFlags? = .init(featureFlagsInfo: ["flag-\(String.mockRandom())": Bool.mockRandom()])
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
-                browserSdkVersion: nil,
-                cls: nil,
+                browserSdkVersion: .mockRandom(),
+                cls: .init(devicePixelRatio: .mockRandom()),
                 configuration: .mockRandom(),
                 documentVersion: .mockRandom(),
-                pageStates: nil,
-                replayStats: nil,
+                pageStates: [.init(start: .mockRandom(), state: .active)],
+                profiling: .mockRandom(),
+                replayStats: .init(recordsCount: .mockRandom(), segmentsCount: .mockRandom(), segmentsTotalRawSize: .mockRandom()),
+                sdkName: .mockRandom(),
                 session: .init(
                     plan: .plan1,
                     sessionPrecondition: .mockRandom()
@@ -262,38 +371,49 @@ extension RUMViewEvent: RandomMockable {
             ),
             account: .mockRandom(),
             application: .init(currentLocale: .mockRandom(), id: .mockRandom()),
-            buildId: nil,
+            buildId: .mockRandom(),
             buildVersion: .mockRandom(),
-            ciTest: nil,
+            ciTest: .mockRandom(),
             connectivity: .mockRandom(),
-            container: nil,
+            container: .init(source: .ios, view: .init(id: .mockRandom())),
             context: .mockRandom(),
             date: date,
             ddtags: .mockRandomDDTags(),
             device: .mockRandom(),
-            display: nil,
+            display: .init(
+                scroll: .init(
+                    maxDepth: .mockRandom(),
+                    maxDepthScrollTop: .mockRandom(),
+                    maxScrollHeight: .mockRandom(),
+                    maxScrollHeightTime: .mockRandom()
+                ),
+                viewport: .init(height: .mockRandom(), width: .mockRandom())
+            ),
             featureFlags: featureFlags,
             os: .mockRandom(),
-            privacy: nil,
+            privacy: .init(replayLevel: .allow),
             service: .mockRandom(),
             session: .init(
                 hasReplay: hasReplay,
                 id: sessionID.uuidString.lowercased(),
                 isActive: true,
-                sampledForReplay: nil,
+                sampledForReplay: .mockRandom(),
                 type: .user
             ),
             source: .ios,
-            synthetics: nil,
+            stream: nil,
+            synthetics: .mockRandom(),
+            tab: nil,
             usr: .mockRandom(),
             version: .mockAny(),
             view: .init(
+                accessibility: .mockRandom(),
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
                 cpuTicksPerSecond: .mockRandom(),
                 crash: crashCount.map { .init(count: $0) },
                 cumulativeLayoutShift: .mockRandom(),
-                cumulativeLayoutShiftTargetSelector: nil,
+                cumulativeLayoutShiftTargetSelector: .mockRandom(),
                 cumulativeLayoutShiftTime: .mockRandom(),
                 customTimings: .mockAny(),
                 domComplete: .mockRandom(),
@@ -303,13 +423,13 @@ extension RUMViewEvent: RandomMockable {
                 firstByte: .mockRandom(),
                 firstContentfulPaint: .mockRandom(),
                 firstInputDelay: .mockRandom(),
-                firstInputTargetSelector: nil,
+                firstInputTargetSelector: .mockRandom(),
                 firstInputTime: .mockRandom(),
-                flutterBuildTime: nil,
-                flutterRasterTime: nil,
-                freezeRate: nil,
+                flutterBuildTime: .init(average: .mockRandom(), max: .mockRandom(), metricMax: .mockRandom(), min: .mockRandom()),
+                flutterRasterTime: .init(average: .mockRandom(), max: .mockRandom(), metricMax: .mockRandom(), min: .mockRandom()),
+                freezeRate: .mockRandom(),
                 frozenFrame: .init(count: .mockRandom()),
-                frustration: nil,
+                frustration: .init(count: .mockRandom()),
                 id: viewID,
                 inForegroundPeriods: [
                     .init(
@@ -317,23 +437,24 @@ extension RUMViewEvent: RandomMockable {
                         start: .mockRandom()
                     )
                 ],
-                interactionToNextPaint: nil,
-                interactionToNextPaintTargetSelector: nil,
+                interactionToNextPaint: .mockRandom(),
+                interactionToNextPaintTargetSelector: .mockRandom(),
                 interactionToNextPaintTime: .mockRandom(),
                 interactionToNextViewTime: .mockRandom(),
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
-                jsRefreshRate: nil,
+                jsRefreshRate: .init(average: .mockRandom(), max: .mockRandom(), metricMax: .mockRandom(), min: .mockRandom()),
                 largestContentfulPaint: .mockRandom(),
-                largestContentfulPaintTargetSelector: nil,
+                largestContentfulPaintTargetSelector: .mockRandom(),
                 loadEvent: .mockRandom(),
                 loadingTime: viewTimeSpent,
-                loadingType: nil,
+                loadingType: .initialLoad,
                 longTask: .init(count: .mockRandom()),
                 memoryAverage: .mockRandom(),
                 memoryMax: .mockRandom(),
                 name: .mockRandom(),
                 networkSettledTime: .mockRandom(),
+                performance: .mockRandom(),
                 referrer: .mockRandom(),
                 refreshRateAverage: .mockRandom(),
                 refreshRateMin: .mockRandom(),

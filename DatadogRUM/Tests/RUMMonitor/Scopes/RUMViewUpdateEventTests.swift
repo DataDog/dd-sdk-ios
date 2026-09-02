@@ -284,6 +284,8 @@ private extension RUMViewEvent.DD.Configuration {
     init(_ s: RUMViewUpdateEvent.DD.Configuration) {
         self.init(
             profilingSampleRate: s.profilingSampleRate,
+            remoteConfigurationId: s.remoteConfigurationId,
+            sessionReplayExperimentalFeatures: s.sessionReplayExperimentalFeatures,
             sessionReplaySampleRate: s.sessionReplaySampleRate,
             sessionSampleRate: s.sessionSampleRate,
             startSessionReplayRecordingManually: s.startSessionReplayRecordingManually,
