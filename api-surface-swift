@@ -433,9 +433,9 @@ public enum RUM
             case average
             case rare
         public struct Timeseries
-            public var collectTypes: [TimeseriesType]?
-            public init(collectTypes: [TimeseriesType]? = nil)
-            public static let defaultTimeseries = Timeseries(collectTypes: [.memory, .cpu])
+            public var collectTypes: Set<TimeseriesType>
+            public init(collectTypes: Set<TimeseriesType>)
+            public static let `default` = Timeseries(collectTypes: [.memory, .cpu])
         public enum TimeseriesType: CaseIterable
             case memory
             case cpu
