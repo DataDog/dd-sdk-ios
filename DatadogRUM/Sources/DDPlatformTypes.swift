@@ -111,7 +111,7 @@ extension NSApplication {
 }
 
 // MARK: - SDK specific
-internal typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
+internal typealias DDKitRUMActionsPredicate = MacOSRUMActionsPredicate
 internal typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
 
 #if canImport(SwiftUI)

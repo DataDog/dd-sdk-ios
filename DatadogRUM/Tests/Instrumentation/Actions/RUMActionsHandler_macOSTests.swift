@@ -18,14 +18,14 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func appKitHandler(
-        appKitPredicate: AppKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
-        swiftUIDetector: SwiftUIComponentDetector = SwiftUIComponentDetectorMock(result: .noDecision)
+        macOSPredicate: MacOSRUMActionsPredicate? = DefaultMacOSRUMActionsPredicate(),
+        accessibilityHierarchyDetector: AccessibilityHierarchyDetector = AccessibilityHierarchyDetectorMock(result: .noDecision)
     ) -> RUMActionsHandler {
-        let eventCommandsFactory = appKitPredicate.map {
+        let eventCommandsFactory = macOSPredicate.map {
             AppKitCommandFactory(
                 dateProvider: dateProvider,
-                appKitPredicate: $0,
-                swiftUIDetector: swiftUIDetector
+                macOSPredicate: $0,
+                accessibilityHierarchyDetector: accessibilityHierarchyDetector
             )
         }
         let handler = RUMActionsHandler(
@@ -170,9 +170,9 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let button = NSButton(frame: .init(x: 10, y: 5, width: 80, height: 20))
         cellView.addSubview(button)
 
-        let predicate = AppKitRUMActionsPredicateMock()
+        let predicate = MacOSRUMActionsPredicateMock()
         predicate.resultByView[button] = RUMAction(name: "Row Button", attributes: [:])
-        let handler = appKitHandler(appKitPredicate: predicate)
+        let handler = appKitHandler(macOSPredicate: predicate)
         let buttonCenterInWindow = button.convert(
             .init(x: button.bounds.midX, y: button.bounds.midY),
             to: nil
@@ -228,9 +228,9 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let button = NSButton(frame: .init(x: 10, y: 5, width: 60, height: 30))
         item.view.addSubview(button)
 
-        let predicate = AppKitRUMActionsPredicateMock()
+        let predicate = MacOSRUMActionsPredicateMock()
         predicate.resultByView[button] = RUMAction(name: "Item Button", attributes: [:])
-        let handler = appKitHandler(appKitPredicate: predicate)
+        let handler = appKitHandler(macOSPredicate: predicate)
         let buttonCenterInWindow = button.convert(
             .init(x: button.bounds.midX, y: button.bounds.midY),
             to: nil
@@ -294,12 +294,12 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
     func testGivenAppKitEvent_itAppliesUserAttributesAndCustomName() throws {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "foobar", attributes: mockAttributes)
         )
         let window = makeWindow()
         window.contentView?.addSubview(NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40)))
-        let handler = appKitHandler(appKitPredicate: predicate)
+        let handler = appKitHandler(macOSPredicate: predicate)
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
@@ -314,7 +314,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         // Given
         let window = makeWindow()
         window.contentView?.addSubview(NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40)))
-        let handler = appKitHandler(appKitPredicate: AppKitRUMActionsPredicateMock(result: nil))
+        let handler = appKitHandler(macOSPredicate: MacOSRUMActionsPredicateMock(result: nil))
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
@@ -363,10 +363,10 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
     func testGivenMenuItem_itAppliesUserAttributesAndCustomName() throws {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "foobar", attributes: mockAttributes)
         )
-        let handler = appKitHandler(appKitPredicate: predicate)
+        let handler = appKitHandler(macOSPredicate: predicate)
 
         // When
         handler.notify_menuItemSelected(NSMenuItem())
@@ -379,7 +379,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     func testGivenAppKitActionPredicateReturnsNil_itDoesntSendMenuItemAction() {
         // Given
-        let handler = appKitHandler(appKitPredicate: AppKitRUMActionsPredicateMock(result: nil))
+        let handler = appKitHandler(macOSPredicate: MacOSRUMActionsPredicateMock(result: nil))
 
         // When
         handler.notify_menuItemSelected(NSMenuItem())
@@ -390,12 +390,12 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     // MARK: - SwiftUI Actions
 
-    func testGivenAppKitPredicate_whenAppKitDetectsAction_itDoesNotUseSwiftUIDetector() throws {
+    func testGivenAppKitPredicate_whenAppKitDetectsAction_itDoesNotUseAccessibilityHierarchyDetector() throws {
         // Given
         let window = makeWindow()
         window.contentView?.addSubview(NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40)))
-        let detector = SwiftUIComponentDetectorMock(result: .command(.mockSwiftUIAutomatic()))
-        let handler = appKitHandler(swiftUIDetector: detector)
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(.mockSwiftUIAutomatic()))
+        let handler = appKitHandler(accessibilityHierarchyDetector: detector)
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
@@ -406,15 +406,15 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertEqual(detector.receivedEvents.count, 0)
     }
 
-    func testGivenAppKitPredicate_whenAppKitDoesNotDetectAction_itUsesSwiftUIDetector() throws {
+    func testGivenAppKitPredicate_whenAppKitDoesNotDetectAction_itUsesAccessibilityHierarchyDetector() throws {
         // Given
         let expectedCommand = RUMAddUserActionCommand.mockSwiftUIAutomatic()
-        let detector = SwiftUIComponentDetectorMock(result: .command(expectedCommand))
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(expectedCommand))
         let window = makeWindow()
         window.contentView?.addSubview(NSView(frame: .init(x: 20, y: 20, width: 100, height: 40)))
         let handler = appKitHandler(
-            appKitPredicate: AppKitRUMActionsPredicateMock(),
-            swiftUIDetector: detector
+            macOSPredicate: MacOSRUMActionsPredicateMock(),
+            accessibilityHierarchyDetector: detector
         )
 
         // When
@@ -436,10 +436,10 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let button = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
         window.contentView?.addSubview(button)
 
-        let predicate = AppKitRUMActionsPredicateMock(result: nil)
+        let predicate = MacOSRUMActionsPredicateMock(result: nil)
         predicate.resultByAccessibilityRole[.button] = RUMAction(name: "AX Button", attributes: [:])
         let detector = predicateEvaluatingDetector()
-        let handler = appKitHandler(appKitPredicate: predicate, swiftUIDetector: detector)
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
 
         // When
         handler.notify_sendEvent(
@@ -463,10 +463,10 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         button.hitTestResult = swiftUIView
         window.contentView?.addSubview(button)
 
-        let predicate = AppKitRUMActionsPredicateMock(result: nil)
+        let predicate = MacOSRUMActionsPredicateMock(result: nil)
         predicate.resultByView[button] = RUMAction(name: "AppKit Button", attributes: [:])
         let detector = predicateEvaluatingDetector()
-        let handler = appKitHandler(appKitPredicate: predicate, swiftUIDetector: detector)
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
 
         // When
         handler.notify_sendEvent(
@@ -483,7 +483,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     func testGivenNoAutomaticPredicates_whenEventOrMenuItemIsReceived_itDoesntSendAction() {
         // Given
-        let handler = appKitHandler(appKitPredicate: nil)
+        let handler = appKitHandler(macOSPredicate: nil)
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: nil))
@@ -495,7 +495,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     func testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction() throws {
         // Given
-        let handler = appKitHandler(appKitPredicate: nil)
+        let handler = appKitHandler(macOSPredicate: nil)
 
         // When
         let actionName: String = .mockRandom()
@@ -513,8 +513,8 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     // MARK: - Fixtures
 
-    private func predicateEvaluatingDetector() -> SwiftUIComponentDetectorMock {
-        let detector = SwiftUIComponentDetectorMock(result: .noDecision)
+    private func predicateEvaluatingDetector() -> AccessibilityHierarchyDetectorMock {
+        let detector = AccessibilityHierarchyDetectorMock(result: .noDecision)
         detector.resultFromPredicate = { predicate in
             guard predicate?.rumAction(accessibilityRole: .button, identifier: nil) != nil else {
                 return .ignore
@@ -594,9 +594,9 @@ private final class MockNSEvent: NSEvent {
     override var locationInWindow: NSPoint { mockLocationInWindow }
 }
 
-private final class SwiftUIComponentDetectorMock: SwiftUIComponentDetector {
+private final class AccessibilityHierarchyDetectorMock: AccessibilityHierarchyDetector {
     let result: AccessibilityCommandResult
-    var resultFromPredicate: ((AppKitRUMActionsPredicate?) -> AccessibilityCommandResult)?
+    var resultFromPredicate: ((MacOSRUMActionsPredicate?) -> AccessibilityCommandResult)?
     private(set) var receivedEvents: [NSEvent] = []
 
     init(result: AccessibilityCommandResult) {
@@ -605,7 +605,7 @@ private final class SwiftUIComponentDetectorMock: SwiftUIComponentDetector {
 
     func createActionCommand(
         from event: NSEvent,
-        predicate: AppKitRUMActionsPredicate?,
+        predicate: MacOSRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> AccessibilityCommandResult {
         receivedEvents.append(event)

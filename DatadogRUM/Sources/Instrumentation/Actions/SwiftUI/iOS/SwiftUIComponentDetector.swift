@@ -38,7 +38,7 @@ internal enum SwiftUIComponentNames {
  * - May have some false positives:
  * a `Button` can't be differentiated from a `Label`, therefore we report both interactions
  */
-internal protocol SwiftUIComponentDetector {
+internal protocol AccessibilityHierarchyDetector {
     /// Processes a touch and creates a RUM action command if appropriate
     /// - Parameters:
     ///   - touch: The `UITouch` to process
@@ -55,7 +55,7 @@ internal protocol SwiftUIComponentDetector {
 internal enum SwiftUIComponentFactory {
     /// Factory that creates the appropriate SwiftUI detector based on platform and version.
     /// Modern detection is only available on iOS 18+ and tvOS 18+.
-    static func createDetector() -> SwiftUIComponentDetector {
+    static func createDetector() -> AccessibilityHierarchyDetector {
         if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
             return ModernSwiftUIComponentDetector()
         }
@@ -92,21 +92,6 @@ internal class SwiftUIComponentHelpers {
         #endif
 
         return defaultName
-    }
-}
-
-/// Protocol defining interface for type description functionality
-@objc
-internal protocol TypeDescribing {
-    /// Returns a string describing the type of the object
-    var typeDescription: String { get }
-}
-
-/// Default implementation for UIKit views
-extension DDView: TypeDescribing {
-    /// Returns a string describing the type of the view
-    @objc var typeDescription: String {
-        return String(describing: type(of: self))
     }
 }
 

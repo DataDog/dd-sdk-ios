@@ -142,7 +142,7 @@ class RUMTests: XCTestCase {
         // Given
         #if os(macOS)
         config.appKitViewsPredicate = UIKitRUMViewsPredicateMock()
-        config.appKitActionsPredicate = AppKitRUMActionsPredicateMock()
+        config.macOSActionsPredicate = MacOSRUMActionsPredicateMock()
         #else
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
@@ -190,7 +190,7 @@ class RUMTests: XCTestCase {
         // Given
         #if os(macOS)
         config.appKitViewsPredicate = nil
-        config.appKitActionsPredicate = nil
+        config.macOSActionsPredicate = nil
         #else
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil

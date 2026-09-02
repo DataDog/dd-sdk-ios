@@ -13,7 +13,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 @MainActor
-class MacOSSwiftUIComponentDetectorTests: XCTestCase {
+class MacOSAccessibilityHierarchyDetectorTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
 
     func testGivenSupportedAccessibilityRole_itCreatesActionCommand() {
@@ -35,7 +35,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
 
         for role in supportedRoles {
             let element = MockAccessibilityElement(role: role)
-            let predicate = AppKitRUMActionsPredicateMock(
+            let predicate = MacOSRUMActionsPredicateMock(
                 result: RUMAction(name: "action", attributes: [:])
             )
             let (detector, event, _) = makeDetectorInput(hitTestResult: element)
@@ -60,7 +60,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
     func testGivenAccessibilityIdentifier_itPassesIdentifierToPredicate() {
         // Given
         let element = MockAccessibilityElement(role: .button, identifier: "Save")
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
@@ -77,7 +77,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         for identifier in [nil, ""] as [String?] {
             // Given
             let element = MockAccessibilityElement(role: .button, identifier: identifier)
-            let predicate = AppKitRUMActionsPredicateMock(
+            let predicate = MacOSRUMActionsPredicateMock(
                 result: RUMAction(name: "action", attributes: [:])
             )
             let (detector, event, _) = makeDetectorInput(hitTestResult: element)
@@ -94,7 +94,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
     func testGivenPredicateAction_itCreatesCommandWithExpectedMetadata() throws {
         // Given
         let attributes: [AttributeKey: AttributeValue] = ["key": "value"]
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "custom-action", attributes: attributes)
         )
         let element = MockAccessibilityElement(role: .button)
@@ -138,7 +138,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         // Given
         let element = MockAccessibilityElement(role: .button)
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
-        let rejectingPredicate = AppKitRUMActionsPredicateMock(result: nil)
+        let rejectingPredicate = MacOSRUMActionsPredicateMock(result: nil)
 
         // When
         let result = detector.createActionCommand(
@@ -158,7 +158,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         // Given
         let parent = MockAccessibilityElement(role: .button, identifier: "Parent")
         let child = MockAccessibilityElement(role: .group, parent: parent)
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: child)
@@ -175,7 +175,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         // Given
         let parent = MockAccessibilityElement(role: .checkBox)
         let child = MockAccessibilityElement(role: nil, parent: parent)
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: child)
@@ -191,7 +191,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
     func testGivenNoInterestingElementInHierarchy_itReturnsNoDecision() {
         // Given
         let element = MockAccessibilityElement(role: .group)
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
@@ -225,7 +225,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             role: .scrollArea,
             children: [outerLazyNode]
         )
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, window) = makeDetectorInput(hitTestResult: outerScrollView)
@@ -250,7 +250,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             parent: parent,
             children: []
         )
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: scrollView)
@@ -273,7 +273,7 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             children: [lazyNode]
         )
         lazyNode.hitTestResult = scrollView
-        let predicate = AppKitRUMActionsPredicateMock(
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let (detector, event, _) = makeDetectorInput(hitTestResult: scrollView)
@@ -289,8 +289,8 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
 
     func testGivenMissingEventContext_itReturnsNoDecision() {
         // Given
-        let detector = MacOSSwiftUIComponentDetector()
-        let predicate = AppKitRUMActionsPredicateMock(
+        let detector = MacOSAccessibilityHierarchyDetector()
+        let predicate = MacOSRUMActionsPredicateMock(
             result: RUMAction(name: "action", attributes: [:])
         )
         let windowWithoutHitTestResult = MockNSWindow(hitTestResult: nil)
@@ -322,10 +322,10 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
 
     private func makeDetectorInput(
         hitTestResult: Any?
-    ) -> (MacOSSwiftUIComponentDetector, MockNSEvent, MockNSWindow) {
+    ) -> (MacOSAccessibilityHierarchyDetector, MockNSEvent, MockNSWindow) {
         let window = MockNSWindow(hitTestResult: hitTestResult)
         let event = MockNSEvent(window: window, locationInWindow: .init(x: 30, y: 40))
-        return (MacOSSwiftUIComponentDetector(), event, window)
+        return (MacOSAccessibilityHierarchyDetector(), event, window)
     }
 }
 

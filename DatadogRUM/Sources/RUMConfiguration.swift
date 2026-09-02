@@ -89,7 +89,7 @@ extension RUM {
         /// implementing `AppKitRUMActionsPredicate`.
         ///
         /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default.
-        public var appKitActionsPredicate: AppKitRUMActionsPredicate?
+        public var macOSActionsPredicate: MacOSRUMActionsPredicate?
         #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
         ///
@@ -125,7 +125,7 @@ extension RUM {
         #if !os(watchOS)
         internal var ddKitActionsPredicate: DDKitRUMActionsPredicate? {
             #if os(macOS)
-            return appKitActionsPredicate
+            return macOSActionsPredicate
             #else
             return uiKitActionsPredicate
             #endif
@@ -730,7 +730,7 @@ extension RUM.Configuration {
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
         appKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
-        appKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
+        macOSActionsPredicate: MacOSRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
@@ -758,7 +758,7 @@ extension RUM.Configuration {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
         self.appKitViewsPredicate = appKitViewsPredicate
-        self.appKitActionsPredicate = appKitActionsPredicate
+        self.macOSActionsPredicate = macOSActionsPredicate
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
