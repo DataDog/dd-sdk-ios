@@ -10,7 +10,7 @@ import AppKit
 import DatadogInternal
 import os.log
 
-internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
+internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetector {
     /// Used to make sure `setupAxClient()` runs only once.
     @MainActor private static var axSetupPerformed = false
 
@@ -88,7 +88,7 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     ///
     /// - Returns: The command resulting from the given event, or `nil` if no action should be recorded for
     /// this event.
-    func createActionCommand(from event: NSEvent, predicate: (any AppKitRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> AccessibilityCommandResult {
+    func createActionCommand(from event: NSEvent, predicate: (any MacOSRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> AccessibilityCommandResult {
         guard
             let predicate,
             let window = event.window,
