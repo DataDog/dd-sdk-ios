@@ -8,6 +8,15 @@
 import UIKit
 import DatadogInternal
 
+/// Predicate determining which SwiftUI component interactions should be recorded as RUM actions.
+/// Implement this protocol to customize or filter SwiftUI action tracking.
+public protocol SwiftUIRUMActionsPredicate {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameter componentName: The name of the SwiftUI component that received the action
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(with componentName: String) -> RUMAction?
+}
+
 /// Default implementations of `SwiftUIRUMActionsPredicate`
 public struct DefaultSwiftUIRUMActionsPredicate {
     /// Whether to enable SwiftUI action detection on iOS 17 and below.

@@ -119,6 +119,7 @@ class SwiftUIRUMViewsPredicateBridgeTests: XCTestCase {
     }
 }
 
+#if !os(macOS)
 class SwiftUIRUMActionsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
         class MockPredicate: objc_SwiftUIRUMActionsPredicate {
@@ -137,6 +138,7 @@ class SwiftUIRUMActionsPredicateBridgeTests: XCTestCase {
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
 }
+#endif
 
 #endif
 

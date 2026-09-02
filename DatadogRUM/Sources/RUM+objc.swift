@@ -60,6 +60,12 @@ public class objc_DefaultAppKitRUMActionsPredicate: NSObject, objc_AppKitRUMActi
             objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
     }
+
+    public func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> objc_RUMAction? {
+        swiftPredicate.rumAction(accessibilityRole: accessibilityRole, identifier: identifier).map {
+            objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+        }
+    }
 }
 
 @objc(DDAppKitRUMActionsPredicate)
@@ -71,6 +77,8 @@ public protocol objc_AppKitRUMActionsPredicate: AnyObject {
     func rumAction(targetView: NSView) -> objc_RUMAction?
 
     func rumAction(targetMenuItem: NSMenuItem) -> objc_RUMAction?
+
+    func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> objc_RUMAction?
 }
 
 internal struct AppKitRUMActionsPredicateBridge: AppKitRUMActionsPredicate {
@@ -82,6 +90,10 @@ internal struct AppKitRUMActionsPredicateBridge: AppKitRUMActionsPredicate {
 
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
         return objcPredicate.rumAction(targetMenuItem: targetMenuItem)?.swiftAction
+    }
+
+    func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction? {
+        return objcPredicate.rumAction(accessibilityRole: accessibilityRole, identifier: identifier)?.swiftAction
     }
 }
 
@@ -740,10 +752,12 @@ public class objc_RUMConfiguration: NSObject {
         get { (swiftConfig.swiftUIViewsPredicate as? SwiftUIRUMViewsPredicateBridge)?.objcPredicate }
     }
 
+    #if !os(macOS)
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate? {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
+    #endif
 
     public var trackMemoryWarnings: Bool {
         set { swiftConfig.trackMemoryWarnings = newValue }
