@@ -4316,7 +4316,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // MARK: - View Attributes
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
