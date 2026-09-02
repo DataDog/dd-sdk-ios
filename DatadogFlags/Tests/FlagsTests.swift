@@ -6,6 +6,8 @@
 
 import XCTest
 import TestUtilities
+
+@_spi(Internal)
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {

@@ -48,7 +48,7 @@ final class AssignmentRequestFetchTests: XCTestCase {
         }
         let fetch = base
             .withTimeout(1, schedule: scheduler.schedule)
-            .withRetry(1, schedule: scheduler.schedule, jitter: { _ in 0 }, now: Date.init)
+            .withRetry(1)
         let request = URLRequest(url: .mockAny())
         var completionCount = 0
         var capturedResult: Result<Flags.AssignmentRequestFetch.Response, Error>?
@@ -62,16 +62,13 @@ final class AssignmentRequestFetchTests: XCTestCase {
         XCTAssertEqual(scheduler.activeDelays, [1])
         scheduler.runNext() // first attempt timeout
         XCTAssertEqual(cancellationCount, 1)
-        XCTAssertEqual(scheduler.activeDelays, [0])
-
-        fetchCompletions[0](.failure(URLError(.cancelled))) // cancelled attempt finishes late
-        XCTAssertEqual(completionCount, 0)
-        scheduler.runNext() // retry backoff
-
         XCTAssertEqual(capturedRequests.count, 2)
         XCTAssertEqual(capturedRequests[0].url, request.url)
         XCTAssertEqual(capturedRequests[1].url, request.url)
         XCTAssertEqual(scheduler.activeDelays, [1])
+
+        fetchCompletions[0](.failure(URLError(.cancelled))) // cancelled attempt finishes late
+        XCTAssertEqual(completionCount, 0)
         scheduler.runNext() // second attempt timeout
 
         XCTAssertEqual(cancellationCount, 2)
@@ -86,7 +83,6 @@ final class AssignmentRequestFetchTests: XCTestCase {
         // Reversing the chain is intentionally different: `base.withRetry(1).withTimeout(1)`
         // wraps the entire retry pipeline in one timeout.
         let timeoutScheduler = ManualScheduler()
-        let retryScheduler = ManualScheduler()
         var fetchCount = 0
         var secondAttemptCompletion: Flags.AssignmentRequestFetch.Completion?
         var secondAttemptCancellationCount = 0
@@ -100,7 +96,7 @@ final class AssignmentRequestFetchTests: XCTestCase {
             return { secondAttemptCancellationCount += 1 }
         }
         let fetch = base
-            .withRetry(1, schedule: retryScheduler.schedule, jitter: { _ in 0 }, now: Date.init)
+            .withRetry(1)
             .withTimeout(1, schedule: timeoutScheduler.schedule)
         var completionCount = 0
         var capturedResult: Result<Flags.AssignmentRequestFetch.Response, Error>?
@@ -111,8 +107,6 @@ final class AssignmentRequestFetchTests: XCTestCase {
         }
 
         XCTAssertEqual(timeoutScheduler.scheduledDelays, [1])
-        XCTAssertEqual(retryScheduler.activeDelays, [0])
-        retryScheduler.runNext()
         XCTAssertEqual(fetchCount, 2)
         XCTAssertEqual(timeoutScheduler.scheduledDelays, [1], "the outer timeout is not recreated per retry")
 
@@ -162,7 +156,6 @@ final class AssignmentRequestFetchTests: XCTestCase {
     }
 
     func testRetryDecoratorCapsRetryCount() {
-        let scheduler = ManualScheduler()
         var fetchCount = 0
         let base = Flags.AssignmentRequestFetch { _, completion in
             fetchCount += 1
@@ -173,70 +166,29 @@ final class AssignmentRequestFetchTests: XCTestCase {
             }
             return {}
         }
-        let fetch = base.withRetry(
-            .max,
-            schedule: scheduler.schedule,
-            jitter: { _ in 0 },
-            now: Date.init
-        )
+        let fetch = base.withRetry(.max)
         var capturedResult: Result<Flags.AssignmentRequestFetch.Response, Error>?
 
         _ = fetch(URLRequest(url: .mockAny())) { capturedResult = $0 }
-        for _ in 0..<FlagAssignmentsRequestOperation.maximumRetryCount {
-            scheduler.runNext()
-        }
 
         XCTAssertEqual(fetchCount, FlagAssignmentsRequestOperation.maximumRetryCount + 1)
         assertSuccess(capturedResult)
     }
 
     func testNegativeRetryDecoratorDoesNotRetry() {
-        let scheduler = ManualScheduler()
         var fetchCount = 0
         let base = Flags.AssignmentRequestFetch { _, completion in
             fetchCount += 1
             completion(.failure(URLError(.networkConnectionLost)))
             return {}
         }
-        let fetch = base.withRetry(
-            -1,
-            schedule: scheduler.schedule,
-            jitter: { _ in 0 },
-            now: Date.init
-        )
+        let fetch = base.withRetry(-1)
         var capturedResult: Result<Flags.AssignmentRequestFetch.Response, Error>?
 
         _ = fetch(URLRequest(url: .mockAny())) { capturedResult = $0 }
 
         XCTAssertEqual(fetchCount, 1)
-        XCTAssertTrue(scheduler.scheduledDelays.isEmpty)
         assertURLFailure(capturedResult, code: .networkConnectionLost)
-    }
-
-    func testCancellingComposedFetchCancelsRetryDelayAndSuppressesLateWork() {
-        let scheduler = ManualScheduler()
-        var fetchCount = 0
-        let base = Flags.AssignmentRequestFetch { _, completion in
-            fetchCount += 1
-            completion(.failure(URLError(.notConnectedToInternet)))
-            return {}
-        }
-        let fetch = base.withRetry(
-            1,
-            schedule: scheduler.schedule,
-            jitter: { _ in 0 },
-            now: Date.init
-        )
-        var completionCount = 0
-
-        let cancel = fetch(URLRequest(url: .mockAny())) { _ in completionCount += 1 }
-        XCTAssertEqual(scheduler.activeDelays, [0])
-
-        cancel()
-
-        XCTAssertTrue(scheduler.activeDelays.isEmpty)
-        XCTAssertEqual(completionCount, 0)
-        XCTAssertEqual(fetchCount, 1)
     }
 
     private static func response(statusCode: Int) -> Flags.AssignmentRequestFetch.Response {

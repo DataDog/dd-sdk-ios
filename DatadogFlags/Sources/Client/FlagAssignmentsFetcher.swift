@@ -51,23 +51,15 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         featureScope: any FeatureScope,
         fetch: @escaping FlagAssignmentsFetch,
         assignmentRequestTimeout: TimeInterval = 0,
-        assignmentRequestRetryCount: Int = 0,
-        schedule: @escaping FlagAssignmentsSchedule = FlagAssignmentsRequestOperation.schedule,
-        jitter: @escaping (TimeInterval) -> TimeInterval = { upperBound in Double.random(in: 0..<upperBound) },
-        now: @escaping () -> Date = Date.init
+        assignmentRequestRetryCount: Int = 0
     ) {
         let policyFetch: FlagAssignmentsFetch
         if assignmentRequestTimeout == 0, assignmentRequestRetryCount == 0 {
             policyFetch = fetch
         } else {
             let composedFetch = Flags.AssignmentRequestFetch(fetch)
-                .withTimeout(assignmentRequestTimeout, schedule: schedule)
-                .withRetry(
-                    assignmentRequestRetryCount,
-                    schedule: schedule,
-                    jitter: jitter,
-                    now: now
-                )
+                .withTimeout(assignmentRequestTimeout, schedule: FlagAssignmentsRequestOperation.schedule)
+                .withRetry(assignmentRequestRetryCount)
             policyFetch = { request, completion in
                 composedFetch(request, completion: completion)
             }
@@ -118,9 +110,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     timeout: 0,
                     retryCount: 0,
                     fetch: self.fetch,
-                    schedule: FlagAssignmentsRequestOperation.schedule,
-                    jitter: { _ in 0 },
-                    now: Date.init
+                    schedule: FlagAssignmentsRequestOperation.schedule
                 )
                 operation.start { [featureScope] result in
                     switch result {

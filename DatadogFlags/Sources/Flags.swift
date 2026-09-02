@@ -94,7 +94,7 @@ public enum Flags {
         /// The number of times to retry a failed request for precomputed flag assignments.
         ///
         /// This is the number of retries after the initial request. The SDK retries URL transport errors,
-        /// timeouts, HTTP `408`, and HTTP `5xx` responses with randomized exponential backoff. HTTP `429`
+        /// timeouts, HTTP `408`, and HTTP `5xx` responses immediately. HTTP `429`
         /// responses are not retried. Ignored when `assignmentRequestFetch` is set. Values are limited to
         /// the range `0...10`.
         ///

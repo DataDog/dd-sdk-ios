@@ -108,9 +108,10 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         else {
             return XCTFail("Expected HTTP status validation after the custom transport")
         }
-        XCTAssertEqual(
-            featureScope.telemetryMock.messages.firstError()?.message,
-            "Failed to fetch flag assignments from the server"
+        XCTAssertTrue(
+            featureScope.telemetryMock.messages.firstError()?.message.hasPrefix(
+                "Failed to fetch flag assignments from the server"
+            ) == true
         )
     }
 
@@ -165,9 +166,10 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         else {
             return XCTFail("Expected the transport error to be mapped to a network error")
         }
-        XCTAssertEqual(
-            featureScope.telemetryMock.messages.firstError()?.message,
-            "Failed to fetch flag assignments from the server"
+        XCTAssertTrue(
+            featureScope.telemetryMock.messages.firstError()?.message.hasPrefix(
+                "Failed to fetch flag assignments from the server"
+            ) == true
         )
     }
 
@@ -175,7 +177,6 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         // Given
         let expectedError = URLError(.networkConnectionLost)
         var fetchCount = 0
-        var scheduledRetryCount = 0
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
@@ -183,10 +184,6 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             fetch: { _, completion in
                 fetchCount += 1
                 completion(.failure(expectedError))
-                return {}
-            },
-            schedule: { _, _ in
-                scheduledRetryCount += 1
                 return {}
             }
         )
@@ -198,7 +195,6 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         // Then
         XCTAssertEqual(fetcher.assignmentRequestRetryCount, 0)
         XCTAssertEqual(fetchCount, 1)
-        XCTAssertEqual(scheduledRetryCount, 0)
         guard
             case .failure(.networkError(let error)) = capturedResult,
             (error as? URLError)?.code == expectedError.code

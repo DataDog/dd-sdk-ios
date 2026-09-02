@@ -122,15 +122,10 @@ extension Flags {
         /// Wraps this transport with bounded retries for transient failures.
         ///
         /// The value is the number of retries after the initial attempt and is limited to `0...10`.
-        /// URL transport failures, timeouts, HTTP `408`, and HTTP `5xx` responses are retried with
-        /// randomized exponential backoff. Cancellation, HTTP `429`, and other HTTP responses are not retried.
+        /// URL transport failures, timeouts, HTTP `408`, and HTTP `5xx` responses are retried immediately.
+        /// Cancellation, HTTP `429`, and other HTTP responses are not retried.
         public func withRetry(_ retries: Int) -> Self {
-            withRetry(
-                retries,
-                schedule: FlagAssignmentsRequestOperation.schedule,
-                jitter: { upperBound in Double.random(in: 0..<upperBound) },
-                now: Date.init
-            )
+            withRetryPolicy(retries)
         }
 
         internal func withTimeout(
@@ -153,20 +148,13 @@ extension Flags {
                     fetch: { request, completion in
                         self(request, completion: completion)
                     },
-                    schedule: schedule,
-                    jitter: { _ in 0 },
-                    now: Date.init
+                    schedule: schedule
                 )
                 return operation.start(completion: completion)
             }
         }
 
-        internal func withRetry(
-            _ retries: Int,
-            schedule: @escaping FlagAssignmentsSchedule,
-            jitter: @escaping (TimeInterval) -> TimeInterval,
-            now: @escaping () -> Date
-        ) -> Self {
+        private func withRetryPolicy(_ retries: Int) -> Self {
             let boundedRetries = min(max(retries, 0), FlagAssignmentsRequestOperation.maximumRetryCount)
             guard boundedRetries > 0 else {
                 return self
@@ -180,9 +168,7 @@ extension Flags {
                     fetch: { request, completion in
                         self(request, completion: completion)
                     },
-                    schedule: schedule,
-                    jitter: jitter,
-                    now: now
+                    schedule: FlagAssignmentsRequestOperation.schedule
                 )
                 return operation.start(completion: completion)
             }
