@@ -53,7 +53,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         case .ignore: return nil
         case .tryAccessibility:
             // In some situations (see the documentation of`createAppKitActionCommand(from:)`),
-            // `createAppKitActionCommand` will use the SwiftUI Detector to obtain an action,
+            // `createAppKitActionCommand` will use the accessibility detector to obtain an action,
             // if possible.
             //
             // Here, the detector covers situations not handled by `createAppKitActionCommand`.
@@ -87,10 +87,10 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         /// event happened at a location where there is no interactive element throughout the entire hierarchy.
         case appKit(NSView?)
 
-        /// The best target is a SwiftUI view inside an AppView container, and the SwiftUI detector should
+        /// The best target is a SwiftUI view inside an AppView container, and the accessibility detector should
         /// be called to try to obtain a RUM action out of the SwiftUI view hierarchy.
         ///
-        /// If no action is obtained from the SwiftUI detector, then the view in the associated value, if any,
+        /// If no action is obtained from the accessibility detector, then the view in the associated value, if any,
         /// should be used as the best target. This happens in situations where the clicked SwiftUI view is
         /// inside a traditional AppKit container like an `NSTableView` or `NSCollectionView` (but
         /// **not** a view whose single purpose is to host SwiftUI views, like `NSHostingView`). Usually
@@ -240,9 +240,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     ///   - view: The target view of `event`.
     ///   - event: The `NSEvent` being processed.
     ///
-    /// - Returns: As instance of `BestTarget` indicating if this is a pure AppKit view or if the SwiftUI detector should
+    /// - Returns: As instance of `BestTarget` indicating if this is a pure AppKit view or if the accessibility detector should
     /// try to obtain the target view. If AppKit, also provides the target view, if any. For SwiftUI, it provides the fallback target view
-    /// to be used if the SwiftUI Detector fails to generate a RUM action.
+    /// to be used if the accessibility detector fails to generate a RUM action.
     private func bestActionTargetFor(view: DDView, event: NSEvent) -> BestTarget {
         // In toolbars, if no button was explicitly attributed to item.view, the
         // class that returns itself from hitTest is NSToolbarItemViewer, not the
@@ -282,7 +282,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             // for those specifically.
             //
             // In case `isSwiftUIContainerView` is true, this (plus the processing below) will
-            // be just the fallback view if the SwiftUI Detector cannot create an action.
+            // be just the fallback view if the accessibility detector cannot create an action.
             let bestParent = view.findInParentHierarchy { parent in
                 return parent is NSControl
                     || parent is NSCollectionView

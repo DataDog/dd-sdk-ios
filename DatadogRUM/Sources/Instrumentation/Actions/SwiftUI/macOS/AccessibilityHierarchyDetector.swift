@@ -10,14 +10,16 @@ import Foundation
 import AppKit
 import DatadogInternal
 
-/// Protocol defining the macOS version of the SwiftUI component detector.
+/// Protocol defining the macOS version of the accessibility hierarchy detector.
+///
+/// This is used to traverse and detect actions on SwiftUI view hierarchies.
 internal protocol AccessibilityHierarchyDetector {
-    /// Processes a touch and creates a RUM action command if appropriate
+    /// Processes an event and creates a RUM action command if appropriate
     /// - Parameters:
-    ///   - touch: The `NSEvent` to process
+    ///   - event: The `NSEvent` to process
     ///   - predicate: The predicate to use for determining if an action should be created
     ///   - dateProvider: Provider for current time
-    /// - Returns: A RUM action command if one should be created, `nil` otherwise
+    /// - Returns: A `AccessibilityCommandResult` case.
     func createActionCommand(
         from event: NSEvent,
         predicate: MacOSRUMActionsPredicate?,
@@ -25,7 +27,7 @@ internal protocol AccessibilityHierarchyDetector {
     ) -> AccessibilityCommandResult
 }
 
-/// Result from `SwiftUIComponentDetector.createActionCommand(from:predicate:dateProvider:)`.
+/// Result from `AccessibilityHierarchyDetector.createActionCommand(from:predicate:dateProvider:)`.
 internal enum AccessibilityCommandResult {
     /// The accessibility detector could not find a suitable target, and no predicate rejection happened.
     ///

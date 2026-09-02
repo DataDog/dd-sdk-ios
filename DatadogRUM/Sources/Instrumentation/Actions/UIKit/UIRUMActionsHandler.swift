@@ -35,7 +35,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: AccessibilityHierarchyDetector?
+        swiftUIDetector: SwiftUIComponentDetector?
     ) {
         guard uiKitPredicate != nil || swiftUIPredicate != nil else {
             self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
