@@ -15,12 +15,13 @@ extension RUMViewEvent {
     /// - `self` is the previously sent `RUMViewEvent` (stored in `RUMViewScope.lastSentViewEvent`).
     /// - `event` is the newly built `RUMViewEvent` (post-mapper). Its values win.
     /// - Fields equal between `self` and `event` are set to `nil` (meaning "unchanged").
-    ///   `dd` is always forwarded wholesale from `event`.
+    ///   `dd`, `usr`, and `account` are always forwarded wholesale from `event`, since `nil`
+    ///   would be ambiguous between "unchanged" and "explicitly cleared" for these fields.
     ///
     func update(from event: RUMViewEvent) -> RUMViewUpdateEvent {
         RUMViewUpdateEvent(
             dd: .init(event.dd),
-            account: diff(account, event.account),
+            account: event.account,
             application: .init(event.application),
             buildId: diff(buildId, event.buildId),
             buildVersion: diff(buildVersion, event.buildVersion),
@@ -41,7 +42,7 @@ extension RUMViewEvent {
             stream: diffMap(stream, event.stream, RUMViewUpdateEvent.Stream.init),
             synthetics: diff(synthetics, event.synthetics),
             tab: diffMap(tab, event.tab, RUMViewUpdateEvent.TAB.init),
-            usr: diff(usr, event.usr),
+            usr: event.usr,
             version: diff(version, event.version),
             view: .init(old: view, new: event.view)
         )

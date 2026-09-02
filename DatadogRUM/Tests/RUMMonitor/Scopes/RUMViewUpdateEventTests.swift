@@ -28,6 +28,49 @@ class RUMViewUpdateEventTests: XCTestCase {
             DDAssertJSONEqual(reconstructed, target)
         }
     }
+
+    /// `dd`, `application`, and `session` are always forwarded wholesale from `event`, never
+    /// diffed against `self`.
+    func testUpdate_ddApplicationAndSessionAreForwardedWholesaleNotDiffed() throws {
+        let base = RUMViewEvent.mockRandom()
+        let target = RUMViewEvent.mockRandom()
+        let update = base.update(from: target)
+
+        // Values come from `target` (the new event), not `base` — proving these are forwarded
+        // from `event`, not accidentally left as `self`'s own value.
+        XCTAssertEqual(update.dd.documentVersion, target.dd.documentVersion)
+        XCTAssertEqual(update.application.id, target.application.id)
+        XCTAssertEqual(update.session.id, target.session.id)
+        XCTAssertEqual(update.session.type, target.session.type)
+    }
+
+    /// `usr` and `account` are identity fields: unlike diffed fields, `nil` on the wire must
+    /// unambiguously mean "the target event has no usr/account", never "unchanged" — otherwise
+    /// `clearUserInfo()`/`clearAccountInfo()` mid-view would be silently dropped from the delta.
+    /// They must therefore be forwarded wholesale from `event`, like `dd`, and never diffed.
+    func testUpdate_usrAndAccountAreForwardedWholesaleNotDiffed() throws {
+        var base = RUMViewEvent.mockRandom()
+        base.usr = .mockRandom()
+        base.account = .mockRandom()
+
+        // Same non-nil value on both sides: if diffed, this would collapse to `nil` — the exact
+        // wire representation of "unchanged" — because old == new.
+        var unchanged = base
+        unchanged.usr = base.usr
+        unchanged.account = base.account
+        let unchangedUpdate = base.update(from: unchanged)
+        DDAssertJSONEqual(unchangedUpdate.usr, base.usr)
+        DDAssertJSONEqual(unchangedUpdate.account, base.account)
+
+        // Non-nil → nil transition (e.g. clearUserInfo()/clearAccountInfo()) must produce `nil`
+        // in the update, reflecting the target's actual (empty) value.
+        var cleared = base
+        cleared.usr = nil
+        cleared.account = nil
+        let clearedUpdate = base.update(from: cleared)
+        XCTAssertNil(clearedUpdate.usr)
+        XCTAssertNil(clearedUpdate.account)
+    }
 }
 
 // MARK: - RUMViewEvent apply extensions
@@ -45,7 +88,7 @@ private extension RUMViewEvent {
     func apply(update: RUMViewUpdateEvent) -> RUMViewEvent {
         RUMViewEvent(
             dd: dd.apply(update: update.dd),
-            account: update.account ?? account,
+            account: update.account,
             application: .init(update.application),
             buildId: update.buildId ?? buildId,
             buildVersion: update.buildVersion ?? buildVersion,
@@ -66,7 +109,7 @@ private extension RUMViewEvent {
             stream: update.stream.map { .init($0) } ?? stream,
             synthetics: update.synthetics ?? synthetics,
             tab: update.tab.map { .init($0) } ?? tab,
-            usr: update.usr ?? usr,
+            usr: update.usr,
             version: update.version ?? version,
             view: view.apply(update: update.view)
         )
