@@ -14,7 +14,7 @@ import DatadogInternal
 ///
 /// ## Instrumenting mouse clicks
 ///
-/// When a `.leftMouseClick` occurs, the SDK will make a first attempt to detect which `NSView` within the
+/// When a `.leftMouseDown` occurs, the SDK will make a first attempt to detect which `NSView` within the
 /// AppKit domain was the target of the event. If it succeeds, `rumAction(targetView:)` will be called, giving
 /// the predicate an opportunity to decide if the view should be instrumented or not.
 ///
@@ -28,11 +28,10 @@ import DatadogInternal
 ///
 /// Some important considerations:
 ///
-/// * Depending on the view hierarchy, `rumAction(targetView:)`, `rumAction(accessibilityRole:identifier:)`,
-/// none, or both, may be called. Do not make any assumptions regarding which method(s) will be called, and in
-/// what order.
+/// * Depending on the view hierarchy, `rumAction(targetView:)` or`rumAction(accessibilityRole:identifier:)`
+/// may be called. Do not make any assumptions regarding which method will be called.
 ///
-/// * If either `rumAction(targetView:)`, `rumAction(accessibilityRole:identifier:)` return
+/// * If either `rumAction(targetView:)` or `rumAction(accessibilityRole:identifier:)` return
 /// `nil`, the instrumentation process ends for the current event, and the other method will not be called for the
 /// same event.
 ///
@@ -140,7 +139,7 @@ public struct DefaultMacOSRUMActionsPredicate {
     }
 
     private func targetName(baseName: String, identifier: String?) -> String {
-        if let identifier {
+        if let identifier, identifier.isEmpty == false {
             return "\(baseName) (\(identifier))"
         } else {
             return baseName
