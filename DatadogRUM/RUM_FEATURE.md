@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-26
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: 5d65cab08
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -250,7 +250,7 @@ Requires configuration to be set, otherwise disabled by default:
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
-- **App hangs**: `appHangThreshold` (default: nil/disabled)
+- **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
@@ -275,17 +275,17 @@ Event mappers allow modifying or dropping events before upload:
 
 ### Timeseries Collection (Experimental)
 - `RUM.Configuration.timeseries` — gated behind `@_spi(Experimental)`; not an init parameter, must be set on the configuration instance before calling `RUM.enable(with:)`. Default: `nil` (disabled).
-- Set it to `RUM.Configuration.Timeseries(collectTypes:)` to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
+- Set it to `RUM.Configuration.Timeseries(collectTypes:)`, or to the built-in `.default`, to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
   ```swift
   @_spi(Experimental) import DatadogRUM
 
   var rumConfig = RUM.Configuration(applicationID: "<rum_application_id>")
-  rumConfig.timeseries = RUM.Configuration.Timeseries(
-      // Default: nil (collects all types available on the current platform)
-      collectTypes: [.memory, .cpu]
-  )
+  rumConfig.timeseries = .default // memory + cpu
+  // or, to pick specific types explicitly:
+  // rumConfig.timeseries = RUM.Configuration.Timeseries(collectTypes: [.memory])
   RUM.enable(with: rumConfig)
   ```
+- `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 
@@ -314,7 +314,7 @@ Event mappers allow modifying or dropping events before upload:
 
 ## Feature Interactions
 
-- **Crash Reporting**: Enhances App Hang monitoring with stack traces
+- **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
 - **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
 - **Session Replay**: RUM must be enabled for Session Replay to work
 - **WebView Tracking**: Enables RUM tracking in web views. Requires:

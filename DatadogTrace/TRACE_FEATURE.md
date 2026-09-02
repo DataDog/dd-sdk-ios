@@ -245,7 +245,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
-- **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
+- **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
 
 ### Event Modification
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.

@@ -1,6 +1,10 @@
 # Unreleased
 
 - [IMPROVEMENT] Add opt-in retries and per-attempt timeouts, plus composable custom transports for `DatadogFlags` assignment requests.
+- [IMPROVEMENT] Bump minimum deployment targets to iOS 15.0, tvOS 15.0, and watchOS 9.0. See [#3155][]
+- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
+- [IMPROVEMENT] Report cross-platform-specific instrumentation types (Flutter, React Native, Unity, Kotlin Multiplatform) for RUM views in SDK telemetry. See [#3165][]
+- [IMPROVEMENT] Return `nil` carrier info on iOS 16+ since `CTCarrier` is deprecated with no replacement. See [#3164][]
 
 # 3.16.0 / 19-08-2026
 
@@ -1231,6 +1235,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 [#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
 [#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
+[#3155]: https://github.com/DataDog/dd-sdk-ios/pull/3155
+[#3136]: https://github.com/DataDog/dd-sdk-ios/pull/3136
+[#3165]: https://github.com/DataDog/dd-sdk-ios/pull/3165
+[#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

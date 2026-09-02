@@ -375,16 +375,14 @@ extension ResourceMetrics {
                 download = DateInterval(start: downloadStart, end: downloadEnd)
             }
 
-            if #available(iOS 13.0, tvOS 13, *) {
-                let responseEncoded = mainTransaction.countOfResponseBodyBytesReceived
-                let responseDecoded = mainTransaction.countOfResponseBodyBytesAfterDecoding
+            let responseEncoded = mainTransaction.countOfResponseBodyBytesReceived
+            let responseDecoded = mainTransaction.countOfResponseBodyBytesAfterDecoding
 
-                responseBodySize = (encoded: responseEncoded, decoded: responseDecoded)
+            responseBodySize = (encoded: responseEncoded, decoded: responseDecoded)
 
-                let requestEncoded = mainTransaction.countOfRequestBodyBytesSent
-                let requestDecoded = mainTransaction.countOfRequestBodyBytesBeforeEncoding
-                requestBodySize = (encoded: requestEncoded, decoded: requestDecoded)
-            }
+            let requestEncoded = mainTransaction.countOfRequestBodyBytesSent
+            let requestDecoded = mainTransaction.countOfRequestBodyBytesBeforeEncoding
+            requestBodySize = (encoded: requestEncoded, decoded: requestDecoded)
         }
 
         self.init(

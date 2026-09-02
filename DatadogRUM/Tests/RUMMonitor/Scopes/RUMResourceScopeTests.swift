@@ -1031,10 +1031,6 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenStartedResource_whenResourceReceivesMetricsWithRequestAndResponseBodySizes_itAggregatesThemInSentResourceEvent() throws {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given

@@ -17,6 +17,9 @@ public struct BacktraceReporterMock: BacktraceReporting, @unchecked Sendable {
     /// The binary images returned by this mock. If not set, binary images are derived from `backtrace`.
     @ReadWriteLock
     public var binaryImagesList: [BinaryImage]?
+    /// The number of times `generateBacktrace(threadID:)` was called on this mock.
+    @ReadWriteLock
+    public var generateBacktraceCallsCount: Int
 
     /// Creates backtrace reporter mock.
     /// - Parameters:
@@ -31,9 +34,13 @@ public struct BacktraceReporterMock: BacktraceReporting, @unchecked Sendable {
         self.backtrace = backtrace
         self.backtraceGenerationError = backtraceGenerationError
         self.binaryImagesList = binaryImages
+        self.generateBacktraceCallsCount = 0
     }
 
     public func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
+        // `+=` through the wrapper would take the read and the write lock separately, losing increments under
+        // concurrent calls. `mutate` acquires the write lock once.
+        _generateBacktraceCallsCount.mutate { $0 += 1 }
         try throwIfNeeded()
         return backtrace
     }

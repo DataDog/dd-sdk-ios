@@ -2050,6 +2050,7 @@ class RUMViewScopeTests: XCTestCase {
             case .uikit: return "UIKit action"
             case .swiftuiAutomatic: return "Automatic SwiftUI action"
             case .swiftui: return "SwiftUI action"
+            case .crossPlatform(let value): return "\(value) action"
             }
         }
 
@@ -4316,7 +4317,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // MARK: - View Attributes
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given

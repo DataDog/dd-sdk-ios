@@ -11,6 +11,8 @@ internal struct Environment {
     struct Argument {
         static let isRunningUnitTests       = "IS_RUNNING_UNIT_TESTS"
         static let isRunningUITests         = "IS_RUNNING_UI_TESTS"
+        /// Launches the app with `CrashReporting.Configuration.appHangBacktraceEnabled` set to `false`.
+        static let disableAppHangBacktraces = "DD_DISABLE_APP_HANG_BACKTRACES"
     }
 
     struct InfoPlistKey {
@@ -35,6 +37,13 @@ internal struct Environment {
     /// If running `Example` in interactive, debug mode (launching it with 'Run' in Xcode or by tapping on the app icon).
     static func isRunningInteractive() -> Bool {
         return !isRunningUITests() && !isRunningUnitTests()
+    }
+
+    /// Whether App Hangs detected by RUM should carry a stack trace.
+    ///
+    /// Add `DD_DISABLE_APP_HANG_BACKTRACES` to the scheme's launch arguments to exercise the opt-out.
+    static func isAppHangBacktraceEnabled() -> Bool {
+        return !ProcessInfo.processInfo.arguments.contains(Argument.disableAppHangBacktraces)
     }
 
     // MARK: - Info.plist

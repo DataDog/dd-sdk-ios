@@ -15,7 +15,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct UIViewSessionReplaySlotIDTests {
-    @available(iOS 13.0, *)
     @Test
     func slotIDIsNilByDefault() {
         // given
@@ -28,7 +27,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(slotID == nil)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func slotIDIsStoredPerView() {
         // given
@@ -43,7 +41,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(otherView.dd.sessionReplaySlotID == nil)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func settingSlotIDToNilClearsIt() {
         // given
@@ -57,7 +54,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(view.dd.sessionReplaySlotID == nil)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func changingSlotIDMarksTheViewAsNeedingLayout() {
         // given
@@ -72,7 +68,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(view.setNeedsLayoutCount == 1)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func settingSameSlotIDDoesNotMarkTheViewAsNeedingLayout() {
         // given
@@ -88,7 +83,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(view.setNeedsLayoutCount == 0)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func clearingSlotIDMarksTheViewAsNeedingLayout() {
         // given

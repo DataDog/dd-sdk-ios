@@ -14,6 +14,9 @@ class DebugCrashReportingWithRUMViewController: UIViewController {
         super.viewDidLoad()
         rumServiceNameTextField.text = serviceName
         viewNameTextField.placeholder = viewName
+        appHangBacktraceStatusLabel.text = Environment.isAppHangBacktraceEnabled()
+            ? "Backtraces: ON — launch with `DD_DISABLE_APP_HANG_BACKTRACES` to turn them off"
+            : "Backtraces: OFF — `appHangBacktraceEnabled: false`"
     }
 
     private func crash() {
@@ -45,6 +48,22 @@ class DebugCrashReportingWithRUMViewController: UIViewController {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.crash()
+        }
+    }
+
+    // MARK: - App Hang
+
+    @IBOutlet weak var appHangBacktraceStatusLabel: UILabel!
+
+    /// Blocks the main thread for longer than the `appHangThreshold` configured in `ExampleAppDelegate`,
+    /// so RUM reports an App Hang error. Whether that error carries a stack trace depends on
+    /// `CrashReporting.Configuration.appHangBacktraceEnabled`.
+    @IBAction func didTapHangMainThread(_ sender: Any) {
+        (sender as? UIButton)?.disableFor(seconds: 0.5)
+
+        rumMonitor.startView(key: viewName, name: viewName, attributes: [:])
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            Thread.sleep(forTimeInterval: 2)
         }
     }
 

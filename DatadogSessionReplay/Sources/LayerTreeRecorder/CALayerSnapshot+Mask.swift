@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     struct Mask: Sendable, Equatable {
         let replayID: Int64
@@ -26,7 +25,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     @MainActor
     fileprivate func maskDependencies() -> [CALayerReference] {

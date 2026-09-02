@@ -3930,6 +3930,12 @@ public enum objc_RUMFeatureOperationFailureReason: Int
     case error
     case abandoned
     case other
+public final class objc_RUMTimeseriesType: NSObject
+    public static let memory = objc_RUMTimeseriesType(.memory)
+    public static let cpu = objc_RUMTimeseriesType(.cpu)
+public final class objc_RUMTimeseriesConfiguration: NSObject
+    public init(collectTypes: [objc_RUMTimeseriesType])
+    public static let `default` = objc_RUMTimeseriesConfiguration(collectTypes: [.memory, .cpu])
 public class objc_OperationOptions: NSObject
 public final class objc_ProfilingOptions: objc_OperationOptions
     public init(sampleRate: Float)
@@ -3971,6 +3977,7 @@ public class objc_RUMConfiguration: NSObject
     public var longTaskThreshold: TimeInterval
     public var appHangThreshold: TimeInterval
     public var vitalsUpdateFrequency: objc_VitalsFrequency
+    public func setTimeseriesConfiguration(_ configuration: objc_RUMTimeseriesConfiguration)
     public func setViewEventMapper(_ mapper: @escaping (objc_RUMViewEvent) -> objc_RUMViewEvent)
     public func setResourceEventMapper(_ mapper: @escaping (objc_RUMResourceEvent) -> objc_RUMResourceEvent?)
     public func setActionEventMapper(_ mapper: @escaping (objc_RUMActionEvent) -> objc_RUMActionEvent?)
