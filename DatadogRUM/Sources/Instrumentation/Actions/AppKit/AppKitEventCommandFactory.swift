@@ -220,7 +220,12 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     ///
     /// - Parameter control: The target control of the event being processed.
     /// - Returns: The best target for the event, as described above.
-    private func bestActionTargetFor(control: NSControl, event: NSEvent) -> NSView {
+    private func bestActionTargetFor(control: NSControl, event: NSEvent) -> NSView? {
+        // Ignore disabled controls.
+        guard control.isEnabled else {
+            return nil
+        }
+
         if let toolbarItemViewer = control.findInParentHierarchy(viewMatching: { $0.className == "NSToolbarItemViewer" }) {
             return toolbarItemViewer
         }
@@ -254,10 +259,6 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             || view is NSTableHeaderView {
             return .appKit(view)
         } else if let ddControl = view as? DDControl {
-            // Ignore disabled controls.
-            guard ddControl.isEnabled else {
-                return .appKit(nil)
-            }
             // NSTableView interactive element is the row, not the cell. If the click hits a row,
             // outside of a specific control present in a table cell, it's caught here, as a click
             // on the NSTableView itself (NSTableView extends NSControl). The bestActionTargetFor(control:event:)
