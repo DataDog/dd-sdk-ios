@@ -131,7 +131,6 @@ extension FlagsClientProtocol {
     /// - Parameter context: The evaluation context containing targeting key and custom attributes.
     ///
     /// - Throws: ``FlagsError`` if the operation fails.
-    @available(iOS 13.0, tvOS 13.0, *)
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws {
         try await withCheckedThrowingContinuation { continuation in
             setEvaluationContext(context) { result in
