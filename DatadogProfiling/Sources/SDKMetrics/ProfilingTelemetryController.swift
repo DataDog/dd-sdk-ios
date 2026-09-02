@@ -105,6 +105,13 @@ internal final class ProfilingTelemetryController {
         )
     }
 
+    /// Reports a failure to install a memory allocation interception path, so an
+    /// absent install surfaces in telemetry rather than silently leaving memory
+    /// profiling enabled but blind.
+    func sendMemoryInterceptionInstallFailure(path: String, status: String) {
+        telemetry.error("Datadog memory profiling failed to install \(path) interception: \(status)")
+    }
+
     func send(_ metric: ProfilingSessionMetric) {
         guard var metricAttributes = metric.asMetricAttributes() else {
             telemetry.debug("Failed to compute attributes for '\(metric.metricName)'")

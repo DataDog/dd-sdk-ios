@@ -63,28 +63,6 @@ typedef enum {
 // MARK: - Status and diagnostics
 
 /**
- * Status returned by hook installation.
- */
-typedef enum {
-    /// Hooks were not installed because the profiler was already running.
-    DD_MEMORY_STATUS_ALREADY_INSTALLED = 0,
-    /// Hooks installed by replacing function pointers in the default zone
-    /// without needing mprotect (zone struct page was already writable).
-    DD_MEMORY_STATUS_INSTALLED_DIRECT = 1,
-    /// Hooks installed via mprotect to make the zone struct page writable.
-    /// Indicates the default zone resides on a read-only page on this OS.
-    DD_MEMORY_STATUS_INSTALLED_MPROTECT = 2,
-    /// Hooks could not be installed: the zone struct could not be made
-    /// writable. This is the App Store risk path the POC is meant to detect.
-    DD_MEMORY_STATUS_FAILED_READ_ONLY_ZONE = 3,
-    /// Hooks could not be installed: malloc_default_zone returned NULL.
-    DD_MEMORY_STATUS_FAILED_NO_ZONE = 4,
-    /// Hooks could not be installed: another tool has already replaced the
-    /// zone function pointers (probable collision with another SDK or sanitizer).
-    DD_MEMORY_STATUS_FAILED_COLLISION = 5
-} dd_memory_install_status_t;
-
-/**
  * Snapshot of overhead and counters for the running profiler.
  */
 typedef struct dd_memory_diagnostics {
@@ -147,20 +125,11 @@ typedef struct dd_memory_snapshot {
 // MARK: - Lifecycle
 
 /**
- * Installs malloc_zone hooks and starts Poisson sampling on the default zone.
- *
- * @param poisson_rate_bytes Average bytes between sampled allocations.
- *                           Use DD_MEMORY_POISSON_DEFAULT_RATE_BYTES for default (512 KB).
- * @return Status indicating which installation path was taken or why it failed.
- */
-dd_memory_install_status_t dd_memory_profiler_start(uint64_t poisson_rate_bytes);
-
-/**
  * Starts the profiler in passive mode: allocates the sample table, initializes
  * the Poisson sampler, and flips the enabled flag — but installs NO malloc_zone
  * hooks. Allocations must be reported externally via dd_memory_observe_allocation.
  *
- * Used by the +allocWithZone: swizzling spike (memory_swizzle_poc): the Obj-C
+ * Used by the +allocWithZone: interception (objc_alloc_hook): the Obj-C
  * runtime hands the swizzle a freshly-allocated object with its class identity
  * intact, and we observe it through this passive path.
  *

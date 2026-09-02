@@ -14,11 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <execinfo.h>
-#include <mach/mach.h>
-#include <mach/mach_init.h>
 #include <mach/mach_time.h>
-#include <mach/vm_map.h>
-#include <mach/vm_page_size.h>
 #include <malloc/malloc.h>
 #include <limits>
 #include <new>
@@ -28,37 +24,26 @@
 #include <sys/mman.h>
 
 // =====================================================================
-// Memory Profiler RFC reference implementation (RUM-16460)
+// Memory Profiler — passive Poisson sampler (RUM-16460)
 //
-// The implementation validates the RFC's risky technical assumptions:
-//
-//   1. Can we install malloc_zone_t hooks in an App Store release build?
-//   2. What is the actual overhead of Poisson sampling at B=512 KB?
-//   3. Does the collocated is_sampled bitmap work on iOS, or do we need
-//      a separate tracking structure?
-//   4. Is vm_region_recurse_64 reliable for VM decomposition?
-//
-// Question 4 is answered by vm_region_walker.cpp. The rest live here.
+// Owns the sampled live-allocation table, the per-window allocation log,
+// and heap snapshot capture. Allocations and deallocations are reported
+// into this sampler by the interception paths (objc_alloc_hook for
+// NSObject-rooted allocations, swift_alloc_hook for pure-Swift classes);
+// this file installs no interception itself.
 //
 // Implementation overview:
-//   - install_hooks() probes whether the default zone struct is writable
-//     and reports back which path was taken.
-//   - Each hook funnels through hook_post_alloc()/hook_pre_free() which
-//     check a global enabled flag and per-thread reentrancy guard before
-//     doing any work.
-//   - Poisson sampling is per-thread: each thread keeps a byte counter
-//     and decrements on every allocation. When the counter falls to
-//     zero, the allocation is sampled and a new threshold drawn from
-//     exp(B).
-//   - Sampled allocations are stored in a fixed-size, pre-allocated
-//     hash table. Slot metadata is synchronized and snapshot-consistent;
-//     we never call malloc from inside a hook (would recurse) or grow
-//     the table at runtime.
-//
-// Q3 conclusion (see findings doc in Simao's Brain wiki):
-// collocating a bit alongside libmalloc's per-slot `in_use` bitmap is
-// NOT App Store safe because libmalloc internals are private. We use
-// a side hash table instead.
+//   - Reporting funnels through record_allocation()/record_free(), which
+//     check a global enabled flag and a per-thread reentrancy guard
+//     (tls_in_profiler) before doing any work, so allocations triggered by
+//     our own backtrace()/table insertion cannot recurse.
+//   - Poisson sampling is per-thread: each thread keeps a byte counter and
+//     decrements on every allocation. When the counter falls to zero, the
+//     allocation is sampled and a new threshold drawn from exp(B).
+//   - Sampled allocations are stored in a fixed-size, pre-allocated,
+//     mmap-backed hash table. Slot metadata is synchronized and
+//     snapshot-consistent; we never call malloc from inside the sampler
+//     (would recurse) or grow the table at runtime.
 // =====================================================================
 
 namespace {
@@ -122,18 +107,6 @@ struct sample_entry {
 
 // MARK: - Global state
 
-/// Original zone function pointers, captured at install time so we can
-/// forward unsampled allocations and reentrant calls to the real allocator.
-struct original_zone_funcs {
-    void* (*malloc_fn)(malloc_zone_t*, size_t) = nullptr;
-    void* (*calloc_fn)(malloc_zone_t*, size_t, size_t) = nullptr;
-    void* (*valloc_fn)(malloc_zone_t*, size_t) = nullptr;
-    void (*free_fn)(malloc_zone_t*, void*) = nullptr;
-    void (*free_definite_size_fn)(malloc_zone_t*, void*, size_t) = nullptr;
-    void* (*realloc_fn)(malloc_zone_t*, void*, size_t) = nullptr;
-    void* (*memalign_fn)(malloc_zone_t*, size_t, size_t) = nullptr;
-};
-
 /// Whether the hook layer should perform any work. A successful acquire
 /// load publishes the table and session configuration initialized before
 /// the corresponding release store at session start.
@@ -164,9 +137,6 @@ mach_timebase_info_data_t g_timebase = {};
 /// Profiler start time in mach ticks; sample timestamps are deltas
 /// from this anchor.
 std::atomic<uint64_t> g_start_ticks{0};
-
-/// Function pointers we captured before installing our hooks.
-original_zone_funcs g_original;
 
 /// Poisson sampling rate (mean bytes between samples). Set at start.
 std::atomic<uint64_t> g_poisson_rate_bytes{DD_MEMORY_POISSON_DEFAULT_RATE_BYTES};
@@ -574,160 +544,7 @@ void record_free(void* ptr) {
     remove_sample(reinterpret_cast<uint64_t>(ptr), session_generation);
 }
 
-// MARK: - Hook implementations
-//
-// Each hook delegates to the original function pointer captured at
-// install time, then runs our bookkeeping. We never replace the
-// allocator behavior — only observe it.
-
-void* hooked_malloc(malloc_zone_t* zone, size_t size) {
-    void* ptr = g_original.malloc_fn(zone, size);
-    return record_allocation(ptr, size);
-}
-
-void* hooked_calloc(malloc_zone_t* zone, size_t num_items, size_t item_size) {
-    void* ptr = g_original.calloc_fn(zone, num_items, item_size);
-    return record_allocation(ptr, num_items * item_size);
-}
-
-void* hooked_valloc(malloc_zone_t* zone, size_t size) {
-    void* ptr = g_original.valloc_fn(zone, size);
-    return record_allocation(ptr, size);
-}
-
-void hooked_free(malloc_zone_t* zone, void* ptr) {
-    record_free(ptr);
-    g_original.free_fn(zone, ptr);
-}
-
-void hooked_free_definite_size(malloc_zone_t* zone, void* ptr, size_t size) {
-    record_free(ptr);
-    g_original.free_definite_size_fn(zone, ptr, size);
-}
-
-void* hooked_realloc(malloc_zone_t* zone, void* ptr, size_t size) {
-    // Treat realloc as a free + alloc pair for tracking purposes.
-    // This loses the connection between original and reallocated
-    // pointers, but covers the common case where the allocator moves
-    // the region. The in-place case (same pointer back) leaks a stale
-    // size in the tracked entry — documented gap.
-    record_free(ptr);
-    void* new_ptr = g_original.realloc_fn(zone, ptr, size);
-    return record_allocation(new_ptr, size);
-}
-
-void* hooked_memalign(malloc_zone_t* zone, size_t alignment, size_t size) {
-    if (g_original.memalign_fn == nullptr) {
-        return nullptr;
-    }
-    void* ptr = g_original.memalign_fn(zone, alignment, size);
-    return record_allocation(ptr, size);
-}
-
 // MARK: - Installation
-
-/// Probes whether the default zone struct lives on a writable page.
-/// Reads the current malloc field, attempts to write the same value
-/// back, and checks whether the write took. If the page is read-only,
-/// the write segfaults via the kernel's protection check and we never
-/// reach here — so we use vm_region_recurse_64 to inspect protection
-/// up front and avoid the crash.
-bool probe_zone_writable(malloc_zone_t* zone) {
-    if (zone == nullptr) {
-        return false;
-    }
-    vm_address_t addr = reinterpret_cast<vm_address_t>(zone);
-    vm_size_t size = 0;
-    natural_t depth = 0;
-    vm_region_submap_info_data_64_t info = {};
-    mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
-    const kern_return_t kr = vm_region_recurse_64(mach_task_self(),
-                                                    &addr, &size, &depth,
-                                                    reinterpret_cast<vm_region_recurse_info_t>(&info),
-                                                    &info_count);
-    if (kr != KERN_SUCCESS) {
-        return false;
-    }
-    // Protection field is a bitmask of VM_PROT_READ / VM_PROT_WRITE /
-    // VM_PROT_EXECUTE. We need WRITE permission to install hooks
-    // without mprotect.
-    return (info.protection & VM_PROT_WRITE) != 0;
-}
-
-/// Attempts to make the default zone struct's page writable using
-/// mprotect. The page is restored to its original protection after
-/// hooks are installed.
-bool make_zone_writable(malloc_zone_t* zone, vm_prot_t* original_prot_out) {
-    vm_address_t addr = reinterpret_cast<vm_address_t>(zone);
-    vm_size_t size = 0;
-    natural_t depth = 0;
-    vm_region_submap_info_data_64_t info = {};
-    mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
-    const kern_return_t region_kr = vm_region_recurse_64(mach_task_self(),
-                                                            &addr, &size, &depth,
-                                                            reinterpret_cast<vm_region_recurse_info_t>(&info),
-                                                            &info_count);
-    if (region_kr != KERN_SUCCESS) {
-        return false;
-    }
-    *original_prot_out = info.protection;
-
-    void* page_start = reinterpret_cast<void*>(addr);
-    const size_t page_size = static_cast<size_t>(vm_kernel_page_size);
-    if (mprotect(page_start, page_size, PROT_READ | PROT_WRITE) != 0) {
-        return false;
-    }
-    return true;
-}
-
-void restore_zone_protection(malloc_zone_t* zone, vm_prot_t original_prot) {
-    vm_address_t addr = reinterpret_cast<vm_address_t>(zone);
-    vm_size_t size = 0;
-    natural_t depth = 0;
-    vm_region_submap_info_data_64_t info = {};
-    mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
-    vm_region_recurse_64(mach_task_self(), &addr, &size, &depth,
-                           reinterpret_cast<vm_region_recurse_info_t>(&info),
-                           &info_count);
-
-    void* page_start = reinterpret_cast<void*>(addr);
-    const size_t page_size = static_cast<size_t>(vm_kernel_page_size);
-    int prot_flags = 0;
-    if ((original_prot & VM_PROT_READ) != 0) prot_flags |= PROT_READ;
-    if ((original_prot & VM_PROT_WRITE) != 0) prot_flags |= PROT_WRITE;
-    if ((original_prot & VM_PROT_EXECUTE) != 0) prot_flags |= PROT_EXEC;
-    if (prot_flags == 0) {
-        prot_flags = PROT_READ;
-    }
-    mprotect(page_start, page_size, prot_flags);
-}
-
-void capture_originals(malloc_zone_t* zone) {
-    g_original.malloc_fn = zone->malloc;
-    g_original.calloc_fn = zone->calloc;
-    g_original.valloc_fn = zone->valloc;
-    g_original.free_fn = zone->free;
-    g_original.free_definite_size_fn = zone->free_definite_size;
-    g_original.realloc_fn = zone->realloc;
-    g_original.memalign_fn = zone->memalign;
-}
-
-/// Detects whether another tool has already replaced the zone's hooks
-/// (e.g. Bugsnag, Sentry, MallocStackLogging, or a sanitizer). If the
-/// function pointers don't point inside the libsystem image, we assume
-/// someone else got there first and refuse to install. We can chain
-/// in the future but that's beyond the POC scope.
-bool zone_has_default_hooks(malloc_zone_t* zone) {
-    if (zone == nullptr || zone->malloc == nullptr) {
-        return false;
-    }
-    // Sentinel addresses from libsystem are in the dyld shared cache,
-    // typically high in user space. The simplest detection is whether
-    // the pointer matches any other zone we'd return to — but that
-    // adds complexity. For the POC, we just check that the pointer
-    // is not one of OUR hooks (paranoia for repeated installs).
-    return zone->malloc != hooked_malloc;
-}
 
 bool ensure_sample_table_allocated() {
     if (g_samples != nullptr) {
@@ -811,79 +628,6 @@ void stop_current_session() {
 } // namespace
 
 // MARK: - Public API
-
-extern "C" dd_memory_install_status_t dd_memory_profiler_start(uint64_t poisson_rate_bytes) {
-    os_unfair_lock_lock(&g_lifecycle_lock);
-    if (g_profiler_enabled.load(std::memory_order_acquire)) {
-        os_unfair_lock_unlock(&g_lifecycle_lock);
-        return DD_MEMORY_STATUS_ALREADY_INSTALLED;
-    }
-
-    if (g_timebase.denom == 0) {
-        mach_timebase_info(&g_timebase);
-    }
-
-    malloc_zone_t* zone = malloc_default_zone();
-    if (zone == nullptr) {
-        os_unfair_lock_unlock(&g_lifecycle_lock);
-        return DD_MEMORY_STATUS_FAILED_NO_ZONE;
-    }
-    // Restart path: we never restore original pointers on stop because
-    // another tool may have hooked after us. So a restart legitimately
-    // sees our own hooks already in place. Treat that as success and
-    // just flip the enable flag back on.
-    if (zone->malloc == hooked_malloc) {
-        if (!ensure_sample_table_allocated()) {
-            os_unfair_lock_unlock(&g_lifecycle_lock);
-            return DD_MEMORY_STATUS_FAILED_NO_ZONE;
-        }
-        start_new_session(poisson_rate_bytes);
-        os_unfair_lock_unlock(&g_lifecycle_lock);
-        return DD_MEMORY_STATUS_INSTALLED_DIRECT;
-    }
-    if (!zone_has_default_hooks(zone)) {
-        os_unfair_lock_unlock(&g_lifecycle_lock);
-        return DD_MEMORY_STATUS_FAILED_COLLISION;
-    }
-
-    if (!ensure_sample_table_allocated()) {
-        os_unfair_lock_unlock(&g_lifecycle_lock);
-        return DD_MEMORY_STATUS_FAILED_NO_ZONE;
-    }
-
-    capture_originals(zone);
-
-    dd_memory_install_status_t status = DD_MEMORY_STATUS_INSTALLED_DIRECT;
-    vm_prot_t original_prot = 0;
-    bool used_mprotect = false;
-
-    if (!probe_zone_writable(zone)) {
-        if (!make_zone_writable(zone, &original_prot)) {
-            os_unfair_lock_unlock(&g_lifecycle_lock);
-            return DD_MEMORY_STATUS_FAILED_READ_ONLY_ZONE;
-        }
-        used_mprotect = true;
-        status = DD_MEMORY_STATUS_INSTALLED_MPROTECT;
-    }
-
-    zone->malloc = hooked_malloc;
-    zone->calloc = hooked_calloc;
-    zone->valloc = hooked_valloc;
-    zone->free = hooked_free;
-    zone->free_definite_size = hooked_free_definite_size;
-    zone->realloc = hooked_realloc;
-    if (g_original.memalign_fn != nullptr) {
-        zone->memalign = hooked_memalign;
-    }
-
-    if (used_mprotect) {
-        restore_zone_protection(zone, original_prot);
-    }
-
-    start_new_session(poisson_rate_bytes);
-    os_unfair_lock_unlock(&g_lifecycle_lock);
-    return status;
-}
 
 extern "C" bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes) {
     os_unfair_lock_lock(&g_lifecycle_lock);
@@ -1100,10 +844,6 @@ extern "C" dd_memory_diagnostics_t dd_memory_profiler_diagnostics(void) {
 }
 
 // MARK: - Testing API
-
-extern "C" bool dd_memory_test_default_zone_writable(void) {
-    return probe_zone_writable(malloc_default_zone());
-}
 
 extern "C" void dd_memory_test_reset(void) {
     os_unfair_lock_lock(&g_lifecycle_lock);

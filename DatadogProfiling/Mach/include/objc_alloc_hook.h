@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#ifndef DD_MEMORY_SWIZZLE_POC_H_
-#define DD_MEMORY_SWIZZLE_POC_H_
+#ifndef DD_OBJC_ALLOC_HOOK_H_
+#define DD_OBJC_ALLOC_HOOK_H_
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -19,37 +19,34 @@ extern "C" {
 #endif
 
 // =====================================================================
-// +allocWithZone: / -dealloc Swizzling Spike (follow-up to RUM-16460)
+// +allocWithZone: / -dealloc Obj-C allocation interception (RUM-16460)
 //
-// Pre-RFC spike that validates whether swizzling +allocWithZone: on
-// NSObject is a viable App Store-safe interception primitive for the
-// memory profiler. The RUM-16460 POC proved malloc_zone hooks are
-// bypassed by libmalloc's fast path; this spike answers whether the
-// Obj-C runtime path is reachable instead.
-//
-// Findings document target:
-// Simao's Brain/my-wiki/wiki/projects/profiling/memory/spike-allocwithzone-findings.md
+// Intercepts NSObject-rooted allocations by swizzling +allocWithZone: and
+// -dealloc on NSObject and reporting them to the passive memory sampler.
+// Complements the swift_allocObject rebinding (swift_alloc_hook), which
+// covers pure-Swift class allocations. See docs/SWIZZLING.md for the
+// never-restore / composition discipline this path follows.
 // =====================================================================
 
 /**
- * Status returned by dd_memory_swizzle_start.
+ * Status returned by dd_objc_alloc_hook_start.
  */
 typedef enum {
     /// Swizzle is in place; observation pipeline is active.
-    DD_MEMORY_SWIZZLE_STATUS_OK = 0,
+    DD_OBJC_ALLOC_HOOK_OK = 0,
     /// Swizzle was already installed by a prior call.
-    DD_MEMORY_SWIZZLE_STATUS_ALREADY_INSTALLED = 1,
+    DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED = 1,
     /// The passive sampler could not be started (sample table allocation failed).
-    DD_MEMORY_SWIZZLE_STATUS_FAILED_SAMPLER = 2,
+    DD_OBJC_ALLOC_HOOK_FAILED_SAMPLER = 2,
     /// NSObject's +allocWithZone: class method could not be resolved.
-    DD_MEMORY_SWIZZLE_STATUS_FAILED_NO_METHOD = 3
-} dd_memory_swizzle_status_t;
+    DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD = 3
+} dd_objc_alloc_hook_status_t;
 
 /**
  * Diagnostics for the swizzle layer itself (separate from the sampler counters
  * in dd_memory_profiler_diagnostics).
  */
-typedef struct dd_memory_swizzle_diagnostics {
+typedef struct dd_objc_alloc_hook_diagnostics {
     /// Total times the swizzled +allocWithZone: was invoked.
     uint64_t total_invocations;
     /// Allocations forwarded to the observer (passed the enabled check).
@@ -63,7 +60,7 @@ typedef struct dd_memory_swizzle_diagnostics {
     uint64_t observed_deallocations;
     /// Deallocations skipped because the swizzle was stopped.
     uint64_t skipped_dealloc_disabled;
-} dd_memory_swizzle_diagnostics_t;
+} dd_objc_alloc_hook_diagnostics_t;
 
 /**
  * Installs +allocWithZone: and -dealloc swizzles on NSObject and starts the
@@ -75,25 +72,31 @@ typedef struct dd_memory_swizzle_diagnostics {
  *                           sampler. Pass 0 for default (512 KB).
  * @return Install status; OK only on a freshly-started session.
  */
-dd_memory_swizzle_status_t dd_memory_swizzle_start(uint64_t poisson_rate_bytes);
+dd_objc_alloc_hook_status_t dd_objc_alloc_hook_start(uint64_t poisson_rate_bytes);
 
 /**
- * Restores NSObject's original +allocWithZone: and -dealloc implementations
- * when our implementations are still the outermost swizzles, then disables the
- * sampler. Safe to call multiple times.
+ * Stops observing allocations and deallocations and disables the sampler.
+ *
+ * Follows a never-restore discipline: the installed +allocWithZone: / -dealloc
+ * trampolines stay in place and keep forwarding to the implementation captured
+ * at install time; only observation is disabled. Restoring the original IMP is
+ * intentionally avoided because it cannot compose safely with third-party
+ * swizzles on these selectors (see docs/SWIZZLING.md). Safe to call multiple
+ * times; a subsequent dd_objc_alloc_hook_start re-enables observation without
+ * reinstalling.
  */
-void dd_memory_swizzle_stop(void);
+void dd_objc_alloc_hook_stop(void);
 
 /**
  * Returns true when the swizzles are installed and observing allocations and
  * deallocations.
  */
-bool dd_memory_swizzle_is_running(void);
+bool dd_objc_alloc_hook_is_running(void);
 
 /**
  * Returns a copy of the swizzle-layer counters.
  */
-dd_memory_swizzle_diagnostics_t dd_memory_swizzle_diagnostics(void);
+dd_objc_alloc_hook_diagnostics_t dd_objc_alloc_hook_diagnostics(void);
 
 #ifdef __cplusplus
 }
@@ -102,4 +105,4 @@ dd_memory_swizzle_diagnostics_t dd_memory_swizzle_diagnostics(void);
 #endif // !TARGET_OS_WATCH
 #endif // __APPLE__
 
-#endif // DD_MEMORY_SWIZZLE_POC_H_
+#endif // DD_OBJC_ALLOC_HOOK_H_

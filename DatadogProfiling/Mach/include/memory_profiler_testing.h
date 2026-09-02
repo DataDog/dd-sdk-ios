@@ -27,15 +27,6 @@ extern "C" {
 // =====================================================================
 
 /**
- * Probes whether the default malloc zone struct lives on a writable page
- * without actually installing hooks.
- *
- * @return true if direct function pointer replacement would succeed,
- *         false if the page is read-only (mprotect would be required).
- */
-bool dd_memory_test_default_zone_writable(void);
-
-/**
  * Resets all profiler state to uninitialized.
  *
  * Drops all sampled allocations, zeros diagnostics, and unsets the

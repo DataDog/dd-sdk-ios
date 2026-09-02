@@ -25,6 +25,22 @@ All swizzles use `MethodSwizzler<Signature, Override>` in `DatadogInternal/Sourc
 
 ---
 
+## Scoped exception: whole-process allocation interception
+
+There is exactly **one** sanctioned exception to the "always use `MethodSwizzler`" rule: the memory profiler's allocation interception in `DatadogProfiling/Mach` — the `+[NSObject allocWithZone:]` / `-[NSObject dealloc]` Obj-C swizzle and the `swift_allocObject` / `swift_deallocClassInstance` fishhook rebinding. Do **not** cite this as precedent for any other swizzle; if you are not modifying the allocation interceptors, the exception does not apply to you.
+
+**Why `MethodSwizzler` cannot be used here.** `MethodSwizzler` installs its override as a `@convention(block)` closure IMP (`imp_implementationWithBlock`). These two selectors fire on *every allocation and deallocation in the entire process*. A Swift closure body can allocate implicitly — ARC bridging of `id`/`Class` to `AnyObject`, `String(cString:)`, autoreleased temporaries, escaping-closure boxes — and any such allocation re-enters the very method being swizzled *before* any guard runs, producing unbounded recursion / stack overflow. On top of that, the per-call block-invoke indirection plus ARC retain/release traffic is a large regression on one of the hottest paths in the runtime. Every other `MethodSwizzler` user fires on coarse, low-frequency, mostly main-thread UIKit/URLSession events where free-allocating closures are fine; allocation/deallocation is a categorically different regime.
+
+**The discipline that replaces `MethodSwizzler` here.** Because this path forgoes `MethodSwizzler`, it must uphold the same composition and safety guarantees by hand:
+
+1. **Zero-allocation fast path, in C/C++.** The trampolines are plain C functions. The fast path forwards through a raw captured function pointer and allocates nothing — the class name is passed to the observer as a borrowed `const char*` (never a Swift `String`), and no Swift-managed object is touched.
+2. **Reentrancy guarded in C.** The only path that can allocate (backtrace + side-table insertion) is fenced by a C thread-local guard (`tls_in_profiler`); any allocation our own bookkeeping triggers is observed re-entrantly and skipped. A Swift closure cannot make this guarantee, which is the crux of why it is unsafe here.
+3. **Never-restore on stop.** `stop` only flips an enabled flag; the trampolines stay installed and keep forwarding to the implementation captured at install time. Restoring the original IMP is forbidden — on these two of the most heavily-swizzled selectors it would either clobber a framework that swizzled on top of us, or reinstate a captured "original" that was actually another framework's now-torn-down IMP. This is the same never-restore stance used by the `swift_allocObject` fishhook path, and it is what makes the interceptor compose correctly with third-party swizzles installed in any order.
+
+Any change to the allocation interceptors must preserve all three properties. Entry/exit is funneled through a reviewed Swift facade (`ObjCAllocInterception` / `SwiftAllocInterception`) so the C swizzle is never driven ad hoc.
+
+---
+
 ## Two categories of swizzle
 
 Before applying any pattern, identify which category your swizzle falls into:

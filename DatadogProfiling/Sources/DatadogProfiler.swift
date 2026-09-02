@@ -773,9 +773,12 @@ private extension DatadogProfiler {
         // Passive profiler start (allocates sample table, initialises Poisson sampler, flips
         // the enabled flag) MUST precede the swizzle installation so that allocations observed
         // by the +allocWithZone: trampoline have a live sample table to write into.
-        // dd_memory_swizzle_start internally calls dd_memory_profiler_start_passive and
+        // dd_objc_alloc_hook_start internally calls dd_memory_profiler_start_passive and
         // installs the swizzle in the correct order, so a single call is sufficient.
-        let status = MemorySwizzlingPOC.start(poissonRateBytes: MemorySwizzlingPOC.defaultPoissonRateBytes)
+        let objcStatus = ObjCAllocInterception.start(poissonRateBytes: ObjCAllocInterception.defaultPoissonRateBytes)
+        if objcStatus == .failedSampler || objcStatus == .failedNoMethod {
+            telemetryController.sendMemoryInterceptionInstallFailure(path: "Obj-C +allocWithZone:", status: "\(objcStatus)")
+        }
 
         // Dual interception: also intercept pure-Swift class allocations
         // (swift_allocObject), which bypass the Obj-C +allocWithZone: swizzle.
@@ -783,17 +786,17 @@ private extension DatadogProfiler {
         // both paths feed one shared sampler / live-set / encoder. Samples are
         // tagged source=swift and unioned with the Obj-C path (disjoint, no
         // double-count).
-        SwiftAllocInterception.start(poissonRateBytes: SwiftAllocInterception.defaultPoissonRateBytes)
-        // TEMP DEBUG — remove before merging. Confirms the swizzle install boundary on device.
-//        print("[PROFILING-DEBUG] mem swizzle start status=\(status) "
-//            + "swizzleRunning=\(MemorySwizzlingPOC.isRunning) samplerRunning=\(MemoryProfilerPOC.isRunning)")
+        let swiftStatus = SwiftAllocInterception.start(poissonRateBytes: SwiftAllocInterception.defaultPoissonRateBytes)
+        if swiftStatus == .failedNoSymbol {
+            telemetryController.sendMemoryInterceptionInstallFailure(path: "swift_allocObject", status: "\(swiftStatus)")
+        }
     }
 
     func stopMemoryProfiling() {
-        // dd_memory_swizzle_stop restores the original +allocWithZone: and -dealloc IMPs
-        // when they are still the outermost swizzles, and clears the sampler's enabled flag.
-        // Safe to call even when not running.
-        MemorySwizzlingPOC.stop()
+        // Never-restore: the +allocWithZone: / -dealloc trampolines stay installed and keep
+        // forwarding; dd_objc_alloc_hook_stop only clears the observing flag and disables the
+        // sampler. Safe to call even when not running.
+        ObjCAllocInterception.stop()
         // Stop recording pure-Swift allocations. Never-restore: the rebound
         // trampolines stay installed and keep forwarding; they simply stop
         // observing. Safe to call even when not running.

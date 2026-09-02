@@ -36,14 +36,14 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         dd_profiler_stop()
         dd_profiler_destroy()
         // Ensure the memory interception paths are clean at test start.
-        MemorySwizzlingPOC.stop()
+        ObjCAllocInterception.stop()
         SwiftAllocInterception.stop()
         dd_memory_test_reset()
     }
 
     override func tearDown() {
         // Always stop the memory interception — process-global, must not leak into other tests.
-        MemorySwizzlingPOC.stop()
+        ObjCAllocInterception.stop()
         SwiftAllocInterception.stop()
         dd_memory_test_reset()
         dd_profiler_stop()

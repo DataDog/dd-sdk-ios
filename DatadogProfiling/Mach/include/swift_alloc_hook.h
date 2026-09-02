@@ -21,16 +21,14 @@ extern "C" {
 #endif
 
 // =====================================================================
-// swift_allocObject interception spike (RUM-16460 follow-up)
+// swift_allocObject interception (RUM-16460)
 //
-// Validates whether pure-Swift class allocations — which bypass the
-// Obj-C +allocWithZone: swizzle because they go through the Swift
-// runtime allocator, not the Obj-C runtime — can be intercepted in an
-// App Store-safe way via symbol rebinding (fishhook) of
-// `swift_allocObject` / `swift_deallocClassInstance`.
+// Intercepts pure-Swift class allocations — which bypass the Obj-C
+// +allocWithZone: swizzle because they go through the Swift runtime
+// allocator, not the Obj-C runtime — in an App Store-safe way via symbol
+// rebinding (fishhook) of `swift_allocObject` / `swift_deallocClassInstance`.
 //
-// This is a validation spike, not the production interceptor. It runs
-// ALONGSIDE the +allocWithZone: swizzle; the two allocation paths are
+// Runs ALONGSIDE the +allocWithZone: swizzle; the two allocation paths are
 // disjoint (pure-Swift class -> swift_allocObject; NSObject-rooted ->
 // objc_allocWithZone), so together they widen coverage with no
 // double-counting.
@@ -70,7 +68,7 @@ void dd_swift_alloc_hook_stop(void);
 
 dd_swift_alloc_hook_diagnostics_t dd_swift_alloc_hook_diagnostics(void);
 
-// ---- Testing helpers (spike questions SQ1..SQ3) ---------------------
+// ---- Testing helpers ------------------------------------------------
 
 /// Reset counters and any armed capture. Does not uninstall the rebinding.
 void dd_swift_alloc_test_reset(void);
@@ -92,7 +90,7 @@ uint64_t dd_swift_alloc_test_captured_name(char *buf, uint64_t buf_len);
 // To keep the live set deterministic (the hook is process-wide and sees
 // every pure-Swift allocation), the test registers the *type metadata* of
 // the fixture classes it cares about. Only allocations whose metadata is
-// registered are inserted into the spike live set; deallocations remove by
+// registered are inserted into the tracked live set; deallocations remove by
 // address. `metadata` is a Swift class metatype reinterpreted as a pointer
 // (e.g. `unsafeBitCast(MyClass.self, to: UnsafeMutableRawPointer.self)`).
 

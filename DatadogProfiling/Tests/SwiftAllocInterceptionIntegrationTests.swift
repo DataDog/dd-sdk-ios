@@ -24,7 +24,7 @@ private final class IntegrationObjCFixture: NSObject { var payload = (0, 0, 0, 0
 final class SwiftAllocInterceptionIntegrationTests: XCTestCase {
     override func tearDown() {
         SwiftAllocInterception.stop()
-        MemorySwizzlingPOC.stop()
+        ObjCAllocInterception.stop()
         dd_memory_profiler_stop()
         super.tearDown()
     }
@@ -34,7 +34,7 @@ final class SwiftAllocInterceptionIntegrationTests: XCTestCase {
         dd_swift_alloc_test_reset()
 
         // Dual interception, one shared passive sampler.
-        XCTAssertEqual(MemorySwizzlingPOC.start(), .ok)
+        XCTAssertEqual(ObjCAllocInterception.start(), .ok)
         XCTAssertNotEqual(SwiftAllocInterception.start(), .failedNoSymbol)
         XCTAssertTrue(dd_memory_profiler_is_running())
 

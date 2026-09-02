@@ -17,41 +17,37 @@ internal import DatadogMachProfiler
 // swiftlint:enable duplicate_imports
 
 // =====================================================================
-// +allocWithZone: / -dealloc Swizzling Spike — Swift facade
+// +allocWithZone: / -dealloc interception — Swift facade
 //
-// Validates whether method swizzling on NSObject is a viable interception
-// primitive for the iOS memory profiler. Pivot from the malloc_zone
-// approach of RUM-16460, which was App Store safe but bypassed by
-// libmalloc's fast path.
-//
-// NOT FOR PRODUCTION. This is a pre-RFC spike to answer five questions:
-//   Q1: does the swizzle fire for typical Obj-C/Swift allocation patterns?
-//   Q2: what allocation patterns bypass the swizzle?
-//   Q3: what is the measured overhead vs unswizzled baseline?
-//   Q4: does the reentrancy guard hold under concurrent stress?
-//   Q7: are class name and instance size extractable at the swizzle point?
+// Swift entry point over the Obj-C allocation interception (objc_alloc_hook):
+// swizzles +[NSObject allocWithZone:] / -[NSObject dealloc] and feeds the
+// shared passive memory sampler. Runs alongside SwiftAllocInterception,
+// which covers pure-Swift class allocations via swift_allocObject; the two
+// paths are disjoint (NSObject-rooted vs pure-Swift), so together they widen
+// coverage with no double-counting. See docs/SWIZZLING.md for the
+// never-restore / composition rules this path follows.
 // =====================================================================
 
-/// Outcome of `MemorySwizzlingPOC.start()`.
-internal enum MemorySwizzleStatus: Sendable, Equatable {
+/// Outcome of `ObjCAllocInterception.start()`.
+internal enum ObjCAllocHookStatus: Sendable, Equatable {
     case ok
     case alreadyInstalled
     case failedSampler
     case failedNoMethod
 
-    init(_ raw: dd_memory_swizzle_status_t) {
+    init(_ raw: dd_objc_alloc_hook_status_t) {
         switch raw {
-        case DD_MEMORY_SWIZZLE_STATUS_OK: self = .ok
-        case DD_MEMORY_SWIZZLE_STATUS_ALREADY_INSTALLED: self = .alreadyInstalled
-        case DD_MEMORY_SWIZZLE_STATUS_FAILED_SAMPLER: self = .failedSampler
-        case DD_MEMORY_SWIZZLE_STATUS_FAILED_NO_METHOD: self = .failedNoMethod
+        case DD_OBJC_ALLOC_HOOK_OK: self = .ok
+        case DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED: self = .alreadyInstalled
+        case DD_OBJC_ALLOC_HOOK_FAILED_SAMPLER: self = .failedSampler
+        case DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD: self = .failedNoMethod
         default: self = .failedNoMethod
         }
     }
 }
 
 /// Counters that describe what the swizzle layer itself observed.
-internal struct MemorySwizzleDiagnostics: Sendable {
+internal struct ObjCAllocDiagnostics: Sendable {
     let totalInvocations: UInt64
     let observedAllocations: UInt64
     let skippedDisabled: UInt64
@@ -60,25 +56,25 @@ internal struct MemorySwizzleDiagnostics: Sendable {
     let skippedDeallocDisabled: UInt64
 }
 
-internal enum MemorySwizzlingPOC {
+internal enum ObjCAllocInterception {
     static let defaultPoissonRateBytes: UInt64 = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)
 
     @discardableResult
-    static func start(poissonRateBytes: UInt64 = defaultPoissonRateBytes) -> MemorySwizzleStatus {
-        MemorySwizzleStatus(dd_memory_swizzle_start(poissonRateBytes))
+    static func start(poissonRateBytes: UInt64 = defaultPoissonRateBytes) -> ObjCAllocHookStatus {
+        ObjCAllocHookStatus(dd_objc_alloc_hook_start(poissonRateBytes))
     }
 
     static func stop() {
-        dd_memory_swizzle_stop()
+        dd_objc_alloc_hook_stop()
     }
 
     static var isRunning: Bool {
-        dd_memory_swizzle_is_running()
+        dd_objc_alloc_hook_is_running()
     }
 
-    static func diagnostics() -> MemorySwizzleDiagnostics {
-        let raw = dd_memory_swizzle_diagnostics()
-        return MemorySwizzleDiagnostics(
+    static func diagnostics() -> ObjCAllocDiagnostics {
+        let raw = dd_objc_alloc_hook_diagnostics()
+        return ObjCAllocDiagnostics(
             totalInvocations: raw.total_invocations,
             observedAllocations: raw.observed_allocations,
             skippedDisabled: raw.skipped_disabled,

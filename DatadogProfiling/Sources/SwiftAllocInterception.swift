@@ -43,7 +43,7 @@ internal struct SwiftAllocDiagnostics: Sendable {
 }
 
 /// Swift facade over the `swift_allocObject` interception path. Runs alongside
-/// `MemorySwizzlingPOC`; the two allocation paths are disjoint (pure-Swift
+/// `ObjCAllocInterception`; the two allocation paths are disjoint (pure-Swift
 /// class -> swift_allocObject; NSObject-rooted -> +allocWithZone:).
 internal enum SwiftAllocInterception {
     static let defaultPoissonRateBytes: UInt64 = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)

@@ -4,40 +4,43 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#include "memory_swizzle_poc.h"
+#include "objc_alloc_hook.h"
 #include "memory_profiler.h"
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
 #include <atomic>
+#include <malloc/malloc.h>
 #include <objc/objc.h>
 #include <objc/runtime.h>
 #include <objc/message.h>
 
 // =====================================================================
-// +allocWithZone: / -dealloc Swizzling Spike (follow-up to RUM-16460)
+// +allocWithZone: / -dealloc Obj-C allocation interception (RUM-16460)
 //
 // Strategy:
 //   1. Resolve +[NSObject allocWithZone:] and -[NSObject dealloc] via
 //      the Obj-C runtime (no @selector / no Obj-C source — runtime API
 //      is plain C).
-//   2. Replace their IMPs with trampolines using method_setImplementation.
-//      Previous IMPs are stored so calls can be forwarded and restored.
+//   2. Install trampolines over their IMPs, capturing the previous IMP so
+//      calls are forwarded. The trampolines are never restored on stop
+//      (see dd_objc_alloc_hook_stop) so the interceptor composes safely
+//      with third-party swizzles installed in any order.
 //   3. Allocation invocations forward first, then report the new instance
 //      and class to the passive sampler. Deallocation invocations remove
 //      the instance from the live table before forwarding.
 //
 // The trampoline writes through the same Poisson sampler / reentrancy
-// guard / side-table as the zone-hook path: any allocation triggered by
-// our own backtrace() / table insertion is caught by the tls_in_profiler
-// guard inside record_allocation and skipped.
+// guard / side-table as the swift_allocObject path: any allocation
+// triggered by our own backtrace() / table insertion is caught by the
+// tls_in_profiler guard inside record_allocation and skipped. See
+// docs/SWIZZLING.md for why this path uses a hand-written C trampoline
+// rather than MethodSwizzler.
 // =====================================================================
 
 namespace {
 
 std::atomic<bool> g_swizzle_enabled{false};
-Method g_alloc_method = nullptr;
-Method g_dealloc_method = nullptr;
 std::atomic<IMP> g_original_alloc_imp{nullptr};
 std::atomic<IMP> g_original_dealloc_imp{nullptr};
 bool g_alloc_layer_installed = false;
@@ -73,11 +76,17 @@ id swizzled_alloc_with_zone(Class cls, SEL cmd, struct _NSZone* zone) {
         return obj;
     }
 
-    // class_getInstanceSize returns the ivar storage footprint — a
-    // close enough proxy for the allocator's request size for the
-    // spike. class_getName returns a stable C string tied to the class
-    // metadata, safe to store as a borrowed pointer.
-    const size_t size = class_getInstanceSize(cls);
+    // Prefer the allocator's actual block size (malloc_size) over the class's
+    // ivar footprint (class_getInstanceSize): it reflects the real heap cost,
+    // including allocator rounding and overhead. Fall back to the ivar size on
+    // the rare pointer malloc_size does not recognise.
+    size_t size = malloc_size(reinterpret_cast<const void*>(obj));
+    if (size == 0) {
+        size = class_getInstanceSize(cls);
+    }
+    // class_getName returns a pointer into the class's metadata that is valid
+    // for the class's lifetime. The Obj-C runtime does not unload classes that
+    // vend instances, so the observer may store it as a borrowed pointer.
     const char* name = class_getName(cls);
     dd_memory_observe_allocation(reinterpret_cast<const void*>(obj),
                                   static_cast<uint64_t>(size),
@@ -117,32 +126,30 @@ void reset_swizzle_diagnostics() {
 
 } // namespace
 
-extern "C" dd_memory_swizzle_status_t dd_memory_swizzle_start(uint64_t poisson_rate_bytes) {
+extern "C" dd_objc_alloc_hook_status_t dd_objc_alloc_hook_start(uint64_t poisson_rate_bytes) {
     if (g_swizzle_enabled.load(std::memory_order_acquire)) {
-        return DD_MEMORY_SWIZZLE_STATUS_ALREADY_INSTALLED;
+        return DD_OBJC_ALLOC_HOOK_ALREADY_INSTALLED;
     }
 
     // Resolve both methods before starting the sampler so a missing runtime
     // method cannot leave passive profiling enabled without interception.
     Class nsobject_class = objc_getClass("NSObject");
     if (nsobject_class == nullptr) {
-        return DD_MEMORY_SWIZZLE_STATUS_FAILED_NO_METHOD;
+        return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
     }
     SEL alloc_sel = sel_registerName("allocWithZone:");
     SEL dealloc_sel = sel_registerName("dealloc");
     Method alloc_method = class_getClassMethod(nsobject_class, alloc_sel);
     Method dealloc_method = class_getInstanceMethod(nsobject_class, dealloc_sel);
     if (alloc_method == nullptr || dealloc_method == nullptr) {
-        return DD_MEMORY_SWIZZLE_STATUS_FAILED_NO_METHOD;
+        return DD_OBJC_ALLOC_HOOK_FAILED_NO_METHOD;
     }
 
     if (!dd_memory_profiler_start_passive(poisson_rate_bytes)) {
-        return DD_MEMORY_SWIZZLE_STATUS_FAILED_SAMPLER;
+        return DD_OBJC_ALLOC_HOOK_FAILED_SAMPLER;
     }
 
     reset_swizzle_diagnostics();
-    g_alloc_method = alloc_method;
-    g_dealloc_method = dealloc_method;
 
     if (!g_alloc_layer_installed) {
         // Prime the forwarding pointer before publishing the trampoline. The
@@ -170,45 +177,39 @@ extern "C" dd_memory_swizzle_status_t dd_memory_swizzle_start(uint64_t poisson_r
     }
 
     g_swizzle_enabled.store(true, std::memory_order_release);
-    return DD_MEMORY_SWIZZLE_STATUS_OK;
+    return DD_OBJC_ALLOC_HOOK_OK;
 }
 
-extern "C" void dd_memory_swizzle_stop(void) {
+extern "C" void dd_objc_alloc_hook_stop(void) {
     if (!g_swizzle_enabled.exchange(false, std::memory_order_acq_rel)) {
         return;
     }
 
-    // Disable observation before touching either IMP. In-flight trampolines
-    // retain stable forwarding pointers and will still reach the next layer.
+    // Never-restore discipline: leave the +allocWithZone: / -dealloc trampolines
+    // installed and forwarding to the implementation captured at install time.
+    // We only stop observing (g_swizzle_enabled was just cleared, making the
+    // trampolines forward-only) and disable the sampler.
+    //
+    // Restoring the original IMP here would be unsafe on these two of the most
+    // heavily-swizzled Obj-C selectors:
+    //   - A framework that swizzled ON TOP of us would be silently clobbered.
+    //   - A framework that swizzled BEFORE us left *its* IMP as our captured
+    //     "original"; it may since have torn itself down, so reinstating that
+    //     pointer would forward every allocation/deallocation into freed code.
+    // This mirrors dd_swift_alloc_hook_stop() and satisfies the composition
+    // rules in docs/SWIZZLING.md. A later
+    // dd_objc_alloc_hook_start re-enables observation without reinstalling (the
+    // g_*_layer_installed guards keep us from re-capturing our own trampoline as
+    // the "original").
     dd_memory_profiler_stop();
-
-    if (g_dealloc_layer_installed
-        && g_dealloc_method != nullptr
-        && method_getImplementation(g_dealloc_method) == reinterpret_cast<IMP>(swizzled_dealloc)) {
-        method_setImplementation(
-            g_dealloc_method,
-            g_original_dealloc_imp.load(std::memory_order_acquire)
-        );
-        g_dealloc_layer_installed = false;
-    }
-
-    if (g_alloc_layer_installed
-        && g_alloc_method != nullptr
-        && method_getImplementation(g_alloc_method) == reinterpret_cast<IMP>(swizzled_alloc_with_zone)) {
-        method_setImplementation(
-            g_alloc_method,
-            g_original_alloc_imp.load(std::memory_order_acquire)
-        );
-        g_alloc_layer_installed = false;
-    }
 }
 
-extern "C" bool dd_memory_swizzle_is_running(void) {
+extern "C" bool dd_objc_alloc_hook_is_running(void) {
     return g_swizzle_enabled.load(std::memory_order_acquire);
 }
 
-extern "C" dd_memory_swizzle_diagnostics_t dd_memory_swizzle_diagnostics(void) {
-    dd_memory_swizzle_diagnostics_t d = {};
+extern "C" dd_objc_alloc_hook_diagnostics_t dd_objc_alloc_hook_diagnostics(void) {
+    dd_objc_alloc_hook_diagnostics_t d = {};
     d.total_invocations = g_total_invocations.load(std::memory_order_relaxed);
     d.observed_allocations = g_observed_allocations.load(std::memory_order_relaxed);
     d.skipped_disabled = g_skipped_disabled.load(std::memory_order_relaxed);

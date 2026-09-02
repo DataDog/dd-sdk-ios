@@ -37,13 +37,13 @@ private final class WeakReference<Object: AnyObject> {
 final class MemoryLiveHeapValidationTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        MemorySwizzlingPOC.stop()
+        ObjCAllocInterception.stop()
         dd_memory_test_reset()
         warmUpFixtureClasses()
     }
 
     override func tearDown() {
-        MemorySwizzlingPOC.stop()
+        ObjCAllocInterception.stop()
         dd_memory_test_reset()
         super.tearDown()
     }
@@ -70,13 +70,13 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
 
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupA.self), 1)
 
-        let sampledFreesBeforeRelease = MemoryProfilerPOC.diagnostics().sampledFrees
+        let sampledFreesBeforeRelease = MemoryProfilerProbe.diagnostics().sampledFrees
         object = nil
         XCTAssertNil(weakObject.value, "The fixture must be deallocated before validating the live set")
 
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupA.self), 0)
         XCTAssertGreaterThanOrEqual(
-            MemoryProfilerPOC.diagnostics().sampledFrees - sampledFreesBeforeRelease,
+            MemoryProfilerProbe.diagnostics().sampledFrees - sampledFreesBeforeRelease,
             1
         )
     }
@@ -99,7 +99,7 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupB.self), objectCount)
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupC.self), objectCount)
 
-        let sampledFreesBeforeReleasingGroupB = MemoryProfilerPOC.diagnostics().sampledFrees
+        let sampledFreesBeforeReleasingGroupB = MemoryProfilerProbe.diagnostics().sampledFrees
         let releasedGroupBObject = WeakReference(groupB?.first)
         groupB = nil
         XCTAssertNil(releasedGroupBObject.value, "Group B must be released before the first live-set assertion")
@@ -108,11 +108,11 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupB.self), 0)
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupC.self), objectCount)
         XCTAssertGreaterThanOrEqual(
-            MemoryProfilerPOC.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupB,
+            MemoryProfilerProbe.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupB,
             UInt64(objectCount)
         )
 
-        let sampledFreesBeforeReleasingGroupC = MemoryProfilerPOC.diagnostics().sampledFrees
+        let sampledFreesBeforeReleasingGroupC = MemoryProfilerProbe.diagnostics().sampledFrees
         let releasedGroupCObject = WeakReference(groupC?.first)
         groupC = nil
         XCTAssertNil(releasedGroupCObject.value, "Group C must be released before the second live-set assertion")
@@ -121,11 +121,11 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupB.self), 0)
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupC.self), 0)
         XCTAssertGreaterThanOrEqual(
-            MemoryProfilerPOC.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupC,
+            MemoryProfilerProbe.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupC,
             UInt64(objectCount)
         )
 
-        let sampledFreesBeforeReleasingGroupA = MemoryProfilerPOC.diagnostics().sampledFrees
+        let sampledFreesBeforeReleasingGroupA = MemoryProfilerProbe.diagnostics().sampledFrees
         let releasedGroupAObject = WeakReference(groupA?.first)
         groupA = nil
         XCTAssertNil(releasedGroupAObject.value, "Group A must be released before the final live-set assertion")
@@ -134,7 +134,7 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupB.self), 0)
         XCTAssertEqual(liveCount(for: MemoryLiveHeapValidationGroupC.self), 0)
         XCTAssertGreaterThanOrEqual(
-            MemoryProfilerPOC.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupA,
+            MemoryProfilerProbe.diagnostics().sampledFrees - sampledFreesBeforeReleasingGroupA,
             UInt64(objectCount)
         )
     }
@@ -151,11 +151,11 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         for (index, address) in addresses.enumerated() {
             observeForcedAllocation(at: address, size: UInt64(index + 1))
         }
-        XCTAssertEqual(Set(MemoryProfilerPOC.captureSnapshot().samples.map(\.address)), Set(addresses))
+        XCTAssertEqual(Set(MemoryProfilerProbe.captureSnapshot().samples.map(\.address)), Set(addresses))
 
         observeDeallocation(at: addresses[0])
         XCTAssertEqual(
-            Set(MemoryProfilerPOC.captureSnapshot().samples.map(\.address)),
+            Set(MemoryProfilerProbe.captureSnapshot().samples.map(\.address)),
             Set(addresses.dropFirst())
         )
 
@@ -163,14 +163,14 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         // mistakes the tombstone for an empty slot will fail this removal.
         observeDeallocation(at: addresses[2])
         XCTAssertEqual(
-            Set(MemoryProfilerPOC.captureSnapshot().samples.map(\.address)),
+            Set(MemoryProfilerProbe.captureSnapshot().samples.map(\.address)),
             [addresses[1]]
         )
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().sampledFrees, 2)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().droppedSamples, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().sampledFrees, 2)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 0)
 
         observeDeallocation(at: addresses[1])
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().liveSampledAllocations, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 0)
     }
 
     func testFullTableRejectsOverflowAndReusesTombstone() {
@@ -189,32 +189,32 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
 
         let overflowAddress = UInt64(0x20_0000)
         XCTAssertFalse(insertTableSample(at: overflowAddress, size: 1, generation: generation))
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().liveSampledAllocations, UInt64(capacity))
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().droppedSamples, 1)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, UInt64(capacity))
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 1)
 
         observeDeallocation(at: addresses[capacity / 2])
         XCTAssertTrue(insertTableSample(at: overflowAddress, size: 99, generation: generation))
 
-        let snapshot = MemoryProfilerPOC.captureSnapshot()
+        let snapshot = MemoryProfilerProbe.captureSnapshot()
         XCTAssertEqual(snapshot.samples.count, capacity)
         XCTAssertEqual(Set(snapshot.samples.map(\.address)).count, capacity)
         XCTAssertFalse(snapshot.samples.contains { $0.address == addresses[capacity / 2] })
         XCTAssertEqual(snapshot.samples.first { $0.address == overflowAddress }?.size, 99)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().droppedSamples, 1)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 1)
     }
 
     func testRestartClearsSamplesFromPreviousSession() {
         XCTAssertTrue(dd_memory_profiler_start_passive(1))
 
         observeForcedAllocation(at: 0x2_0000, size: 64)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().liveSampledAllocations, 1)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 1)
 
         dd_memory_profiler_stop()
         XCTAssertTrue(dd_memory_profiler_start_passive(1))
 
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().liveSampledAllocations, 0)
-        XCTAssertTrue(MemoryProfilerPOC.captureSnapshot().samples.isEmpty)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().sampledAllocations, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 0)
+        XCTAssertTrue(MemoryProfilerProbe.captureSnapshot().samples.isEmpty)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().sampledAllocations, 0)
     }
 
     func testWorkFromPreviousSessionCannotEnterRestartedTable() {
@@ -229,9 +229,9 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
             insertTableSample(at: 0x2_1000, size: 64, generation: previousGeneration),
             "An insertion carrying a stale session token must be rejected"
         )
-        XCTAssertTrue(MemoryProfilerPOC.captureSnapshot().samples.isEmpty)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().sampledAllocations, 0)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().droppedSamples, 0)
+        XCTAssertTrue(MemoryProfilerProbe.captureSnapshot().samples.isEmpty)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().sampledAllocations, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 0)
     }
 
     func testSnapshotsRemainConsistentDuringConcurrentSlotReuse() {
@@ -257,7 +257,7 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         }
 
         for _ in 0..<100 {
-            let snapshot = MemoryProfilerPOC.captureSnapshot()
+            let snapshot = MemoryProfilerProbe.captureSnapshot()
             XCTAssertEqual(Set(snapshot.samples.map(\.address)).count, snapshot.samples.count)
             for sample in snapshot.samples {
                 XCTAssertEqual(sample.size, expectedSizes[sample.address])
@@ -265,14 +265,14 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         }
 
         XCTAssertEqual(group.wait(timeout: .now() + 10), .success)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().liveSampledAllocations, 0)
-        XCTAssertEqual(MemoryProfilerPOC.diagnostics().droppedSamples, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 0)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 0)
     }
 
     private func startMemoryProfiler() {
-        let status = MemorySwizzlingPOC.start(poissonRateBytes: 1)
+        let status = ObjCAllocInterception.start(poissonRateBytes: 1)
         XCTAssertEqual(status, .ok, "The allocation swizzle must install in a clean test process")
-        XCTAssertTrue(MemorySwizzlingPOC.isRunning)
+        XCTAssertTrue(ObjCAllocInterception.isRunning)
     }
 
     private func warmUpFixtureClasses() {
@@ -306,7 +306,7 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
 
     private func liveCount<Object: NSObject>(for type: Object.Type) -> Int {
         let expectedClassName = NSStringFromClass(type)
-        return MemoryProfilerPOC.captureSnapshot().samples.reduce(into: 0) { count, sample in
+        return MemoryProfilerProbe.captureSnapshot().samples.reduce(into: 0) { count, sample in
             if sample.className == expectedClassName {
                 count += 1
             }

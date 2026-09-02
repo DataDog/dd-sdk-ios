@@ -80,7 +80,7 @@ size_t name_bucket(const void *metadata) {
     return static_cast<size_t>(v) & (NAME_CACHE_CAPACITY - 1);
 }
 
-// One-shot capture for the spike tests. thread_local arm flag keeps it
+// One-shot capture for tests. thread_local arm flag keeps it
 // deterministic per test; the captured slot is global.
 thread_local bool t_in_hook = false;
 thread_local bool t_arm_capture = false;
@@ -277,7 +277,7 @@ extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(uint64_t poiss
     // function is our `orig`, and it still runs). If another rebinds AFTER us,
     // our trampoline is bypassed for future images but our already-bound slots
     // keep working; g_installed makes re-entry idempotent. We never restore
-    // (see dd_swift_alloc_hook_stop), mirroring the Obj-C zone-hook stance.
+    // (see dd_swift_alloc_hook_stop), mirroring the +allocWithZone: swizzle's stance.
     rebind_symbols(rebindings, 3);
 
     if (replaced_alloc != nullptr) {

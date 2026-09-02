@@ -162,15 +162,6 @@ extension ProfilingHandler {
         var allocWindow = dd_memory_alloc_window_capture()
         defer { dd_memory_snapshot_destroy(&allocWindow) }
 
-        // TEMP DEBUG — remove before merging. Pinpoints which boundary is empty on device.
-        let sw = MemorySwizzlingPOC.diagnostics()
-        let mp = MemoryProfilerPOC.diagnostics()
-//        print("[PROFILING-DEBUG] mem swizzle.totalInvocations=\(sw.totalInvocations) "
-//            + "swizzle.observed=\(sw.observedAllocations) swizzle.skippedDisabled=\(sw.skippedDisabled)")
-//        print("[PROFILING-DEBUG] mem sampler.totalAllocations=\(mp.totalAllocations) "
-//            + "sampled=\(mp.sampledAllocations) live=\(mp.liveSampledAllocations) reentrantSkips=\(mp.reentrantSkips)")
-//        print("[PROFILING-DEBUG] mem snapshot.sampleCount=\(snapshot.sample_count)")
-
         // Extract RUM correlation IDs from attributes using the same keys the wall
         // profiling path receives from the RUM feature message.
         // `view.id` is sent by the RUM SDK as [String] (array); take the first element.

@@ -12,7 +12,7 @@
 #include "mach_sampling_profiler.h"
 #include "binary_image_resolver.h"
 #include "memory_profiler.h"
-#include "memory_swizzle_poc.h"
+#include "objc_alloc_hook.h"
 #include "swift_alloc_hook.h"
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -501,7 +501,7 @@ static void dd_profiler_auto_start() {
     // match the CPU auto-start's caution.
     //
     // The interception started here flows into the Swift-managed lifecycle with
-    // NO restart: `dd_memory_swizzle_start` / `dd_swift_alloc_hook_start` and the
+    // NO restart: `dd_objc_alloc_hook_start` / `dd_swift_alloc_hook_start` and the
     // shared passive sampler are idempotent and preserve the live set, so
     // `DatadogProfiler` adopts this already-running sampler rather than clearing
     // it (see `isMemoryProfilingRunning` adoption). If the RUM-composed memory
@@ -513,7 +513,7 @@ static void dd_profiler_auto_start() {
         // Order matches DatadogProfiler.startMemoryProfiling(): the Obj-C swizzle
         // brings up the shared passive sampler and records via +allocWithZone:;
         // the pure-Swift rebinding then joins the same sampler (idempotent).
-        dd_memory_swizzle_start(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
+        dd_objc_alloc_hook_start(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
         dd_swift_alloc_hook_start(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES);
     }
 
