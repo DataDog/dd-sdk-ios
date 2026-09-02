@@ -30,3 +30,7 @@ artifacts/
 
 # GSD planning files (local only)
 .planning/
+
+# RUM AI Toolkit:
+.rum-ai-toolkit/
+.cr-agent/sessions/
