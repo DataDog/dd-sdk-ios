@@ -85,6 +85,11 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     /// Whether memory interception is currently enabled. Tracked so reconciliation only calls
     /// start/stop on an actual state change.
     private var isMemoryProfilingRunning = false
+    /// Latched once neither interception path could install. Memory profiling then stays off for
+    /// the lifetime of this profiler — the failure (a sample table that could not be allocated, or
+    /// both hook targets unresolvable) is not transient, so retrying each context update would only
+    /// repeat the telemetry.
+    private var hasMemoryInterceptionFailed = false
     /// Start of the current memory-profiling emission window, used to bound a heap-only
     /// `ProfileEvent` (which has no CPU profile to source timestamps from). Advanced on each emission.
     private var memoryWindowStart: Date
@@ -240,6 +245,11 @@ private extension DatadogProfiler {
                 telemetryController.resetContinuousCycleIndex()
             }
 
+            // Memory profiling follows its own decision + conditions, so reconcile it on EVERY
+            // context update regardless of the early-returns below — including the consent
+            // revocation below, which returns before any continuous-profiling path is reached.
+            defer { updateMemoryProfilingState() }
+
             let wasTrackingConsentAllowed = isTrackingConsentAllowed
             isTrackingConsentAllowed = context.trackingConsent != .notGranted
             if !isTrackingConsentAllowed {
@@ -253,13 +263,10 @@ private extension DatadogProfiler {
             let currentAppState = context.applicationStateHistory.currentState
             defer { previousAppState = currentAppState }
 
-            // Memory profiling follows its own decision + conditions, so reconcile it on EVERY
-            // context update regardless of the continuous-profiling early-returns below. Consume the
-            // launch grace once the RUM memory decision is definitive.
+            // Consume the launch grace once the RUM memory decision is definitive.
             if profilingSamplerProvider.memoryProfilingSampled != nil {
                 isMemoryProfilingGraceAvailable = false
             }
-            defer { updateMemoryProfilingState() }
 
             switch profilingSamplerProvider.continuousProfilingSampled {
             case true?:
@@ -691,11 +698,18 @@ private extension DatadogProfiler {
     }
 
     /// Whether memory (heap) profiling should currently be sampling — independent of the
-    /// continuous/custom CPU decision. Requires: memory configured, not quota-rejected, foreground
-    /// conditions met (`hasConditionsToProfile` is false in background / Low Power / low battery),
-    /// and the RUM-composed memory session decision sampled-in (or still in the launch grace).
+    /// continuous/custom CPU decision. Requires: tracking consent not denied, memory configured,
+    /// not quota-rejected, foreground conditions met (`hasConditionsToProfile` is false in
+    /// background / Low Power / low battery), and the RUM-composed memory session decision
+    /// sampled-in (or still in the launch grace).
+    ///
+    /// Consent is checked here — not only in `shouldKeepProfilerRunning()` — because memory
+    /// profiling has its own lifecycle: `.notGranted` must uninstall the interception outright,
+    /// not merely stop the CPU profiler.
     func shouldRunMemoryProfiling() -> Bool {
-        guard profilingSamplerProvider.isMemoryProfilingConfigured,
+        guard isTrackingConsentAllowed,
+              !hasMemoryInterceptionFailed,
+              profilingSamplerProvider.isMemoryProfilingConfigured,
               !quotaChecker.isRejectedByQuota,
               hasConditionsToProfile else {
             return false
@@ -715,7 +729,14 @@ private extension DatadogProfiler {
     func updateMemoryProfilingState() {
         let shouldRun = shouldRunMemoryProfiling()
         if shouldRun, !isMemoryProfilingRunning {
-            startMemoryProfiling()
+            guard startMemoryProfiling() else {
+                // Neither path installed — fail closed rather than report a running profiler that
+                // can never produce a sample. Latched so the next context update does not retry a
+                // failure that is not transient (and re-emit its telemetry every cycle).
+                hasMemoryInterceptionFailed = true
+                stopMemoryProfiling()
+                return
+            }
             isMemoryProfilingRunning = true
         } else if !shouldRun, isMemoryProfilingRunning {
             stopMemoryProfiling()
@@ -769,14 +790,21 @@ private extension DatadogProfiler {
         }
     }
 
-    func startMemoryProfiling() {
+    /// Installs both interception paths.
+    ///
+    /// - Returns: `true` when at least one path is observing. A single-path failure still returns
+    ///   `true`: the surviving path yields real (if narrower) attribution, and the failure is
+    ///   reported via telemetry. Only a total failure — typically the shared sampler failing to
+    ///   start, which takes both paths down — returns `false`, so the caller can fail closed rather
+    ///   than emit windows that can never contain a sample.
+    func startMemoryProfiling() -> Bool {
         // Passive profiler start (allocates sample table, initialises Poisson sampler, flips
         // the enabled flag) MUST precede the swizzle installation so that allocations observed
         // by the +allocWithZone: trampoline have a live sample table to write into.
         // dd_objc_alloc_hook_start internally calls dd_memory_profiler_start_passive and
         // installs the swizzle in the correct order, so a single call is sufficient.
         let objcStatus = ObjCAllocInterception.start(poissonRateBytes: ObjCAllocInterception.defaultPoissonRateBytes)
-        if objcStatus == .failedSampler || objcStatus == .failedNoMethod {
+        if !objcStatus.isInstalled {
             telemetryController.sendMemoryInterceptionInstallFailure(path: "Obj-C +allocWithZone:", status: "\(objcStatus)")
         }
 
@@ -787,9 +815,11 @@ private extension DatadogProfiler {
         // tagged source=swift and unioned with the Obj-C path (disjoint, no
         // double-count).
         let swiftStatus = SwiftAllocInterception.start(poissonRateBytes: SwiftAllocInterception.defaultPoissonRateBytes)
-        if swiftStatus == .failedNoSymbol {
+        if !swiftStatus.isInstalled {
             telemetryController.sendMemoryInterceptionInstallFailure(path: "swift_allocObject", status: "\(swiftStatus)")
         }
+
+        return objcStatus.isInstalled || swiftStatus.isInstalled
     }
 
     func stopMemoryProfiling() {

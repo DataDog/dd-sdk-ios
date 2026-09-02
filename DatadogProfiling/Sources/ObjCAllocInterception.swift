@@ -44,6 +44,11 @@ internal enum ObjCAllocHookStatus: Sendable, Equatable {
         default: self = .failedNoMethod
         }
     }
+
+    /// Whether the path is observing allocations after this call.
+    var isInstalled: Bool {
+        self == .ok || self == .alreadyInstalled
+    }
 }
 
 /// Counters that describe what the swizzle layer itself observed.

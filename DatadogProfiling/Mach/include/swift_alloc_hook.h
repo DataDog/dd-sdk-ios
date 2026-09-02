@@ -40,7 +40,11 @@ typedef enum {
     /// A prior call already installed the rebinding; observation re-enabled.
     DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED = 1,
     /// The Swift runtime allocator symbol could not be resolved.
-    DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL = 2
+    DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL = 2,
+    /// The passive sampler could not be started (sample table allocation failed).
+    /// Mirrors DD_OBJC_ALLOC_HOOK_FAILED_SAMPLER: the sampler is shared, so this
+    /// failure takes down both interception paths, not just this one.
+    DD_SWIFT_ALLOC_HOOK_FAILED_SAMPLER = 3
 } dd_swift_alloc_hook_status_t;
 
 typedef struct dd_swift_alloc_hook_diagnostics {

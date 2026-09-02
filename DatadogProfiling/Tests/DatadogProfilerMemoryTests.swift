@@ -262,6 +262,83 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - Tracking consent
+
+    /// `.notGranted` must stop memory profiling outright — the interception is uninstalled, not just
+    /// the CPU profiler stopped. Memory has its own lifecycle, so it needs its own consent gate.
+    func testMemoryProfilingStopsOnConsentNotGranted_andResumesWhenGrantedAgain() {
+        let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        // Granted + foreground → running.
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must run when consent is granted")
+
+        // Consent revoked → interception must stop, even though the app stays in the foreground.
+        core.context = .mockWith(trackingConsent: .notGranted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertFalse(dd_memory_profiler_is_running(), "Memory profiling must stop when consent is .notGranted")
+
+        // Consent granted again → resumed.
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Memory profiling must resume when consent is granted again")
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Allocations must not be recorded once consent is revoked — proves the interception really is
+    /// observing-off, not merely flagged as stopped.
+    ///
+    /// Memory must be *running* first, otherwise the assertion passes for the wrong reason: the
+    /// suite's default context is background, which stops memory on its own.
+    func testMemoryProfilingRecordsNoAllocations_afterConsentRevoked() {
+        let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        // Granted + foreground → running, and allocations ARE recorded.
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory profiling must be running")
+
+        let baseline = dd_memory_test_live_count()
+        dd_memory_test_force_next_sample()
+        let recorded = ProdSwiftFixture()
+        withExtendedLifetime(recorded) {
+            XCTAssertEqual(dd_memory_test_live_count(), baseline + 1,
+                           "Precondition: allocations must be recorded while consent is granted")
+        }
+
+        // Consent revoked → no further allocation may be recorded.
+        core.context = .mockWith(trackingConsent: .notGranted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+
+        let afterRevocation = dd_memory_test_live_count()
+        dd_memory_test_force_next_sample()
+        let ignored = ProdSwiftFixture()
+        withExtendedLifetime(ignored) {
+            XCTAssertEqual(dd_memory_test_live_count(), afterRevocation,
+                           "No allocation may be recorded once tracking consent is .notGranted")
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// `.pending` is fail-open for memory, matching the CPU profiler: only `.notGranted` disables
+    /// collection. Data written while pending is held by core and resolved on the consent decision.
+    func testMemoryProfilingRuns_whenConsentPending() {
+        let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        core.context = .mockWith(trackingConsent: .pending, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Memory profiling must keep running while consent is .pending")
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Teardown / stop
 
     func testMemoryProfilerStops_whenProfilerDeallocates() {

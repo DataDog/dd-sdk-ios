@@ -21,14 +21,23 @@ internal enum SwiftAllocHookStatus: Sendable, Equatable {
     case ok
     case alreadyInstalled
     case failedNoSymbol
+    /// The shared passive sampler could not be started. Distinct from `failedNoSymbol`: the sampler
+    /// is shared with the Obj-C path, so this failure means neither path can observe.
+    case failedSampler
 
     init(_ raw: dd_swift_alloc_hook_status_t) {
         switch raw {
         case DD_SWIFT_ALLOC_HOOK_OK: self = .ok
         case DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED: self = .alreadyInstalled
         case DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL: self = .failedNoSymbol
+        case DD_SWIFT_ALLOC_HOOK_FAILED_SAMPLER: self = .failedSampler
         default: self = .failedNoSymbol
         }
+    }
+
+    /// Whether the path is observing allocations after this call.
+    var isInstalled: Bool {
+        self == .ok || self == .alreadyInstalled
     }
 }
 

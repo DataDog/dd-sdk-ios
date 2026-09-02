@@ -234,7 +234,7 @@ extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(uint64_t poiss
     // Bring up (or join) the shared passive sampler. Idempotent: if the Obj-C
     // swizzle already started it, this leaves the active session untouched.
     if (!dd_memory_profiler_start_passive(poisson_rate_bytes)) {
-        return DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL;
+        return DD_SWIFT_ALLOC_HOOK_FAILED_SAMPLER;
     }
 
     if (g_installed.exchange(true)) {
