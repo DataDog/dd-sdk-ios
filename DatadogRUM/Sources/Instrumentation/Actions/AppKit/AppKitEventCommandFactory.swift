@@ -30,37 +30,42 @@ internal protocol AppKitEventCommandFactory {
 /// Handles both AppKit and SwiftUI components using different detection strategies.
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     let dateProvider: DateProvider
-    let appKitPredicate: AppKitRUMActionsPredicate?
-    let swiftUIPredicate: SwiftUIRUMActionsPredicate?
-    let swiftUIDetector: SwiftUIComponentDetector?
+    let appKitPredicate: AppKitRUMActionsPredicate
+    let swiftUIDetector: SwiftUIComponentDetector
 
     init(
         dateProvider: DateProvider,
-        appKitPredicate: AppKitRUMActionsPredicate?,
-        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: SwiftUIComponentDetector?
+        appKitPredicate: AppKitRUMActionsPredicate,
+        swiftUIDetector: SwiftUIComponentDetector
     ) {
         self.dateProvider = dateProvider
         self.appKitPredicate = appKitPredicate
-        self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector
     }
 
     func command(from event: NSEvent) -> RUMAddUserActionCommand? {
-        if let rumAction = createAppKitActionCommand(from: event) {
-            return rumAction
+        guard event.type == .leftMouseDown else {
+            return nil // Handle mouse down only for now
         }
 
-        // In some situations (see the documentation of`createAppKitActionCommand(from:)`),
-        // `createAppKitActionCommand` will use the SwiftUI Detector to obtain an action,
-        // if possible.
-        //
-        // Here, the detector covers situations not handled by `createAppKitActionCommand`.
-        // These are situations where a SwiftUI interactive view (like a button) is on a window,
-        // either in a fully native SwiftUI window, or a NSHostingView in an AppKit window,
-        // but not inside an AppKit container (like a NSTableRowView or NSCollectionView) that
-        // would otherwise be detected by `createAppKitActionCommand`.
-        return swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider)
+        switch createAppKitActionCommand(from: event) {
+        case .command(let command): return command
+        case .ignore: return nil
+        case .tryAccessibility:
+            // In some situations (see the documentation of`createAppKitActionCommand(from:)`),
+            // `createAppKitActionCommand` will use the SwiftUI Detector to obtain an action,
+            // if possible.
+            //
+            // Here, the detector covers situations not handled by `createAppKitActionCommand`.
+            // These are situations where a SwiftUI interactive view (like a button) is on a window,
+            // either in a fully native SwiftUI window, or a NSHostingView in an AppKit window,
+            // but not inside an AppKit container (like a NSTableRowView or NSCollectionView) that
+            // would otherwise be detected by `createAppKitActionCommand`.
+            switch swiftUIDetector.createActionCommand(from: event, predicate: appKitPredicate, dateProvider: dateProvider) {
+            case .command(let command): return command
+            case .ignore, .noDecision:  return nil
+            }
+        }
     }
 
     func command(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
@@ -107,29 +112,27 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
     }
 
+    private enum AppKitCommandResult {
+        case command(RUMAddUserActionCommand)
+        case tryAccessibility
+        case ignore
+    }
+
     /// Creates a RUM Action command if appropriate based on the given `NSEvent`.
     ///
     /// - Parameters:
     ///   - event: The `NSEvent` being processed. Only `.leftMouseDown` events are supported for now.
     /// - Returns: A `RUMAddUserActionCommand` if all the conditions for a RUM Action command creation
     /// are met, `nil` otherwise.
-    private func createAppKitActionCommand(from event: NSEvent) -> RUMAddUserActionCommand? {
-        guard let appKitPredicate else {
-            return nil
-        }
-
-        guard event.type == .leftMouseDown else {
-            return nil // Handle mouse down only for now
-        }
-
+    private func createAppKitActionCommand(from event: NSEvent) -> AppKitCommandResult {
         // Run hitTesting on the root view to include toolbar buttons and chrome.
         guard let clickedView = event.window?.rootView?.hitTest(event.locationInWindow) else {
-            return nil // We don't know what was clicked
+            return .tryAccessibility // We don't know what was clicked
         }
 
         // If it's not safe for privacy, bail out immediately.
         guard clickedView.isSafeForPrivacy else {
-            return nil // no valid view
+            return .ignore // no valid view
         }
 
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
@@ -145,23 +148,40 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         // view to be used as target, we fallback to the container view. If we just returned `nil`
         // and relied on `swiftUIDetector.createActionCommand(…)`, the container view context would
         // be lost and no action would be returned.
-        if case .trySwiftUIWithFallbackTo = bestTarget,
-           let swiftUIResult = swiftUIDetector?.createActionCommand(from: event, predicate: swiftUIPredicate, dateProvider: dateProvider) {
-            return swiftUIResult
+        if case .trySwiftUIWithFallbackTo(let fallback) = bestTarget {
+            switch swiftUIDetector.createActionCommand(from: event, predicate: appKitPredicate, dateProvider: dateProvider) {
+            case .command(let command):
+                return .command(command)
+            case .ignore:
+                return .ignore
+            case .noDecision:
+                if fallback == nil {
+                    // If bestTarget result was to try SwiftUI without any fallback view,
+                    // if the swiftUIDetector fails to generate an action here we know it's
+                    // not going to generate one in command(from:). So we avoid the second
+                    // call there by returning .ignore.
+                    return .ignore
+                }
+            }
         }
 
-        guard let targetView = bestTarget.view,
-              let action = appKitPredicate.rumAction(targetView: targetView)
-        else {
-            return nil
+        guard let targetView = bestTarget.view else {
+            return .tryAccessibility
         }
 
-        return RUMAddUserActionCommand(
-            time: dateProvider.now,
-            attributes: action.attributes,
-            instrumentation: .appKit,
-            actionType: .click,
-            name: action.name
+        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
+            return .ignore
+        }
+
+        return
+            .command(
+                RUMAddUserActionCommand(
+                time: dateProvider.now,
+                attributes: action.attributes,
+                instrumentation: .appKit,
+                actionType: .click,
+                name: action.name
+            )
         )
     }
 
@@ -172,10 +192,6 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     /// - Returns: A `RUMAddUserActionCommand` if all the conditions for a RUM Action command creation
     /// are met, `nil` otherwise.
     private func createAppKitActionCommand(from menuItem: NSMenuItem) -> RUMAddUserActionCommand? {
-        guard let appKitPredicate else {
-            return nil
-        }
-
         guard menuItem.isSafeForPrivacy else {
             return nil // no valid menu item
         }
@@ -239,7 +255,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return .appKit(view)
         } else if let ddControl = view as? DDControl {
             // Ignore disabled controls.
-            guard ddControl.isEnabled else { return .appKit(nil) }
+            guard ddControl.isEnabled else {
+                return .appKit(nil)
+            }
             // NSTableView interactive element is the row, not the cell. If the click hits a row,
             // outside of a specific control present in a table cell, it's caught here, as a click
             // on the NSTableView itself (NSTableView extends NSControl). The bestActionTargetFor(control:event:)

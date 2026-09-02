@@ -10,14 +10,70 @@ import DatadogInternal
 
 /// The predicate for macOS interactions deciding if a given RUM Action should be recorded.
 ///
-/// When the app is running, the SDK will ask the implementation of `UITouchRUMActionsPredicate` if any noticed user action on the target view should
-/// be considered as a RUM Action. The predicate implementation should return RUM Action parameters if it should be recorded or `nil` otherwise.
+/// # How instrumentation works
+///
+/// ## Instrumenting mouse clicks
+///
+/// When a `.leftMouseClick` occurs, the SDK will make a first attempt to detect which `NSView` within the
+/// AppKit domain was the target of the event. If it succeeds, `rumAction(targetView:)` will be called, giving
+/// the predicate an opportunity to decide if the view should be instrumented or not.
+///
+/// If either no suitable AppKit `NSView` subclass is found, or if the event target lies within a SwiftUI container like
+/// `NSHostingView`, the SDK resorts to the accessibility hierarchy to find the accessibility element that matches
+/// the SwiftUI view the event targeted. This includes traversing down the hierarchy of accessibility containers, like
+/// scroll views, etc. The accessibility hierarchy is used since, given the nature of SwiftUI, no APIs are available to
+/// inspect and traverse the view hierarchy. If a suitable accessibility element is found,
+/// `rumAction(accessibilityRole:identifier:)` is called, again giving the predicate an opportunity to
+/// generate an action or reject the element.
+///
+/// Some important considerations:
+///
+/// * Depending on the view hierarchy, `rumAction(targetView:)`, `rumAction(accessibilityRole:identifier:)`,
+/// none, or both, may be called. Do not make any assumptions regarding which method(s) will be called, and in
+/// what order.
+///
+/// * If either `rumAction(targetView:)`, `rumAction(accessibilityRole:identifier:)` return
+/// `nil`, the instrumentation process ends for the current event, and the other method will not be called for the
+/// same event.
+///
+/// * Depending on the specific implementation of SwiftUI views on macOS, some SwiftUI views may be backed
+/// by AppKit views and be instrumented as if they were AppKit views. The same SwiftUI view may have different
+/// backing implementations depending on the specific view configuration. For example, a `Button` with a default
+/// look (just a simple label) is usually backed by a `NSButton`, while a button with a custom label (with stacks,
+/// multiple labels and images) is implemented as a pure SwiftUI view. Additionally, even for a view backed by
+/// AppKit like the simple `Button` with a default label, it may be detected as an AppKit or SwiftUI view depending
+/// on where it is in the view hierarchy. Usually, AppKit-backed SwiftUI views will be instrumented as SwiftUI (more
+/// specifically as accessibility elements) if they are inside a SwiftUI container like a SwiftUI scroll view. Don't make
+/// any assumptions regarding which methods are called based on how a specific SwiftUI is implemented.
+///
+/// * The implementation of SwiftUI is different between macOS versions, so assume which methods are called,
+/// and their order, to change between macOS versions.
+///
+/// ## Instrumenting menu items
+///
+/// The predicate includes a specific method for menu items, `rumAction(targetMenuItem:)`. This is called
+/// when a user picks an item from a Menu (either from the Menu Bar, or a Popup Menu), and regardless of the item
+/// being picked using the mouse, or a keyboard shortcut.
+///
+///
+/// # General predicate use
+///
+/// The predicate has the opportunity to generate a `RUMAction` with a custom name and attributes for each of
+/// the methods described above. If you want to omit a certain action from instrumentation (for privacy or other reasons),
+/// simply return `nil` from the method.
 public protocol AppKitRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded for a `.leftMouseDown` event on the given view.
     ///
     /// - Parameter targetView: an instance of the `NSView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: NSView) -> RUMAction?
+
+    /// The predicate deciding if a RUM action should be recorded for a `.leftMouseDown` on the
+    /// accessibility element with the given role and identifier.
+    ///
+    /// - Note: This predicate is not called for an element resulting from an event if, for the same event,
+    /// ``rumAction(targetView:)`` returned `nil`.
+    func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction?
 
     /// The predicate deciding if the RUM Action should be recorded for the given menu item selected by the user.
     ///
@@ -76,15 +132,18 @@ public struct DefaultAppKitRUMActionsPredicate {
             return nil
         }()
 
+        return targetName(baseName: baseName(for: view), identifier: identifier)
+    }
+
+    private func targetName(accessibilityRole: NSAccessibility.Role, identifier: String?) -> String {
+        targetName(baseName: accessibilityRole.rawValue, identifier: identifier)
+    }
+
+    private func targetName(baseName: String, identifier: String?) -> String {
         if let identifier {
-            return "\(baseName(for: view)) (\(identifier))"
-        // Some SwiftUI components are UIKit under the hood,
-        // but need to clean up tangled SwiftUI name
-        // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18UISegmentedControl
-        } else if view.isSwiftUIView {
-            return view.swiftUIViewName
+            return "\(baseName) (\(identifier))"
         } else {
-            return baseName(for: view)
+            return baseName
         }
     }
 
@@ -175,6 +234,13 @@ extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
     public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetMenuItem),
+            attributes: [:]
+        )
+    }
+
+    public func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction? {
+        return RUMAction(
+            name: targetName(accessibilityRole: accessibilityRole, identifier: identifier),
             attributes: [:]
         )
     }

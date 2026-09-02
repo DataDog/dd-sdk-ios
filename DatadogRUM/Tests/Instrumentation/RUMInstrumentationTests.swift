@@ -15,15 +15,40 @@ import TestUtilities
 class RUMInstrumentationTests: XCTestCase {
     private var config = RUM.Configuration(applicationID: .mockAny())
 
+    #if os(macOS)
+    private func makePredicates(
+        rumViewsPredicate: DDKitRUMViewsPredicate? = nil,
+        rumActionsPredicate: DDKitRUMActionsPredicate? = nil,
+        swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate? = nil
+    ) -> RUMInstrumentation.Predicates {
+        return .init(
+            rumViewsPredicate: rumViewsPredicate,
+            rumActionsPredicate: rumActionsPredicate,
+            swiftUIRUMViewsPredicate: swiftUIRUMViewsPredicate
+        )
+    }
+    #else
+    private func makePredicates(
+        rumViewsPredicate: DDKitRUMViewsPredicate? = nil,
+        rumActionsPredicate: DDKitRUMActionsPredicate? = nil,
+        swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
+        swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate? = nil
+    ) -> RUMInstrumentation.Predicates {
+        return .init(
+            rumViewsPredicate: rumViewsPredicate,
+            rumActionsPredicate: rumActionsPredicate,
+            swiftUIRUMViewsPredicate: swiftUIRUMViewsPredicate,
+            swiftUIRUMActionsPredicate: swiftUIRUMActionsPredicate
+        )
+    }
+    #endif
+
     #if !os(macOS)
     func testWhenOnlyUIKitViewsPredicateIsConfigured_itInstrumentsUIViewController() throws {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(rumViewsPredicate: UIKitRUMViewsPredicateMock()),
             longTaskThreshold: nil,
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -56,10 +81,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(rumActionsPredicate: UIKitRUMActionsPredicateMock()),
             longTaskThreshold: nil,
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -90,10 +112,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock()),
             longTaskThreshold: nil,
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -123,10 +142,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
+            predicates: makePredicates(swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock()),
             longTaskThreshold: nil,
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -157,10 +173,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(rumActionsPredicate: UIKitRUMActionsPredicateMock()),
             trackScrollAndSwipeActions: false,
             longTaskThreshold: nil,
             appHangThreshold: .mockAny(),
@@ -190,10 +203,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(),
             longTaskThreshold: 0.5,
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -223,10 +233,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(),
             longTaskThreshold: .mockRandom(min: -100, max: 0),
             appHangThreshold: .mockAny(),
             mainQueue: .main,
@@ -252,10 +259,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(),
             longTaskThreshold: .mockRandom(min: -100, max: 0),
             appHangThreshold: 2,
             mainQueue: .main,
@@ -281,10 +285,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(),
             longTaskThreshold: .mockRandom(min: -100, max: 0),
             appHangThreshold: nil,
             mainQueue: .main,
@@ -310,10 +311,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: nil,
-            ddKitRUMActionsPredicate: nil,
-            swiftUIRUMViewsPredicate: nil,
-            swiftUIRUMActionsPredicate: nil,
+            predicates: makePredicates(),
             longTaskThreshold: 0.1,
             appHangThreshold: 0.1,
             mainQueue: .main,
@@ -340,10 +338,12 @@ class RUMInstrumentationTests: XCTestCase {
         // Given
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            ddKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
-            swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
-            swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
+            predicates: makePredicates(
+                rumViewsPredicate: UIKitRUMViewsPredicateMock(),
+                rumActionsPredicate: UIKitRUMActionsPredicateMock(),
+                swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
+                swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock()
+            ),
             longTaskThreshold: 0.5,
             appHangThreshold: 2,
             mainQueue: .main,
@@ -376,10 +376,11 @@ class RUMInstrumentationTests: XCTestCase {
         // Given
         let instrumentation = RUMInstrumentation(
             featureScope: NOPFeatureScope(),
-            ddKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            ddKitRUMActionsPredicate: AppKitRUMActionsPredicateMock(),
-            swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock(),
-            swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicateMock(),
+            predicates: makePredicates(
+                rumViewsPredicate: UIKitRUMViewsPredicateMock(),
+                rumActionsPredicate: AppKitRUMActionsPredicateMock(),
+                swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock()
+            ),
             longTaskThreshold: 0.5,
             appHangThreshold: 2,
             mainQueue: .main,

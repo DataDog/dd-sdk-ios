@@ -19,14 +19,18 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     private func appKitHandler(
         appKitPredicate: AppKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
-        swiftUIPredicate: SwiftUIRUMActionsPredicate? = nil,
-        swiftUIDetector: SwiftUIComponentDetector? = nil
+        swiftUIDetector: SwiftUIComponentDetector = SwiftUIComponentDetectorMock(result: .noDecision)
     ) -> RUMActionsHandler {
+        let eventCommandsFactory = appKitPredicate.map {
+            AppKitCommandFactory(
+                dateProvider: dateProvider,
+                appKitPredicate: $0,
+                swiftUIDetector: swiftUIDetector
+            )
+        }
         let handler = RUMActionsHandler(
             dateProvider: dateProvider,
-            appKitPredicate: appKitPredicate,
-            swiftUIPredicate: swiftUIPredicate,
-            swiftUIDetector: swiftUIDetector
+            eventCommandsFactory: eventCommandsFactory
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -386,15 +390,12 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     // MARK: - SwiftUI Actions
 
-    func testGivenAppKitAndSwiftUIPredicates_whenAppKitDetectsAction_itDoesNotUseSwiftUIDetector() throws {
+    func testGivenAppKitPredicate_whenAppKitDetectsAction_itDoesNotUseSwiftUIDetector() throws {
         // Given
         let window = makeWindow()
         window.contentView?.addSubview(NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40)))
-        let detector = SwiftUIComponentDetectorMock(command: .mockSwiftUIAutomatic())
-        let handler = appKitHandler(
-            swiftUIPredicate: MockSwiftUIRUMActionsPredicate(),
-            swiftUIDetector: detector
-        )
+        let detector = SwiftUIComponentDetectorMock(result: .command(.mockSwiftUIAutomatic()))
+        let handler = appKitHandler(swiftUIDetector: detector)
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30)))
@@ -405,15 +406,14 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertEqual(detector.receivedEvents.count, 0)
     }
 
-    func testGivenSwiftUIPredicate_whenAppKitDoesNotDetectAction_itUsesSwiftUIDetector() throws {
+    func testGivenAppKitPredicate_whenAppKitDoesNotDetectAction_itUsesSwiftUIDetector() throws {
         // Given
         let expectedCommand = RUMAddUserActionCommand.mockSwiftUIAutomatic()
-        let detector = SwiftUIComponentDetectorMock(command: expectedCommand)
+        let detector = SwiftUIComponentDetectorMock(result: .command(expectedCommand))
         let window = makeWindow()
         window.contentView?.addSubview(NSView(frame: .init(x: 20, y: 20, width: 100, height: 40)))
         let handler = appKitHandler(
-            appKitPredicate: nil,
-            swiftUIPredicate: MockSwiftUIRUMActionsPredicate(),
+            appKitPredicate: AppKitRUMActionsPredicateMock(),
             swiftUIDetector: detector
         )
 
@@ -430,9 +430,60 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertIdentical(detector.receivedEvents[0], event)
     }
 
+    func testGivenAppKitPredicateRejectsView_whenAccessibilityPredicateWouldAccept_itDoesNotEvaluateAccessibilityPredicate() throws {
+        // Given
+        let window = makeWindow()
+        let button = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        window.contentView?.addSubview(button)
+
+        let predicate = AppKitRUMActionsPredicateMock(result: nil)
+        predicate.resultByAccessibilityRole[.button] = RUMAction(name: "AX Button", attributes: [:])
+        let detector = predicateEvaluatingDetector()
+        let handler = appKitHandler(appKitPredicate: predicate, swiftUIDetector: detector)
+
+        // When
+        handler.notify_sendEvent(
+            event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30))
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+        XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), button)
+        XCTAssertTrue(predicate.receivedAccessibilityRoles.isEmpty)
+        XCTAssertTrue(predicate.receivedAccessibilityIdentifiers.isEmpty)
+        XCTAssertTrue(detector.receivedEvents.isEmpty)
+    }
+
+    func testGivenAccessibilityPredicateRejectsElement_whenAppKitPredicateWouldAcceptFallback_itDoesNotEvaluateAppKitPredicate() {
+        // Given
+        let window = makeWindow()
+        let button = HitTestingButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        let swiftUIView = CellHostingView(frame: button.bounds)
+        button.addSubview(swiftUIView)
+        button.hitTestResult = swiftUIView
+        window.contentView?.addSubview(button)
+
+        let predicate = AppKitRUMActionsPredicateMock(result: nil)
+        predicate.resultByView[button] = RUMAction(name: "AppKit Button", attributes: [:])
+        let detector = predicateEvaluatingDetector()
+        let handler = appKitHandler(appKitPredicate: predicate, swiftUIDetector: detector)
+
+        // When
+        handler.notify_sendEvent(
+            event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30))
+        )
+
+        // Then
+        XCTAssertNil(commandSubscriber.lastReceivedCommand)
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, [nil])
+        XCTAssertTrue(predicate.receivedViews.isEmpty)
+        XCTAssertEqual(detector.receivedEvents.count, 1)
+    }
+
     func testGivenNoAutomaticPredicates_whenEventOrMenuItemIsReceived_itDoesntSendAction() {
         // Given
-        let handler = appKitHandler(appKitPredicate: nil, swiftUIPredicate: nil, swiftUIDetector: nil)
+        let handler = appKitHandler(appKitPredicate: nil)
 
         // When
         handler.notify_sendEvent(event: MockNSEvent.mockWith(window: nil))
@@ -444,7 +495,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     func testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction() throws {
         // Given
-        let handler = appKitHandler(appKitPredicate: nil, swiftUIPredicate: nil, swiftUIDetector: nil)
+        let handler = appKitHandler(appKitPredicate: nil)
 
         // When
         let actionName: String = .mockRandom()
@@ -461,6 +512,17 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
     }
 
     // MARK: - Fixtures
+
+    private func predicateEvaluatingDetector() -> SwiftUIComponentDetectorMock {
+        let detector = SwiftUIComponentDetectorMock(result: .noDecision)
+        detector.resultFromPredicate = { predicate in
+            guard predicate?.rumAction(accessibilityRole: .button, identifier: nil) != nil else {
+                return .ignore
+            }
+            return .command(.mockSwiftUIAutomatic())
+        }
+        return detector
+    }
 
     private func makeWindow() -> NSWindow {
         return NSWindow(
@@ -533,22 +595,33 @@ private final class MockNSEvent: NSEvent {
 }
 
 private final class SwiftUIComponentDetectorMock: SwiftUIComponentDetector {
-    let command: RUMAddUserActionCommand?
+    let result: AccessibilityCommandResult
+    var resultFromPredicate: ((AppKitRUMActionsPredicate?) -> AccessibilityCommandResult)?
     private(set) var receivedEvents: [NSEvent] = []
 
-    init(command: RUMAddUserActionCommand?) {
-        self.command = command
+    init(result: AccessibilityCommandResult) {
+        self.result = result
     }
 
     func createActionCommand(
         from event: NSEvent,
-        predicate: SwiftUIRUMActionsPredicate?,
+        predicate: AppKitRUMActionsPredicate?,
         dateProvider: DateProvider
-    ) -> RUMAddUserActionCommand? {
+    ) -> AccessibilityCommandResult {
         receivedEvents.append(event)
-        return command
+        return resultFromPredicate?(predicate) ?? result
     }
 }
+
+private final class HitTestingButton: NSButton {
+    var hitTestResult: NSView?
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return hitTestResult ?? super.hitTest(point)
+    }
+}
+
+private final class CellHostingView: NSView { }
 
 private final class TableDataSource: NSObject, NSTableViewDataSource, NSTableViewDelegate {
     func numberOfRows(in tableView: NSTableView) -> Int {

@@ -109,7 +109,9 @@ class RUMTests: XCTestCase {
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
         #endif
         config.swiftUIViewsPredicate = SwiftUIRUMViewsPredicateMock()
+        #if !os(macOS)
         config.swiftUIActionsPredicate = SwiftUIRUMActionsPredicateMock()
+        #endif
         config.longTaskThreshold = 0.5
         config.appHangThreshold = 2
 
@@ -155,7 +157,9 @@ class RUMTests: XCTestCase {
         config.uiKitActionsPredicate = nil
         #endif
         config.swiftUIViewsPredicate = nil
+        #if !os(macOS)
         config.swiftUIActionsPredicate = nil
+        #endif
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
         config.trackMemoryWarnings = false

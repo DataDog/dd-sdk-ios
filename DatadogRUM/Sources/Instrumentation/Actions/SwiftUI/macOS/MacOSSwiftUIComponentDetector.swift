@@ -88,31 +88,37 @@ internal struct MacOSSwiftUIComponentDetector: SwiftUIComponentDetector {
     ///
     /// - Returns: The command resulting from the given event, or `nil` if no action should be recorded for
     /// this event.
-    func createActionCommand(from event: NSEvent, predicate: (any SwiftUIRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> RUMAddUserActionCommand? {
+    func createActionCommand(from event: NSEvent, predicate: (any AppKitRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> AccessibilityCommandResult {
         guard
             let predicate,
             let window = event.window,
             case let coordsInScreen = window.convertPoint(toScreen: event.locationInWindow),
             let accessibilityElement = axHitTesting(window, coordinates: coordsInScreen)
         else {
-            return nil
+            return .noDecision
         }
 
-        guard let targetElement = bestActionTargetFor(accessibilityElement: accessibilityElement, coordinates: coordsInScreen) else {
-            return nil
+        guard
+            let targetElement = bestActionTargetFor(accessibilityElement: accessibilityElement, coordinates: coordsInScreen),
+            let role = axRole(targetElement)
+        else {
+            return .noDecision
         }
 
-        guard let action = predicate.rumAction(with: targetName(for: targetElement)) else {
-            return nil
+        guard let action = predicate.rumAction(accessibilityRole: role, identifier: axIdentifier(targetElement)) else {
+            return .ignore
         }
 
-        return RUMAddUserActionCommand(
-            time: dateProvider.now,
-            attributes: action.attributes,
-            instrumentation: .swiftuiAutomatic,
-            actionType: .click,
-            name: action.name
-        )
+        return
+            .command(
+                RUMAddUserActionCommand(
+                    time: dateProvider.now,
+                    attributes: action.attributes,
+                    instrumentation: .swiftuiAutomatic,
+                    actionType: .click,
+                    name: action.name
+                )
+            )
     }
 
     /// Builds the name of the accessibility target, based on its role and identifier.

@@ -159,7 +159,7 @@ extension RUM {
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
         #endif
 
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
         ///
         /// RUM will query this predicate for each view that the user interacts with. The predicate implementation
@@ -732,7 +732,6 @@ extension RUM.Configuration {
         appKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
         appKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
-        swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
@@ -761,7 +760,6 @@ extension RUM.Configuration {
         self.appKitViewsPredicate = appKitViewsPredicate
         self.appKitActionsPredicate = appKitActionsPredicate
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
-        self.swiftUIActionsPredicate = swiftUIActionsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
