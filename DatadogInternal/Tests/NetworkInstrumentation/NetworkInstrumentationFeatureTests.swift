@@ -480,7 +480,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testRegisteredDelegate_capturesMetricsForCombineDataTask() throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -690,7 +689,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, *)
     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -795,7 +793,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testAutomaticMode_tracksCombineTasks() throws {
         guard #available(iOS 16, tvOS 16, *) else {
             return
@@ -1059,11 +1056,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode() throws {
-        // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
-            return
-        }
-
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidComplete.expectedFulfillmentCount = 2
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -1154,7 +1146,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1190,7 +1181,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenRegisteredDelegateWithoutCompletionHandler_itCapturesMetricsAndData() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1226,7 +1216,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
     }
 
-    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1264,7 +1253,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 15, tvOS 15, watchOS 8, *)
     func testGivenBothModesEnabled_whenUnregisteredDelegateWithoutCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1302,7 +1290,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 15, tvOS 15, *)
     func testGivenBothModesEnabled_whenNoDelegateWithCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1337,7 +1324,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
-    @available(iOS 15, tvOS 15, *)
     func testGivenBothModesEnabled_whenNoDelegateWithoutCompletionHandler_itUsesAutomaticMode() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -1422,11 +1408,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode() throws {
-        // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
-            return
-        }
-
         let notifyInterceptionDidComplete = expectation(description: "Notify interception did complete")
         notifyInterceptionDidComplete.expectedFulfillmentCount = 2
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -2028,7 +2009,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertTrue(task.isSupportedForInstrumentation)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testIsSupportedForInstrumentation_returnsTrueForWebSocketTask() {
         let session = URLSession(configuration: .ephemeral)
         let task = session.webSocketTask(with: URL(string: "wss://example.com")!)
@@ -2061,7 +2041,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Crash regression: resume() on various task types
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testWebSocketTask_resumeDoesNotCrash() throws {
         // Regression: verify that resuming a WebSocketTask with the swizzle installed doesn't crash.
         // The crash in interceptResume is synchronous, so no real connection is needed — we cancel immediately.
@@ -2352,11 +2331,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     // MARK: - Subclass Delegate Handling
 
     func testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate() throws {
-        // pre iOS 15 cannot set delegate per task
-        guard #available(iOS 15, tvOS 15, watchOS 8, *) else {
-            return
-        }
-
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
         // Given - Register BASE delegate class
