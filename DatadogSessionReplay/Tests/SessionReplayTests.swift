@@ -215,7 +215,6 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(config.startRecordingManually, !startRecordingImmediately)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testWhenEnabled_itUpdatesCoreContextWithEnabledFeatureFlags() throws {
         let core = PassthroughCoreMock()
         config.featureFlags[.swiftui] = true
@@ -269,7 +268,6 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, random)
     }
 
-    @available(iOS 13.0, *)
     func testWhenEnabledWithCompositionTreeRecordingFeatureFlag_itUsesLayerTreeRecordingCoordinator() throws {
         // Given
         config.featureFlags[.compositionTreeRecording] = true

@@ -9,12 +9,10 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol ImageRepresentable: Hashable {
     func makeImage() -> UIImage?
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct AnyImageRepresentable: ImageRepresentable {
     private let base: any ImageRepresentable
 

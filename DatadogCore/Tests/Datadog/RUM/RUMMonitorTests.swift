@@ -171,10 +171,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingNativeResourceWithRequestWithMetrics() throws {
-        guard #available(iOS 13, *) else {
-            return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
-        }
-
         RUM.enable(with: config, in: core)
 
         let monitor = RUMMonitor.shared(in: core)

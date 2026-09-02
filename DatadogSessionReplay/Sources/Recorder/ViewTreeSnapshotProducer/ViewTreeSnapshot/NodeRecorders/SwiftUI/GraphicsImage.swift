@@ -9,7 +9,6 @@ import CoreGraphics
 import SwiftUI
 
 /// Represents a SwiftUI.GraphicsImage
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct GraphicsImage {
     let contents: Contents
     let scale: CGFloat
@@ -41,7 +40,6 @@ internal struct GraphicsImage {
 }
 
 /// Mapping SwiftUI orientation to UIImage orientation
-@available(iOS 13.0, tvOS 13.0, *)
 internal extension UIImage.Orientation {
     init(_ orientation: SwiftUI.Image.Orientation) {
         switch orientation {

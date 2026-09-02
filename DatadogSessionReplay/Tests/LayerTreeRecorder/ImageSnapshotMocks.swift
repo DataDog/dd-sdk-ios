@@ -11,7 +11,6 @@ import UIKit
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshot {
     static func mockAny(
         image: UIImage = UIImage(),
@@ -34,7 +33,6 @@ extension ContentSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotData {
     static func mockAny(
         snapshot: ContentSnapshot = .mockAny(),
@@ -53,14 +51,12 @@ extension ContentSnapshotData {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension MaskSnapshot {
     static func mockAny(image: UIImage = UIImage()) -> MaskSnapshot {
         MaskSnapshot(image: image)
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension MaskSnapshotData {
     static func mockAny(
         snapshot: MaskSnapshot = .mockAny(),

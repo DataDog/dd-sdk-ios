@@ -9,7 +9,6 @@ import DatadogInternal
 import UIKit
 
 /// Maps layer snapshots to wireframes and resources.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerWireframeBuilder {
     typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
 

@@ -15,7 +15,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct ImageSnapshotterTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders image snapshot for layer subclass")
     func rendersImageSnapshotForLayerSubclass() async throws {
         // Given
@@ -39,7 +38,6 @@ struct ImageSnapshotterTests {
         #expect(imageSnapshot.hasLayerSemantics)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders ignored sublayer content outside its semantic owner bounds")
     func rendersIgnoredSublayerContentOutsideSemanticOwnerBounds() async throws {
         // Given
@@ -73,7 +71,6 @@ struct ImageSnapshotterTests {
         #expect(cornerImage.map { UIImage(cgImage: $0) }?.dominantColor == .red)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders and caches mask snapshot for container mask")
     func rendersAndCachesMaskSnapshotForContainerMask() async throws {
         // Given
@@ -108,7 +105,6 @@ struct ImageSnapshotterTests {
         #expect(changedMaskSnapshot.image.size == fixture.maskedLayer.bounds.size)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Times out unprocessed image requests")
     func timesOutUnprocessedImageRequests() async throws {
         // Given
@@ -127,7 +123,6 @@ struct ImageSnapshotterTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes cached image when changed request times out")
     func removesCachedImageWhenChangedRequestTimesOut() async throws {
         // Given
@@ -166,7 +161,6 @@ struct ImageSnapshotterTests {
         #expect(firstImageSnapshot.image !== nextImageSnapshot.image)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Reuses cached image when only frame changes")
     func reusesCachedImageWhenOnlyFrameChanges() async throws {
         // Given
@@ -197,7 +191,6 @@ struct ImageSnapshotterTests {
         #expect(secondImageSnapshot.frame == CGRect(x: 20, y: 15, width: 100, height: 40))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Refreshes snapshot metadata when cached image is reused")
     func refreshesSnapshotMetadataWhenCachedImageIsReused() async throws {
         // Given
@@ -244,7 +237,6 @@ struct ImageSnapshotterTests {
         #expect(secondImageSnapshot.hasLayerSemantics)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders new image when content changes")
     func rendersNewImageWhenContentChanges() async throws {
         // Given
@@ -276,7 +268,6 @@ struct ImageSnapshotterTests {
         #expect(secondImageSnapshot.frame == layer.frame)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Invalidates cached image when occluded layer content changes")
     func invalidatesCachedImageWhenOccludedLayerContentChanges() async throws {
         // Given
@@ -323,7 +314,6 @@ struct ImageSnapshotterTests {
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Invalidates cached image when occluded ignored sublayer changes")
     func invalidatesCachedImageWhenOccludedIgnoredSublayerChanges() async throws {
         // Given
@@ -380,7 +370,6 @@ struct ImageSnapshotterTests {
         #expect(firstImageSnapshot.image !== revealedImageSnapshot.image)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders full layer image when clipped by ancestor")
     func rendersFullLayerImageWhenClippedByAncestor() async throws {
         // Given
@@ -411,7 +400,6 @@ struct ImageSnapshotterTests {
         #expect(imageSnapshot.image.size == CGSize(width: 40, height: 40))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Renders visible rect for oversized layer")
     func rendersVisibleRectForOversizedLayer() async throws {
         // Given
@@ -437,7 +425,6 @@ struct ImageSnapshotterTests {
         #expect(imageSnapshot.image.size == CGSize(width: 100, height: 100))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private struct MaskFixture {
         let rootLayer: CALayer
         let maskedLayer: CALayer

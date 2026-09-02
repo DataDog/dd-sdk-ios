@@ -93,7 +93,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
         #if !os(watchOS)
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
+        if configuration.collectAccessibility {
              accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
         }
 
@@ -154,7 +154,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ciTest: ciTest,
                 syntheticsTest: syntheticsTest,
                 sessionSampleRate: Double(sessionSampleRate),
-                now: { configuration.dateProvider.now }
+                now: { configuration.dateProvider.now },
+                mediaTimeProvider: configuration.mediaTimeProvider
             )
         }
 
@@ -350,6 +351,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         if let watchdogTermination = watchdogTermination {
             messageReceivers.append(watchdogTermination)
+        }
+
+        if timeseriesCollector != nil {
+            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
         }
 
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)

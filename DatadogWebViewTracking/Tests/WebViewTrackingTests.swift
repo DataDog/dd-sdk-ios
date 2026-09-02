@@ -304,7 +304,6 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     /// Loads a simulated request on a WebView, and waits for the page to finish loading.
-    @available(iOS 15.0, *)
     private func loadAndWait(on webView: WKWebView, request: URLRequest, responseHTML: String) {
         final class NavigationDelegate: NSObject, WKNavigationDelegate {
             let expectation: XCTestExpectation
@@ -332,7 +331,6 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
-    @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:
@@ -400,7 +398,6 @@ class WebViewTrackingTests: XCTestCase {
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
 
-    @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRolloverInIframes() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:
@@ -481,7 +478,6 @@ class WebViewTrackingTests: XCTestCase {
         waitForJS(nestedIframeJS, toReturn: "true", webView: webView, description: "nested iframe sessionUUID2")
     }
 
-    @available(iOS 15.0, *)
     func testItSetsBridgeDecisionToNullOnSessionStop() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:

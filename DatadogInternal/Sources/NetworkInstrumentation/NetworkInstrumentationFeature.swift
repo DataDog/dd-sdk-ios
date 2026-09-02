@@ -164,9 +164,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 interceptDidFinishCollecting: { [weak self] session, task, metrics in
                     self?.task(task, didFinishCollecting: metrics)
 
-                    if #available(iOS 15, tvOS 15, *), !task.dd.hasCompletion {
-                        // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
-                        // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+                    if !task.dd.hasCompletion {
                         self?.task(task, didCompleteWithError: task.error)
                     }
                 },

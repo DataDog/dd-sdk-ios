@@ -13,7 +13,6 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension LayerTreeSnapshot {
     static func mockWith(
         date: Date = Date(timeIntervalSince1970: 42),
@@ -47,7 +46,6 @@ extension LayerTreeSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     static func mockRoot(
         absoluteFrame: CGRect = CGRect(x: 0, y: 0, width: 100, height: 200),

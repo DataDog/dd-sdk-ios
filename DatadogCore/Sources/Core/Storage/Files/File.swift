@@ -67,52 +67,15 @@ internal struct File: WritableFile, ReadableFile, FileProtocol, Equatable {
     /// Appends given data at the end of this file.
     func append(data: Data) throws {
         let fileHandle = try FileHandle(forWritingTo: url)
-
-        // NOTE: RUMM-669
-        // https://github.com/DataDog/dd-sdk-ios/issues/214
-        // https://en.wikipedia.org/wiki/Xcode#11.x_series
-        // compiler version needs to have iOS 13.4+ as base SDK
-        #if compiler(>=5.2)
-        /**
-         Even though the `fileHandle.seekToEnd()` should be available since iOS 13.0:
-         ```
-         @available(OSX 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-         public func seekToEnd() throws -> UInt64
-         ```
-         it crashes on iOS Simulators prior to iOS 13.4:
-         ```
-         Symbol not found: _$sSo12NSFileHandleC10FoundationE9seekToEnds6UInt64VyKF
-         ```
-         This is fixed in iOS 14/Xcode 12
-        */
-        if #available(iOS 13.4, tvOS 13.4, *) {
-            defer { try? fileHandle.close() }
-            try fileHandle.seekToEnd()
-            try fileHandle.write(contentsOf: data)
-        } else {
-            try legacyAppend(data, to: fileHandle)
-        }
-        #else
-        try legacyAppend(data, to: fileHandle)
-        #endif
+        defer { try? fileHandle.close() }
+        try fileHandle.seekToEnd()
+        try fileHandle.write(contentsOf: data)
     }
 
     func write(data: Data) throws {
         // The `.atomic` option writes data to an auxiliary file first and then replace the original
         // file with the auxiliary file when the write completes
         try data.write(to: url, options: .atomic)
-    }
-
-    private func legacyAppend(_ data: Data, to fileHandle: FileHandle) throws {
-        defer {
-            try? objc_rethrow {
-                fileHandle.closeFile()
-            }
-        }
-        try objc_rethrow {
-            fileHandle.seekToEndOfFile()
-            fileHandle.write(data)
-        }
     }
 
     func stream() throws -> InputStream {

@@ -10,35 +10,30 @@ import Foundation
 import SwiftUI
 import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList: Reflection {
     init(from reflector: Reflector) throws {
         items = try reflector.descendant("items")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Identity: Reflection {
     init(from reflector: Reflector) throws {
         value = try reflector.descendant("value")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Seed: Reflection {
     init(from reflector: Reflector) throws {
         value = try reflector.descendant("value")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewRenderer: Reflection {
     init(from reflector: Reflector) throws {
         renderer = try reflector.descendant("renderer")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater: Reflection {
     init(from reflector: Reflector) throws {
         viewCache = try reflector.descendant("viewCache")
@@ -46,7 +41,6 @@ extension DisplayList.ViewUpdater: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Effect: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -68,28 +62,24 @@ extension DisplayList.Effect: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewCache: Reflection {
     init(from reflector: Reflector) throws {
         map = try reflector.descendant("map")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewCache.Key: Reflection {
     init(from reflector: Reflector) throws {
         id = try reflector.descendant("id")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Index.ID: Reflection {
     init(from reflector: Reflector) throws {
         identity = try reflector.descendant("identity")
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.ViewUpdater.ViewInfo: Reflection {
     init(from reflector: Reflector) throws {
         // do not retain the views or layer, only get values required
@@ -129,7 +119,6 @@ extension DisplayList.ViewUpdater.ViewInfo: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Content: Reflection {
     init(from reflector: Reflector) throws {
         seed = try reflector.descendant("seed")
@@ -137,7 +126,6 @@ extension DisplayList.Content: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Content.Value: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -173,7 +161,6 @@ extension DisplayList.Content.Value: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Item: Reflection {
     init(from reflector: Reflector) throws {
         identity = try reflector.descendant("identity")
@@ -182,7 +169,6 @@ extension DisplayList.Item: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension DisplayList.Item.Value: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
