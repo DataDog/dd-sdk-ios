@@ -116,7 +116,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         timer?.cancel()
     }
 
-    /// Per-process CPU as a percentage (0–100+), summed across all app threads.
+    /// Per-process CPU as a percentage of total device capacity (0–100), summed across all app threads
+    /// and normalized by `activeProcessorCount`.
     /// Separated into a static so it can be called from the init closure without capturing self.
     private static func processCPU() -> Double? {
         #if os(watchOS)
@@ -156,7 +157,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             }
             total += Double(info.cpu_usage) / Double(TH_USAGE_SCALE) * 100.0
         }
-        return min(total, 100.0)
+        let coreCount = max(ProcessInfo.processInfo.activeProcessorCount, 1)
+        return min(max(total / Double(coreCount), 0.0), 100.0)
         #endif
     }
 

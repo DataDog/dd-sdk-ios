@@ -3934,7 +3934,8 @@ public final class objc_RUMTimeseriesType: NSObject
     public static let memory = objc_RUMTimeseriesType(.memory)
     public static let cpu = objc_RUMTimeseriesType(.cpu)
 public final class objc_RUMTimeseriesConfiguration: NSObject
-    public init(collectTypes: [objc_RUMTimeseriesType]?)
+    public init(collectTypes: [objc_RUMTimeseriesType])
+    public static let `default` = objc_RUMTimeseriesConfiguration(collectTypes: [.memory, .cpu])
 public class objc_OperationOptions: NSObject
 public final class objc_ProfilingOptions: objc_OperationOptions
     public init(sampleRate: Float)
