@@ -6,7 +6,6 @@
 
 import SwiftUI
 
-@available(iOS 13, tvOS 13,*)
 extension Color {
     /// Datadog purple.
     static var datadogPurple: Color {
@@ -30,7 +29,6 @@ extension Color {
     }
 }
 
-@available(iOS 13, tvOS 13,*)
 internal struct DatadogButtonStyle: ButtonStyle {
     func makeBody(configuration: DatadogButtonStyle.Configuration) -> some View {
         return configuration.label
