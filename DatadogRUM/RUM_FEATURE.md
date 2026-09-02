@@ -275,17 +275,17 @@ Event mappers allow modifying or dropping events before upload:
 
 ### Timeseries Collection (Experimental)
 - `RUM.Configuration.timeseries` — gated behind `@_spi(Experimental)`; not an init parameter, must be set on the configuration instance before calling `RUM.enable(with:)`. Default: `nil` (disabled).
-- Set it to `RUM.Configuration.Timeseries(collectTypes:)`, or to the built-in `.defaultTimeseries`, to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
+- Set it to `RUM.Configuration.Timeseries(collectTypes:)`, or to the built-in `.default`, to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
   ```swift
   @_spi(Experimental) import DatadogRUM
 
   var rumConfig = RUM.Configuration(applicationID: "<rum_application_id>")
-  rumConfig.timeseries = .defaultTimeseries // memory + cpu
+  rumConfig.timeseries = .default // memory + cpu
   // or, to pick specific types explicitly:
   // rumConfig.timeseries = RUM.Configuration.Timeseries(collectTypes: [.memory])
   RUM.enable(with: rumConfig)
   ```
-- `collectTypes: nil` (e.g. `RUM.Configuration.Timeseries()`) collects nothing — there is no implicit "collect everything" default. Use `RUM.Configuration.Timeseries.defaultTimeseries` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
+- `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
 

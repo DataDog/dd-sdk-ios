@@ -215,12 +215,12 @@ class DDRUMConfigurationTests: XCTestCase {
         XCTAssertNil(swift.vitalsUpdateFrequency)
     }
 
-func testTimeseriesConfigurationWithAllTypes() {
-    objc.setTimeseriesConfiguration(.init(collectTypes: nil))
+    func testTimeseriesConfigurationWithDefaultTypes() {
+        objc.setTimeseriesConfiguration(.default)
 
-    XCTAssertNotNil(swift.timeseries)
-    XCTAssertNil(swift.timeseries?.collectTypes)
-}
+        XCTAssertNotNil(swift.timeseries)
+        XCTAssertEqual(swift.timeseries?.collectTypes, [.memory, .cpu])
+    }
 
     func testTimeseriesConfigurationWithMemoryType() {
         objc.setTimeseriesConfiguration(.init(collectTypes: [.memory]))
