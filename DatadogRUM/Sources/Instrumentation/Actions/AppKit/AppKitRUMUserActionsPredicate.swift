@@ -76,6 +76,11 @@ public protocol MacOSRUMActionsPredicate {
 
     /// The predicate deciding if the RUM Action should be recorded for the given menu item selected by the user.
     ///
+    /// - Remark: Calling `NSMenu.performActionForItem(at:)` will record an action since there isn't a
+    /// reliable way of telling apart between user-triggered and programatic menu item interaction. If your application
+    /// makes use of this function, you can consider either calling the menu item action directly, or using a custom
+    /// predicate that returns `nil` from this function for programmatically triggered menu interactions.
+    ///
     /// - Parameter targetMenuItem: A `NSMenuItem` selected by the user.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction?
@@ -177,6 +182,13 @@ public struct DefaultMacOSRUMActionsPredicate {
     private func baseName(for view: DDView) -> String {
         let baseName = NSStringFromClass(type(of: view))
 
+        // Some SwiftUI components are AppKit under the hood,
+        // but need to clean up tangled SwiftUI name
+        // e.g., _TtCV7SwiftUIP33_D74FE142C3C5A6C2CEA4987A69AEBD7522SystemSegmentedControl18NSSegmentedControl
+        if view.isSwiftUIView {
+            return view.swiftUIViewName
+        }
+
         guard let button = view as? NSButton else {
             return baseName
         }
@@ -201,7 +213,7 @@ public struct DefaultMacOSRUMActionsPredicate {
                 return "\(baseName) [radio]"
             }
             if role == .disclosureTriangle {
-                return "\(baseName) [disclosure]"
+                return "\(baseName) [disclosure]"
             }
         }
 
@@ -210,10 +222,10 @@ public struct DefaultMacOSRUMActionsPredicate {
         // `.roundedDisclosure` → `.pushDisclosure`); the legacy names still resolve.
         let bezel = button.bezelStyle
         if bezel == .helpButton {
-            return "\(baseName) [help]"
+            return "\(baseName) [help]"
         }
         if bezel == .roundedDisclosure {
-            return "\(baseName) [disclosure]"
+            return "\(baseName) [disclosure]"
         }
 
         // Normal push button: regular, recessed, inline, gradient, textured, …
