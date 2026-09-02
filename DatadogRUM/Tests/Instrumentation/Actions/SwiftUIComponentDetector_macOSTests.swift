@@ -35,65 +35,79 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
 
         for role in supportedRoles {
             let element = MockAccessibilityElement(role: role)
-            let predicate = RecordingSwiftUIRUMActionsPredicate()
+            let predicate = AppKitRUMActionsPredicateMock(
+                result: RUMAction(name: "action", attributes: [:])
+            )
             let (detector, event, _) = makeDetectorInput(hitTestResult: element)
 
             // When
-            let command = detector.createActionCommand(
+            let result = detector.createActionCommand(
                 from: event,
                 predicate: predicate,
                 dateProvider: dateProvider
             )
 
             // Then
-            XCTAssertNotNil(command, "Expected \(role.rawValue) to produce an action")
-            XCTAssertEqual(predicate.receivedComponentNames, [role.rawValue])
+            guard case .command = result else {
+                XCTFail("Expected \(role.rawValue) to produce an action")
+                continue
+            }
+            XCTAssertEqual(predicate.receivedAccessibilityRoles, [role])
+            XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, [nil])
         }
     }
 
-    func testGivenAccessibilityIdentifier_itIncludesIdentifierInComponentName() {
+    func testGivenAccessibilityIdentifier_itPassesIdentifierToPredicate() {
         // Given
         let element = MockAccessibilityElement(role: .button, identifier: "Save")
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
 
         // When
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXButton (Save)"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, ["Save"])
     }
 
-    func testGivenNoAccessibilityIdentifier_itUsesRoleAsComponentName() {
+    func testGivenNoAccessibilityIdentifier_itPassesIdentifierToPredicate() {
         for identifier in [nil, ""] as [String?] {
             // Given
             let element = MockAccessibilityElement(role: .button, identifier: identifier)
-            let predicate = RecordingSwiftUIRUMActionsPredicate()
+            let predicate = AppKitRUMActionsPredicateMock(
+                result: RUMAction(name: "action", attributes: [:])
+            )
             let (detector, event, _) = makeDetectorInput(hitTestResult: element)
 
             // When
             _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
             // Then
-            XCTAssertEqual(predicate.receivedComponentNames, ["AXButton"])
+            XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+            XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, [identifier])
         }
     }
 
     func testGivenPredicateAction_itCreatesCommandWithExpectedMetadata() throws {
         // Given
         let attributes: [AttributeKey: AttributeValue] = ["key": "value"]
-        let predicate = RecordingSwiftUIRUMActionsPredicate(
-            action: RUMAction(name: "custom-action", attributes: attributes)
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "custom-action", attributes: attributes)
         )
         let element = MockAccessibilityElement(role: .button)
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
 
         // When
-        let command = try XCTUnwrap(
-            detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
-        )
+        let result = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
+        guard case .command(let command) = result else {
+            XCTFail("Expected an action command")
+            return
+        }
         XCTAssertEqual(command.name, "custom-action")
         XCTAssertEqual(command.actionType, .click)
         XCTAssertEqual(command.instrumentation, .swiftuiAutomatic)
@@ -101,73 +115,101 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         DDAssertDictionariesEqual(command.attributes, attributes)
     }
 
-    func testGivenNilOrRejectingPredicate_itDoesNotCreateActionCommand() {
+    func testGivenNoPredicate_itReturnsNoDecision() {
         // Given
         let element = MockAccessibilityElement(role: .button)
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
-        let rejectingPredicate = RecordingSwiftUIRUMActionsPredicate(action: nil)
 
         // When
-        let commandWithoutPredicate = detector.createActionCommand(
+        let result = detector.createActionCommand(
             from: event,
             predicate: nil,
             dateProvider: dateProvider
         )
-        let commandRejectedByPredicate = detector.createActionCommand(
+
+        // Then
+        guard case .noDecision = result else {
+            XCTFail("Expected no decision without a predicate")
+            return
+        }
+    }
+
+    func testGivenRejectingPredicate_itReturnsIgnore() {
+        // Given
+        let element = MockAccessibilityElement(role: .button)
+        let (detector, event, _) = makeDetectorInput(hitTestResult: element)
+        let rejectingPredicate = AppKitRUMActionsPredicateMock(result: nil)
+
+        // When
+        let result = detector.createActionCommand(
             from: event,
             predicate: rejectingPredicate,
             dateProvider: dateProvider
         )
 
         // Then
-        XCTAssertNil(commandWithoutPredicate)
-        XCTAssertNil(commandRejectedByPredicate)
+        guard case .ignore = result else {
+            XCTFail("Expected an explicit rejection from the predicate")
+            return
+        }
     }
 
     func testGivenUninterestingElementWithInterestingParent_itUsesParentAsTarget() {
         // Given
         let parent = MockAccessibilityElement(role: .button, identifier: "Parent")
         let child = MockAccessibilityElement(role: .group, parent: parent)
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: child)
 
         // When
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXButton (Parent)"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, ["Parent"])
     }
 
     func testGivenElementWithoutRole_itCanUseInterestingParentAsTarget() {
         // Given
         let parent = MockAccessibilityElement(role: .checkBox)
         let child = MockAccessibilityElement(role: nil, parent: parent)
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: child)
 
         // When
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXCheckBox"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.checkBox])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, [nil])
     }
 
-    func testGivenNoInterestingElementInHierarchy_itDoesNotCreateActionCommand() {
+    func testGivenNoInterestingElementInHierarchy_itReturnsNoDecision() {
         // Given
         let element = MockAccessibilityElement(role: .group)
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: element)
 
         // When
-        let command = detector.createActionCommand(
+        let result = detector.createActionCommand(
             from: event,
             predicate: predicate,
             dateProvider: dateProvider
         )
 
         // Then
-        XCTAssertNil(command)
-        XCTAssertTrue(predicate.receivedComponentNames.isEmpty)
+        guard case .noDecision = result else {
+            XCTFail("Expected no decision without an interesting accessibility element")
+            return
+        }
+        XCTAssertTrue(predicate.receivedAccessibilityRoles.isEmpty)
+        XCTAssertTrue(predicate.receivedAccessibilityIdentifiers.isEmpty)
     }
 
     func testGivenNestedHostingScrollViews_itHitTestsLazyNodesAndUsesDescendant() {
@@ -183,7 +225,9 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             role: .scrollArea,
             children: [outerLazyNode]
         )
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, window) = makeDetectorInput(hitTestResult: outerScrollView)
         let expectedScreenPoint = window.convertPoint(toScreen: event.locationInWindow)
 
@@ -191,7 +235,8 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXButton (Nested)"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, ["Nested"])
         XCTAssertEqual(window.receivedHitTestPoints, [expectedScreenPoint])
         XCTAssertEqual(outerLazyNode.receivedHitTestPoints, [expectedScreenPoint])
         XCTAssertEqual(innerLazyNode.receivedHitTestPoints, [expectedScreenPoint])
@@ -205,14 +250,17 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             parent: parent,
             children: []
         )
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: scrollView)
 
         // When
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXOutline (List)"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.outline])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, ["List"])
     }
 
     func testGivenHostingScrollViewHitTestReturnsItself_itDoesNotLoop() {
@@ -225,39 +273,51 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
             children: [lazyNode]
         )
         lazyNode.hitTestResult = scrollView
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let (detector, event, _) = makeDetectorInput(hitTestResult: scrollView)
 
         // When
         _ = detector.createActionCommand(from: event, predicate: predicate, dateProvider: dateProvider)
 
         // Then
-        XCTAssertEqual(predicate.receivedComponentNames, ["AXButton"])
+        XCTAssertEqual(predicate.receivedAccessibilityRoles, [.button])
+        XCTAssertEqual(predicate.receivedAccessibilityIdentifiers, [nil])
         XCTAssertEqual(lazyNode.receivedHitTestPoints.count, 1)
     }
 
-    func testGivenMissingEventContext_itDoesNotCreateActionCommand() {
+    func testGivenMissingEventContext_itReturnsNoDecision() {
         // Given
         let detector = MacOSSwiftUIComponentDetector()
-        let predicate = RecordingSwiftUIRUMActionsPredicate()
+        let predicate = AppKitRUMActionsPredicateMock(
+            result: RUMAction(name: "action", attributes: [:])
+        )
         let windowWithoutHitTestResult = MockNSWindow(hitTestResult: nil)
 
         // When
-        let commandWithoutWindow = detector.createActionCommand(
+        let resultWithoutWindow = detector.createActionCommand(
             from: MockNSEvent(window: nil),
             predicate: predicate,
             dateProvider: dateProvider
         )
-        let commandWithoutHitTestResult = detector.createActionCommand(
+        let resultWithoutHitTestResult = detector.createActionCommand(
             from: MockNSEvent(window: windowWithoutHitTestResult),
             predicate: predicate,
             dateProvider: dateProvider
         )
 
         // Then
-        XCTAssertNil(commandWithoutWindow)
-        XCTAssertNil(commandWithoutHitTestResult)
-        XCTAssertTrue(predicate.receivedComponentNames.isEmpty)
+        guard case .noDecision = resultWithoutWindow else {
+            XCTFail("Expected no decision without a window")
+            return
+        }
+        guard case .noDecision = resultWithoutHitTestResult else {
+            XCTFail("Expected no decision when accessibility hit testing fails")
+            return
+        }
+        XCTAssertTrue(predicate.receivedAccessibilityRoles.isEmpty)
+        XCTAssertTrue(predicate.receivedAccessibilityIdentifiers.isEmpty)
     }
 
     private func makeDetectorInput(
@@ -270,20 +330,6 @@ class MacOSSwiftUIComponentDetectorTests: XCTestCase {
 }
 
 // MARK: - Test Mocks
-
-private final class RecordingSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
-    private let action: RUMAction?
-    private(set) var receivedComponentNames: [String] = []
-
-    init(action: RUMAction? = RUMAction(name: "action", attributes: [:])) {
-        self.action = action
-    }
-
-    func rumAction(with componentName: String) -> RUMAction? {
-        receivedComponentNames.append(componentName)
-        return action
-    }
-}
 
 private final class MockNSEvent: NSEvent {
     private let mockWindow: NSWindow?

@@ -26,7 +26,9 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertNil(config.uiKitActionsPredicate)
         #endif
         XCTAssertNil(config.swiftUIViewsPredicate)
+        #if !os(macOS)
         XCTAssertNil(config.swiftUIActionsPredicate)
+        #endif
         XCTAssertTrue(config.trackMemoryWarnings)
         #endif
         XCTAssertNil(config.urlSessionTracking)

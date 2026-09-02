@@ -40,13 +40,12 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     ///   - appKitPredicate: Predicate deciding if a RUM action should be recorded for a given event on an AppKit view.
     ///   - swiftUIPredicate: Predicate deciding if a RUM action should be recorded for a given event on an SwiftUI view.
     ///   - swiftUIDetector: SwiftUI component detector, used by SwiftUI action tracking.
+    @MainActor
     convenience init(
         dateProvider: DateProvider,
-        appKitPredicate: AppKitRUMActionsPredicate?,
-        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: SwiftUIComponentDetector?
+        appKitPredicate: AppKitRUMActionsPredicate?
     ) {
-        guard appKitPredicate != nil || swiftUIPredicate != nil else {
+        guard let appKitPredicate else {
             self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
             return
         }
@@ -56,8 +55,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             eventCommandsFactory: AppKitCommandFactory(
                 dateProvider: dateProvider,
                 appKitPredicate: appKitPredicate,
-                swiftUIPredicate: swiftUIPredicate,
-                swiftUIDetector: swiftUIDetector
+                swiftUIDetector: MacOSSwiftUIComponentDetector()
             )
         )
     }

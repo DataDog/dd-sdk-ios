@@ -41,6 +41,7 @@ public class objc_DefaultSwiftUIRUMViewsPredicate: NSObject, objc_SwiftUIRUMView
 
 // MARK: - SwiftUI Actions Predicate Bridge
 
+#if !os(macOS)
 internal struct SwiftUIRUMActionsPredicateBridge: SwiftUIRUMActionsPredicate {
     let objcPredicate: objc_SwiftUIRUMActionsPredicate
 
@@ -63,19 +64,11 @@ public protocol objc_SwiftUIRUMActionsPredicate: AnyObject {
 public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate {
     private let swiftPredicate: DefaultSwiftUIRUMActionsPredicate
 
-    #if os(macOS)
-    @objc(init)
-    override public init() {
-        swiftPredicate = DefaultSwiftUIRUMActionsPredicate()
-        super.init()
-    }
-    #else
     @objc(initWithIsLegacyDetectionEnabled:)
     public init(isLegacyDetectionEnabled: Bool) {
         swiftPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: isLegacyDetectionEnabled)
         super.init()
     }
-    #endif
 
     public func rumAction(with componentName: String) -> objc_RUMAction? {
         swiftPredicate.rumAction(with: componentName).map {
@@ -83,4 +76,5 @@ public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMAc
         }
     }
 }
+#endif
 #endif

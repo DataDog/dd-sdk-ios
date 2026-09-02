@@ -1608,22 +1608,34 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
 public class AppKitRUMActionsPredicateMock: AppKitRUMActionsPredicate {
     public var resultByView: [NSView: RUMAction] = [:]
     public var resultByMenuItem: [NSMenuItem: RUMAction] = [:]
+    public var resultByAccessibilityRole: [NSAccessibility.Role: RUMAction] = [:]
     public var result: RUMAction?
+    public private(set) var receivedViews: [NSView] = []
+    public private(set) var receivedAccessibilityRoles: [NSAccessibility.Role] = []
+    public private(set) var receivedAccessibilityIdentifiers: [String?] = []
 
     public init(result: RUMAction? = nil) {
         self.result = result
     }
 
     public func rumAction(targetView: NSView) -> RUMAction? {
+        receivedViews.append(targetView)
         return resultByView[targetView] ?? result
     }
 
     public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
         return resultByMenuItem[targetMenuItem] ?? result
     }
+
+    public func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction? {
+        receivedAccessibilityRoles.append(accessibilityRole)
+        receivedAccessibilityIdentifiers.append(identifier)
+        return resultByAccessibilityRole[accessibilityRole] ?? result
+    }
 }
 #endif
 
+#if !os(macOS)
 public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
     var returnAction: RUMAction?
 
@@ -1635,6 +1647,7 @@ public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
         return returnAction
     }
 }
+#endif
 
 public class RUMActionsHandlerMock: RUMActionsHandling {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
@@ -2091,6 +2104,7 @@ public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
     }
 }
 
+#if !os(macOS)
 public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
     public var resultByName: [String: RUMAction] = [:]
     public var result: RUMAction?
@@ -2103,4 +2117,5 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
         return resultByName[componentName] ?? result
     }
 }
+#endif
 #endif
