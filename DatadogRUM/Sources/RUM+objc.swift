@@ -44,10 +44,10 @@ public class objc_DefaultAppKitRUMViewsPredicate: NSObject, objc_AppKitRUMViewsP
     }
 }
 
-@objc(DDDefaultAppKitRUMActionsPredicate)
+@objc(DDDefaultMacOSRUMActionsPredicate)
 @objcMembers
 @_spi(objc)
-public class objc_DefaultAppKitRUMActionsPredicate: NSObject, objc_MacOSRUMActionsPredicate {
+public class objc_DefaultMacOSRUMActionsPredicate: NSObject, objc_MacOSRUMActionsPredicate {
     let swiftPredicate = DefaultMacOSRUMActionsPredicate()
     public func rumAction(targetView: NSView) -> objc_RUMAction? {
         swiftPredicate.rumAction(targetView: targetView).map {
@@ -736,7 +736,7 @@ public class objc_RUMConfiguration: NSObject {
     #endif
 
     #if os(macOS)
-    public var appKitActionsPredicate: objc_MacOSRUMActionsPredicate? {
+    public var macOSActionsPredicate: objc_MacOSRUMActionsPredicate? {
         set { swiftConfig.macOSActionsPredicate = newValue.map { MacOSRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.macOSActionsPredicate as? MacOSRUMActionsPredicateBridge)?.objcPredicate as? objc_MacOSRUMActionsPredicate  }
     }

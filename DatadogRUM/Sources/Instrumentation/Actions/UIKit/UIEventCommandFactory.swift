@@ -27,14 +27,14 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     let heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
     let uiKitPredicate: UITouchRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
-    let swiftUIDetector: AccessibilityHierarchyDetector?
+    let swiftUIDetector: SwiftUIComponentDetector?
 
     init(
         dateProvider: DateProvider,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: AccessibilityHierarchyDetector?
+        swiftUIDetector: SwiftUIComponentDetector?
     ) {
         self.dateProvider = dateProvider
         self.heatmapIdentifierRegistry = heatmapIdentifierRegistry

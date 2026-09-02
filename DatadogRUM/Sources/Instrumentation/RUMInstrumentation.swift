@@ -132,7 +132,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }()
 
         // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
-        // and only activate `UIApplicationSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured
+        // and only activate instrumentation if automatic instrumentation for UIKit or SwiftUI is configured
         let actionsHandler: RUMActionsHandling = {
             #if os(tvOS)
             return RUMActionsHandler(
@@ -142,7 +142,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #elseif os(macOS)
             return RUMActionsHandler(
                 dateProvider: dateProvider,
-                appKitPredicate: predicates.rumActionsPredicate
+                macOSPredicate: predicates.rumActionsPredicate
             )
             #else
             return RUMActionsHandler(
@@ -155,7 +155,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             #endif
         }()
 
-        let uiApplicationSwizzler: DDApplicationInstrumentation? = {
+        let applicationInstrumentation: DDApplicationInstrumentation? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
                 if predicates.shouldEnableActionsInstrumentation {
@@ -201,7 +201,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewsHandler = viewsHandler
         self.actionsHandler = actionsHandler
         self.viewControllerSwizzler = viewControllerSwizzler
-        self.applicationInstrumentation = uiApplicationSwizzler
+        self.applicationInstrumentation = applicationInstrumentation
         #if !os(tvOS) && !os(macOS)
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler

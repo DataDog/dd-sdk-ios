@@ -81,14 +81,15 @@ extension RUM {
 
         /// The predicate for automatically tracking `NSEvents` as RUM actions.
         ///
-        /// RUM will query this predicate for each `NSView` and `NSMenuItem` that the user interacts with. The predicate
-        /// implementation should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
+        /// RUM will query this predicate for `NSView`s, `AccessibilityElement`s and `NSMenuItem` that the user interacts with.
+        /// The predicate implementation should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
         /// Touch events on the keyboard are ignored for privacy reasons.
         ///
-        /// You can use `DefaultAppKitRUMActionsPredicate` or create your own predicate by
-        /// implementing `AppKitRUMActionsPredicate`.
+        /// Read the documentation of ``MacOSRUMActionsPredicate`` for more details.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default.
+        /// You can use `DefaultMacOSRUMActionsPredicate` or create your own predicate by implementing `MacOSRUMActionsPredicate`.
+        ///
+        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
         public var macOSActionsPredicate: MacOSRUMActionsPredicate?
         #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
