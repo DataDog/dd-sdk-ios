@@ -117,8 +117,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     /// Per-process CPU as a percentage of total device capacity (0–100), summed across all app threads
-    /// and normalized by `activeProcessorCount`, so multi-threaded work is represented correctly without
-    /// artificial clamping to a single core.
+    /// and normalized by `activeProcessorCount`.
     /// Separated into a static so it can be called from the init closure without capturing self.
     private static func processCPU() -> Double? {
         #if os(watchOS)
