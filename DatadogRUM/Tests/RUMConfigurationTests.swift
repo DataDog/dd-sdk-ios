@@ -20,7 +20,7 @@ class RUMConfigurationTests: XCTestCase {
         #if !os(watchOS)
         #if os(macOS)
         XCTAssertNil(config.appKitViewsPredicate)
-        XCTAssertNil(config.appKitActionsPredicate)
+        XCTAssertNil(config.macOSActionsPredicate)
         #else
         XCTAssertNil(config.uiKitViewsPredicate)
         XCTAssertNil(config.uiKitActionsPredicate)

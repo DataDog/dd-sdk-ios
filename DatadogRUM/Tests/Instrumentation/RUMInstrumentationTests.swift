@@ -378,7 +378,7 @@ class RUMInstrumentationTests: XCTestCase {
             featureScope: NOPFeatureScope(),
             predicates: makePredicates(
                 rumViewsPredicate: UIKitRUMViewsPredicateMock(),
-                rumActionsPredicate: AppKitRUMActionsPredicateMock(),
+                rumActionsPredicate: MacOSRUMActionsPredicateMock(),
                 swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicateMock()
             ),
             longTaskThreshold: 0.5,

@@ -30,17 +30,17 @@ internal protocol AppKitEventCommandFactory {
 /// Handles both AppKit and SwiftUI components using different detection strategies.
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     let dateProvider: DateProvider
-    let appKitPredicate: AppKitRUMActionsPredicate
-    let swiftUIDetector: SwiftUIComponentDetector
+    let macOSPredicate: MacOSRUMActionsPredicate
+    let accessibilityHierarchyDetector: AccessibilityHierarchyDetector
 
     init(
         dateProvider: DateProvider,
-        appKitPredicate: AppKitRUMActionsPredicate,
-        swiftUIDetector: SwiftUIComponentDetector
+        macOSPredicate: MacOSRUMActionsPredicate,
+        accessibilityHierarchyDetector: AccessibilityHierarchyDetector
     ) {
         self.dateProvider = dateProvider
-        self.appKitPredicate = appKitPredicate
-        self.swiftUIDetector = swiftUIDetector
+        self.macOSPredicate = macOSPredicate
+        self.accessibilityHierarchyDetector = accessibilityHierarchyDetector
     }
 
     func command(from event: NSEvent) -> RUMAddUserActionCommand? {
@@ -61,7 +61,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             // either in a fully native SwiftUI window, or a NSHostingView in an AppKit window,
             // but not inside an AppKit container (like a NSTableRowView or NSCollectionView) that
             // would otherwise be detected by `createAppKitActionCommand`.
-            switch swiftUIDetector.createActionCommand(from: event, predicate: appKitPredicate, dateProvider: dateProvider) {
+            switch accessibilityHierarchyDetector.createActionCommand(from: event, predicate: macOSPredicate, dateProvider: dateProvider) {
             case .command(let command): return command
             case .ignore, .noDecision:  return nil
             }
@@ -98,7 +98,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         ///
         /// If the associated view is `nil`, it usually means the container is not an interactive element. In
         /// this case, the code should follow the same path as the `.appKit` case.
-        case trySwiftUIWithFallbackTo(NSView?)
+        case tryAccessibilityHierarchyWithFallbackTo(NSView?)
 
         /// Obtains the view from either case above.
         ///
@@ -107,7 +107,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         /// we are interested in.
         var view: NSView? {
             switch self {
-            case .appKit(let view), .trySwiftUIWithFallbackTo(let view): view
+            case .appKit(let view), .tryAccessibilityHierarchyWithFallbackTo(let view): view
             }
         }
     }
@@ -137,19 +137,19 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
 
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
 
-        // If the best target is determined to be a possible SwiftUI view, `swiftUIDetector`
-        // is called to obtain an actin from the SwiftUI hierarchy.
+        // If the best target is determined to be a possible SwiftUI view, `accessibilityHierarchyDetector`
+        // is called to obtain an action from the SwiftUI hierarchy.
         //
         // The reason it's important to do it here instead of falling back to the
-        // `swiftUIDetector.createActionCommand(…)` call in `AppKitCommandFactory.command(from:)`
-        // is we may have a fallback container view, present in the `.trySwiftUIFallback` associated
-        // value. This happens in situations like a SwiftUI Table that, on macOS, is implemented
+        // `accessibilityHierarchyDetector.createActionCommand(…)` call in `AppKitCommandFactory.command(from:)`
+        // is we may have a fallback container view, present in the `.tryAccessibilityHierarchyWithFallbackTo`
+        // associated value. This happens in situations like a SwiftUI Table that, on macOS, is implemented
         // by a NSTableView, with SwiftUI views inside cells. If there is no interesting SwiftUI
         // view to be used as target, we fallback to the container view. If we just returned `nil`
-        // and relied on `swiftUIDetector.createActionCommand(…)`, the container view context would
-        // be lost and no action would be returned.
-        if case .trySwiftUIWithFallbackTo(let fallback) = bestTarget {
-            switch swiftUIDetector.createActionCommand(from: event, predicate: appKitPredicate, dateProvider: dateProvider) {
+        // and relied on `accessibilityHierarchyDetector.createActionCommand(…)`, the container view
+        // context would be lost and no action would be returned.
+        if case .tryAccessibilityHierarchyWithFallbackTo(let fallback) = bestTarget {
+            switch accessibilityHierarchyDetector.createActionCommand(from: event, predicate: macOSPredicate, dateProvider: dateProvider) {
             case .command(let command):
                 return .command(command)
             case .ignore:
@@ -157,9 +157,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             case .noDecision:
                 if fallback == nil {
                     // If bestTarget result was to try SwiftUI without any fallback view,
-                    // if the swiftUIDetector fails to generate an action here we know it's
-                    // not going to generate one in command(from:). So we avoid the second
-                    // call there by returning .ignore.
+                    // if the accessibilityHierarchyDetector fails to generate an action
+                    // here we know it's not going to generate one in command(from:). So
+                    // we avoid the second call there by returning .ignore.
                     return .ignore
                 }
             }
@@ -169,7 +169,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return .tryAccessibility
         }
 
-        guard let action = appKitPredicate.rumAction(targetView: targetView) else {
+        guard let action = macOSPredicate.rumAction(targetView: targetView) else {
             return .ignore
         }
 
@@ -196,7 +196,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil // no valid menu item
         }
 
-        guard let action = appKitPredicate.rumAction(targetMenuItem: menuItem) else {
+        guard let action = macOSPredicate.rumAction(targetMenuItem: menuItem) else {
             return nil
         }
 
@@ -301,7 +301,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
                 result = bestParent
             }
 
-            return isSwiftUIContainerView ? .trySwiftUIWithFallbackTo(result) : .appKit(result)
+            return isSwiftUIContainerView ? .tryAccessibilityHierarchyWithFallbackTo(result) : .appKit(result)
         }
     }
 

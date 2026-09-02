@@ -269,7 +269,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             featureScope: featureScope,
             predicates: .init(
                 rumViewsPredicate: configuration.appKitViewsPredicate,
-                rumActionsPredicate: configuration.appKitActionsPredicate,
+                rumActionsPredicate: configuration.macOSActionsPredicate,
                 swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate
             ),
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],

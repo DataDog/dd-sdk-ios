@@ -37,12 +37,13 @@
 		09ACCD2D303607FA00DEBDF3 /* SwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD2B303607FA00DEBDF3 /* SwiftUIComponentDetector.swift */; };
 		09ACCD2E303607FA00DEBDF3 /* LegacySwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD29303607FA00DEBDF3 /* LegacySwiftUIComponentDetector.swift */; };
 		09ACCD2F303607FA00DEBDF3 /* ModernSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD2A303607FA00DEBDF3 /* ModernSwiftUIComponentDetector.swift */; };
-		09ACCD333036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD313036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift */; };
-		09ACCD343036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD303036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift */; };
+		09ACCD333036080100DEBDF3 /* AccessibilityHierarchyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD313036080100DEBDF3 /* AccessibilityHierarchyDetector.swift */; };
+		09ACCD343036080100DEBDF3 /* MacOSAccessibilityHierarchyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ACCD303036080100DEBDF3 /* MacOSAccessibilityHierarchyDetector.swift */; };
 		09B4B1DC2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */; };
 		09C2D45430063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */; };
 		09C638563046E7AF00874FA6 /* AccessibilityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */; };
 		09C6386B30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C6386A30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift */; };
+		09C6386D30484BB200874FA6 /* CommonExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C6386C30484BB200874FA6 /* CommonExtensions.swift */; };
 		09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */; };
 		09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */; };
 		09E5009E30333743003E67A6 /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E5009D30333743003E67A6 /* DDPlatformTypes.swift */; };
@@ -1951,12 +1952,13 @@
 		09ACCD29303607FA00DEBDF3 /* LegacySwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySwiftUIComponentDetector.swift; sourceTree = "<group>"; };
 		09ACCD2A303607FA00DEBDF3 /* ModernSwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModernSwiftUIComponentDetector.swift; sourceTree = "<group>"; };
 		09ACCD2B303607FA00DEBDF3 /* SwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIComponentDetector.swift; sourceTree = "<group>"; };
-		09ACCD303036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSSwiftUIComponentDetector.swift; sourceTree = "<group>"; };
-		09ACCD313036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIComponentDetector_macOS.swift; sourceTree = "<group>"; };
+		09ACCD303036080100DEBDF3 /* MacOSAccessibilityHierarchyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSAccessibilityHierarchyDetector.swift; sourceTree = "<group>"; };
+		09ACCD313036080100DEBDF3 /* AccessibilityHierarchyDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHierarchyDetector.swift; sourceTree = "<group>"; };
 		09B4B1DB2F9BA09D0089438B /* DistributedTracingSampleRateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistributedTracingSampleRateProvider.swift; sourceTree = "<group>"; };
 		09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSApplicationStateProvider.swift; sourceTree = "<group>"; };
 		09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUtilities.swift; sourceTree = "<group>"; };
 		09C6386A30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate.swift; sourceTree = "<group>"; };
+		09C6386C30484BB200874FA6 /* CommonExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonExtensions.swift; sourceTree = "<group>"; };
 		09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09E5009D30333743003E67A6 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
@@ -3577,8 +3579,8 @@
 		09ACCD323036080100DEBDF3 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
-				09ACCD303036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift */,
-				09ACCD313036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift */,
+				09ACCD303036080100DEBDF3 /* MacOSAccessibilityHierarchyDetector.swift */,
+				09ACCD313036080100DEBDF3 /* AccessibilityHierarchyDetector.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -6992,6 +6994,7 @@
 				095858D22FDABBB6005BBEAC /* AppKitExtensions.swift */,
 				615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */,
 				D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */,
+				09C6386C30484BB200874FA6 /* CommonExtensions.swift */,
 				611529A425E3DD51004F740E /* ValuePublisher.swift */,
 			);
 			path = Utils;
@@ -9581,8 +9584,8 @@
 				09C638563046E7AF00874FA6 /* AccessibilityUtilities.swift in Sources */,
 				11F55FD92DCE183500DE4944 /* RUMDataModels+objc.swift in Sources */,
 				D29A9F7C29DD85BB005C54A4 /* RUMEventBuilder.swift in Sources */,
-				09ACCD333036080100DEBDF3 /* SwiftUIComponentDetector_macOS.swift in Sources */,
-				09ACCD343036080100DEBDF3 /* MacOSSwiftUIComponentDetector.swift in Sources */,
+				09ACCD333036080100DEBDF3 /* AccessibilityHierarchyDetector.swift in Sources */,
+				09ACCD343036080100DEBDF3 /* MacOSAccessibilityHierarchyDetector.swift in Sources */,
 				118ACA3C2EEED247004E7F20 /* AppLaunchMetricController.swift in Sources */,
 				118ACA3D2EEED247004E7F20 /* AppLaunchMetric.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
@@ -9635,6 +9638,7 @@
 				968A6CA02FBF2EBD00B87826 /* DDForwardingProxyBase.m in Sources */,
 				D29A9F8229DD85BB005C54A4 /* UIKitRUMUserActionsPredicate.swift in Sources */,
 				3C5CD8CD2C3ECB9400B12303 /* MemoryWarningReporter.swift in Sources */,
+				09C6386D30484BB200874FA6 /* CommonExtensions.swift in Sources */,
 				D29A9F8E29DD8665005C54A4 /* SwiftUIExtensions.swift in Sources */,
 				3CFF4F942C09E63C006F191D /* WatchdogTerminationChecker.swift in Sources */,
 				D29A9F7829DD85BB005C54A4 /* RUMDataModelsMapping.swift in Sources */,

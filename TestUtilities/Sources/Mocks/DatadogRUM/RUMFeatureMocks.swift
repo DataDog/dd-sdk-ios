@@ -155,7 +155,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
         appKitViewsPredicate: DDKitRUMViewsPredicate? = DefaultAppKitRUMViewsPredicate(),
-        appKitActionsPredicate: DDKitRUMActionsPredicate? = DefaultAppKitRUMActionsPredicate(),
+        macOSActionsPredicate: DDKitRUMActionsPredicate? = DefaultMacOSRUMActionsPredicate(),
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = .mockAny(),
@@ -182,7 +182,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             applicationID: applicationID,
             sessionSampleRate: sessionSampleRate,
             appKitViewsPredicate: appKitViewsPredicate,
-            appKitActionsPredicate: appKitActionsPredicate,
+            macOSActionsPredicate: macOSActionsPredicate,
             swiftUIViewsPredicate: swiftUIViewsPredicate,
             urlSessionTracking: urlSessionTracking,
             trackFrustrations: trackFrustrations,
@@ -1601,7 +1601,7 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
     }
 }
 #else
-public class AppKitRUMActionsPredicateMock: AppKitRUMActionsPredicate {
+public class MacOSRUMActionsPredicateMock: MacOSRUMActionsPredicate {
     public var resultByView: [NSView: RUMAction] = [:]
     public var resultByMenuItem: [NSMenuItem: RUMAction] = [:]
     public var resultByAccessibilityRole: [NSAccessibility.Role: RUMAction] = [:]

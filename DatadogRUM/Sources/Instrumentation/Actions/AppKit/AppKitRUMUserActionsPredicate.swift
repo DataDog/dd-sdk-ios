@@ -61,7 +61,7 @@ import DatadogInternal
 /// The predicate has the opportunity to generate a `RUMAction` with a custom name and attributes for each of
 /// the methods described above. If you want to omit a certain action from instrumentation (for privacy or other reasons),
 /// simply return `nil` from the method.
-public protocol AppKitRUMActionsPredicate {
+public protocol MacOSRUMActionsPredicate {
     /// The predicate deciding if the RUM Action should be recorded for a `.leftMouseDown` event on the given view.
     ///
     /// - Parameter targetView: an instance of the `NSView` which received the action.
@@ -84,7 +84,7 @@ public protocol AppKitRUMActionsPredicate {
 
 /// Default implementation of `AppKitRUMActionsPredicate`.
 /// It names  RUM Actions by the `accessibilityIdentifier` or `className` otherwise.
-public struct DefaultAppKitRUMActionsPredicate {
+public struct DefaultMacOSRUMActionsPredicate {
     /// Name of the internal AppKit class used for the windows' zoom button.
     ///
     /// This is the green button of the usual "traffic-light" buttons on the left side of a window title bar.
@@ -223,7 +223,7 @@ public struct DefaultAppKitRUMActionsPredicate {
 }
 
 // MARK: DefaultAppKitRUMActionsPredicate
-extension DefaultAppKitRUMActionsPredicate: AppKitRUMActionsPredicate {
+extension DefaultMacOSRUMActionsPredicate: MacOSRUMActionsPredicate {
     public func rumAction(targetView: NSView) -> RUMAction? {
         return RUMAction(
             name: targetName(for: targetView),
