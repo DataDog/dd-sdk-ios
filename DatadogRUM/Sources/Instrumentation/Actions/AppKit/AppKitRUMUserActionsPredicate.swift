@@ -82,7 +82,7 @@ public protocol MacOSRUMActionsPredicate {
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction?
 }
 
-/// Default implementation of `AppKitRUMActionsPredicate`.
+/// Default implementation of `MacOSRUMActionsPredicate`.
 /// It names  RUM Actions by the `accessibilityIdentifier` or `className` otherwise.
 public struct DefaultMacOSRUMActionsPredicate {
     /// Name of the internal AppKit class used for the windows' zoom button.
@@ -222,7 +222,7 @@ public struct DefaultMacOSRUMActionsPredicate {
     }
 }
 
-// MARK: DefaultAppKitRUMActionsPredicate
+// MARK: DefaultMacOSRUMActionsPredicate
 extension DefaultMacOSRUMActionsPredicate: MacOSRUMActionsPredicate {
     public func rumAction(targetView: NSView) -> RUMAction? {
         return RUMAction(

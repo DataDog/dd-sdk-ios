@@ -390,7 +390,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     // MARK: - SwiftUI Actions
 
-    func testGivenAppKitPredicate_whenAppKitDetectsAction_itDoesNotUseAccessibilityHierarchyDetector() throws {
+    func testGivenMacOSPredicate_whenAppKitDetectsAction_itDoesNotUseAccessibilityHierarchyDetector() throws {
         // Given
         let window = makeWindow()
         window.contentView?.addSubview(NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40)))
@@ -406,7 +406,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertEqual(detector.receivedEvents.count, 0)
     }
 
-    func testGivenAppKitPredicate_whenAppKitDoesNotDetectAction_itUsesAccessibilityHierarchyDetector() throws {
+    func testGivenMacOSPredicate_whenAppKitDoesNotDetectAction_itUsesAccessibilityHierarchyDetector() throws {
         // Given
         let expectedCommand = RUMAddUserActionCommand.mockSwiftUIAutomatic()
         let detector = AccessibilityHierarchyDetectorMock(result: .command(expectedCommand))
@@ -430,7 +430,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertIdentical(detector.receivedEvents[0], event)
     }
 
-    func testGivenAppKitPredicateRejectsView_whenAccessibilityPredicateWouldAccept_itDoesNotEvaluateAccessibilityPredicate() throws {
+    func testGivenMacOSPredicateRejectsView_whenAccessibilityPredicateWouldAccept_itDoesNotEvaluateAccessibilityPredicate() throws {
         // Given
         let window = makeWindow()
         let button = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
@@ -454,7 +454,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertTrue(detector.receivedEvents.isEmpty)
     }
 
-    func testGivenAccessibilityPredicateRejectsElement_whenAppKitPredicateWouldAcceptFallback_itDoesNotEvaluateAppKitPredicate() {
+    func testGivenAccessibilityPredicateRejectsElement_whenMacOSPredicateWouldAcceptFallback_itDoesNotEvaluateMacOSPredicate() {
         // Given
         let window = makeWindow()
         let button = HitTestingButton(frame: .init(x: 20, y: 20, width: 100, height: 40))

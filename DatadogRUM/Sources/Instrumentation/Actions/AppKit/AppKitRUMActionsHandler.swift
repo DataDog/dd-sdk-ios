@@ -32,18 +32,17 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 
     /// Initializes the `RUMActionsHandler`.
     ///
-    /// For automatic action tracking, `appKitPredicate` and/or `swiftUIPredicate` must be not `nil`.
-    /// If both values are `nil`, only manual tracking is supported.
+    /// For automatic action tracking, `macOSPredicate` must be not `nil`. Otherwise, only manual tracking is supported.
     ///
     /// - Parameters:
     ///   - dateProvider: The date provider used to timestamp the events.
-    ///   - appKitPredicate: Predicate deciding if a RUM action should be recorded for a given event on an AppKit view.
+    ///   - macOSPredicate: Predicate deciding if a RUM action should be recorded for a given event on a view.
     @MainActor
     convenience init(
         dateProvider: DateProvider,
-        appKitPredicate: MacOSRUMActionsPredicate?
+        macOSPredicate: MacOSRUMActionsPredicate?
     ) {
-        guard let appKitPredicate else {
+        guard let macOSPredicate else {
             self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
             return
         }
@@ -52,7 +51,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             dateProvider: dateProvider,
             eventCommandsFactory: AppKitCommandFactory(
                 dateProvider: dateProvider,
-                macOSPredicate: appKitPredicate,
+                macOSPredicate: macOSPredicate,
                 accessibilityHierarchyDetector: MacOSAccessibilityHierarchyDetector()
             )
         )

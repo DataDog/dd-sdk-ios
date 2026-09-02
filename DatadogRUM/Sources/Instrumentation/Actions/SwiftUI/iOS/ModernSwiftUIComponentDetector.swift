@@ -11,7 +11,7 @@ import UIKit
 import DatadogInternal
 
 @available(iOS 18.0, tvOS 18.0, visionOS 2.0, *)
-internal final class ModernSwiftUIComponentDetector: AccessibilityHierarchyDetector {
+internal final class ModernSwiftUIComponentDetector: SwiftUIComponentDetector {
     /// Storage for pending touches that began but haven't ended yet
     private var pendingSwiftUIActions = [ObjectIdentifier: PendingAction]()
     private static let stalePendingActionTimeout: TimeInterval = 5.0 // 5-sec timeout

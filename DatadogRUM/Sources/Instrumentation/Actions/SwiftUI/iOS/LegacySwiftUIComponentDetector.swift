@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import DatadogInternal
 
-internal final class LegacySwiftUIComponentDetector: AccessibilityHierarchyDetector {
+internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
     func createActionCommand(
         from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,

@@ -83,11 +83,10 @@ internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetec
     ///
     /// - Parameters:
     ///   - event: The event triggered by a user action.
-    ///   - predicate: Predicate indicating if SwiftUI actions should be recorded.
+    ///   - predicate: Predicate indicating if actions should be recorded.
     ///   - dateProvider: Provides dates for RUM events.
     ///
-    /// - Returns: The command resulting from the given event, or `nil` if no action should be recorded for
-    /// this event.
+    /// - Returns: An instance of `AccessibilityCommandResult`.
     func createActionCommand(from event: NSEvent, predicate: (any MacOSRUMActionsPredicate)?, dateProvider: any DatadogInternal.DateProvider) -> AccessibilityCommandResult {
         guard
             let predicate,

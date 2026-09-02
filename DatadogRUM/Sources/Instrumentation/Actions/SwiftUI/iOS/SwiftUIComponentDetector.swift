@@ -38,7 +38,7 @@ internal enum SwiftUIComponentNames {
  * - May have some false positives:
  * a `Button` can't be differentiated from a `Label`, therefore we report both interactions
  */
-internal protocol AccessibilityHierarchyDetector {
+internal protocol SwiftUIComponentDetector {
     /// Processes a touch and creates a RUM action command if appropriate
     /// - Parameters:
     ///   - touch: The `UITouch` to process
@@ -55,7 +55,7 @@ internal protocol AccessibilityHierarchyDetector {
 internal enum SwiftUIComponentFactory {
     /// Factory that creates the appropriate SwiftUI detector based on platform and version.
     /// Modern detection is only available on iOS 18+ and tvOS 18+.
-    static func createDetector() -> AccessibilityHierarchyDetector {
+    static func createDetector() -> SwiftUIComponentDetector {
         if #available(iOS 18.0, tvOS 18.0, visionOS 2.0, *) {
             return ModernSwiftUIComponentDetector()
         }

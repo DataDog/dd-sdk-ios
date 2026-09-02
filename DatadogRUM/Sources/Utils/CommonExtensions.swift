@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(watchOS)
+
 #if os(macOS)
 import AppKit
 #else
@@ -24,3 +26,5 @@ extension DDView: TypeDescribing {
         return String(describing: type(of: self))
     }
 }
+
+#endif
