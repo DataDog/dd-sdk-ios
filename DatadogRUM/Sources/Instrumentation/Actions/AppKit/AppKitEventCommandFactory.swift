@@ -29,18 +29,21 @@ internal protocol AppKitEventCommandFactory {
 /// macOS-specific implementation that detects user interactions through touches.
 /// Handles both AppKit and SwiftUI components using different detection strategies.
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
+    typealias AccessibilityHierarchyDetectorCreator = () -> AccessibilityHierarchyDetector
+
     let dateProvider: DateProvider
     let macOSPredicate: MacOSRUMActionsPredicate
-    let accessibilityHierarchyDetector: AccessibilityHierarchyDetector
+    let accessibilityHierarchyDetectorCreator: AccessibilityHierarchyDetectorCreator
+    private(set) lazy var accessibilityHierarchyDetector = accessibilityHierarchyDetectorCreator()
 
     init(
         dateProvider: DateProvider,
         macOSPredicate: MacOSRUMActionsPredicate,
-        accessibilityHierarchyDetector: AccessibilityHierarchyDetector
+        accessibilityHierarchyDetectorCreator: @escaping AccessibilityHierarchyDetectorCreator
     ) {
         self.dateProvider = dateProvider
         self.macOSPredicate = macOSPredicate
-        self.accessibilityHierarchyDetector = accessibilityHierarchyDetector
+        self.accessibilityHierarchyDetectorCreator = accessibilityHierarchyDetectorCreator
     }
 
     func command(from event: NSEvent) -> RUMAddUserActionCommand? {

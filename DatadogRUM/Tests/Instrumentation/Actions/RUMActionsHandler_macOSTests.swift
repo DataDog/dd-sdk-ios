@@ -25,7 +25,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             AppKitCommandFactory(
                 dateProvider: dateProvider,
                 macOSPredicate: $0,
-                accessibilityHierarchyDetector: accessibilityHierarchyDetector
+                accessibilityHierarchyDetectorCreator: { accessibilityHierarchyDetector }
             )
         }
         let handler = RUMActionsHandler(
