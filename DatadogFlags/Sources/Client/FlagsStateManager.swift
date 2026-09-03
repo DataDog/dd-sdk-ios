@@ -57,6 +57,16 @@ internal final class FlagsStateManager: FlagsStateObservable {
     }
 
     func updateState(_ newState: FlagsClientState) {
+        updateStateDeferringNotification(newState)()
+    }
+
+    /// Publishes `newState` and returns a closure that notifies its listeners.
+    ///
+    /// A caller holding its own lock must invoke the returned closure only after unlocking.
+    /// Listeners are customer code and may re-enter the SDK.
+    func updateStateDeferringNotification(
+        _ newState: FlagsClientState
+    ) -> () -> Void {
         // Capture listeners under lock, then notify outside lock to prevent deadlock.
         var listenersToNotify: [WeakListener] = []
 
@@ -68,8 +78,10 @@ internal final class FlagsStateManager: FlagsStateObservable {
             listenersToNotify = state.listeners
         }
 
-        for weakListener in listenersToNotify {
-            weakListener.value?.flagsStateDidChange(newState)
+        return {
+            for weakListener in listenersToNotify {
+                weakListener.value?.flagsStateDidChange(newState)
+            }
         }
     }
 

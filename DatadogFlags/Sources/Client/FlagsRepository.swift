@@ -185,13 +185,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 let requestGeneration = self.requestGeneration
                 let hadFlags = self.flagsData != nil
                 let cachedContext = self.flagsData?.context
+                let notifyListeners = self.stateManager
+                    .updateStateDeferringNotification(.reconciling)
                 return (
                     generation: requestGeneration,
                     hadFlags: hadFlags,
-                    cachedContext: cachedContext
+                    cachedContext: cachedContext,
+                    notifyListeners: notifyListeners
                 )
             }
-            self.stateManager.updateState(.reconciling)
+            request.notifyListeners()
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 guard let self else {
@@ -201,44 +204,42 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
                 switch result {
                 case .success(let flags):
-                    let isCurrentRequest = self.withRequestLock { () -> Bool in
+                    let notifyListeners = self.withRequestLock { () -> (() -> Void)? in
                         guard self.requestGeneration == request.generation else {
-                            return false
+                            return nil
                         }
                         self.flagsData = .init(
                             flags: flags,
                             context: context,
                             date: self.dateProvider.now
                         )
-                        return true
-                    }
-                    if isCurrentRequest {
                         self.writeState()
-                        self.stateManager.updateState(.ready)
+                        return self.stateManager
+                            .updateStateDeferringNotification(.ready)
                     }
+                    notifyListeners?()
                     completion(.success(()))
                 case .failure(let error):
-                    let stateToPublish = self.withRequestLock { () -> FlagsClientState? in
+                    let notifyListeners = self.withRequestLock { () -> (() -> Void)? in
                         guard self.requestGeneration == request.generation else {
                             return nil
                         }
                         // Only use cached flags if they match the requested context to avoid
                         // serving flags from a different user/context.
-                        if request.hadFlags && request.cachedContext == context {
-                            return .stale
-                        } else {
+                        guard request.hadFlags && request.cachedContext == context else {
                             // Clear cached data to prevent cross-context flag leakage.
                             // Without this, flagAssignment() could return the previous
                             // user's flags while in .error state.
                             self.flagsData = nil
-                            return .error
+                            return self.stateManager
+                                .updateStateDeferringNotification(.error)
                         }
+                        return self.stateManager
+                            .updateStateDeferringNotification(.stale)
                     }
                     // State must be updated before calling completion —
                     // dd-openfeature-provider-swift checks currentState in the callback.
-                    if let stateToPublish {
-                        self.stateManager.updateState(stateToPublish)
-                    }
+                    notifyListeners?()
                     completion(.failure(error))
                 }
             }
@@ -250,10 +251,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        withRequestLock {
+        let notifyListeners = withRequestLock { () -> () -> Void in
             requestGeneration &+= 1
             flagsData = nil
+            return stateManager.updateStateDeferringNotification(.notReady)
         }
-        stateManager.updateState(.notReady)
+        notifyListeners()
     }
 }
