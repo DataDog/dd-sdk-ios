@@ -406,6 +406,9 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Both requests should be in-flight
         XCTAssertEqual(capturedCompletions.count, 2)
+        guard capturedCompletions.count == 2 else {
+            return XCTFail("Expected two in-flight requests")
+        }
 
         // When — request B completes successfully first (writes flags)
         capturedCompletions[1].completion(.success(flagsForB))
@@ -423,6 +426,70 @@ final class FlagsRepositoryTests: XCTestCase {
             "Request B's flags should not be cleared by request A's failure"
         )
         XCTAssertEqual(flagsRepository.context, contextB, "Context should be from request B")
+    }
+
+    func testOverlappingContextUpdatesLaterSuccessIsNotOverwrittenByEarlierSuccess() {
+        var capturedCompletions: [(
+            context: FlagsEvaluationContext,
+            completion: (Result<[String: FlagAssignment], FlagsError>) -> Void
+        )] = []
+        let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
+            capturedCompletions.append((context, completion))
+        }
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completedA = expectation(description: "request A completed")
+        let completedB = expectation(description: "request B completed")
+
+        flagsRepository.setEvaluationContext(contextA) { _ in completedA.fulfill() }
+        flagsRepository.setEvaluationContext(contextB) { _ in completedB.fulfill() }
+
+        guard capturedCompletions.count == 2 else {
+            return XCTFail("Expected two in-flight requests")
+        }
+        capturedCompletions[1].completion(.success(["new": .mockAny()]))
+        capturedCompletions[0].completion(.success(["old": .mockAny()]))
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "new"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old"))
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testResetSupersedesInflightContextUpdate() {
+        var capturedCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                capturedCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "request completed")
+        var capturedResult: Result<Void, FlagsError>?
+
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+        flagsRepository.reset()
+        capturedCompletion?(.success(["old": .mockAny()]))
+
+        waitForExpectations(timeout: 1)
+        XCTAssertNoThrow(try capturedResult?.get())
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old"))
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        featureScope.dataStore.flush()
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
     }
 
     // MARK: - State-Before-Completion Ordering

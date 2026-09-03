@@ -41,10 +41,9 @@ internal final class FlagsRepository {
     @ReadWriteLock
     private var flagsData: FlagsData?
 
-    /// Version counter for `flagsData`. Incremented on every write to detect
-    /// when a newer request has succeeded while an older request was in-flight.
-    @ReadWriteLock
-    private var flagsDataVersion: UInt64 = 0
+    /// Serializes request generations and the state changes that they protect.
+    private let requestLock = NSRecursiveLock()
+    private var requestGeneration: UInt64 = 0
 
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
@@ -76,6 +75,7 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
+        let generationAtStart = withRequestLock { requestGeneration }
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
             guard let self else {
                 // Signal even if self is nil to unblock any waiting getters
@@ -84,7 +84,12 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            self.withRequestLock {
+                guard self.requestGeneration == generationAtStart else {
+                    return
+                }
+                self.flagsData = data
+            }
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -138,6 +143,12 @@ internal final class FlagsRepository {
         }
         featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
     }
+
+    private func withRequestLock<Result>(_ operation: () throws -> Result) rethrows -> Result {
+        requestLock.lock()
+        defer { requestLock.unlock() }
+        return try operation()
+    }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
@@ -169,47 +180,58 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 return
             }
 
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
-            let versionAtStart = self.flagsDataVersion
-            self.stateManager.updateState(.reconciling)
+            let request = self.withRequestLock {
+                self.requestGeneration &+= 1
+                let requestGeneration = self.requestGeneration
+                let hadFlags = self.flagsData != nil
+                let cachedContext = self.flagsData?.context
+                self.stateManager.updateState(.reconciling)
+                return (
+                    generation: requestGeneration,
+                    hadFlags: hadFlags,
+                    cachedContext: cachedContext
+                )
+            }
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+                guard let self else {
+                    completion(.failure(.clientNotInitialized))
+                    return
+                }
+
                 switch result {
                 case .success(let flags):
-                    guard let self else {
-                        completion(.failure(.clientNotInitialized))
-                        return
+                    self.withRequestLock {
+                        guard self.requestGeneration == request.generation else {
+                            return
+                        }
+                        self.flagsData = .init(
+                            flags: flags,
+                            context: context,
+                            date: self.dateProvider.now
+                        )
+                        self.writeState()
+                        self.stateManager.updateState(.ready)
                     }
-                    self.flagsData = .init(
-                        flags: flags,
-                        context: context,
-                        date: self.dateProvider.now
-                    )
-                    self._flagsDataVersion.mutate { $0 += 1 }
-                    self.writeState()
-                    self.stateManager.updateState(.ready)
                     completion(.success(()))
                 case .failure(let error):
-                    // Only update state if no newer request has succeeded.
-                    // This prevents an older failing request from clearing data
-                    // written by a newer successful request.
-                    guard self?.flagsDataVersion == versionAtStart else {
-                        completion(.failure(error))
-                        return
-                    }
-                    // State must be updated before calling completion —
-                    // dd-openfeature-provider-swift checks currentState in the callback.
-                    // Only use cached flags if they match the requested context to avoid
-                    // serving flags from a different user/context.
-                    if hadFlags && cachedContext == context {
-                        self?.stateManager.updateState(.stale)
-                    } else {
-                        // Clear cached data to prevent cross-context flag leakage.
-                        // Without this, flagAssignment() could return the previous
-                        // user's flags while in .error state.
-                        self?.flagsData = nil
-                        self?.stateManager.updateState(.error)
+                    self.withRequestLock {
+                        guard self.requestGeneration == request.generation else {
+                            return
+                        }
+                        // State must be updated before calling completion —
+                        // dd-openfeature-provider-swift checks currentState in the callback.
+                        // Only use cached flags if they match the requested context to avoid
+                        // serving flags from a different user/context.
+                        if request.hadFlags && request.cachedContext == context {
+                            self.stateManager.updateState(.stale)
+                        } else {
+                            // Clear cached data to prevent cross-context flag leakage.
+                            // Without this, flagAssignment() could return the previous
+                            // user's flags while in .error state.
+                            self.flagsData = nil
+                            self.stateManager.updateState(.error)
+                        }
                     }
                     completion(.failure(error))
                 }
@@ -221,8 +243,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // Clear disk first, then memory, then update state.
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.
-        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        flagsData = nil
-        stateManager.updateState(.notReady)
+        withRequestLock {
+            requestGeneration &+= 1
+            featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            flagsData = nil
+            stateManager.updateState(.notReady)
+        }
     }
 }

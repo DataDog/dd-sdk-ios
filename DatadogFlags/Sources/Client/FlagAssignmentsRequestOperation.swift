@@ -12,7 +12,7 @@ import DatadogInternal
 
 internal typealias FlagAssignmentsFetchResponse = Flags.AssignmentRequestFetch.Response
 
-internal typealias FlagAssignmentsFetch = (
+internal typealias FlagAssignmentsFetch = @Sendable (
     URLRequest,
     @escaping Flags.AssignmentRequestFetch.Completion
 ) -> Flags.AssignmentRequestFetch.Cancellation
@@ -397,7 +397,8 @@ internal final class FlagAssignmentsRequestOperation: @unchecked Sendable {
         URLError.cannotConnectToHost.rawValue,
         URLError.dnsLookupFailed.rawValue,
         URLError.networkConnectionLost.rawValue,
-        URLError.notConnectedToInternet.rawValue
+        URLError.notConnectedToInternet.rawValue,
+        URLError.badServerResponse.rawValue
     ]
 
     private static func retryAfterDelay(
@@ -451,7 +452,10 @@ internal final class FlagAssignmentsRequestOperation: @unchecked Sendable {
     }
 
     internal static let fullJitter: FlagAssignmentsJitter = { maximum in
-        Double.random(in: 0..<maximum)
+        guard maximum > 0, maximum.isFinite else {
+            return 0
+        }
+        return Double.random(in: 0..<maximum)
     }
 
     internal static let currentDate: FlagAssignmentsNow = {

@@ -63,6 +63,9 @@ final class AssignmentRequestFetchTests: XCTestCase {
         XCTAssertEqual(retryScheduler.activeDelays, [0])
         retryScheduler.runNext()
         XCTAssertEqual(capturedRequests.value.count, 2)
+        guard capturedRequests.value.count == 2, fetchCompletions.value.count == 2 else {
+            return XCTFail("Expected two attempts")
+        }
         XCTAssertEqual(capturedRequests.value[0].url, request.url)
         XCTAssertEqual(capturedRequests.value[1].url, request.url)
         XCTAssertEqual(timeoutScheduler.activeDelays, [1])
@@ -175,20 +178,13 @@ final class AssignmentRequestFetchTests: XCTestCase {
         XCTAssertTrue(scheduler.activeDelays.isEmpty)
     }
 
-    func testRetryDecoratorCapsRetryCount() {
+    func testRetryDecoratorSchedulesNoRetryBeyondTheMaximumRetryCount() {
         let scheduler = ManualScheduler()
         let fetchCount = ThreadSafeBox(0)
         let capturedResult = ThreadSafeBox<Result<FlagAssignmentsFetchResponse, Error>?>(nil)
         let base = Flags.AssignmentRequestFetch { _, completion in
-            let attempt = fetchCount.mutate { count -> Int in
-                count += 1
-                return count
-            }
-            if attempt <= FlagAssignmentsRequestOperation.maximumRetryCount {
-                completion(.failure(URLError(.networkConnectionLost)))
-            } else {
-                completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
-            }
+            fetchCount.mutate { $0 += 1 }
+            completion(.failure(URLError(.networkConnectionLost)))
             return {}
         }
         let fetch = base.withRetry(.max, schedule: scheduler.schedule, jitter: { _ in 0 }, now: { Date() })
@@ -199,7 +195,8 @@ final class AssignmentRequestFetchTests: XCTestCase {
         }
 
         XCTAssertEqual(fetchCount.value, FlagAssignmentsRequestOperation.maximumRetryCount + 1)
-        XCTAssertFlagAssignmentsSuccess(capturedResult.value)
+        XCTAssertTrue(scheduler.activeDelays.isEmpty)
+        XCTAssertFlagAssignmentsURLFailure(capturedResult.value, code: .networkConnectionLost)
     }
 
     func testNegativeRetryDecoratorDoesNotRetry() {

@@ -112,7 +112,7 @@ extension Flags {
             }
         }
 
-        /// Wraps this transport with a timeout for each request.
+        /// Wraps this transport with a timeout.
         ///
         /// The timeout covers receipt of the complete response body. A value of `0` disables this timer.
         /// Negative and non-finite values leave the transport unchanged. Values above the
@@ -134,8 +134,9 @@ extension Flags {
         /// Transient URL transport failures, timeouts, HTTP `408`, and HTTP `5xx` responses are retried
         /// with randomized exponential backoff capped at 30 seconds. For HTTP `503`, a valid
         /// `Retry-After` value up to 30 seconds is a minimum delay before the backoff. A response
-        /// that requests a longer delay is not retried. Cancellation, permanent URL failures,
-        /// HTTP `429`, and other HTTP responses are not retried.
+        /// that requests a longer delay is not retried. The SDK deliberately honors `Retry-After`
+        /// only for HTTP `503`. Cancellation, permanent URL failures, HTTP `429`, and other HTTP
+        /// responses are not retried.
         ///
         /// Composition order is significant. `transport.withTimeout(t).withRetry(n)` gives each attempt
         /// a fresh timeout. `transport.withRetry(n).withTimeout(t)` gives the complete retry sequence one

@@ -82,9 +82,11 @@ public enum Flags {
         /// Default: `nil` (use the SDK transport and scalar timeout/retry settings).
         public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
 
-        /// The timeout for each request that retrieves precomputed flag assignments.
+        /// The timeout for each attempt that retrieves precomputed flag assignments.
         ///
         /// The timeout includes downloading the complete response body. Set to `0` to disable this SDK timeout.
+        /// With retries, the maximum total timeout is `(assignmentRequestRetryCount + 1)` times this value.
+        /// Retry backoff and valid HTTP `503` `Retry-After` delays add to this total.
         /// It does not apply to loading cached assignments or sending exposure and evaluation data.
         /// Ignored when `assignmentRequestFetch` is set.
         /// Values are limited to the range `0...2_147_483.647` seconds.
@@ -97,9 +99,10 @@ public enum Flags {
         /// This is the number of retries after the initial request. The SDK retries transient URL transport
         /// errors, timeouts, HTTP `408`, and HTTP `5xx` responses with randomized exponential backoff capped
         /// at 30 seconds. For HTTP `503`, a valid `Retry-After` value up to 30 seconds is a minimum delay
-        /// before the backoff. A response that requests a longer delay is not retried. Cancellation,
-        /// permanent URL failures, and HTTP `429` responses are not retried. Ignored when
-        /// `assignmentRequestFetch` is set. Values are limited to the range `0...10`.
+        /// before the backoff. A response that requests a longer delay is not retried. The SDK deliberately
+        /// honors `Retry-After` only for HTTP `503`. Cancellation, permanent URL failures, and HTTP `429`
+        /// responses are not retried. Ignored when `assignmentRequestFetch` is set. Values are limited to
+        /// the range `0...10`.
         ///
         /// Default: `0` retries (one initial request only).
         public var assignmentRequestRetryCount: Int

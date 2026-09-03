@@ -37,11 +37,13 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         XCTAssertEqual(capturedRequests.value.count, 1)
         XCTAssertEqual(scheduler.activeDelays, [0.05])
         scheduler.runNext()
-        XCTAssertEqual(capturedRequests.value.count, 2)
+        guard capturedRequests.value.count == 2 else {
+            return XCTFail("Expected a second attempt. Got \(capturedRequests.value.count)")
+        }
         XCTAssertEqual(capturedRequests.value[0].url, capturedRequests.value[1].url)
         XCTAssertEqual(capturedRequests.value[0].allHTTPHeaderFields, capturedRequests.value[1].allHTTPHeaderFields)
         XCTAssertEqual(capturedRequests.value[0].httpBody, capturedRequests.value[1].httpBody)
-        XCTAssertFlagAssignmentsSuccess(capturedResult.value)
+        XCTAssertFlagAssignmentsHTTPStatus(capturedResult.value, statusCode: 200)
     }
 
     func testRetriesTransientHTTPStatusesAfterBackoff() {
@@ -69,7 +71,11 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
             XCTAssertEqual(scheduler.activeDelays, [0.04], "status: \(statusCode)")
             scheduler.runNext()
             XCTAssertEqual(fetchCount.value, 2, "status: \(statusCode)")
-            XCTAssertFlagAssignmentsSuccess(capturedResult.value, message: "status: \(statusCode)")
+            XCTAssertFlagAssignmentsHTTPStatus(
+                capturedResult.value,
+                statusCode: 200,
+                message: "status: \(statusCode)"
+            )
         }
     }
 
@@ -107,7 +113,8 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
             .cannotConnectToHost,
             .dnsLookupFailed,
             .networkConnectionLost,
-            .notConnectedToInternet
+            .notConnectedToInternet,
+            .badServerResponse
         ]
 
         for code in retryableCodes {
@@ -137,7 +144,11 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
             scheduler.runNext()
 
             XCTAssertEqual(fetchCount.value, 2, "error: \(code)")
-            XCTAssertFlagAssignmentsSuccess(capturedResult.value, message: "error: \(code)")
+            XCTAssertFlagAssignmentsHTTPStatus(
+                capturedResult.value,
+                statusCode: 200,
+                message: "error: \(code)"
+            )
         }
     }
 
@@ -156,6 +167,7 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         for error in nonRetryableErrors {
             let scheduler = ManualScheduler()
             let fetchCount = ThreadSafeBox(0)
+            let capturedResult = ThreadSafeBox<Result<FlagAssignmentsFetchResponse, Error>?>(nil)
             let operation = makeOperation(
                 retryCount: 10,
                 fetch: { _, completion in
@@ -166,10 +178,64 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
                 schedule: scheduler.schedule
             )
 
-            operation.start { _ in }
+            operation.start { capturedResult.value = $0 }
 
             XCTAssertEqual(fetchCount.value, 1, "error: \(error)")
             XCTAssertTrue(scheduler.scheduledDelays.isEmpty, "error: \(error)")
+            guard case .failure(let capturedError) = capturedResult.value else {
+                return XCTFail("Expected the transport failure to be delivered. error: \(error)")
+            }
+            XCTAssertEqual(capturedError as NSError, error as NSError, "error: \(error)")
+        }
+    }
+
+    func testInvalidJitterFallsBackToADelayInsideTheBackoffWindow() {
+        let inputs: [(TimeInterval, TimeInterval)] = [
+            (.nan, 0),
+            (-.infinity, 0),
+            (.infinity, 0),
+            (-1, 0),
+            (.greatestFiniteMagnitude, 0.1)
+        ]
+
+        for (proposedJitter, expectedDelay) in inputs {
+            let scheduler = ManualScheduler()
+            let fetchCount = ThreadSafeBox(0)
+            let capturedResult = ThreadSafeBox<Result<FlagAssignmentsFetchResponse, Error>?>(nil)
+            let operation = makeOperation(
+                retryCount: 1,
+                fetch: { _, completion in
+                    let attempt = fetchCount.mutate { count -> Int in
+                        count += 1
+                        return count
+                    }
+                    if attempt == 1 {
+                        completion(.failure(URLError(.networkConnectionLost)))
+                    } else {
+                        completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+                    }
+                    return {}
+                },
+                schedule: scheduler.schedule,
+                jitter: { _ in proposedJitter }
+            )
+
+            operation.start { capturedResult.value = $0 }
+
+            XCTAssertEqual(scheduler.activeDelays, [expectedDelay], "jitter: \(proposedJitter)")
+            scheduler.runNext()
+            XCTAssertEqual(fetchCount.value, 2, "jitter: \(proposedJitter)")
+            XCTAssertFlagAssignmentsHTTPStatus(
+                capturedResult.value,
+                statusCode: 200,
+                message: "jitter: \(proposedJitter)"
+            )
+        }
+    }
+
+    func testFullJitterReturnsZeroForInvalidMaximum() {
+        for maximum in [0, -1, .nan, .infinity, -.infinity] as [TimeInterval] {
+            XCTAssertEqual(FlagAssignmentsRequestOperation.fullJitter(maximum), 0)
         }
     }
 
@@ -330,6 +396,9 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         scheduler.runNext()
         XCTAssertEqual(fetchCompletions.value.count, 2)
         XCTAssertEqual(scheduler.activeDelays, [1])
+        guard fetchCompletions.value.count == 2 else {
+            return XCTFail("Expected a second attempt. Got \(fetchCompletions.value.count)")
+        }
 
         fetchCompletions.value[0](.failure(URLError(.cancelled)))
         XCTAssertEqual(completionCount.value, 0)
@@ -386,6 +455,149 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         XCTAssertEqual(cancellationCount.value, 2)
     }
 
+    func testCancellationDuringBackoffGapCancelsThePendingRetry() {
+        let scheduler = ManualScheduler()
+        let fetchCount = ThreadSafeBox(0)
+        let completionCount = ThreadSafeBox(0)
+        let operation = makeOperation(
+            retryCount: 1,
+            fetch: { _, completion in
+                fetchCount.mutate { $0 += 1 }
+                completion(.failure(URLError(.networkConnectionLost)))
+                return {}
+            },
+            schedule: scheduler.schedule,
+            jitter: { _ in 0.05 }
+        )
+
+        let cancel = operation.start { _ in completionCount.mutate { $0 += 1 } }
+
+        XCTAssertEqual(fetchCount.value, 1)
+        XCTAssertEqual(scheduler.activeDelays, [0.05])
+        cancel()
+
+        XCTAssertTrue(scheduler.activeDelays.isEmpty)
+        XCTAssertEqual(fetchCount.value, 1)
+        XCTAssertEqual(completionCount.value, 0)
+    }
+
+    func testFiredRetryTimerDoesNotStartAnAttemptAfterCancellation() {
+        let scheduledRetry = ThreadSafeBox<(@Sendable () -> Void)?>(nil)
+        let fetchCount = ThreadSafeBox(0)
+        let completionCount = ThreadSafeBox(0)
+        let operation = makeOperation(
+            retryCount: 1,
+            fetch: { _, completion in
+                fetchCount.mutate { $0 += 1 }
+                completion(.failure(URLError(.networkConnectionLost)))
+                return {}
+            },
+            schedule: { _, work in
+                scheduledRetry.value = work
+                return {}
+            },
+            jitter: { _ in 0 }
+        )
+
+        let cancel = operation.start { _ in completionCount.mutate { $0 += 1 } }
+        cancel()
+        scheduledRetry.value?()
+
+        XCTAssertEqual(fetchCount.value, 1)
+        XCTAssertEqual(completionCount.value, 0)
+    }
+
+    func testRetryTimerCreatedDuringCancellationIsCancelledImmediately() {
+        let fetchCompletion = ThreadSafeBox<Flags.AssignmentRequestFetch.Completion?>(nil)
+        let cancelOperation = ThreadSafeBox<Flags.AssignmentRequestFetch.Cancellation?>(nil)
+        let retryTimerCancellationCount = ThreadSafeBox(0)
+        let scheduledRetry = ThreadSafeBox<(@Sendable () -> Void)?>(nil)
+        let fetchCount = ThreadSafeBox(0)
+        let operation = makeOperation(
+            retryCount: 1,
+            fetch: { _, completion in
+                fetchCount.mutate { $0 += 1 }
+                fetchCompletion.value = completion
+                return {}
+            },
+            schedule: { _, work in
+                scheduledRetry.value = work
+                cancelOperation.value?()
+                return { retryTimerCancellationCount.mutate { $0 += 1 } }
+            },
+            jitter: { _ in 0 }
+        )
+
+        cancelOperation.value = operation.start { _ in }
+        fetchCompletion.value?(.failure(URLError(.networkConnectionLost)))
+
+        XCTAssertEqual(retryTimerCancellationCount.value, 1)
+        scheduledRetry.value?()
+        XCTAssertEqual(fetchCount.value, 1)
+    }
+
+    func testAlreadyConsumedRetryTimerDoesNotStartAnExtraAttempt() {
+        let scheduledRetries = ThreadSafeBox<[@Sendable () -> Void]>([])
+        let fetchCount = ThreadSafeBox(0)
+        let operation = makeOperation(
+            retryCount: 5,
+            fetch: { _, completion in
+                fetchCount.mutate { $0 += 1 }
+                completion(.failure(URLError(.networkConnectionLost)))
+                return {}
+            },
+            schedule: { _, work in
+                scheduledRetries.mutate { $0.append(work) }
+                return {}
+            },
+            jitter: { _ in 0 }
+        )
+
+        operation.start { _ in }
+        XCTAssertEqual(fetchCount.value, 1)
+        XCTAssertEqual(scheduledRetries.value.count, 1)
+        guard let firstRetry = scheduledRetries.value.first else {
+            return XCTFail("Expected the first retry timer")
+        }
+
+        firstRetry()
+        XCTAssertEqual(fetchCount.value, 2)
+        XCTAssertEqual(scheduledRetries.value.count, 2)
+
+        firstRetry()
+
+        XCTAssertEqual(fetchCount.value, 2)
+        XCTAssertEqual(scheduledRetries.value.count, 2)
+    }
+
+    func testCompletionQueueDeliversTheResultOffTheCallingThread() {
+        let completionQueue = DispatchQueue(label: "com.datadoghq.flags.test-assignment-request-completion")
+        let completionQueueKey = DispatchSpecificKey<Void>()
+        completionQueue.setSpecific(key: completionQueueKey, value: ())
+        let releaseCompletionQueue = DispatchSemaphore(value: 0)
+        completionQueue.async { _ = releaseCompletionQueue.wait(timeout: .now() + 5) }
+        let deliveredOnCompletionQueue = ThreadSafeBox<Bool?>(nil)
+        let delivered = expectation(description: "completion delivered")
+        let operation = makeOperation(
+            retryCount: 0,
+            fetch: { _, completion in
+                completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+                return {}
+            },
+            completionQueue: completionQueue
+        )
+
+        operation.start { _ in
+            deliveredOnCompletionQueue.value = DispatchQueue.getSpecific(key: completionQueueKey) != nil
+            delivered.fulfill()
+        }
+
+        XCTAssertNil(deliveredOnCompletionQueue.value)
+        releaseCompletionQueue.signal()
+        wait(for: [delivered], timeout: 1)
+        XCTAssertEqual(deliveredOnCompletionQueue.value, true)
+    }
+
     func testNoTimeoutDoesNotScheduleTimer() {
         let scheduler = ManualScheduler()
         let capturedResult = ThreadSafeBox<Result<FlagAssignmentsFetchResponse, Error>?>(nil)
@@ -415,6 +627,21 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         cancel()
 
         wait(for: [scheduledOperation], timeout: 0.2)
+    }
+
+    func testDefaultScheduleDefersWorkByTheRequestedDelay() {
+        let requestedDelay: TimeInterval = 0.3
+        let ran = expectation(description: "scheduled work ran")
+        let elapsed = ThreadSafeBox<TimeInterval>(0)
+        let start = Date()
+
+        _ = FlagAssignmentsRequestOperation.schedule(requestedDelay) {
+            elapsed.value = Date().timeIntervalSince(start)
+            ran.fulfill()
+        }
+
+        wait(for: [ran], timeout: 5)
+        XCTAssertGreaterThanOrEqual(elapsed.value, requestedDelay)
     }
 
     func testCompletedOperationIsNotRetainedByTimerOrCancellation() {
