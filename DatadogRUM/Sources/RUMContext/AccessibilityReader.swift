@@ -262,6 +262,7 @@ internal final class AccessibilityReader: AccessibilityReading {
         state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
         state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
         state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
+        #endif
 
         return state
     }
