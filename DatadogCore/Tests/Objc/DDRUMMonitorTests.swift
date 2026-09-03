@@ -384,10 +384,6 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingResourceEvents() throws {
-        guard #available(iOS 13, *) else {
-            return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
-        }
-
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 

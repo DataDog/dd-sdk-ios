@@ -583,6 +583,7 @@ extension RUMViewScope {
             browserSdkVersion: nil,
             cls: nil,
             configuration: .init(
+                remoteConfigurationId: context.remoteConfigurationId,
                 sessionReplayExperimentalFeatures: sessionReplayConfig?.experimentalFeatures,
                 sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
                 sessionSampleRate: Double(dependencies.samplingRate),

@@ -38,27 +38,28 @@ internal extension AppHang.BacktraceGenerationResult {
         case .succeeded(let backtrace): return backtrace.stack
         case .failed: return AppHangsMonitor.Constants.appHangStackGenerationFailedErrorMessage
         case .notAvailable: return AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage
+        case .disabled: return AppHangsMonitor.Constants.appHangStackDisabledErrorMessage
         }
     }
 
     var threads: [DDThread]? {
         switch self {
         case .succeeded(let backtrace): return backtrace.threads
-        case .failed, .notAvailable: return nil
+        case .failed, .notAvailable, .disabled: return nil
         }
     }
 
     var binaryImages: [BinaryImage]? {
         switch self {
         case .succeeded(let backtrace): return backtrace.binaryImages
-        case .failed, .notAvailable: return nil
+        case .failed, .notAvailable, .disabled: return nil
         }
     }
 
     var wasTruncated: Bool? {
         switch self {
         case .succeeded(let backtrace): return backtrace.wasTruncated
-        case .failed, .notAvailable: return nil
+        case .failed, .notAvailable, .disabled: return nil
         }
     }
 }

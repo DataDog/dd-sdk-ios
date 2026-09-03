@@ -39,11 +39,9 @@ internal struct UIPickerViewRecorder: NodeRecorder {
                 UIViewRecorder(
                     identifier: identifier,
                     semanticsOverride: { view, attributes in
-                        if #available(iOS 13.0, *) {
-                            if !attributes.isVisible || attributes.alpha < 1 || !CATransform3DIsIdentity(view.transform3D) {
-                                // If this view has any 3D effect applied, do not enter its subtree:
-                                return IgnoredElement(subtreeStrategy: .ignore)
-                            }
+                        if !attributes.isVisible || attributes.alpha < 1 || !CATransform3DIsIdentity(view.transform3D) {
+                            // If this view has any 3D effect applied, do not enter its subtree:
+                            return IgnoredElement(subtreeStrategy: .ignore)
                         }
                         // Otherwise, enter the subtree of this element, but do not consider it significant (`InvisibleElement`):
                         return InvisibleElement(subtreeStrategy: .record)

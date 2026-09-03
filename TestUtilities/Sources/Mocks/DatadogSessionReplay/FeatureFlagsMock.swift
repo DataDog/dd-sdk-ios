@@ -18,9 +18,7 @@ extension SessionReplay.Configuration.FeatureFlags {
             .heatmaps: true,
         ]
 
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            flags[.compositionTreeRecording] = true
-        }
+        flags[.compositionTreeRecording] = true
 
         return flags
     }

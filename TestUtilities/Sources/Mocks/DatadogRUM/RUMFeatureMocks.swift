@@ -1713,7 +1713,8 @@ extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
         return [
             .succeeded(.mockRandom()),
             .failed,
-            .notAvailable
+            .notAvailable,
+            .disabled
         ].randomElement()!
     }
 }

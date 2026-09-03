@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Semantic meaning captured for a layer, plus capture hints for its sublayers.
     struct SemanticObservation: Sendable, Equatable {
@@ -22,7 +21,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     enum VisualEffect: Sendable, Equatable {
         case automaticCapsule
@@ -36,7 +34,6 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct PortalSemantics: Sendable, Equatable {
         let sourceReplayID: Int64
@@ -47,7 +44,6 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
@@ -63,7 +59,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - GradientSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct GradientSemantics: Sendable, Equatable {
         let type: CAGradientLayerType
@@ -95,7 +90,6 @@ extension CALayerSnapshot.SemanticObservation {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     @MainActor
     init(layer: CALayer, context: CALayerSnapshot.Context) {
@@ -113,7 +107,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - LabelSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct LabelSemantics: Sendable, Equatable {
         let text: String?
@@ -143,7 +136,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - ImageSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct ImageSemantics: Sendable, Equatable {
         let hasContent: Bool
@@ -158,7 +150,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - TextInputSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct TextInputSemantics: Sendable, Equatable {
         let isSensitiveText: Bool
@@ -175,7 +166,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - EmbeddedContentSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct EmbeddedContentSemantics: Sendable, Equatable {
         let slotID: String
@@ -188,7 +178,6 @@ extension CALayerSnapshot.SemanticObservation {
 
 // MARK: - WebViewSemantics
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation {
     struct WebViewSemantics: Sendable, Equatable {
         let slotID: Int

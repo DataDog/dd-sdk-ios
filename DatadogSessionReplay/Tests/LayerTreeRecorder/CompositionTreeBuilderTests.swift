@@ -17,7 +17,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CompositionTreeBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates background and content references for container")
     func buildCreatesBackgroundAndContentReferencesForContainer() throws {
         // Given
@@ -68,7 +67,6 @@ struct CompositionTreeBuilderTests {
         #expect(output.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates fallback and content references for automatic capsule")
     func buildCreatesFallbackAndContentReferencesForAutomaticCapsule() throws {
         // Given
@@ -104,7 +102,6 @@ struct CompositionTreeBuilderTests {
         ])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates composition layer for leaf with modifiers")
     func buildCreatesCompositionLayerForLeafWithModifiers() throws {
         // Given
@@ -142,7 +139,6 @@ struct CompositionTreeBuilderTests {
         #expect(output.wireframes.count == 1)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build applies inherited visual effect to descendant wireframe")
     func buildAppliesInheritedVisualEffectToDescendantWireframe() throws {
         // Given
@@ -183,7 +179,6 @@ struct CompositionTreeBuilderTests {
         #expect(shapeWireframe.shapeStyle?.cornerRadius == 12)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build includes embedded content visibility state")
     func buildIncludesEmbeddedContentVisibilityState() throws {
         // Given
@@ -231,7 +226,6 @@ struct CompositionTreeBuilderTests {
         #expect(visibleWireframe.isVisible == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given
@@ -268,17 +262,14 @@ struct CompositionTreeBuilderTests {
         #expect(secondOutput.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func visibleWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func hiddenWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func webViewSlotIDs(in wireframes: [SRWireframe], isVisible: Bool) -> [String] {
         wireframes.compactMap { wireframe in
             guard case .webviewWireframe(let value) = wireframe, value.isVisible == isVisible else {

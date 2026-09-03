@@ -12,6 +12,7 @@ internal final class ExposureTracker {
         let flagKey: String
         let allocationKey: String
         let variationKey: String
+        let serialID: Int?
     }
 
     private final class ExposureKey: NSObject {
@@ -42,14 +43,16 @@ internal final class ExposureTracker {
     private final class Assignment {
         let allocationKey: String
         let variationKey: String
+        let serialID: Int?
 
         init(_ exposure: Exposure) {
             self.allocationKey = exposure.allocationKey
             self.variationKey = exposure.variationKey
+            self.serialID = exposure.serialID
         }
 
         func isEqual(to other: Assignment) -> Bool {
-            allocationKey == other.allocationKey && variationKey == other.variationKey
+            allocationKey == other.allocationKey && variationKey == other.variationKey && serialID == other.serialID
         }
     }
 

@@ -199,7 +199,7 @@ internal struct RUMStartViewCommand: RUMCommand {
         self.identity = identity
         self.name = name
         self.path = path
-        self.instrumentationType = instrumentationType
+        self.instrumentationType = InstrumentationType.extract(from: &self.attributes) ?? instrumentationType
     }
 }
 

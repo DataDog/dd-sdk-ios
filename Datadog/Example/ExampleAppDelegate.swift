@@ -61,7 +61,11 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         // Enable Crash Reporting
-        CrashReporting.enable()
+        CrashReporting.enable(
+            with: CrashReporting.Configuration(
+                appHangBacktraceEnabled: Environment.isAppHangBacktraceEnabled()
+            )
+        )
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug
@@ -87,6 +91,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                     }
                 ),
                 trackBackgroundEvents: true,
+                appHangThreshold: 0.5,
                 trackWatchdogTerminations: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
