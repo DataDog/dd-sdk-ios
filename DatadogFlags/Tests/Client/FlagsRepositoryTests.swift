@@ -492,6 +492,39 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
     }
 
+    func testStateListenerIsNotNotifiedWhileHoldingTheRequestLock() {
+        let otherThreadFinished = DispatchSemaphore(value: 0)
+        let otherThreadEnteredRepository = ThreadSafeBox(false)
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": FlagAssignment.mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        let listener = BlockingStateListener { state in
+            guard state == .reconciling else {
+                return
+            }
+            DispatchQueue.global().async {
+                flagsRepository.reset()
+                otherThreadEnteredRepository.value = true
+                otherThreadFinished.signal()
+            }
+            _ = otherThreadFinished.wait(timeout: .now() + 1)
+        }
+        flagsRepository.state.addListener(listener)
+
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+
+        XCTAssertTrue(
+            otherThreadEnteredRepository.value,
+            "a state listener must not be notified while the repository holds its request lock"
+        )
+        withExtendedLifetime(listener) {}
+    }
+
     // MARK: - State-Before-Completion Ordering
 
     func testStateIsUpdatedBeforeCompletionOnSuccess() {
@@ -542,5 +575,17 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+}
+
+private final class BlockingStateListener: FlagsStateListener {
+    private let onChange: (FlagsClientState) -> Void
+
+    init(onChange: @escaping (FlagsClientState) -> Void) {
+        self.onChange = onChange
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        onChange(newState)
     }
 }

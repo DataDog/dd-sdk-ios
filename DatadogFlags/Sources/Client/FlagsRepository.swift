@@ -42,7 +42,7 @@ internal final class FlagsRepository {
     private var flagsData: FlagsData?
 
     /// Serializes request generations and the state changes that they protect.
-    private let requestLock = NSRecursiveLock()
+    private let requestLock = NSLock()
     private var requestGeneration: UInt64 = 0
 
     /// Tracks disk read state and pending callbacks for async operations.
@@ -185,13 +185,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 let requestGeneration = self.requestGeneration
                 let hadFlags = self.flagsData != nil
                 let cachedContext = self.flagsData?.context
-                self.stateManager.updateState(.reconciling)
                 return (
                     generation: requestGeneration,
                     hadFlags: hadFlags,
                     cachedContext: cachedContext
                 )
             }
+            self.stateManager.updateState(.reconciling)
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 guard let self else {
@@ -201,37 +201,43 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
                 switch result {
                 case .success(let flags):
-                    self.withRequestLock {
+                    let isCurrentRequest = self.withRequestLock { () -> Bool in
                         guard self.requestGeneration == request.generation else {
-                            return
+                            return false
                         }
                         self.flagsData = .init(
                             flags: flags,
                             context: context,
                             date: self.dateProvider.now
                         )
+                        return true
+                    }
+                    if isCurrentRequest {
                         self.writeState()
                         self.stateManager.updateState(.ready)
                     }
                     completion(.success(()))
                 case .failure(let error):
-                    self.withRequestLock {
+                    let stateToPublish = self.withRequestLock { () -> FlagsClientState? in
                         guard self.requestGeneration == request.generation else {
-                            return
+                            return nil
                         }
-                        // State must be updated before calling completion —
-                        // dd-openfeature-provider-swift checks currentState in the callback.
                         // Only use cached flags if they match the requested context to avoid
                         // serving flags from a different user/context.
                         if request.hadFlags && request.cachedContext == context {
-                            self.stateManager.updateState(.stale)
+                            return .stale
                         } else {
                             // Clear cached data to prevent cross-context flag leakage.
                             // Without this, flagAssignment() could return the previous
                             // user's flags while in .error state.
                             self.flagsData = nil
-                            self.stateManager.updateState(.error)
+                            return .error
                         }
+                    }
+                    // State must be updated before calling completion —
+                    // dd-openfeature-provider-swift checks currentState in the callback.
+                    if let stateToPublish {
+                        self.stateManager.updateState(stateToPublish)
                     }
                     completion(.failure(error))
                 }
@@ -243,11 +249,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         // Clear disk first, then memory, then update state.
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.
+        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
         withRequestLock {
             requestGeneration &+= 1
-            featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
             flagsData = nil
-            stateManager.updateState(.notReady)
         }
+        stateManager.updateState(.notReady)
     }
 }
