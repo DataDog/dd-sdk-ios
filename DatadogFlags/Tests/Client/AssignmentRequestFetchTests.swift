@@ -120,8 +120,25 @@ final class AssignmentRequestFetchTests: XCTestCase {
         XCTAssertEqual(completionCount, 1, "cancellation and a late callback must complete exactly once")
     }
 
-    func testDisabledOrInvalidTimeoutDecoratorDoesNotScheduleTimer() {
-        for timeout in [0, -1, .nan, .infinity] {
+    func testZeroTimeoutDecoratorTimesOutImmediately() {
+        let scheduler = ManualScheduler()
+        var cancellationCount = 0
+        var capturedResult: Result<Flags.AssignmentRequestFetch.Response, Error>?
+        let base = Flags.AssignmentRequestFetch { _, _ in
+            return { cancellationCount += 1 }
+        }
+        let fetch = base.withTimeout(0, schedule: scheduler.schedule)
+
+        _ = fetch(URLRequest(url: .mockAny())) { capturedResult = $0 }
+
+        XCTAssertEqual(scheduler.activeDelays, [0])
+        scheduler.runNext()
+        XCTAssertEqual(cancellationCount, 1)
+        assertURLFailure(capturedResult, code: .timedOut)
+    }
+
+    func testInvalidTimeoutDecoratorDoesNotScheduleTimer() {
+        for timeout in [-1, .nan, .infinity] {
             let scheduler = ManualScheduler()
             var fetchCount = 0
             let base = Flags.AssignmentRequestFetch { _, completion in

@@ -109,9 +109,9 @@ extension Flags {
 
         /// Wraps this transport with a timeout for each request.
         ///
-        /// The timeout covers receipt of the complete response body. A value of `0` disables the wrapper.
-        /// Negative and non-finite values also leave the transport unchanged. Values above the supported
-        /// timer range are capped at `2_147_483.647` seconds.
+        /// The timeout covers receipt of the complete response body. A value of `0` causes an immediate
+        /// timeout. Negative and non-finite values leave the transport unchanged. Values above the
+        /// supported timer range are capped at `2_147_483.647` seconds.
         public func withTimeout(_ timeout: TimeInterval) -> Self {
             withTimeout(
                 timeout,
@@ -132,7 +132,7 @@ extension Flags {
             _ timeout: TimeInterval,
             schedule: @escaping FlagAssignmentsSchedule
         ) -> Self {
-            guard timeout.isFinite, timeout > 0 else {
+            guard timeout.isFinite, timeout >= 0 else {
                 return self
             }
 
@@ -163,7 +163,7 @@ extension Flags {
             return Self { request, completion in
                 let operation = FlagAssignmentsRequestOperation(
                     request: request,
-                    timeout: 0,
+                    timeout: nil,
                     retryCount: boundedRetries,
                     fetch: { request, completion in
                         self(request, completion: completion)

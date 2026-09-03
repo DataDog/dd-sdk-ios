@@ -177,7 +177,7 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         XCTAssertEqual(completionCount, 1, "late task completion must be ignored")
     }
 
-    func testZeroTimeoutDisablesTimer() {
+    func testNoTimeoutDoesNotScheduleTimer() {
         let scheduler = ManualScheduler()
         let operation = makeOperation(
             retryCount: 0,
@@ -185,7 +185,7 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
                 completion(.success(Self.response(statusCode: 200)))
                 return {}
             },
-            timeout: 0,
+            timeout: nil,
             schedule: scheduler.schedule
         )
         var capturedResult: Result<FlagAssignmentsFetchResponse, Error>?
@@ -194,6 +194,32 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
 
         assertSuccess(capturedResult)
         XCTAssertTrue(scheduler.scheduledDelays.isEmpty)
+    }
+
+    func testCompletedOperationIsNotRetainedByTimerOrCancellation() {
+        let scheduler = ManualScheduler()
+        var fetchCompletion: ((Result<FlagAssignmentsFetchResponse, Error>) -> Void)?
+        var cancellation: (() -> Void)?
+        weak var weakOperation: FlagAssignmentsRequestOperation?
+        var operation: FlagAssignmentsRequestOperation? = makeOperation(
+            retryCount: 0,
+            fetch: { _, completion in
+                fetchCompletion = completion
+                return {}
+            },
+            timeout: FlagAssignmentsRequestOperation.maximumSupportedTimeout,
+            schedule: scheduler.schedule
+        )
+        weakOperation = operation
+
+        cancellation = operation?.start { _ in }
+        fetchCompletion?(.success(Self.response(statusCode: 200)))
+        fetchCompletion = nil
+        operation = nil
+
+        XCTAssertNotNil(cancellation)
+        XCTAssertNil(weakOperation)
+        withExtendedLifetime(cancellation) {}
     }
 
     func testTransportCompletionIsDeliveredExactlyOnce() {
@@ -216,7 +242,7 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         retryCount: Int,
         fetch: @escaping FlagAssignmentsFetch,
         request: URLRequest = URLRequest(url: .mockAny()),
-        timeout: TimeInterval = 0,
+        timeout: TimeInterval? = nil,
         schedule: @escaping FlagAssignmentsSchedule = FlagAssignmentsRequestOperation.schedule
     ) -> FlagAssignmentsRequestOperation {
         FlagAssignmentsRequestOperation(

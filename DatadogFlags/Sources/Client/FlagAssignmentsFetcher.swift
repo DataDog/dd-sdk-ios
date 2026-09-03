@@ -53,24 +53,23 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         assignmentRequestTimeout: TimeInterval = 0,
         assignmentRequestRetryCount: Int = 0
     ) {
-        let policyFetch: FlagAssignmentsFetch
-        if assignmentRequestTimeout == 0, assignmentRequestRetryCount == 0 {
-            policyFetch = fetch
-        } else {
-            let composedFetch = Flags.AssignmentRequestFetch(fetch)
-                .withTimeout(assignmentRequestTimeout, schedule: FlagAssignmentsRequestOperation.schedule)
-                .withRetry(assignmentRequestRetryCount)
-            policyFetch = { request, completion in
-                composedFetch(request, completion: completion)
-            }
-        }
+        let timeout = assignmentRequestTimeout > 0 ? assignmentRequestTimeout : nil
 
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
         self.assignmentRequestTimeout = assignmentRequestTimeout
         self.assignmentRequestRetryCount = assignmentRequestRetryCount
-        self.fetch = policyFetch
+        self.fetch = { request, completion in
+            let operation = FlagAssignmentsRequestOperation(
+                request: request,
+                timeout: timeout,
+                retryCount: assignmentRequestRetryCount,
+                fetch: fetch,
+                schedule: FlagAssignmentsRequestOperation.schedule
+            )
+            return operation.start(completion: completion)
+        }
     }
 
     init(
@@ -85,7 +84,16 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         self.assignmentRequestTimeout = nil
         self.assignmentRequestRetryCount = nil
         self.fetch = { request, completion in
-            assignmentRequestFetch(request, completion: completion)
+            let operation = FlagAssignmentsRequestOperation(
+                request: request,
+                timeout: nil,
+                retryCount: 0,
+                fetch: { request, completion in
+                    assignmentRequestFetch(request, completion: completion)
+                },
+                schedule: FlagAssignmentsRequestOperation.schedule
+            )
+            return operation.start(completion: completion)
         }
     }
 
@@ -105,14 +113,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                let operation = FlagAssignmentsRequestOperation(
-                    request: request,
-                    timeout: 0,
-                    retryCount: 0,
-                    fetch: self.fetch,
-                    schedule: FlagAssignmentsRequestOperation.schedule
-                )
-                operation.start { [featureScope] result in
+                _ = self.fetch(request) { [featureScope] result in
                     switch result {
                     case .success(let response):
                         guard (200..<300).contains(response.httpResponse.statusCode) else {

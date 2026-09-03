@@ -43,10 +43,12 @@ internal final class FlagAssignmentsRequestOperation {
         var nextAttemptID: UInt64 = 0
         var activeAttempt: ActiveAttempt?
         var completion: ((Result<FlagAssignmentsFetchResponse, Error>) -> Void)?
+        // A policy operation must remain alive when its caller discards the cancellation closure.
+        var keepAlive: FlagAssignmentsRequestOperation?
     }
 
     private let request: URLRequest
-    private let timeout: TimeInterval
+    private let timeout: TimeInterval?
     private let retryCount: Int
     private let fetch: FlagAssignmentsFetch
     private let schedule: FlagAssignmentsSchedule
@@ -56,7 +58,7 @@ internal final class FlagAssignmentsRequestOperation {
 
     init(
         request: URLRequest,
-        timeout: TimeInterval,
+        timeout: TimeInterval?,
         retryCount: Int,
         fetch: @escaping FlagAssignmentsFetch,
         schedule: @escaping FlagAssignmentsSchedule
@@ -79,6 +81,9 @@ internal final class FlagAssignmentsRequestOperation {
             }
             state.isStarted = true
             state.completion = completion
+            if timeout != nil || retryCount > 0 {
+                state.keepAlive = self
+            }
             shouldStart = true
         }
         guard shouldStart else {
@@ -86,7 +91,7 @@ internal final class FlagAssignmentsRequestOperation {
         }
 
         startAttempt(number: 0)
-        return { [self] in cancel() }
+        return { [weak self] in self?.cancel() }
     }
 
     private func startAttempt(number: Int) {
@@ -99,9 +104,9 @@ internal final class FlagAssignmentsRequestOperation {
         }
         setFetchCancellation(cancelFetch, forAttemptWithID: attemptID)
 
-        if timeout > 0, isAttemptActive(withID: attemptID) {
-            let cancelTimeout = schedule(timeout) { [self] in
-                timeOutAttempt(withID: attemptID)
+        if let timeout, isAttemptActive(withID: attemptID) {
+            let cancelTimeout = schedule(timeout) { [weak self] in
+                self?.timeOutAttempt(withID: attemptID)
             }
             guard setTimeoutCancellation(cancelTimeout, forAttemptWithID: attemptID) else {
                 cancelTimeout()
@@ -227,6 +232,7 @@ internal final class FlagAssignmentsRequestOperation {
             state.isComplete = true
             completion = state.completion
             state.completion = nil
+            state.keepAlive = nil
         }
         completion?(result)
     }
@@ -241,6 +247,7 @@ internal final class FlagAssignmentsRequestOperation {
             state.completion = nil
             activeAttempt = state.activeAttempt
             state.activeAttempt = nil
+            state.keepAlive = nil
         }
         if let activeAttempt {
             activeAttempt.cancelTimeout?()
