@@ -87,7 +87,9 @@ extension RUM.Configuration {
     /// no `urlSessionTracking` was configured in code (there is nothing to clear).
     ///
     /// Each entry in `tracedHosts` carries its own `propagatorTypes`, mapped directly onto the host's
-    /// header formats — an empty list traces the host with no header formats.
+    /// header formats. An empty list yields no header formats for that host, which makes
+    /// `FirstPartyHosts.isFirstParty(url:)` treat it as not first-party — there is currently no way to
+    /// trace a host while injecting zero headers.
     ///
     /// - Parameter trace: The `trace` namespace, or `nil` to leave the configuration unchanged.
     private mutating func apply(trace: RemoteConfiguration.Trace?) {
