@@ -11,9 +11,6 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     static let name = "flags"
 
     private enum Constants {
-        static let disabledAssignmentRequestTimeout: TimeInterval = 0
-        static let maxAssignmentRequestTimeout = FlagAssignmentsRequestOperation.maximumSupportedTimeout
-        static let maxAssignmentRequestRetryCount = FlagAssignmentsRequestOperation.maximumRetryCount
         static let minEvaluationFlushInterval: TimeInterval = 1.0
         static let maxEvaluationFlushInterval: TimeInterval = 60.0
     }
@@ -35,6 +32,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol
     ) {
         if let assignmentRequestFetch = configuration.assignmentRequestFetch {
+            if configuration.assignmentRequestTimeout != 0 || configuration.assignmentRequestRetryCount != 0 {
+                DD.logger.warn(
+                    "`Flags.Configuration.assignmentRequestTimeout` and "
+                        + "`Flags.Configuration.assignmentRequestRetryCount` are ignored when "
+                        + "`Flags.Configuration.assignmentRequestFetch` is set. Compose "
+                        + "`withTimeout(_:)` and `withRetry(_:)` onto the transport instead."
+                )
+            }
             flagAssignmentsFetcher = FlagAssignmentsFetcher(
                 customEndpoint: configuration.customFlagsEndpoint,
                 customHeaders: configuration.customFlagsHeaders,
@@ -42,35 +47,30 @@ internal struct FlagsFeature: DatadogRemoteFeature {
                 assignmentRequestFetch: assignmentRequestFetch
             )
         } else {
-            let assignmentRequestTimeout: TimeInterval
-            if configuration.assignmentRequestTimeout.isFinite && configuration.assignmentRequestTimeout >= 0 {
-                assignmentRequestTimeout = min(
-                    configuration.assignmentRequestTimeout,
-                    Constants.maxAssignmentRequestTimeout
-                )
-                if assignmentRequestTimeout != configuration.assignmentRequestTimeout {
-                    DD.logger.warn(
-                        "`Flags.Configuration.assignmentRequestTimeout` cannot exceed "
-                            + "\(Constants.maxAssignmentRequestTimeout)s. "
-                            + "A value of \(assignmentRequestTimeout)s will be used."
-                    )
-                }
-            } else {
+            let assignmentRequestTimeout = FlagAssignmentsRequestOperation.boundedTimeout(
+                configuration.assignmentRequestTimeout
+            )
+            if configuration.assignmentRequestTimeout != 0 && assignmentRequestTimeout == nil {
                 DD.logger.warn(
                     "`Flags.Configuration.assignmentRequestTimeout` must be finite and non-negative. "
                         + "The assignment request timeout will be disabled."
                 )
-                assignmentRequestTimeout = Constants.disabledAssignmentRequestTimeout
+            } else if let assignmentRequestTimeout,
+                      assignmentRequestTimeout != configuration.assignmentRequestTimeout {
+                DD.logger.warn(
+                    "`Flags.Configuration.assignmentRequestTimeout` cannot exceed "
+                        + "\(FlagAssignmentsRequestOperation.maximumSupportedTimeout)s. "
+                        + "A value of \(assignmentRequestTimeout)s will be used."
+                )
             }
 
-            let assignmentRequestRetryCount = min(
-                max(configuration.assignmentRequestRetryCount, 0),
-                Constants.maxAssignmentRequestRetryCount
+            let assignmentRequestRetryCount = FlagAssignmentsRequestOperation.boundedRetryCount(
+                configuration.assignmentRequestRetryCount
             )
             if assignmentRequestRetryCount != configuration.assignmentRequestRetryCount {
                 DD.logger.warn(
                     "`Flags.Configuration.assignmentRequestRetryCount` must be between 0 and "
-                        + "\(Constants.maxAssignmentRequestRetryCount). "
+                        + "\(FlagAssignmentsRequestOperation.maximumRetryCount). "
                         + "A value of \(assignmentRequestRetryCount) will be used."
                 )
             }

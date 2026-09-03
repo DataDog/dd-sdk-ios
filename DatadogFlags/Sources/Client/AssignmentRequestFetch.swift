@@ -15,9 +15,9 @@ extension Flags {
     /// The SDK builds the complete `URLRequest`, including its endpoint, authentication, headers, and body,
     /// before passing it to this transport. This transport is used only for retrieving flag assignments;
     /// exposure and evaluation uploads continue to use the SDK's own transport.
-    public struct AssignmentRequestFetch {
+    public struct AssignmentRequestFetch: Sendable {
         /// The response returned by an assignment-request transport.
-        public struct Response {
+        public struct Response: Sendable {
             /// The complete response body.
             public let data: Data
 
@@ -32,22 +32,26 @@ extension Flags {
         }
 
         /// Completion callback for an assignment request.
-        public typealias Completion = (Result<Response, Error>) -> Void
+        /// The transport can invoke this callback on any queue.
+        public typealias Completion = @Sendable (Result<Response, Error>) -> Void
 
         /// Requests cancellation of an in-flight assignment request.
         ///
         /// The transport may subsequently complete with a cancellation error. Timeout and retry decorators
         /// ignore callbacks from attempts that they have already cancelled.
-        public typealias Cancellation = () -> Void
+        public typealias Cancellation = @Sendable () -> Void
 
-        private let execute: FlagAssignmentsFetch
+        private let execute: @Sendable (
+            URLRequest,
+            @escaping Completion
+        ) -> Cancellation
 
         /// Creates a transport from a request execution closure.
         ///
         /// The closure must return immediately after starting asynchronous work. It must invoke `completion`
         /// no more than once and return a closure that cancels any in-flight work.
         public init(
-            _ fetch: @escaping (
+            _ fetch: @escaping @Sendable (
                 URLRequest,
                 @escaping Completion
             ) -> Cancellation
@@ -59,6 +63,7 @@ extension Flags {
         ///
         /// This public invocation point lets callers build their own wrappers around a transport before
         /// assigning it to `Flags.Configuration.assignmentRequestFetch`.
+        @discardableResult
         public func callAsFunction(
             _ request: URLRequest,
             completion: @escaping Completion
@@ -103,15 +108,19 @@ extension Flags {
                     )
                 }
                 task.resume()
-                return task.cancel
+                return { task.cancel() }
             }
         }
 
         /// Wraps this transport with a timeout for each request.
         ///
-        /// The timeout covers receipt of the complete response body. A value of `0` causes an immediate
-        /// timeout. Negative and non-finite values leave the transport unchanged. Values above the
+        /// The timeout covers receipt of the complete response body. A value of `0` disables this timer.
+        /// Negative and non-finite values leave the transport unchanged. Values above the
         /// supported timer range are capped at `2_147_483.647` seconds.
+        ///
+        /// Composition order is significant. `transport.withTimeout(t).withRetry(n)` gives each attempt
+        /// a fresh timeout. `transport.withRetry(n).withTimeout(t)` gives the complete retry sequence one
+        /// timeout budget.
         public func withTimeout(_ timeout: TimeInterval) -> Self {
             withTimeout(
                 timeout,
@@ -122,24 +131,31 @@ extension Flags {
         /// Wraps this transport with bounded retries for transient failures.
         ///
         /// The value is the number of retries after the initial attempt and is limited to `0...10`.
-        /// URL transport failures, timeouts, HTTP `408`, and HTTP `5xx` responses are retried immediately.
-        /// Cancellation, HTTP `429`, and other HTTP responses are not retried.
+        /// Transient URL transport failures, timeouts, HTTP `408`, and HTTP `5xx` responses are retried
+        /// with randomized exponential backoff capped at 30 seconds. For HTTP `503`, a valid
+        /// `Retry-After` value up to 30 seconds is a minimum delay before the backoff. A response
+        /// that requests a longer delay is not retried. Cancellation, permanent URL failures,
+        /// HTTP `429`, and other HTTP responses are not retried.
+        ///
+        /// Composition order is significant. `transport.withTimeout(t).withRetry(n)` gives each attempt
+        /// a fresh timeout. `transport.withRetry(n).withTimeout(t)` gives the complete retry sequence one
+        /// timeout budget.
         public func withRetry(_ retries: Int) -> Self {
-            withRetryPolicy(retries)
+            withRetry(
+                retries,
+                schedule: FlagAssignmentsRequestOperation.schedule,
+                jitter: FlagAssignmentsRequestOperation.fullJitter,
+                now: FlagAssignmentsRequestOperation.currentDate
+            )
         }
 
         internal func withTimeout(
             _ timeout: TimeInterval,
             schedule: @escaping FlagAssignmentsSchedule
         ) -> Self {
-            guard timeout.isFinite, timeout >= 0 else {
+            guard let boundedTimeout = FlagAssignmentsRequestOperation.boundedTimeout(timeout) else {
                 return self
             }
-
-            let boundedTimeout = min(
-                timeout,
-                FlagAssignmentsRequestOperation.maximumSupportedTimeout
-            )
             return Self { request, completion in
                 let operation = FlagAssignmentsRequestOperation(
                     request: request,
@@ -154,8 +170,13 @@ extension Flags {
             }
         }
 
-        private func withRetryPolicy(_ retries: Int) -> Self {
-            let boundedRetries = min(max(retries, 0), FlagAssignmentsRequestOperation.maximumRetryCount)
+        internal func withRetry(
+            _ retries: Int,
+            schedule: @escaping FlagAssignmentsSchedule,
+            jitter: @escaping FlagAssignmentsJitter,
+            now: @escaping FlagAssignmentsNow
+        ) -> Self {
+            let boundedRetries = FlagAssignmentsRequestOperation.boundedRetryCount(retries)
             guard boundedRetries > 0 else {
                 return self
             }
@@ -168,7 +189,9 @@ extension Flags {
                     fetch: { request, completion in
                         self(request, completion: completion)
                     },
-                    schedule: FlagAssignmentsRequestOperation.schedule
+                    schedule: schedule,
+                    jitter: jitter,
+                    now: now
                 )
                 return operation.start(completion: completion)
             }

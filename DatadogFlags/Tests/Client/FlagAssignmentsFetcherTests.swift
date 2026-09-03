@@ -15,48 +15,51 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
     func testBuildsRequestAndDecodesResponse() throws {
-        // Given
         featureScope.contextMock = .mockWith(site: .us3)
-        var capturedRequest: URLRequest?
+        let capturedRequest = ThreadSafeBox<URLRequest?>(nil)
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "assignments decoded")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: ["X-Custom-Header": "custom-value"],
             featureScope: featureScope,
             fetch: { request, completion in
-                capturedRequest = request
-                completion(.success(Self.fetchResponse(statusCode: 200)))
+                capturedRequest.value = request
+                completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
                 return {}
             },
             assignmentRequestRetryCount: 0
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
         XCTAssertEqual(
-            capturedRequest?.url?.absoluteString,
+            capturedRequest.value?.url?.absoluteString,
             "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
         )
-        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Custom-Header"), "custom-value")
-        XCTAssertNotNil(capturedRequest?.value(forHTTPHeaderField: "dd-client-token"))
-        XCTAssertNotNil(capturedRequest?.httpBody)
-        let flagAssignments = try XCTUnwrap(capturedResult?.get())
+        XCTAssertEqual(capturedRequest.value?.value(forHTTPHeaderField: "X-Custom-Header"), "custom-value")
+        XCTAssertNotNil(capturedRequest.value?.value(forHTTPHeaderField: "dd-client-token"))
+        XCTAssertNotNil(capturedRequest.value?.httpBody)
+        let flagAssignments = try XCTUnwrap(capturedResult.value?.get())
         XCTAssertEqual(flagAssignments, .mockAny())
     }
 
     func testCustomAssignmentRequestFetchReceivesSDKOwnedRequest() throws {
-        // Given
         featureScope.contextMock = .mockWith(
             site: .eu1,
             clientToken: "client-token",
             additionalContext: [RUMCoreContext.mockWith(applicationID: "application-id")]
         )
-        var capturedRequest: URLRequest?
+        let capturedRequest = ThreadSafeBox<URLRequest?>(nil)
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "assignments decoded")
         let customFetch = Flags.AssignmentRequestFetch { request, completion in
-            capturedRequest = request
-            completion(.success(Self.fetchResponse(statusCode: 200)))
+            capturedRequest.value = request
+            completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
             return {}
         }
         let fetcher = FlagAssignmentsFetcher(
@@ -65,29 +68,31 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             featureScope: featureScope,
             assignmentRequestFetch: customFetch
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
         XCTAssertEqual(
-            capturedRequest?.url?.absoluteString,
+            capturedRequest.value?.url?.absoluteString,
             "https://preview.ff-cdn.datadoghq.eu/precompute-assignments"
         )
-        XCTAssertEqual(capturedRequest?.httpMethod, "POST")
-        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "dd-client-token"), "client-token")
-        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "dd-application-id"), "application-id")
-        XCTAssertEqual(capturedRequest?.value(forHTTPHeaderField: "X-Custom-Header"), "custom-value")
-        XCTAssertNotNil(capturedRequest?.httpBody)
-        let flagAssignments = try XCTUnwrap(capturedResult?.get())
+        XCTAssertEqual(capturedRequest.value?.httpMethod, "POST")
+        XCTAssertEqual(capturedRequest.value?.value(forHTTPHeaderField: "dd-client-token"), "client-token")
+        XCTAssertEqual(capturedRequest.value?.value(forHTTPHeaderField: "dd-application-id"), "application-id")
+        XCTAssertEqual(capturedRequest.value?.value(forHTTPHeaderField: "X-Custom-Header"), "custom-value")
+        XCTAssertNotNil(capturedRequest.value?.httpBody)
+        let flagAssignments = try XCTUnwrap(capturedResult.value?.get())
         XCTAssertEqual(flagAssignments, .mockAny())
     }
 
     func testCustomAssignmentRequestFetchCannotBypassResponseStatusValidation() {
-        // Given
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "status validated")
         let customFetch = Flags.AssignmentRequestFetch { _, completion in
-            completion(.success(Self.fetchResponse(statusCode: 401)))
+            completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 401)))
             return {}
         }
         let fetcher = FlagAssignmentsFetcher(
@@ -96,54 +101,58 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             featureScope: featureScope,
             assignmentRequestFetch: customFetch
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
         guard
-            case .failure(.networkError(let error)) = capturedResult,
+            case .failure(.networkError(let error)) = capturedResult.value,
             (error as? URLError)?.code == .badServerResponse
         else {
             return XCTFail("Expected HTTP status validation after the custom transport")
         }
         XCTAssertTrue(
-            featureScope.telemetryMock.messages.firstError()?.message.hasPrefix(
-                "Failed to fetch flag assignments from the server"
+            featureScope.telemetryMock.messages.firstError()?.message.contains(
+                "Failed to fetch flag assignments from the server (status: 401)"
             ) == true
         )
     }
 
     func testSuccessfulResponseWithInvalidBodyIsNotRetried() {
-        // Given
-        var fetchCount = 0
+        let fetchCount = ThreadSafeBox(0)
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "invalid body rejected")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: [:],
             featureScope: featureScope,
             fetch: { _, completion in
-                fetchCount += 1
-                completion(.success(Self.fetchResponse(statusCode: 200, data: Data())))
+                fetchCount.mutate { $0 += 1 }
+                completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200, data: Data())))
                 return {}
             },
             assignmentRequestRetryCount: 3
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
-        guard case .failure(.invalidResponse) = capturedResult else {
+        guard case .failure(.invalidResponse) = capturedResult.value else {
             return XCTFail("Expected an invalid response error")
         }
-        XCTAssertEqual(fetchCount, 1)
+        XCTAssertEqual(fetchCount.value, 1)
     }
 
     func testMapsTransportErrorToNetworkError() {
-        // Given
         let expectedError = URLError(.notConnectedToInternet)
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "transport error mapped")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
@@ -154,14 +163,15 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             },
             assignmentRequestRetryCount: 0
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
         guard
-            case .failure(.networkError(let error)) = capturedResult,
+            case .failure(.networkError(let error)) = capturedResult.value,
             (error as? URLError)?.code == expectedError.code
         else {
             return XCTFail("Expected the transport error to be mapped to a network error")
@@ -174,56 +184,127 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
     }
 
     func testDefaultPolicyMakesOneRequestWithoutRetry() {
-        // Given
         let expectedError = URLError(.networkConnectionLost)
-        var fetchCount = 0
+        let fetchCount = ThreadSafeBox(0)
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "request failed")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: nil,
             customHeaders: nil,
             featureScope: featureScope,
             fetch: { _, completion in
-                fetchCount += 1
+                fetchCount.mutate { $0 += 1 }
                 completion(.failure(expectedError))
                 return {}
             }
         )
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        fetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
-        // Then
-        XCTAssertEqual(fetcher.assignmentRequestRetryCount, 0)
-        XCTAssertEqual(fetchCount, 1)
+        XCTAssertEqual(fetchCount.value, 1)
         guard
-            case .failure(.networkError(let error)) = capturedResult,
+            case .failure(.networkError(let error)) = capturedResult.value,
             (error as? URLError)?.code == expectedError.code
         else {
             return XCTFail("Expected the initial request failure without a retry")
         }
     }
 
+    func testSerializesCompletionDeliveryForConcurrentRequests() {
+        let transportCompletions = ThreadSafeBox<[Flags.AssignmentRequestFetch.Completion]>([])
+        let customFetch = Flags.AssignmentRequestFetch { _, completion in
+            transportCompletions.mutate { $0.append(completion) }
+            return {}
+        }
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: featureScope,
+            assignmentRequestFetch: customFetch
+        )
+        let firstEntered = DispatchSemaphore(value: 0)
+        let releaseFirst = DispatchSemaphore(value: 0)
+        let secondEntered = DispatchSemaphore(value: 0)
+
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            firstEntered.signal()
+            _ = releaseFirst.wait(timeout: .now() + 2)
+        }
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            secondEntered.signal()
+        }
+        XCTAssertEqual(transportCompletions.value.count, 2)
+
+        transportCompletions.value[0](.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+        XCTAssertEqual(firstEntered.wait(timeout: .now() + 1), .success)
+        transportCompletions.value[1](.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+        XCTAssertEqual(
+            secondEntered.wait(timeout: .now() + 0.1),
+            .timedOut,
+            "the second callback must not overlap the first callback"
+        )
+        releaseFirst.signal()
+        XCTAssertEqual(secondEntered.wait(timeout: .now() + 1), .success)
+    }
+
+    func testCustomTransportCompletionIsDeliveredAtMostOnce() {
+        let customFetch = Flags.AssignmentRequestFetch { _, completion in
+            completion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+            completion(.failure(URLError(.networkConnectionLost)))
+            return {}
+        }
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: featureScope,
+            assignmentRequestFetch: customFetch
+        )
+        let completionCount = ThreadSafeBox(0)
+        let firstCompletion = expectation(description: "first completion")
+        let duplicateCompletion = expectation(description: "duplicate completion")
+        duplicateCompletion.isInverted = true
+
+        fetcher.flagAssignments(for: .mockAny()) { _ in
+            let count = completionCount.mutate { value -> Int in
+                value += 1
+                return value
+            }
+            if count == 1 {
+                firstCompletion.fulfill()
+            } else {
+                duplicateCompletion.fulfill()
+            }
+        }
+
+        wait(for: [firstCompletion], timeout: 1)
+        wait(for: [duplicateCompletion], timeout: 0.1)
+        XCTAssertEqual(completionCount.value, 1)
+    }
+
     func testUsesCustomEndpoint() {
-        // Given
         let customEndpoint = URL(string: "https://custom-proxy.com/flags")!
-        var capturedRequest: URLRequest?
+        let capturedRequest = ThreadSafeBox<URLRequest?>(nil)
+        let completion = expectation(description: "request completed")
         let fetcher = FlagAssignmentsFetcher(
             customEndpoint: customEndpoint,
             customHeaders: nil,
             featureScope: featureScope,
-            fetch: { request, completion in
-                capturedRequest = request
-                completion(.success(Self.fetchResponse(statusCode: 200)))
+            fetch: { request, fetchCompletion in
+                capturedRequest.value = request
+                fetchCompletion(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
                 return {}
             },
             assignmentRequestRetryCount: 0
         )
 
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { _ in }
+        fetcher.flagAssignments(for: .mockAny()) { _ in completion.fulfill() }
+        wait(for: [completion], timeout: 1)
 
-        // Then
-        XCTAssertEqual(capturedRequest?.url, customEndpoint)
+        XCTAssertEqual(capturedRequest.value?.url, customEndpoint)
     }
 
     func testFlagsEndpointForAllSites() {
@@ -240,20 +321,5 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         for (site, expectedEndpoint) in flagsEndpoints {
             XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
         }
-    }
-
-    private static func fetchResponse(
-        statusCode: Int,
-        data: Data = .mockAnyFlagAssignmentsResponse()
-    ) -> FlagAssignmentsFetchResponse {
-        FlagAssignmentsFetchResponse(
-            data: data,
-            httpResponse: HTTPURLResponse(
-                url: .mockAny(),
-                statusCode: statusCode,
-                httpVersion: nil,
-                headerFields: nil
-            )!
-        )
     }
 }

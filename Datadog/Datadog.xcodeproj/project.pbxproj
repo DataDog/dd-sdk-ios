@@ -349,10 +349,6 @@
 		5B1D02742E8D2EF600AB2391 /* FlagAssignmentsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */; };
 		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
 		5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */; };
-		A1B2C3D4E5F60718293A4B5D /* FlagAssignmentsRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */; };
-		A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */; };
-		A1B2C3D4E5F60718293A4B5F /* FlagAssignmentsRequestOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */; };
-		A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */; };
 		5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */; };
 		5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
 		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
@@ -876,6 +872,10 @@
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A01D384CBDE4FFDC49CCD424 /* HeatmapIdentifierRegistryFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9F4D5BEEE5E977A58E2034 /* HeatmapIdentifierRegistryFeature.swift */; };
 		A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */; };
+		A1B2C3D4E5F60718293A4B5D /* FlagAssignmentsRequestOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */; };
+		A1B2C3D4E5F60718293A4B5F /* FlagAssignmentsRequestOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */; };
+		A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */; };
+		A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */; };
 		A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */ = {isa = PBXBuildFile; fileRef = A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		A1B2C3E52F92000100ABCDEF /* ProfilingContext+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3E42F92000100ABCDEF /* ProfilingContext+RUM.swift */; };
 		A1B2C3E72F92000100ABCDEF /* ProfilingContextRUMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3E62F92000100ABCDEF /* ProfilingContextRUMTests.swift */; };
@@ -2211,10 +2211,6 @@
 		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
 		5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequest.swift; sourceTree = "<group>"; };
 		5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperation.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetch.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperationTests.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetchTests.swift; sourceTree = "<group>"; };
 		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
 		5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsResponseTests.swift; sourceTree = "<group>"; };
@@ -2867,6 +2863,10 @@
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = aggregation_worker.cpp; sourceTree = "<group>"; };
 		A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = aggregation_worker.h; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* FlagAssignmentsRequestOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperation.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5E /* FlagAssignmentsRequestOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestOperationTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetch.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetchTests.swift; sourceTree = "<group>"; };
 		A1B2C3E42F92000100ABCDEF /* ProfilingContext+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingContext+RUM.swift"; sourceTree = "<group>"; };
 		A1B2C3E62F92000100ABCDEF /* ProfilingContextRUMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingContextRUMTests.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };

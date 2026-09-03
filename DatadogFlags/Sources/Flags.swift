@@ -68,15 +68,16 @@ public enum Flags {
         /// ```swift
         /// let assignmentFetch = Flags.AssignmentRequestFetch
         ///     .urlSession()
-        ///     .withTimeout(5)
-        ///     .withRetry(1)
+        ///     .withTimeout(5) // Five seconds for each attempt.
+        ///     .withRetry(1)   // Two attempts, plus retry backoff.
         ///
         /// var configuration = Flags.Configuration()
         /// configuration.assignmentRequestFetch = assignmentFetch
         /// ```
         ///
-        /// When set, this transport is used verbatim and `assignmentRequestTimeout` and
-        /// `assignmentRequestRetryCount` are ignored.
+        /// When set, `assignmentRequestTimeout` and `assignmentRequestRetryCount` are ignored.
+        /// The SDK adds no timeout or retries. It still validates the HTTP status and delivers
+        /// no more than one completion.
         ///
         /// Default: `nil` (use the SDK transport and scalar timeout/retry settings).
         public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
@@ -93,10 +94,12 @@ public enum Flags {
 
         /// The number of times to retry a failed request for precomputed flag assignments.
         ///
-        /// This is the number of retries after the initial request. The SDK retries URL transport errors,
-        /// timeouts, HTTP `408`, and HTTP `5xx` responses immediately. HTTP `429`
-        /// responses are not retried. Ignored when `assignmentRequestFetch` is set. Values are limited to
-        /// the range `0...10`.
+        /// This is the number of retries after the initial request. The SDK retries transient URL transport
+        /// errors, timeouts, HTTP `408`, and HTTP `5xx` responses with randomized exponential backoff capped
+        /// at 30 seconds. For HTTP `503`, a valid `Retry-After` value up to 30 seconds is a minimum delay
+        /// before the backoff. A response that requests a longer delay is not retried. Cancellation,
+        /// permanent URL failures, and HTTP `429` responses are not retried. Ignored when
+        /// `assignmentRequestFetch` is set. Values are limited to the range `0...10`.
         ///
         /// Default: `0` retries (one initial request only).
         public var assignmentRequestRetryCount: Int

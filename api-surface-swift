@@ -1568,14 +1568,14 @@ public struct SessionReplayPrivacyView<Content: View>: View
 # ----------------------------------
 
 [?] extension Flags
-    public struct AssignmentRequestFetch
-        public struct Response
+    public struct AssignmentRequestFetch: Sendable
+        public struct Response: Sendable
             public let data: Data
             public let httpResponse: HTTPURLResponse
             public init(data: Data, httpResponse: HTTPURLResponse)
-        public typealias Completion = (Result<Response, Error>) -> Void
-        public typealias Cancellation = () -> Void
-        public init(_ fetch: @escaping (URLRequest,@escaping Completion) -> Cancellation)
+        public typealias Completion = @Sendable (Result<Response, Error>) -> Void
+        public typealias Cancellation = @Sendable () -> Void
+        public init(_ fetch: @escaping @Sendable (URLRequest,@escaping Completion) -> Cancellation)
         public func callAsFunction(_ request: URLRequest,completion: @escaping Completion) -> Cancellation
         public static func urlSession() -> Self
         public static func urlSession(_ session: URLSession) -> Self

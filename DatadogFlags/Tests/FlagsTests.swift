@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 
 @_spi(Internal)
 @testable import DatadogFlags
@@ -78,20 +79,19 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.performanceOverride?.maxObjectsInFile, 50)
         XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
         XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
-        XCTAssertEqual(flagAssignmentFetcher.assignmentRequestTimeout, Optional(2.5))
-        XCTAssertEqual(flagAssignmentFetcher.assignmentRequestRetryCount, Optional(3))
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }
 
-    func testInvalidAssignmentRequestConfigurationIsBounded() throws {
-        let inputs: [(TimeInterval, Int, TimeInterval, Int)] = [
-            (-.infinity, -1, 0, 0),
-            (.nan, 11, 0, 10),
-            (.greatestFiniteMagnitude, 1, 2_147_483.647, 1),
+    func testInvalidAssignmentRequestConfigurationIsBounded() {
+        let inputs: [(TimeInterval, Int, Int)] = [
+            (-.infinity, -1, 2),
+            (.nan, 11, 2),
+            (.greatestFiniteMagnitude, 1, 1),
         ]
 
-        for (timeout, retryCount, expectedTimeout, expectedRetryCount) in inputs {
+        for (timeout, retryCount, expectedWarningCount) in inputs {
+            let dd = DD.mockWith(logger: CoreLoggerMock())
             var configuration = Flags.Configuration()
             configuration.assignmentRequestTimeout = timeout
             configuration.assignmentRequestRetryCount = retryCount
@@ -99,10 +99,9 @@ final class FlagsTests: XCTestCase {
 
             Flags.enable(with: configuration, in: core)
 
-            let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
-            let fetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
-            XCTAssertEqual(fetcher.assignmentRequestTimeout, Optional(expectedTimeout))
-            XCTAssertEqual(fetcher.assignmentRequestRetryCount, Optional(expectedRetryCount))
+            XCTAssertNotNil(core.get(feature: FlagsFeature.self))
+            XCTAssertEqual(dd.logger.warnMessages.count, expectedWarningCount)
+            dd.reset()
         }
     }
 
@@ -114,18 +113,17 @@ final class FlagsTests: XCTestCase {
 
         Flags.enable(with: configuration, in: core)
 
-        let flags = try XCTUnwrap(core.get(feature: FlagsFeature.self))
-        let fetcher = try XCTUnwrap(flags.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
-        XCTAssertEqual(fetcher.assignmentRequestTimeout, Optional(0))
-        XCTAssertEqual(fetcher.assignmentRequestRetryCount, Optional(0))
+        XCTAssertNotNil(core.get(feature: FlagsFeature.self))
     }
 
     func testCustomAssignmentRequestFetchBypassesScalarPolicy() throws {
         // Given
-        var fetchCount = 0
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let fetchCount = ThreadSafeBox(0)
         let expectedError = URLError(.notConnectedToInternet)
         let customFetch = Flags.AssignmentRequestFetch { _, completion in
-            fetchCount += 1
+            fetchCount.mutate { $0 += 1 }
             completion(.failure(expectedError))
             return {}
         }
@@ -134,20 +132,28 @@ final class FlagsTests: XCTestCase {
         configuration.assignmentRequestRetryCount = 10
         configuration.assignmentRequestFetch = customFetch
         let core = SingleFeatureCoreMock<FlagsFeature>()
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
+        let capturedResult = ThreadSafeBox<Result<[String: FlagAssignment], FlagsError>?>(nil)
+        let completion = expectation(description: "custom transport completed")
 
         // When
         Flags.enable(with: configuration, in: core)
         let feature = try XCTUnwrap(core.get(feature: FlagsFeature.self))
-        feature.flagAssignmentsFetcher.flagAssignments(for: .mockAny()) { capturedResult = $0 }
+        feature.flagAssignmentsFetcher.flagAssignments(for: .mockAny()) {
+            capturedResult.value = $0
+            completion.fulfill()
+        }
+        wait(for: [completion], timeout: 1)
 
         // Then
-        XCTAssertEqual(fetchCount, 1, "scalar retries must not wrap a custom transport")
-        let fetcher = try XCTUnwrap(feature.flagAssignmentsFetcher as? FlagAssignmentsFetcher)
-        XCTAssertNil(fetcher.assignmentRequestTimeout)
-        XCTAssertNil(fetcher.assignmentRequestRetryCount)
+        XCTAssertEqual(fetchCount.value, 1, "scalar retries must not wrap a custom transport")
+        XCTAssertEqual(dd.logger.warnMessages.count, 1)
+        XCTAssertTrue(
+            dd.logger.warnMessages[0].contains(
+                "are ignored when `Flags.Configuration.assignmentRequestFetch` is set"
+            )
+        )
         guard
-            case .failure(.networkError(let error)) = capturedResult,
+            case .failure(.networkError(let error)) = capturedResult.value,
             (error as? URLError)?.code == expectedError.code
         else {
             return XCTFail("Expected the custom transport failure without scalar policy")

@@ -14,11 +14,27 @@ internal protocol FlagAssignmentsFetching {
     )
 }
 
+private final class FlagAssignmentsCompletionGate: @unchecked Sendable {
+    private var isComplete = false
+    private let completion: Flags.AssignmentRequestFetch.Completion
+
+    init(completion: @escaping Flags.AssignmentRequestFetch.Completion) {
+        self.completion = completion
+    }
+
+    /// This method must run on the fetcher's serial completion queue.
+    func complete(with result: Result<FlagAssignmentsFetchResponse, Error>) {
+        guard !isComplete else {
+            return
+        }
+        isComplete = true
+        completion(result)
+    }
+}
+
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
-    let assignmentRequestTimeout: TimeInterval?
-    let assignmentRequestRetryCount: Int?
 
     private let featureScope: any FeatureScope
     private let fetch: FlagAssignmentsFetch
@@ -29,7 +45,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
-        assignmentRequestTimeout: TimeInterval,
+        assignmentRequestTimeout: TimeInterval?,
         assignmentRequestRetryCount: Int
     ) {
         let assignmentRequestFetch = Flags.AssignmentRequestFetch.urlSession()
@@ -50,23 +66,24 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
         fetch: @escaping FlagAssignmentsFetch,
-        assignmentRequestTimeout: TimeInterval = 0,
+        assignmentRequestTimeout: TimeInterval? = nil,
         assignmentRequestRetryCount: Int = 0
     ) {
-        let timeout = assignmentRequestTimeout > 0 ? assignmentRequestTimeout : nil
+        let completionQueue = DispatchQueue(
+            label: "com.datadoghq.flags.assignment-request-completion"
+        )
 
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
-        self.assignmentRequestTimeout = assignmentRequestTimeout
-        self.assignmentRequestRetryCount = assignmentRequestRetryCount
         self.fetch = { request, completion in
             let operation = FlagAssignmentsRequestOperation(
                 request: request,
-                timeout: timeout,
+                timeout: assignmentRequestTimeout,
                 retryCount: assignmentRequestRetryCount,
                 fetch: fetch,
-                schedule: FlagAssignmentsRequestOperation.schedule
+                schedule: FlagAssignmentsRequestOperation.schedule,
+                completionQueue: completionQueue
             )
             return operation.start(completion: completion)
         }
@@ -78,22 +95,20 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         featureScope: any FeatureScope,
         assignmentRequestFetch: Flags.AssignmentRequestFetch
     ) {
+        let completionQueue = DispatchQueue(
+            label: "com.datadoghq.flags.assignment-request-completion"
+        )
+
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
-        self.assignmentRequestTimeout = nil
-        self.assignmentRequestRetryCount = nil
         self.fetch = { request, completion in
-            let operation = FlagAssignmentsRequestOperation(
-                request: request,
-                timeout: nil,
-                retryCount: 0,
-                fetch: { request, completion in
-                    assignmentRequestFetch(request, completion: completion)
-                },
-                schedule: FlagAssignmentsRequestOperation.schedule
-            )
-            return operation.start(completion: completion)
+            let gate = FlagAssignmentsCompletionGate(completion: completion)
+            return assignmentRequestFetch(request) { result in
+                completionQueue.async {
+                    gate.complete(with: result)
+                }
+            }
         }
     }
 
@@ -119,7 +134,11 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         guard (200..<300).contains(response.httpResponse.statusCode) else {
                             let error = URLError(.badServerResponse)
                             DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
-                            featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
+                            featureScope.telemetry.error(
+                                "Failed to fetch flag assignments from the server "
+                                    + "(status: \(response.httpResponse.statusCode))",
+                                error: error
+                            )
                             completion(.failure(.networkError(error)))
                             return
                         }
