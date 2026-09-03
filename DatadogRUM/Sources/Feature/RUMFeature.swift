@@ -304,7 +304,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
             uuidGenerator: configuration.uuidGenerator,
-            heatmapIdentifierRegistry: heatmapIdentifierStore
+            heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #elseif os(watchOS)
         self.instrumentation = RUMInstrumentation(
@@ -320,7 +321,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
-            uuidGenerator: configuration.uuidGenerator
+            uuidGenerator: configuration.uuidGenerator,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #else
         var memoryWarningMonitor: MemoryWarningMonitor?
