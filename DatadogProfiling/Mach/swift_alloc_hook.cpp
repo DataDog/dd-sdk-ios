@@ -49,6 +49,9 @@ std::atomic<uint64_t> g_alloc_invocations{0};
 std::atomic<uint64_t> g_dealloc_invocations{0};
 std::atomic<uint64_t> g_dealloc_object_invocations{0};
 std::atomic<uint64_t> g_reentrant_skips{0};
+/// Times a type name was actually resolved. Only the sampled path resolves,
+/// so this stays orders of magnitude below g_alloc_invocations.
+std::atomic<uint64_t> g_name_resolutions{0};
 std::atomic<bool> g_alloc_bound{false};
 std::atomic<bool> g_dealloc_bound{false};
 
@@ -105,6 +108,9 @@ std::unordered_set<const void *> g_live_addresses;
 // stable copy. Runs only from inside the reentrancy guard. Returns nullptr if
 // the runtime symbol is unavailable or resolution fails.
 const char *resolve_type_name(HeapMetadata *metadata) {
+    // Counted here rather than at the call site so the metric reflects real
+    // resolution work on whichever path invoked it.
+    g_name_resolutions.fetch_add(1, std::memory_order_relaxed);
     if (metadata == nullptr) {
         return nullptr;
     }
@@ -329,6 +335,7 @@ extern "C" dd_swift_alloc_hook_diagnostics_t dd_swift_alloc_hook_diagnostics(voi
     diag.dealloc_invocations = g_dealloc_invocations.load(std::memory_order_relaxed);
     diag.dealloc_object_invocations = g_dealloc_object_invocations.load(std::memory_order_relaxed);
     diag.reentrant_skips = g_reentrant_skips.load(std::memory_order_relaxed);
+    diag.name_resolutions = g_name_resolutions.load(std::memory_order_relaxed);
     diag.alloc_bound = g_alloc_bound.load(std::memory_order_relaxed);
     diag.dealloc_bound = g_dealloc_bound.load(std::memory_order_relaxed);
     return diag;
@@ -339,6 +346,7 @@ extern "C" void dd_swift_alloc_test_reset(void) {
     g_dealloc_invocations.store(0, std::memory_order_relaxed);
     g_dealloc_object_invocations.store(0, std::memory_order_relaxed);
     g_reentrant_skips.store(0, std::memory_order_relaxed);
+    g_name_resolutions.store(0, std::memory_order_relaxed);
     g_captured_metadata.store(nullptr, std::memory_order_relaxed);
     g_captured_size.store(0, std::memory_order_relaxed);
     t_arm_capture = false;

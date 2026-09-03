@@ -47,6 +47,18 @@ void dd_memory_test_reset(void);
 void dd_memory_test_force_next_sample(void);
 
 /**
+ * Forces dd_memory_profiler_start_passive to fail, as if the sample table
+ * could not be allocated.
+ *
+ * The shared sampler backs both interception paths, so this makes every
+ * install fail and lets tests reach the fail-closed branch — which is
+ * otherwise unreachable, since a real failure needs the mmap to fail.
+ *
+ * Cleared by dd_memory_test_reset().
+ */
+void dd_memory_test_force_start_failure(bool enabled);
+
+/**
  * Returns the count of allocations sampled since the last reset.
  */
 uint64_t dd_memory_test_sampled_count(void);

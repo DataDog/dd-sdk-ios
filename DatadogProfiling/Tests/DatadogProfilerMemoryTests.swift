@@ -339,6 +339,94 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - Fail closed on install failure
+
+    /// The shared sampler backs both interception paths, so a sampler that cannot
+    /// start means neither installs. Memory profiling must fail closed and latch,
+    /// so a non-transient failure is not retried on every lifecycle transition.
+    ///
+    /// The observable is the install-failure telemetry count, deliberately: the
+    /// native `dd_memory_profiler_is_running()` reads false whenever the sampler
+    /// did not start, whether or not the Swift side latched, so asserting on it
+    /// alone cannot tell a fail-closed profiler from one that merely looks
+    /// stopped. Without the latch, each background→foreground cycle reconciles
+    /// into a fresh install attempt and repeats the telemetry.
+    func testMemoryProfilingFailsClosedAndDoesNotRetry_whenNeitherPathInstalls() {
+        dd_memory_test_force_start_failure(true)
+        defer { dd_memory_test_force_start_failure(false) }
+
+        let telemetry = TelemetryMock()
+        let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, telemetry: telemetry)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+
+        XCTAssertFalse(dd_memory_profiler_is_running(), "The sampler must not be running")
+        let attemptsAfterFirstInstall = installFailureCount(in: telemetry)
+        XCTAssertGreaterThan(attemptsAfterFirstInstall, 0, "The failed install must be reported once")
+
+        // Background, then foreground again. Reconciliation runs on both.
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInBackground())
+        flushQueue()
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+
+        XCTAssertEqual(
+            installFailureCount(in: telemetry), attemptsAfterFirstInstall,
+            "A latched install failure must not be retried, and must not re-report"
+        )
+        XCTAssertFalse(dd_memory_profiler_is_running(), "The sampler must still not be running")
+        withExtendedLifetime(profiler) {}
+    }
+
+    // MARK: - Type name resolution stays off the hot path
+
+    /// Resolving a Swift type name probes a cache and, at saturation, takes a
+    /// global mutex. It must therefore run only for allocations the Poisson
+    /// sampler actually selects — never once per allocation.
+    func testSwiftTypeNameResolvesOnlyForSampledAllocations() {
+        let provider = makeSamplerProvider(memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory profiling must be running")
+
+        dd_swift_alloc_test_reset()
+
+        // Allocate without forcing a sample. These are far too small to trip the
+        // 512 KB Poisson counter, so none should resolve a name.
+        var retained: [ProdSwiftFixture] = []
+        for _ in 0..<500 {
+            retained.append(ProdSwiftFixture())
+        }
+        withExtendedLifetime(retained) {
+            let unsampled = SwiftAllocInterception.diagnostics()
+            XCTAssertGreaterThanOrEqual(
+                unsampled.allocInvocations, 500,
+                "Precondition: the trampoline must have observed the allocations"
+            )
+            XCTAssertEqual(
+                unsampled.nameResolutions, 0,
+                "No type name may be resolved for an unsampled allocation"
+            )
+
+            // Force exactly one sample: that one — and only that one — resolves.
+            dd_memory_test_force_next_sample()
+            let sampledObject = ProdSwiftFixture()
+            withExtendedLifetime(sampledObject) {
+                XCTAssertEqual(
+                    SwiftAllocInterception.diagnostics().nameResolutions, 1,
+                    "The sampled allocation must resolve its type name exactly once"
+                )
+            }
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Teardown / stop
 
     func testMemoryProfilerStops_whenProfilerDeallocates() {
@@ -394,16 +482,26 @@ private extension DatadogProfilerMemoryTests {
     func makeProfiler(
         profilingSamplerProvider: ProfilingSamplerProvider,
         quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock(),
-        dateProvider: DateProvider = DateProviderMock()
+        dateProvider: DateProvider = DateProviderMock(),
+        telemetry: TelemetryMock? = nil
     ) -> DatadogProfiler {
         DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             queue: profilerQueue,
+            telemetryController: telemetry.map { .init(telemetry: $0) } ?? .init(),
             profilingInterval: .infinity,
             dateProvider: dateProvider
         )
+    }
+
+    /// Number of memory-interception install failures reported so far.
+    func installFailureCount(in telemetry: TelemetryMock) -> Int {
+        telemetry.messages
+            .compactMap(\.asError)
+            .filter { $0.message.contains("memory profiling failed to install") }
+            .count
     }
 
     func connectMessageReceiver(

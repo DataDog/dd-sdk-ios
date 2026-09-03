@@ -56,6 +56,10 @@ typedef struct dd_swift_alloc_hook_diagnostics {
     uint64_t dealloc_object_invocations;
     /// Trampoline entries skipped because of the reentrancy guard.
     uint64_t reentrant_skips;
+    /// Times type-name resolution was entered. Resolution runs only on the
+    /// sampled path, so this must stay far below `alloc_invocations`; the ratio
+    /// is what proves name lookup is off the per-allocation hot path.
+    uint64_t name_resolutions;
     /// True once the alloc symbol was resolved and at least one slot rebound.
     bool alloc_bound;
     /// True once the dealloc symbol was resolved and at least one slot rebound.

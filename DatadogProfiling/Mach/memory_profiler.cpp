@@ -141,6 +141,10 @@ std::atomic<uint64_t> g_start_ticks{0};
 /// Poisson sampling rate (mean bytes between samples). Set at start.
 std::atomic<uint64_t> g_poisson_rate_bytes{DD_MEMORY_POISSON_DEFAULT_RATE_BYTES};
 
+/// Test-only: makes the passive start fail so the fail-closed path is reachable.
+/// Always false in production.
+std::atomic<bool> g_test_force_start_failure{false};
+
 // MARK: - Diagnostics
 
 std::atomic<uint64_t> g_total_bytes_allocated{0};
@@ -675,6 +679,12 @@ void stop_current_session() {
 // MARK: - Public API
 
 extern "C" bool dd_memory_profiler_start_passive(uint64_t poisson_rate_bytes) {
+    // Test-only: simulate a sampler that cannot start. Relaxed load of a flag
+    // that is false in production, so this costs nothing on the real path.
+    if (g_test_force_start_failure.load(std::memory_order_relaxed)) {
+        return false;
+    }
+
     os_unfair_lock_lock(&g_lifecycle_lock);
     // Idempotent: if already running (zone-hook or passive), leave the active
     // session and its live set unchanged.
@@ -898,7 +908,12 @@ extern "C" dd_memory_diagnostics_t dd_memory_profiler_diagnostics(void) {
 
 // MARK: - Testing API
 
+extern "C" void dd_memory_test_force_start_failure(bool enabled) {
+    g_test_force_start_failure.store(enabled, std::memory_order_relaxed);
+}
+
 extern "C" void dd_memory_test_reset(void) {
+    g_test_force_start_failure.store(false, std::memory_order_relaxed);
     os_unfair_lock_lock(&g_lifecycle_lock);
     os_unfair_lock_lock(&g_insert_lock);
     g_profiler_enabled.store(false, std::memory_order_release);

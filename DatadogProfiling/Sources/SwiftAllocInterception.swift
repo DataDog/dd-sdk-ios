@@ -47,6 +47,9 @@ internal struct SwiftAllocDiagnostics: Sendable {
     let deallocInvocations: UInt64
     let deallocObjectInvocations: UInt64
     let reentrantSkips: UInt64
+    /// Times the type name was actually resolved. Resolution runs only on the
+    /// sampled path, so this stays far below `allocInvocations`.
+    let nameResolutions: UInt64
     let allocBound: Bool
     let deallocBound: Bool
 }
@@ -78,6 +81,7 @@ internal enum SwiftAllocInterception {
             deallocInvocations: raw.dealloc_invocations,
             deallocObjectInvocations: raw.dealloc_object_invocations,
             reentrantSkips: raw.reentrant_skips,
+            nameResolutions: raw.name_resolutions,
             allocBound: raw.alloc_bound,
             deallocBound: raw.dealloc_bound
         )
