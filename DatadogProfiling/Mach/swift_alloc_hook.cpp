@@ -71,6 +71,11 @@ struct NameCacheEntry {
 };
 NameCacheEntry g_name_cache[NAME_CACHE_CAPACITY];
 std::mutex g_name_mutex;
+/// Set once a probe has proven there is no free slot left. Latched: entries are
+/// never evicted, so saturation is permanent for the life of the process. Read
+/// before any probing so a full cache costs one relaxed load instead of two
+/// full scans plus a global mutex acquisition per unknown type.
+std::atomic<bool> g_name_cache_saturated{false};
 
 size_t name_bucket(const void *metadata) {
     uintptr_t v = reinterpret_cast<uintptr_t>(metadata) >> 4;
@@ -101,6 +106,13 @@ std::unordered_set<const void *> g_live_addresses;
 // the runtime symbol is unavailable or resolution fails.
 const char *resolve_type_name(HeapMetadata *metadata) {
     if (metadata == nullptr) {
+        return nullptr;
+    }
+    // Saturation short-circuit. Once every slot is taken no further type can be
+    // admitted, and without this flag each unknown type would probe the whole
+    // cache, take the global mutex, probe it again, and still resolve nothing.
+    // One relaxed load replaces all of that.
+    if (g_name_cache_saturated.load(std::memory_order_relaxed)) {
         return nullptr;
     }
     const void *key = static_cast<const void *>(metadata);
@@ -150,8 +162,16 @@ const char *resolve_type_name(HeapMetadata *metadata) {
             return stable;
         }
     }
-    // Cache full: degrade to no class name (bounded, no per-alloc leak).
+    // Cache full: degrade to no class name (bounded, no per-alloc leak) and
+    // latch the flag so subsequent unknown types skip the probing entirely.
+    g_name_cache_saturated.store(true, std::memory_order_relaxed);
     return nullptr;
+}
+
+/// C-linkage adapter so the sampler can resolve the type name lazily, on the
+/// sampled path only. `context` is the HeapMetadata pointer.
+extern "C" const char *swift_alloc_resolve_class_name(void *context) {
+    return resolve_type_name(static_cast<HeapMetadata *>(context));
 }
 
 HeapObject *trampoline_alloc(HeapMetadata *metadata, size_t size, size_t alignMask) {
@@ -182,13 +202,16 @@ HeapObject *trampoline_alloc(HeapMetadata *metadata, size_t size, size_t alignMa
     }
 
     // Production path: record into the shared sampler/live-set/encoder pipeline.
-    // Name resolution and observe run inside the reentrancy guard, so any
-    // allocation they trigger short-circuits (t_in_hook) instead of recursing.
-    const char *name = resolve_type_name(metadata);
-    dd_memory_observe_allocation_with_source(
+    // The type name is resolved through a callback so it runs ONLY when the
+    // Poisson decision samples this allocation. Resolving eagerly would put a
+    // cache probe — and, at saturation, a global mutex — on every Swift
+    // allocation in the process, for a name that is discarded in all but roughly
+    // one allocation per sampling interval.
+    dd_memory_observe_allocation_resolved(
         static_cast<const void *>(obj),
         static_cast<uint64_t>(size),
-        name,
+        &swift_alloc_resolve_class_name,
+        static_cast<void *>(metadata),
         DD_MEMORY_SOURCE_SWIFT);
 
     t_in_hook = false;

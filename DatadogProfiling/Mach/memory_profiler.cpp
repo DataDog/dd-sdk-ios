@@ -240,6 +240,26 @@ double poisson_weight_for_size(uint64_t size, uint64_t poisson_rate_bytes) {
 constexpr uint64_t EMPTY_SLOT = 0;
 constexpr uint64_t TOMBSTONE_SLOT = 1;
 
+/// Maximum slots a hash probe may visit before giving up.
+///
+/// A removal leaves a TOMBSTONE so colliding keys keep their probe chain, and a
+/// slot never returns to EMPTY within a session (EMPTY -> occupied -> TOMBSTONE
+/// -> occupied ...). The count of EMPTY slots is therefore monotonically
+/// non-increasing, so a probe that terminates only on EMPTY degrades over the
+/// process lifetime: once churn has touched every bucket, a lookup miss would
+/// scan the whole table. Every free in the process goes through `remove_sample`,
+/// the overwhelming majority of them misses, so that cost is unacceptable on a
+/// continuously running profiler.
+///
+/// Bounding the probe caps a miss at a fixed cost. Insert and remove MUST use
+/// the same bound: insert never places an entry further than this from its
+/// bucket, so remove is guaranteed to find anything insert admitted. Exhausting
+/// the probe on insert counts as a drop (`dropped_samples`), which censors
+/// `inuse_*` — permitted by the design — rather than corrupting it.
+constexpr size_t MAX_PROBE_DISTANCE = 32;
+static_assert(MAX_PROBE_DISTANCE <= SAMPLE_TABLE_CAPACITY,
+              "probe bound cannot exceed the table");
+
 bool is_live_address(uint64_t addr) {
     return addr > TOMBSTONE_SLOT;
 }
@@ -314,7 +334,8 @@ insert_result insert_sample(uint64_t addr, uint64_t size, double weight,
     size_t available_idx = SAMPLE_TABLE_CAPACITY;
     const size_t start = bucket_for(addr);
 
-    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
+    // Bounded probe — see MAX_PROBE_DISTANCE. Must match `remove_sample`.
+    for (size_t i = 0; i < MAX_PROBE_DISTANCE; ++i) {
         const size_t idx = (start + i) % SAMPLE_TABLE_CAPACITY;
         const uint64_t current = g_samples[idx].addr.load(std::memory_order_acquire);
 
@@ -372,7 +393,10 @@ bool remove_sample(uint64_t addr, uint64_t session_generation) {
     }
 
     const size_t start = bucket_for(addr);
-    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
+    // Bounded probe — see MAX_PROBE_DISTANCE. Must match `insert_sample`, which
+    // never places an entry beyond this distance from its bucket, so exhausting
+    // the bound here proves the address was never admitted.
+    for (size_t i = 0; i < MAX_PROBE_DISTANCE; ++i) {
         const size_t idx = (start + i) % SAMPLE_TABLE_CAPACITY;
         sample_entry& entry = g_samples[idx];
         const uint64_t current = entry.addr.load(std::memory_order_acquire);
@@ -458,8 +482,18 @@ uint32_t capture_backtrace(uint64_t* frames, uint32_t max_frames) {
 /// unchanged so hook wrappers can `return record_allocation(...)`.
 /// @param class_name Optional Obj-C/Swift class name (from class_getName);
 ///                   stored verbatim in the sample. nullptr for zone-hook path.
+/// @param resolver Optional callback producing the class name, invoked ONLY when
+///                 the allocation is sampled. Callers whose name lookup is more
+///                 than a metadata read (the Swift path resolves and caches a
+///                 demangled type name) must pass this instead of `class_name`
+///                 so the cost lands on the sampled path — roughly one
+///                 allocation in `poisson_rate_bytes` — not on every allocation
+///                 in the process. Ignored when `class_name` is non-null.
+/// @param resolver_context Opaque argument forwarded to `resolver`.
 void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr,
-                        dd_memory_source_t source = DD_MEMORY_SOURCE_ZONE) {
+                        dd_memory_source_t source = DD_MEMORY_SOURCE_ZONE,
+                        dd_memory_class_name_resolver_t resolver = nullptr,
+                        void* resolver_context = nullptr) {
     if (ptr == nullptr) {
         return ptr;
     }
@@ -509,6 +543,15 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
     // or the table machinery from here on must short-circuit via the
     // tls_in_profiler check above.
     tls_in_profiler = true;
+
+    // Resolve the class name now that the allocation is known to be sampled.
+    // Deliberately inside the reentrancy guard: a resolver may dlsym or touch
+    // runtime caches, and any allocation it triggers must short-circuit rather
+    // than recurse into this hook.
+    if (class_name == nullptr && resolver != nullptr) {
+        class_name = resolver(resolver_context);
+    }
+
     uint64_t frames[SAMPLE_STACK_DEPTH];
     const uint32_t frame_count = capture_backtrace(frames, SAMPLE_STACK_DEPTH);
     const double weight = poisson_weight_for_size(size, poisson_rate_bytes);
@@ -527,9 +570,11 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
 }
 
 /// Per-free bookkeeping. Removes the entry from the live set if we
-/// were tracking it. Unsampled frees fall straight through, costing
-/// only the probe-then-stop path in `remove_sample` (one or two
-/// cache-line reads).
+/// were tracking it. Unsampled frees — the overwhelming majority — cost at most
+/// MAX_PROBE_DISTANCE slot reads in `remove_sample`, and typically far fewer
+/// while empty slots remain. The bound matters: empty slots only ever become
+/// occupied or tombstoned within a session, so an unbounded probe would grow
+/// towards a full-table scan on every free as the process runs.
 void record_free(void* ptr) {
     if (ptr == nullptr) {
         return;
@@ -660,6 +705,14 @@ extern "C" void dd_memory_observe_allocation_with_source(const void* ptr, uint64
                                                          const char* class_name,
                                                          dd_memory_source_t source) {
     record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size), class_name, source);
+}
+
+extern "C" void dd_memory_observe_allocation_resolved(const void* ptr, uint64_t size,
+                                                      dd_memory_class_name_resolver_t resolver,
+                                                      void* context,
+                                                      dd_memory_source_t source) {
+    record_allocation(const_cast<void*>(ptr), static_cast<size_t>(size),
+                      /*class_name=*/nullptr, source, resolver, context);
 }
 
 extern "C" void dd_memory_observe_deallocation(const void* ptr) {
@@ -909,7 +962,8 @@ extern "C" dd_memory_source_t dd_memory_test_sample_source(const void* ptr) {
         return DD_MEMORY_SOURCE_ZONE;
     }
     const size_t start = bucket_for(addr);
-    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
+    // Same bound as insert/remove so the test helper agrees with production.
+    for (size_t i = 0; i < MAX_PROBE_DISTANCE; ++i) {
         const size_t idx = (start + i) % SAMPLE_TABLE_CAPACITY;
         sample_entry& entry = g_samples[idx];
         const uint64_t current = entry.addr.load(std::memory_order_acquire);

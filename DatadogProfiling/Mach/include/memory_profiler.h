@@ -165,6 +165,39 @@ void dd_memory_observe_allocation_with_source(const void* ptr, uint64_t size,
                                               dd_memory_source_t source);
 
 /**
+ * Produces a class name for a sampled allocation. Must not allocate in a way
+ * that depends on the profiler being re-entrant; it is called inside the
+ * reentrancy guard, so any allocation it triggers is short-circuited.
+ *
+ * @param context Opaque value passed through from the observe call.
+ * @return Class name that outlives the sample, or NULL if unavailable.
+ */
+typedef const char* (*dd_memory_class_name_resolver_t)(void* context);
+
+/**
+ * Records an externally-observed allocation, resolving the class name lazily.
+ *
+ * Identical to dd_memory_observe_allocation_with_source except that the class
+ * name is produced by `resolver` ONLY when the allocation is sampled. Use this
+ * whenever obtaining the name costs more than reading a pointer out of type
+ * metadata — the Swift path resolves and caches a demangled type name, which at
+ * cache saturation degrades badly and must never run per allocation.
+ *
+ * The size is still required up front: Poisson sampling decrements a byte
+ * counter by it and the weight is derived from it, so it cannot be deferred.
+ *
+ * @param ptr Allocation pointer; NULL is a no-op.
+ * @param size Allocation size in bytes.
+ * @param resolver Called only on the sampled path; may be NULL for no name.
+ * @param context Opaque argument forwarded to `resolver`.
+ * @param source Interception path recording this allocation.
+ */
+void dd_memory_observe_allocation_resolved(const void* ptr, uint64_t size,
+                                           dd_memory_class_name_resolver_t resolver,
+                                           void* context,
+                                           dd_memory_source_t source);
+
+/**
  * Records an externally-observed Objective-C object deallocation.
  *
  * If the pointer belongs to a sampled allocation, it is removed from the live

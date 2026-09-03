@@ -173,34 +173,87 @@ final class MemoryLiveHeapValidationTests: XCTestCase {
         XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 0)
     }
 
-    func testFullTableRejectsOverflowAndReusesTombstone() {
+    /// Insert and remove probe at most `MAX_PROBE_DISTANCE` slots, so a key whose
+    /// probe window is full is dropped even while free slots remain elsewhere in
+    /// the table. The table therefore saturates a little below its slot count.
+    ///
+    /// That is the deliberate trade for a bounded free: `remove_sample` runs on
+    /// every deallocation in the process, and an unbounded probe would decay
+    /// towards a full-table scan as empty slots are consumed. Dropping a sample
+    /// censors `inuse_*`, which the design permits; a scan on every free does not.
+    func testTableSaturatesWithinProbeBoundAndCountsDrops() {
         XCTAssertTrue(dd_memory_profiler_start_passive(1))
 
         let generation = dd_memory_test_session_generation()
-        let capacity = 4_096
-        let addresses = (0..<capacity).map { UInt64(0x10_0000 + $0 * 0x10) }
+        let slotCount = 4_096
+        let addresses = (0..<slotCount).map { UInt64(0x10_0000 + $0 * 0x10) }
 
+        var admitted: [UInt64] = []
+        var rejected: [UInt64] = []
         for (index, address) in addresses.enumerated() {
-            XCTAssertTrue(
-                insertTableSample(at: address, size: UInt64(index + 1), generation: generation),
-                "Insertion \(index) must fit within the declared table capacity"
-            )
+            if insertTableSample(at: address, size: UInt64(index + 1), generation: generation) {
+                admitted.append(address)
+            } else {
+                rejected.append(address)
+            }
         }
 
-        let overflowAddress = UInt64(0x20_0000)
-        XCTAssertFalse(insertTableSample(at: overflowAddress, size: 1, generation: generation))
-        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, UInt64(capacity))
-        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 1)
+        XCTAssertFalse(admitted.isEmpty, "The table must admit samples")
+        XCTAssertFalse(
+            rejected.isEmpty,
+            "Probing is bounded, so a full slot window must reject before every slot is used"
+        )
+        XCTAssertGreaterThan(
+            admitted.count, slotCount * 3 / 4,
+            "The probe bound must not cost more than a small fraction of usable capacity"
+        )
 
-        observeDeallocation(at: addresses[capacity / 2])
-        XCTAssertTrue(insertTableSample(at: overflowAddress, size: 99, generation: generation))
+        // Drop-new, never evict: every admitted sample is still live and unique,
+        // and every rejection is counted.
+        let diagnostics = MemoryProfilerProbe.diagnostics()
+        XCTAssertEqual(diagnostics.liveSampledAllocations, UInt64(admitted.count))
+        XCTAssertEqual(diagnostics.droppedSamples, UInt64(rejected.count))
 
         let snapshot = MemoryProfilerProbe.captureSnapshot()
-        XCTAssertEqual(snapshot.samples.count, capacity)
-        XCTAssertEqual(Set(snapshot.samples.map(\.address)).count, capacity)
-        XCTAssertFalse(snapshot.samples.contains { $0.address == addresses[capacity / 2] })
-        XCTAssertEqual(snapshot.samples.first { $0.address == overflowAddress }?.size, 99)
-        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 1)
+        XCTAssertEqual(snapshot.samples.count, admitted.count)
+        XCTAssertEqual(Set(snapshot.samples.map(\.address)), Set(admitted))
+    }
+
+    /// A removal leaves a tombstone; a later insert whose probe reaches that slot
+    /// must reuse it rather than reporting the table full.
+    func testInsertReusesTombstoneWithinProbeWindow() {
+        XCTAssertTrue(dd_memory_profiler_start_passive(1))
+
+        let generation = dd_memory_test_session_generation()
+        // All four keys must come from the SAME call: `findCollidingAddresses`
+        // returns whichever bucket first reaches the requested count, so asking
+        // twice can yield two different buckets.
+        let colliding = findCollidingAddresses(count: 4)
+        guard colliding.count == 4 else {
+            return XCTFail("The fixture must find four addresses in the same table bucket")
+        }
+        XCTAssertEqual(Set(colliding.map(tableBucket)).count, 1, "All four keys must share a bucket")
+
+        let addresses = Array(colliding.prefix(3))
+        let reuseAddress = colliding[3]
+
+        for (index, address) in addresses.enumerated() {
+            XCTAssertTrue(insertTableSample(at: address, size: UInt64(index + 1), generation: generation))
+        }
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 3)
+
+        // Free the head of the chain, leaving a tombstone in the shared bucket.
+        observeDeallocation(at: addresses[0])
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().liveSampledAllocations, 2)
+
+        // The fourth key probes the same bucket and must reuse the tombstone.
+        XCTAssertTrue(insertTableSample(at: reuseAddress, size: 99, generation: generation))
+
+        let snapshot = MemoryProfilerProbe.captureSnapshot()
+        XCTAssertEqual(snapshot.samples.count, 3)
+        XCTAssertFalse(snapshot.samples.contains { $0.address == addresses[0] })
+        XCTAssertEqual(snapshot.samples.first { $0.address == reuseAddress }?.size, 99)
+        XCTAssertEqual(MemoryProfilerProbe.diagnostics().droppedSamples, 0)
     }
 
     func testRestartClearsSamplesFromPreviousSession() {
