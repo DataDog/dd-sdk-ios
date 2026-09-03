@@ -281,7 +281,8 @@ Unit Tests (macOS):
     - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 UI Tests:

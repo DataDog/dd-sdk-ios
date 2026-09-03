@@ -324,7 +324,11 @@ class SessionEndedMetricTests: XCTestCase {
         }
 
         // native instrumentation types must keep encoding as their original Int wire values
+        #if canImport(UIKit)
         XCTAssertEqual(try encodedValue(.uikit) as? Int, 0)
+        #elseif canImport(AppKit)
+        XCTAssertEqual(try encodedValue(.appKit) as? Int, 0)
+        #endif
         XCTAssertEqual(try encodedValue(.swiftuiAutomatic) as? Int, 1)
         XCTAssertEqual(try encodedValue(.swiftui) as? Int, 2)
         XCTAssertEqual(try encodedValue(.manual) as? Int, 3)
@@ -334,7 +338,7 @@ class SessionEndedMetricTests: XCTestCase {
 
     private var ddKitName: String {
         #if os(macOS)
-        "appKit"
+        "appkit"
         #else
         "uikit"
         #endif
@@ -380,7 +384,7 @@ class SessionEndedMetricTests: XCTestCase {
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
         XCTAssertEqual(
             rse.viewsCount.total,
-            manualViewsCount + swiftuiViewsCount + uikitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + flutterViewsCount + unknownViewsCount
+            manualViewsCount + swiftuiViewsCount + ddkitPredicateViewsCount + swiftuiAutomaticPredicateViewsCount + flutterViewsCount + unknownViewsCount
         )
         #if os(macOS)
         let ddKitName = "appkit"
