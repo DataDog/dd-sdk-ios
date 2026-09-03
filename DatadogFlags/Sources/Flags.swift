@@ -145,8 +145,6 @@ public enum Flags {
         ///   - gracefulModeEnabled: Controls error handling behavior for API misuse. Default: `true`.
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
-        ///   - assignmentRequestTimeout: Timeout for each precomputed assignment request. Default: `0` (disabled).
-        ///   - assignmentRequestRetryCount: Number of retries after the initial assignment request. Default: `0`.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
@@ -157,8 +155,6 @@ public enum Flags {
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
-            assignmentRequestTimeout: TimeInterval = 0,
-            assignmentRequestRetryCount: Int = 0,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
@@ -170,8 +166,8 @@ public enum Flags {
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
             self.assignmentRequestFetch = nil
-            self.assignmentRequestTimeout = assignmentRequestTimeout
-            self.assignmentRequestRetryCount = assignmentRequestRetryCount
+            self.assignmentRequestTimeout = 0
+            self.assignmentRequestRetryCount = 0
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint

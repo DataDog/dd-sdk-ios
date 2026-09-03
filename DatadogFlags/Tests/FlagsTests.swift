@@ -22,6 +22,24 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(config.assignmentRequestRetryCount, 0)
     }
 
+    func testLegacyInitializerKeepsAssignmentRequestDefaults() {
+        let config = Flags.Configuration(
+            gracefulModeEnabled: false,
+            customFlagsEndpoint: nil,
+            customFlagsHeaders: nil,
+            customExposureEndpoint: nil,
+            trackExposures: false,
+            customEvaluationEndpoint: nil,
+            trackEvaluations: false,
+            evaluationFlushInterval: 20,
+            rumIntegrationEnabled: false
+        )
+
+        XCTAssertNil(config.assignmentRequestFetch)
+        XCTAssertEqual(config.assignmentRequestTimeout, 0)
+        XCTAssertEqual(config.assignmentRequestRetryCount, 0)
+    }
+
     func testWhenNotEnabled() {
         // Given
         let core = FeatureRegistrationCoreMock()
@@ -67,34 +85,16 @@ final class FlagsTests: XCTestCase {
     }
 
     func testInvalidAssignmentRequestConfigurationIsBounded() throws {
-        let configurations: [(Flags.Configuration, TimeInterval, Int)] = [
-            (
-                Flags.Configuration(
-                    assignmentRequestTimeout: -.infinity,
-                    assignmentRequestRetryCount: -1
-                ),
-                0,
-                0
-            ),
-            (
-                Flags.Configuration(
-                    assignmentRequestTimeout: .nan,
-                    assignmentRequestRetryCount: 11
-                ),
-                0,
-                10
-            ),
-            (
-                Flags.Configuration(
-                    assignmentRequestTimeout: .greatestFiniteMagnitude,
-                    assignmentRequestRetryCount: 1
-                ),
-                2_147_483.647,
-                1
-            ),
+        let inputs: [(TimeInterval, Int, TimeInterval, Int)] = [
+            (-.infinity, -1, 0, 0),
+            (.nan, 11, 0, 10),
+            (.greatestFiniteMagnitude, 1, 2_147_483.647, 1),
         ]
 
-        for (configuration, expectedTimeout, expectedRetryCount) in configurations {
+        for (timeout, retryCount, expectedTimeout, expectedRetryCount) in inputs {
+            var configuration = Flags.Configuration()
+            configuration.assignmentRequestTimeout = timeout
+            configuration.assignmentRequestRetryCount = retryCount
             let core = FeatureRegistrationCoreMock()
 
             Flags.enable(with: configuration, in: core)
@@ -107,10 +107,9 @@ final class FlagsTests: XCTestCase {
     }
 
     func testZeroAssignmentRequestTimeoutAndRetryCountAreAccepted() throws {
-        let configuration = Flags.Configuration(
-            assignmentRequestTimeout: 0,
-            assignmentRequestRetryCount: 0
-        )
+        var configuration = Flags.Configuration()
+        configuration.assignmentRequestTimeout = 0
+        configuration.assignmentRequestRetryCount = 0
         let core = FeatureRegistrationCoreMock()
 
         Flags.enable(with: configuration, in: core)
@@ -130,10 +129,9 @@ final class FlagsTests: XCTestCase {
             completion(.failure(expectedError))
             return {}
         }
-        var configuration = Flags.Configuration(
-            assignmentRequestTimeout: 0.000001,
-            assignmentRequestRetryCount: 10
-        )
+        var configuration = Flags.Configuration()
+        configuration.assignmentRequestTimeout = 0.000001
+        configuration.assignmentRequestRetryCount = 10
         configuration.assignmentRequestFetch = customFetch
         let core = SingleFeatureCoreMock<FlagsFeature>()
         var capturedResult: Result<[String: FlagAssignment], FlagsError>?
