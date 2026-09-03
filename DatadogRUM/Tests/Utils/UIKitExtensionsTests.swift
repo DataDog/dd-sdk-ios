@@ -36,7 +36,6 @@ struct UIKitExtensionsTests {
         self.mockAppWindow = UIWindow(frame: .zero)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Tests UIKit alerts and action sheets, all button styles.", arguments: 1...5, 0...2)
     @MainActor
     func expectedControlTypesInAlerts(numberOfActionButtons: Int, numberOfTextFields: Int) throws {
@@ -91,7 +90,6 @@ struct UIKitExtensionsTests {
     }
 
     /// Obtains the available button roles, based on both the compile time and run time version checks.
-    @available(iOS 15.0, tvOS 15.0, *)
     private static var buttonRoles: [ButtonRole?] {
         // We need to use both compile time and runtime checks for this,
         // to make sure we can build on Xcode <=16 (compile time check)
@@ -132,7 +130,6 @@ struct UIKitExtensionsTests {
         #endif
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
     @Test("Test SwiftUI alerts, all button roles.", arguments: 1...5, 0...2)
     @MainActor
     func expectedControlTypesInAlertsSwiftUI(numberOfActionButtons: Int, numberOfTextFields: Int) throws {
@@ -182,7 +179,6 @@ struct UIKitExtensionsTests {
         #endif
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
     @Test("Test SwiftUI confirmation dialogs, all button roles.", arguments: 1...5)
     @MainActor
     func expectedControlTypesInConfirmationDialogsSwiftUI(numberOfActionButtons: Int) throws {
@@ -219,7 +215,6 @@ struct UIKitExtensionsTests {
 
     // MARK: Tests for old style alerts and action sheets (iOS/tvOS 13.0-14.*)
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Test SwiftUI deprecated Alert constructor.")
     @MainActor
     func expectedControlTypesInDeprecatedAlertsSwiftUI() throws {
@@ -257,7 +252,6 @@ struct UIKitExtensionsTests {
         #expect(alertController.view.allSubviewsMatching(predicate: { $0.isUIAlertTextField }).count == 0)
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
     @Test("Test SwiftUI deprecated ActionSheet constructor, all button roles.", arguments: 1...5)
     @MainActor
     func expectedControlTypesInDeprecatedActionSheetsSwiftUI(numberOfActionButtons: Int) throws {

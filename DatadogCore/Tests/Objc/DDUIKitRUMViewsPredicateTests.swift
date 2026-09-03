@@ -56,9 +56,6 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
 #if canImport(SwiftUI)
     func testGivenDefaultPredicate_whenAskingSwiftUIViewController_itReturnsNoView() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
         // Given
         let predicate = objc_DefaultUIKitRUMViewsPredicate()
 

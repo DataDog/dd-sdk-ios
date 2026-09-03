@@ -478,9 +478,11 @@ public final class objc_RUMTimeseriesType: NSObject {
 public final class objc_RUMTimeseriesConfiguration: NSObject {
     internal let swiftConfig: RUM.Configuration.Timeseries
 
-    public init(collectTypes: [objc_RUMTimeseriesType]?) {
-        swiftConfig = .init(collectTypes: collectTypes?.map(\.swiftType))
+    public init(collectTypes: [objc_RUMTimeseriesType]) {
+        swiftConfig = .init(collectTypes: Set(collectTypes.map(\.swiftType)))
     }
+
+    public static let `default` = objc_RUMTimeseriesConfiguration(collectTypes: [.memory, .cpu])
 }
 
 @objc(DDOperationOptions)

@@ -12,7 +12,6 @@ import Foundation
 ///
 /// It starts monitoring only when Session Replay is enabled and the current
 /// session is sampled.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerTreeRecordingCoordinator: RecordingController {
     let replaySampleRate: SampleRate
     let textAndInputPrivacy: TextAndInputPrivacyLevel
@@ -138,7 +137,6 @@ internal final class LayerTreeRecordingCoordinator: RecordingController {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension LayerTreeRecordingCoordinator: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from _: DatadogCoreProtocol) -> Bool {
         guard case let .context(context) = message else {

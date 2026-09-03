@@ -135,9 +135,7 @@ class TracerTests: XCTestCase {
         XCTAssertNoThrow(try spanMatcher.meta.mobileNetworkCarrierRadioTechnology())
         XCTAssertNoThrow(try spanMatcher.meta.networkConnectionSupportsIPv4())
         XCTAssertNoThrow(try spanMatcher.meta.networkConnectionSupportsIPv6())
-        if #available(iOS 13.0, *) {
-            XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsConstrained())
-        }
+        XCTAssertNoThrow(try spanMatcher.meta.networkConnectionIsConstrained())
     }
 
     func testSendingSpanWithGlobalTags() throws {

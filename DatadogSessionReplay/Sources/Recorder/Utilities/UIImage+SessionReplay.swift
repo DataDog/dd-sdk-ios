@@ -88,7 +88,7 @@ extension DatadogExtension where ExtendedType: UIImage {
     ///   - tintColor: The tint color to apply.
     /// - Returns: The PNG data.
     func pngData(maxSize: CGSize = .init(width: 1_000, height: 1_000), tintColor: UIColor? = nil) -> Data? {
-        if #available(iOS 13.0, *), type.isSymbolImage, let tintColor = tintColor {
+        if type.isSymbolImage, let tintColor = tintColor {
             return png(image: type.withTintColor(tintColor), maxSize: maxSize, tintColor: nil)
         }
 
@@ -132,12 +132,10 @@ extension DatadogExtension where ExtendedType: UIImage {
 }
 
 extension UIImage {
-    @available(iOS 13.0, *)
     var isContextual: Bool {
         return isSymbolImage || isBundled || isAlwaysTemplate
     }
 
-    @available(iOS 13.0, *)
     var isTinted: Bool {
         return isSymbolImage || isAlwaysTemplate
     }

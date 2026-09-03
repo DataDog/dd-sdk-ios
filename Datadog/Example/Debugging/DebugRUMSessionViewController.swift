@@ -8,7 +8,6 @@ import SwiftUI
 import DatadogRUM
 import DatadogTrace
 
-@available(iOS 13, tvOS 13, *)
 internal class DebugRUMSessionViewController: UIHostingController<DebugRUMSessionView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: DebugRUMSessionView())
@@ -22,7 +21,6 @@ private enum SessionItemType {
     case error
 }
 
-@available(iOS 13, tvOS 13, *)
 private class DebugRUMSessionViewModel: ObservableObject {
     struct SessionItem: Identifiable {
         let label: String
@@ -196,7 +194,6 @@ private class DebugRUMSessionViewModel: ObservableObject {
     }
 }
 
-@available(iOS 13, tvOS 13, *)
 internal struct DebugRUMSessionView: View {
     @ObservedObject private var viewModel = DebugRUMSessionViewModel()
 
@@ -289,7 +286,6 @@ internal struct DebugRUMSessionView: View {
     }
 }
 
-@available(iOS 13, tvOS 13, *)
 private struct FormItemView: View {
     let title: String
     let placeholder: String
@@ -317,7 +313,6 @@ private struct FormItemView: View {
     }
 }
 
-@available(iOS 13, tvOS 13, *)
 private struct SessionItemView: View {
     let item: DebugRUMSessionViewModel.SessionItem
 
@@ -368,7 +363,6 @@ private struct SessionItemView: View {
 
 // MARK - Preview
 
-@available(iOS 13, tvOS 13, *)
 struct DebugRUMSessionViewController_Previews: PreviewProvider {
     static var previews: some View {
         Group {

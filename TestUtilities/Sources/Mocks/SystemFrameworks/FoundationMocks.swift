@@ -639,7 +639,6 @@ extension URLSessionTaskMetrics {
         return URLSessionTaskMetrics()
     }
 
-    @available(iOS 13, *)
     public static func mockWith(
         taskInterval: DateInterval = .init(start: Date(), duration: 1),
         transactionMetrics: [URLSessionTaskTransactionMetrics] = []
@@ -657,7 +656,6 @@ extension URLSessionTaskTransactionMetrics {
     }
 
     /// Mocks `URLSessionTaskTransactionMetrics` by spreading out detailed values between `start` and `end`.
-    @available(iOS 13, *)
     public static func mockBySpreadingDetailsBetween(
         start: Date,
         end: Date,
@@ -700,7 +698,6 @@ extension URLSessionTaskTransactionMetrics {
         )
     }
 
-    @available(iOS 13, *)
     public static func mockWith(
         resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad,
         fetchStartDate: Date? = nil,
@@ -750,7 +747,6 @@ private class URLSessionDataTaskMock: URLSessionDataTask, @unchecked Sendable {
     }
 }
 
-@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskMetrics` prior to iOS 13.0
 private class URLSessionTaskMetricsMock: URLSessionTaskMetrics, @unchecked Sendable {
     private let _taskInterval: DateInterval
     override var taskInterval: DateInterval { _taskInterval }
@@ -764,7 +760,6 @@ private class URLSessionTaskMetricsMock: URLSessionTaskMetrics, @unchecked Senda
     }
 }
 
-@available(iOS 13, *) // We can't rely on subclassing the `URLSessionTaskTransactionMetrics` prior to iOS 13.0
 private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMetrics, @unchecked Sendable {
     private let _resourceFetchType: URLSessionTaskMetrics.ResourceFetchType
     override var resourceFetchType: URLSessionTaskMetrics.ResourceFetchType { _resourceFetchType }

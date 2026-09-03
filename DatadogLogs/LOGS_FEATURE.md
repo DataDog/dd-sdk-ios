@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-31
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: b9103bfe1
 tracked_files:
   - DatadogLogs/Sources/Logs.swift
   - DatadogLogs/Sources/Logger.swift
@@ -161,7 +161,7 @@ logger.error(
 ### Logger Enrichment
 - **Service**: `service` (default: SDK service value) — overrides `service` on log events.
 - **Logger name**: `name` — reported as `logger.name` on log events.
-- **Network info**: `networkInfoEnabled` (default: `false`) — attaches reachability, connection type, mobile carrier to every log.
+- **Network info**: `networkInfoEnabled` (default: `false`) — attaches reachability, connection type, mobile carrier to every log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — attaches `application_id`, `session_id`, `view.id`, `user_action.id` when a sampled-in RUM session is active.
 - **Trace bundling**: `bundleWithTraceEnabled` (default: `true`) — attaches `dd.trace_id` and `dd.span_id` when a Datadog span is active (via `span.setActive()` from `Tracer.shared()`). OTel spans activated through `withActiveSpan` do not propagate through this path.
 

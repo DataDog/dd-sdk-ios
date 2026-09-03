@@ -9,7 +9,6 @@ import DatadogInternal
 import Foundation
 
 /// Turns layer tree, image, and touch snapshots into Session Replay records.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol LayerSnapshotProcessing {
     func process(
         layerTreeSnapshot: LayerTreeSnapshot,
@@ -19,7 +18,6 @@ internal protocol LayerSnapshotProcessing {
 }
 
 /// Builds and writes Session Replay records for the Core Animation recording pipeline.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private let queue: Queue
     private let recordWriter: RecordWriting
@@ -173,7 +171,6 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension LayerTreeSnapshot {
     func shouldStartNewSegment(after previousSnapshot: LayerTreeSnapshot?) -> Bool {
         return context.applicationID != previousSnapshot?.context.applicationID ||
@@ -182,7 +179,6 @@ private extension LayerTreeSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension EnrichedRecord {
     init(context: LayerRecordingContext, records: [SRRecord]) {
         self.applicationID = context.applicationID
