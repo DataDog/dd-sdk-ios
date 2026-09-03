@@ -25,6 +25,18 @@ internal typealias FlagAssignmentsSchedule = @Sendable (
 internal typealias FlagAssignmentsJitter = @Sendable (TimeInterval) -> TimeInterval
 internal typealias FlagAssignmentsNow = @Sendable () -> Date
 
+private final class FlagAssignmentsScheduledWork: @unchecked Sendable {
+    let workItem: DispatchWorkItem
+
+    init(operation: @escaping @Sendable () -> Void) {
+        self.workItem = DispatchWorkItem(block: operation)
+    }
+
+    func cancel() {
+        workItem.cancel()
+    }
+}
+
 /// Executes an assignment request with a per-attempt timeout and bounded retries.
 ///
 /// Each attempt receives the same immutable `URLRequest`. The operation ignores late transport
@@ -447,10 +459,10 @@ internal final class FlagAssignmentsRequestOperation: @unchecked Sendable {
     }
 
     internal static let schedule: FlagAssignmentsSchedule = { delay, operation in
-        let work = DispatchWorkItem(block: operation)
+        let work = FlagAssignmentsScheduledWork(operation: operation)
         DispatchQueue.global(qos: .utility).asyncAfter(
             deadline: .now() + delay,
-            execute: work
+            execute: work.workItem
         )
         return { work.cancel() }
     }

@@ -405,6 +405,18 @@ final class FlagAssignmentsRequestOperationTests: XCTestCase {
         XCTAssertTrue(scheduler.scheduledDelays.isEmpty)
     }
 
+    func testDefaultScheduleCancellationPreventsScheduledOperationFromRunning() {
+        let scheduledOperation = expectation(description: "scheduled operation")
+        scheduledOperation.isInverted = true
+        let cancel = FlagAssignmentsRequestOperation.schedule(0.1) {
+            scheduledOperation.fulfill()
+        }
+
+        cancel()
+
+        wait(for: [scheduledOperation], timeout: 0.2)
+    }
+
     func testCompletedOperationIsNotRetainedByTimerOrCancellation() {
         let scheduler = ManualScheduler()
         let fetchCompletion = ThreadSafeBox<Flags.AssignmentRequestFetch.Completion?>(nil)
