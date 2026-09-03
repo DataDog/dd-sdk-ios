@@ -24,6 +24,8 @@ internal class JSONSchema: Decodable {
         case items = "items"
         case readOnly = "readOnly"
         case ref = "$ref"
+        case defs = "$defs"
+        case definitions = "definitions"
         case oneOf = "oneOf"
         case anyOf = "anyOf"
         case allOf = "allOf"
@@ -76,61 +78,57 @@ internal class JSONSchema: Decodable {
     }
 
     required init(from decoder: Decoder) throws {
-        do {
-            // First try decoding with keyed container
-            let keyedContainer = try decoder.container(keyedBy: CodingKeys.self)
-            self.id = try keyedContainer.decodeIfPresent(String.self, forKey: .id)
-            self.title = try keyedContainer.decodeIfPresent(String.self, forKey: .title)
-            self.description = try keyedContainer.decodeIfPresent(String.self, forKey: .description)
-            self.properties = try keyedContainer.decodeIfPresent([String: JSONSchema].self, forKey: .properties)
-            self.additionalProperties = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
-            self.required = try keyedContainer.decodeIfPresent([String].self, forKey: .required)
-            self.type = try keyedContainer.decodeIfPresent(SchemaType.self, forKey: .type)
-            self.enum = try keyedContainer.decodeIfPresent([EnumValue].self, forKey: .enum)
-            self.const = try keyedContainer.decodeIfPresent(SchemaConstant.self, forKey: .const)
-            self.items = try keyedContainer.decodeIfPresent(JSONSchema.self, forKey: .items)
-            self.readOnly = try keyedContainer.decodeIfPresent(Bool.self, forKey: .readOnly)
-            self.ref = try keyedContainer.decodeIfPresent(String.self, forKey: .ref)
-            self.allOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .allOf)
-            self.oneOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
-            self.anyOf = try keyedContainer.decodeIfPresent([JSONSchema].self, forKey: .anyOf)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-            // RUMM-2266 Patch:
-            // If schema doesn't define `type`, but defines `properties`, it is safe to assume
-            // that its `.object` schema:
-            if self.type == nil && self.properties != nil {
-                self.type = .object
-            }
-        } catch let keyedContainerError as DecodingError {
-            // If data in this `decoder` cannot be represented as keyed container, perhaps it encodes
-            // a single value. Check known schema values:
-            do {
-                if decoder.codingPath.last as? JSONSchema.CodingKeys == .additionalProperties {
-                    // Handle `additionalProperties: true | false`
-                    let singleValueContainer = try decoder.singleValueContainer()
-                    let hasAdditionalProperties = try singleValueContainer.decode(Bool.self)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.title = try container.decodeIfPresent(String.self, forKey: .title)
+        self.description = try container.decodeIfPresent(String.self, forKey: .description)
+        self.properties = try container.decodeIfPresent([String: JSONSchema].self, forKey: .properties)
+        self.required = try container.decodeIfPresent([String].self, forKey: .required)
+        self.`enum` = try container.decodeIfPresent([EnumValue].self, forKey: .enum)
+        self.const = try container.decodeIfPresent(SchemaConstant.self, forKey: .const)
+        self.items = try container.decodeIfPresent(JSONSchema.self, forKey: .items)
+        self.readOnly = try container.decodeIfPresent(Bool.self, forKey: .readOnly)
+        self.ref = try container.decodeIfPresent(String.self, forKey: .ref)
+        self.defs = try container.decodeIfPresent([String: JSONSchema].self, forKey: .defs)
+        self.definitions = try container.decodeIfPresent([String: JSONSchema].self, forKey: .definitions)
+        self.allOf = try container.decodeIfPresent([JSONSchema].self, forKey: .allOf)
+        self.oneOf = try container.decodeIfPresent([JSONSchema].self, forKey: .oneOf)
+        self.anyOf = try container.decodeIfPresent([JSONSchema].self, forKey: .anyOf)
 
-                    if hasAdditionalProperties {
-                        self.type = .object
-                    } else {
-                        throw Exception.moreContext(
-                            "Decoding `additionalProperties: false` is not supported in `JSONSchema.init(from:)`.",
-                            for: keyedContainerError
-                        )
-                    }
-                } else {
-                    throw Exception.moreContext(
-                        "Decoding \(decoder.codingPath) is not supported in `JSONSchema.init(from:)`.",
-                        for: keyedContainerError
-                    )
-                }
-            } catch let singleValueContainerError {
-                throw Exception.moreContext(
-                    "Unhandled parsing exception in `JSONSchema.init(from:)`.",
-                    for: singleValueContainerError
-                )
+        self.additionalProperties = try Self.decodeAdditionalProperties(from: container)
+        // RUMM-2266: infer `.object` when `properties` exist but `type` is absent.
+        self.type = try Self.decodeType(from: container) ?? (properties != nil ? .object : nil)
+    }
+
+    /// Decodes `additionalProperties`, which JSON Schema allows as `true`, `false`, or a schema object.
+    /// `false` → `nil` (nothing to generate); `true` → unconstrained object schema.
+    private static func decodeAdditionalProperties(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> JSONSchema? {
+        if let bool = try? container.decode(Bool.self, forKey: .additionalProperties) {
+            guard bool else {
+                return nil
             }
+            let schema = JSONSchema()
+            schema.type = .object
+            return schema
         }
+        return try container.decodeIfPresent(JSONSchema.self, forKey: .additionalProperties)
+    }
+
+    /// Decodes `type`, which JSON Schema allows as a single string or an array of strings.
+    /// When it's an array (e.g. `["array", "null"]`), returns the first non-`null` entry.
+    private static func decodeType(
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> SchemaType? {
+        if let single = try? container.decodeIfPresent(SchemaType.self, forKey: .type) {
+            return single
+        }
+        if let array = try? container.decode([String].self, forKey: .type) {
+            return array.first(where: { $0 != "null" }).flatMap(SchemaType.init(rawValue:))
+        }
+        return nil
     }
 
     init() {}
@@ -169,6 +167,13 @@ internal class JSONSchema: Decodable {
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#ref
     private var ref: String?
 
+    /// In-document schema definitions.
+    /// https://json-schema.org/draft/2019-09/json-schema-core.html#defs
+    private(set) var defs: [String: JSONSchema]?
+
+    /// In-document schema definitions (draft-07 `definitions` keyword, equivalent to `$defs`).
+    private(set) var definitions: [String: JSONSchema]?
+
     /// Subschemas to be resolved.
     /// https://json-schema.org/draft/2019-09/json-schema-core.html#rfc.section.9.2.1.1
     private(set) var allOf: [JSONSchema]?
@@ -183,6 +188,25 @@ internal class JSONSchema: Decodable {
 
     // MARK: - Resolving Schema References
 
+    /// Navigates a JSON Pointer path from a root schema, returning `nil` for any unsupported step.
+    private static func navigate(_ path: ArraySlice<String>, in schema: JSONSchema) -> JSONSchema? {
+        guard let key = path.first else {
+            return schema
+        }
+        switch key {
+        case "$defs":
+            return path.dropFirst().first.flatMap { schema.defs?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "definitions":
+            return path.dropFirst().first.flatMap { schema.definitions?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "properties":
+            return path.dropFirst().first.flatMap { schema.properties?[$0] }.flatMap { navigate(path.dropFirst(2), in: $0) }
+        case "items":
+            return schema.items.flatMap { navigate(path.dropFirst(), in: $0) }
+        default:
+            return nil
+        }
+    }
+
     /// Resolves `$ref` recursively.
     ///
     /// All sub-schemas with `$ref`, including `self` will be resolved.
@@ -192,35 +216,67 @@ internal class JSONSchema: Decodable {
     /// - Parameters:
     ///   - directory: The directory in which to look for referred schemas.
     ///   - reader: The schema file reader.
-    func resolveReferences(in directory: URL, using reader: JSONSchemaReader) throws {
+    ///   - root: The document root schema, used to resolve in-document `#/...` refs.
+    func resolveReferences(in directory: URL, using reader: JSONSchemaReader, root: JSONSchema? = nil) throws {
+        let effectiveRoot = root ?? self
+
+        // resolve `$defs` / `definitions` entries first so they're ready as resolution targets
+        try self.defs?.values.forEach {
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
+        }
+        try self.definitions?.values.forEach {
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
+        }
+
         // resolve `properties.$ref`
         try properties?.map(\.value).forEach {
-            try $0.resolveReferences(in: directory, using: reader)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `items.$ref`
         try items.map {
-            try $0.resolveReferences(in: directory, using: reader)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `oneOf[].$ref`
         // `oneOf` schemas are kept as orphans
         try oneOf?.forEach {
-            try $0.resolveReferences(in: directory, using: reader)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
         }
 
         // resolve `allOf[].$ref`
         // merge `allOf` schemas with `self`
         try allOf?.forEach {
-            try $0.resolveReferences(in: directory, using: reader)
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
             merge(with: $0)
         }
 
+        // resolve `anyOf[].$ref`
+        try anyOf?.forEach {
+            try $0.resolveReferences(in: directory, using: reader, root: effectiveRoot)
+        }
+
         // resolve `$ref`
+        // Refs follow the JSON Reference format: `[file]#[/json/pointer]`
+        // Both parts are optional: `#/foo` (in-document), `other.json` (whole file), `other.json#/foo` (cross-file).
         try ref.map { ref in
-            let url = directory.appendingPathComponent(ref)
-            let schema = try reader.read(url)
-            merge(with: schema)
+            let range = ref.range(of: "#")
+            let file = range.map { String(ref[ref.startIndex..<$0.lowerBound]) } ?? ref
+            let fragment = range.map { String(ref[$0.upperBound...]) }
+
+            let root = file.isEmpty
+                ? effectiveRoot
+                : try reader.read(directory.appendingPathComponent(file))
+
+            if let fragment, !fragment.isEmpty {
+                let parts = fragment.split(separator: "/").map(String.init)
+                guard let resolved = Self.navigate(parts[...], in: root) else {
+                    throw Exception.unimplemented("Unsupported $ref path: \(ref)")
+                }
+                merge(with: resolved)
+            } else {
+                merge(with: root)
+            }
         }
 
         oneOf = oneOf?.compactMap { obj in
@@ -255,7 +311,8 @@ internal class JSONSchema: Decodable {
             return
         }
 
-        // Title can be overwritten
+        // id and title can be inferred from the merged schema
+        self.id = self.id ?? otherSchema.id
         self.title = self.title ?? otherSchema.title
 
         // Description can be overwritten

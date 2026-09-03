@@ -1,0 +1,22 @@
+{
+    "title": "TitledUnion",
+    "description": "Schema where title takes precedence over discriminator",
+    "anyOf": [
+        {
+            "title": "ExplicitTitleA",
+            "type": "object",
+            "properties": {
+                "kind": { "type": "string", "const": "a" },
+                "value": { "type": "string" }
+            }
+        },
+        {
+            "title": "ExplicitTitleB",
+            "type": "object",
+            "properties": {
+                "kind": { "type": "string", "const": "b" },
+                "value": { "type": "integer" }
+            }
+        }
+    ]
+}

@@ -7,5 +7,8 @@ xcuserdata/
 # Directory used to clone `rum-events-format` repository
 /rum-events-format
 
+# Directory used to clone `dd-go` repository
+/dd-go
+
 # Directory used to generate models for `/rum-events-format`
 /.temp
