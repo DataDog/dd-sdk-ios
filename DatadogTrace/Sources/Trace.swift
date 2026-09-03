@@ -42,11 +42,10 @@ public enum Trace {
 
         // Register Trace feature:
         let trace = TraceFeature(in: core, configuration: configuration)
-
-        // Subscribe typed-bus receivers before registration so initial context push is received:
-        core.messageBus.subscribe(receiver: trace.contextReceiver)
-
         try core.register(feature: trace)
+
+        // Subscribe typed-bus receivers only after successful registration:
+        core.messageBus.subscribe(receiver: trace.contextReceiver)
 
         // If `URLSession` tracking is configured, register `URLSessionHandler` to enable distributed tracing:
         if let urlSessionTracking = configuration.urlSessionTracking {
