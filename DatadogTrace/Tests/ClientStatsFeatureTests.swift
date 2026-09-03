@@ -532,6 +532,8 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     private let contextValue: DatadogContext
     private var registeredFeatures: [DatadogFeature] = []
 
+    var remoteConfiguration: RemoteConfiguration? { nil }
+
     init(context: DatadogContext = .mockAny()) {
         self.contextValue = context
     }
