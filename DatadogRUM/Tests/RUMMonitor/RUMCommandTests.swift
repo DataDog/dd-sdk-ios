@@ -104,8 +104,13 @@ class RUMCommandTests: XCTestCase {
         let missing: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .manual)
         XCTAssertEqual(missing.instrumentationType, .manual)
 
+        #if canImport(UIKit)
         let uikit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .uikit)
         XCTAssertEqual(uikit.instrumentationType, .uikit)
+        #elseif canImport(AppKit)
+        let appkit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .appKit)
+        XCTAssertEqual(appkit.instrumentationType, .appKit)
+        #endif
     }
 
     func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorIsCrashAttribute() {

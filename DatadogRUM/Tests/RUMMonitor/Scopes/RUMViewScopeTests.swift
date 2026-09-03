@@ -2050,6 +2050,7 @@ class RUMViewScopeTests: XCTestCase {
             case .appKit: return "AppKit action"
             case .swiftuiAutomatic: return "Automatic SwiftUI action"
             case .swiftui: return "SwiftUI action"
+            case .crossPlatform(let value): return "\(value) action"
             }
         }
 
@@ -2122,15 +2123,32 @@ class RUMViewScopeTests: XCTestCase {
             )
         }
 
-        try testClickActions(firstClick: .appKit, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        let crossPlatform = InstrumentationType.crossPlatform("Cross-platform")
+
         try testClickActions(firstClick: .appKit, secondClick: .manual, expectedActionName: actionName(for: .manual))
         try testClickActions(firstClick: .appKit, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
-        try testClickActions(firstClick: .swiftui, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .appKit, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .appKit, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .appKit, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
         try testClickActions(firstClick: .swiftui, secondClick: .appKit, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: .manual, expectedActionName: actionName(for: .manual))
         try testClickActions(firstClick: .swiftui, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
         try testClickActions(firstClick: .manual, secondClick: .appKit, expectedActionName: actionName(for: .manual))
-        try testClickActions(firstClick: .manual, secondClick: .swiftui, expectedActionName: actionName(for: .manual))
         try testClickActions(firstClick: .manual, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: .swiftui, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: crossPlatform, secondClick: .appKit, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftui, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .manual, expectedActionName: actionName(for: crossPlatform))
     }
     #elseif !os(macOS)
     func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
