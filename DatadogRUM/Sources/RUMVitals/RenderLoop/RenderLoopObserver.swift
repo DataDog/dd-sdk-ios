@@ -6,7 +6,11 @@
 
 import DatadogInternal
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal protocol RenderLoopReader: AnyObject {
     var isActive: Bool { get }
@@ -40,17 +44,32 @@ internal class DisplayLinker {
 
     init(
         notificationCenter: NotificationCenter,
-        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }
+        frameInfoProviderFactory: @escaping (Any, Selector) -> FrameInfoProvider = {
+            #if canImport(UIKit)
+            CADisplayLink(target: $0, selector: $1)
+            #elseif canImport(AppKit)
+            NoopFrameInfoProvider(target: $0, selector: $1)
+            #endif
+        }
     ) {
         self.notificationCenter = notificationCenter
         self.frameInfoProviderFactory = frameInfoProviderFactory
 
+        #if os(macOS)
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(appWillResignActive),
+            name: ApplicationNotifications.didResignActive,
+            object: nil
+        )
+        #else
         notificationCenter.addObserver(
             self,
             selector: #selector(appWillResignActive),
             name: ApplicationNotifications.willResignActive,
             object: nil
         )
+        #endif
         notificationCenter.addObserver(
             self,
             selector: #selector(appDidBecomeActive),

@@ -28,7 +28,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// The current application state history.
     ///
     /// **Note**: It must be accessed from the main thread.
-    private var history: AppStateHistory
+    @MainActor private var history: AppStateHistory
 
     /// The receiver for publishing the state history.
     @ReadWriteLock
@@ -37,13 +37,11 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     /// Creates a Application state publisher for publishing application state
     /// history.
     ///
-    /// **Note**: It must be called on the main thread.
-    ///
     /// - Parameters:
     ///   - appStateHistory: The history of app state and their transitions over time.
     ///   - notificationCenter: The notification center where this publisher observes `UIApplication` notifications.
     ///   - dateProvider: The date provider for the Application state snapshot timestamp.
-    ///   - queue: The queue for publishing the history.
+    @MainActor
     init(
         appStateHistory: AppStateHistory,
         notificationCenter: NotificationCenter,
@@ -68,32 +66,36 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
         notificationCenter.addObserver(self, selector: #selector(applicationWillEnterForeground), name: ApplicationNotifications.willEnterForeground, object: nil)
     }
 
+    @MainActor
     @objc
     private func applicationDidBecomeActive() {
         append(state: .active)
     }
 
+    @MainActor
     @objc
     private func applicationWillResignActive() {
         append(state: .inactive)
     }
 
+    @MainActor
     @objc
     private func applicationDidEnterBackground() {
         append(state: .background)
     }
 
+    @MainActor
     @objc
     private func applicationWillEnterForeground() {
         append(state: .inactive)
     }
 
+    @MainActor
     private func append(state: AppState) {
         // This must run on the main thread for two reasons:
         // - For maximum performance, `history` is lock-free and relies on synchronization through a single thread.
         // - `receiver` must be updated from the main thread to ensure the new app state is always available
         //   for the next `eventWriteContext {}` and `context {}` request on this thread.
-        dd_assert(Thread.isMainThread, "Must be called on main thread")
         history.append(state: state, at: dateProvider.now)
         receiver?(history)
     }

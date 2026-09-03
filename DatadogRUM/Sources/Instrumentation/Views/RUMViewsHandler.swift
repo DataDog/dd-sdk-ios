@@ -5,7 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 // MARK: - RUMViewsHandler
@@ -37,7 +41,7 @@ internal final class RUMViewsHandler {
     #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
-    private let uiKitPredicate: UIKitRUMViewsPredicate?
+    private let uiKitPredicate: DDKitRUMViewsPredicate?
 
     /// `SwiftUI` view predicate. `nil` if `SwiftUI` auto-instrumentations is
     /// disabled.
@@ -48,9 +52,9 @@ internal final class RUMViewsHandler {
     private let swiftUIViewNameExtractor: SwiftUIViewNameExtractor?
     #endif
 
-    /// The notification center where this handler observes app lifecycle notifications:
-    /// - `.didEnterBackground`
-    /// - `.willEnterForeground`
+    /// The notification center where this handler observes following `DDApplication` notifications:
+    /// - `.didEnterBackgroundNotification`
+    /// - `.willEnterForegroundNotification`
     private weak var notificationCenter: NotificationCenter?
 
     /// The RUM Command subscriber responsible for processing
@@ -73,10 +77,10 @@ internal final class RUMViewsHandler {
     ///   - predicate: `UIKit` view predicate. `nil`, if `UIKit`
     ///     auto-instrumentations is disabled.
     ///   - notificationCenter: The notification center where this handler
-    ///    a set of `UIApplication` notifications.
+    ///    a set of `DDApplication` notifications.
     init(
         dateProvider: DateProvider,
-        uiKitPredicate: UIKitRUMViewsPredicate?,
+        uiKitPredicate: DDKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
         notificationCenter: NotificationCenter
@@ -87,6 +91,7 @@ internal final class RUMViewsHandler {
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
         self.notificationCenter = notificationCenter
 
+        #if !os(macOS)
         notificationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
@@ -99,6 +104,7 @@ internal final class RUMViewsHandler {
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
+        #endif
     }
 
     #else
@@ -126,6 +132,7 @@ internal final class RUMViewsHandler {
     }
     #endif
 
+    #if !os(macOS)
     deinit {
         notificationCenter?.removeObserver(
             self,
@@ -138,6 +145,7 @@ internal final class RUMViewsHandler {
             object: nil
         )
     }
+    #endif
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
@@ -223,6 +231,7 @@ internal final class RUMViewsHandler {
         )
     }
 
+#if !os(macOS)
     @objc
     private func applicationDidEnterBackground() {
         if let current = stack.last {
@@ -250,18 +259,20 @@ internal final class RUMViewsHandler {
             )
         )
     }
+#endif
 }
 
 // MARK: - UIViewControllerHandler
 #if !os(watchOS)
 extension RUMViewsHandler: UIViewControllerHandler {
-    func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
+    func notify_viewDidAppear(viewController: DDViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
         if let view = stack.first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
         } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
+#if canImport(UIKit)
             add(
                 view: .init(
                     identity: identity,
@@ -272,6 +283,18 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     instrumentationType: .uikit
                 )
             )
+#elseif canImport(AppKit)
+            add(
+                view: .init(
+                    identity: identity,
+                    name: rumView.name,
+                    path: rumView.path ?? viewController.canonicalClassName,
+                    isUntrackedModal: rumView.isUntrackedModal,
+                    attributes: rumView.attributes,
+                    instrumentationType: .appKit
+                )
+            )
+#endif
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
@@ -290,7 +313,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         }
     }
 
-    func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
         remove(identity: ViewIdentifier(viewController))
     }
 }

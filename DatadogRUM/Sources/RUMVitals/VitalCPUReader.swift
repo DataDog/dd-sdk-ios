@@ -5,6 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 /// A class reading the CPU ticks of the processor.
@@ -20,12 +25,17 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     private let telemetry: Telemetry
 
     init(
-        notificationCenter: NotificationCenter,
+        notificationCenterProvider: NotificationCenterProvider,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.telemetry = telemetry
-        notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
+        #if os(macOS)
+        notificationCenterProvider.workspaceCenter.addObserver(self, selector: #selector(appWillResignActive), name: WorkspaceNotifications.willSleep, object: nil)
+        notificationCenterProvider.workspaceCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: WorkspaceNotifications.didWake, object: nil)
+        #else
+        notificationCenterProvider.applicationCenter.addObserver(self, selector: #selector(appWillResignActive), name: ApplicationNotifications.willResignActive, object: nil)
+        notificationCenterProvider.applicationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: ApplicationNotifications.didBecomeActive, object: nil)
+        #endif
     }
 
     func readVitalData() -> Double? {

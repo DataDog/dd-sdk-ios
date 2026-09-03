@@ -3846,25 +3846,25 @@ public protocol objc_SwiftUIRUMActionsPredicate: AnyObject
 public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMActionsPredicate
     public init(isLegacyDetectionEnabled: Bool)
     public func rumAction(with componentName: String) -> objc_RUMAction?
-public class objc_RUMView: NSObject
-    public var name: String
-    public var attributes: [String: Any]
-    public init(name: String, attributes: [String: Any])
 public protocol objc_UIKitRUMViewsPredicate: AnyObject
     func rumView(for viewController: UIViewController) -> objc_RUMView?
 public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPredicate
     public func rumView(for viewController: UIViewController) -> objc_RUMView?
 public class objc_DefaultUIKitRUMActionsPredicate: NSObject, objc_UIKitRUMActionsPredicate
     public func rumAction(targetView: UIView) -> objc_RUMAction?
-public class objc_RUMAction: NSObject
-    public var name: String
-    public var attributes: [String: Any]
-    public init(name: String, attributes: [String: Any])
 public protocol objc_UIKitRUMActionsPredicate: objc_UITouchRUMActionsPredicate
 public protocol objc_UITouchRUMActionsPredicate: AnyObject
     func rumAction(targetView: UIView) -> objc_RUMAction?
 public protocol objc_UIPressRUMActionsPredicate: AnyObject
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
+public class objc_RUMView: NSObject
+    public var name: String
+    public var attributes: [String: Any]
+    public init(name: String, attributes: [String: Any])
+public class objc_RUMAction: NSObject
+    public var name: String
+    public var attributes: [String: Any]
+    public init(name: String, attributes: [String: Any])
 public class objc_TNSResourceParams: NSObject
     public let url: String
     public let timeSinceViewStart: TimeInterval

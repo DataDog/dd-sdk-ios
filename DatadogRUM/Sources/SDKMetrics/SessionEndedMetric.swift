@@ -619,7 +619,11 @@ extension InstrumentationType: Encodable {
 
     var metricKey: String {
         switch self {
+#if canImport(UIKit)
         case .uikit: return "uikit"
+#elseif canImport(AppKit)
+        case .appKit: return "appKit"
+#endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"
@@ -629,6 +633,7 @@ extension InstrumentationType: Encodable {
 }
 
 private extension AppState {
+    #if !os(macOS)
     var toString: String {
         switch self {
         case .active: return "active"
@@ -637,4 +642,16 @@ private extension AppState {
         case .terminated: return "terminated"
         }
     }
+    #else
+    var toString: String {
+        switch self {
+        case .active: return "active"
+        case .inactive: return "inactive"
+        case .hidden: return "hidden"
+        case .lockScreen: return "lock screen"
+        case .sleeping: return "sleeping"
+        case .terminating: return "terminating"
+        }
+    }
+    #endif
 }

@@ -7,12 +7,16 @@
 #if !os(watchOS)
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
     func createActionCommand(
-        from touch: UITouch,
+        from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {
@@ -21,6 +25,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
             return nil
         }
 
+        #if canImport(UIKit)
         if let view = touch.view,
            view.isSwiftUIView,
            // For iOS 17 and below, we can't reliably distinguish SwiftUI component types (e.g., Button vs Label).
@@ -41,6 +46,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
                 )
             }
         }
+        #endif
 
         return nil
     }

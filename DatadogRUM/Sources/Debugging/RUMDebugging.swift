@@ -5,7 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
 import DatadogInternal
 
 #if !os(watchOS)
@@ -29,10 +33,11 @@ private struct RUMDebugInfo {
 }
 #endif
 
+#if canImport(UIKit)
 internal class RUMDebugging {
     #if !os(watchOS)
-    /// An overlay view renderd on top of the app content. It is created lazily on first draw.
-    private var canvas: UIView? = nil
+    /// An overlay view rendered on top of the app content. It is created lazily on first draw.
+    private var canvas: DDView? = nil
     #endif
 
     // MARK: - Initialization
@@ -121,7 +126,7 @@ internal class RUMDebugging {
             canvas.addSubview(view)
         }
         if canvas.superview == nil,
-           let someWindow = UIApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
+           let someWindow = DDApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
             canvas.frame.size = someWindow.bounds.size
             someWindow.addSubview(canvas)
         }
@@ -134,8 +139,9 @@ internal class RUMDebugging {
     }
     #endif
 }
+#endif
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
         static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
@@ -143,20 +149,20 @@ internal class RUMViewOutline: RUMDebugView {
         static let labelHeight: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
-            .foregroundColor: UIColor.white,
+            .font: DDFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.8, weight: .semibold),
+            .foregroundColor: DDColor.white,
         ]
         static let viewDetailsTextAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
-            .foregroundColor: UIColor.white,
+            .font: DDFont.monospacedDigitSystemFont(ofSize: Constants.labelHeight * 0.5, weight: .regular),
+            .foregroundColor: DDColor.white,
         ]
     }
 
-    private let label: UILabel
+    private let label: DDLabel
     private let stackOffset: CGFloat
 
     fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
-        self.label = UILabel(frame: .zero)
+        self.label = DDLabel(frame: .zero)
         self.stackOffset = CGFloat(stack.index) * Constants.labelHeight
 
         let viewName = viewInfo.name
@@ -197,11 +203,40 @@ internal class RUMViewOutline: RUMDebugView {
     }
 }
 
-internal class RUMDebugView: UIView {
+internal class RUMDebugView: DDView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .clear
         self.isUserInteractionEnabled = false
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+#endif
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+internal class RUMDebugging {
+    init() {}
+    func debug(applicationScope: RUMApplicationScope) {}
+}
+
+internal class RUMViewOutline: RUMDebugView {
+    fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
+        super.init(frame: .zero)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+internal class RUMDebugView: DDView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
     }
 
     @available(*, unavailable)

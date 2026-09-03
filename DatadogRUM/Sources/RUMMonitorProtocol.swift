@@ -4,7 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import Foundation
 import DatadogInternal
 
@@ -415,7 +419,27 @@ public protocol RUMMonitorViewProtocol: AnyObject {
     /// - Parameter keys: array of attribute keys that will be removed.
     func removeViewAttributes(forKeys keys: [AttributeKey])
 
-    #if !os(watchOS)
+    #if os(macOS)
+    /// Starts RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `NSViewController` representing this view.
+    ///   - name: the name of the view. If not provided, the `viewController` class name will be used.
+    ///   - attributes: custom attributes to attach to this view.
+    func startView(
+        viewController: NSViewController,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    )
+
+    /// Stops RUM view.
+    /// - Parameters:
+    ///   - viewController: the instance of `NSViewController` representing this view.
+    ///   - attributes: custom attributes to attach to this view.
+    func stopView(
+        viewController: NSViewController,
+        attributes: [AttributeKey: AttributeValue]
+    )
+    #elseif !os(watchOS)
     /// Starts RUM view.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this view.
@@ -548,8 +572,8 @@ extension NOPMonitor: RUMMonitorViewProtocol {
     func removeViewAttributes(forKeys keys: [AttributeKey]) { warn() }
 
     #if !os(watchOS)
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(viewController: DDViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
     #endif
     func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }

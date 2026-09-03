@@ -5,7 +5,7 @@ all: env-check repo-setup dependencies templates
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
-		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-upload \
 		benchmark-build benchmark-upload \
@@ -75,6 +75,12 @@ DEFAULT_WATCHOS_DEVICE := Apple Watch Series 11 (46mm)
 DEFAULT_VISIONOS_OS := latest
 DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
 DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
+
+# Test env for running macOS tests in local:
+# macOS runs natively (no simulator), so OS and DEVICE are placeholders ignored by tools/test.sh.
+DEFAULT_MACOS_OS := latest
+DEFAULT_MACOS_PLATFORM := macOS
+DEFAULT_MACOS_DEVICE := macOS
 
 # Test env for running SR snapshot tests in local:
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
@@ -186,6 +192,22 @@ test-visionos-all:
 	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
 	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
 
+# Run unit tests for specified SCHEME using macOS
+test-macos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all schemes ready for macOS so far
+test-macos-all:
+	@$(MAKE) test-macos SCHEME="DatadogInternal"
+	@$(MAKE) test-macos SCHEME="DatadogCore"
+	@$(MAKE) test-macos SCHEME="DatadogLogs"
+	@$(MAKE) test-macos SCHEME="DatadogTrace"
+	@$(MAKE) test-macos SCHEME="DatadogFlags"
+
 # Run UI tests for specified TEST_PLAN
 ui-test:
 	@$(call require_param,TEST_PLAN)
@@ -253,6 +275,19 @@ smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
 
+# Run smoke tests for specified TEST_DIRECTORY using macOS (runs natively on the host)
+smoke-test-macos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using macOS (SmokeTests/spm + spm-6 have macOS targets)
+smoke-test-macos-all:
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm-6"
+
 # Builds SPM package SCHEME for specified DESTINATION
 spm-build:
 	@$(call require_param,SCHEME)
@@ -277,15 +312,17 @@ spm-build-watchos:
 	# Build only compatible schemes for watchOS:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=watchOS"
 
-# Builds SPM package for macOS (and Mac Catalyst)
+# Builds SPM package for macOS
 spm-build-macos:
-	# Whole package for Mac Catalyst:
-	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
-	# Only compatible schemes for macOS:
+	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
+	# dependency of these; it is not a package product, so it has no scheme of its own):
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogRUM"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogWebViewTracking"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogFlags"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
 e2e-upload:

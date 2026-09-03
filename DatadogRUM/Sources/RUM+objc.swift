@@ -5,44 +5,99 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 @_spi(objc)
 import DatadogInternal
 
-#if !os(watchOS)
-internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
-    let objcPredicate: objc_UIKitRUMViewsPredicate
+#if os(macOS)
+internal struct AppKitRUMViewsPredicateBridge: AppKitRUMViewsPredicate {
+    let objcPredicate: objc_AppKitRUMViewsPredicate
 
-    func rumView(for viewController: UIViewController) -> RUMView? {
+    func rumView(for viewController: NSViewController) -> RUMView? {
         return objcPredicate.rumView(for: viewController)?.swiftView
     }
 }
 
-@objc(DDRUMView)
+@objc(DDAppKitRUMViewsPredicate)
+@_spi(objc)
+public protocol objc_AppKitRUMViewsPredicate: AnyObject {
+    /// The predicate deciding if the RUM View should be started or ended for given instance of the `NSViewController`.
+    /// - Parameter viewController: an instance of the view controller noticed by the SDK.
+    /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
+    func rumView(for viewController: NSViewController) -> objc_RUMView?
+}
+
+@objc(DDDefaultAppKitRUMViewsPredicate)
 @objcMembers
 @_spi(objc)
-public class objc_RUMView: NSObject {
-    let swiftView: RUMView
+public class objc_DefaultAppKitRUMViewsPredicate: NSObject, objc_AppKitRUMViewsPredicate {
+    private let swiftPredicate = DefaultAppKitRUMViewsPredicate()
 
-    public var name: String { swiftView.name }
-    public var attributes: [String: Any] { swiftView.attributes.dd.objCAttributes }
+    public func rumView(for viewController: NSViewController) -> objc_RUMView? {
+        return swiftPredicate.rumView(for: viewController).map {
+            objc_RUMView(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+        }
+    }
+}
 
-    /// Initializes the RUM View description.
-    /// - Parameters:
-    ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
-    ///   - attributes: additional attributes to associate with the RUM View.
-    public init(name: String, attributes: [String: Any]) {
-        swiftView = RUMView(
-            name: name,
-            attributes: attributes.dd.swiftAttributes
-        )
+@objc(DDDefaultAppKitRUMActionsPredicate)
+@objcMembers
+@_spi(objc)
+public class objc_DefaultAppKitRUMActionsPredicate: NSObject, objc_AppKitRUMActionsPredicate {
+    let swiftPredicate = DefaultAppKitRUMActionsPredicate()
+    public func rumAction(targetView: NSView) -> objc_RUMAction? {
+        swiftPredicate.rumAction(targetView: targetView).map {
+            objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+        }
+    }
+
+    public func rumAction(targetMenuItem: NSMenuItem) -> objc_RUMAction? {
+        swiftPredicate.rumAction(targetMenuItem: targetMenuItem).map {
+            objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+        }
+    }
+}
+
+@objc(DDAppKitRUMActionsPredicate)
+@_spi(objc)
+public protocol objc_AppKitRUMActionsPredicate: AnyObject {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameter targetView: an instance of the `NSView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(targetView: NSView) -> objc_RUMAction?
+
+    func rumAction(targetMenuItem: NSMenuItem) -> objc_RUMAction?
+}
+
+internal struct AppKitRUMActionsPredicateBridge: AppKitRUMActionsPredicate {
+    let objcPredicate: objc_AppKitRUMActionsPredicate
+
+    func rumAction(targetView: NSView) -> RUMAction? {
+        return objcPredicate.rumAction(targetView: targetView)?.swiftAction
+    }
+
+    func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
+        return objcPredicate.rumAction(targetMenuItem: targetMenuItem)?.swiftAction
+    }
+}
+
+#elseif !os(watchOS)
+internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
+    let objcPredicate: objc_UIKitRUMViewsPredicate
+
+    func rumView(for viewController: DDViewController) -> RUMView? {
+        return objcPredicate.rumView(for: viewController)?.swiftView
     }
 }
 
 @objc(DDUIKitRUMViewsPredicate)
 @_spi(objc)
 public protocol objc_UIKitRUMViewsPredicate: AnyObject {
-    /// The predicate deciding if the RUM View should be started or ended for given instance of the `UIViewController`.
+    /// The predicate deciding if the RUM View should be started or ended for given instance of the `DDViewController`.
     /// - Parameter viewController: an instance of the view controller noticed by the SDK.
     /// - Returns: RUM View parameters if received view controller should start/end the RUM View, `nil` otherwise.
     func rumView(for viewController: UIViewController) -> objc_RUMView?
@@ -61,6 +116,7 @@ public class objc_DefaultUIKitRUMViewsPredicate: NSObject, objc_UIKitRUMViewsPre
     }
 }
 
+#if canImport(UIKit)
 @objc(DDDefaultUIKitRUMActionsPredicate)
 @objcMembers
 @_spi(objc)
@@ -106,6 +162,61 @@ internal struct UIKitRUMActionsPredicateBridge: UITouchRUMActionsPredicate & UIP
         return objcPredicate.rumAction(press: type, targetView: targetView)?.swiftAction
     }
 }
+#endif
+
+#if os(tvOS)
+@objc(DDUIKitRUMActionsPredicate)
+@_spi(objc)
+public protocol objc_UIKitRUMActionsPredicate: objc_UIPressRUMActionsPredicate {}
+#else
+@objc(DDUIKitRUMActionsPredicate)
+@_spi(objc)
+public protocol objc_UIKitRUMActionsPredicate: objc_UITouchRUMActionsPredicate {}
+#endif
+
+@objc(DDUITouchRUMActionsPredicate)
+@_spi(objc)
+public protocol objc_UITouchRUMActionsPredicate: AnyObject {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameter targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(targetView: UIView) -> objc_RUMAction?
+}
+
+#if canImport(UIKit)
+@objc(DDUIPressRUMActionsPredicate)
+@_spi(objc)
+public protocol objc_UIPressRUMActionsPredicate: AnyObject {
+    /// The predicate deciding if the RUM Action should be recorded.
+    /// - Parameters:
+    ///   - type: the `UIPress.PressType` which received the action.
+    ///   - targetView: an instance of the `UIView` which received the action.
+    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
+}
+#endif
+#endif
+
+@objc(DDRUMView)
+@objcMembers
+@_spi(objc)
+public class objc_RUMView: NSObject {
+    let swiftView: RUMView
+
+    public var name: String { swiftView.name }
+    public var attributes: [String: Any] { swiftView.attributes.dd.objCAttributes }
+
+    /// Initializes the RUM View description.
+    /// - Parameters:
+    ///   - name: the RUM View name, appearing as `VIEW NAME` in RUM Explorer.
+    ///   - attributes: additional attributes to associate with the RUM View.
+    public init(name: String, attributes: [String: Any]) {
+        swiftView = RUMView(
+            name: name,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+}
 
 @objc(DDRUMAction)
 @objcMembers
@@ -127,37 +238,6 @@ public class objc_RUMAction: NSObject {
         )
     }
 }
-
-#if os(tvOS)
-@objc(DDUIKitRUMActionsPredicate)
-@_spi(objc)
-public protocol objc_UIKitRUMActionsPredicate: objc_UIPressRUMActionsPredicate {}
-#else
-@objc(DDUIKitRUMActionsPredicate)
-@_spi(objc)
-public protocol objc_UIKitRUMActionsPredicate: objc_UITouchRUMActionsPredicate {}
-#endif
-
-@objc(DDUITouchRUMActionsPredicate)
-@_spi(objc)
-public protocol objc_UITouchRUMActionsPredicate: AnyObject {
-    /// The predicate deciding if the RUM Action should be recorded.
-    /// - Parameter targetView: an instance of the `UIView` which received the action.
-    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(targetView: UIView) -> objc_RUMAction?
-}
-
-@objc(DDUIPressRUMActionsPredicate)
-@_spi(objc)
-public protocol objc_UIPressRUMActionsPredicate: AnyObject {
-    /// The predicate deciding if the RUM Action should be recorded.
-    /// - Parameters:
-    ///   - type: the `UIPress.PressType` which received the action.
-    ///   - targetView: an instance of the `UIView` which received the action.
-    /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
-    func rumAction(press type: UIPress.PressType, targetView: UIView) -> objc_RUMAction?
-}
-#endif
 
 // MARK: - NetworkSettledResourcePredicate
 
@@ -630,15 +710,30 @@ public class objc_RUMConfiguration: NSObject {
     }
 
     #if !os(watchOS)
+
+    #if os(macOS)
+    public var appKitViewsPredicate: objc_AppKitRUMViewsPredicate? {
+        set { swiftConfig.appKitViewsPredicate = newValue.map { AppKitRUMViewsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.appKitViewsPredicate as? AppKitRUMViewsPredicateBridge)?.objcPredicate  }
+    }
+    #else
     public var uiKitViewsPredicate: objc_UIKitRUMViewsPredicate? {
         set { swiftConfig.uiKitViewsPredicate = newValue.map { UIKitRUMViewsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate  }
     }
+    #endif
 
+    #if os(macOS)
+    public var appKitActionsPredicate: objc_AppKitRUMActionsPredicate? {
+        set { swiftConfig.appKitActionsPredicate = newValue.map { AppKitRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.appKitActionsPredicate as? AppKitRUMActionsPredicateBridge)?.objcPredicate as? objc_AppKitRUMActionsPredicate  }
+    }
+    #elseif canImport(UIKit)
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate? {
         set { swiftConfig.uiKitActionsPredicate = newValue.map { UIKitRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? objc_UIKitRUMActionsPredicate  }
     }
+    #endif
 
     public var swiftUIViewsPredicate: objc_SwiftUIRUMViewsPredicate? {
         set { swiftConfig.swiftUIViewsPredicate = newValue.map { SwiftUIRUMViewsPredicateBridge(objcPredicate: $0) } }
@@ -823,7 +918,22 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys)
     }
 
-    #if !os(watchOS)
+    #if os(macOS)
+    public func startView(
+        viewController: NSViewController,
+        name: String?,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startView(viewController: viewController, name: name, attributes: attributes.dd.swiftAttributes)
+    }
+
+    public func stopView(
+        viewController: NSViewController,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopView(viewController: viewController, attributes: attributes.dd.swiftAttributes)
+    }
+    #elseif !os(watchOS)
     public func startView(
         viewController: UIViewController,
         name: String?,

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
 
 #if os(watchOS)
@@ -258,25 +259,6 @@ extension UIApplication.State: AnyMockable, RandomMockable {
     }
 }
 
-extension UIColor: AnyMockable, RandomMockable {
-    public static func mockAny() -> Self {
-        return UIColor.green as! Self
-    }
-
-    public static func mockRandom() -> Self {
-        return mockRandomWith(alpha: .mockRandom(min: 0, max: 1))
-    }
-
-    public static func mockRandomWith(alpha: CGFloat) -> Self {
-        return UIColor(
-            red: .mockRandom(min: 0, max: 1),
-            green: .mockRandom(min: 0, max: 1),
-            blue: .mockRandom(min: 0, max: 1),
-            alpha: alpha
-        ) as! Self
-    }
-}
-
 extension UIView: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
         return .init(frame: .init(x: 0, y: 0, width: 200, height: 400))
@@ -363,4 +345,5 @@ extension UIImage: RandomMockable {
     }
 }
 
+#endif
 #endif

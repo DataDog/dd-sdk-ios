@@ -220,8 +220,8 @@ extension Datadog {
             URLSessionClient(proxyConfiguration: proxyConfiguration)
         }
 
-        /// The default notification center used for subscribing to app lifecycle events and system notifications.
-        internal var notificationCenter: NotificationCenter = .default
+        /// Provides notification centers used for subscribing to app lifecycle events and system notifications.
+        internal var notificationCenterProvider: NotificationCenterProvider = .default
 
         /// The default app launch handler for tracking application startup time.
         internal var appLaunchHandler: AppLaunchHandling = AppLaunchHandler.shared

@@ -150,4 +150,9 @@ extension DatadogExtension where ExtendedType == Bundle {
     public var isUIKit: Bool {
         return type.bundleURL.lastPathComponent == "UIKitCore.framework"
     }
+
+    /// Returns `true` when `self` represents the `AppKit` framework bundle.
+    public var isAppKit: Bool {
+        return type.bundleURL.lastPathComponent == "AppKit.framework"
+    }
 }

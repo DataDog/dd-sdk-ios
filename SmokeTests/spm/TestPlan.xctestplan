@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "CC75A12C-1263-4520-A9E0-37CD93546A97",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:SPMProject.xcodeproj",
+        "identifier" : "61C363EB24374D6100C4D4E6",
+        "name" : "App iOS Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:SPMProject.xcodeproj",
+        "identifier" : "61C363F624374D6100C4D4E6",
+        "name" : "App iOS UITests"
+      }
+    }
+  ],
+  "version" : 1
+}

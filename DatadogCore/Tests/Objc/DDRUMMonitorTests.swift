@@ -16,9 +16,9 @@ import DatadogInternal
 
 class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcPredicate() {
-        class MockPredicate: objc_UIKitRUMViewsPredicate {
+        class MockPredicate: objc_ViewsPredicate {
             var didCallRUMView = false
-            func rumView(for viewController: UIViewController) -> objc_RUMView? {
+            func rumView(for viewController: DDViewController) -> objc_RUMView? {
                 didCallRUMView = true
                 return nil
             }
@@ -26,7 +26,7 @@ class UIKitRUMViewsPredicateBridgeTests: XCTestCase {
 
         let objcPredicate = MockPredicate()
 
-        let predicateBridge = UIKitRUMViewsPredicateBridge(objcPredicate: objcPredicate)
+        let predicateBridge = ViewsPredicate(objcPredicate: objcPredicate)
         _ = predicateBridge.rumView(for: mockView)
 
         XCTAssertTrue(objcPredicate.didCallRUMView)
@@ -43,11 +43,12 @@ class DDRUMViewTests: XCTestCase {
     }
 }
 
+#if canImport(UIKit)
 class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcTouchPredicate() {
         class MockPredicate: objc_UITouchRUMActionsPredicate {
             var didCallRUMAction = false
-            func rumAction(targetView: UIView) -> objc_RUMAction? {
+            func rumAction(targetView: DDView) -> objc_RUMAction? {
                 didCallRUMAction = true
                 return nil
             }
@@ -56,7 +57,7 @@ class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
         let objcPredicate = MockPredicate()
 
         let predicateBridge = UIKitRUMActionsPredicateBridge(objcPredicate: objcPredicate)
-        _ = predicateBridge.rumAction(targetView: UIView())
+        _ = predicateBridge.rumAction(targetView: DDView())
 
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
@@ -78,6 +79,7 @@ class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
 }
+#endif
 
 class DDRUMActionTests: XCTestCase {
     func testItCreatesSwiftRUMAction() {

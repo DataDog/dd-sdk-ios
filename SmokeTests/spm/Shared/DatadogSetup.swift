@@ -8,6 +8,19 @@ import DatadogCore
 import DatadogLogs
 import DatadogTrace
 import DatadogCrashReporting
+#if !os(macOS)
+import DatadogRUM
+import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
+#endif
+@preconcurrency import OpenTelemetryApi
+
+#if canImport(UIKit)
+import UIKit
+typealias DDViewController = UIViewController
+#elseif canImport(AppKit)
+import AppKit
+typealias DDViewController = NSViewController
+#endif
 
 @MainActor
 enum DatadogSetup {
@@ -35,5 +48,42 @@ enum DatadogSetup {
         logger?.info("It works")
         let span = Tracer.shared().startSpan(operationName: "this too")
         span.finish()
+    }
+
+    static func enableAndTest(viewController: DDViewController) {
+        #if !os(macOS)
+        // RUM APIs must be visible:
+	RUM.enable(
+            with: .init(
+                applicationID: "app-id",
+                onSessionStart: { sessionID, _ in
+                    print("Session ID is \(sessionID)")
+                }
+            )
+        )
+        RUMMonitor.shared().startView(viewController: viewController)
+        #endif
+        
+        // Trace APIs must be visible:
+        Trace.enable()
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider()
+        )
+
+        let otSpan = Tracer.shared().startSpan(operationName: "OT Span")
+        otSpan.finish()
+
+        // otel tracer
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+        let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
+        otelSpan.end()
+
+        #if os(iOS)
+        // Session Replay API must be visible:
+        SessionReplay.enable(with: .init(replaySampleRate: 0))
+        #endif
     }
 }

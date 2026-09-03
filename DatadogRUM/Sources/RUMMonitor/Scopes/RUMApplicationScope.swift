@@ -113,7 +113,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             // the initial state can be `.active`. Therefore, we consider both `.inactive` and `.active` as valid
             // initial states for starting the initial view.
             let appState = context.applicationStateHistory.currentState
-            let sdkInitInForeground = appState == .inactive || appState == .active
+            let sdkInitInForeground = appState.isRunningInForeground
             let isUserLaunch = context.launchInfo.launchReason == .userLaunch
 
             if sdkInitInForeground || isUserLaunch {
@@ -221,6 +221,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
+        #if os(macOS)
+        startPrecondition = .userAppLaunch
+        #else
         if context.applicationStateHistory.currentState == .background {
             switch context.launchInfo.launchReason {
             case .userLaunch:
@@ -233,6 +236,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         } else {
             startPrecondition = .userAppLaunch
         }
+        #endif
 
         let initialSession = RUMSessionScope(
             isInitialSession: true,
@@ -254,7 +258,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
-        if context.applicationStateHistory.currentState == .background,
+        if isCurrentStateBackground(context: context),
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
         } else if lastSessionEndReason == .timeOut {
@@ -265,7 +269,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
-        let refreshingInForeground = context.applicationStateHistory.currentState == .active
+        let refreshingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
         let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
             && refreshingInForeground
@@ -290,7 +294,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
-        if context.applicationStateHistory.currentState == .background,
+        if isCurrentStateBackground(context: context),
            let backgroundPrecondition = preconditionForNewBackgroundSession(context: context) {
             startPrecondition = backgroundPrecondition
         } else if lastSessionEndReason == .stopAPI {
@@ -308,7 +312,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
-        let startingInForeground = context.applicationStateHistory.currentState == .active
+        let startingInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         var resumeViewScope = false
 
         if lastSessionEndReason == .stopAPI {
@@ -348,7 +352,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         let isUserLaunch = context.launchInfo.launchReason == .userLaunch
         let isPrewarmed = context.launchInfo.launchReason == .prewarming
         let isBackgroundLaunch = context.launchInfo.launchReason == .backgroundLaunch
-        let isStartedInForeground = command is RUMSDKInitCommand && context.applicationStateHistory.currentState != .background
+        let isStartedInForeground = command is RUMSDKInitCommand && !isCurrentStateBackground(context: context)
         guard isUserLaunch || (isPrewarmed && isStartedInForeground) || (isBackgroundLaunch && isStartedInForeground) else {
             return
         }
@@ -380,5 +384,13 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             )
             return nil
         }
+    }
+
+    private func isCurrentStateBackground(context: DatadogContext) -> Bool {
+        #if os(macOS)
+        false
+        #else
+        context.applicationStateHistory.currentState == .background
+        #endif
     }
 }

@@ -4,10 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
 final class DisplayLinkerTests: XCTestCase {
@@ -81,14 +82,14 @@ final class DisplayLinkerTests: XCTestCase {
         displayLinker.register(reader)
         let registrar = VitalPublisher(initialValue: VitalInfo())
 
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
-        mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
         reader.register(registrar)
 
         XCTAssertFalse(reader.isActive)
         XCTAssertEqual(registrar.currentValue.sampleCount, 0)
 
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
 
         wait(during: 0.1) {
             XCTAssertTrue(reader.isActive)
@@ -101,19 +102,19 @@ final class DisplayLinkerTests: XCTestCase {
         let reader = ViewHitchesReader()
         displayLinker.register(reader)
 
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
         wait(during: 0.1) {
             XCTAssertTrue(displayLinker.isActive)
             XCTAssertTrue(reader.isActive)
         }
 
-        mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
         wait(during: 0.1) {
             XCTAssertFalse(displayLinker.isActive)
             XCTAssertFalse(reader.isActive)
         }
 
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
         wait(during: 0.1) {
             XCTAssertTrue(displayLinker.isActive)
             XCTAssertTrue(reader.isActive)
@@ -133,14 +134,14 @@ final class DisplayLinkerTests: XCTestCase {
             XCTAssertTrue(viewHitchesReader.isActive)
         }
 
-        mockNotificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
 
         wait(during: 0.1) {
             XCTAssertFalse(refreshRateReader.isActive)
             XCTAssertFalse(viewHitchesReader.isActive)
         }
 
-        mockNotificationCenter.post(name: UIApplication.didBecomeActiveNotification, object: nil)
+        mockNotificationCenter.post(name: DDApplication.didBecomeActiveNotification, object: nil)
 
         wait(during: 0.1) {
             XCTAssertTrue(refreshRateReader.isActive)

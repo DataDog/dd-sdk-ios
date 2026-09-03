@@ -9,8 +9,12 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class VitalCPUReaderTest: XCTestCase {
-    let testNotificationCenter = NotificationCenter()
-    lazy var cpuReader = VitalCPUReader(notificationCenter: testNotificationCenter)
+    #if os(macOS)
+    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
+    #else
+    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter())
+    #endif
+    lazy var cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
 
     func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {
         let repetitions = 3
@@ -40,10 +44,18 @@ class VitalCPUReaderTest: XCTestCase {
     #if !os(watchOS)
     func testWhenInactiveAppStateItIgnoresCPUTicks() throws {
         let baseline = try XCTUnwrap(cpuReader.readVitalData())
-        testNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #if os(macOS)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
+        #else
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #endif
         heavyLoad()
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
-        testNotificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        #if os(macOS)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
+        #else
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        #endif
         heavyLoad()
         let measurementWhenActive = try XCTUnwrap(cpuReader.readVitalData())
 
@@ -58,14 +70,18 @@ class VitalCPUReaderTest: XCTestCase {
         let tickWhenResigningActive = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
         let cpuReader = VitalCPUReaderMock(
-            notificationCenter: testNotificationCenter,
+            notificationCenterProvider: testNotificationCenterProvider,
             mockTicks: [
                 tickWhenResigningActive,
                 tickAfterRollover
             ]
         )
 
-        testNotificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #if os(macOS)
+        testNotificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.willSleep, object: nil)
+        #else
+        testNotificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #endif
 
         let measurementWhenInactive = try XCTUnwrap(cpuReader.readVitalData())
         XCTAssertEqual(measurementWhenInactive, Double(tickWhenResigningActive))
@@ -75,7 +91,7 @@ class VitalCPUReaderTest: XCTestCase {
         let tickBeforeRollover = UInt32.max - 10
         let tickAfterRollover: UInt32 = 20
         let cpuReader = VitalCPUReaderMock(
-            notificationCenter: testNotificationCenter,
+            notificationCenterProvider: testNotificationCenterProvider,
             mockTicks: [
                 tickBeforeRollover,
                 tickAfterRollover
@@ -108,9 +124,9 @@ class VitalCPUReaderTest: XCTestCase {
 private class VitalCPUReaderMock: VitalCPUReader {
     private var mockTicks: [UInt32]
 
-    init(notificationCenter: NotificationCenter, mockTicks: [UInt32]) {
+    init(notificationCenterProvider: NotificationCenterProvider, mockTicks: [UInt32]) {
         self.mockTicks = mockTicks
-        super.init(notificationCenter: notificationCenter)
+        super.init(notificationCenterProvider: notificationCenterProvider)
     }
 
     override func readRawUtilizedTicks() -> UInt32? {

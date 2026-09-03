@@ -274,6 +274,7 @@ public enum Datadog {
         }
     }
 
+    @MainActor
     private static func initializeOrThrow(
         with configuration: Configuration,
         trackingConsent: TrackingConsent,
@@ -377,6 +378,7 @@ extension DatadogCore {
     ///     passed to SDK's downstream components.
     ///   - trackingConsent: The user's consent regarding data tracking for the SDK.
     ///   - instanceName: A unique name for this SDK instance.
+    @MainActor
     convenience init(
         configuration: Datadog.Configuration,
         trackingConsent: TrackingConsent,
@@ -450,7 +452,7 @@ extension DatadogCore {
                 processInfo: configuration.processInfo,
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider,
-                notificationCenter: configuration.notificationCenter,
+                notificationCenterProvider: configuration.notificationCenterProvider,
                 appLaunchHandler: configuration.appLaunchHandler,
                 appStateProvider: configuration.appStateProvider
             ),

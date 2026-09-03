@@ -4,11 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 import DatadogInternal
 
-internal final class UIApplicationSwizzler {
+internal final class DDApplicationSwizzler {
     let sendEvent: SendEvent
 
     init(handler: RUMActionsHandling) throws {
@@ -25,22 +25,22 @@ internal final class UIApplicationSwizzler {
 
     // MARK: - Swizzlings
 
-    /// Swizzles the `UIApplication.sendEvent(_:)`
+    /// Swizzles the `DDApplication.sendEvent(_:)`
     class SendEvent: MethodSwizzler <
-        @convention(c) (UIApplication, Selector, UIEvent) -> Bool,
-        @convention(block) (UIApplication, UIEvent) -> Bool
+        @convention(c) (DDApplication, Selector, DDEvent) -> Bool,
+        @convention(block) (DDApplication, DDEvent) -> Bool
     > {
-        private static let selector = #selector(UIApplication.sendEvent(_:))
+        private static let selector = #selector(DDApplication.sendEvent(_:))
         private let method: Method
         private let handler: RUMActionsHandling
 
         init(handler: RUMActionsHandling) throws {
-            self.method = try dd_class_getInstanceMethod(UIApplication.self, Self.selector)
+            self.method = try dd_class_getInstanceMethod(DDApplication.self, Self.selector)
             self.handler = handler
         }
 
         func swizzle() {
-            typealias Signature = @convention(block) (UIApplication, UIEvent) -> Bool
+            typealias Signature = @convention(block) (DDApplication, DDEvent) -> Bool
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] application, event  in
                     handler?.notify_sendEvent(application: application, event: event)

@@ -7,16 +7,75 @@
 import Foundation
 
 /// A protocol that provides access to the current application state.
-/// See: https://developer.apple.com/documentation/uikit/uiapplication/state
+///
+/// This is used only at the SDK initialization. State changes during the SDK instance lifetime are tracked
+/// by `DatadogCore.ApplicationStatePublisher`.
 public protocol AppStateProvider: Sendable {
     /// The current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
-    var current: AppState { get }
+    @MainActor var current: AppState { get }
 }
 
+public protocol AppStateProtocol: Codable {
+    /// `true` if the application execution may be suspended in this state, `false` otherwise.
+    ///
+    /// This method's name uses the word "may" since it's not guaranteed the application is suspended just for being
+    /// in one of the suspension-prone states. Returning `true` from here means the application may be suspended
+    /// at any point while it remains on this state. In fact, if this method returns something, it means the application cannot
+    /// be suspended, otherwise it would not be executing at all.
+    ///
+    /// On macOS, the only state when the application process stops running is during the device's sleep stages. Note this
+    /// does not include the STOP/CONT UNIX signal handling. These signals are not catchable, and applications don't know
+    /// they are about to be suspended, or have been resumed, using these signals.
+    ///
+    /// On iOS, the application may be suspended while it's in the background state. The OS may switch between suspended
+    /// and background states allowing the application to perform background tasks.
+    ///
+    /// On all operating systems, the terminating/terminated states are not considered suspended, since on those states
+    /// the application is indeed given CPU time to perform house-cleaning routines before being effectively terminated.
+    var applicationMayBeSuspended: Bool { get }
+
+    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    var isRunningInForeground: Bool { get }
+}
+
+#if os(macOS)
 /// Application state.
-public enum AppState: Codable {
+public enum AppState: AppStateProtocol {
+    /// The app is running in the foreground and currently receiving events.
+    case active
+    /// The app is in the background, or in the foreground but blocked by an interruption like a system dialog (for example,
+    /// the shutdown confirmation dialog).
+    case inactive
+    /// The app is hidden (using the Hide command in Finder).
+    case hidden
+    /// The lock screen is active, and the Mac is **not** sleeping.
+    /// This happens in multiple situations, like displays sleeping, lock screen, or screen saver turned on.
+    /// Note the lock screen being active does not mean a password will be asked. That depends on the system configuration.
+    case lockScreen
+    /// The system is entering the sleep state, or sleeping.
+    /// After receiving a `NSWorkspace.willSleepNotification`, processes can delay sleeping for 30 seconds. We have no way of
+    /// knowing exactly when the process enters sleep by definition, as the CPU powers off and processes aren't running, so we assume sleep
+    /// as soon as we get the notification.
+    case sleeping
+    /// The app is going through its shutdown sequence.
+    case terminating
+
+    public var applicationMayBeSuspended: Bool {
+        switch self {
+        case .sleeping: true
+        case .active, .inactive, .hidden, .lockScreen, .terminating: false
+        }
+    }
+
+    /// macOS does not have the same background concept as iOS.
+    /// For the purposes of this method, it should always be true.
+    public var isRunningInForeground: Bool {
+        true
+    }
+}
+#else
+/// Application state.
+public enum AppState: AppStateProtocol {
     /// The app is running in the foreground and currently receiving events.
     case active
     /// The app is running in the foreground but is not receiving events.
@@ -27,7 +86,15 @@ public enum AppState: Codable {
     /// The app is terminated.
     case terminated
 
-    /// If the app is running in the foreground - no matter if receiving events or not (i.e. being interrupted because of transitioning from background).
+    public var applicationMayBeSuspended: Bool {
+        switch self {
+        case .background:
+            return true
+        case .active, .inactive, .terminated:
+            return false
+        }
+    }
+
     public var isRunningInForeground: Bool {
         switch self {
         case .active, .inactive:
@@ -37,6 +104,7 @@ public enum AppState: Codable {
         }
     }
 }
+#endif
 
 /// Records app state transitions over time.
 public struct AppStateHistory: Codable, Equatable {
@@ -114,9 +182,28 @@ public struct AppStateHistory: Codable, Equatable {
     /// - Parameter range: The time period to analyze.
     /// - Returns: The total time (in seconds) spent in foreground states.
     public func foregroundDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0.isRunningInForeground })
+    }
+
+    /// Computes the total duration the app was running in states where the process could not have been suspended within the given time range.
+    ///
+    /// - Parameter range: The time period to analyze.
+    /// - Returns: The total time (in seconds) spent in states the process could not have been suspended.
+    public func applicationNotSuspendedDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0.applicationMayBeSuspended == false })
+    }
+
+    /// Helper function for calculating durations of a given condition.
+    ///
+    /// - Parameters:
+    ///   - range: The time period to analyze.
+    ///   - predicate: The predicate applied to each state in the history inside the given range. If `true` the duration of that
+    ///   state is considered.
+    /// - Returns: The total time (in seconds) spent in states that satisfy the predicate.
+    private func duration(during range: ClosedRange<Date>, predicate: (AppState) -> Bool) -> TimeInterval {
         var total: TimeInterval = 0
         iterateStates(in: range) { state, duration in
-            if state.isRunningInForeground {
+            if predicate(state) {
                 total += duration
             }
         }
@@ -146,66 +233,3 @@ public struct AppStateHistory: Codable, Equatable {
         }
     }
 }
-
-#if canImport(WatchKit)
-
-import WatchKit
-
-public struct DefaultAppStateProvider: AppStateProvider {
-    public init() {}
-
-    /// Gets the current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
-    public var current: AppState {
-        return AppState(WKApplication.shared().applicationState)
-    }
-}
-
-extension AppState {
-    public init(_ state: WKApplicationState) {
-        switch state {
-        case .active: self = .active
-        case .inactive: self = .inactive
-        case .background: self = .background
-        @unknown default:
-            self = .active // in case a new state is introduced, default to most expected state
-        }
-    }
-}
-
-#elseif canImport(UIKit)
-
-import UIKit
-
-public struct DefaultAppStateProvider: AppStateProvider {
-    public init() {}
-
-    /// Gets the current application state.
-    ///
-    /// **Note**: Must be called on the main thread.
-    public var current: AppState {
-        let uiKitState = UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
-        return AppState(uiKitState)
-    }
-}
-
-extension AppState {
-    public init(_ state: UIApplication.State) {
-        switch state {
-        case .active: self = .active
-        case .inactive: self = .inactive
-        case .background: self = .background
-        @unknown default: self = .active // in case a new state is introduced, default to most expected state
-        }
-    }
-}
-
-#else // macOS (no UIKit and no WatchKit)
-
-public struct DefaultAppStateProvider: AppStateProvider {
-    public init() {}
-    public let current: AppState = .active
-}
-
-#endif
