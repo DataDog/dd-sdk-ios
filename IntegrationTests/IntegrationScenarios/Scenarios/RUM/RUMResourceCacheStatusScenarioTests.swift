@@ -35,6 +35,13 @@ class RUMResourceCacheStatusScenarioTests: IntegrationTests, RUMCommonAsserts {
             )
         )
 
+        // Wait for both the "prime" and "revalidate" requests to complete before ending the RUM session -
+        // otherwise `endRUMSession()`'s fixed delay could race with the 2nd request's completion, ending the
+        // view before the revalidate resource is reported and dropping it from the RUM session.
+        let cacheRequests = try cacheServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            requests.count == 2
+        }
+
         try app.endRUMSession()
 
         // Get RUM Session with expected number of View visits and Resources
@@ -46,9 +53,6 @@ class RUMResourceCacheStatusScenarioTests: IntegrationTests, RUMCommonAsserts {
 
         // Prove that the mock server actually took its `304` branch for the 2nd request - otherwise the
         // status-code assertions below would pass just the same even if revalidation never happened.
-        let cacheRequests = try cacheServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            requests.count == 2
-        }
         let cacheResponseStatuses = try cacheRequests.map { request -> Int in
             let json = try JSONSerialization.jsonObject(with: request.httpBody) as? [String: Int]
             return try XCTUnwrap(json?["response_status"])
