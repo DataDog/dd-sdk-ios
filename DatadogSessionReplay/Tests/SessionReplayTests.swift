@@ -39,6 +39,79 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNotNil(core.get(feature: ResourcesFeature.self))
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabledWithRemoteSampleRate_itOverridesInCodeSampleRateAtEnableTime() {
+        // Given — in-code sample rate is 0 (would not record), remote enables it
+        config = SessionReplay.Configuration(replaySampleRate: 0)
+        core.remoteConfiguration = .mockWith(sessionReplay: .mockWith(sampleRate: 100))
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Remote `sampleRate` must override the in-code value at enable time, enabling recording"
+        )
+    }
+
+    func testWhenEnabledWithRemoteSampleRateZero_itDisablesRecordingAtEnableTime() {
+        // Given — in-code sample rate records, remote disables it
+        config = SessionReplay.Configuration(replaySampleRate: 100)
+        core.remoteConfiguration = .mockWith(sessionReplay: .mockWith(sampleRate: 0))
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Remote `sampleRate` of 0 must override the in-code value at enable time, disabling recording"
+        )
+    }
+
+    func testWhenEnabledWithRemoteConfiguration_itInjectsConfigurationAtEnableTime() throws {
+        // Given in-code values that all differ from the remote ones
+        config = SessionReplay.Configuration(
+            replaySampleRate: 10,
+            textAndInputPrivacyLevel: .maskSensitiveInputs,
+            imagePrivacyLevel: .maskNone,
+            touchPrivacyLevel: .show
+        )
+        core.remoteConfiguration = .mockWith(sessionReplay: .mockWith(
+            imagePrivacy: .maskAll,
+            sampleRate: 90,
+            textAndInputPrivacy: .maskAllInputs,
+            touchPrivacy: .hide
+        ))
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then the merged remote values are injected into the recording coordinator at enable time
+        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
+        XCTAssertEqual(sr.recordingCoordinator.replaySampleRate, 90)
+        XCTAssertEqual(sr.recordingCoordinator.textAndInputPrivacy, .maskAllInputs)
+        XCTAssertEqual(sr.recordingCoordinator.imagePrivacy, .maskAll)
+        XCTAssertEqual(sr.recordingCoordinator.touchPrivacy, .hide)
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() {
+        // Given
+        config = SessionReplay.Configuration(replaySampleRate: 100)
+        core.remoteConfiguration = nil
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: SessionReplayFeature.self),
+            "Without remote configuration, Session Replay must behave exactly as configured in-code"
+        )
+    }
+
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionSpy()
         consolePrint = printFunction.print

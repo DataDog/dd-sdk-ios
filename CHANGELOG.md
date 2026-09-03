@@ -1,6 +1,7 @@
 # Unreleased
 
 - [IMPROVEMENT] Add opt-in retries and per-attempt timeouts, plus composable custom transports for `DatadogFlags` assignment requests.
+- [FEATURE] Add `remoteConfiguration` to `Datadog.Configuration`, set with `RemoteConfiguration(id:)`, to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
 - [IMPROVEMENT] Bump minimum deployment targets to iOS 15.0, tvOS 15.0, and watchOS 9.0. See [#3155][]
 - [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
 - [IMPROVEMENT] Report cross-platform-specific instrumentation types (Flutter, React Native, Unity, Kotlin Multiplatform) for RUM views in SDK telemetry. See [#3165][]
@@ -1200,6 +1201,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 [#2876]: https://github.com/DataDog/dd-sdk-ios/pull/2876
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
+[#2919]: https://github.com/DataDog/dd-sdk-ios/pull/2919
 [#2937]: https://github.com/DataDog/dd-sdk-ios/pull/2937
 [#2941]: https://github.com/DataDog/dd-sdk-ios/pull/2941
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942

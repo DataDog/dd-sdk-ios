@@ -10,6 +10,7 @@
 import os
 import re
 import sys
+import shlex
 import argparse
 import traceback
 import subprocess
@@ -21,10 +22,17 @@ SCHEMAS_REPO = 'https://github.com/DataDog/rum-events-format.git'
 RUM_SCHEMA_PATH = '/rum-events-format/schemas/rum-events-mobile-schema.json'
 SR_SCHEMA_PATH = '/rum-events-format/schemas/session-replay-mobile-schema.json'
 
+# RC schema lives in the private dd-go repo; cloned sparsely using GITHUB_TOKEN
+DD_GO_REPO = 'https://github.com/DataDog/dd-go.git'
+RC_SCHEMA_REPO_PATH = 'remote-config/apps/rc-schema-validation/schemas/rum-sdk-config/STAGING/ios.json'
+RC_SCHEMA_SPARSE_DIR = 'remote-config/apps/rc-schema-validation/schemas'
+RC_SCHEMA_LOCAL_PATH = f'dd-go/{RC_SCHEMA_REPO_PATH}'  # relative to cwd (script_dir)
+
 # Generated file paths (relative to repository root)
 RUM_SWIFT_GENERATED_FILE_PATH = '/DatadogInternal/Sources/Models/RUM/RUMDataModels.swift'
 RUM_OBJC_GENERATED_FILE_PATH = '/DatadogRUM/Sources/DataModels/RUMDataModels+objc.swift'
 SR_SWIFT_GENERATED_FILE_PATH = '/DatadogSessionReplay/Sources/Models/SRDataModels.swift'
+RC_SWIFT_GENERATED_FILE_PATH = '/DatadogInternal/Sources/Models/RC/RCDataModels.swift'
 
 @dataclass
 class Context:
@@ -37,7 +45,10 @@ class Context:
     # Resolved path to JSON schema describing Session Replay events
     sr_schema_path: str
 
-    # Git reference to clone schemas repo at.
+    # Resolved path to JSON schema describing Remote Configuration events (fetched from dd-go)
+    rc_schema_path: str
+
+    # Git reference to clone/fetch schemas at.
     git_ref: str
 
     # Resolved path to source code file with RUM model definitions (Swift)
@@ -49,6 +60,9 @@ class Context:
     # Resolved path to source code file with Session Replay model definitions (Swift)
     sr_swift_generated_file_path: str
 
+    # Resolved path to source code file with Remote Configuration model definitions (Swift)
+    rc_swift_generated_file_path: str
+
     # List of type names to skip from code generation in Objective-C
     skip_objc: [str]
 
@@ -58,9 +72,11 @@ class Context:
         - rum_schema_path = {self.rum_schema_path}
         - git_ref = {self.git_ref}
         - sr_schema_path = {self.sr_schema_path}
+        - rc_schema_path = {self.rc_schema_path}
         - rum_swift_generated_file_path = {self.rum_swift_generated_file_path}
         - rum_objc_generated_file_path = {self.rum_objc_generated_file_path}
         - sr_swift_generated_file_path = {self.sr_swift_generated_file_path}
+        - rc_swift_generated_file_path = {self.rc_swift_generated_file_path}
         """
 
 
@@ -128,14 +144,14 @@ def read_sha_from_generated_file(path):
             raise Exception(f'Failed to read SHA from last line of {path}. Last line is: "{last_line}"')
 
 
-def generate_code(ctx: Context, language: str, convention: str, json_schema: str, git_sha: str):
+def generate_code(ctx: Context, language: str, convention: str, json_schema: str, source_url: str):
     """
     Generates code for given language and conventions from provided JSON schema.
     :param ctx: generation `Context`
     :param language: 'swift' or 'objc'
-    :param convention: 'rum' or 'sr'
+    :param convention: 'rum', 'sr', or 'rc'
     :param json_schema: the path to JSON schema
-    :param git_sha: the commit from `rum-events-format` repo that JSON schema comes from
+    :param source_url: URL appended as the final comment (e.g. GitHub permalink to the schema file)
     :return: generated code as it should be written to target `*.swift` file
     """
     skip = ""
@@ -144,49 +160,51 @@ def generate_code(ctx: Context, language: str, convention: str, json_schema: str
 
     cli_command = f'{ctx.cli_executable_path} generate-{language} --convention {convention} --path "{json_schema}" {skip}'
     code = shell_output(cli_command)
-    code += f'// Generated from https://github.com/DataDog/rum-events-format/tree/{git_sha}'
+    code += f'// Generated from {source_url}'
     return code
 
 
-def validate_code(ctx: Context, language: str, convention: str, json_schema: str, target_file: str, git_sha: str):
+def validate_code(ctx: Context, language: str, convention: str, json_schema: str, target_file: str, source_url: str):
     """
     Verifies if code in given target file matches its definition generated from given JSON schema.
     :param ctx: generation `Context`
     :param language: 'swift' or 'objc'
-    :param convention: 'rum' or 'sr'
+    :param convention: 'rum', 'sr', or 'rc'
     :param json_schema: the path to JSON schema
     :param target_file: the file to verify
-    :param git_sha: the commit from `rum-events-format` repo that JSON schema comes from
+    :param source_url: URL used in the trailing comment; must match what was used during generation
     :return:
     """
     with open(target_file, 'r') as file:
         actual_code = file.read()
         expected_code = generate_code(
-            ctx, language=language, convention=convention, json_schema=json_schema, git_sha=git_sha
+            ctx, language=language, convention=convention, json_schema=json_schema, source_url=source_url
         )
         if actual_code != expected_code:
-            raise Exception(f'The code in {target_file} does not match models '
-                            f'generated from https://github.com/DataDog/rum-events-format/tree/{git_sha}')
+            raise Exception(f'The code in {target_file} does not match models generated from {source_url}')
+
+
+def rum_events_format_source_url(sha: str):
+    return f'https://github.com/DataDog/rum-events-format/tree/{sha}'
 
 
 def generate_rum_models(ctx: Context):
     sha = clone_schemas_repo(git_ref=ctx.git_ref)
+    source_url = rum_events_format_source_url(sha)
 
     with open(ctx.rum_swift_generated_file_path, 'w') as file:
-        code = generate_code(ctx, language='swift', convention='rum', json_schema=ctx.rum_schema_path, git_sha=sha)
-        file.write(code)
+        file.write(generate_code(ctx, language='swift', convention='rum', json_schema=ctx.rum_schema_path, source_url=source_url))
 
     with open(ctx.rum_objc_generated_file_path, 'w') as file:
-        code = generate_code(ctx, language='objc', convention='rum', json_schema=ctx.rum_schema_path, git_sha=sha)
-        file.write(code)
+        file.write(generate_code(ctx, language='objc', convention='rum', json_schema=ctx.rum_schema_path, source_url=source_url))
 
 
 def generate_sr_models(ctx: Context):
     sha = clone_schemas_repo(git_ref=ctx.git_ref)
+    source_url = rum_events_format_source_url(sha)
 
     with open(ctx.sr_swift_generated_file_path, 'w') as file:
-        code = generate_code(ctx, language='swift', convention='sr', json_schema=ctx.sr_schema_path, git_sha=sha)
-        file.write(code)
+        file.write(generate_code(ctx, language='swift', convention='sr', json_schema=ctx.sr_schema_path, source_url=source_url))
 
 
 def validate_rum_models(ctx: Context):
@@ -196,21 +214,68 @@ def validate_rum_models(ctx: Context):
     if swift_sha != objc_sha:
         raise Exception(f'SHAs in generated RUM swift and objc code do not match ({swift_sha} != {objc_sha}).')
 
-    expected_sha = clone_schemas_repo(git_ref=swift_sha)
+    sha = clone_schemas_repo(git_ref=swift_sha)
+    source_url = rum_events_format_source_url(sha)
 
     validate_code(ctx, language='swift', convention='rum', json_schema=ctx.rum_schema_path,
-                  target_file=ctx.rum_swift_generated_file_path, git_sha=expected_sha)
+                  target_file=ctx.rum_swift_generated_file_path, source_url=source_url)
 
     validate_code(ctx, language='objc', convention='rum', json_schema=ctx.rum_schema_path,
-                  target_file=ctx.rum_objc_generated_file_path, git_sha=expected_sha)
+                  target_file=ctx.rum_objc_generated_file_path, source_url=source_url)
 
 
 def validate_sr_models(ctx: Context):
     sha = read_sha_from_generated_file(path=ctx.sr_swift_generated_file_path)
-    expected_sha = clone_schemas_repo(git_ref=sha)
+    sha = clone_schemas_repo(git_ref=sha)
+    source_url = rum_events_format_source_url(sha)
 
     validate_code(ctx, language='swift', convention='sr', json_schema=ctx.sr_schema_path,
-                  target_file=ctx.sr_swift_generated_file_path, git_sha=expected_sha)
+                  target_file=ctx.sr_swift_generated_file_path, source_url=source_url)
+
+
+def clone_rc_schema_repo(git_ref: str):
+    """
+    Sparsely clones the dd-go repo at the given git_ref, checking out only the RC schema directory.
+    Requires a GITHUB_TOKEN environment variable for authentication.
+    :param git_ref: branch name, tag, or commit SHA in dd-go (e.g. 'prod')
+    :return: the SHA of the checked-out commit
+    """
+    token = os.environ.get('GITHUB_TOKEN')
+    if not token:
+        raise Exception('GITHUB_TOKEN environment variable is required to clone the private dd-go repository.')
+
+    print(f'⚙️ Cloning `dd-go` repository (sparse) at "{git_ref}"...')
+    # Authenticate via a credential helper that reads `GITHUB_TOKEN` from the environment at
+    # runtime, so the token itself never appears in the cloned URL, the process command line,
+    # or `shell_output`'s failure output (which echoes the command it ran).
+    credential_helper = '!f() { echo "username=x-access-token"; echo "password=$GITHUB_TOKEN"; }; f'
+    shell_output('rm -rf dd-go')
+    shell_output(f'git -c credential.helper={shlex.quote(credential_helper)} clone --depth=1 --filter=blob:none --sparse {DD_GO_REPO}')
+    shell_output(f'cd dd-go && git sparse-checkout set {RC_SCHEMA_SPARSE_DIR}')
+    shell_output(f'cd dd-go && git fetch origin {git_ref} && git checkout FETCH_HEAD')
+    sha = shell_output('cd dd-go && git rev-parse HEAD').strip()
+    return sha
+
+
+def dd_go_source_url(sha: str):
+    return f'https://github.com/DataDog/dd-go/blob/{sha}/{RC_SCHEMA_REPO_PATH}'
+
+
+def generate_rc_models(ctx: Context):
+    sha = clone_rc_schema_repo(git_ref=ctx.git_ref)
+
+    os.makedirs(os.path.dirname(ctx.rc_swift_generated_file_path), exist_ok=True)
+    with open(ctx.rc_swift_generated_file_path, 'w') as file:
+        file.write(generate_code(ctx, language='swift', convention='rc', json_schema=ctx.rc_schema_path,
+                                 source_url=dd_go_source_url(sha)))
+
+
+def validate_rc_models(ctx: Context):
+    sha = read_sha_from_generated_file(path=ctx.rc_swift_generated_file_path)
+    clone_rc_schema_repo(git_ref=sha)
+
+    validate_code(ctx, language='swift', convention='rc', json_schema=ctx.rc_schema_path,
+                  target_file=ctx.rc_swift_generated_file_path, source_url=dd_go_source_url(sha))
 
 
 if __name__ == "__main__":
@@ -223,8 +288,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=['generate', 'verify'], help="Run mode")
-    parser.add_argument("product", choices=['rum', 'sr'], help="Either 'rum' (RUM) or 'sr' (Session Replay)")
-    parser.add_argument("--git_ref", help="The git reference to clone `rum-events-format` repo at (only effective for `generate` command).")
+    parser.add_argument("product", choices=['rum', 'sr', 'rc'], help="'rum' (RUM), 'sr' (Session Replay), or 'rc' (Remote Configuration)")
+    parser.add_argument("--git_ref", help="Git reference to use: branch/tag/SHA in rum-events-format for 'rum'/'sr', or branch/tag/SHA in dd-go for 'rc' (e.g. 'prod').")
     parser.add_argument("--skip_objc", help="List of type names to skip in Objective-C generation", nargs='*', type=str, default=[])
     args = parser.parse_args()
 
@@ -233,10 +298,12 @@ if __name__ == "__main__":
             cli_executable_path=build_swift_cli(),
             rum_schema_path=os.path.abspath(f'{script_dir}/{RUM_SCHEMA_PATH}'),
             sr_schema_path=os.path.abspath(f'{script_dir}/{SR_SCHEMA_PATH}'),
+            rc_schema_path=os.path.abspath(f'{script_dir}/{RC_SCHEMA_LOCAL_PATH}'),
             git_ref=args.git_ref if args.command else None,
             rum_swift_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_SWIFT_GENERATED_FILE_PATH}'),
             rum_objc_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_OBJC_GENERATED_FILE_PATH}'),
             sr_swift_generated_file_path=os.path.abspath(f'{repository_root}/{SR_SWIFT_GENERATED_FILE_PATH}'),
+            rc_swift_generated_file_path=os.path.abspath(f'{repository_root}/{RC_SWIFT_GENERATED_FILE_PATH}'),
             skip_objc=args.skip_objc
         )
 
@@ -251,6 +318,10 @@ if __name__ == "__main__":
                 print(f'⚙️ Generating Session Replay models...')
                 generate_sr_models(ctx=context)
 
+            elif args.product == 'rc':
+                print(f'⚙️ Generating Remote Configuration models...')
+                generate_rc_models(ctx=context)
+
         elif args.command == 'verify':
             if args.product == 'rum':
                 print(f'⚙️ Verifying RUM models...')
@@ -259,6 +330,10 @@ if __name__ == "__main__":
             elif args.product == 'sr':
                 print(f'⚙️ Verifying Session Replay models...')
                 validate_sr_models(ctx=context)
+
+            elif args.product == 'rc':
+                print(f'⚙️ Verifying Remote Configuration models...')
+                validate_rc_models(ctx=context)
 
         print(f'✅️ OK')
 

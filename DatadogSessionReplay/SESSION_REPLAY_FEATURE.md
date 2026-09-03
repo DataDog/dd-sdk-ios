@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-31
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: b9103bfe1
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift
+  - DatadogSessionReplay/Sources/SessionReplayConfiguration+RemoteConfiguration.swift
   - DatadogSessionReplay/Sources/SessionReplayPrivacyOverrides.swift
   - DatadogSessionReplay/Sources/SessionReplayPrivacyView.swift
   - DatadogInternal/Sources/Models/SessionReplay/SessionReplayConfiguration.swift
@@ -140,6 +141,7 @@ SessionReplayPrivacyView(
 ### Configuration
 - **`DatadogSessionReplay/Sources/SessionReplayConfiguration.swift`** - All configuration options
   - Sampling rate, privacy levels, feature flags
+- **`DatadogSessionReplay/Sources/SessionReplayConfiguration+RemoteConfiguration.swift`** - Applies Datadog Remote Configuration on top of the in-code `SessionReplay.Configuration`, once, at `SessionReplay.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Privacy Overrides (Per-View)
 - **`DatadogSessionReplay/Sources/SessionReplayPrivacyOverrides.swift`** - UIKit per-view privacy control
@@ -199,6 +201,14 @@ SessionReplayPrivacyView(
 }
 ```
 
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `SessionReplay.enable(with:)` runs, it is merged onto the in-code `SessionReplay.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- The `sessionReplay` namespace overrides `replaySampleRate`, `textAndInputPrivacyLevel`, `imagePrivacyLevel`, and `touchPrivacyLevel`. `startRecordingImmediately` and `featureFlags` are not remotely configurable.
+- A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
+- See `SessionReplayConfiguration+RemoteConfiguration.swift` for the merge logic.
+
 ## Common Troubleshooting Patterns
 
 ### "No Session Replay data"
@@ -244,6 +254,7 @@ SessionReplayPrivacyView(
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
 - **Tracking Consent**: Respects user consent settings from Core SDK
+- **Remote Configuration**: overrides `replaySampleRate` and privacy levels — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 
