@@ -76,6 +76,38 @@ static_assert(
     "The alloc-window capacity must remain a power of two"
 );
 
+/// Occupancy fraction at which back-pressure first widens the interval.
+///
+/// Below this, the fixed 512 KB base rate is in force and behavior is
+/// identical to a non-adaptive sampler. The trigger is deliberately at half
+/// capacity rather than nearer the top: once a structure is full the excess is
+/// already unrecoverable, and the schedule below needs enough remaining
+/// entries to spend on successive doublings.
+constexpr double PRESSURE_FIRST_STEP_FRACTION = 0.50;
+
+/// Spacing between successive widening steps, as a fraction of capacity.
+///
+/// Evenly spaced marks combined with a doubling multiplier is what makes the
+/// window's reach grow exponentially: each 5% slice of entries covers twice
+/// the bytes the previous slice did. The obvious alternative — stepping when
+/// half the *remaining* headroom is consumed — converges on capacity too fast
+/// and buys only a constant number of bytes per step, which is nowhere near
+/// enough for a pathological allocator.
+constexpr double PRESSURE_STEP_SPACING_FRACTION = 0.05;
+
+/// Occupancy fraction at or below which a completed window narrows the
+/// interval one step back toward the base rate.
+///
+/// The gap between this and PRESSURE_FIRST_STEP_FRACTION is hysteresis.
+/// Without it, a widened interval would empty the next window, immediately
+/// narrow, refill, and oscillate — halving effective resolution every other
+/// window for no benefit. Steady load that settles between the two fractions
+/// holds its interval indefinitely, which is the intended resting state.
+constexpr double PRESSURE_RELIEF_FRACTION = 0.30;
+
+/// Ceiling on the interval multiplier. Mirrors the public contract.
+constexpr uint64_t MAX_RATE_MULTIPLIER = DD_MEMORY_MAX_RATE_MULTIPLIER;
+
 // MARK: - Internal sample entry
 
 /// One slot in the live-sample hash table.
@@ -138,12 +170,42 @@ mach_timebase_info_data_t g_timebase = {};
 /// from this anchor.
 std::atomic<uint64_t> g_start_ticks{0};
 
-/// Poisson sampling rate (mean bytes between samples). Set at start.
+/// Configured Poisson sampling rate (mean bytes between samples). Set at
+/// session start and immutable for the session's lifetime; this is the base
+/// the back-pressure multiplier is applied to, and the floor of the effective
+/// rate.
 std::atomic<uint64_t> g_poisson_rate_bytes{DD_MEMORY_POISSON_DEFAULT_RATE_BYTES};
+
+/// Sampling rate actually in force: `g_poisson_rate_bytes * g_rate_multiplier`.
+/// Read once per observed allocation on the hot path, so it is cached here as
+/// a product rather than recomputed.
+std::atomic<uint64_t> g_effective_rate_bytes{DD_MEMORY_POISSON_DEFAULT_RATE_BYTES};
+
+/// Power-of-two back-pressure multiplier in [1, MAX_RATE_MULTIPLIER].
+/// Written only under `g_insert_lock`.
+uint64_t g_rate_multiplier = 1;
+
+/// Occupancy at which the next widening step fires. Recomputed after each
+/// step so successive steps consume half the remaining headroom, and reset to
+/// `PRESSURE_STEP_FRACTION * capacity` when a window drains. Written only
+/// under `g_insert_lock`.
+size_t g_pressure_step_threshold = 0;
+
+/// Highest occupancy observed this session. Writes are already serialized by
+/// `g_insert_lock`, but the storage is atomic so the public diagnostics getter
+/// can read it without taking that lock — `os_unfair_lock` is not recursive,
+/// and a public accessor that grabs the insert lock would deadlock any future
+/// caller that reads diagnostics from inside the sampled path.
+std::atomic<uint64_t> g_occupancy_high_water{0};
 
 /// Test-only: makes the passive start fail so the fail-closed path is reachable.
 /// Always false in production.
 std::atomic<bool> g_test_force_start_failure{false};
+
+/// Whether occupancy-driven back-pressure may adjust the interval. Always true
+/// in production; tests clear it to pin the sampler to its base rate so the
+/// same workload can be measured with and without adaptation.
+std::atomic<bool> g_pressure_adaptation_enabled{true};
 
 // MARK: - Diagnostics
 
@@ -156,6 +218,8 @@ std::atomic<uint64_t> g_sampled_frees{0};
 std::atomic<uint64_t> g_live_sampled_allocations{0};
 std::atomic<uint64_t> g_reentrant_skips{0};
 std::atomic<uint64_t> g_unsampled_calls{0};
+std::atomic<uint64_t> g_rate_widen_events{0};
+std::atomic<uint64_t> g_rate_narrow_events{0};
 
 /// Sampling insertions are rare relative to observed allocations. Serializing
 /// them prevents duplicate keys while per-entry locks keep free-side lookups
@@ -188,6 +252,18 @@ thread_local uint64_t tls_sampling_generation = 0;
 /// Force the next allocation to be sampled regardless of the counter.
 /// Used only by tests; production code never touches this.
 thread_local bool tls_force_next_sample = false;
+
+/// The effective rate in force when `tls_bytes_until_sample` was drawn.
+///
+/// A sample's weight must be derived from the interval that governed its
+/// inclusion probability, NOT from whatever the interval happens to be when
+/// the sample fires. Those are the same number only while the rate is fixed.
+/// Under back-pressure they diverge: a counter that ticked down under the
+/// 512 KB base can fire after a burst has widened the interval to 8 MB, and
+/// weighting it at 8 MB would overstate that sample 16-fold. Pinning the draw
+/// rate per thread keeps every weight matched to its own draw, which is what
+/// makes a varying interval unbiased rather than merely plausible.
+thread_local uint64_t tls_threshold_rate_bytes = 0;
 
 // MARK: - Time helpers
 
@@ -237,6 +313,101 @@ double poisson_weight_for_size(uint64_t size, uint64_t poisson_rate_bytes) {
             : 1.0;
     }
     return 1.0 / p;
+}
+
+// MARK: - Back-pressure rate control
+
+/// Recomputes the cached effective rate from the base rate and multiplier.
+/// Caller must hold `g_insert_lock`.
+void publish_effective_rate_locked() {
+    const uint64_t base = g_poisson_rate_bytes.load(std::memory_order_relaxed);
+    g_effective_rate_bytes.store(base * g_rate_multiplier, std::memory_order_release);
+}
+
+/// Entries between successive widening steps; at least one so the schedule
+/// always makes progress even at small capacities.
+constexpr size_t pressure_step_spacing() {
+    const size_t spacing =
+        static_cast<size_t>(ALLOC_WINDOW_CAPACITY * PRESSURE_STEP_SPACING_FRACTION);
+    return spacing > 0 ? spacing : 1;
+}
+
+/// Occupancy at which the first widening step fires.
+constexpr size_t pressure_first_step() {
+    return static_cast<size_t>(ALLOC_WINDOW_CAPACITY * PRESSURE_FIRST_STEP_FRACTION);
+}
+
+/// Resets rate control to the configured base. Caller must hold
+/// `g_insert_lock`.
+void reset_rate_control_locked() {
+    g_rate_multiplier = 1;
+    g_pressure_step_threshold = pressure_first_step();
+    g_occupancy_high_water.store(0, std::memory_order_relaxed);
+    publish_effective_rate_locked();
+}
+
+/// Widening half of the controller, called on the sampled slow path once the
+/// allocation has been admitted to the window. Caller must hold
+/// `g_insert_lock`.
+///
+/// `occupancy` is the greater of the two fixed-capacity structures' fill
+/// levels, since either one saturating causes data loss and both share a
+/// capacity.
+///
+/// The schedule is a doubling of the interval at every 5% of capacity past the
+/// halfway mark, which makes each successive slice of entries cover twice the
+/// bytes of the one before it. With a 4096-entry window and a 256x ceiling
+/// that gives a single window a reach of roughly 100 GB of allocation before
+/// it can saturate — about 1.7 GB/s sustained across a 60s emission window,
+/// comfortably past any allocation rate a client app survives — while a
+/// workload that merely brushes the halfway mark pays exactly one doubling.
+///
+/// The loop (rather than a single step) matters because `occupancy` can jump
+/// by more than one entry between calls: the live-table count moves
+/// independently of the window count, so the schedule has to be able to catch
+/// up rather than trail a fast-moving signal by several steps.
+void note_pressure_locked(size_t occupancy) {
+    if (occupancy > g_occupancy_high_water.load(std::memory_order_relaxed)) {
+        g_occupancy_high_water.store(occupancy, std::memory_order_relaxed);
+    }
+
+    if (!g_pressure_adaptation_enabled.load(std::memory_order_relaxed)) {
+        return;
+    }
+
+    bool stepped = false;
+    while (occupancy >= g_pressure_step_threshold && g_rate_multiplier < MAX_RATE_MULTIPLIER) {
+        g_rate_multiplier *= 2;
+        g_pressure_step_threshold += pressure_step_spacing();
+        g_rate_widen_events.fetch_add(1, std::memory_order_relaxed);
+        stepped = true;
+    }
+    if (stepped) {
+        publish_effective_rate_locked();
+    }
+}
+
+/// Narrowing half of the controller, called once per window when the window
+/// drains. Caller must hold `g_insert_lock`.
+///
+/// A window that completed comfortably under the relief threshold is evidence
+/// the widened interval is no longer needed, so we step back one notch — one
+/// per window, not straight to the base, so a burst that is merely pausing
+/// does not immediately re-saturate. Recovery from the 256x ceiling therefore
+/// takes 8 quiet windows, which the anti-ratchet test pins.
+void relieve_pressure_locked(size_t final_occupancy) {
+    g_pressure_step_threshold = pressure_first_step();
+
+    if (!g_pressure_adaptation_enabled.load(std::memory_order_relaxed) || g_rate_multiplier <= 1) {
+        return;
+    }
+    if (final_occupancy > static_cast<size_t>(ALLOC_WINDOW_CAPACITY * PRESSURE_RELIEF_FRACTION)) {
+        return;
+    }
+
+    g_rate_multiplier /= 2;
+    g_rate_narrow_events.fetch_add(1, std::memory_order_relaxed);
+    publish_effective_rate_locked();
 }
 
 // MARK: - Live-sample table
@@ -333,6 +504,17 @@ insert_result insert_sample(uint64_t addr, uint64_t size, double weight,
         } else {
             g_alloc_window_dropped.fetch_add(1, std::memory_order_relaxed);
         }
+
+        // Answer back-pressure from whichever fixed-capacity structure is
+        // closer to saturating. Runs on the sampled slow path only — one
+        // comparison per sample, not per allocation — and the widened interval
+        // takes effect on the next threshold draw.
+        const size_t live_occupancy = static_cast<size_t>(
+            g_live_sampled_allocations.load(std::memory_order_relaxed)
+        );
+        note_pressure_locked(
+            g_alloc_window_count > live_occupancy ? g_alloc_window_count : live_occupancy
+        );
     }
 
     size_t available_idx = SAMPLE_TABLE_CAPACITY;
@@ -508,7 +690,7 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
         return ptr;
     }
     const uint64_t session_generation = g_session_generation.load(std::memory_order_acquire);
-    const uint64_t poisson_rate_bytes = g_poisson_rate_bytes.load(std::memory_order_acquire);
+    const uint64_t poisson_rate_bytes = g_effective_rate_bytes.load(std::memory_order_acquire);
 
     g_total_allocations.fetch_add(1, std::memory_order_relaxed);
     g_total_bytes_allocated.fetch_add(size, std::memory_order_relaxed);
@@ -522,6 +704,7 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
 
     if (tls_sampling_generation != session_generation) {
         tls_sampling_generation = session_generation;
+        tls_threshold_rate_bytes = poisson_rate_bytes;
         tls_bytes_until_sample = draw_next_threshold(poisson_rate_bytes);
         tls_force_next_sample = false;
     }
@@ -541,6 +724,15 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
         return ptr;
     }
     tls_force_next_sample = false;
+
+    // Weight this sample at the rate its own countdown was drawn under, then
+    // rearm at whatever rate is in force now. Under a fixed rate the two are
+    // identical; under back-pressure this is what keeps the estimator
+    // unbiased across an interval change. See tls_threshold_rate_bytes.
+    const uint64_t draw_rate_bytes = tls_threshold_rate_bytes != 0
+        ? tls_threshold_rate_bytes
+        : poisson_rate_bytes;
+    tls_threshold_rate_bytes = poisson_rate_bytes;
     tls_bytes_until_sample = draw_next_threshold(poisson_rate_bytes);
 
     // Enter the sampling slow path. Any allocation made by backtrace()
@@ -558,7 +750,7 @@ void* record_allocation(void* ptr, size_t size, const char* class_name = nullptr
 
     uint64_t frames[SAMPLE_STACK_DEPTH];
     const uint32_t frame_count = capture_backtrace(frames, SAMPLE_STACK_DEPTH);
-    const double weight = poisson_weight_for_size(size, poisson_rate_bytes);
+    const double weight = poisson_weight_for_size(size, draw_rate_bytes);
     insert_sample(
         reinterpret_cast<uint64_t>(ptr),
         size,
@@ -638,6 +830,8 @@ void reset_diagnostics() {
     g_sampled_frees.store(0, std::memory_order_relaxed);
     g_reentrant_skips.store(0, std::memory_order_relaxed);
     g_unsampled_calls.store(0, std::memory_order_relaxed);
+    g_rate_widen_events.store(0, std::memory_order_relaxed);
+    g_rate_narrow_events.store(0, std::memory_order_relaxed);
 }
 
 void start_new_session(uint64_t poisson_rate_bytes) {
@@ -653,6 +847,7 @@ void start_new_session(uint64_t poisson_rate_bytes) {
     clear_sample_table_locked();
     g_alloc_window_count = 0;
     reset_diagnostics();
+    reset_rate_control_locked();
     g_profiler_enabled.store(true, std::memory_order_release);
     os_unfair_lock_unlock(&g_insert_lock);
 }
@@ -854,6 +1049,7 @@ extern "C" dd_memory_snapshot_t dd_memory_alloc_window_capture(void) {
     if (g_alloc_window == nullptr || count == 0) {
         // Nothing this window; still reset so the next window starts clean.
         g_alloc_window_count = 0;
+        relieve_pressure_locked(count);
         os_unfair_lock_unlock(&g_insert_lock);
         return result;
     }
@@ -873,6 +1069,10 @@ extern "C" dd_memory_snapshot_t dd_memory_alloc_window_capture(void) {
 
     std::memcpy(out, g_alloc_window, count * sizeof(dd_memory_sample_t));
     g_alloc_window_count = 0;  // window drained; next window accumulates fresh
+    // The drained fill level is this window's verdict on whether the current
+    // interval is still needed. Narrowing is deliberately once-per-window,
+    // never per-insert, so relief cannot race the burst that caused it.
+    relieve_pressure_locked(count);
     result.samples = out;
     result.sample_count = count;
     result.timestamp_ns = monotonic_ns_since_start();
@@ -903,6 +1103,11 @@ extern "C" dd_memory_diagnostics_t dd_memory_profiler_diagnostics(void) {
     d.live_sampled_allocations = g_live_sampled_allocations.load(std::memory_order_relaxed);
     d.reentrant_skips = g_reentrant_skips.load(std::memory_order_relaxed);
     d.unsampled_calls = g_unsampled_calls.load(std::memory_order_relaxed);
+    d.base_rate_bytes = g_poisson_rate_bytes.load(std::memory_order_relaxed);
+    d.effective_rate_bytes = g_effective_rate_bytes.load(std::memory_order_acquire);
+    d.rate_widen_events = g_rate_widen_events.load(std::memory_order_relaxed);
+    d.rate_narrow_events = g_rate_narrow_events.load(std::memory_order_relaxed);
+    d.occupancy_high_water = g_occupancy_high_water.load(std::memory_order_relaxed);
     return d;
 }
 
@@ -912,8 +1117,13 @@ extern "C" void dd_memory_test_force_start_failure(bool enabled) {
     g_test_force_start_failure.store(enabled, std::memory_order_relaxed);
 }
 
+extern "C" void dd_memory_test_set_pressure_adaptation(bool enabled) {
+    g_pressure_adaptation_enabled.store(enabled, std::memory_order_relaxed);
+}
+
 extern "C" void dd_memory_test_reset(void) {
     g_test_force_start_failure.store(false, std::memory_order_relaxed);
+    g_pressure_adaptation_enabled.store(true, std::memory_order_relaxed);
     os_unfair_lock_lock(&g_lifecycle_lock);
     os_unfair_lock_lock(&g_insert_lock);
     g_profiler_enabled.store(false, std::memory_order_release);
@@ -921,12 +1131,14 @@ extern "C" void dd_memory_test_reset(void) {
     clear_sample_table_locked();
     g_alloc_window_count = 0;
     reset_diagnostics();
+    reset_rate_control_locked();
     os_unfair_lock_unlock(&g_insert_lock);
     os_unfair_lock_unlock(&g_lifecycle_lock);
 
     tls_force_next_sample = false;
     tls_bytes_until_sample = 0;
     tls_sampling_generation = 0;
+    tls_threshold_rate_bytes = 0;
 }
 
 extern "C" void dd_memory_test_force_next_sample(void) {

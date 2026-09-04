@@ -56,10 +56,27 @@ internal struct MemoryProfilerDiagnostics: Sendable {
     let totalAllocations: UInt64
     let sampledAllocations: UInt64
     let droppedSamples: UInt64
+    /// Sampled allocations dropped because the per-window alloc log was full.
+    /// Every drop is unrecoverable understatement in `alloc_*`, so this is the
+    /// counter the back-pressure controller exists to hold at zero.
+    let droppedAllocRecords: UInt64
     let sampledFrees: UInt64
     let liveSampledAllocations: UInt64
     let reentrantSkips: UInt64
     let unsampledCalls: UInt64
+    /// Configured base interval for the session.
+    let baseRateBytes: UInt64
+    /// Interval currently in force; `baseRateBytes` unless widened.
+    let effectiveRateBytes: UInt64
+    /// Peak fill of the fixed-capacity structures this session, in entries.
+    let occupancyHighWater: UInt64
+    let rateWidenEvents: UInt64
+    let rateNarrowEvents: UInt64
+
+    /// How far back-pressure has widened the interval, as a multiple of the base.
+    var rateMultiplier: UInt64 {
+        baseRateBytes > 0 ? effectiveRateBytes / baseRateBytes : 1
+    }
 }
 
 /// Swift facade over the passive sampler's C introspection API. All methods
@@ -117,11 +134,42 @@ internal enum MemoryProfilerProbe {
             totalAllocations: raw.total_allocations,
             sampledAllocations: raw.sampled_allocations,
             droppedSamples: raw.dropped_samples,
+            droppedAllocRecords: raw.dropped_alloc_records,
             sampledFrees: raw.sampled_frees,
             liveSampledAllocations: raw.live_sampled_allocations,
             reentrantSkips: raw.reentrant_skips,
-            unsampledCalls: raw.unsampled_calls
+            unsampledCalls: raw.unsampled_calls,
+            baseRateBytes: raw.base_rate_bytes,
+            effectiveRateBytes: raw.effective_rate_bytes,
+            occupancyHighWater: raw.occupancy_high_water,
+            rateWidenEvents: raw.rate_widen_events,
+            rateNarrowEvents: raw.rate_narrow_events
         )
+    }
+
+    /// Drains the current `alloc_*` window, returning every allocation sampled
+    /// since the last drain and resetting the window. This is also the point at
+    /// which the back-pressure controller re-evaluates relief, so tests that
+    /// exercise adaptation must drive windows through this call.
+    static func captureAllocWindow() -> MemorySnapshot {
+        var raw = dd_memory_alloc_window_capture()
+        defer { dd_memory_snapshot_destroy(&raw) }
+
+        guard raw.sample_count > 0, let samplesPtr = raw.samples else {
+            return MemorySnapshot(timestampNs: raw.timestamp_ns, samples: [])
+        }
+
+        let samples = UnsafeBufferPointer(start: samplesPtr, count: raw.sample_count).map { rawSample in
+            MemorySample(
+                address: rawSample.addr,
+                size: rawSample.size,
+                weight: rawSample.weight,
+                frames: [],
+                timestampNs: rawSample.timestamp_ns,
+                className: rawSample.class_name.flatMap { String(cString: $0) }
+            )
+        }
+        return MemorySnapshot(timestampNs: raw.timestamp_ns, samples: samples)
     }
 }
 

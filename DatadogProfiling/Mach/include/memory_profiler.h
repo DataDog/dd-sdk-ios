@@ -37,9 +37,36 @@ extern "C" {
  * higher values produce sparser samples (less overhead, less precision for
  * small allocations).
  *
- * 512 KB is the same rate used by Go's heap profiler and heapprofd.
+ * 512 KB is the same rate used by Go's heap profiler and heapprofd. It is the
+ * FLOOR of the effective rate: back-pressure only ever widens the interval
+ * beyond this, never below it — see DD_MEMORY_MAX_RATE_MULTIPLIER.
  */
 #define DD_MEMORY_POISSON_DEFAULT_RATE_BYTES (512ULL * 1024ULL)
+
+/**
+ * Ceiling on how far back-pressure may widen the sampling interval, as a
+ * multiple of the configured base rate.
+ *
+ * The sampler's live table and per-window allocation log are fixed-capacity
+ * and pre-allocated (they cannot grow without calling malloc, which would
+ * recurse into the hook). When either fills, the pre-adaptation behavior was
+ * to drop the excess and count it: `alloc_*` and `inuse_*` then understate the
+ * true totals by an amount no consumer can recover, because a dropped sample
+ * leaves no weight behind.
+ *
+ * Widening the interval under pressure is the strictly better degradation
+ * mode: each surviving sample carries a proportionally larger weight, so the
+ * estimator stays unbiased and only its variance grows.
+ *
+ * 256x the 512 KB base is a 128 MB interval. Combined with the doubling
+ * schedule, that gives one 4096-entry window a reach of roughly 100 GB of
+ * allocation before it can saturate — about 1.7 GB/s sustained over a 60s
+ * emission window. The ceiling is not higher because recovery is one step per
+ * quiet window: 256x already takes eight windows to unwind back to the base
+ * rate, and full resolution should not stay degraded longer than that after a
+ * burst has passed.
+ */
+#define DD_MEMORY_MAX_RATE_MULTIPLIER 256ULL
 
 /**
  * Maximum stack frames captured per sampled allocation.
@@ -84,6 +111,19 @@ typedef struct dd_memory_diagnostics {
     uint64_t reentrant_skips;
     /** Number of hook calls that fell through unsampled (the common case). */
     uint64_t unsampled_calls;
+    /** Configured base sampling interval for this session, in bytes. */
+    uint64_t base_rate_bytes;
+    /** Sampling interval currently in force, in bytes. Equals base_rate_bytes
+     *  unless back-pressure has widened it; always a power-of-two multiple. */
+    uint64_t effective_rate_bytes;
+    /** Highest occupancy (live table or alloc window, whichever is greater)
+     *  reached during this session, in entries. Compare against capacity to
+     *  see how close the fixed-size structures came to saturating. */
+    uint64_t occupancy_high_water;
+    /** Number of times back-pressure widened the interval this session. */
+    uint64_t rate_widen_events;
+    /** Number of times relieved pressure narrowed it back toward the base. */
+    uint64_t rate_narrow_events;
 } dd_memory_diagnostics_t;
 
 /**

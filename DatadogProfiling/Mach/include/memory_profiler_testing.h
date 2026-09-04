@@ -105,6 +105,19 @@ bool dd_memory_test_insert_sample(
  */
 dd_memory_source_t dd_memory_test_sample_source(const void* ptr);
 
+/**
+ * Enables or disables occupancy-driven back-pressure adaptation.
+ *
+ * Adaptation is ON in production and defaults to ON here. Disabling it pins
+ * the interval to the configured base rate, reproducing the pre-adaptation
+ * fixed-512 KB sampler exactly — which is what lets the benchmark and
+ * convergence suites measure the same workload both ways and attribute the
+ * difference in estimator error to this mechanism alone.
+ *
+ * Re-enabled by dd_memory_test_reset().
+ */
+void dd_memory_test_set_pressure_adaptation(bool enabled);
+
 #ifdef __cplusplus
 }
 #endif
