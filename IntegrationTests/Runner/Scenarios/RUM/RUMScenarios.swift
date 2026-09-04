@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogInternal
 import DatadogRUM
 import DatadogCore
 
@@ -171,6 +172,30 @@ final class RUMMobileVitalsScenario: TestScenario {
 
 /// Base scenario for RUM resources testing.
 class RUMResourcesBaseScenario: URLSessionBaseScenario {
+    /// The URL to a resource that supports ETag-based revalidation, used to test OS-level HTTP cache
+    /// revalidation reporting from `SendThirdPartyRequestsViewController`. Backed by the last entry in
+    /// `instrumentedEndpoints`, appended only for the Swift `URLSession` scenario (see `RUMResourcesScenarioTests`).
+    var cacheableResourceURL: URL {
+        if Environment.isRunningUITests() {
+            return Environment.serverMockConfiguration()!.instrumentedEndpoints[5]
+        }
+        return URL(string: "https://status.datadoghq.com/cache-test/resource-1")!
+    }
+
+    private let cacheEnabledSessionDelegate = CustomURLSessionDelegate()
+
+    /// A separate `URLSession`, configured with a real `URLCache` (not `.ephemeral`) and `.useProtocolCachePolicy`,
+    /// used only to exercise OS-level HTTP cache revalidation. Kept independent from `URLSessionBaseScenario.session`
+    /// so the other resource requests sharing that session are unaffected.
+    lazy var cacheEnabledSession: URLSession = {
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
+
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache(memoryCapacity: 4 * 1_024 * 1_024, diskCapacity: 20 * 1_024 * 1_024, diskPath: nil)
+        configuration.requestCachePolicy = .useProtocolCachePolicy
+        return URLSession(configuration: configuration, delegate: cacheEnabledSessionDelegate, delegateQueue: nil)
+    }()
+
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
