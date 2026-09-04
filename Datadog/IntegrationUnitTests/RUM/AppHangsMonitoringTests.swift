@@ -116,6 +116,48 @@ class AppHangsMonitoringTests: XCTestCase {
         #endif
     }
 
+    func testGivenAppHangBacktracesDisabledInCrashReporting_whenRUMIsEnabledFirst_itTracksAppHangWithNoStackTrace() throws {
+        try assertAppHangIsTrackedWithNoStackTrace { crashReportingConfig in
+            RUM.enable(with: self.rumConfig, in: self.core)
+            CrashReporting.enable(with: crashReportingConfig, in: self.core)
+        }
+    }
+
+    func testGivenAppHangBacktracesDisabledInCrashReporting_whenCrashReportingIsEnabledFirst_itTracksAppHangWithNoStackTrace() throws {
+        try assertAppHangIsTrackedWithNoStackTrace { crashReportingConfig in
+            CrashReporting.enable(with: crashReportingConfig, in: self.core)
+            RUM.enable(with: self.rumConfig, in: self.core)
+        }
+    }
+
+    /// Asserts that a hang is tracked with no stack trace, with the SDK enabled by `enableSDK`.
+    ///
+    /// Both enablement orders get their own test rather than being picked at random: only the RUM-first order
+    /// proves that the opt-out is read per hang instead of being captured when RUM is enabled, so randomizing
+    /// would let that regression pass half of the runs.
+    private func assertAppHangIsTrackedWithNoStackTrace(enableSDK: (CrashReporting.Configuration) -> Void) throws {
+        // Given (initialize SDK on the main thread)
+        enableSDK(CrashReporting.Configuration(appHangBacktraceEnabled: false))
+
+        // When
+        mainQueue.sync {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        try flushHangsMonitoring()
+        let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
+        let appHangError = try XCTUnwrap(errors.first)
+
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+        XCTAssertEqual(appHangError.error.source, .source)
+        XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as App Hang backtraces were disabled")
+        XCTAssertNil(appHangError.error.binaryImages, "Binary Images should be unavailable as App Hang backtraces were disabled")
+        XCTAssertNil(appHangError.error.wasTruncated, "Truncation flag should be unavailable as App Hang backtraces were disabled")
+    }
+
     func testGivenOnlyRUMEnabled_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
         // Given
         mainQueue.sync {

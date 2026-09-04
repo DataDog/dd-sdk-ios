@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-08-19
+last_updated: 2026-08-31
 sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+verified_against_commit: b9103bfe1
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
+  - DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift
   - DatadogTrace/Sources/Tracer.swift
   - DatadogTrace/Sources/OpenTracing/OTTracer.swift
   - DatadogTrace/Sources/OpenTracing/OTSpan.swift
@@ -204,6 +205,7 @@ requestSpan.finish()
   - RUM and network-info enrichment
   - Span event mapper, custom endpoint
   - Client-side APM stats (`statsComputationEnabled`, `customStatsEndpoint`)
+- **`DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift`** — Applies Datadog Remote Configuration on top of the in-code `Trace.Configuration`, once, at `Trace.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API — Manual Instrumentation
 - **`DatadogTrace/Sources/Tracer.swift`** — Access point: `Tracer.shared(in:)` returns an `OTTracer`. Also defines `SpanTags` (`resource`, `operation`, `service`, `manualKeep`, `manualDrop`).
@@ -259,7 +261,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
-- **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log.
+- **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
 
 ### Event Modification
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
@@ -274,6 +276,14 @@ For non-`URLSession` HTTP clients, build headers yourself:
 - `W3CHTTPHeadersWriter()` — W3C `tracecontext` (all params have defaults)
 - `B3HTTPHeadersWriter(injectEncoding:)` — B3 single or multi
 - Pass a writer to `tracer.inject(spanContext:writer:)`, then read `writer.traceHeaderFields` and copy them into your request.
+
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `Trace.enable(with:)` runs, it is merged onto the in-code `Trace.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- Trace's remote configuration only overrides `sampleRate`, the default tracer's span sample rate. A parameter the remote configuration omits (or `nil`, when none was fetched) keeps its in-code value.
+- Distributed-tracing enablement (first-party hosts, `firstPartyHostsTracing`, header/propagator types, injection strategy) is **not** owned by Trace's remote configuration — it is owned by RUM's, to avoid registering overlapping URLSession handlers when both modules are enabled. See `DatadogRUM/RUM_FEATURE.md#remote-configuration` and `RUMConfiguration+RemoteConfiguration.swift`.
+- See `TraceConfiguration+RemoteConfiguration.swift` for the merge logic.
 
 ## Common Troubleshooting Patterns
 
@@ -312,6 +322,7 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - **Crash Reporting**: Independent — crashes do not require Trace.
 - **WebView Tracking**: Independent — see `DatadogWebViewTracking/Sources/WebViewTracking.swift`.
 - **OpenTelemetry**: Use `OTelTracerProvider` to drive the standard OpenTelemetry API on top of Datadog Trace.
+- **Remote Configuration**: only overrides the default tracer's `sampleRate`; distributed-tracing enablement via remote config is owned by RUM — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 

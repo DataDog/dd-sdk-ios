@@ -13,7 +13,6 @@ import WebKit
 @_spi(Internal)
 import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
     static let embeddedContent = Self { layer, _, context in
         guard
@@ -133,7 +132,6 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.GradientSemantics {
     fileprivate init?(gradientLayer: CAGradientLayer) {
         guard let colorValues = gradientLayer.colors else {
@@ -156,7 +154,6 @@ extension CALayerSnapshot.SemanticObservation.GradientSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.LabelSemantics {
     fileprivate init(label: UILabel) {
         self.init(
@@ -170,7 +167,6 @@ extension CALayerSnapshot.SemanticObservation.LabelSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.ImageSemantics {
     fileprivate init(imageView: UIImageView) {
         let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
@@ -182,7 +178,6 @@ extension CALayerSnapshot.SemanticObservation.ImageSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.TextInputSemantics {
     fileprivate init(textView: UITextView) {
         self.init(
@@ -201,7 +196,6 @@ extension CALayerSnapshot.SemanticObservation.TextInputSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.WebViewSemantics {
     fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
         self.init(

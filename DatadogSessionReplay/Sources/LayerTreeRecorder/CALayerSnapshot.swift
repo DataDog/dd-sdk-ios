@@ -18,7 +18,6 @@ import UIKit
 /// payload needed by later Session Replay recording steps.
 /// Frames are captured in the root layer coordinate space, matching the
 /// coordinate space used by Session Replay wireframes.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct CALayerSnapshot: Sendable {
     let layer: CALayerReference
     let replayID: Int64
@@ -71,7 +70,6 @@ internal struct CALayerSnapshot: Sendable {
     let shadowPath: CGPath?
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Describes the bounds and placement of a layer's rendered content.
     struct ContentGeometry: Sendable {
@@ -232,7 +230,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.ContentGeometry {
     @MainActor
     fileprivate init(
@@ -270,7 +267,6 @@ extension CALayerSnapshot.ContentGeometry {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     fileprivate struct ResolvedPrivacy {
         var textAndInputPrivacyLevel: TextAndInputPrivacyLevel
@@ -289,7 +285,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     @MainActor fileprivate var privacyOverrides: SessionReplayPrivacyOverrides? {
         (delegate as? UIView)?.dd._privacyOverrides

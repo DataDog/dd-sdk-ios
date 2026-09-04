@@ -17,7 +17,6 @@ import WebKit
 @Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotImageSnapshotRequestTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips content snapshot request for visual effect")
     func skipsContentSnapshotRequestForVisualEffect() {
         // Given
@@ -34,7 +33,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.compactMap(\.content).isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips content snapshot request for gradient")
     func skipsContentSnapshotRequestForGradient() throws {
         // Given
@@ -60,7 +58,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.compactMap(\.content).isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for plain layer with contents")
     func createsRequestForPlainLayerWithContents() throws {
         // Given
@@ -84,7 +81,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for plain layer with content changes")
     func createsRequestForPlainLayerWithContentChanges() throws {
         // Given
@@ -104,7 +100,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for plain layer with cached snapshot data")
     func createsRequestForPlainLayerWithCachedSnapshotData() throws {
         // Given
@@ -127,7 +122,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.previousSnapshotData?.snapshot === imageSnapshot)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates mask request for container with mask")
     func createsMaskRequestForContainerWithMask() throws {
         // Given
@@ -163,7 +157,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(!request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Marks mask request changed when mask dependency changes")
     func marksMaskRequestChangedWhenMaskDependencyChanges() throws {
         // Given
@@ -193,7 +186,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates mask request for transparent container mask")
     func createsMaskRequestForTransparentContainerMask() throws {
         // Given
@@ -221,7 +213,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.dependencies.contains { $0.matches(mask) })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips mask request for leaf layer")
     func skipsMaskRequestForLeafLayer() throws {
         // Given
@@ -242,7 +233,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(!requests.contains { $0.mask != nil })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips plain layer without contents, content changes, or cache")
     func skipsPlainLayerWithoutContentsChangesOrCachedSnapshotData() throws {
         // Given
@@ -258,7 +248,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for layer subclass without contents")
     func createsRequestForLayerSubclassWithoutContents() throws {
         // Given
@@ -279,7 +268,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasLayerSemantics)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for semantic image layer when image privacy masks none")
     func createsRequestForSemanticImageLayerWhenImagePrivacyMasksNone() throws {
         // Given
@@ -307,7 +295,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(!requests.contains { $0.content?.layer.matches(child) == true })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips empty semantic image layer")
     func skipsEmptySemanticImageLayer() throws {
         // Given
@@ -324,7 +311,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for semantic image layer with dependencies")
     func createsRequestForSemanticImageLayerWithDependencies() throws {
         // Given
@@ -349,7 +335,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.dependencies.contains { $0.matches(dependency) })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips semantic image layer when image privacy masks all")
     func skipsSemanticImageLayerWhenImagePrivacyMasksAll() throws {
         // Given
@@ -367,7 +352,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for progress view image sublayer when image privacy masks all")
     func createsRequestForProgressViewImageSublayerWhenImagePrivacyMasksAll() throws {
         // Given
@@ -390,7 +374,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.imagePrivacyLevel == .maskNone)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for slider image sublayer when image privacy masks all")
     func createsRequestForSliderImageSublayerWhenImagePrivacyMasksAll() throws {
         // Given
@@ -413,7 +396,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.imagePrivacyLevel == .maskNone)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for button image sublayer when image privacy masks all")
     func createsRequestForButtonImageSublayerWhenImagePrivacyMasksAll() throws {
         // Given
@@ -436,7 +418,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.imagePrivacyLevel == .maskNone)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips button image sublayer when button image privacy override masks all")
     func skipsButtonImageSublayerWhenButtonImagePrivacyOverrideMasksAll() throws {
         // Given
@@ -458,7 +439,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips semantic image layer when image privacy masks non-bundled images")
     func skipsSemanticImageLayerWhenImagePrivacyMasksNonBundledImages() throws {
         // Given
@@ -476,7 +456,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for highlighted semantic image layer when highlighted image is bundled")
     func createsRequestForHighlightedSemanticImageLayerWhenHighlightedImageIsBundled() throws {
         // Given
@@ -497,7 +476,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.layer.matches(imageView.layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for highlighted semantic image layer when fallback image is bundled")
     func createsRequestForHighlightedSemanticImageLayerWhenFallbackImageIsBundled() throws {
         // Given
@@ -518,7 +496,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.layer.matches(imageView.layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for semantic image layer when ignored sublayer changes")
     func createsRequestForSemanticImageLayerWhenIgnoredSublayerChanges() throws {
         // Given
@@ -549,7 +526,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for semantic image layer when ignored sublayer lays out")
     func createsRequestForSemanticImageLayerWhenIgnoredSublayerLaysOut() throws {
         // Given
@@ -575,7 +551,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for semantic image layer when ignored sublayer is replaced")
     func createsRequestForSemanticImageLayerWhenIgnoredSublayerIsReplaced() throws {
         // Given
@@ -616,7 +591,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not mark semantic image layer changed when owner only lays out")
     func doesNotMarkSemanticImageLayerChangedWhenOwnerOnlyLaysOut() throws {
         // Given
@@ -644,7 +618,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(!request.hasChanges)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips web view layer")
     func skipsWebViewLayer() throws {
         // Given
@@ -660,7 +633,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips private layer")
     func skipsPrivateLayer() throws {
         // Given
@@ -677,7 +649,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates request for visible child of zero-sized non-clipping container")
     func createsRequestForVisibleChildOfZeroSizedNonClippingContainer() throws {
         // Given
@@ -704,7 +675,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.first?.content?.layer.matches(imageView.layer) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps traversing image-capable container")
     func keepsTraversingImageCapableContainer() throws {
         // Given
@@ -732,7 +702,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(request.layer.matches(child))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps traversing when container image would include web view")
     func keepsTraversingWhenContainerImageWouldIncludeWebView() throws {
         // Given
@@ -770,7 +739,6 @@ struct CALayerSnapshotImageSnapshotRequestTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension ImageSnapshotRequest {
     var content: ContentSnapshotRequest? {
         guard case .content(let request) = self else {

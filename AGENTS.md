@@ -9,7 +9,7 @@ The SDK powers mission-critical telemetry for thousands of customer apps. All ch
 1. **Zero crashes caused by SDK code** — prefer making the SDK non-operational over throwing exceptions
 2. **Small footprint** — minimize runtime performance impact, library size, and network load
 3. **Stability** — avoid breaking changes; minor updates must be transparent
-4. **Compatibility** — support iOS 12.0+, both Swift and Objective-C
+4. **Compatibility** — support iOS 15.0+, both Swift and Objective-C
 
 ## Documentation Map
 

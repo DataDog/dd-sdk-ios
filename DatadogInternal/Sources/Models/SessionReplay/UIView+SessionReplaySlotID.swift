@@ -23,7 +23,6 @@ public extension DatadogExtension where ExtendedType: UIView {
     /// Sets the Session Replay slot ID for this view.
     ///
     /// Changing the slot changes the recorded view hierarchy, so this triggers a new snapshot.
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func setSessionReplaySlotID(_ slotID: String?) {
         guard slotID != sessionReplaySlotID else {

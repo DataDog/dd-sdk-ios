@@ -7,6 +7,12 @@
 import Foundation
 
 /// Carrier details specific to cellular radio access.
+///
+/// - Note: Automatically collected only on iOS versions below 16. Apple deprecated the underlying
+///   Core Telephony APIs (`CTCarrier`) in iOS 16 with no replacement and confirmed they always return
+///   placeholder ("--") or empty values from that version onward, so `CarrierInfoPublisher` never
+///   publishes a non-nil `CarrierInfo` on iOS 16+.
+///   ref.: https://forums.developer.apple.com/forums/thread/714876
 public struct CarrierInfo: Codable, Equatable {
     // swiftlint:disable identifier_name
     public enum RadioAccessTechnology: String, Codable, CaseIterable {

@@ -40,6 +40,12 @@ public enum Trace {
             )
         }
 
+        // Merge remote configuration on top of the in-code configuration. Remote values take
+        // precedence for supported behavioral parameters; if no remote configuration is available,
+        // the in-code configuration is used unchanged.
+        var configuration = configuration
+        configuration.apply(remoteConfiguration: core.remoteConfiguration)
+
         // Register Client-Side Stats feature first if enabled, so the Trace feature (which stamps
         // `meta._dd.compute_stats=0` on every span) is only registered once the stats pipeline is
         // known to be installed. If stats registration fails, we return before any span is stamped,

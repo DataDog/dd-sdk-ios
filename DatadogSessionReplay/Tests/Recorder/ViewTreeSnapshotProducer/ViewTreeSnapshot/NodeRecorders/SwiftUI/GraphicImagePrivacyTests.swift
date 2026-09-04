@@ -10,7 +10,6 @@ import TestUtilities
 import XCTest
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 class ImagePrivacyTests: XCTestCase {
     func testShouldRecordImagePredicate() {
         // Given
