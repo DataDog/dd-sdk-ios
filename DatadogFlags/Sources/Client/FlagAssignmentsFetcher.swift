@@ -14,43 +14,55 @@ internal protocol FlagAssignmentsFetching {
     )
 }
 
+private final class FlagAssignmentsCompletionGate: @unchecked Sendable {
+    @ReadWriteLock
+    private var isComplete = false
+
+    func accept() -> Bool {
+        var accepted = false
+        _isComplete.mutate { isComplete in
+            guard !isComplete else {
+                return
+            }
+            isComplete = true
+            accepted = true
+        }
+        return accepted
+    }
+}
+
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
 
     private let featureScope: any FeatureScope
-    private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+    private let assignmentRequestFetch: Flags.AssignmentRequestFetch
 
     private static let decoder = JSONDecoder()
-
-    convenience init(
-        customEndpoint: URL?,
-        customHeaders: [String: String]?,
-        featureScope: any FeatureScope
-    ) {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-
-        let urlSession = URLSession(configuration: configuration)
-
-        self.init(
-            customEndpoint: customEndpoint,
-            customHeaders: customHeaders,
-            featureScope: featureScope,
-            fetch: urlSession.fetch
-        )
-    }
 
     init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        assignmentRequestFetch: Flags.AssignmentRequestFetch
     ) {
+        let completionQueue = DispatchQueue(
+            label: "com.datadoghq.flags.assignment-request-completion"
+        )
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
-        self.fetch = fetch
+        self.assignmentRequestFetch = .init { request, completion in
+            let completionGate = FlagAssignmentsCompletionGate()
+            return assignmentRequestFetch(request) { result in
+                completionQueue.async {
+                    guard completionGate.accept() else {
+                        return
+                    }
+                    completion(result)
+                }
+            }
+        }
     }
 
     func flagAssignments(
@@ -69,11 +81,25 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                self.fetch(request) { [featureScope] result in
+                self.assignmentRequestFetch(request) { [featureScope] result in
                     switch result {
-                    case .success(let data):
+                    case .success(let response):
+                        guard 200..<300 ~= response.httpResponse.statusCode else {
+                            let error = URLError(.badServerResponse)
+                            DD.logger.error("Failed to fetch flag assignments from the server.", error: error)
+                            featureScope.telemetry.error(
+                                "Failed to fetch flag assignments from the server "
+                                    + "(status: \(response.httpResponse.statusCode))",
+                                error: error
+                            )
+                            completion(.failure(.networkError(error)))
+                            return
+                        }
                         do {
-                            let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
+                            let response = try Self.decoder.decode(
+                                FlagAssignmentsResponse.self,
+                                from: response.data
+                            )
 
                             // Log any flags that failed to decode to telemetry
                             if !response.failedFlags.isEmpty {
@@ -141,31 +167,5 @@ extension DatadogSite {
             return URL(string: "https://\(subdomain).ff-cdn.datadoghq.com")!
         // swiftlint:enable force_unwrapping
         }
-    }
-}
-
-extension URLSession {
-    fileprivate func fetch(
-        _ request: URLRequest,
-        completion: @escaping (Result<Data, Error>) -> Void
-    ) {
-        let task = self.dataTask(with: request) { data, response, error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-
-            guard
-                let data,
-                let httpResponse = response as? HTTPURLResponse,
-                200..<300 ~= httpResponse.statusCode
-            else {
-                completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-
-            completion(.success(data))
-        }
-        task.resume()
     }
 }
