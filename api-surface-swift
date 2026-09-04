@@ -1625,6 +1625,7 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
+        public var initializationTimeout: TimeInterval
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
         public var customEvaluationEndpoint: URL?
@@ -1689,6 +1690,7 @@ public enum FlagsError: Error
     case invalidResponse
     case clientNotInitialized
     case invalidConfiguration
+    case initializationTimedOut
 public struct FlagsEvaluationContext: Equatable, Codable
     public let targetingKey: String
     public let attributes: [String: AnyValue]

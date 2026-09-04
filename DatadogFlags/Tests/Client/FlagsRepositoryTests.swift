@@ -122,6 +122,103 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeoutReturnsFailureAndAllowsLateReadyState() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var scheduledTimeout: TimeInterval?
+        var callbackResults: [Result<Void, FlagsError>] = []
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { timeout, action in
+                scheduledTimeout = timeout
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResults.append($0) }
+
+        // When
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(scheduledTimeout, 2.5)
+        XCTAssertEqual(callbackResults.count, 1)
+        guard case .failure(.initializationTimedOut) = callbackResults[0] else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        // When
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+
+        // Then
+        XCTAssertEqual(callbackResults.count, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testInitializationCompletionCancelsTimeout() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var timeoutCancellationCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return { timeoutCancellationCount += 1 }
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(timeoutCancellationCount, 1)
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutOnlyAppliesToFirstContext() {
+        // Given
+        var scheduledTimeoutCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            scheduleInitializationTimeout: { _, _ in
+                scheduledTimeoutCount += 1
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+        flagsRepository.setEvaluationContext(.mockRandom()) { _ in callbackCount += 1 }
+
+        // Then
+        XCTAssertEqual(scheduledTimeoutCount, 1)
+        XCTAssertEqual(callbackCount, 2)
+    }
+
     // MARK: - State Transitions
 
     func testStateTransitionsToReadyOnSuccess() {

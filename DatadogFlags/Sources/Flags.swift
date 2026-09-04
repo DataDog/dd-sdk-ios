@@ -24,6 +24,8 @@ public enum Flags {
     /// Use this type to customize the behavior of feature flag evaluation, including custom endpoints,
     /// exposure tracking, and error handling modes.
     public struct Configuration {
+        internal static let defaultInitializationTimeout: TimeInterval = 30
+
         /// Controls error handling behavior for `FlagsClient` API misuse.
         ///
         /// This setting determines how the SDK responds to incorrect usage, such as:
@@ -57,6 +59,18 @@ public enum Flags {
         ///
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
+
+        /// The maximum time to wait for the first evaluation context to become ready.
+        ///
+        /// This timeout covers the complete initialization operation. It includes loading cached data,
+        /// fetching assignments, reading the response body, decoding JSON, and publishing the ready state.
+        /// It does not change the HTTP client's timeout. The assignment operation continues after this timeout
+        /// and can update the client to ``FlagsClientState/ready`` when it completes.
+        ///
+        /// The value is in seconds. Invalid values cause an immediate timeout.
+        ///
+        /// Default: `30` seconds.
+        public var initializationTimeout: TimeInterval
 
         /// Custom server url for sending Flags exposure data.
         ///
@@ -122,6 +136,7 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
+            self.initializationTimeout = Self.defaultInitializationTimeout
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint
