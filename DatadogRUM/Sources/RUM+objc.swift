@@ -44,11 +44,11 @@ public class objc_DefaultAppKitRUMViewsPredicate: NSObject, objc_AppKitRUMViewsP
     }
 }
 
-@objc(DDDefaultAppKitRUMActionsPredicate)
+@objc(DDDefaultMacOSRUMActionsPredicate)
 @objcMembers
 @_spi(objc)
-public class objc_DefaultAppKitRUMActionsPredicate: NSObject, objc_AppKitRUMActionsPredicate {
-    let swiftPredicate = DefaultAppKitRUMActionsPredicate()
+public class objc_DefaultMacOSRUMActionsPredicate: NSObject, objc_MacOSRUMActionsPredicate {
+    let swiftPredicate = DefaultMacOSRUMActionsPredicate()
     public func rumAction(targetView: NSView) -> objc_RUMAction? {
         swiftPredicate.rumAction(targetView: targetView).map {
             objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
@@ -60,21 +60,29 @@ public class objc_DefaultAppKitRUMActionsPredicate: NSObject, objc_AppKitRUMActi
             objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
         }
     }
+
+    public func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> objc_RUMAction? {
+        swiftPredicate.rumAction(accessibilityRole: accessibilityRole, identifier: identifier).map {
+            objc_RUMAction(name: $0.name, attributes: $0.attributes.dd.objCAttributes)
+        }
+    }
 }
 
-@objc(DDAppKitRUMActionsPredicate)
+@objc(DDMacOSRUMActionsPredicate)
 @_spi(objc)
-public protocol objc_AppKitRUMActionsPredicate: AnyObject {
+public protocol objc_MacOSRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `NSView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
     func rumAction(targetView: NSView) -> objc_RUMAction?
 
     func rumAction(targetMenuItem: NSMenuItem) -> objc_RUMAction?
+
+    func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> objc_RUMAction?
 }
 
-internal struct AppKitRUMActionsPredicateBridge: AppKitRUMActionsPredicate {
-    let objcPredicate: objc_AppKitRUMActionsPredicate
+internal struct MacOSRUMActionsPredicateBridge: MacOSRUMActionsPredicate {
+    let objcPredicate: objc_MacOSRUMActionsPredicate
 
     func rumAction(targetView: NSView) -> RUMAction? {
         return objcPredicate.rumAction(targetView: targetView)?.swiftAction
@@ -82,6 +90,10 @@ internal struct AppKitRUMActionsPredicateBridge: AppKitRUMActionsPredicate {
 
     func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
         return objcPredicate.rumAction(targetMenuItem: targetMenuItem)?.swiftAction
+    }
+
+    func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction? {
+        return objcPredicate.rumAction(accessibilityRole: accessibilityRole, identifier: identifier)?.swiftAction
     }
 }
 
@@ -724,9 +736,9 @@ public class objc_RUMConfiguration: NSObject {
     #endif
 
     #if os(macOS)
-    public var appKitActionsPredicate: objc_AppKitRUMActionsPredicate? {
-        set { swiftConfig.appKitActionsPredicate = newValue.map { AppKitRUMActionsPredicateBridge(objcPredicate: $0) } }
-        get { (swiftConfig.appKitActionsPredicate as? AppKitRUMActionsPredicateBridge)?.objcPredicate as? objc_AppKitRUMActionsPredicate  }
+    public var macOSActionsPredicate: objc_MacOSRUMActionsPredicate? {
+        set { swiftConfig.macOSActionsPredicate = newValue.map { MacOSRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.macOSActionsPredicate as? MacOSRUMActionsPredicateBridge)?.objcPredicate as? objc_MacOSRUMActionsPredicate  }
     }
     #elseif canImport(UIKit)
     public var uiKitActionsPredicate: objc_UIKitRUMActionsPredicate? {
@@ -740,10 +752,12 @@ public class objc_RUMConfiguration: NSObject {
         get { (swiftConfig.swiftUIViewsPredicate as? SwiftUIRUMViewsPredicateBridge)?.objcPredicate }
     }
 
+    #if !os(macOS)
     public var swiftUIActionsPredicate: objc_SwiftUIRUMActionsPredicate? {
         set { swiftConfig.swiftUIActionsPredicate = newValue.map { SwiftUIRUMActionsPredicateBridge(objcPredicate: $0) } }
         get { (swiftConfig.swiftUIActionsPredicate as? SwiftUIRUMActionsPredicateBridge)?.objcPredicate }
     }
+    #endif
 
     public var trackMemoryWarnings: Bool {
         set { swiftConfig.trackMemoryWarnings = newValue }

@@ -609,7 +609,11 @@ extension InstrumentationType: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
+#if canImport(UIKit)
         case .uikit: try container.encode(0)
+#elseif canImport(AppKit)
+        case .appKit: try container.encode(0)
+#endif
         case .swiftuiAutomatic: try container.encode(1)
         case .swiftui: try container.encode(2)
         case .manual: try container.encode(3)
@@ -622,7 +626,7 @@ extension InstrumentationType: Encodable {
 #if canImport(UIKit)
         case .uikit: return "uikit"
 #elseif canImport(AppKit)
-        case .appKit: return "appKit"
+        case .appKit: return "appkit"
 #endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"

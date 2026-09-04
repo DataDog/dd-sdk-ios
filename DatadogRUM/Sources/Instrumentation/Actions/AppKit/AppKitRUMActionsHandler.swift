@@ -9,30 +9,40 @@ import AppKit
 import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
+    /// Notifies a `.leftMouseDown` event was dispatched through the app's main event loop.
+    func notify_sendEvent(event: NSEvent)
+
+    /// Notifies that a menu item was selected and its action was dispatched.
+    func notify_menuItemSelected(_ menuItem: NSMenuItem)
+
     /// Tracks RUM actions manually with AppKit view modifiers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
-
-    func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?)
-
-    func notify_sendEvent(event: NSEvent)
 }
 
 internal final class RUMActionsHandler: RUMActionsHandling {
     /// Factory that processes `DDEvents` and creates RUM action commands.
-    /// It is `nil` when both UIKit and SwiftUI automatic instrumentations are not enabled.
+    /// It is `nil` when both AppKit and SwiftUI automatic instrumentations are not enabled.
     private let eventCommandsFactory: AppKitEventCommandFactory?
+
+    /// Provides the date used for the event timestamps.
     private let dateProvider: DateProvider
 
+    /// Subscriber that will process the RUM Commands generated from the user-interface events.
     weak var subscriber: RUMCommandSubscriber?
 
-    /// Convenience initializer for macOS
+    /// Initializes the `RUMActionsHandler`.
+    ///
+    /// For automatic action tracking, `macOSPredicate` must be not `nil`. Otherwise, only manual tracking is supported.
+    ///
+    /// - Parameters:
+    ///   - dateProvider: The date provider used to timestamp the events.
+    ///   - macOSPredicate: Predicate deciding if a RUM action should be recorded for a given event on a view.
+    @MainActor
     convenience init(
         dateProvider: DateProvider,
-        appKitPredicate: AppKitRUMActionsPredicate?,
-        swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: SwiftUIComponentDetector?
+        macOSPredicate: MacOSRUMActionsPredicate?
     ) {
-        guard appKitPredicate != nil || swiftUIPredicate != nil else {
+        guard let macOSPredicate else {
             self.init(dateProvider: dateProvider, eventCommandsFactory: nil)
             return
         }
@@ -41,13 +51,20 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             dateProvider: dateProvider,
             eventCommandsFactory: AppKitCommandFactory(
                 dateProvider: dateProvider,
-                appKitPredicate: appKitPredicate,
-                swiftUIPredicate: swiftUIPredicate,
-                swiftUIDetector: swiftUIDetector
+                macOSPredicate: macOSPredicate,
+                accessibilityHierarchyDetectorCreator: { MacOSAccessibilityHierarchyDetector() }
             )
         )
     }
 
+    /// Initializes the `RUMActionsHandler`.
+    ///
+    /// For automatic action tracking, `eventCommandsFactory` must be not `nil`. Otherwise, only manual tracking is supported.
+    ///
+    /// - Parameters:
+    ///   - dateProvider: The date provider used to timestamp the events.
+    ///   - eventCommandsFactory: Factory producing RUM Actions for the given events. Must not be `nil` for automatic event
+    ///   tracking to work, otherwise only manual tracking is supported.
     init(
         dateProvider: DateProvider,
         eventCommandsFactory: AppKitCommandFactory?
@@ -78,9 +95,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 
-    /// Tracks manually instrumented SwiftUI actions via `.trackRUMTapAction()` view modifier,
-    /// in response to `SwiftUI.TapGesture.onEnded` event.
-    func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable]) {
+   func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable]) {
         let command = RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: actionAttributes,
@@ -102,8 +117,8 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 
-    func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?) {
-        guard let command = eventCommandsFactory?.command(from: app, action: action, target: target, from: from) else {
+    func notify_menuItemSelected(_ menuItem: NSMenuItem) {
+        guard let command = eventCommandsFactory?.command(from: menuItem) else {
             return
         }
 

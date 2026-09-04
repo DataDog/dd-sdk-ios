@@ -356,7 +356,11 @@ class TNSMetricTests: XCTestCase {
 
         // When
         var appStateHistory = AppStateHistory(initialState: .active, date: .distantPast)
+        #if os(macOS)
+        appStateHistory.append(state: .sleeping, at: resourceStart + resourceDuration * 0.25)
+        #else
         appStateHistory.append(state: .background, at: resourceStart + resourceDuration * 0.25)
+        #endif
         appStateHistory.append(state: .active, at: resourceStart + resourceDuration * 0.5)
 
         // Then

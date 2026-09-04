@@ -40,6 +40,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         maxFileAgeForRead: 24.hours // RUM intake can ingest events up to 24hrs old
     )
 
+    @MainActor
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
@@ -266,10 +267,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
-            uiKitRUMViewsPredicate: configuration.appKitViewsPredicate,
-            uiKitRUMActionsPredicate: configuration.appKitActionsPredicate,
-            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
-            swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            predicates: .init(
+                rumViewsPredicate: configuration.appKitViewsPredicate,
+                rumActionsPredicate: configuration.macOSActionsPredicate,
+                swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate
+            ),
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
@@ -318,10 +320,12 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
-            uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
-            uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
-            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
-            swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            predicates: .init(
+                rumViewsPredicate: configuration.uiKitViewsPredicate,
+                rumActionsPredicate: configuration.uiKitActionsPredicate,
+                swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
+                swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate
+            ),
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
@@ -405,7 +409,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         // Send configuration telemetry:
         #if !os(watchOS)
         let swiftUIViewTrackingEnabled = configuration.swiftUIViewsPredicate != nil
+        #if os(macOS)
+        let swiftUIActionTrackingEnabled = configuration.ddKitActionsPredicate != nil
+        #else
         let swiftUIActionTrackingEnabled = configuration.swiftUIActionsPredicate != nil
+        #endif
         let trackNativeViews = configuration.ddKitViewsPredicate != nil
         let trackUserInteractions = configuration.ddKitActionsPredicate != nil
         #else

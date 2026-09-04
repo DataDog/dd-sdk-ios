@@ -101,10 +101,17 @@ class RUMTests: XCTestCase {
     #if !os(watchOS)
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = UIKitRUMViewsPredicateMock()
+        config.macOSActionsPredicate = MacOSRUMActionsPredicateMock()
+        #else
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        #endif
         config.swiftUIViewsPredicate = SwiftUIRUMViewsPredicateMock()
+        #if !os(macOS)
         config.swiftUIActionsPredicate = SwiftUIRUMActionsPredicateMock()
+        #endif
         config.longTaskThreshold = 0.5
         config.appHangThreshold = 2
 
@@ -118,10 +125,12 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
+        #if !os(macOS)
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
+        #endif
     }
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(macOS)
     func testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled() throws {
         // Given
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
@@ -140,10 +149,17 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = nil
+        config.macOSActionsPredicate = nil
+        #else
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
+        #endif
         config.swiftUIViewsPredicate = nil
+        #if !os(macOS)
         config.swiftUIActionsPredicate = nil
+        #endif
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
         config.trackMemoryWarnings = false

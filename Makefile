@@ -204,6 +204,7 @@ test-macos:
 test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogInternal"
 	@$(MAKE) test-macos SCHEME="DatadogCore"
+	@$(MAKE) test-macos SCHEME="DatadogRUM"
 	@$(MAKE) test-macos SCHEME="DatadogLogs"
 	@$(MAKE) test-macos SCHEME="DatadogTrace"
 	@$(MAKE) test-macos SCHEME="DatadogFlags"

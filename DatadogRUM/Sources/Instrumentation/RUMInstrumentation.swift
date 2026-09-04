@@ -35,9 +35,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// It is `nil` (no swizzling) if RUM View automatic instrumentation is not enabled.
     let viewControllerSwizzler: DDViewControllerSwizzler?
 
-    /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
-    /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
-    let uiApplicationSwizzler: DDApplicationSwizzler?
+    /// Instruments `UI/NSApplication` for intercepting `UI/NSEvents` passed to the app.
+    /// It is `nil` (no instrumentation) if RUM Action automatic instrumentation is not enabled.
+    private let applicationInstrumentation: DDApplicationInstrumentation?
 
     #if !os(tvOS) && !os(macOS)
     /// Swizzles `UIScrollView.delegate` setter for intercepting scroll gestures.
@@ -62,13 +62,35 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     // MARK: - Initialization
 
     #if !os(watchOS)
+
+    #if os(macOS)
+    struct Predicates {
+        let rumViewsPredicate: DDKitRUMViewsPredicate?
+        let rumActionsPredicate: DDKitRUMActionsPredicate?
+        let swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?
+
+        var shouldEnableActionsInstrumentation: Bool {
+            rumActionsPredicate != nil
+        }
+    }
+    #else
+    struct Predicates {
+        let rumViewsPredicate: DDKitRUMViewsPredicate?
+        let rumActionsPredicate: DDKitRUMActionsPredicate?
+        let swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?
+        let swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?
+
+        var shouldEnableActionsInstrumentation: Bool {
+            rumActionsPredicate != nil || swiftUIRUMActionsPredicate != nil
+        }
+    }
+    #endif
+
     //swiftlint:disable function_default_parameter_at_end
+    @MainActor
     init(
         featureScope: FeatureScope,
-        uiKitRUMViewsPredicate rumViewsPredicate: DDKitRUMViewsPredicate?,
-        uiKitRUMActionsPredicate rumActionsPredicate: DDKitRUMActionsPredicate?,
-        swiftUIRUMViewsPredicate: SwiftUIRUMViewsPredicate?,
-        swiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate?,
+        predicates: Predicates,
         trackScrollAndSwipeActions: Bool = true,
         longTaskThreshold: TimeInterval?,
         appHangThreshold: TimeInterval?,
@@ -89,15 +111,15 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
         let viewsHandler = RUMViewsHandler(
             dateProvider: dateProvider,
-            uiKitPredicate: rumViewsPredicate,
-            swiftUIPredicate: swiftUIRUMViewsPredicate,
+            uiKitPredicate: predicates.rumViewsPredicate,
+            swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
             notificationCenter: notificationCenter
         )
         let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic view tracking is enabled
-                if rumViewsPredicate != nil || swiftUIRUMViewsPredicate != nil {
+                if predicates.rumViewsPredicate != nil || predicates.swiftUIRUMViewsPredicate != nil {
                     return try DDViewControllerSwizzler(handler: viewsHandler)
                 }
             } catch {
@@ -110,36 +132,34 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }()
 
         // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
-        // and only activate `UIApplicationSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured
+        // and only activate instrumentation if automatic instrumentation for UIKit or SwiftUI is configured
         let actionsHandler: RUMActionsHandling = {
             #if os(tvOS)
             return RUMActionsHandler(
                 dateProvider: dateProvider,
-                uiKitPredicate: rumActionsPredicate
+                uiKitPredicate: predicates.rumActionsPredicate
             )
             #elseif os(macOS)
             return RUMActionsHandler(
                 dateProvider: dateProvider,
-                appKitPredicate: rumActionsPredicate,
-                swiftUIPredicate: swiftUIRUMActionsPredicate,
-                swiftUIDetector: SwiftUIComponentFactory.createDetector()
+                macOSPredicate: predicates.rumActionsPredicate
             )
             #else
             return RUMActionsHandler(
                 dateProvider: dateProvider,
                 heatmapIdentifierRegistry: heatmapIdentifierRegistry,
-                uiKitPredicate: rumActionsPredicate,
-                swiftUIPredicate: swiftUIRUMActionsPredicate,
+                uiKitPredicate: predicates.rumActionsPredicate,
+                swiftUIPredicate: predicates.swiftUIRUMActionsPredicate,
                 swiftUIDetector: SwiftUIComponentFactory.createDetector()
             )
             #endif
         }()
 
-        let uiApplicationSwizzler: DDApplicationSwizzler? = {
+        let applicationInstrumentation: DDApplicationInstrumentation? = {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
-                if rumActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
-                    return try DDApplicationSwizzler(handler: actionsHandler)
+                if predicates.shouldEnableActionsInstrumentation {
+                    return try DDApplicationInstrumentation(handler: actionsHandler)
                 }
             } catch {
                 consolePrint(
@@ -155,7 +175,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // AND the `trackScrollAndSwipeActions` feature flag is set:
         let scrollHandler: RUMScrollHandler?
         let scrollViewSwizzler: UIScrollViewSwizzler?
-        if let uiKitRUMActionsPredicate = rumActionsPredicate, trackScrollAndSwipeActions {
+        if let uiKitRUMActionsPredicate = predicates.rumActionsPredicate, trackScrollAndSwipeActions {
             let handler = RUMScrollHandler(
                 dateProvider: dateProvider,
                 predicate: uiKitRUMActionsPredicate
@@ -181,7 +201,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.viewsHandler = viewsHandler
         self.actionsHandler = actionsHandler
         self.viewControllerSwizzler = viewControllerSwizzler
-        self.uiApplicationSwizzler = uiApplicationSwizzler
+        self.applicationInstrumentation = applicationInstrumentation
         #if !os(tvOS) && !os(macOS)
         self.scrollHandler = scrollHandler
         self.scrollViewSwizzler = scrollViewSwizzler
@@ -204,7 +224,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
-        self.uiApplicationSwizzler?.swizzle()
+        self.applicationInstrumentation?.install()
         #if !os(tvOS) && !os(macOS)
         self.scrollViewSwizzler?.swizzle()
         #endif
@@ -264,7 +284,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         // Disable configured instrumentations:
         #if !os(watchOS)
         viewControllerSwizzler?.unswizzle()
-        uiApplicationSwizzler?.unswizzle()
+        applicationInstrumentation?.uninstall()
         #if !os(tvOS) && !os(macOS)
         scrollViewSwizzler?.unswizzle()
         #endif
