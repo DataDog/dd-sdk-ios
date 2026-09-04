@@ -229,8 +229,8 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil
         }
 
-        if let toolbarItemViewer = control.findInParentHierarchy(viewMatching: { $0.className == "NSToolbarItemViewer" }) {
-            return toolbarItemViewer
+        if let toolbarItemViewer = control.findInParentHierarchy(viewMatching: { $0.isNSToolbarItemViewer }) {
+            return bestActionTargetFor(toolbarItemViewer: toolbarItemViewer, control: control)
         }
 
         if let tableView = control as? NSTableView {
@@ -252,14 +252,15 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     /// try to obtain the target view. If AppKit, also provides the target view, if any. For SwiftUI, it provides the fallback target view
     /// to be used if the accessibility detector fails to generate a RUM action.
     private func bestActionTargetFor(view: DDView, event: NSEvent) -> BestTarget {
-        // In toolbars, if no button was explicitly attributed to item.view, the
-        // class that returns itself from hitTest is NSToolbarItemViewer, not the
-        // synthesized button inside it (NSToolbarButton instance).
-        if view.className == "NSToolbarItemViewer"
+        if view.isNSToolbarItemViewer {
+            // In toolbars, if no button was explicitly attributed to item.view, the
+            // class that returns itself from hitTest is NSToolbarItemViewer (or a subclass),
+            // not the synthesized button inside it (NSToolbarButton instance).
+            return .appKit(bestActionTargetForToolbarItem(toolbarItemViewer: view))
+        } else if view is NSTableHeaderView {
             // In tables, a click on a header hits a view (not control) of class NSTableHeaderView.
             // We avoid the path of finding the NSTableView parent and then digging in to look for
             // the clicked header view since we already know it, so we shortcut it here.
-            || view is NSTableHeaderView {
             return .appKit(view)
         } else if let ddControl = view as? DDControl {
             // NSTableView interactive element is the row, not the cell. If the click hits a row,
@@ -306,6 +307,70 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             }
 
             return isSwiftUIContainerView ? .tryAccessibilityHierarchyWithFallbackTo(result) : .appKit(result)
+        }
+    }
+
+    /// Utility function that obtains the control inside a toolbar item viewer and calls `bestActionTargetFor(toolbarItemViewer:control:)`.
+    ///
+    /// Read the documentation of `bestActionTargetFor(toolbarItemViewer:control:)`
+    /// for more details.
+    ///
+    /// - Parameters:
+    ///   - toolbarItemViewer: The toolbar item viewer view. It must be an instance of `NSToolbarItemViewer`
+    ///   or one of its subclasses.
+    ///
+    /// - Returns: The result of `bestActionTargetFor(toolbarItemViewer:control:)`.
+    private func bestActionTargetForToolbarItem(toolbarItemViewer: NSView) -> NSView? {
+        guard let control = toolbarItemViewer.subviews.lazy.compactMap({ $0 as? NSControl }).first else {
+            return toolbarItemViewer
+        }
+
+        return bestActionTargetFor(toolbarItemViewer: toolbarItemViewer, control: control)
+    }
+
+    /// Obtains the best target for a toolbar item.
+    ///
+    /// This method must receive an instance of `NSToolbarViewItem` or one of its subclasses, and the `NSControl`
+    /// instance that is one of its subviews.
+    ///
+    /// The following tests are done:
+    /// * If `control` is disabled, the toolbar item is considered disabled, and `nil` is returned, as we don't want to
+    /// create an action for a disabled item.
+    /// * The returned view will be the one that has an accessibility identifier, which can be either `control` or
+    /// `toolbarItemViewer` depending on how the toolbar item was built. If both of neither have an accessibility
+    /// identifier, `toolbarItemViewer` is returned.
+    ///
+    /// This allows us to obtain as much information as possible from the toolbar item, regardless of how it was constructed.
+    ///
+    /// - Parameters:
+    ///   - toolbarItemViewer: The toolbar item viewer view. It must be an instance of `NSToolbarItemViewer`
+    ///   or one of its subclasses.
+    ///   - control: An instance of `NSControl` or one of its subclasses that is a direct subview of `toolbarItemViewer`.
+    ///
+    /// - Returns: `nil` if `control` is disabled, otherwise returns either `toolbarItemViewer` or `control`
+    /// as explained above.
+    private func bestActionTargetFor(toolbarItemViewer: NSView, control: NSControl) -> NSView? {
+        guard toolbarItemViewer.isNSToolbarItemViewer else {
+            consolePrint("Internal consistency error, bestActionTargetFor(toolbarItemViewer:control:) was called on a view other than NSToolbarItemViewer.", .error)
+            return toolbarItemViewer
+        }
+
+        guard control.isEnabled else {
+            return nil
+        }
+
+        let normalizedItemViewerIdentifier = axIdentifier(toolbarItemViewer).map { $0.isEmpty ? nil : $0 }
+        let normalizedControlIdentifier = axIdentifier(control).map { $0.isEmpty ? nil : $0 }
+
+        switch (normalizedItemViewerIdentifier, normalizedControlIdentifier) {
+        case (.none, .none):
+            return toolbarItemViewer
+        case (.some, .none):
+            return toolbarItemViewer
+        case (.none, .some):
+            return control
+        case (.some, .some):
+            return toolbarItemViewer
         }
     }
 

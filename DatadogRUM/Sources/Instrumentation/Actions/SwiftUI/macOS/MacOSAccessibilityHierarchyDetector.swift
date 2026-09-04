@@ -8,7 +8,6 @@
 import Foundation
 import AppKit
 import DatadogInternal
-import os.log
 
 internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetector {
     /// Used to make sure `setupAxClient()` runs only once.
@@ -45,7 +44,7 @@ internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetec
             if result == .success {
                 axSetupPerformed = true
             } else {
-                Logger().error("⚠️ Error initializing accessibility client for RUM SwiftUI instrumentation. RUM SwiftUI instrumentation may not work.")
+                consolePrint("⚠️ Error initializing accessibility client for RUM SwiftUI instrumentation. RUM SwiftUI instrumentation may not work.", .error)
             }
         }
     }
