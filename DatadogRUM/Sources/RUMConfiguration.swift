@@ -776,6 +776,12 @@ extension RUM.Configuration {
         /// gestures will no longer count as candidate "last interactions" for INV
         /// (Interaction-to-Next-View) attribution.
         case trackScrollAndSwipeActions
+        /// When `true`, changes how view updates are reported: after the first full `RUMViewEvent`
+        /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
+        /// fields that changed, instead of resending the full event. A full event is still sent every
+        /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
+        /// Defaults to `false`.
+        case viewUpdates
     }
 }
 
