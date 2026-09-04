@@ -2012,7 +2012,7 @@ class RUMViewScopeTests: XCTestCase {
         (0..<5).forEach { i in
             XCTAssertTrue(
                 scope.process(
-                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap),
+                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: pointerActionType),
                     context: context,
                     writer: writer
                 )
@@ -4538,5 +4538,13 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertNil(viewEvent.view.accessibility)
+    }
+
+    private var pointerActionType: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
     }
 }
