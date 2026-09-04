@@ -16,7 +16,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     }
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
-    let initializationTimeout: TimeInterval
+    let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
     let clientRegistry: FlagsClientRegistry

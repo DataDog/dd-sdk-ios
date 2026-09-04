@@ -15,7 +15,7 @@ final class FlagsTests: XCTestCase {
 
         // Then
         XCTAssertNil(config.customExposureEndpoint)
-        XCTAssertEqual(config.initializationTimeout, 30)
+        XCTAssertNil(config.initializationTimeout)
     }
 
     func testWhenNotEnabled() {

@@ -81,7 +81,7 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
-    private let initializationTimeout: TimeInterval
+    private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
 
     private let initializationLock = NSLock()
@@ -116,7 +116,7 @@ internal final class FlagsRepository {
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
-        initializationTimeout: TimeInterval = Flags.Configuration.defaultInitializationTimeout,
+        initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
         self.clientName = clientName
@@ -160,9 +160,17 @@ internal final class FlagsRepository {
         didStartInitialization = true
         initializationLock.unlock()
 
+        guard let initializationTimeout else {
+            return nil
+        }
+
         let initializationCompletion = InitializationCompletion(completion: completion)
-        let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [initializationCompletion] in
-            initializationCompletion.take()?(.failure(.initializationTimedOut))
+        let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self, initializationCompletion] in
+            guard let completion = initializationCompletion.take() else {
+                return
+            }
+            self?.stateManager.updateState(.error)
+            completion(.failure(.initializationTimedOut))
         }
         initializationCompletion.armTimeoutCancellation(cancelTimeout)
         return initializationCompletion

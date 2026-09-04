@@ -1625,7 +1625,7 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
-        public var initializationTimeout: TimeInterval
+        public var initializationTimeout: TimeInterval?
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
         public var customEvaluationEndpoint: URL?

@@ -128,6 +128,7 @@ final class FlagsRepositoryTests: XCTestCase {
         var timeoutAction: (() -> Void)?
         var scheduledTimeout: TimeInterval?
         var callbackResults: [Result<Void, FlagsError>] = []
+        var stateAtTimeoutCallback: FlagsClientState?
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -143,7 +144,10 @@ final class FlagsRepositoryTests: XCTestCase {
             }
         )
 
-        flagsRepository.setEvaluationContext(.mockAny()) { callbackResults.append($0) }
+        flagsRepository.setEvaluationContext(.mockAny()) {
+            stateAtTimeoutCallback = flagsRepository.state.currentState
+            callbackResults.append($0)
+        }
 
         // When
         try XCTUnwrap(timeoutAction)()
@@ -154,7 +158,8 @@ final class FlagsRepositoryTests: XCTestCase {
         guard case .failure(.initializationTimedOut) = callbackResults[0] else {
             return XCTFail("Expected initialization timeout")
         }
-        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        XCTAssertEqual(stateAtTimeoutCallback, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
 
         // When
         try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
@@ -177,6 +182,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
                 timeoutAction = action
                 return { timeoutCancellationCount += 1 }
@@ -204,6 +210,7 @@ final class FlagsRepositoryTests: XCTestCase {
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
+            initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, _ in
                 scheduledTimeoutCount += 1
                 return {}
@@ -217,6 +224,32 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then
         XCTAssertEqual(scheduledTimeoutCount, 1)
         XCTAssertEqual(callbackCount, 2)
+    }
+
+    func testInitializationTimeoutIsDisabledByDefault() {
+        // Given
+        var scheduledTimeoutCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            scheduleInitializationTimeout: { _, _ in
+                scheduledTimeoutCount += 1
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+
+        // Then
+        XCTAssertEqual(scheduledTimeoutCount, 0)
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
     // MARK: - State Transitions
