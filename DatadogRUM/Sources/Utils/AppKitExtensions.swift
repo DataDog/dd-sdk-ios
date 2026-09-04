@@ -8,6 +8,9 @@
 import AppKit
 
 internal extension NSWindow {
+    /// Obtains the window's root view.
+    ///
+    /// This is an internal view that has, as child views, both the content view and the toolbar view.
     var rootView: NSView? {
         var rootView = contentView
 
@@ -26,4 +29,21 @@ internal extension NSMenuItem {
         true
     }
 }
+
+internal extension NSView {
+    /// `true` if this view is an instance of `NSToolbarItemViewer` or a subclass of it, `false` otherwise.
+    var isNSToolbarItemViewer: Bool {
+        guard let toolbarItemViewerClass else {
+            return false
+        }
+
+        return isKind(of: toolbarItemViewerClass)
+    }
+}
+
+/// Obtains the Class object for the AppKit internal `NSToolbarItemViewer` class.
+internal var toolbarItemViewerClass: AnyClass? = {
+    NSClassFromString("NSToolbarItemViewer")
+}()
+
 #endif
