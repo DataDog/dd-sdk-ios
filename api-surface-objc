@@ -958,6 +958,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case macos
     case linux
     case maui
+    case nodejs
 public class objc_RUMErrorEventErrorThreads: NSObject
     public var crashed: NSNumber
     public var name: String
@@ -3649,6 +3650,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var useProxy: NSNumber?
     public var useRemoteConfigurationProxy: NSNumber?
     public var useSecureSessionCookie: NSNumber?
+    public var useTraceSamplingRules: NSNumber?
     public var useTracing: NSNumber?
     public var useTrackGraphQlPayload: NSNumber?
     public var useTrackGraphQlResponseErrors: NSNumber?

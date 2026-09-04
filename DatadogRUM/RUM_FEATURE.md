@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-31
+last_updated: 2026-09-02
 sdk_version: 3.16.0
-verified_against_commit: b9103bfe1
+verified_against_commit: a6401a154
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -186,7 +186,9 @@ RUM.enable(
         // RUM feature flags
         // Default: .defaults ([.trackScrollAndSwipeActions: true])
         // Set [.trackScrollAndSwipeActions: false] to disable automatic
-        // scroll/swipe action tracking and INV attribution for those gestures
+        // scroll/swipe action tracking and INV attribution for those gestures.
+        // Set [.viewUpdates: true] to send incremental view_update deltas
+        // instead of resending the full view event on every update
         featureFlags: .defaults
     )
 )
@@ -273,6 +275,7 @@ Event mappers allow modifying or dropping events before upload:
 ### Feature Flags
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
+- `.viewUpdates`: defaults to `false` (not set). When set to `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)
