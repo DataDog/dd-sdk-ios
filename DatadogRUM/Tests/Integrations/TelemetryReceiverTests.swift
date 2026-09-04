@@ -500,7 +500,7 @@ class TelemetryReceiverTests: XCTestCase {
         let osMock: OperatingSystem = .mockRandom()
         featureScope.contextMock = .mockWith(device: deviceMock, os: osMock)
         featureScope.contextMock.set(additionalContext: rumContext)
-        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: rumContext.applicationID)
 
         // When
         TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: mockRandomAttributes(), sampleRate: 100)
@@ -526,7 +526,7 @@ class TelemetryReceiverTests: XCTestCase {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
-        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: rumContext.applicationID)
         let sessionIDOverride = "session-id-override"
 
         // When
@@ -541,6 +541,20 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id.stringValue, rumContext.userActionID)
         XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
+    }
+
+    func testSendTelemetryMetricWithNoRUMContext() {
+        // Given
+        let applicationID: String = .mockRandom()
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: applicationID)
+
+        // When: no RUM context exists, e.g. the session expired or was stopped
+        TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: mockRandomAttributes(), sampleRate: 100)
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the metric to the RUM application even with no session")
+        XCTAssertNil(event?.session?.id, "It should not report a session ID when no session exists")
     }
 
     func testMethodCallTelemetryPropagatesAllData() throws {

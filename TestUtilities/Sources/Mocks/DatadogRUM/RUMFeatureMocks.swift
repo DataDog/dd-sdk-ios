@@ -1596,12 +1596,14 @@ extension TelemetryReceiver: AnyMockable {
 
     public static func mockWith(
         featureScope: FeatureScope = NOPFeatureScope(),
+        applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler = .mockKeepAll(),
         configurationExtraSampler: Sampler = .mockKeepAll()
     ) -> Self {
         .init(
             featureScope: featureScope,
+            applicationID: applicationID,
             dateProvider: dateProvider,
             sampler: sampler,
             configurationExtraSampler: configurationExtraSampler
