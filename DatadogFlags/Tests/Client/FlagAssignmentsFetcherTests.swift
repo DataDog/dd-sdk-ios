@@ -322,4 +322,41 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
         }
     }
+
+    // PROBE: after the handle is cancelled, does the fetcher still deliver a result?
+    func testCancelledRequestDeliversNothing() {
+        let transportCompletion = ThreadSafeBox<Flags.AssignmentRequestFetch.Completion?>(nil)
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: featureScope,
+            fetch: { _, completion in
+                transportCompletion.value = completion
+                return {}
+            },
+            assignmentRequestRetryCount: 0
+        )
+        let cancelledResults = ThreadSafeBox(0)
+
+        let handle = fetcher.flagAssignments(for: .mockAny()) { _ in
+            cancelledResults.mutate { $0 += 1 }
+        }
+        let cancelledTransport = transportCompletion.value
+        XCTAssertNotNil(cancelledTransport, "the request must have reached the transport")
+        handle.cancel()
+        cancelledTransport?(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+
+        // Results arrive on one serial queue, so a later request that does deliver proves the
+        // cancelled one already had its turn.
+        let delivered = expectation(description: "an uncancelled request delivers")
+        fetcher.flagAssignments(for: .mockAny()) { _ in delivered.fulfill() }
+        transportCompletion.value?(.success(mockFlagAssignmentsFetchResponse(statusCode: 200)))
+        waitForExpectations(timeout: 5)
+
+        XCTAssertEqual(
+            cancelledResults.value,
+            0,
+            "a cancelled request must not deliver a result: the repository answers its caller instead"
+        )
+    }
 }

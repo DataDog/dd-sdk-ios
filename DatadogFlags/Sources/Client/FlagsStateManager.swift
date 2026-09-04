@@ -47,6 +47,10 @@ internal final class FlagsStateManager: FlagsStateObservable {
     private struct ManagerState {
         var clientState: FlagsClientState = .notReady
         var listeners: [WeakListener] = []
+        /// Increments on every state change, so a deferred delivery can tell whether it is stale.
+        var transition: UInt64 = 0
+        /// The newest transition already delivered to listeners.
+        var deliveredTransition: UInt64 = 0
     }
 
     @ReadWriteLock
@@ -64,23 +68,50 @@ internal final class FlagsStateManager: FlagsStateObservable {
     ///
     /// A caller holding its own lock must invoke the returned closure only after unlocking.
     /// Listeners are customer code and may re-enter the SDK.
+    /// Callers can release their lock in a different order than they acquired it, so the returned
+    /// closure reports whichever state is current when it runs, and does nothing if a later
+    /// delivery already reported it. This keeps a listener's last callback equal to `currentState`
+    /// without holding any lock while customer code runs.
+    ///
+    /// The caller must invoke the returned closure exactly once, after releasing its own lock.
     func updateStateDeferringNotification(
         _ newState: FlagsClientState
     ) -> () -> Void {
-        // Capture listeners under lock, then notify outside lock to prevent deadlock.
-        var listenersToNotify: [WeakListener] = []
+        var didChange = false
 
         _managerState.mutate { state in
             guard newState != state.clientState else {
                 return
             }
+            state.transition &+= 1
             state.clientState = newState
-            listenersToNotify = state.listeners
+            didChange = true
         }
 
-        return {
+        guard didChange else {
+            return {}
+        }
+
+        return { [weak self] in
+            guard let self else {
+                return
+            }
+            // Capture listeners under lock, then notify outside lock to prevent deadlock.
+            var stateToDeliver: FlagsClientState?
+            var listenersToNotify: [WeakListener] = []
+            self._managerState.mutate { state in
+                guard state.deliveredTransition != state.transition else {
+                    return
+                }
+                state.deliveredTransition = state.transition
+                stateToDeliver = state.clientState
+                listenersToNotify = state.listeners
+            }
+            guard let stateToDeliver else {
+                return
+            }
             for weakListener in listenersToNotify {
-                weakListener.value?.flagsStateDidChange(newState)
+                weakListener.value?.flagsStateDidChange(stateToDeliver)
             }
         }
     }

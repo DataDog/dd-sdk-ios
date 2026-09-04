@@ -173,6 +173,80 @@ final class FlagsStateManagerTests: XCTestCase {
             )
         }
     }
+    // A caller can release its own lock in a different order than it acquired it, so a deferred
+    // delivery can run after a newer one. The stale delivery must be dropped, otherwise a
+    // listener's last callback disagrees with `currentState`.
+    // Delivery happens outside the lock, so the closures can run in either order. Whichever runs
+    // must report the newest state, or a listener's last callback disagrees with `currentState`.
+    func testDeferredNotificationInvokedOutOfOrderStillReportsNewestState() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+
+        let staleDelivery = manager.updateStateDeferringNotification(.reconciling)
+        let newestDelivery = manager.updateStateDeferringNotification(.ready)
+
+        staleDelivery()
+        newestDelivery()
+
+        XCTAssertEqual(manager.currentState, .ready)
+        XCTAssertEqual(listener.states.last, .ready)
+        XCTAssertFalse(
+            listener.states.contains(.reconciling),
+            "a delivery must report currentState, not the transition it was created for"
+        )
+        XCTAssertEqual(
+            listener.states.filter { $0 == .ready }.count,
+            1,
+            "the second delivery must be a no-op once the newest state was reported"
+        )
+    }
+
+    func testStaleDeferredNotificationIsSuppressed() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+
+        let staleDelivery = manager.updateStateDeferringNotification(.reconciling)
+        let newestDelivery = manager.updateStateDeferringNotification(.ready)
+
+        newestDelivery()
+        staleDelivery()
+
+        XCTAssertEqual(manager.currentState, .ready)
+        XCTAssertEqual(
+            listener.states.last,
+            .ready,
+            "a listener's last callback must equal currentState"
+        )
+        XCTAssertFalse(
+            listener.states.contains(.reconciling),
+            "the superseded transition must not be delivered after the newer one"
+        )
+    }
+
+    func testDeferredNotificationsDeliveredInOrderAreAllSeen() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+
+        manager.updateStateDeferringNotification(.reconciling)()
+        manager.updateStateDeferringNotification(.ready)()
+
+        XCTAssertEqual(listener.states, [.notReady, .reconciling, .ready])
+        XCTAssertEqual(manager.currentState, .ready)
+    }
+
+    func testDeferredNotificationForUnchangedStateDeliversNothing() {
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+        let before = listener.states.count
+
+        manager.updateStateDeferringNotification(.notReady)()
+
+        XCTAssertEqual(listener.states.count, before)
+    }
 }
 
 // MARK: - Helpers

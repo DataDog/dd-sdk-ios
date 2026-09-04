@@ -44,6 +44,28 @@ internal final class FlagsRepository {
     /// Serializes request generations and the state changes that they protect.
     private let requestLock = NSLock()
     private var requestGeneration: UInt64 = 0
+    /// The assignment request for the authoritative generation. Guarded by `requestLock`.
+    private var inFlightRequest: FlagAssignmentsRequestHandle?
+    /// The newest generation whose request already delivered a result. Guarded by `requestLock`.
+    private var finishedGeneration: UInt64 = 0
+    /// Callers waiting for a context update to settle. Guarded by `requestLock`.
+    ///
+    /// A newer context update supersedes the request before it, but not the caller that asked for
+    /// it. Superseded callers stay here and receive the result of whichever request wins, so every
+    /// `setEvaluationContext(_:completion:)` call is answered exactly once.
+    private var pendingCompletions: [ContextCompletion] = []
+
+    private typealias ContextCompletion = (Result<Void, FlagsError>) -> Void
+
+    /// What to do with a request handle once its fetch has started.
+    private enum HandleDisposition {
+        /// The request is authoritative and still running.
+        case stored
+        /// A newer context update or `reset()` took over, so this request must stop.
+        case superseded
+        /// The fetch completed synchronously, so there is nothing left to cancel.
+        case alreadyFinished
+    }
 
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
@@ -72,6 +94,37 @@ internal final class FlagsRepository {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
         readState()
+    }
+
+    deinit {
+        // Nothing can answer these callers any more. Answer them here, so that an
+        // `await setEvaluationContext(_:)` does not stay suspended for the life of the process.
+        //
+        // A caller waits in one of two places, depending on how far it got: in `diskReadState`
+        // if the disk read had not finished, or in `pendingCompletions` once its request started.
+        // Both are answered. Each deferred disk-read callback finds `self` already nil and
+        // answers its own caller with `.clientNotInitialized`.
+        let outcome = withRequestLock { () -> (pending: [ContextCompletion], request: FlagAssignmentsRequestHandle?) in
+            let pending = pendingCompletions
+            pendingCompletions = []
+            let request = inFlightRequest
+            inFlightRequest = nil
+            return (pending, request)
+        }
+        // Nothing consumes this request's result any more, so stop it.
+        outcome.request?.cancel()
+        for completion in outcome.pending {
+            completion(.failure(.clientNotInitialized))
+        }
+
+        var deferredCallbacks: [() -> Void] = []
+        _diskReadState.mutate { state in
+            deferredCallbacks = state.pendingCallbacks
+            state.pendingCallbacks = []
+        }
+        for callback in deferredCallbacks {
+            callback()
+        }
     }
 
     private func readState() {
@@ -149,6 +202,29 @@ internal final class FlagsRepository {
         defer { requestLock.unlock() }
         return try operation()
     }
+
+    /// The work that an authoritative outcome defers until `requestLock` is free.
+    private struct Settlement {
+        let notifyListeners: () -> Void
+        let pendingCompletions: [ContextCompletion]
+    }
+
+    /// Records the new state and takes the callers that it answers. Call with `requestLock` held.
+    private func settle(with state: FlagsClientState) -> Settlement {
+        let settlement = Settlement(
+            notifyListeners: stateManager.updateStateDeferringNotification(state),
+            pendingCompletions: pendingCompletions
+        )
+        pendingCompletions = []
+        return settlement
+    }
+
+    /// Answers the given callers. Call with `requestLock` free: these are customer callbacks.
+    private func resolve(_ completions: [ContextCompletion], with result: Result<Void, FlagsError>) {
+        for completion in completions {
+            completion(result)
+        }
+    }
 }
 
 extension FlagsRepository: FlagsRepositoryProtocol {
@@ -185,26 +261,33 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 let requestGeneration = self.requestGeneration
                 let hadFlags = self.flagsData != nil
                 let cachedContext = self.flagsData?.context
+                // The newest context update is authoritative, so the request it supersedes stops.
+                // Its caller keeps waiting below, and the authoritative request answers it.
+                let supersededRequest = self.inFlightRequest
+                self.inFlightRequest = nil
+                self.pendingCompletions.append(completion)
                 let notifyListeners = self.stateManager
                     .updateStateDeferringNotification(.reconciling)
                 return (
                     generation: requestGeneration,
                     hadFlags: hadFlags,
                     cachedContext: cachedContext,
+                    supersededRequest: supersededRequest,
                     notifyListeners: notifyListeners
                 )
             }
+            request.supersededRequest?.cancel()
             request.notifyListeners()
 
-            self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+            let handle = self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+                // `deinit` answers every pending caller, so this one is answered already.
                 guard let self else {
-                    completion(.failure(.clientNotInitialized))
                     return
                 }
 
                 switch result {
                 case .success(let flags):
-                    let notifyListeners = self.withRequestLock { () -> (() -> Void)? in
+                    let settled = self.withRequestLock { () -> Settlement? in
                         guard self.requestGeneration == request.generation else {
                             return nil
                         }
@@ -214,16 +297,23 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                             date: self.dateProvider.now
                         )
                         self.writeState()
-                        return self.stateManager
-                            .updateStateDeferringNotification(.ready)
+                        self.inFlightRequest = nil
+                        self.finishedGeneration = request.generation
+                        return self.settle(with: .ready)
                     }
-                    notifyListeners?()
-                    completion(.success(()))
+                    // A superseded request answers no one. Its caller waits for the winner.
+                    guard let settled else {
+                        return
+                    }
+                    settled.notifyListeners()
+                    self.resolve(settled.pendingCompletions, with: .success(()))
                 case .failure(let error):
-                    let notifyListeners = self.withRequestLock { () -> (() -> Void)? in
+                    let settled = self.withRequestLock { () -> Settlement? in
                         guard self.requestGeneration == request.generation else {
                             return nil
                         }
+                        self.inFlightRequest = nil
+                        self.finishedGeneration = request.generation
                         // Only use cached flags if they match the requested context to avoid
                         // serving flags from a different user/context.
                         guard request.hadFlags && request.cachedContext == context else {
@@ -231,31 +321,59 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                             // Without this, flagAssignment() could return the previous
                             // user's flags while in .error state.
                             self.flagsData = nil
-                            return self.stateManager
-                                .updateStateDeferringNotification(.error)
+                            return self.settle(with: .error)
                         }
-                        return self.stateManager
-                            .updateStateDeferringNotification(.stale)
+                        return self.settle(with: .stale)
+                    }
+                    // A superseded request answers no one. Its caller waits for the winner.
+                    guard let settled else {
+                        return
                     }
                     // State must be updated before calling completion —
                     // dd-openfeature-provider-swift checks currentState in the callback.
-                    notifyListeners?()
-                    completion(.failure(error))
+                    settled.notifyListeners()
+                    self.resolve(settled.pendingCompletions, with: .failure(error))
                 }
+            }
+
+            // The fetch can finish or be superseded before `flagAssignments` returns, so decide
+            // what to do with the handle only after the generation and the result are both known.
+            let disposition = self.withRequestLock { () -> HandleDisposition in
+                guard self.requestGeneration == request.generation else {
+                    return .superseded
+                }
+                guard self.finishedGeneration != request.generation else {
+                    return .alreadyFinished
+                }
+                self.inFlightRequest = handle
+                return .stored
+            }
+            if disposition == .superseded {
+                handle.cancel()
             }
         }
     }
 
     func reset() {
-        // Clear disk first, then memory, then update state.
-        // This prevents race conditions where a listener reacts to the state
-        // change and queries the data store before disk is cleared.
-        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        let notifyListeners = withRequestLock { () -> () -> Void in
+        // The data store is asynchronous, so its operations must be queued in the same order as
+        // the generation change. Queuing the removal outside this lock lets a superseded request
+        // queue a write after it, which restores invalidated assignments on the next launch.
+        //
+        // Disk is still cleared before listeners are notified, so a listener cannot observe
+        // `.notReady` and then read stale data.
+        let outcome = withRequestLock { () -> (supersededRequest: FlagAssignmentsRequestHandle?, settled: Settlement) in
             requestGeneration &+= 1
             flagsData = nil
-            return stateManager.updateStateDeferringNotification(.notReady)
+            let supersededRequest = inFlightRequest
+            inFlightRequest = nil
+            featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            return (supersededRequest, settle(with: .notReady))
         }
-        notifyListeners()
+        outcome.supersededRequest?.cancel()
+        outcome.settled.notifyListeners()
+        // `reset()` cancels the request that would have answered these callers, so it answers
+        // them itself. It reports success, because `reset()` is the operation that won and it
+        // succeeded. This matches the result they received before requests became cancellable.
+        resolve(outcome.settled.pendingCompletions, with: .success(()))
     }
 }

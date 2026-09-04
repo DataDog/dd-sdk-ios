@@ -7,11 +7,43 @@
 import Foundation
 import DatadogInternal
 
+/// A cancellation handle a caller can hold before the work it cancels exists.
+///
+/// `flagAssignments(for:completion:)` builds its request inside an asynchronous context callback,
+/// so it has no cancellation closure to return when it returns. Cancelling before that closure
+/// arrives marks the handle cancelled, and the closure runs as soon as it is armed.
+internal final class FlagAssignmentsRequestHandle: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancellation: Flags.AssignmentRequestFetch.Cancellation?
+    private var isCancelled = false
+
+    func arm(_ cancellation: @escaping Flags.AssignmentRequestFetch.Cancellation) {
+        lock.lock()
+        guard !isCancelled else {
+            lock.unlock()
+            cancellation()
+            return
+        }
+        self.cancellation = cancellation
+        lock.unlock()
+    }
+
+    func cancel() {
+        lock.lock()
+        let cancellation = self.cancellation
+        self.cancellation = nil
+        isCancelled = true
+        lock.unlock()
+        cancellation?()
+    }
+}
+
 internal protocol FlagAssignmentsFetching {
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    )
+    ) -> FlagAssignmentsRequestHandle
 }
 
 private final class FlagAssignmentsCompletionGate: @unchecked Sendable {
@@ -112,10 +144,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         }
     }
 
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    ) {
+    ) -> FlagAssignmentsRequestHandle {
+        let handle = FlagAssignmentsRequestHandle()
         featureScope.context { [weak self] context in
             guard let self else {
                 completion(.failure(.clientNotInitialized))
@@ -128,7 +162,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     context: context,
                     customHeaders: self.customHeaders
                 )
-                _ = self.fetch(request) { [featureScope] result in
+                handle.arm(self.fetch(request) { [featureScope] result in
                     switch result {
                     case .success(let response):
                         guard (200..<300).contains(response.httpResponse.statusCode) else {
@@ -179,13 +213,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                         featureScope.telemetry.error("Failed to fetch flag assignments from the server", error: error)
                         completion(.failure(.networkError(error)))
                     }
-                }
+                })
             } catch let error {
                 DD.logger.error("Failed to encode flag assignments request body.", error: error)
                 featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
                 completion(.failure(.invalidConfiguration))
             }
         }
+        return handle
     }
 
     private func url(with context: DatadogContext) -> URL {

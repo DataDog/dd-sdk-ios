@@ -343,11 +343,18 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         self.flagAssignmentsStub = flagAssignmentsStub
     }
 
+    /// Cancellations requested on handles this mock returned, in order.
+    let cancellationCount = ThreadSafeBox(0)
+
+    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    ) {
+    ) -> FlagAssignmentsRequestHandle {
+        let handle = FlagAssignmentsRequestHandle()
+        handle.arm { [cancellationCount] in cancellationCount.mutate { $0 += 1 } }
         flagAssignmentsStub?(evaluationContext, completion)
+        return handle
     }
 }
 
