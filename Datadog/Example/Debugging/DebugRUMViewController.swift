@@ -244,6 +244,7 @@ extension RUMActionType {
     init(string: String) {
         switch string {
         case "tap": self = .tap
+        case "click": self = .click
         case "scroll": self = .scroll
         case "swipe": self = .swipe
         case "custom": self = .custom
