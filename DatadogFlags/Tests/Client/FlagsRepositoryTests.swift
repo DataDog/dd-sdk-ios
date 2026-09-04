@@ -262,6 +262,35 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    /// The realistic form of the same hazard: a listener starts new work from its own callback.
+    func testResetStartedByAListenerIsNotOverwrittenByTheInterruptedDelivery() {
+        let fetcher = FlagAssignmentsFetcherMock { _, _ in }   // never completes
+        let repository = makeRepository(fetcher: fetcher)
+        let observedStates = ThreadSafeBox<[FlagsClientState]>([])
+        var hasReset = false
+        let changer = BlockingStateListener { state in
+            guard state == .reconciling, !hasReset else {
+                return
+            }
+            hasReset = true
+            repository.reset()
+        }
+        let observer = BlockingStateListener { state in
+            observedStates.mutate { $0.append(state) }
+        }
+        repository.state.addListener(changer)
+        repository.state.addListener(observer)
+        observedStates.mutate { $0.removeAll() }
+
+        repository.setEvaluationContext(.mockAny()) { _ in }
+
+        XCTAssertEqual(
+            observedStates.value.last,
+            repository.state.currentState,
+            "a listener's last callback must equal currentState, got \(observedStates.value)"
+        )
+    }
+
     private func makeRepository(
         fetcher: FlagAssignmentsFetcherMock,
         dateProvider: any DateProvider = DateProviderMock()

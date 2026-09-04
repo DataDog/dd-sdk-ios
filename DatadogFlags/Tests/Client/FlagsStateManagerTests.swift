@@ -247,9 +247,50 @@ final class FlagsStateManagerTests: XCTestCase {
 
         XCTAssertEqual(listener.states.count, before)
     }
+
+    /// A listener can change the state from inside its own callback. The nested delivery reaches
+    /// every listener, so the interrupted outer delivery must not follow it with an older state.
+    func testStateChangedByAListenerIsNotOverwrittenByTheInterruptedDelivery() {
+        let manager = FlagsStateManager()
+        let changer = ChangingStateListener(manager: manager, changeOn: .reconciling, changeTo: .ready)
+        let observer = ConcurrentMockStateListener()
+        manager.addListener(changer)
+        manager.addListener(observer)
+        observer.reset()
+
+        manager.updateState(.reconciling)
+
+        XCTAssertEqual(
+            observer.observedStates.last,
+            manager.currentState,
+            "a listener's last callback must equal currentState, got \(observer.observedStates)"
+        )
+    }
 }
 
 // MARK: - Helpers
+
+/// Listener that changes the state once, from inside its own callback, on a chosen state.
+private final class ChangingStateListener: FlagsStateListener {
+    private let manager: FlagsStateManager
+    private let changeOn: FlagsClientState
+    private let changeTo: FlagsClientState
+    private var hasChanged = false
+
+    init(manager: FlagsStateManager, changeOn: FlagsClientState, changeTo: FlagsClientState) {
+        self.manager = manager
+        self.changeOn = changeOn
+        self.changeTo = changeTo
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        guard newState == changeOn, !hasChanged else {
+            return
+        }
+        hasChanged = true
+        manager.updateState(changeTo)
+    }
+}
 
 private final class MockStateListener: FlagsStateListener {
     var states: [FlagsClientState] = []

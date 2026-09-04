@@ -99,11 +99,13 @@ internal final class FlagsStateManager: FlagsStateObservable {
             // Capture listeners under lock, then notify outside lock to prevent deadlock.
             var stateToDeliver: FlagsClientState?
             var listenersToNotify: [WeakListener] = []
+            var transitionToDeliver: UInt64 = 0
             self._managerState.mutate { state in
                 guard state.deliveredTransition != state.transition else {
                     return
                 }
                 state.deliveredTransition = state.transition
+                transitionToDeliver = state.transition
                 stateToDeliver = state.clientState
                 listenersToNotify = state.listeners
             }
@@ -111,6 +113,12 @@ internal final class FlagsStateManager: FlagsStateObservable {
                 return
             }
             for weakListener in listenersToNotify {
+                // A listener can change the state from inside this callback, and that newer
+                // delivery reaches every listener. This one is stale from that point on, so it
+                // stops rather than follow the newer state with an older one.
+                guard self.managerState.deliveredTransition == transitionToDeliver else {
+                    return
+                }
                 weakListener.value?.flagsStateDidChange(stateToDeliver)
             }
         }
