@@ -31,58 +31,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         featureScope: FeatureScope,
         core: DatadogCoreProtocol
     ) {
-        if let assignmentRequestFetch = configuration.assignmentRequestFetch {
-            if configuration.assignmentRequestTimeout != 0 || configuration.assignmentRequestRetryCount != 0 {
-                DD.logger.warn(
-                    "`Flags.Configuration.assignmentRequestTimeout` and "
-                        + "`Flags.Configuration.assignmentRequestRetryCount` are ignored when "
-                        + "`Flags.Configuration.assignmentRequestFetch` is set. Compose "
-                        + "`withTimeout(_:)` and `withRetry(_:)` onto the transport instead."
-                )
-            }
-            flagAssignmentsFetcher = FlagAssignmentsFetcher(
-                customEndpoint: configuration.customFlagsEndpoint,
-                customHeaders: configuration.customFlagsHeaders,
-                featureScope: featureScope,
-                assignmentRequestFetch: assignmentRequestFetch
-            )
-        } else {
-            let assignmentRequestTimeout = FlagAssignmentsRequestOperation.boundedTimeout(
-                configuration.assignmentRequestTimeout
-            )
-            if configuration.assignmentRequestTimeout != 0 && assignmentRequestTimeout == nil {
-                DD.logger.warn(
-                    "`Flags.Configuration.assignmentRequestTimeout` must be finite and non-negative. "
-                        + "The assignment request timeout will be disabled."
-                )
-            } else if let assignmentRequestTimeout,
-                      assignmentRequestTimeout != configuration.assignmentRequestTimeout {
-                DD.logger.warn(
-                    "`Flags.Configuration.assignmentRequestTimeout` cannot exceed "
-                        + "\(FlagAssignmentsRequestOperation.maximumSupportedTimeout)s. "
-                        + "A value of \(assignmentRequestTimeout)s will be used."
-                )
-            }
-
-            let assignmentRequestRetryCount = FlagAssignmentsRequestOperation.boundedRetryCount(
-                configuration.assignmentRequestRetryCount
-            )
-            if assignmentRequestRetryCount != configuration.assignmentRequestRetryCount {
-                DD.logger.warn(
-                    "`Flags.Configuration.assignmentRequestRetryCount` must be between 0 and "
-                        + "\(FlagAssignmentsRequestOperation.maximumRetryCount). "
-                        + "A value of \(assignmentRequestRetryCount) will be used."
-                )
-            }
-
-            flagAssignmentsFetcher = FlagAssignmentsFetcher(
-                customEndpoint: configuration.customFlagsEndpoint,
-                customHeaders: configuration.customFlagsHeaders,
-                featureScope: featureScope,
-                assignmentRequestTimeout: assignmentRequestTimeout,
-                assignmentRequestRetryCount: assignmentRequestRetryCount
-            )
-        }
+        flagAssignmentsFetcher = FlagAssignmentsFetcher(
+            customEndpoint: configuration.customFlagsEndpoint,
+            customHeaders: configuration.customFlagsHeaders,
+            featureScope: featureScope
+        )
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
             telemetry: featureScope.telemetry

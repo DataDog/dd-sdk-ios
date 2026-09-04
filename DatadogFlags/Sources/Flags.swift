@@ -58,55 +58,6 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
-        /// A custom transport used only to retrieve precomputed flag assignments.
-        ///
-        /// The SDK passes a complete `URLRequest` containing its endpoint, authentication, configured headers,
-        /// and encoded evaluation context to this transport. Exposure and evaluation uploads do not use it.
-        /// Compose `Flags.AssignmentRequestFetch.urlSession()` with `withTimeout(_:)` and `withRetry(_:)`
-        /// to build a custom request policy.
-        ///
-        /// ```swift
-        /// let assignmentFetch = Flags.AssignmentRequestFetch
-        ///     .urlSession()
-        ///     .withTimeout(5) // Five seconds for each attempt.
-        ///     .withRetry(1)   // Two attempts, plus retry backoff.
-        ///
-        /// var configuration = Flags.Configuration()
-        /// configuration.assignmentRequestFetch = assignmentFetch
-        /// ```
-        ///
-        /// When set, `assignmentRequestTimeout` and `assignmentRequestRetryCount` are ignored.
-        /// The SDK adds no timeout or retries. It still validates the HTTP status and delivers
-        /// no more than one completion.
-        ///
-        /// Default: `nil` (use the SDK transport and scalar timeout/retry settings).
-        public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
-
-        /// The timeout for each attempt that retrieves precomputed flag assignments.
-        ///
-        /// The timeout includes downloading the complete response body. Set to `0` to disable this SDK timeout.
-        /// With retries, the maximum total timeout is `(assignmentRequestRetryCount + 1)` times this value.
-        /// Retry backoff and valid HTTP `503` `Retry-After` delays add to this total.
-        /// It does not apply to loading cached assignments or sending exposure and evaluation data.
-        /// Ignored when `assignmentRequestFetch` is set.
-        /// Values are limited to the range `0...2_147_483.647` seconds.
-        ///
-        /// Default: `0` (disabled).
-        public var assignmentRequestTimeout: TimeInterval
-
-        /// The number of times to retry a failed request for precomputed flag assignments.
-        ///
-        /// This is the number of retries after the initial request. The SDK retries transient URL transport
-        /// errors, timeouts, HTTP `408`, and HTTP `5xx` responses with randomized exponential backoff capped
-        /// at 30 seconds. For HTTP `503`, a valid `Retry-After` value up to 30 seconds is a minimum delay
-        /// before the backoff. A response that requests a longer delay is not retried. The SDK deliberately
-        /// honors `Retry-After` only for HTTP `503`. Cancellation, permanent URL failures, and HTTP `429`
-        /// responses are not retried. Ignored when `assignmentRequestFetch` is set. Values are limited to
-        /// the range `0...10`.
-        ///
-        /// Default: `0` retries (one initial request only).
-        public var assignmentRequestRetryCount: Int
-
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
@@ -171,9 +122,6 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
-            self.assignmentRequestFetch = nil
-            self.assignmentRequestTimeout = 0
-            self.assignmentRequestRetryCount = 0
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint

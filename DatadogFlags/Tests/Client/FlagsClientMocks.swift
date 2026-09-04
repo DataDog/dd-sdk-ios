@@ -34,150 +34,6 @@ extension Data {
     }
 }
 
-final class ThreadSafeBox<Value>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedValue: Value
-
-    init(_ value: Value) {
-        self.storedValue = value
-    }
-
-    var value: Value {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return storedValue
-        }
-        set {
-            lock.lock()
-            storedValue = newValue
-            lock.unlock()
-        }
-    }
-
-    @discardableResult
-    func mutate<Result>(_ mutation: (inout Value) -> Result) -> Result {
-        lock.lock()
-        defer { lock.unlock() }
-        return mutation(&storedValue)
-    }
-}
-
-final class ManualScheduler: @unchecked Sendable {
-    private final class ScheduledOperation: @unchecked Sendable {
-        let delay: TimeInterval
-        let operation: @Sendable () -> Void
-        var isCancelled = false
-        var hasRun = false
-
-        init(delay: TimeInterval, operation: @escaping @Sendable () -> Void) {
-            self.delay = delay
-            self.operation = operation
-        }
-    }
-
-    private let operations = ThreadSafeBox<[ScheduledOperation]>([])
-
-    var scheduledDelays: [TimeInterval] {
-        operations.mutate { $0.map(\.delay) }
-    }
-
-    var activeDelays: [TimeInterval] {
-        operations.mutate {
-            $0.filter { !$0.isCancelled && !$0.hasRun }.map(\.delay)
-        }
-    }
-
-    var schedule: FlagAssignmentsSchedule {
-        { [self] delay, operation in
-            enqueue(after: delay, operation: operation)
-        }
-    }
-
-    private func enqueue(
-        after delay: TimeInterval,
-        operation: @escaping @Sendable () -> Void
-    ) -> @Sendable () -> Void {
-        let scheduled = ScheduledOperation(delay: delay, operation: operation)
-        operations.mutate { $0.append(scheduled) }
-        return { [operations] in
-            operations.mutate { _ in scheduled.isCancelled = true }
-        }
-    }
-
-    func runNext(
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let operation = operations.mutate { operations -> (@Sendable () -> Void)? in
-            guard let scheduled = operations.first(where: { !$0.isCancelled && !$0.hasRun }) else {
-                return nil
-            }
-            scheduled.hasRun = true
-            return scheduled.operation
-        }
-        guard let operation else {
-            return XCTFail("No scheduled operation", file: file, line: line)
-        }
-        operation()
-    }
-}
-
-func mockFlagAssignmentsFetchResponse(
-    statusCode: Int,
-    data: Data = .mockAnyFlagAssignmentsResponse(),
-    headers: [String: String]? = nil
-) -> FlagAssignmentsFetchResponse {
-    FlagAssignmentsFetchResponse(
-        data: data,
-        httpResponse: HTTPURLResponse(
-            url: .mockAny(),
-            statusCode: statusCode,
-            httpVersion: nil,
-            headerFields: headers
-        )!
-    )
-}
-
-func XCTAssertFlagAssignmentsURLFailure(
-    _ result: Result<FlagAssignmentsFetchResponse, Error>?,
-    code: URLError.Code,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    guard
-        case .failure(let error) = result,
-        (error as? URLError)?.code == code
-    else {
-        return XCTFail("Expected URL error \(code)", file: file, line: line)
-    }
-}
-
-func XCTAssertFlagAssignmentsHTTPStatus(
-    _ result: Result<FlagAssignmentsFetchResponse, Error>?,
-    statusCode: Int,
-    message: String = "",
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    guard case .success(let response) = result else {
-        return XCTFail("Expected an HTTP response. \(message)", file: file, line: line)
-    }
-    XCTAssertEqual(response.httpResponse.statusCode, statusCode, message, file: file, line: line)
-}
-
-func XCTAssertFlagAssignmentsSuccess(
-    _ result: Result<FlagAssignmentsFetchResponse, Error>?,
-    message: String = "",
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    guard let result else {
-        return XCTFail("Expected a result. \(message)", file: file, line: line)
-    }
-    XCTAssertNoThrow(try result.get(), message, file: file, line: line)
-}
-
 extension FlagAssignment: AnyMockable, RandomMockable {
     public static func mockAny() -> FlagAssignment {
         .mockAnyBoolean()
@@ -343,18 +199,11 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         self.flagAssignmentsStub = flagAssignmentsStub
     }
 
-    /// Cancellations requested on handles this mock returned, in order.
-    let cancellationCount = ThreadSafeBox(0)
-
-    @discardableResult
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
-    ) -> FlagAssignmentsRequestHandle {
-        let handle = FlagAssignmentsRequestHandle()
-        handle.arm { [cancellationCount] in cancellationCount.mutate { $0 += 1 } }
+    ) {
         flagAssignmentsStub?(evaluationContext, completion)
-        return handle
     }
 }
 
