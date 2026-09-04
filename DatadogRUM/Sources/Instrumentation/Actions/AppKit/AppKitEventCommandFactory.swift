@@ -31,11 +31,29 @@ internal protocol AppKitEventCommandFactory {
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     typealias AccessibilityHierarchyDetectorCreator = () -> AccessibilityHierarchyDetector
 
+    /// The event date provider.
     let dateProvider: DateProvider
+
+    /// The predicate used to determine which action, if any, is created from AppKit views, accessibility elements
+    /// or menu items.
     let macOSPredicate: MacOSRUMActionsPredicate
+
+    /// Closure that creates a new `AccessibilityHierarchyDetector` when needed.
+    ///
+    /// This avoids creating the `AccessibilityHierarchyDetector` too early, since its creation also creates
+    /// an accessibility client (the app becomes a client of itself).
     let accessibilityHierarchyDetectorCreator: AccessibilityHierarchyDetectorCreator
+
+    /// Accessibility detector, used to instrument the SwiftUI view hierarchy.
     private(set) lazy var accessibilityHierarchyDetector = accessibilityHierarchyDetectorCreator()
 
+    /// Creates a new `AppKitCommandFactory`.
+    ///
+    /// - Parameters:
+    ///   - dateProvider: The event date provider.
+    ///   - macOSPredicate: The MacOS predicate.
+    ///   - accessibilityHierarchyDetectorCreator: Function used to create the `AccessibilityHierarchyDetector`
+    ///   when needed. This function runs only once during the `AppKitCommandFactory` lifetime.
     init(
         dateProvider: DateProvider,
         macOSPredicate: MacOSRUMActionsPredicate,
@@ -115,9 +133,20 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         }
     }
 
+    /// Result from `createAppKitActionCommand(from:)`.
     private enum AppKitCommandResult {
+        /// The event resulted in a RUM action command.
         case command(RUMAddUserActionCommand)
+
+        /// No command was generated, but it's possible a command can be obtained from the accessibility
+        /// hierarchy (specifically, an action targeting a SwiftUI view) so the `accessibilityHierarchyDetector`
+        /// should be given an opportunity.
         case tryAccessibility
+
+        /// No command was generated and the`accessibilityHierarchyDetector` should not run.
+        /// This happens when the macOSPredicate explicitly denied the view, or when `createAppKitActionCommand`
+        /// already tried using the `accessibilityHierarchyDetector` and no action resulted from it,
+        /// so it's pointless to try again.
         case ignore
     }
 
