@@ -37,7 +37,6 @@
         "RUMResourceActiveSpanAugmentationTests\/testManuallyDropped()",
         "RUMResourceActiveSpanAugmentationTests\/testManuallyKept()",
         "RUMResourceActiveSpanAugmentationTests\/testSampled()",
-        "RUMResourceCacheStatusScenarioTests\/testRUMResourceCacheStatusScenario_revalidatedCacheHitReportsAppVisibleStatusCode()",
         "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_composition()",
         "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts()",
         "RUMResourcesScenarioTests\/testRUMNSURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts()",

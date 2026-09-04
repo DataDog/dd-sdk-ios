@@ -25,7 +25,6 @@
         "RUMMobileVitalsScenarioTests",
         "RUMModalViewsScenarioTests",
         "RUMNavigationControllerScenarioTests",
-        "RUMResourceCacheStatusScenarioTests",
         "RUMResourcesScenarioTests",
         "RUMScrubbingScenarioTests",
         "RUMStopSessionScenarioTests",

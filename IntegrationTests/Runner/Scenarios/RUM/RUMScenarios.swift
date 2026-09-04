@@ -172,6 +172,30 @@ final class RUMMobileVitalsScenario: TestScenario {
 
 /// Base scenario for RUM resources testing.
 class RUMResourcesBaseScenario: URLSessionBaseScenario {
+    /// The URL to a resource that supports ETag-based revalidation, used to test OS-level HTTP cache
+    /// revalidation reporting from `SendThirdPartyRequestsViewController`. Backed by the last entry in
+    /// `instrumentedEndpoints`, appended only for the Swift `URLSession` scenario (see `RUMResourcesScenarioTests`).
+    var cacheableResourceURL: URL {
+        if Environment.isRunningUITests() {
+            return Environment.serverMockConfiguration()!.instrumentedEndpoints[5]
+        }
+        return URL(string: "https://status.datadoghq.com/cache-test/resource-1")!
+    }
+
+    private let cacheEnabledSessionDelegate = CustomURLSessionDelegate()
+
+    /// A separate `URLSession`, configured with a real `URLCache` (not `.ephemeral`) and `.useProtocolCachePolicy`,
+    /// used only to exercise OS-level HTTP cache revalidation. Kept independent from `URLSessionBaseScenario.session`
+    /// so the other resource requests sharing that session are unaffected.
+    lazy var cacheEnabledSession: URLSession = {
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
+
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache(memoryCapacity: 4 * 1_024 * 1_024, diskCapacity: 20 * 1_024 * 1_024, diskPath: nil)
+        configuration.requestCachePolicy = .useProtocolCachePolicy
+        return URLSession(configuration: configuration, delegate: cacheEnabledSessionDelegate, delegateQueue: nil)
+    }()
+
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
@@ -210,48 +234,6 @@ final class RUMURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenar
 /// sent with Objective-c `NSURLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
 final class RUMNSURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
-}
-
-/// Scenario testing RUM Resource reporting for OS-level HTTP cache revalidation. Unlike `RUMResourcesBaseScenario`,
-/// it uses a real (non-`ephemeral`) `URLSessionConfiguration` with a `URLCache` attached, so a 2nd request made
-/// to the same URL can be served from the device's local HTTP cache - either as a `304`-revalidated hit (transparent
-/// to the app, which sees the synthesized `200` response) or as a genuine cache miss / full re-download.
-final class RUMResourceCacheStatusScenario: TestScenario {
-    static let storyboardName = "RUMResourceCacheStatusScenario"
-
-    /// The URL to a resource that supports ETag-based revalidation: the mock server responds `200` on the
-    /// first request and `304` (no body) on subsequent requests sending a matching `If-None-Match` header.
-    let cacheableResourceURL: URL
-
-    private let delegate = CustomURLSessionDelegate()
-
-    /// `URLSession` configured with a real `URLCache` (not `.ephemeral`) and `.useProtocolCachePolicy`,
-    /// so the OS-level HTTP cache is actually exercised.
-    lazy var session: URLSession = {
-        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: CustomURLSessionDelegate.self))
-
-        let configuration = URLSessionConfiguration.default
-        configuration.urlCache = URLCache(memoryCapacity: 4 * 1_024 * 1_024, diskCapacity: 20 * 1_024 * 1_024, diskPath: nil)
-        configuration.requestCachePolicy = .useProtocolCachePolicy
-        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-    }()
-
-    init() {
-        if Environment.isRunningUITests() {
-            let serverMockConfiguration = Environment.serverMockConfiguration()!
-            cacheableResourceURL = serverMockConfiguration.instrumentedEndpoints[0]
-        } else {
-            cacheableResourceURL = URL(string: "https://status.datadoghq.com/cache-test/resource-1")!
-        }
-    }
-
-    func configureFeatures() {
-        var config = RUM.Configuration(applicationID: "rum-application-id")
-        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
-        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        config.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100))
-        RUM.enable(with: config)
-    }
 }
 
 /// Scenario which uses RUM manual instrumentation API to send bunch of RUM events. Each event contains some
