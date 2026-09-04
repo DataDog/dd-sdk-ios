@@ -151,22 +151,16 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         if let delegateClass = configuration?.delegateClass {
             // Swizzle delegate methods for metrics collection and completion detection:
             // - didFinishCollecting: Captures `URLSessionTaskMetrics` for detailed timing information
-            // - didCompleteWithError: Detects completion on pre-iOS 15 where setState doesn't fire
+            // - didCompleteWithError: Detects completion for tasks with completion handlers
             //
             // Completion detection strategy:
-            // For tasks WITHOUT completion handlers:
-            //   - iOS 15+: setState swizzling detects completion (didCompleteWithError is not called by URLSession)
-            //   - Pre-iOS 15: didCompleteWithError delegate detects completion (setState doesn't change to completed)
-            // For tasks WITH completion handlers:
-            //   - All iOS versions: Completion handler swizzling detects completion
+            // - Tasks WITHOUT completion handlers: setState swizzling detects completion
+            //   (didCompleteWithError is not called by URLSession in this case)
+            // - Tasks WITH completion handlers: Completion handler swizzling detects completion
             try swizzler.swizzle(
                 delegateClass: delegateClass,
                 interceptDidFinishCollecting: { [weak self] session, task, metrics in
                     self?.task(task, didFinishCollecting: metrics)
-
-                    if !task.dd.hasCompletion {
-                        self?.task(task, didCompleteWithError: task.error)
-                    }
                 },
                 interceptDidCompleteWithError: { [weak self] session, task, error in
                     self?.task(task, didCompleteWithError: error)
