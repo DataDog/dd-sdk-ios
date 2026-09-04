@@ -872,6 +872,8 @@
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A01D384CBDE4FFDC49CCD424 /* HeatmapIdentifierRegistryFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A9F4D5BEEE5E977A58E2034 /* HeatmapIdentifierRegistryFeature.swift */; };
 		A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */; };
+		A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */; };
+		A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */; };
 		A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */ = {isa = PBXBuildFile; fileRef = A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		A1B2C3E52F92000100ABCDEF /* ProfilingContext+RUM.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3E42F92000100ABCDEF /* ProfilingContext+RUM.swift */; };
 		A1B2C3E72F92000100ABCDEF /* ProfilingContextRUMTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3E62F92000100ABCDEF /* ProfilingContextRUMTests.swift */; };
@@ -2870,6 +2872,8 @@
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = aggregation_worker.cpp; sourceTree = "<group>"; };
 		A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = aggregation_worker.h; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetch.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssignmentRequestFetchTests.swift; sourceTree = "<group>"; };
 		A1B2C3E42F92000100ABCDEF /* ProfilingContext+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProfilingContext+RUM.swift"; sourceTree = "<group>"; };
 		A1B2C3E62F92000100ABCDEF /* ProfilingContextRUMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingContextRUMTests.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
@@ -4102,6 +4106,7 @@
 				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
+				A1B2C3D4E5F60718293A4B62 /* AssignmentRequestFetchTests.swift */,
 				11014EACF1FB9927DAD57822 /* EvaluationMocks.swift */,
 				BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */,
 				5AA681535D980BA99B12659B /* EvaluationAggregatorTests.swift */,
@@ -4188,6 +4193,7 @@
 				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
+				A1B2C3D4E5F60718293A4B60 /* AssignmentRequestFetch.swift */,
 				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
 				5BBDF1C22E97B33300670CEB /* FallbackFlagsClient.swift */,
@@ -8397,6 +8403,7 @@
 				5B0E75DB2E9690D200F66739 /* ExposureTracker.swift in Sources */,
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
+				A1B2C3D4E5F60718293A4B61 /* AssignmentRequestFetch.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
 				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
 				27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */,
@@ -8422,6 +8429,7 @@
 				5B1D02912E8ED10500AB2391 /* ExposureEventTests.swift in Sources */,
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
 				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
+				A1B2C3D4E5F60718293A4B63 /* AssignmentRequestFetchTests.swift in Sources */,
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,

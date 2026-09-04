@@ -31,10 +31,14 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         featureScope: FeatureScope,
         core: DatadogCoreProtocol
     ) {
+        let assignmentRequestFetch = configuration.assignmentRequestFetch
+            ?? Flags.AssignmentRequestFetch.urlSession()
+                .withTimeout(configuration.assignmentRequestTimeout)
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
-            featureScope: featureScope
+            featureScope: featureScope,
+            assignmentRequestFetch: assignmentRequestFetch
         )
         requestBuilder = ExposureRequestBuilder(
             customIntakeURL: configuration.customExposureEndpoint,
