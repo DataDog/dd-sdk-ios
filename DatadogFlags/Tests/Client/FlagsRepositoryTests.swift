@@ -170,6 +170,45 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testImmediateInitializationTimeoutCannotBeOverwrittenByReconciling() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var stateAtCallback: FlagsClientState?
+        var callbackResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0,
+            scheduleInitializationTimeout: { _, action in
+                action()
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            stateAtCallback = flagsRepository.state.currentState
+            callbackResult = result
+        }
+
+        // Then
+        XCTAssertEqual(stateAtCallback, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+
+        // When
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
     func testInitializationCompletionCancelsTimeout() throws {
         // Given
         var timeoutAction: (() -> Void)?
@@ -250,6 +289,98 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(scheduledTimeoutCount, 0)
         XCTAssertEqual(callbackCount, 1)
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutRacingSuccessfulCompletionIsConsistent() throws {
+        let iterations = 1_000
+        let raceQueue = DispatchQueue(
+            label: "com.datadog.flags.initialization-timeout-race",
+            attributes: .concurrent
+        )
+
+        for iteration in 0..<iterations {
+            // Given
+            let iterationFeatureScope = FeatureScopeMock()
+            var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var timeoutAction: (() -> Void)?
+            let flagsRepository = FlagsRepository(
+                clientName: "race-\(iteration)",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletion = completion
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: iterationFeatureScope,
+                initializationTimeout: 2.5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return {}
+                }
+            )
+
+            let callbackLock = NSLock()
+            var callbackCount = 0
+            var callbackSucceeded = false
+            var callbackTimedOut = false
+            var stateAtCallback: FlagsClientState?
+            flagsRepository.setEvaluationContext(.mockAny()) { result in
+                callbackLock.lock()
+                callbackCount += 1
+                stateAtCallback = flagsRepository.state.currentState
+                switch result {
+                case .success:
+                    callbackSucceeded = true
+                case .failure(.initializationTimedOut):
+                    callbackTimedOut = true
+                case .failure:
+                    break
+                }
+                callbackLock.unlock()
+            }
+
+            let start = DispatchSemaphore(value: 0)
+            let finished = DispatchGroup()
+            let completion = try XCTUnwrap(fetchCompletion)
+            let timeout = try XCTUnwrap(timeoutAction)
+
+            // When
+            finished.enter()
+            raceQueue.async {
+                start.wait()
+                completion(.success(["test": .mockAny()]))
+                finished.leave()
+            }
+            finished.enter()
+            raceQueue.async {
+                start.wait()
+                timeout()
+                finished.leave()
+            }
+            start.signal()
+            start.signal()
+
+            // Then
+            XCTAssertEqual(
+                finished.wait(timeout: .now() + 2),
+                .success,
+                "Race did not finish at iteration \(iteration)"
+            )
+
+            callbackLock.lock()
+            let observedCallbackCount = callbackCount
+            let observedCallbackSucceeded = callbackSucceeded
+            let observedCallbackTimedOut = callbackTimedOut
+            let observedStateAtCallback = stateAtCallback
+            callbackLock.unlock()
+
+            XCTAssertEqual(observedCallbackCount, 1, "Iteration \(iteration)")
+            XCTAssertNotEqual(observedCallbackSucceeded, observedCallbackTimedOut, "Iteration \(iteration)")
+            XCTAssertEqual(
+                observedStateAtCallback,
+                observedCallbackSucceeded ? .ready : .error,
+                "Iteration \(iteration)"
+            )
+            XCTAssertEqual(flagsRepository.state.currentState, .ready, "Iteration \(iteration)")
+        }
     }
 
     // MARK: - State Transitions
