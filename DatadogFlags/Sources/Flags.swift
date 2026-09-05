@@ -67,8 +67,12 @@ public enum Flags {
         /// It does not change the HTTP client's timeout. The assignment operation continues after this timeout
         /// and can update the client to ``FlagsClientState/ready`` when it completes.
         ///
-        /// The value is in seconds. Invalid values cause an immediate timeout.
-        /// Set this property only when the application needs a bounded initialization wait.
+        /// The value is in seconds. Zero, negative, `NaN`, and infinite values cause an immediate timeout.
+        /// The timeout applies only to the first call to ``FlagsClient/setEvaluationContext(_:completion:)``.
+        /// Once that call starts, the timeout is consumed even if the operation fails; later calls, including
+        /// retries, are not bounded by this setting. If matching cached assignments are available when the
+        /// timeout fires, the client becomes ``FlagsClientState/stale``; otherwise it becomes
+        /// ``FlagsClientState/error``. Set this property only when the application needs a bounded initial wait.
         ///
         /// Default: `nil` (no initialization timeout).
         public var initializationTimeout: TimeInterval?
