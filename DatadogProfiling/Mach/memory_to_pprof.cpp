@@ -256,10 +256,17 @@ size_t dd_memory_snapshots_to_pprof(
             a.inuse_objects,  // inuse_objects
             a.inuse_space,    // inuse_space
         };
-        // RUM correlation labels (uniform), plus per-key class_name and source.
+        // RUM correlation labels (uniform), plus the per-key allocated class and source.
+        //
+        // The class label is named "allocation class" because that is the name the profiling
+        // backend already recognizes for this concept across Ruby, .NET, and Java
+        // (LabelNames.ALLOCATED_CLASS). Emitting our own spelling would leave the backend's
+        // allocated-class handling blind to it: the "top types" allocation metrics aggregate over
+        // that exact label name, so a bespoke name yields an empty metric rather than an error,
+        // and the UI's existing "Allocated Type" grouping would have nothing to resolve.
         sample.labels = rum_labels;
         if (!key.class_name.empty()) {
-            sample.labels.push_back(prof.make_string_label("class_name", key.class_name.c_str()));
+            sample.labels.push_back(prof.make_string_label("allocation class", key.class_name.c_str()));
         }
         sample.labels.push_back(prof.make_string_label("source", source_label_value(key.source)));
         prof.add_raw_sample(std::move(sample));

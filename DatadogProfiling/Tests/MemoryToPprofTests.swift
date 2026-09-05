@@ -198,7 +198,7 @@ final class MemoryToPprofTests: XCTestCase {
                 let key = String(cString: strings[Int(lbl.pointee.key)]!)
                 if lbl.pointee.str != 0 { byKey[key] = String(cString: strings[Int(lbl.pointee.str)]!) }
             }
-            seen.append((byKey["class_name"] ?? "", byKey["source"] ?? ""))
+            seen.append((byKey["allocation class"] ?? "", byKey["source"] ?? ""))
         }
         XCTAssertTrue(seen.contains(where: { $0 == ("NSFoo", "objc") }), "objc sample+labels missing")
         XCTAssertTrue(seen.contains(where: { $0 == ("SwiftBar", "swift") }), "swift sample+labels missing")
@@ -256,7 +256,7 @@ final class MemoryToPprofTests: XCTestCase {
             var className = ""
             for li in 0..<Int(s.pointee.n_label) {
                 guard let lbl = s.pointee.label?[li] else { continue }
-                if String(cString: strings[Int(lbl.pointee.key)]!) == "class_name", lbl.pointee.str != 0 {
+                if String(cString: strings[Int(lbl.pointee.key)]!) == "allocation class", lbl.pointee.str != 0 {
                     className = String(cString: strings[Int(lbl.pointee.str)]!)
                 }
             }

@@ -72,7 +72,7 @@ final class SwiftAllocInterceptionIntegrationTests: XCTestCase {
                             byKey[key] = String(cString: strings[Int(lbl.pointee.str)]!)
                         }
                     }
-                    if let cn = byKey["class_name"], let src = byKey["source"] {
+                    if let cn = byKey["allocation class"], let src = byKey["source"] {
                         pairs.append((cn, src))
                     }
                 }
