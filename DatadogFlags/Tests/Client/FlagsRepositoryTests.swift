@@ -632,17 +632,14 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testSupersededInitializationTimeoutDoesNotOverrideANewerSuccess() throws {
+    func testResetDiscardsALateSuccessFromATimedOutInitialization() throws {
         // Given
-        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
-        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
-        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
-        var firstResult: Result<Void, FlagsError>?
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                fetchCompletions.append(completion)
+                fetchCompletion = completion
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
@@ -653,16 +650,53 @@ final class FlagsRepositoryTests: XCTestCase {
             }
         )
 
+        // When — the initialization times out, the caller resets, then the late result arrives
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        flagsRepository.reset()
+        featureScope.dataStore.flush()
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+        featureScope.dataStore.flush()
+
+        // Then — reset invalidated the generation, so the late success publishes nothing
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+    }
+
+    func testNewerSuccessCompletesTheSupersededInitializationCaller() throws {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        var timeoutCancellationCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return { timeoutCancellationCount += 1 }
+            }
+        )
+
         // When
         flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
-        flagsRepository.setEvaluationContext(contextB) { _ in }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
         fetchCompletions[1](.success(["flag-b": .mockAny()]))
         try XCTUnwrap(timeoutAction)()
 
         // Then
-        guard case .failure(.initializationTimedOut) = firstResult else {
-            return XCTFail("Expected the first caller to time out")
-        }
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(timeoutCancellationCount, 1)
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
         XCTAssertEqual(flagsRepository.context, contextB)
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-b"))
@@ -702,12 +736,55 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "flag-a"))
     }
 
-    func testOrdinaryOverlappingSuccessPublishesBeforeCompletion() {
+    func testSupersededLateFailureDoesNotRestoreStaleForAnotherContext() throws {
+        // Given — cached flags for context A
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(
+                FlagsData(flags: ["a": .mockAny()], context: contextA, date: .mockAny())
+            ),
+            forKey: .mockAny()
+        )
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+
+        // When — A times out, B starts and stays in flight, then A's failure arrives
+        flagsRepository.setEvaluationContext(contextA) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        flagsRepository.setEvaluationContext(contextB) { _ in }
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        try XCTUnwrap(fetchCompletions.first)(.failure(.invalidResponse))
+
+        // Then — A is superseded, so it must not publish state over B's in-flight request
+        XCTAssertEqual(
+            flagsRepository.state.currentState,
+            .reconciling,
+            "A superseded failure must not publish state while a newer request is in flight"
+        )
+    }
+
+    func testSupersededOrdinarySuccessWaitsForLatestResult() {
         // Given
         let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
         let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
         var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
         var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -720,15 +797,158 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // When
         flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
-        flagsRepository.setEvaluationContext(contextB) { _ in }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
         fetchCompletions[0](.success(["flag-a": .mockAny()]))
 
-        // Then
-        guard case .success = firstResult else {
-            return XCTFail("Expected the published ordinary request to succeed")
+        // Then — the superseded caller waits and cannot publish
+        XCTAssertNil(firstResult)
+        XCTAssertNil(secondResult)
+        XCTAssertNil(flagsRepository.context)
+
+        // When — the latest request completes
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+
+        // Then — both callers receive the latest result
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-b"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "flag-a"))
+    }
+
+    func testSupersededOrdinaryFailureWaitsForLatestSuccess() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[0](.failure(.invalidResponse))
+
+        // Then — the superseded failure cannot publish or complete its caller
+        XCTAssertNil(firstResult)
+        XCTAssertNil(secondResult)
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        // When — the latest request succeeds
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+
+        // Then — both callers receive the latest success
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, contextB)
+    }
+
+    func testLatestFailureCompletesSupersededCallerWithSameFailure() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[0](.success(["flag-a": .mockAny()]))
+        fetchCompletions[1](.failure(.invalidResponse))
+
+        // Then — both callers receive the latest failure
+        guard case .failure(.invalidResponse) = firstResult else {
+            return XCTFail("Expected the first caller to receive the latest failure")
         }
-        XCTAssertEqual(flagsRepository.context, contextA)
-        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-a"))
+        guard case .failure(.invalidResponse) = secondResult else {
+            return XCTFail("Expected the second caller to receive the latest failure")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        XCTAssertNil(flagsRepository.context)
+    }
+
+    func testConcurrentTerminalResultsAlwaysPublishAndCompleteTheLatestContext() throws {
+        let iterations = 1_000
+        let raceQueue = DispatchQueue(
+            label: "com.datadog.flags.context-update-race",
+            attributes: .concurrent
+        )
+
+        for iteration in 0..<iterations {
+            // Given
+            let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+            let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+            var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let resultLock = NSLock()
+            var results: [Result<Void, FlagsError>] = []
+            let flagsRepository = FlagsRepository(
+                clientName: "race-\(iteration)",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(),
+                initializationTimeout: nil
+            )
+            flagsRepository.setEvaluationContext(contextA) { result in
+                resultLock.lock()
+                results.append(result)
+                resultLock.unlock()
+            }
+            flagsRepository.setEvaluationContext(contextB) { result in
+                resultLock.lock()
+                results.append(result)
+                resultLock.unlock()
+            }
+
+            let start = DispatchSemaphore(value: 0)
+            let finished = DispatchGroup()
+            for (index, completion) in fetchCompletions.enumerated() {
+                finished.enter()
+                raceQueue.async {
+                    start.wait()
+                    completion(.success(["flag-\(index)": .mockAny()]))
+                    finished.leave()
+                }
+            }
+
+            // When
+            start.signal()
+            start.signal()
+
+            // Then
+            XCTAssertEqual(finished.wait(timeout: .now() + 2), .success, "Iteration \(iteration)")
+            resultLock.lock()
+            let completedResults = results
+            resultLock.unlock()
+            XCTAssertEqual(completedResults.count, 2, "Iteration \(iteration)")
+            for result in completedResults {
+                XCTAssertNoThrow(try result.get(), "Iteration \(iteration)")
+            }
+            XCTAssertEqual(flagsRepository.context, contextB, "Iteration \(iteration)")
+            XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-1"), "Iteration \(iteration)")
+            XCTAssertNil(flagsRepository.flagAssignment(for: "flag-0"), "Iteration \(iteration)")
+        }
     }
 
     func testInitializationTimeoutDiscardsFlagsCachedForAnotherContext() throws {
@@ -993,6 +1213,31 @@ final class FlagsRepositoryTests: XCTestCase {
         // Complete the fetch
         capturedCompletion?(.success(["test": .mockAny()]))
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testStateListenerReceivesReconcilingWhenAContextUpdateStarts() {
+        // Given
+        var observedStates: [FlagsClientState] = []
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        let listener = BlockingStateListener { observedStates.append($0) }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+
+        // Then
+        XCTAssertEqual(
+            observedStates,
+            [.notReady, .reconciling],
+            "A listener must receive the reconciling state"
+        )
+        withExtendedLifetime(listener) {}
     }
 
     func testResetTransitionsToNotReady() {

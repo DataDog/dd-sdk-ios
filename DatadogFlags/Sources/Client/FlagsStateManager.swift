@@ -102,6 +102,9 @@ internal final class FlagsStateManager: FlagsStateObservable {
                 return
             }
             for weakListener in listenersToNotify {
+                guard self.managerState.deliveredTransition == transitionToDeliver else {
+                    return
+                }
                 weakListener.value?.flagsStateDidChange(newState)
             }
         }

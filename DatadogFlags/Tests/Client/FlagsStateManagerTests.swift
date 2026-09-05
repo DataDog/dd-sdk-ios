@@ -110,6 +110,65 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(listener.states, [.ready])
     }
 
+    func testDeferredNotificationIsDeliveredOnlyOnce() {
+        // Given
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+        XCTAssertEqual(listener.states, [.notReady])
+        let notifyReady = manager.updateStateDeferringNotification(.ready)
+
+        // When
+        notifyReady()
+        notifyReady()
+
+        // Then
+        XCTAssertEqual(listener.states, [.notReady, .ready])
+    }
+
+    func testSupersededDeferredNotificationIsNotDeliveredBeforeLatestTransition() {
+        // Given
+        let manager = FlagsStateManager()
+        let listener = MockStateListener()
+        manager.addListener(listener)
+        let notifyReconciling = manager.updateStateDeferringNotification(.reconciling)
+        let notifyReady = manager.updateStateDeferringNotification(.ready)
+
+        // When — the superseded notification runs before the latest notification
+        notifyReconciling()
+        notifyReady()
+
+        // Then — only the latest transition is delivered
+        XCTAssertEqual(listener.states, [.notReady, .ready])
+    }
+
+    func testListenerThatChangesStateDoesNotLeaveASecondListenerStale() {
+        // Given
+        let manager = FlagsStateManager()
+        let observer = RecordingStateListener()
+        let mutating = MutatingStateListener { state in
+            guard state == .reconciling else {
+                return
+            }
+            manager.updateState(.ready)
+        }
+        manager.addListener(mutating)
+        manager.addListener(observer)
+        observer.states.removeAll()
+
+        // When
+        manager.updateState(.reconciling)
+
+        // Then
+        XCTAssertEqual(
+            observer.states.last,
+            manager.currentState,
+            "A listener's last callback must equal currentState; saw \(observer.states)"
+        )
+        withExtendedLifetime(mutating) {}
+        withExtendedLifetime(observer) {}
+    }
+
     func testDeallocatedListenerIsCleanedUp() {
         let manager = FlagsStateManager()
         var listener: MockStateListener? = MockStateListener()
@@ -193,6 +252,26 @@ private final class MockStateListener: FlagsStateListener {
 
     func flagsStateDidChange(_ newState: FlagsClientState) {
         states.append(newState)
+    }
+}
+
+private final class RecordingStateListener: FlagsStateListener {
+    var states: [FlagsClientState] = []
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        states.append(newState)
+    }
+}
+
+private final class MutatingStateListener: FlagsStateListener {
+    private let onChange: (FlagsClientState) -> Void
+
+    init(onChange: @escaping (FlagsClientState) -> Void) {
+        self.onChange = onChange
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        onChange(newState)
     }
 }
 
