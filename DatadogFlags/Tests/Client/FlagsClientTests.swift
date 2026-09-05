@@ -60,6 +60,79 @@ final class FlagsClientTests: XCTestCase {
         )
     }
 
+    func testCreatePropagatesInitializationTimeoutFromConfiguration() throws {
+        // Given
+        var configuration = Flags.Configuration()
+        configuration.initializationTimeout = 2.5
+        let core = FeatureRegistrationCoreMock()
+        Flags.enable(with: configuration, in: core)
+
+        // When
+        let client = try XCTUnwrap(FlagsClient.create(in: core) as? FlagsClient)
+
+        // Then
+        let repository = try XCTUnwrap(client.repository as? FlagsRepository)
+        XCTAssertEqual(repository.initializationTimeout, 2.5)
+    }
+
+    func testInitializationTimeoutDoesNotLogExposuresForAnotherContext() throws {
+        // Given
+        let clientName = "timeout-client"
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let requestedContext = FlagsEvaluationContext(targetingKey: "requested-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: [
+                "test": FlagAssignment(
+                    allocationKey: "allocation",
+                    variationKey: "enabled",
+                    variation: .boolean(true),
+                    reason: "TARGETING_MATCH",
+                    doLog: true
+                )
+            ],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        let featureScope = FeatureScopeMock(
+            dataStore: DataStoreMock(
+                storage: [
+                    clientName: .value(
+                        try JSONEncoder().encode(cachedData),
+                        dataStoreDefaultKeyVersion
+                    )
+                ]
+            )
+        )
+        var timeoutAction: (() -> Void)?
+        let repository = FlagsRepository(
+            clientName: clientName,
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        let exposureLogger = ExposureLoggerMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: exposureLogger,
+            evaluationLogger: EvaluationLoggerMock(),
+            rumFlagEvaluationReporter: RUMFlagEvaluationReporterMock()
+        )
+
+        // When
+        client.setEvaluationContext(requestedContext) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        let value = client.getBooleanValue(key: "test", defaultValue: false)
+
+        // Then
+        XCTAssertFalse(value)
+        XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
+    }
+
     func testSharedInstance() {
         // Given
         let core = FeatureRegistrationCoreMock()

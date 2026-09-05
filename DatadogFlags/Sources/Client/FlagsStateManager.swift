@@ -47,6 +47,8 @@ internal final class FlagsStateManager: FlagsStateObservable {
     private struct ManagerState {
         var clientState: FlagsClientState = .notReady
         var listeners: [WeakListener] = []
+        var transition: UInt64 = 0
+        var deliveredTransition: UInt64 = 0
     }
 
     @ReadWriteLock
@@ -57,19 +59,54 @@ internal final class FlagsStateManager: FlagsStateObservable {
     }
 
     func updateState(_ newState: FlagsClientState) {
-        // Capture listeners under lock, then notify outside lock to prevent deadlock.
+        updateStateDeferringNotification(newState)()
+    }
+
+    /// Publishes a state and returns a closure that notifies listeners.
+    ///
+    /// Callers that hold another lock must invoke the closure after they release that lock.
+    func updateStateDeferringNotification(_ newState: FlagsClientState) -> () -> Void {
+        var didChange = false
+        var transitionToDeliver: UInt64 = 0
         var listenersToNotify: [WeakListener] = []
 
         _managerState.mutate { state in
             guard newState != state.clientState else {
                 return
             }
+            state.transition &+= 1
             state.clientState = newState
+            transitionToDeliver = state.transition
             listenersToNotify = state.listeners
+            didChange = true
         }
 
-        for weakListener in listenersToNotify {
-            weakListener.value?.flagsStateDidChange(newState)
+        guard didChange else {
+            return {}
+        }
+
+        return { [weak self] in
+            guard let self else {
+                return
+            }
+            var shouldNotify = false
+            self._managerState.mutate { state in
+                guard transitionToDeliver > state.deliveredTransition,
+                      transitionToDeliver == state.transition else {
+                    return
+                }
+                state.deliveredTransition = transitionToDeliver
+                shouldNotify = true
+            }
+            guard shouldNotify else {
+                return
+            }
+            for weakListener in listenersToNotify {
+                guard self.managerState.deliveredTransition == transitionToDeliver else {
+                    return
+                }
+                weakListener.value?.flagsStateDidChange(newState)
+            }
         }
     }
 

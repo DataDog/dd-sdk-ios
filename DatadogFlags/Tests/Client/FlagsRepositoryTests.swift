@@ -122,6 +122,1045 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeoutReturnsFailureAndAllowsLateReadyState() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var scheduledTimeout: TimeInterval?
+        var callbackResults: [Result<Void, FlagsError>] = []
+        var stateAtTimeoutCallback: FlagsClientState?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { timeout, action in
+                scheduledTimeout = timeout
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        flagsRepository.setEvaluationContext(.mockAny()) {
+            stateAtTimeoutCallback = flagsRepository.state.currentState
+            callbackResults.append($0)
+        }
+
+        // When
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(scheduledTimeout, 2.5)
+        XCTAssertEqual(callbackResults.count, 1)
+        guard case .failure(.initializationTimedOut) = callbackResults[0] else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(stateAtTimeoutCallback, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+
+        // When
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+
+        // Then
+        XCTAssertEqual(callbackResults.count, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testImmediateInitializationTimeoutCannotBeOverwrittenByReconciling() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var stateAtCallback: FlagsClientState?
+        var callbackResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0,
+            scheduleInitializationTimeout: { _, action in
+                action()
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            stateAtCallback = flagsRepository.state.currentState
+            callbackResult = result
+        }
+
+        // Then
+        XCTAssertEqual(stateAtCallback, .error)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+
+        // When
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationCompletionCancelsTimeout() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var timeoutCancellationCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return { timeoutCancellationCount += 1 }
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(timeoutCancellationCount, 1)
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutWinsWhenItFiresDuringReadyPublication() throws {
+        // Given
+        let dataStore = BlockingWriteDataStoreMock()
+        let blockingFeatureScope = FeatureScopeMock(dataStore: dataStore)
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        let callbackFinished = DispatchSemaphore(value: 0)
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: blockingFeatureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            callbackResult = result
+            callbackFinished.signal()
+        }
+
+        let completeFetch = try XCTUnwrap(fetchCompletion)
+        let fireTimeout = try XCTUnwrap(timeoutAction)
+        let fetchFinished = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            completeFetch(.success(["test": .mockAny()]))
+            fetchFinished.signal()
+        }
+        XCTAssertEqual(dataStore.writeStarted.wait(timeout: .now() + 1), .success)
+
+        // When — the timeout fires while ready publication holds the initialization lock
+        let timeoutFinished = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            fireTimeout()
+            timeoutFinished.signal()
+        }
+        XCTAssertEqual(timeoutFinished.wait(timeout: .now() + 0.1), .timedOut)
+        dataStore.releaseWrite.signal()
+
+        // Then — publication can recover to ready, but the bounded caller must time out
+        XCTAssertEqual(fetchFinished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(timeoutFinished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(callbackFinished.wait(timeout: .now() + 1), .success)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutOnlyAppliesToFirstContext() {
+        // Given
+        var scheduledTimeoutCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, _ in
+                scheduledTimeoutCount += 1
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+        flagsRepository.setEvaluationContext(.mockRandom()) { _ in callbackCount += 1 }
+
+        // Then
+        XCTAssertEqual(scheduledTimeoutCount, 1)
+        XCTAssertEqual(callbackCount, 2)
+    }
+
+    func testInitializationTimeoutIsDisabledByDefault() {
+        // Given
+        var scheduledTimeoutCount = 0
+        var callbackCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success([:]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            scheduleInitializationTimeout: { _, _ in
+                scheduledTimeoutCount += 1
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in callbackCount += 1 }
+
+        // Then
+        XCTAssertEqual(scheduledTimeoutCount, 0)
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutRacingSuccessfulCompletionIsConsistent() throws {
+        let iterations = 10_000
+        let raceQueue = DispatchQueue(
+            label: "com.datadog.flags.initialization-timeout-race",
+            attributes: .concurrent
+        )
+
+        for iteration in 0..<iterations {
+            // Given
+            let iterationFeatureScope = FeatureScopeMock()
+            var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var timeoutAction: (() -> Void)?
+            let flagsRepository = FlagsRepository(
+                clientName: "race-\(iteration)",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletion = completion
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: iterationFeatureScope,
+                initializationTimeout: 2.5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return {}
+                }
+            )
+
+            let callbackLock = NSLock()
+            var callbackCount = 0
+            var callbackSucceeded = false
+            var callbackTimedOut = false
+            var stateAtCallback: FlagsClientState?
+            flagsRepository.setEvaluationContext(.mockAny()) { result in
+                callbackLock.lock()
+                callbackCount += 1
+                stateAtCallback = flagsRepository.state.currentState
+                switch result {
+                case .success:
+                    callbackSucceeded = true
+                case .failure(.initializationTimedOut):
+                    callbackTimedOut = true
+                case .failure:
+                    break
+                }
+                callbackLock.unlock()
+            }
+
+            let start = DispatchSemaphore(value: 0)
+            let finished = DispatchGroup()
+            let completion = try XCTUnwrap(fetchCompletion)
+            let timeout = try XCTUnwrap(timeoutAction)
+
+            // When
+            finished.enter()
+            raceQueue.async {
+                start.wait()
+                completion(.success(["test": .mockAny()]))
+                finished.leave()
+            }
+            finished.enter()
+            raceQueue.async {
+                start.wait()
+                timeout()
+                finished.leave()
+            }
+            start.signal()
+            start.signal()
+
+            // Then
+            XCTAssertEqual(
+                finished.wait(timeout: .now() + 2),
+                .success,
+                "Race did not finish at iteration \(iteration)"
+            )
+
+            callbackLock.lock()
+            let observedCallbackCount = callbackCount
+            let observedCallbackSucceeded = callbackSucceeded
+            let observedCallbackTimedOut = callbackTimedOut
+            let observedStateAtCallback = stateAtCallback
+            callbackLock.unlock()
+
+            XCTAssertEqual(observedCallbackCount, 1, "Iteration \(iteration)")
+            XCTAssertNotEqual(observedCallbackSucceeded, observedCallbackTimedOut, "Iteration \(iteration)")
+            if observedCallbackSucceeded {
+                XCTAssertEqual(observedStateAtCallback, .ready, "Iteration \(iteration)")
+            } else {
+                // A timeout publishes error first, but the intentionally unblocked late success may
+                // recover to ready before the callback reads the state.
+                XCTAssertTrue(
+                    observedStateAtCallback == .error || observedStateAtCallback == .ready,
+                    "Iteration \(iteration)"
+                )
+            }
+            XCTAssertEqual(flagsRepository.state.currentState, .ready, "Iteration \(iteration)")
+        }
+    }
+
+    func testInitializationTimeoutCompletesWhileTheDiskReadIsStillPending() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var fetchStartedCount = 0
+        var callbackResult: Result<Void, FlagsError>?
+        let pendingFeatureScope = FeatureScopeMock(dataStore: NeverRespondingDataStoreMock())
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in
+                fetchStartedCount += 1
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: pendingFeatureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(fetchStartedCount, 0)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+    }
+
+    func testLateDiskReadDoesNotRestoreFlagsForAnotherContextAfterTimeout() throws {
+        // Given
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let requestedContext = FlagsEvaluationContext(targetingKey: "requested-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        let dataStore = ManuallyRespondingDataStoreMock(
+            result: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        )
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        dataStore.respond()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testLateMatchingDiskReadReportsStaleAfterTimeout() throws {
+        // Given
+        let context = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(flags: ["test": .mockAny()], context: context, date: .mockAny())
+        let dataStore = ManuallyRespondingDataStoreMock(
+            result: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        )
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(context) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        dataStore.respond()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertEqual(flagsRepository.context, context)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testLateMatchingDiskReadIsCompleteBeforeStaleNotification() throws {
+        // Given
+        let context = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(flags: ["test": .mockAny()], context: context, date: .mockAny())
+        let dataStore = ManuallyRespondingDataStoreMock(
+            result: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        )
+        var timeoutAction: (() -> Void)?
+        var lookupDuration: TimeInterval?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        let listener = BlockingStateListener { state in
+            guard state == .stale else {
+                return
+            }
+            let start = DispatchTime.now().uptimeNanoseconds
+            _ = flagsRepository.flagAssignment(for: "test")
+            lookupDuration = TimeInterval(DispatchTime.now().uptimeNanoseconds - start) / 1_000_000_000
+        }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        flagsRepository.setEvaluationContext(context) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        dataStore.respond()
+
+        // Then
+        XCTAssertLessThan(try XCTUnwrap(lookupDuration), 0.05)
+        withExtendedLifetime(listener) {}
+    }
+
+    func testInitializationTimeoutMillisecondsClampsInsteadOfTruncating() {
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 0), 0)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: -1), 0)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: .nan), 0)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 0.25), 250)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 5), 5_000)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 86_400), 86_400_000)
+        XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: .infinity), 0)
+        XCTAssertEqual(
+            FlagsRepository.initializationTimeoutMilliseconds(for: .greatestFiniteMagnitude),
+            .max
+        )
+    }
+
+    func testDefaultSchedulerRunsThenCancellationPreventsTheAction() {
+        // Given
+        let fired = expectation(description: "the timeout action ran")
+        let cancelledFired = expectation(description: "a cancelled timeout must not run")
+        cancelledFired.isInverted = true
+
+        // When
+        _ = FlagsRepository.scheduleInitializationTimeout(0.01) { fired.fulfill() }
+        let cancelTimeout = FlagsRepository.scheduleInitializationTimeout(0.01) {
+            cancelledFired.fulfill()
+        }
+        cancelTimeout()
+
+        // Then
+        waitForExpectations(timeout: 1)
+    }
+
+    func testStateListenerCannotTakeTheInitializationTimeoutFromTheFirstCaller() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var firstResult: Result<Void, FlagsError>?
+        var nestedResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        var didStartNestedCall = false
+        let listener = BlockingStateListener { state in
+            guard state == .reconciling, !didStartNestedCall else {
+                return
+            }
+            didStartNestedCall = true
+            flagsRepository.setEvaluationContext(.mockRandom()) { nestedResult = $0 }
+        }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { firstResult = $0 }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        guard case .failure(.initializationTimedOut) = firstResult else {
+            return XCTFail("The first caller must own the initialization timeout")
+        }
+        XCTAssertNil(nestedResult)
+        withExtendedLifetime(listener) {}
+    }
+
+    func testInitializationTimeoutAppliesAgainAfterReset() throws {
+        // Given
+        var timeoutActions: [() -> Void] = []
+        var callbackResults: [Result<Void, FlagsError>] = []
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutActions.append(action)
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResults.append($0) }
+        try XCTUnwrap(timeoutActions.first)()
+        flagsRepository.reset()
+        flagsRepository.setEvaluationContext(.mockRandom()) { callbackResults.append($0) }
+
+        // Then
+        XCTAssertEqual(timeoutActions.count, 2)
+        guard timeoutActions.count == 2 else {
+            return
+        }
+        timeoutActions[1]()
+        XCTAssertEqual(callbackResults.count, 2)
+        for result in callbackResults {
+            guard case .failure(.initializationTimedOut) = result else {
+                return XCTFail("Expected initialization timeout")
+            }
+        }
+    }
+
+    func testResetDiscardsALateSuccessFromATimedOutInitialization() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When — the initialization times out, the caller resets, then the late result arrives
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        flagsRepository.reset()
+        featureScope.dataStore.flush()
+        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+        featureScope.dataStore.flush()
+
+        // Then — reset invalidated the generation, so the late success publishes nothing
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+    }
+
+    func testNewerSuccessCompletesTheSupersededInitializationCaller() throws {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        var timeoutCancellationCount = 0
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return { timeoutCancellationCount += 1 }
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(timeoutCancellationCount, 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-b"))
+    }
+
+    func testSupersededLateSuccessDoesNotReplaceANewerContext() throws {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        flagsRepository.setEvaluationContext(contextB) { _ in }
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+        fetchCompletions[0](.success(["flag-a": .mockAny()]))
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-b"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "flag-a"))
+    }
+
+    func testSupersededLateFailureDoesNotRestoreStaleForAnotherContext() throws {
+        // Given — cached flags for context A
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(
+                FlagsData(flags: ["a": .mockAny()], context: contextA, date: .mockAny())
+            ),
+            forKey: .mockAny()
+        )
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+
+        // When — A times out, B starts and stays in flight, then A's failure arrives
+        flagsRepository.setEvaluationContext(contextA) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        flagsRepository.setEvaluationContext(contextB) { _ in }
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        try XCTUnwrap(fetchCompletions.first)(.failure(.invalidResponse))
+
+        // Then — A is superseded, so it must not publish state over B's in-flight request
+        XCTAssertEqual(
+            flagsRepository.state.currentState,
+            .reconciling,
+            "A superseded failure must not publish state while a newer request is in flight"
+        )
+    }
+
+    func testSupersededOrdinarySuccessWaitsForLatestResult() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[0](.success(["flag-a": .mockAny()]))
+
+        // Then — the superseded caller waits and cannot publish
+        XCTAssertNil(firstResult)
+        XCTAssertNil(secondResult)
+        XCTAssertNil(flagsRepository.context)
+
+        // When — the latest request completes
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+
+        // Then — both callers receive the latest result
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-b"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "flag-a"))
+    }
+
+    func testSupersededOrdinaryFailureWaitsForLatestSuccess() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[0](.failure(.invalidResponse))
+
+        // Then — the superseded failure cannot publish or complete its caller
+        XCTAssertNil(firstResult)
+        XCTAssertNil(secondResult)
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        // When — the latest request succeeds
+        fetchCompletions[1](.success(["flag-b": .mockAny()]))
+
+        // Then — both callers receive the latest success
+        XCTAssertNoThrow(try XCTUnwrap(firstResult).get())
+        XCTAssertNoThrow(try XCTUnwrap(secondResult).get())
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, contextB)
+    }
+
+    func testLatestFailureCompletesSupersededCallerWithSameFailure() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        var secondResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { secondResult = $0 }
+        fetchCompletions[0](.success(["flag-a": .mockAny()]))
+        fetchCompletions[1](.failure(.invalidResponse))
+
+        // Then — both callers receive the latest failure
+        guard case .failure(.invalidResponse) = firstResult else {
+            return XCTFail("Expected the first caller to receive the latest failure")
+        }
+        guard case .failure(.invalidResponse) = secondResult else {
+            return XCTFail("Expected the second caller to receive the latest failure")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        XCTAssertNil(flagsRepository.context)
+    }
+
+    func testConcurrentTerminalResultsAlwaysPublishAndCompleteTheLatestContext() throws {
+        let iterations = 1_000
+        let raceQueue = DispatchQueue(
+            label: "com.datadog.flags.context-update-race",
+            attributes: .concurrent
+        )
+
+        for iteration in 0..<iterations {
+            // Given
+            let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+            let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+            var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let resultLock = NSLock()
+            var results: [Result<Void, FlagsError>] = []
+            let flagsRepository = FlagsRepository(
+                clientName: "race-\(iteration)",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(),
+                initializationTimeout: nil
+            )
+            flagsRepository.setEvaluationContext(contextA) { result in
+                resultLock.lock()
+                results.append(result)
+                resultLock.unlock()
+            }
+            flagsRepository.setEvaluationContext(contextB) { result in
+                resultLock.lock()
+                results.append(result)
+                resultLock.unlock()
+            }
+
+            let start = DispatchSemaphore(value: 0)
+            let finished = DispatchGroup()
+            for (index, completion) in fetchCompletions.enumerated() {
+                finished.enter()
+                raceQueue.async {
+                    start.wait()
+                    completion(.success(["flag-\(index)": .mockAny()]))
+                    finished.leave()
+                }
+            }
+
+            // When
+            start.signal()
+            start.signal()
+
+            // Then
+            XCTAssertEqual(finished.wait(timeout: .now() + 2), .success, "Iteration \(iteration)")
+            resultLock.lock()
+            let completedResults = results
+            resultLock.unlock()
+            XCTAssertEqual(completedResults.count, 2, "Iteration \(iteration)")
+            for result in completedResults {
+                XCTAssertNoThrow(try result.get(), "Iteration \(iteration)")
+            }
+            XCTAssertEqual(flagsRepository.context, contextB, "Iteration \(iteration)")
+            XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-1"), "Iteration \(iteration)")
+            XCTAssertNil(flagsRepository.flagAssignment(for: "flag-0"), "Iteration \(iteration)")
+        }
+    }
+
+    func testInitializationTimeoutDiscardsFlagsCachedForAnotherContext() throws {
+        // Given
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let requestedContext = FlagsEvaluationContext(targetingKey: "requested-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: cachedContext,
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { _ in }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testInitializationTimeoutWithMatchingCachedFlagsReportsStale() throws {
+        // Given
+        let context = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: context,
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(context) { _ in }
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
+    func testBlockedTimeoutCallbackDoesNotBlockLateReadyState() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        let callbackStarted = DispatchSemaphore(value: 0)
+        let releaseCallback = DispatchSemaphore(value: 0)
+        let readyPublished = expectation(description: "late ready state published")
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        let listener = BlockingStateListener { state in
+            if state == .ready {
+                readyPublished.fulfill()
+            }
+        }
+        flagsRepository.state.addListener(listener)
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            callbackStarted.signal()
+            releaseCallback.wait()
+        }
+
+        // When
+        DispatchQueue.global().async {
+            timeoutAction?()
+        }
+        XCTAssertEqual(callbackStarted.wait(timeout: .now() + 1), .success)
+        DispatchQueue.global().async {
+            fetchCompletion?(.success(["test": .mockAny()]))
+        }
+
+        // Then
+        wait(for: [readyPublished], timeout: 0.25)
+        releaseCallback.signal()
+        withExtendedLifetime(listener) {}
+    }
+
+    func testBlockedReadyListenerDoesNotDelaySuccessfulCompletion() {
+        // Given
+        let listenerStarted = DispatchSemaphore(value: 0)
+        let releaseListener = DispatchSemaphore(value: 0)
+        let completionDelivered = DispatchSemaphore(value: 0)
+        let updateFinished = DispatchSemaphore(value: 0)
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5
+        )
+        let listener = BlockingStateListener { state in
+            if state == .ready {
+                listenerStarted.signal()
+                releaseListener.wait()
+            }
+        }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.setEvaluationContext(.mockAny()) { _ in
+                completionDelivered.signal()
+            }
+            updateFinished.signal()
+        }
+        XCTAssertEqual(listenerStarted.wait(timeout: .now() + 1), .success)
+        let completionResult = completionDelivered.wait(timeout: .now() + 0.25)
+        releaseListener.signal()
+
+        // Then
+        XCTAssertEqual(completionResult, .success)
+        XCTAssertEqual(updateFinished.wait(timeout: .now() + 1), .success)
+        withExtendedLifetime(listener) {}
+    }
+
     // MARK: - State Transitions
 
     func testStateTransitionsToReadyOnSuccess() {
@@ -228,6 +1267,31 @@ final class FlagsRepositoryTests: XCTestCase {
         // Complete the fetch
         capturedCompletion?(.success(["test": .mockAny()]))
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testStateListenerReceivesReconcilingWhenAContextUpdateStarts() {
+        // Given
+        var observedStates: [FlagsClientState] = []
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        let listener = BlockingStateListener { observedStates.append($0) }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in }
+
+        // Then
+        XCTAssertEqual(
+            observedStates,
+            [.notReady, .reconciling],
+            "A listener must receive the reconciling state"
+        )
+        withExtendedLifetime(listener) {}
     }
 
     func testResetTransitionsToNotReady() {
@@ -476,4 +1540,66 @@ final class FlagsRepositoryTests: XCTestCase {
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
     }
+}
+
+private final class BlockingStateListener: FlagsStateListener {
+    private let onChange: (FlagsClientState) -> Void
+
+    init(onChange: @escaping (FlagsClientState) -> Void) {
+        self.onChange = onChange
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        onChange(newState)
+    }
+}
+
+private final class NeverRespondingDataStoreMock: DataStore {
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {}
+    func removeValue(forKey key: String) {}
+    func clearAllData() {}
+    func flush() {}
+}
+
+private final class ManuallyRespondingDataStoreMock: DataStore {
+    private let result: DataStoreValueResult
+    private var callback: ((DataStoreValueResult) -> Void)?
+
+    init(result: DataStoreValueResult) {
+        self.result = result
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {}
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        self.callback = callback
+    }
+
+    func respond() {
+        callback?(result)
+        callback = nil
+    }
+
+    func removeValue(forKey key: String) {}
+    func clearAllData() {}
+    func flush() {}
+}
+
+private final class BlockingWriteDataStoreMock: DataStore {
+    let writeStarted = DispatchSemaphore(value: 0)
+    let releaseWrite = DispatchSemaphore(value: 0)
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        writeStarted.signal()
+        releaseWrite.wait()
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(.noValue)
+    }
+
+    func removeValue(forKey key: String) {}
+    func clearAllData() {}
+    func flush() {}
 }
