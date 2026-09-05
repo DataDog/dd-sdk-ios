@@ -456,6 +456,37 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testLateMatchingDiskReadReportsStaleAfterTimeout() throws {
+        // Given
+        let context = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(flags: ["test": .mockAny()], context: context, date: .mockAny())
+        let dataStore = ManuallyRespondingDataStoreMock(
+            result: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        )
+        var timeoutAction: (() -> Void)?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(context) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        dataStore.respond()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertEqual(flagsRepository.context, context)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
     func testInitializationTimeoutMillisecondsClampsInsteadOfTruncating() {
         XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 0), 0)
         XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: -1), 0)
@@ -631,6 +662,35 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNil(flagsRepository.flagAssignment(for: "flag-a"))
     }
 
+    func testOrdinaryOverlappingSuccessPublishesBeforeCompletion() {
+        // Given
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var firstResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+
+        // When
+        flagsRepository.setEvaluationContext(contextA) { firstResult = $0 }
+        flagsRepository.setEvaluationContext(contextB) { _ in }
+        fetchCompletions[0](.success(["flag-a": .mockAny()]))
+
+        // Then
+        guard case .success = firstResult else {
+            return XCTFail("Expected the published ordinary request to succeed")
+        }
+        XCTAssertEqual(flagsRepository.context, contextA)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "flag-a"))
+    }
+
     func testInitializationTimeoutDiscardsFlagsCachedForAnotherContext() throws {
         // Given
         let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
@@ -744,6 +804,46 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then
         wait(for: [readyPublished], timeout: 0.25)
         releaseCallback.signal()
+        withExtendedLifetime(listener) {}
+    }
+
+    func testBlockedReadyListenerDoesNotDelaySuccessfulCompletion() {
+        // Given
+        let listenerStarted = DispatchSemaphore(value: 0)
+        let releaseListener = DispatchSemaphore(value: 0)
+        let completionDelivered = DispatchSemaphore(value: 0)
+        let updateFinished = DispatchSemaphore(value: 0)
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5
+        )
+        let listener = BlockingStateListener { state in
+            if state == .ready {
+                listenerStarted.signal()
+                releaseListener.wait()
+            }
+        }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.setEvaluationContext(.mockAny()) { _ in
+                completionDelivered.signal()
+            }
+            updateFinished.signal()
+        }
+        XCTAssertEqual(listenerStarted.wait(timeout: .now() + 1), .success)
+        let completionResult = completionDelivered.wait(timeout: .now() + 0.25)
+        releaseListener.signal()
+
+        // Then
+        XCTAssertEqual(completionResult, .success)
+        XCTAssertEqual(updateFinished.wait(timeout: .now() + 1), .success)
         withExtendedLifetime(listener) {}
     }
 

@@ -67,6 +67,8 @@ internal final class FlagsStateManager: FlagsStateObservable {
     /// Callers that hold another lock must invoke the closure after they release that lock.
     func updateStateDeferringNotification(_ newState: FlagsClientState) -> () -> Void {
         var didChange = false
+        var transitionToDeliver: UInt64 = 0
+        var listenersToNotify: [WeakListener] = []
 
         _managerState.mutate { state in
             guard newState != state.clientState else {
@@ -74,6 +76,8 @@ internal final class FlagsStateManager: FlagsStateObservable {
             }
             state.transition &+= 1
             state.clientState = newState
+            transitionToDeliver = state.transition
+            listenersToNotify = state.listeners
             didChange = true
         }
 
@@ -85,21 +89,20 @@ internal final class FlagsStateManager: FlagsStateObservable {
             guard let self else {
                 return
             }
-            var stateToDeliver: FlagsClientState?
-            var listenersToNotify: [WeakListener] = []
+            var shouldNotify = false
             self._managerState.mutate { state in
-                guard state.deliveredTransition != state.transition else {
+                guard transitionToDeliver > state.deliveredTransition,
+                      transitionToDeliver == state.transition else {
                     return
                 }
-                state.deliveredTransition = state.transition
-                stateToDeliver = state.clientState
-                listenersToNotify = state.listeners
+                state.deliveredTransition = transitionToDeliver
+                shouldNotify = true
             }
-            guard let stateToDeliver else {
+            guard shouldNotify else {
                 return
             }
             for weakListener in listenersToNotify {
-                weakListener.value?.flagsStateDidChange(stateToDeliver)
+                weakListener.value?.flagsStateDidChange(newState)
             }
         }
     }

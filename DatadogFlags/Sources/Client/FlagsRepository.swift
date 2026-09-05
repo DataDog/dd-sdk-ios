@@ -90,9 +90,15 @@ internal final class FlagsRepository {
     private var didStartInitialization = false
     private var contextUpdateCount: UInt64 = 0
     private var latestRequestedContext: FlagsEvaluationContext?
+    /// Identifies late work after the initialization timeout has completed the first request.
+    private var timedOutInitializationContextUpdate: UInt64?
 
     @ReadWriteLock
     private var flagsData: FlagsData?
+
+    /// Changes after each flags data write, so an older failure cannot clear newer data.
+    @ReadWriteLock
+    private var flagsDataVersion: UInt64 = 0
 
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
@@ -192,8 +198,8 @@ internal final class FlagsRepository {
                     contextUpdate: contextUpdate.generation
                 ) ?? {}
                 return {
-                    notifyListeners()
                     completion(.failure(.initializationTimedOut))
+                    notifyListeners()
                 }
             }
         }
@@ -210,10 +216,12 @@ internal final class FlagsRepository {
         guard contextUpdateCount == contextUpdate else {
             return {}
         }
+        timedOutInitializationContextUpdate = contextUpdate
         if flagsData?.context == context {
             return stateManager.updateStateDeferringNotification(.stale)
         } else {
             flagsData = nil
+            _flagsDataVersion.mutate { $0 &+= 1 }
             return stateManager.updateStateDeferringNotification(.error)
         }
     }
@@ -221,14 +229,16 @@ internal final class FlagsRepository {
     private func publishSuccess(
         _ flags: [String: FlagAssignment],
         for context: FlagsEvaluationContext,
-        contextUpdate: UInt64
+        contextUpdate: UInt64,
+        requireLatest: Bool
     ) -> () -> Void {
         initializationLock.lock()
         defer { initializationLock.unlock() }
-        guard contextUpdateCount == contextUpdate else {
+        guard !requireLatest || contextUpdateCount == contextUpdate else {
             return {}
         }
         flagsData = .init(flags: flags, context: context, date: dateProvider.now)
+        _flagsDataVersion.mutate { $0 &+= 1 }
         writeState()
         return stateManager.updateStateDeferringNotification(.ready)
     }
@@ -237,17 +247,21 @@ internal final class FlagsRepository {
         hadFlags: Bool,
         cachedContext: FlagsEvaluationContext?,
         requestedContext: FlagsEvaluationContext,
-        contextUpdate: UInt64
+        contextUpdate: UInt64,
+        flagsDataVersionAtStart: UInt64,
+        requireLatest: Bool
     ) -> () -> Void {
         initializationLock.lock()
         defer { initializationLock.unlock() }
-        guard contextUpdateCount == contextUpdate else {
+        guard !requireLatest || contextUpdateCount == contextUpdate,
+              flagsDataVersion == flagsDataVersionAtStart else {
             return {}
         }
         if hadFlags && cachedContext == requestedContext {
             return stateManager.updateStateDeferringNotification(.stale)
         } else {
             flagsData = nil
+            _flagsDataVersion.mutate { $0 &+= 1 }
             return stateManager.updateStateDeferringNotification(.error)
         }
     }
@@ -262,11 +276,19 @@ internal final class FlagsRepository {
                 }
                 return
             }
+            var notifyListeners: () -> Void = {}
             self.initializationLock.lock()
             if self.contextUpdateCount == contextUpdateAtStart || data?.context == self.latestRequestedContext {
                 self.flagsData = data
+                self._flagsDataVersion.mutate { $0 &+= 1 }
+                if data != nil,
+                   data?.context == self.latestRequestedContext,
+                   self.timedOutInitializationContextUpdate == self.contextUpdateCount {
+                    notifyListeners = self.stateManager.updateStateDeferringNotification(.stale)
+                }
             }
             self.initializationLock.unlock()
+            notifyListeners()
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -368,6 +390,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             let hadFlags = self.flagsData != nil
             let cachedContext = self.flagsData?.context
+            let flagsDataVersionAtStart = self.flagsDataVersion
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 switch result {
                 case .success(let flags):
@@ -387,18 +410,20 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                             let notifyListeners = self.publishSuccess(
                                 flags,
                                 for: context,
-                                contextUpdate: contextUpdate.generation
+                                contextUpdate: contextUpdate.generation,
+                                requireLatest: pendingCompletion == nil
                             )
                             return {
-                                notifyListeners()
                                 pendingCompletion?(.success(()))
+                                notifyListeners()
                             }
                         }
                     } else {
                         let notifyListeners = self.publishSuccess(
                             flags,
                             for: context,
-                            contextUpdate: contextUpdate.generation
+                            contextUpdate: contextUpdate.generation,
+                            requireLatest: false
                         )
                         notifyListeners()
                         completion(.success(()))
@@ -409,11 +434,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                             hadFlags: hadFlags,
                             cachedContext: cachedContext,
                             requestedContext: context,
-                            contextUpdate: contextUpdate.generation
+                            contextUpdate: contextUpdate.generation,
+                            flagsDataVersionAtStart: flagsDataVersionAtStart,
+                            requireLatest: initializationCompletion != nil && pendingCompletion == nil
                         ) ?? {}
                         return {
-                            notifyListeners()
                             pendingCompletion?(.failure(error))
+                            notifyListeners()
                         }
                     }
                     if let initializationCompletion {
@@ -436,6 +463,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         didStartInitialization = false
         latestRequestedContext = nil
         flagsData = nil
+        _flagsDataVersion.mutate { $0 &+= 1 }
+        timedOutInitializationContextUpdate = nil
         let notifyListeners = stateManager.updateStateDeferringNotification(.notReady)
         initializationLock.unlock()
         notifyListeners()

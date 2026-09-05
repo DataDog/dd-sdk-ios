@@ -99,6 +99,17 @@ final class FlagsStateManagerTests: XCTestCase {
         XCTAssertEqual(listener.states, [.notReady, .reconciling])
     }
 
+    func testDeferredNotificationDoesNotNotifyAListenerAddedAfterTheTransition() {
+        let manager = FlagsStateManager()
+        let notifyListeners = manager.updateStateDeferringNotification(.ready)
+        let listener = MockStateListener()
+
+        manager.addListener(listener)
+        notifyListeners()
+
+        XCTAssertEqual(listener.states, [.ready])
+    }
+
     func testDeallocatedListenerIsCleanedUp() {
         let manager = FlagsStateManager()
         var listener: MockStateListener? = MockStateListener()
