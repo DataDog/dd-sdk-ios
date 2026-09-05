@@ -238,6 +238,60 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
+    func testInitializationTimeoutWinsWhenItFiresDuringReadyPublication() throws {
+        // Given
+        let dataStore = BlockingWriteDataStoreMock()
+        let blockingFeatureScope = FeatureScopeMock(dataStore: dataStore)
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        let callbackFinished = DispatchSemaphore(value: 0)
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: blockingFeatureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        flagsRepository.setEvaluationContext(.mockAny()) { result in
+            callbackResult = result
+            callbackFinished.signal()
+        }
+
+        let completeFetch = try XCTUnwrap(fetchCompletion)
+        let fireTimeout = try XCTUnwrap(timeoutAction)
+        let fetchFinished = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            completeFetch(.success(["test": .mockAny()]))
+            fetchFinished.signal()
+        }
+        XCTAssertEqual(dataStore.writeStarted.wait(timeout: .now() + 1), .success)
+
+        // When — the timeout fires while ready publication holds the initialization lock
+        let timeoutFinished = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            fireTimeout()
+            timeoutFinished.signal()
+        }
+        XCTAssertEqual(timeoutFinished.wait(timeout: .now() + 0.1), .timedOut)
+        dataStore.releaseWrite.signal()
+
+        // Then — publication can recover to ready, but the bounded caller must time out
+        XCTAssertEqual(fetchFinished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(timeoutFinished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(callbackFinished.wait(timeout: .now() + 1), .success)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
     func testInitializationTimeoutOnlyAppliesToFirstContext() {
         // Given
         var scheduledTimeoutCount = 0
@@ -1525,6 +1579,24 @@ private final class ManuallyRespondingDataStoreMock: DataStore {
     func respond() {
         callback?(result)
         callback = nil
+    }
+
+    func removeValue(forKey key: String) {}
+    func clearAllData() {}
+    func flush() {}
+}
+
+private final class BlockingWriteDataStoreMock: DataStore {
+    let writeStarted = DispatchSemaphore(value: 0)
+    let releaseWrite = DispatchSemaphore(value: 0)
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        writeStarted.signal()
+        releaseWrite.wait()
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(.noValue)
     }
 
     func removeValue(forKey key: String) {}

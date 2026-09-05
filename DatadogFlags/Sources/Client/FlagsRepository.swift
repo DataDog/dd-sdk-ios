@@ -64,6 +64,8 @@ internal final class FlagsRepository {
     private var initializationTimeoutPhase: InitializationTimeoutPhase?
     private var initializationTimeoutCancellation: FlagsInitializationTimeoutCancellation?
     private var deferredInitializationNetworkCompletion: (() -> Void)?
+    @ReadWriteLock
+    private var initializationTimeoutFiredGeneration: UInt64?
     /// Identifies late work after the initialization timeout has completed the first request.
     private var timedOutInitializationContextUpdate: UInt64?
 
@@ -150,6 +152,7 @@ internal final class FlagsRepository {
         if ownsInitialization, initializationTimeout != nil {
             initializationTimeoutGeneration = generation
             initializationTimeoutPhase = .pending
+            initializationTimeoutFiredGeneration = nil
         }
         let notifyReconciling = stateManager.updateStateDeferringNotification(.reconciling)
         initializationLock.unlock()
@@ -169,7 +172,11 @@ internal final class FlagsRepository {
         }
 
         let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self] in
-            self?.initializationDidTimeOut(
+            guard let self else {
+                return
+            }
+            self.initializationTimeoutFiredGeneration = contextUpdate.generation
+            self.initializationDidTimeOut(
                 for: context,
                 contextUpdate: contextUpdate.generation
             )
@@ -277,6 +284,7 @@ internal final class FlagsRepository {
         publishStateLocked: @escaping () -> () -> Void
     ) {
         var timeoutCancellation: FlagsInitializationTimeoutCancellation?
+        var timedOutCompletion: ContextCompletion?
         var completions: [ContextCompletion] = []
         var notifyListeners: () -> Void = {}
 
@@ -298,13 +306,18 @@ internal final class FlagsRepository {
             return
         }
 
+        notifyListeners = publishStateLocked()
         if initializationTimeoutPhase == .pending {
             initializationTimeoutPhase = .completed
             timeoutCancellation = initializationTimeoutCancellation
             initializationTimeoutCancellation = nil
+            if initializationTimeoutFiredGeneration == initializationTimeoutGeneration,
+               let initializationTimeoutGeneration {
+                timedOutCompletion = pendingContextCompletions.removeValue(
+                    forKey: initializationTimeoutGeneration
+                )
+            }
         }
-
-        notifyListeners = publishStateLocked()
         completions = pendingContextCompletions
             .sorted { $0.key < $1.key }
             .map(\.value)
@@ -312,6 +325,7 @@ internal final class FlagsRepository {
         initializationLock.unlock()
 
         timeoutCancellation?()
+        timedOutCompletion?(.failure(.initializationTimedOut))
         for completion in completions {
             completion(result)
         }
@@ -489,6 +503,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         initializationTimeoutCancellation = nil
         initializationTimeoutGeneration = nil
         initializationTimeoutPhase = .completed
+        initializationTimeoutFiredGeneration = nil
         deferredInitializationNetworkCompletion = nil
         pendingCompletions = pendingContextCompletions.values.map { $0 }
         pendingContextCompletions.removeAll()
