@@ -487,6 +487,46 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testLateMatchingDiskReadIsCompleteBeforeStaleNotification() throws {
+        // Given
+        let context = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(flags: ["test": .mockAny()], context: context, date: .mockAny())
+        let dataStore = ManuallyRespondingDataStoreMock(
+            result: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        )
+        var timeoutAction: (() -> Void)?
+        var lookupDuration: TimeInterval?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        let listener = BlockingStateListener { state in
+            guard state == .stale else {
+                return
+            }
+            let start = DispatchTime.now().uptimeNanoseconds
+            _ = flagsRepository.flagAssignment(for: "test")
+            lookupDuration = TimeInterval(DispatchTime.now().uptimeNanoseconds - start) / 1_000_000_000
+        }
+        flagsRepository.state.addListener(listener)
+
+        // When
+        flagsRepository.setEvaluationContext(context) { _ in }
+        try XCTUnwrap(timeoutAction)()
+        dataStore.respond()
+
+        // Then
+        XCTAssertLessThan(try XCTUnwrap(lookupDuration), 0.05)
+        withExtendedLifetime(listener) {}
+    }
+
     func testInitializationTimeoutMillisecondsClampsInsteadOfTruncating() {
         XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: 0), 0)
         XCTAssertEqual(FlagsRepository.initializationTimeoutMilliseconds(for: -1), 0)

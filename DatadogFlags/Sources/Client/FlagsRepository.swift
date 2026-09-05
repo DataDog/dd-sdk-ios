@@ -288,7 +288,6 @@ internal final class FlagsRepository {
                 }
             }
             self.initializationLock.unlock()
-            notifyListeners()
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -302,6 +301,8 @@ internal final class FlagsRepository {
             DispatchQueue.global(qos: .userInitiated).async {
                 readSemaphore.signal()
             }
+
+            notifyListeners()
 
             // Execute async callbacks outside the lock
             for callback in callbacks {
