@@ -431,6 +431,19 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
+    func testInitializationTimeoutDeadlineDoesNotUsePlatformIntWidth() {
+        // Given
+        let start = DispatchTime(uptimeNanoseconds: 1_000_000_000)
+
+        // When
+        let deadline = FlagsRepository.initializationTimeoutDeadline(after: 5, from: start)
+        let delay = deadline.uptimeNanoseconds - start.uptimeNanoseconds
+
+        // Then
+        XCTAssertEqual(delay, 5_000_000_000)
+        XCTAssertGreaterThan(delay, UInt64(Int32.max))
+    }
+
     // MARK: - State Transitions
 
     func testStateTransitionsToReadyOnSuccess() {

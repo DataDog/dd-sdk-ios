@@ -133,20 +133,22 @@ internal final class FlagsRepository {
         _ action: @escaping () -> Void
     ) -> FlagsInitializationTimeoutCancellation {
         let workItem = DispatchWorkItem(block: action)
-        let maximumSeconds = TimeInterval(Int.max / Int(NSEC_PER_SEC))
-        let nanoseconds: Int
-        if !timeout.isFinite || timeout <= 0 {
-            nanoseconds = 0
-        } else if timeout >= maximumSeconds {
-            nanoseconds = Int.max
-        } else {
-            nanoseconds = Int(timeout * TimeInterval(NSEC_PER_SEC))
-        }
         DispatchQueue.global(qos: .userInitiated).asyncAfter(
-            deadline: .now() + .nanoseconds(nanoseconds),
+            deadline: initializationTimeoutDeadline(after: timeout),
             execute: workItem
         )
         return { workItem.cancel() }
+    }
+
+    internal static func initializationTimeoutDeadline(
+        after timeout: TimeInterval,
+        from start: DispatchTime = .now()
+    ) -> DispatchTime {
+        guard timeout.isFinite, timeout > 0 else {
+            return start
+        }
+        let maximumSeconds = TimeInterval(UInt64.max - start.uptimeNanoseconds) / TimeInterval(NSEC_PER_SEC)
+        return timeout < maximumSeconds ? start + timeout : DispatchTime(uptimeNanoseconds: UInt64.max)
     }
 
     private func makeInitializationCompletion(
