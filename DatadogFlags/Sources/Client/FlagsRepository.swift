@@ -151,6 +151,7 @@ internal final class FlagsRepository {
 
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
+        context: FlagsEvaluationContext,
         beforeScheduling: () -> Void
     ) -> InitializationCompletion? {
         initializationLock.lock()
@@ -173,7 +174,8 @@ internal final class FlagsRepository {
             }
             if self?.stateManager.currentState != .ready,
                self?.stateManager.currentState != .stale {
-                self?.stateManager.updateState(.error) {
+                let timeoutState: FlagsClientState = self?.flagsData?.context == context ? .stale : .error
+                self?.stateManager.updateState(timeoutState) {
                     completion(.failure(.initializationTimedOut))
                 }
             } else {
@@ -271,7 +273,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        let initializationCompletion = makeInitializationCompletion(completion) {
+        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
             stateManager.updateState(.reconciling)
         }
         let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {

@@ -170,6 +170,51 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeoutPublishesStaleForMatchingCachedContext() throws {
+        // Given
+        let context = FlagsEvaluationContext.mockAny()
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: context,
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        var stateAtTimeoutCallback: FlagsClientState?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+
+        flagsRepository.setEvaluationContext(context) { result in
+            stateAtTimeoutCallback = flagsRepository.state.currentState
+            callbackResult = result
+        }
+
+        // When
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(stateAtTimeoutCallback, .stale)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+    }
+
     func testInitializationTimeoutDoesNotReplaceReadyStateFromANewerRequest() throws {
         // Given
         var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
