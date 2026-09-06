@@ -205,6 +205,102 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
+    func testInitializationSuccessClaimsCompletionBeforeReadyListeners() throws {
+        // Given
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+        let listener = ClosureFlagsStateListener { state in
+            if state == .ready {
+                timeoutAction?()
+            }
+        }
+        flagsRepository.state.addListener(listener)
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
+
+        // When
+        try XCTUnwrap(fetchCompletion)(.success([:]))
+
+        // Then
+        XCTAssertNoThrow(try XCTUnwrap(callbackResult).get())
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationTimeoutCompletesBeforeErrorListeners() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        var callbackWasDeliveredBeforeErrorListener = false
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+        let listener = ClosureFlagsStateListener { state in
+            if state == .error {
+                callbackWasDeliveredBeforeErrorListener = callbackResult != nil
+            }
+        }
+        flagsRepository.state.addListener(listener)
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
+
+        // When
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        XCTAssertTrue(callbackWasDeliveredBeforeErrorListener)
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+    }
+
+    func testImmediateInitializationTimeoutRemainsError() {
+        // Given
+        var callbackResult: Result<Void, FlagsError>?
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 0,
+            scheduleInitializationTimeout: { _, action in
+                action()
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
+
+        // Then
+        guard case .failure(.initializationTimedOut) = callbackResult else {
+            return XCTFail("Expected initialization timeout")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
+    }
+
     func testInitializationCompletionCancelsTimeout() throws {
         // Given
         var timeoutAction: (() -> Void)?
@@ -643,5 +739,17 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+}
+
+private final class ClosureFlagsStateListener: FlagsStateListener {
+    private let onStateChange: (FlagsClientState) -> Void
+
+    init(onStateChange: @escaping (FlagsClientState) -> Void) {
+        self.onStateChange = onStateChange
+    }
+
+    func flagsStateDidChange(_ newState: FlagsClientState) {
+        onStateChange(newState)
     }
 }
