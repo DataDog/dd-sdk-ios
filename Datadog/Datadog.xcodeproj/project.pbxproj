@@ -10,11 +10,9 @@
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
-		09D107313061706D0056A1C4 /* AppKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D107303061706D0056A1C4 /* AppKitExtensionsTests.swift */; };
-		09D107333061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D107323061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift */; };
 		091E808E2FF289FC00457606 /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091E808D2FF289FC00457606 /* DDPlatformTypes.swift */; };
 		091E809D2FF2ADC700457606 /* CommonAppKitUIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091E809C2FF2ADC700457606 /* CommonAppKitUIKitMocks.swift */; };
-		09393F152FF520F600CBDDF9 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; platformFilters = (ios, tvos, ); productRef = 09393F142FF520F600CBDDF9 /* DatadogSDKTesting */; };
+		09393F152FF520F600CBDDF9 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 09393F142FF520F600CBDDF9 /* DatadogSDKTesting */; };
 		09393F162FF5211800CBDDF9 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		09393F172FF5211800CBDDF9 /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		093AC32A2F56F8AA00267CE1 /* ActiveSpanProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */; };
@@ -46,6 +44,8 @@
 		09C2D45430063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */; };
 		09C638563046E7AF00874FA6 /* AccessibilityUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */; };
 		09C6386B30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C6386A30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift */; };
+		09D107313061706D0056A1C4 /* AppKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D107303061706D0056A1C4 /* AppKitExtensionsTests.swift */; };
+		09D107333061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D107323061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift */; };
 		09D2859B3029CCCF00CA8AE5 /* NSWorkspace+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */; };
 		09D2859D3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */; };
 		09E5009E30333743003E67A6 /* DDPlatformTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E5009D30333743003E67A6 /* DDPlatformTypes.swift */; };
@@ -1930,8 +1930,6 @@
 /* Begin PBXFileReference section */
 		048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierTests.swift; sourceTree = "<group>"; };
 		0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensionsTests.swift; sourceTree = "<group>"; };
-		09D107303061706D0056A1C4 /* AppKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitExtensionsTests.swift; sourceTree = "<group>"; };
-		09D107323061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandlerToolbar_macOSTests.swift; sourceTree = "<group>"; };
 		091E808D2FF289FC00457606 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
 		091E809C2FF2ADC700457606 /* CommonAppKitUIKitMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonAppKitUIKitMocks.swift; sourceTree = "<group>"; };
 		093AC3282F56F8AA00267CE1 /* ActiveSpanProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpanProvider.swift; sourceTree = "<group>"; };
@@ -1963,6 +1961,8 @@
 		09C2D45330063F3E00BD5CF1 /* MacOSApplicationStateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSApplicationStateProvider.swift; sourceTree = "<group>"; };
 		09C638553046E7AF00874FA6 /* AccessibilityUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityUtilities.swift; sourceTree = "<group>"; };
 		09C6386A30472C3000874FA6 /* SwiftUIRUMActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRUMActionsPredicate.swift; sourceTree = "<group>"; };
+		09D107303061706D0056A1C4 /* AppKitExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitExtensionsTests.swift; sourceTree = "<group>"; };
+		09D107323061706D0056A1C4 /* RUMActionsHandlerToolbar_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMActionsHandlerToolbar_macOSTests.swift; sourceTree = "<group>"; };
 		09D2859A3029CCBB00CA8AE5 /* NSWorkspace+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWorkspace+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09D2859C3029CD3100CA8AE5 /* NSRunningApplication+AppStateUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRunningApplication+AppStateUtilities.swift"; sourceTree = "<group>"; };
 		09E5009D30333743003E67A6 /* DDPlatformTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDPlatformTypes.swift; sourceTree = "<group>"; };
