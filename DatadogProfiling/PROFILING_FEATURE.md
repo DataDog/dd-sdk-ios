@@ -177,6 +177,13 @@ The flush triggered by the background transition itself still carries its heap, 
 
 Memory recording stops only for reasons that are terminal for the session: tracking consent `.notGranted`, the RUM-composed memory decision sampling out, an interception install failure, or a quota rejection. Each of those clears the sample table, which is correct — a stop-and-restart is a genuinely fresh session rather than a resumed one with an invisible gap in its sampling. This is why background is *not* on that list: tearing recording down and restarting it would clear the live set on every background round-trip, erasing exactly the long-lived objects `inuse_*` exists to surface.
 
+### Continuous memory profiling
+Memory emits on **every** window in which sampling is active, matching the Go profiler's delta model — not only on windows that happen to carry a RUM event. `alloc_*` is the delta for that window (the native alloc log is captured-and-reset each time), while `inuse_*` is the point-in-time live set, which carries across windows and is never reset by an emission. This is why `alloc_*` can read lower than `inuse_*`: one is a per-window rate, the other a cumulative snapshot. Both directions are normal, and which is larger reflects churn versus retention, not a fault.
+
+The only thing that suppresses an emission is having nothing to report: when neither the live set nor the alloc window holds a sample, no event is written, so an idle app uploads nothing.
+
+RUM correlation (vitals, app hangs, long tasks) is attached when present, but it does not authorize the emission — allocation data from an uncorrelated window is still real. Memory accumulates that correlation **separately** from the CPU state machine and clears it only when a heap profile is actually emitted. The two cannot share: in a memory-only session (`continuousSampleRate: 0`) the CPU machine treats every operation step and every app-state change as the end of its own window and clears its collections, which would otherwise strip correlation from heap profiles whose window had not ended.
+
 ### Quota
 `ProfilingQuotaChecker` checks whether the active RUM session is allowed to write profiles after Profiling has RUM session context and granted consent. Temporary quota lookup failures do not block profiling, while explicit quota rejection stops profiling for that session. A new RUM session triggers a fresh quota decision.
 

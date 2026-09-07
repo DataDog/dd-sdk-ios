@@ -62,6 +62,21 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private var hangs: [DurationEvent] = []
     // Long tasks to attach to profiles.
     private var longTasks: [DurationEvent] = []
+
+    /// Correlation for the memory window, accumulated separately from the three collections above.
+    ///
+    /// Those belong to the CPU state machine and follow its lifecycle: `cleanUpState` clears them
+    /// whenever the CPU window ends, which in a memory-only session (continuous not configured, so
+    /// `isCustomProfiling` is always true and the native profiler always `.stopped`) happens on
+    /// every operation step and every app-state change. Memory windows do not end at those moments,
+    /// so reading the CPU's collections meant heap profiles losing correlation the CPU no longer
+    /// needed — or, before emission became continuous, not being emitted at all.
+    ///
+    /// These are fed from the same message handlers and cleared only when a heap profile is
+    /// actually emitted. The CPU collections keep their existing behaviour untouched.
+    private var memoryRUMVitals: [String: Vital] = [:]
+    private var memoryHangs: [DurationEvent] = []
+    private var memoryLongTasks: [DurationEvent] = []
     /// Start of the current native profile cycle.
     private var profileStartDate: Date
     private var hasConditionsToProfile = true
@@ -344,10 +359,19 @@ private extension DatadogProfiler {
             // Capture vitals like TTFD that are not operation steps.
             if message.operation.stepType == nil {
                 currentRUMVitals[message.operation.key] = message.operation
+                memoryRUMVitals[message.operation.key] = message.operation
             } else if message.operation.stepType == .start {
                 currentRUMVitals[message.operation.key] = message.operation
+                memoryRUMVitals[message.operation.key] = message.operation
+                // Note this can clear `currentRUMVitals` (custom profiling with a stopped native
+                // profiler), which is exactly why memory keeps its own copy above.
                 updateProfilerState(canProfile: shouldKeepProfilerRunning())
             } else if message.operation.stepType == .end {
+                if var memoryVital = memoryRUMVitals[message.operation.key] {
+                    memoryVital.duration = message.operation.date
+                        .timeIntervalSince(memoryVital.date).dd.toInt64Nanoseconds
+                    memoryRUMVitals[message.operation.key] = memoryVital
+                }
                 if var startVital = currentRUMVitals[message.operation.key] {
                     // Add duration to vital to help Profiling backend label correctly the samples of this vital
                     let duration = message.operation.date.timeIntervalSince(startVital.date)
@@ -373,6 +397,7 @@ private extension DatadogProfiler {
             }
             attributes = message.attributes
             hangs.append(message.hang)
+            memoryHangs.append(message.hang)
         }
     }
 
@@ -383,6 +408,7 @@ private extension DatadogProfiler {
             }
             attributes = message.attributes
             longTasks.append(message.longTask)
+            memoryLongTasks.append(message.longTask)
         }
     }
 
@@ -453,18 +479,18 @@ private extension DatadogProfiler {
         let cpuProfile = dd_profiler_flush_and_get_profile()
         defer { if let cpuProfile { dd_pprof_destroy(cpuProfile) } }
 
-        // Emit the heap snapshot only when memory sampling is active, this window may still emit
-        // one (see `canEmitHeapSnapshot`), AND there is a RUM event of interest to correlate with
-        // (vital / hang / long task) — the same signal the CPU `canWriteProfile` gate keys off. On a
-        // skipped window the snapshot is not taken: the live set is a point-in-time view that
-        // carries forward, and the alloc window keeps accumulating (its capture-and-reset lives in
-        // `captureHeapPprof`, which we don't call here), so the next emitted window covers the full
-        // span. Nothing is lost; write/upload work is saved.
-        let wantsHeap = isMemoryProfilingRunning && hasRUMEventsOfInterest && canEmitHeapSnapshot
+        // Memory profiling is continuous: every window in which sampling is active emits its heap,
+        // the same delta model the Go profiler uses. Correlation is attached when there is any, but
+        // it is NOT a precondition — a window with no vital, hang or long task still carries real
+        // allocation data, and withholding it would leave gaps in a curve that is meant to be
+        // unbroken. A genuinely empty window costs nothing: `captureHeapPprof` returns nil when
+        // neither the live set nor the alloc window holds a sample, so an idle app uploads nothing.
+        let wantsHeap = isMemoryProfilingRunning && canEmitHeapSnapshot
 
         if let cpuProfile {
             if canWriteProfile {
-                // Coupled path: CPU/wall profile; heap is attached when memory is active.
+                // Coupled path: CPU/wall profile; heap is attached when memory is active. The event
+                // carries the CPU machine's correlation, unchanged.
                 write(
                     profile: cpuProfile,
                     operation: operation,
@@ -474,39 +500,24 @@ private extension DatadogProfiler {
                     captureHeapProfile: wantsHeap
                 )
             } else if wantsHeap {
-                // CPU profile isn't writable this window, but memory is active with a correlated
-                // event — emit a heap-only profile carrying that event.
-                writeHeapOnlyProfile(
-                    start: windowStart,
-                    end: windowEnd,
-                    operation: operation,
-                    rumVitals: Array(self.currentRUMVitals.values),
-                    hangs: hangs,
-                    longTasks: longTasks
-                )
+                // CPU profile isn't writable this window — emit a heap-only profile carrying
+                // memory's own correlation.
+                writeMemoryProfile(start: windowStart, end: windowEnd)
             } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
                 telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
             }
         } else if wantsHeap {
-            // No CPU profile at all (CPU profiling not running) — independent heap-only emission
-            // carrying the correlated RUM event(s).
-            writeHeapOnlyProfile(
-                start: windowStart,
-                end: windowEnd,
-                operation: operation,
-                rumVitals: Array(self.currentRUMVitals.values),
-                hangs: hangs,
-                longTasks: longTasks
-            )
+            // No CPU profile at all (CPU profiling not running) — independent heap-only emission.
+            writeMemoryProfile(start: windowStart, end: windowEnd)
         } else if shouldReportProfileAbsence {
             telemetryController.sendNoProfile(for: operation)
         }
 
-        // Advance the memory window only when the heap was actually captured this cycle (the alloc
-        // window is reset inside `captureHeapPprof`). Skipped windows leave `memoryWindowStart`
-        // untouched so the accumulated allocations are attributed to the next emitted window.
+        // The alloc window is captured-and-reset inside `captureHeapPprof`, so the delta this
+        // window reported is gone; advance the start so the next one is bounded from here.
         if wantsHeap {
             memoryWindowStart = windowEnd
+            cleanUpMemoryState()
             // Spend the one emission allowed while conditions are lost; re-armed in
             // `handle(context:)` on a return to use.
             if !hasConditionsToProfile {
@@ -515,6 +526,29 @@ private extension DatadogProfiler {
         }
 
         cleanUpState()
+    }
+
+    /// Emits the heap-only profile for this memory window, carrying memory's own correlation.
+    func writeMemoryProfile(start: Date, end: Date) {
+        writeHeapOnlyProfile(
+            start: start,
+            end: end,
+            operation: operation,
+            rumVitals: Array(memoryRUMVitals.values),
+            hangs: memoryHangs,
+            longTasks: memoryLongTasks
+        )
+    }
+
+    /// Closes the memory window's correlation once its heap has been reported — by either the
+    /// coupled or the heap-only path, since both reset the native alloc window.
+    ///
+    /// Ongoing operations carry forward the way `cleanUpState` does for the CPU machine: an
+    /// operation still running spans this window and the next, so it correlates with both.
+    func cleanUpMemoryState() {
+        memoryRUMVitals = memoryRUMVitals.ongoingOperations()
+        memoryHangs.removeAll()
+        memoryLongTasks.removeAll()
     }
 
     func cleanUpState(preservingOngoingOperations: Bool = true) {
@@ -704,16 +738,6 @@ private extension DatadogProfiler {
         // Keep quota fail-open while the check is pending. Only explicit rejection prevents writing.
         return (hasCustomProfilingData || hasContinuousProfilingVitals || hasContinuousProfilingEvents)
             && !quotaChecker.isRejectedByQuota
-    }
-
-    /// Whether there is at least one RUM event of interest this window — a vital (including ongoing
-    /// operations/views), an app hang (error), or a long task. This is the condition under which the
-    /// heap snapshot is emitted, mirroring (and a superset of) the events the CPU `canWriteProfile`
-    /// gate keys off.
-    var hasRUMEventsOfInterest: Bool {
-        currentRUMVitals.isEmpty == false
-            || hangs.isEmpty == false
-            || longTasks.isEmpty == false
     }
 
     /// Whether memory (heap) profiling should currently be sampling — independent of the

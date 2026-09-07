@@ -137,48 +137,86 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
-    /// The gate's resource-saving side: with memory on but NO RUM event of interest this window, the
-    /// background flush emits nothing — the live set carries forward and the alloc window keeps
-    /// accumulating, so no write/upload work is spent on an empty window.
-    func testMemoryDoesNotEmitHeapOnly_whenNoRUMEventOfInterest() {
+    /// Memory profiling is continuous: a window emits its heap whether or not any RUM event landed
+    /// in it. Correlation enriches a heap profile, it does not authorize one — allocation data from
+    /// an uncorrelated window is still real, and withholding it would leave holes in a curve that is
+    /// meant to be unbroken. This mirrors the Go profiler, which uploads a delta every period.
+    func testMemoryEmitsHeapProfile_withNoRUMEventAtAll() throws {
         let dateProvider = DateProviderMock()
         let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
 
-        // A live sample exists, but no RUM event of interest arrives this window.
-        withSampledObject {
+        try withSampledObject {
+            // No vital, no hang, no long task — just a live allocation.
             enterBackground(at: dateProvider.now)
 
-            XCTAssertTrue(core.events.isEmpty, "no RUM event of interest => no heap profile emitted")
+            XCTAssertEqual(heapAttachmentCount, 1, "an uncorrelated window must still emit its heap")
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNil(metadata.pprof, "heap-only event must carry no CPU profile.pprof")
+            XCTAssertNotNil(metadata.heapPprof)
         }
         withExtendedLifetime(profiler) {}
     }
 
-    /// Sequencing: an empty window (no RUM event) emits nothing, and a later window carrying a RUM
-    /// event still emits — exactly one heap-only profile in total. This asserts only that a skipped
-    /// window does not block a subsequent emission; cross-window allocation carry-forward is covered
-    /// by `testMemoryProfilingKeepsRecordingAcrossBackground_andPreservesLiveSet`.
-    func testMemorySkipsEmptyWindow_thenEmitsWhenRUMEventArrives() throws {
+    /// The one thing that does suppress emission is having nothing to report: `captureHeapPprof`
+    /// returns nil when neither the live set nor the alloc window holds a sample, so an idle app
+    /// uploads nothing. A skipped window must not block the next one.
+    func testMemorySkipsWindowWithNoSamples_thenEmitsWhenAllocationsAppear() throws {
         let dateProvider = DateProviderMock()
         let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
 
-        // Window 1: no RUM event of interest → background flush skips (nothing emitted).
+        // Window 1: nothing sampled at all.
         enterBackground(at: dateProvider.now)
-        XCTAssertTrue(core.events.isEmpty, "empty window must not emit")
+        XCTAssertEqual(heapAttachmentCount, 0, "a window with no samples must not emit")
 
-        // Back to foreground (memory was recording throughout).
         enterForeground()
-        XCTAssertTrue(dd_memory_profiler_is_running(), "memory must still be recording in the foreground")
 
-        // Window 2: a live allocation + a long task → background flush now emits exactly one
-        // heap-only event.
+        // Window 2: a live allocation is enough on its own.
         try withSampledObject {
-            sendLongTask(to: profiler)
             enterBackground(at: dateProvider.now)
 
-            XCTAssertEqual(core.events.count, 1, "exactly one heap profile, on the window with the RUM event")
+            XCTAssertEqual(heapAttachmentCount, 1, "the window with samples emits")
             let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
-            XCTAssertNil(metadata.pprof)
             XCTAssertNotNil(metadata.heapPprof)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Memory keeps its own correlation, so an operation step cannot strip it.
+    ///
+    /// In a memory-only session `isCustomProfiling` is always true and the native profiler always
+    /// `.stopped`, so every `updateProfilerState` call — which an operation `.start` triggers —
+    /// runs `cleanUpState(preservingOngoingOperations: false)` and clears the CPU machine's vitals,
+    /// hangs and long tasks. Reading those for the heap event meant a long task recorded before the
+    /// operation vanished from the profile. Memory's copy survives because only a heap emission
+    /// clears it.
+    func testMemoryCorrelationSurvivesCustomProfilingCleanup() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            // A long task, then an operation start whose updateProfilerState wipes the CPU state.
+            sendLongTask(to: profiler)
+            _ = profiler.receive(
+                message: .payload(OperationMessage(
+                    attributes: mockRandomAttributes(),
+                    operation: .mockWith(stepType: .start, date: dateProvider.now)
+                )),
+                from: core
+            )
+            flushQueue()
+
+            enterBackground(at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1, "the heap profile must still be emitted")
+            let event = try XCTUnwrap(core.events(ofType: ProfileEvent.self).last)
+            XCTAssertNotNil(
+                event.additionalAttributes?[RUMCoreContext.IDs.longTaskID],
+                "the long task recorded before the operation step must still correlate"
+            )
+            XCTAssertNotNil(
+                event.additionalAttributes?[RUMCoreContext.IDs.vitalID],
+                "the operation vital itself must correlate too"
+            )
         }
         withExtendedLifetime(profiler) {}
     }
