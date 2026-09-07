@@ -60,10 +60,28 @@ internal final class FlagsStateManager: FlagsStateObservable {
         _ newState: FlagsClientState,
         beforeNotifying: (() -> Void)? = nil
     ) {
+        updateState(
+            newState,
+            unlessCurrentStateIs: [],
+            beforeNotifying: beforeNotifying
+        )
+    }
+
+    @discardableResult
+    func updateState(
+        _ newState: FlagsClientState,
+        unlessCurrentStateIs excludedStates: [FlagsClientState],
+        beforeNotifying: (() -> Void)? = nil
+    ) -> Bool {
         // Capture listeners under lock, then notify outside lock to prevent deadlock.
         var listenersToNotify: [WeakListener] = []
+        var accepted = false
 
         _managerState.mutate { state in
+            guard !excludedStates.contains(state.clientState) else {
+                return
+            }
+            accepted = true
             guard newState != state.clientState else {
                 return
             }
@@ -71,11 +89,15 @@ internal final class FlagsStateManager: FlagsStateObservable {
             listenersToNotify = state.listeners
         }
 
+        guard accepted else {
+            return false
+        }
         beforeNotifying?()
 
         for weakListener in listenersToNotify {
             weakListener.value?.flagsStateDidChange(newState)
         }
+        return true
     }
 
     func addListener(_ listener: FlagsStateListener) {

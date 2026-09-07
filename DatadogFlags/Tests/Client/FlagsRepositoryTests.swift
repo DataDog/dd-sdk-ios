@@ -170,6 +170,34 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeoutCompletesWhenRepositoryIsReleased() throws {
+        // Given
+        var timeoutAction: (() -> Void)?
+        var callbackResult: Result<Void, FlagsError>?
+        var flagsRepository: FlagsRepository? = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: 2.5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return {}
+            }
+        )
+        featureScope.dataStore.flush()
+        flagsRepository?.setEvaluationContext(.mockAny()) { callbackResult = $0 }
+
+        // When
+        flagsRepository = nil
+        try XCTUnwrap(timeoutAction)()
+
+        // Then
+        guard case .failure(.clientNotInitialized) = callbackResult else {
+            return XCTFail("Expected client-not-initialized failure")
+        }
+    }
+
     func testInitializationTimeoutPublishesStaleForMatchingCachedContext() throws {
         // Given
         let context = FlagsEvaluationContext.mockAny()

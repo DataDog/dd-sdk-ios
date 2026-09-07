@@ -176,13 +176,18 @@ internal final class FlagsRepository {
             guard let completion = initializationCompletion.take() else {
                 return
             }
-            if self?.stateManager.currentState != .ready,
-               self?.stateManager.currentState != .stale {
-                let timeoutState: FlagsClientState = self?.flagsData?.context == context ? .stale : .error
-                self?.stateManager.updateState(timeoutState) {
-                    completion(.failure(.initializationTimedOut))
-                }
-            } else {
+            guard let self else {
+                completion(.failure(.clientNotInitialized))
+                return
+            }
+            let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
+            let accepted = self.stateManager.updateState(
+                timeoutState,
+                unlessCurrentStateIs: [.ready, .stale]
+            ) {
+                completion(.failure(.initializationTimedOut))
+            }
+            if !accepted {
                 completion(.failure(.initializationTimedOut))
             }
         }
