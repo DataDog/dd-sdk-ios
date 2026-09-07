@@ -67,7 +67,11 @@ public enum Flags {
         /// It does not change the HTTP client's timeout. The assignment operation continues after this timeout
         /// and can update the client to ``FlagsClientState/ready`` when it completes.
         ///
-        /// The value is in seconds. Invalid values cause an immediate timeout.
+        /// The timeout applies to the first ``FlagsClientProtocol/setEvaluationContext(_:completion:)`` call only.
+        /// That call consumes the timeout even if the operation fails or never starts. Later calls have no timer.
+        ///
+        /// The value is in seconds. A positive finite value enables the timeout. `nil`, zero, negative, and
+        /// non-finite values disable it.
         ///
         /// Default: `5` seconds.
         public var initializationTimeout: TimeInterval?

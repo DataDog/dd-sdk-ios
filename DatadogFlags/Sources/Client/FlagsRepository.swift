@@ -164,7 +164,9 @@ internal final class FlagsRepository {
         didStartInitialization = true
         initializationLock.unlock()
 
-        guard let initializationTimeout else {
+        guard let initializationTimeout,
+              initializationTimeout.isFinite,
+              initializationTimeout > 0 else {
             return nil
         }
 
@@ -258,16 +260,25 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.flags
     }
 
