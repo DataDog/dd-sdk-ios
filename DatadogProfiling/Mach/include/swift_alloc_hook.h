@@ -93,6 +93,15 @@ uint64_t dd_swift_alloc_test_captured_size(void);
 /// swift_getTypeName. Returns the number of bytes written (excluding NUL).
 uint64_t dd_swift_alloc_test_captured_name(char *buf, uint64_t buf_len);
 
+/// First word of the captured allocation's metadata record — the Swift ABI
+/// metadata kind. Lets tests pin the kind values that identify non-type
+/// metadata (closure contexts, capture boxes) rather than hardcoding ABI
+/// constants from memory. Returns UINT64_MAX if nothing was captured.
+/// Resolve the class name the sampler would attach for `metadata`, or NULL when
+/// the metadata has no nominal type to name. Lets tests pin the non-type guard
+/// without having to win a race to capture a real closure-context allocation.
+const char *dd_swift_alloc_test_resolve_class_name(void *metadata);
+
 // ---- Free-side / live-set validation (SQ4) --------------------------
 //
 // To keep the live set deterministic (the hook is process-wide and sees

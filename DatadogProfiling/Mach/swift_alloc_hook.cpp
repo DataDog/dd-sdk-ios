@@ -104,6 +104,23 @@ std::mutex g_track_mutex;
 std::unordered_set<const void *> g_registered_metadata;
 std::unordered_set<const void *> g_live_addresses;
 
+/// Swift ABI: metadata kinds at or above this value are *non-type* metadata —
+/// HeapLocalVariable (0x400), HeapGenericLocalVariable (0x401), ErrorObject
+/// (0x402). They describe heap objects that have no nominal type, so there is
+/// no name to resolve for them.
+constexpr uintptr_t METADATA_KIND_IS_NON_TYPE = 0x400;
+/// Upper bound for a small integer metadata kind. Real class metadata starts
+/// with an ObjC isa pointer, which is far above any kind value, so this cleanly
+/// separates "kind enum" from "pointer" without depending on the exact set of
+/// kinds a future runtime might add.
+constexpr uintptr_t METADATA_KIND_MAX = 0x800;
+
+/// Whether this metadata describes something with no nominal type name.
+bool is_non_type_metadata(const HeapMetadata *metadata) {
+    const uintptr_t kind = *reinterpret_cast<const uintptr_t *>(metadata);
+    return kind >= METADATA_KIND_IS_NON_TYPE && kind < METADATA_KIND_MAX;
+}
+
 // Resolve the demangled type name for a metadata pointer, caching a leak-once
 // stable copy. Runs only from inside the reentrancy guard. Returns nullptr if
 // the runtime symbol is unavailable or resolution fails.
@@ -112,6 +129,23 @@ const char *resolve_type_name(HeapMetadata *metadata) {
     // resolution work on whichever path invoked it.
     g_name_resolutions.fetch_add(1, std::memory_order_relaxed);
     if (metadata == nullptr) {
+        return nullptr;
+    }
+    // Not every swift_allocObject allocation is a class instance. Closure
+    // contexts and capture boxes are heap objects whose metadata is *non-type*
+    // metadata, which has no nominal type to name: swift_getTypeName answers
+    // them with the literal "<<< invalid type >>>". Emitting that as a class
+    // name puts a garbage bucket at the top of the allocated-type breakdown,
+    // and — worse — burns a slot in this never-evicting cache for every
+    // distinct capture layout, which drives the permanent saturation latch
+    // below and would eventually cost type names for real classes too.
+    //
+    // The Swift ABI marks non-type metadata with kind >= MetadataKindIsNonType
+    // (0x400: HeapLocalVariable, HeapGenericLocalVariable, ErrorObject). Class
+    // metadata never collides with that range — its first word is the ObjC isa
+    // pointer, orders of magnitude larger (verified on-device: 0x15af4c560 for
+    // a pure-Swift class vs 0x400 for a capture box).
+    if (is_non_type_metadata(metadata)) {
         return nullptr;
     }
     // Saturation short-circuit. Once every slot is taken no further type can be
@@ -380,6 +414,10 @@ extern "C" void dd_swift_alloc_test_arm_capture(void) {
 
 extern "C" uint64_t dd_swift_alloc_test_captured_size(void) {
     return g_captured_size.load(std::memory_order_relaxed);
+}
+
+extern "C" const char *dd_swift_alloc_test_resolve_class_name(void *metadata) {
+    return resolve_type_name(static_cast<HeapMetadata *>(metadata));
 }
 
 extern "C" uint64_t dd_swift_alloc_test_captured_name(char *buf, uint64_t buf_len) {

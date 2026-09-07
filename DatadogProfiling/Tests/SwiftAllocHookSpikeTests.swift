@@ -157,6 +157,43 @@ final class SwiftAllocHookSpikeTests: XCTestCase {
         )
     }
 
+    // MARK: - Non-type metadata must not be labelled
+
+    /// Not every `swift_allocObject` allocation is a class instance: closure
+    /// contexts and capture boxes are heap objects whose metadata is *non-type*
+    /// metadata. `swift_getTypeName` answers those with the literal
+    /// "<<< invalid type >>>", and publishing that as a class name puts a garbage
+    /// bucket at the top of the allocated-type breakdown — in a production
+    /// profile it was 26% of sampled Swift allocations and the single largest
+    /// "type". It also burns a slot in the never-evicting name cache for every
+    /// distinct capture layout, driving the permanent saturation latch that would
+    /// eventually cost type names for real classes too.
+    ///
+    /// The kind value asserted here (`0x400`, `HeapLocalVariable`) was observed
+    /// on-device from a real capture-box allocation, not taken from the ABI spec.
+    func test_nonTypeMetadata_resolvesToNoClassName() {
+        // A real class still resolves — the guard must not cost valid names.
+        let classMetadata = unsafeBitCast(NamedPureSwiftFixture.self, to: UnsafeMutableRawPointer.self)
+        let resolved = dd_swift_alloc_test_resolve_class_name(classMetadata)
+        XCTAssertEqual(
+            resolved.map { String(cString: $0) }, "NamedPureSwiftFixture",
+            "class metadata must still resolve to its type name"
+        )
+
+        // Metadata whose first word is a non-type kind must resolve to nothing,
+        // rather than to the runtime's "<<< invalid type >>>" sentinel.
+        for kind in [0x400, 0x401, 0x402] {
+            var record = UInt(kind)
+            withUnsafeMutablePointer(to: &record) { pointer in
+                let name = dd_swift_alloc_test_resolve_class_name(UnsafeMutableRawPointer(pointer))
+                XCTAssertNil(
+                    name.map { String(cString: $0) },
+                    "non-type metadata kind 0x\(String(kind, radix: 16)) must produce no class name"
+                )
+            }
+        }
+    }
+
     // MARK: - SQ4: free-side live set (retained stay, released disappear)
 
     func test_sq4_free_side_live_set_tracks_retained_vs_released() {
