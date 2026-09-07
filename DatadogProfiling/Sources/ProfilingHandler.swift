@@ -61,18 +61,12 @@ extension ProfilingHandler {
     ) {
         let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
 
-        // When memory profiling is enabled, capture the live-heap snapshot and bundle it as a
-        // `heap.pprof` attachment on this same profile event. Go-aligned model: one event carries
-        // multiple pprof attachments (wall/CPU + heap) that the backend merges into a single
-        // profile, so wall/CPU and memory appear together in the UI instead of as two profiles.
-        let heapPprof = captureHeapProfile ? captureHeapPprof(attributes: attributes) : nil
-
         self.writeProfilingEvent(
             with: profile,
             operation: operation,
             rumEvents: rumEvents,
             attributes: attributes,
-            heapPprof: heapPprof
+            captureHeapProfile: captureHeapProfile
         )
     }
 
@@ -81,7 +75,7 @@ extension ProfilingHandler {
         operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue],
-        heapPprof: Data?
+        captureHeapProfile: Bool
     ) {
         let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
         dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
@@ -106,6 +100,18 @@ extension ProfilingHandler {
 
         let pprof = Data(bytes: data, count: serializedProfileSize)
         dd_pprof_free_serialized_data(data)
+
+        // Capture the heap only now that the CPU profile is known writable. Capturing it earlier
+        // would drain the native alloc window (capture-and-reset) into a payload the guards above
+        // then discard, permanently losing that window's `alloc_*` — and `sendProfile` advances
+        // `memoryWindowStart` as though it had been covered.
+        //
+        // Go-aligned model: one event carries multiple pprof attachments (wall/CPU + heap) that the
+        // backend merges into a single profile, so wall/CPU and memory appear together in the UI
+        // instead of as two profiles.
+        let heapPprof = captureHeapProfile
+            ? heapAttachmentFitting(alongside: serializedProfileSize, attributes: attributes, operation: operation)
+            : nil
 
         featureScope.eventWriteContext { context, writer in
             var attachmentFilenames = [
@@ -137,6 +143,35 @@ extension ProfilingHandler {
                 for: operation
             )
         }
+    }
+
+    /// Captures the heap snapshot for a coupled event, but only if it fits in what the CPU profile
+    /// leaves of the attachment budget. Returns `nil` when there is nothing to attach or no room.
+    ///
+    /// The budget is shared, not per-attachment. All attachments travel in one `ProfileAttachments`
+    /// metadata block, which the core writer caps at `performance.maxObjectSize`; `Data` fields are
+    /// JSON-encoded as base64, so the encoded block is ~4/3 of the raw bytes. Exceeding the cap does
+    /// not fail loudly — `FileWriter` logs, writes the event *without* its metadata, and the upload
+    /// is then rejected for missing metadata, all while this method's caller has already reported a
+    /// successful profile. Keeping the raw total inside `maxObjectSize` keeps the encoded block
+    /// inside the writer's larger limit with room to spare.
+    ///
+    /// When the heap does not fit, the CPU profile is still written: the heap is the supplementary
+    /// attachment, so dropping it preserves the more valuable payload rather than losing both.
+    private func heapAttachmentFitting(
+        alongside serializedProfileSize: Int,
+        attributes: [AttributeKey: AttributeValue],
+        operation: ProfilingOperation
+    ) -> Data? {
+        guard let heapPprof = captureHeapPprof(attributes: attributes) else {
+            return nil
+        }
+        let budget = Int(ProfilerFeature.Constants.maxObjectSize)
+        guard serializedProfileSize + heapPprof.count <= budget else {
+            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
+            return nil
+        }
+        return heapPprof
     }
 
     /// Captures a live-heap snapshot on the profiling queue and serializes it to `heap.pprof`
@@ -207,6 +242,15 @@ extension ProfilingHandler {
     ) {
         let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
         guard let heapPprof = captureHeapPprof(attributes: attributes) else {
+            return
+        }
+
+        // Same shared attachment budget as the coupled path — see `heapAttachmentFitting`. Here the
+        // heap is the *only* pprof, so there is nothing to fall back to: an oversized snapshot is
+        // dropped outright rather than written into a metadata block the writer would silently
+        // discard, leaving an event that can never upload.
+        guard heapPprof.count <= Int(ProfilerFeature.Constants.maxObjectSize) else {
+            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
             return
         }
 

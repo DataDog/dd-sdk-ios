@@ -49,8 +49,12 @@ std::atomic<uint64_t> g_alloc_invocations{0};
 std::atomic<uint64_t> g_dealloc_invocations{0};
 std::atomic<uint64_t> g_dealloc_object_invocations{0};
 std::atomic<uint64_t> g_reentrant_skips{0};
-/// Times a type name was actually resolved. Only the sampled path resolves,
-/// so this stays orders of magnitude below g_alloc_invocations.
+/// Type-name resolution *attempts* — one per call to resolve_type_name,
+/// counted before the non-type, cache-hit and saturation early-outs, so it is
+/// an upper bound on work rather than a count of names produced. That is the
+/// quantity the hot-path guarantee is about: only sampled allocations may ask
+/// for a name at all, so this stays orders of magnitude below
+/// g_alloc_invocations.
 std::atomic<uint64_t> g_name_resolutions{0};
 std::atomic<bool> g_alloc_bound{false};
 std::atomic<bool> g_dealloc_bound{false};
@@ -148,18 +152,17 @@ const char *resolve_type_name(HeapMetadata *metadata) {
     if (is_non_type_metadata(metadata)) {
         return nullptr;
     }
-    // Saturation short-circuit. Once every slot is taken no further type can be
-    // admitted, and without this flag each unknown type would probe the whole
-    // cache, take the global mutex, probe it again, and still resolve nothing.
-    // One relaxed load replaces all of that.
-    if (g_name_cache_saturated.load(std::memory_order_relaxed)) {
-        return nullptr;
-    }
     const void *key = static_cast<const void *>(metadata);
     const size_t start = name_bucket(key);
 
     // Lock-free read probe. An empty slot terminates the chain (nothing was
     // ever inserted past it for this bucket).
+    //
+    // Runs BEFORE the saturation check on purpose. Saturation means no *new*
+    // type can be admitted; it must not stop types already in the cache from
+    // resolving. Checking the flag first would throw away every name the cache
+    // had learned the moment it filled up, turning a bounded loss of new types
+    // into a total, permanent loss of type attribution.
     for (size_t i = 0; i < NAME_CACHE_CAPACITY; ++i) {
         NameCacheEntry &e = g_name_cache[(start + i) & (NAME_CACHE_CAPACITY - 1)];
         const void *m = e.metadata.load(std::memory_order_acquire);
@@ -169,6 +172,14 @@ const char *resolve_type_name(HeapMetadata *metadata) {
         if (m == nullptr) {
             break;
         }
+    }
+
+    // Saturation short-circuit for a type the probe above did not find. Once
+    // every slot is taken no further type can be admitted, and without this flag
+    // each unknown type would take the global mutex, probe the full cache again,
+    // and still resolve nothing. One relaxed load replaces all of that.
+    if (g_name_cache_saturated.load(std::memory_order_relaxed)) {
+        return nullptr;
     }
 
     // Resolve the runtime symbol once.
@@ -210,7 +221,7 @@ const char *resolve_type_name(HeapMetadata *metadata) {
 
 /// C-linkage adapter so the sampler can resolve the type name lazily, on the
 /// sampled path only. `context` is the HeapMetadata pointer.
-extern "C" const char *swift_alloc_resolve_class_name(void *context) {
+extern "C" const char *dd_swift_alloc_resolve_class_name(void *context) {
     return resolve_type_name(static_cast<HeapMetadata *>(context));
 }
 
@@ -250,7 +261,7 @@ HeapObject *trampoline_alloc(HeapMetadata *metadata, size_t size, size_t alignMa
     dd_memory_observe_allocation_resolved(
         static_cast<const void *>(obj),
         static_cast<uint64_t>(size),
-        &swift_alloc_resolve_class_name,
+        &dd_swift_alloc_resolve_class_name,
         static_cast<void *>(metadata),
         DD_MEMORY_SOURCE_SWIFT);
 

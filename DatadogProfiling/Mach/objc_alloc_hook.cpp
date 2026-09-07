@@ -181,9 +181,16 @@ extern "C" dd_objc_alloc_hook_status_t dd_objc_alloc_hook_start(uint64_t poisson
 }
 
 extern "C" void dd_objc_alloc_hook_stop(void) {
-    if (!g_swizzle_enabled.exchange(false, std::memory_order_acq_rel)) {
-        return;
-    }
+    // Deliberately NOT gated on whether this path was the one observing. The
+    // shared sampler can be running because the *Swift* path started it — the
+    // two install independently and either one alone is treated as success — and
+    // this is the only stop entry point that disables it (dd_swift_alloc_hook_stop
+    // just clears its own flag). Returning early when our swizzle never installed
+    // would leave the sampler enabled with its live set intact, so a caller that
+    // stopped both paths to honour revoked tracking consent would keep the
+    // sampled data resident and hand it to the next session. Both operations
+    // below are idempotent, so running them unconditionally is safe.
+    g_swizzle_enabled.store(false, std::memory_order_release);
 
     // Never-restore discipline: leave the +allocWithZone: / -dealloc trampolines
     // installed and forwarding to the implementation captured at install time.

@@ -308,13 +308,6 @@ void dd_profiler_set_server_time_offset_ns(int64_t offset_ns);
  */
 void dd_profiler_destroy(void);
 
-/**
- * @brief Reads the memory profiling sample rate from UserDefaults.
- *
- * @return The memory sample rate as a double (0.0–100.0), or 0.0 if not set or invalid.
- */
-double read_profiling_memory_sample_rate(void);
-
 #ifdef __cplusplus
 }
 #endif

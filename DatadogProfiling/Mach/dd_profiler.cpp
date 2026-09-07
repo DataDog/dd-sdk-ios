@@ -164,7 +164,7 @@ static double read_profiling_sample_rate() {
  *
  * @return The memory sample rate as a double, or 0.0 if not found or invalid
  */
-double read_profiling_memory_sample_rate() {
+static double read_profiling_memory_sample_rate() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef key = CFSTR(DD_MEMORY_SAMPLE_RATE_KEY);
     CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);

@@ -401,7 +401,19 @@ void relieve_pressure_locked(size_t final_occupancy) {
     if (!g_pressure_adaptation_enabled.load(std::memory_order_relaxed) || g_rate_multiplier <= 1) {
         return;
     }
-    if (final_occupancy > static_cast<size_t>(ALLOC_WINDOW_CAPACITY * PRESSURE_RELIEF_FRACTION)) {
+    // Relief must be judged on the same signal widening reacts to: the greater
+    // of the two fixed-capacity structures. Only the window drains each
+    // emission — the live table does not, and a large long-lived sampled set
+    // holds it near capacity indefinitely. Narrowing on the drained window
+    // alone would step the interval back down every window while the live table
+    // stayed saturated, so drop-new would go on censoring `inuse_*` at exactly
+    // the rate the controller had already widened to escape. Both structures
+    // share a capacity, so one relief fraction covers them.
+    const size_t live_occupancy = static_cast<size_t>(
+        g_live_sampled_allocations.load(std::memory_order_relaxed)
+    );
+    const size_t occupancy = final_occupancy > live_occupancy ? final_occupancy : live_occupancy;
+    if (occupancy > static_cast<size_t>(ALLOC_WINDOW_CAPACITY * PRESSURE_RELIEF_FRACTION)) {
         return;
     }
 
@@ -801,23 +813,38 @@ bool ensure_sample_table_allocated() {
     if (mem == MAP_FAILED) {
         return false;
     }
-    g_samples = static_cast<sample_entry*>(mem);
-    // mmap provides storage, but C++ object lifetime still begins through
-    // placement construction so atomics and per-entry locks are initialized.
-    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
-        new (&g_samples[i]) sample_entry();
-    }
-
     // Per-window allocation log. dd_memory_sample_t is a plain C struct, so the
     // zero-filled mmap pages are already a valid initial state — no placement new.
+    //
+    // Mapped BEFORE publishing g_samples so this function is all-or-nothing. The
+    // early-out at the top keys off g_samples alone, so publishing it first and
+    // then failing here would latch a half-initialised state: every later call
+    // would short-circuit and return true, dd_memory_profiler_start_passive
+    // would report success with a null alloc window, and the profiler would run
+    // permanently unable to record alloc_* — with back-pressure disabled too,
+    // since note_pressure_locked is only reached when the window exists. Silent
+    // and unrecoverable for the life of the process.
     const size_t alloc_bytes = sizeof(dd_memory_sample_t) * ALLOC_WINDOW_CAPACITY;
     void* alloc_mem = mmap(nullptr, alloc_bytes, PROT_READ | PROT_WRITE,
                            MAP_ANON | MAP_PRIVATE, -1, 0);
     if (alloc_mem == MAP_FAILED) {
+        // Release the sample table rather than leaking it: this call failed, and
+        // the next one must start from a clean slate to have any chance.
+        munmap(mem, bytes);
         return false;
     }
+
+    // mmap provides storage, but C++ object lifetime still begins through
+    // placement construction so atomics and per-entry locks are initialized.
+    sample_entry* samples = static_cast<sample_entry*>(mem);
+    for (size_t i = 0; i < SAMPLE_TABLE_CAPACITY; ++i) {
+        new (&samples[i]) sample_entry();
+    }
+
     g_alloc_window = static_cast<dd_memory_sample_t*>(alloc_mem);
     g_alloc_window_count = 0;
+    // Published last: g_samples is the "initialised" flag for the early-out.
+    g_samples = samples;
     return true;
 }
 

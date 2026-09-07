@@ -58,7 +58,13 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         )
 
         Self.setProfilingEnabled(in: userDefaults)
-        Self.setMemory(sampleRate: configuration.memorySampleRate, in: userDefaults)
+        // Persist the debug-adjusted rate, matching `setAppLaunch` below. This value is read by the
+        // pre-`main` constructor on the NEXT launch to decide whether to install interception during
+        // app launch; persisting the raw rate instead would leave a `debugSDK` session sampled fully
+        // in for its own lifetime while the launch window it cares about still drew at, say, 1%.
+        // The opt-in guard above keeps `memorySampleRate` at 0 when the customer never configured
+        // it, so this cannot silently enable the feature for the next launch either.
+        Self.setMemory(sampleRate: memorySampleRate, in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
         let datadogProfiler = DatadogProfiler(

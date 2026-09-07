@@ -88,6 +88,58 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_MEMORY_SAMPLE_RATE_KEY) as? SampleRate, 0)
     }
 
+    /// The persisted rate is what the pre-`main` constructor draws against on the NEXT launch, so it
+    /// must carry the same `debugSDK` boost the in-process sampler gets. Persisting the raw rate
+    /// instead left a debug session fully sampled in for its own lifetime while the app-launch
+    /// window it exists to capture still drew at the configured rate — 1% in a typical E2E setup.
+    func testInit_persistsDebugBoostedMemorySampleRate() {
+        // Given
+        userDefaults.removeObject(forKey: DD_MEMORY_SAMPLE_RATE_KEY)
+
+        var configuration = Profiling.Configuration(memorySampleRate: 1)
+        configuration.debugSDK = true
+
+        // When
+        _ = ProfilerFeature(
+            core: core,
+            configuration: configuration,
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+
+        // Then
+        XCTAssertEqual(
+            userDefaults.value(forKey: DD_MEMORY_SAMPLE_RATE_KEY) as? SampleRate, .maxSampleRate,
+            "debugSDK must boost the rate persisted for the next launch, not just this session's sampler"
+        )
+    }
+
+    /// The boost is opt-in-preserving: `debugSDK` must never turn on a feature the customer left at
+    /// zero, for this session or the next launch.
+    func testInit_debugSDKDoesNotEnableMemoryProfiling_whenUnconfigured() {
+        // Given
+        userDefaults.removeObject(forKey: DD_MEMORY_SAMPLE_RATE_KEY)
+
+        var configuration = Profiling.Configuration(memorySampleRate: 0)
+        configuration.debugSDK = true
+
+        // When
+        _ = ProfilerFeature(
+            core: core,
+            configuration: configuration,
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+
+        // Then
+        XCTAssertEqual(
+            userDefaults.value(forKey: DD_MEMORY_SAMPLE_RATE_KEY) as? SampleRate, 0,
+            "debugSDK must not silently enable an opt-in feature for the next launch"
+        )
+    }
+
     func testInit_setsSampleRateValue() {
         // Given
         userDefaults.setValue(SampleRate(20), forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)

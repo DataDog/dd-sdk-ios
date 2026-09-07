@@ -47,8 +47,10 @@ internal struct SwiftAllocDiagnostics: Sendable {
     let deallocInvocations: UInt64
     let deallocObjectInvocations: UInt64
     let reentrantSkips: UInt64
-    /// Times the type name was actually resolved. Resolution runs only on the
-    /// sampled path, so this stays far below `allocInvocations`.
+    /// Type-name resolution *attempts*, counted before the cache-hit and
+    /// non-type early-outs — an upper bound on work, not a count of names
+    /// produced. Only sampled allocations attempt resolution at all, so this
+    /// stays far below `allocInvocations`.
     let nameResolutions: UInt64
     let allocBound: Bool
     let deallocBound: Bool
