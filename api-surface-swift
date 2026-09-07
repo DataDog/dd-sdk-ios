@@ -1568,6 +1568,19 @@ public struct SessionReplayPrivacyView<Content: View>: View
 # API surface for DatadogFlags:
 # ----------------------------------
 
+[?] extension Flags
+    public struct AssignmentRequestFetch: Sendable
+        public struct Response: Sendable
+            public let data: Data
+            public let httpResponse: HTTPURLResponse
+            public init(data: Data, httpResponse: HTTPURLResponse)
+        public typealias Completion = @Sendable (Result<Response, Error>) -> Void
+        public typealias Cancellation = @Sendable () -> Void
+        public init(_ fetch: @escaping @Sendable (URLRequest,@escaping Completion) -> Cancellation)
+        public func callAsFunction(_ request: URLRequest,completion: @escaping Completion) -> Cancellation
+        public static func urlSession() -> Self
+        public static func urlSession(_ session: URLSession) -> Self
+        public func withTimeout(_ timeout: TimeInterval) -> Self
 public final class FlagsClient
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
@@ -1625,6 +1638,8 @@ public enum Flags
         public var gracefulModeEnabled: Bool
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
+        public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
+        public var assignmentRequestTimeout: TimeInterval
         public var customExposureEndpoint: URL?
         public var trackExposures: Bool
         public var customEvaluationEndpoint: URL?

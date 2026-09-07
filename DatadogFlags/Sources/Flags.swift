@@ -58,6 +58,24 @@ public enum Flags {
         /// Default: `nil`.
         public var customFlagsHeaders: [String: String]?
 
+        /// A custom transport used only to retrieve precomputed flag assignments.
+        ///
+        /// The SDK constructs the URL, body, authentication, and custom headers. Exposure and evaluation uploads do
+        /// not use this transport. Use `AssignmentRequestFetch.urlSession().withTimeout(_:)` to compose a timeout.
+        /// The application retains ownership of a supplied `URLSession` and other transport resources.
+        ///
+        /// Default: `nil` (use the SDK transport).
+        public var assignmentRequestFetch: Flags.AssignmentRequestFetch?
+
+        /// The timeout for a request that retrieves precomputed flag assignments.
+        ///
+        /// The timeout includes the complete response-body download. Set this value to `0` to disable the SDK
+        /// timeout. A negative or non-finite value also disables it. Values greater than `2_147_483.647` seconds are
+        /// reduced to this maximum. A custom `assignmentRequestFetch` replaces this setting.
+        ///
+        /// Default: `0` (disabled).
+        public var assignmentRequestTimeout: TimeInterval
+
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
@@ -122,6 +140,8 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
+            self.assignmentRequestFetch = nil
+            self.assignmentRequestTimeout = 0
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint
