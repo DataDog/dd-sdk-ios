@@ -139,7 +139,7 @@ flowchart TD
 - **`DatadogProfiling/Sources/DatadogProfiler.swift`** - App-launch, Continuous, and Custom Profiling state machine. Owns the native profiler lifecycle, handles RUM messages, and flushes profiles.
 - **`DatadogProfiling/Sources/ProfilingSamplerProvider.swift`** - Stores continuous profiling configuration and session-linked sampling decisions.
 - **`DatadogProfiling/Sources/ProfilingQuotaChecker.swift`** - Checks session-scoped profiling quota admission.
-- **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** - Blocks profiling in low battery, Low Power Mode, or background conditions.
+- **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** - Blocks CPU profiling, and memory profile *uploads*, in low battery, Low Power Mode, or background conditions. Memory *recording* is not blocked — see Runtime Conditions.
 
 ### Event Writing and Upload
 - **`DatadogProfiling/Sources/ProfilingHandler.swift`** - Shared write path for app-launch and continuous profiles. Serializes pprof data and RUM events into a profile event.
@@ -161,12 +161,21 @@ flowchart TD
 - **Operations**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Sampled operation steps are attached to the continuous profile while Continuous Profiling is running.
 
 ### Runtime Conditions
-Profiling is suspended when `ProfilingConditions` sees any blocker:
+CPU profiling is suspended when `ProfilingConditions` sees any blocker:
 - Battery is below 10% and not charging.
 - Low Power Mode is enabled.
 - The app is in the background.
 
 Continuous profiles are also flushed when the app backgrounds after foreground activity.
+
+#### Memory profiling records through all of them
+Memory profiling is deliberately asymmetric. The CPU profiler must stop under these conditions because its sampling thread actively burns CPU. Allocation interception is passive — a Poisson-sampled table write on allocations the app makes anyway — and costs nothing at all while the process is suspended. So **recording continues in the background, in Low Power Mode, and at low battery**, which is what gives visibility into background allocation growth (background fetch, URLSession completions, silent pushes) — a common route to a jetsam kill.
+
+What the blockers still gate is the *upload*: the periodic emission timer is not kept alive for memory while a blocker is active. Allocations observed meanwhile are not lost — they accumulate in the native alloc window and are attributed to the first window that does emit. A long accumulation widens the sampling interval under back-pressure rather than dropping samples.
+
+The flush triggered by the background transition itself still carries its heap, since it closes out the foreground window. A further context update arriving while *already* backgrounded does not re-emit, so the same live set is never uploaded twice.
+
+Memory recording stops only for reasons that are terminal for the session: tracking consent `.notGranted`, the RUM-composed memory decision sampling out, an interception install failure, or a quota rejection. Each of those clears the sample table, which is correct — a stop-and-restart is a genuinely fresh session rather than a resumed one with an invisible gap in its sampling. This is why background is *not* on that list: tearing recording down and restarting it would clear the live set on every background round-trip, erasing exactly the long-lived objects `inuse_*` exists to surface.
 
 ### Quota
 `ProfilingQuotaChecker` checks whether the active RUM session is allowed to write profiles after Profiling has RUM session context and granted consent. Temporary quota lookup failures do not block profiling, while explicit quota rejection stops profiling for that session. A new RUM session triggers a fresh quota decision.
@@ -187,7 +196,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 1. Verify `Datadog.initialize()` and `Profiling.enable()` were called.
 2. Verify RUM is enabled and tracking consent is `.granted`; Profiling relies on RUM context for session-linked sampling and quota.
 3. Check `applicationLaunchSampleRate` or `continuousSampleRate` are greater than zero.
-4. Confirm the app is not on watchOS, in Low Power Mode, below the battery threshold, or running only in background.
+4. Confirm the app is not on watchOS, in Low Power Mode, below the battery threshold, or running only in background. (These block CPU profiling and memory uploads; memory keeps recording regardless.)
 5. Ensure the session was not rejected by the profiling quota API.
 
 ### "Continuous profiles are not written even though profiling runs"
@@ -203,7 +212,9 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 5. App launch profiling may stop with `prewarmed` status when iOS app prewarming is detected.
 
 ### "Profiles stop when the app backgrounds"
-This is expected. Background state is a profiling blocker, and the profiler flushes current data when the app transitions to background after foreground activity.
+This is expected for CPU profiling. Background state is a blocker, and the profiler flushes current data when the app transitions to background after foreground activity.
+
+Memory profiling is different: it keeps recording while backgrounded and only defers the upload. If heap data seems to be missing for a background period, expect it to appear attributed to the first window emitted after the app returns to the foreground, not as its own background window.
 
 ## Feature Interactions
 

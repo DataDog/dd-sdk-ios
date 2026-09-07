@@ -96,6 +96,11 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     /// Tracks profiler stops caused by quota rejection so a later session quota reset can
     /// restart profiling without waiting for an unrelated app-state or condition change.
     private var isStoppedByQuota = false
+    /// Whether the heap has already been emitted since profiling conditions were last lost.
+    /// Memory keeps recording in the background, so without this latch every flush arriving while
+    /// conditions are blocked would upload the same live set again as a fresh profile.
+    /// Re-armed on a genuine return to use (conditions restored and the app `.active`).
+    private var hasEmittedHeapSinceConditionsLost = false
 
     init(
         core: DatadogCoreProtocol,
@@ -261,6 +266,14 @@ private extension DatadogProfiler {
             let previousConditions = hasConditionsToProfile
             hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
             let currentAppState = context.applicationStateHistory.currentState
+            // Re-arm the closing heap emission only on a genuine return to use. `.active` is
+            // required rather than merely `hasConditionsToProfile`: `ProfilingConditions` does not
+            // treat `.inactive` as a blocker, so `background → inactive → background` — the user
+            // starting to foreground the app and abandoning it — would otherwise re-arm
+            // mid-flicker and upload the same live set twice.
+            if hasConditionsToProfile, currentAppState == .active {
+                hasEmittedHeapSinceConditionsLost = false
+            }
             defer { previousAppState = currentAppState }
 
             // Consume the launch grace once the RUM memory decision is definitive.
@@ -382,7 +395,7 @@ private extension DatadogProfiler {
     /// `canProfile` must already account for tracking consent, quota, and runtime conditions.
     /// Profiles stopped without being sent are discarded.
     func updateProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
-        if !canProfile, !shouldRunMemoryProfiling() {
+        if !canProfile, !shouldEmitMemoryProfile {
             // Only stop the timer if memory profiling doesn't still need it (heap-only emission).
             stopTimer()
         }
@@ -419,7 +432,7 @@ private extension DatadogProfiler {
             }
             // Memory can emit even when the CPU profiler isn't started (e.g. continuous sampled
             // out): keep the timer alive so a heap-only profile is uploaded on the window boundary.
-            if timer == nil, shouldRunMemoryProfiling() {
+            if timer == nil, shouldEmitMemoryProfile {
                 startTimer()
             }
         case .running:
@@ -440,13 +453,14 @@ private extension DatadogProfiler {
         let cpuProfile = dd_profiler_flush_and_get_profile()
         defer { if let cpuProfile { dd_pprof_destroy(cpuProfile) } }
 
-        // Emit the heap snapshot only when memory sampling is active AND there is a RUM event of
-        // interest to correlate with this window (vital / hang / long task) — the same signal the
-        // CPU `canWriteProfile` gate keys off. On an empty window the snapshot is skipped: the live
-        // set is a point-in-time view that carries forward, and the alloc window keeps accumulating
-        // (its capture-and-reset lives in `captureHeapPprof`, which we don't call here), so the next
-        // window with an event covers the full span. Nothing is lost; write/upload work is saved.
-        let wantsHeap = isMemoryProfilingRunning && hasRUMEventsOfInterest
+        // Emit the heap snapshot only when memory sampling is active, this window may still emit
+        // one (see `canEmitHeapSnapshot`), AND there is a RUM event of interest to correlate with
+        // (vital / hang / long task) — the same signal the CPU `canWriteProfile` gate keys off. On a
+        // skipped window the snapshot is not taken: the live set is a point-in-time view that
+        // carries forward, and the alloc window keeps accumulating (its capture-and-reset lives in
+        // `captureHeapPprof`, which we don't call here), so the next emitted window covers the full
+        // span. Nothing is lost; write/upload work is saved.
+        let wantsHeap = isMemoryProfilingRunning && hasRUMEventsOfInterest && canEmitHeapSnapshot
 
         if let cpuProfile {
             if canWriteProfile {
@@ -493,6 +507,11 @@ private extension DatadogProfiler {
         // untouched so the accumulated allocations are attributed to the next emitted window.
         if wantsHeap {
             memoryWindowStart = windowEnd
+            // Spend the one emission allowed while conditions are lost; re-armed in
+            // `handle(context:)` on a return to use.
+            if !hasConditionsToProfile {
+                hasEmittedHeapSinceConditionsLost = true
+            }
         }
 
         cleanUpState()
@@ -569,7 +588,7 @@ private extension DatadogProfiler {
         // exit path so heap-only windows keep emitting after launch; the CPU profiler is intentionally
         // NOT restarted here.
         defer {
-            if timer == nil, shouldRunMemoryProfiling() {
+            if timer == nil, shouldEmitMemoryProfile {
                 startTimer()
             }
         }
@@ -698,10 +717,20 @@ private extension DatadogProfiler {
     }
 
     /// Whether memory (heap) profiling should currently be sampling — independent of the
-    /// continuous/custom CPU decision. Requires: tracking consent not denied, memory configured,
-    /// not quota-rejected, foreground conditions met (`hasConditionsToProfile` is false in
-    /// background / Low Power / low battery), and the RUM-composed memory session decision
-    /// sampled-in (or still in the launch grace).
+    /// continuous/custom CPU decision, and deliberately NOT gated on `hasConditionsToProfile`.
+    ///
+    /// Unlike the CPU profiler — whose sampling thread actively burns CPU and must stop in
+    /// background / Low Power / low battery — allocation interception is passive: a Poisson-sampled
+    /// table write on allocations the app makes anyway, costing nothing while the process is
+    /// suspended. Recording therefore continues through every environmental condition, and
+    /// `shouldEmitMemoryProfile` gates the part that does cost battery: the upload.
+    ///
+    /// That is also what preserves the live set. A stop followed by a start takes the native
+    /// `start_new_session()` path, which clears the sample table — so a background round-trip used
+    /// to erase every long-lived object, i.e. precisely the objects `inuse_*` exists to surface.
+    /// The conditions that DO stop memory profiling (consent revoked, sampled out, install failure,
+    /// quota rejection) are ones where clearing is the correct semantics, so no window ever ships
+    /// with a silent hole in it.
     ///
     /// Consent is checked here — not only in `shouldKeepProfilerRunning()` — because memory
     /// profiling has its own lifecycle: `.notGranted` must uninstall the interception outright,
@@ -710,8 +739,7 @@ private extension DatadogProfiler {
         guard isTrackingConsentAllowed,
               !hasMemoryInterceptionFailed,
               profilingSamplerProvider.isMemoryProfilingConfigured,
-              !quotaChecker.isRejectedByQuota,
-              hasConditionsToProfile else {
+              !quotaChecker.isRejectedByQuota else {
             return false
         }
         switch profilingSamplerProvider.memoryProfilingSampled {
@@ -722,6 +750,34 @@ private extension DatadogProfiler {
         case .none: // Waiting for the RUM decision — run optimistically during the launch grace.
             return isMemoryProfilingGraceAvailable
         }
+    }
+
+    /// Whether the periodic emission timer should be kept alive for memory profiling.
+    ///
+    /// Recording is passive and continues regardless of conditions (see
+    /// `shouldRunMemoryProfiling()`), but uploading costs battery, so the timer stays gated on the
+    /// full `ProfilingConditions` set. Keying it off the recording gate instead would leave it
+    /// firing every interval while backgrounded — flushing a null CPU profile and emitting
+    /// `shouldReportProfileAbsence` telemetry for windows that were never going to upload.
+    ///
+    /// Allocations observed while the timer is held off are not lost: they accumulate in the native
+    /// alloc window (capture-and-reset, drained only when a profile is actually emitted) and are
+    /// attributed to the first window that does emit. A long accumulation widens the sampling
+    /// interval under back-pressure rather than dropping samples.
+    var shouldEmitMemoryProfile: Bool {
+        shouldRunMemoryProfiling() && hasConditionsToProfile
+    }
+
+    /// Whether the window currently being closed may still carry a heap snapshot.
+    ///
+    /// Not `shouldEmitMemoryProfile`: the flush triggered by the background transition is what
+    /// closes out the foreground window, and `hasConditionsToProfile` has already flipped false by
+    /// the time it runs — gating on it alone would drop that window's heap. Since recording now
+    /// continues in the background, the latch instead allows exactly one emission once conditions
+    /// are lost and none until they return, so no later flush re-uploads the same live set and
+    /// double-counts the memory in the product.
+    var canEmitHeapSnapshot: Bool {
+        hasConditionsToProfile || !hasEmittedHeapSinceConditionsLost
     }
 
     /// Reconciles the memory interception state with `shouldRunMemoryProfiling()`, starting or
@@ -738,6 +794,15 @@ private extension DatadogProfiler {
                 return
             }
             isMemoryProfilingRunning = true
+            // A start from a stopped state takes the native `start_new_session()` path, which
+            // clears the sample table and the alloc window, so this window's data begins now.
+            // Without advancing, a restart after a quota rejection would keep a `memoryWindowStart`
+            // from before the rejection and claim to cover a span it holds no samples for.
+            //
+            // Launch adoption does not reach here: `isMemoryProfilingRunning` is seeded from
+            // `dd_memory_profiler_is_running()`, so an already-running pre-`main` sampler takes no
+            // start branch and keeps its original window start.
+            memoryWindowStart = dateProvider.now
         } else if !shouldRun, isMemoryProfilingRunning {
             stopMemoryProfiling()
             isMemoryProfilingRunning = false
