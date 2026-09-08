@@ -8,40 +8,47 @@
 import AppKit
 import DatadogInternal
 
-/// Protocol defining the predicate for UIKit view controller tracking in RUM.
+/// Protocol defining the predicate for AppKit view controller tracking in RUM.
 ///
-/// The SDK uses this predicate to determine whether a `UIViewController` should be
+/// The SDK uses this predicate to determine whether a `NSViewController` should be
 /// tracked as a RUM view. When a view controller appears, the SDK asks this predicate
 /// whether to track it and how to represent it in the RUM Explorer.
 ///
 /// Implement this protocol to customize which view controllers are tracked and how they
 /// appear in the RUM Explorer.
 public protocol AppKitRUMViewsPredicate {
-    /// Converts a `UIViewController` into RUM view parameters, or filters it out.
+    /// Converts a `NSViewController` into RUM view parameters, or filters it out.
     ///
     /// - Parameter viewController: The view controller that has appeared in the UI.
     /// - Returns: RUM view parameters if the view controller should be tracked, or `nil` to ignore it.
     func rumView(for viewController: NSViewController) -> RUMView?
 }
 
-/// Default implementation of `UIKitRUMViewsPredicate`.
+/// Default implementation of `AppKitRUMViewsPredicate`.
 ///
 /// This implementation tracks view controllers with their class names as view names.
-/// System container controllers from UIKit are automatically filtered out.
+/// System container controllers from AppKit are automatically filtered out.
 public struct DefaultAppKitRUMViewsPredicate: AppKitRUMViewsPredicate {
     public init () {}
 
     public func rumView(for viewController: NSViewController) -> RUMView? {
         guard !Bundle(for: type(of: viewController)).dd.isAppKit || viewController.isUIAlertController else {
             // Part of our heuristic for (auto) tracking view controllers is to ignore
-            // container view controllers coming from `UIKit` if they are not subclassed.
-            // This condition is wider and it ignores all view controllers defined in `UIKit` bundle.
+            // container view controllers coming from `AppKit` if they are not subclassed.
+            // This condition is wider and it ignores all view controllers defined in `AppKit` bundle.
+            return nil
+        }
+
+        guard !(viewController is NSCollectionViewItem) else {
+            // Collection view items are view controllers. To avoid a whole lot of views
+            // being created when a collection view shows up, and is scrolled, all the
+            // view controllers that are, or extend, NSCollectionViewItem are ignored.
             return nil
         }
 
         guard !Bundle(for: type(of: viewController)).dd.isSwiftUI || viewController.isUIAlertController else {
             // `SwiftUI` requires manual instrumentation in views. Therefore, all SwiftUI
-            // `UIKit` containers (e.g. `UIHostingController`) will be ignored from
+            // `AppKit` containers (e.g. `NSHostingController`) will be ignored from
             // auto-instrumentation.
             // This condition is wider and it ignores all view controllers defined in `SwiftUI` bundle.
             return nil
