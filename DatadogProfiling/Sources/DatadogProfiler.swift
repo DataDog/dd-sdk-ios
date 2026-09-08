@@ -337,7 +337,7 @@ private extension DatadogProfiler {
         let shouldSendCurrentProfile = shouldSendProfile || (hasTimedOut && canProfile && !isCustomProfiling)
         if shouldSendCurrentProfile {
             sendProfile()
-        } else if !canProfile {
+        } else if !canProfile && !shouldWaitForAppLaunchVital {
             discardCurrentProfile()
             cleanUpState()
         }
@@ -565,6 +565,9 @@ private extension DatadogProfiler {
         // If continuous profiling samples out before TTID, keep the native profiler
         // briefly so it can harvest the launch profile.
         isAppLaunchProfilingEnabled
+            && isTrackingConsentAllowed
+            && !quotaChecker.isRejectedByQuota
+            && hasConditionsToProfile
             && hasReceivedAppLaunchVital == false
             && dateProvider.now.timeIntervalSince(profileStartDate) < Constants.cutOffTime
     }

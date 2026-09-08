@@ -773,24 +773,32 @@ uint64_t mach_sampling_profiler::thread_cpu_time_delta_nanos(thread_t thread, ui
         return 0;
     }
 
-    auto result = cpu_time_baselines.emplace(
-        thread_id,
-        cpu_time_baseline{current_cpu_time_nanos, cpu_time_sampling_cycle}
-    );
-    if (result.second) {
+    try {
+        auto result = cpu_time_baselines.try_emplace(
+            thread_id,
+            cpu_time_baseline{current_cpu_time_nanos, cpu_time_sampling_cycle}
+        );
+        if (result.second) {
+            return 0;
+        }
+
+        cpu_time_baseline& baseline = result.first->second;
+        const uint64_t previous_cpu_time_nanos = baseline.cumulative_nanos;
+        baseline.cumulative_nanos = current_cpu_time_nanos;
+        baseline.last_seen_cycle = cpu_time_sampling_cycle;
+
+        if (current_cpu_time_nanos < previous_cpu_time_nanos) {
+            return 0;
+        }
+
+        return current_cpu_time_nanos - previous_cpu_time_nanos;
+    } catch (const std::bad_alloc&) {
+        // CPU-time bookkeeping is best-effort. Keep wall-time profiling active
+        // instead of letting an allocation failure escape the sampling pthread.
+        config.record_cpu_time = 0;
+        cpu_time_baselines.clear();
         return 0;
     }
-
-    cpu_time_baseline& baseline = result.first->second;
-    const uint64_t previous_cpu_time_nanos = baseline.cumulative_nanos;
-    baseline.cumulative_nanos = current_cpu_time_nanos;
-    baseline.last_seen_cycle = cpu_time_sampling_cycle;
-
-    if (current_cpu_time_nanos < previous_cpu_time_nanos) {
-        return 0;
-    }
-
-    return current_cpu_time_nanos - previous_cpu_time_nanos;
 }
 
 void mach_sampling_profiler::prune_thread_cpu_time_state() {

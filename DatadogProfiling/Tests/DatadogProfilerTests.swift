@@ -844,6 +844,89 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
+    func testReceiveContext_preservesLaunchSamplesUntilTTID_whenOnlyAppLaunchProfilingIsEnabled() throws {
+        // Given - native launch profiling starts before the SDK receives its first foreground context.
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profiler = customProfiler(isAppLaunchProfilingEnabled: true)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        let launchTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        launchTrace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
+        dd_free(launchTrace)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+
+        // When - the foreground context arrives with continuous profiling disabled.
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+
+        // Then - sampling stops, but the captured launch profile remains available for TTID.
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+
+        // When - TTID arrives within the app-launch grace period.
+        waitForProfileWrite(timeout: 1.0) {
+            _ = profiler.receive(
+                message: .payload(TTIDMessage(
+                    attributes: mockRandomAttributes(),
+                    ttid: .mockWith(id: "ttid-id", stepType: nil)
+                )),
+                from: core
+            )
+            flushQueue()
+        }
+
+        // Then - the preserved profile is written as the app-launch profile.
+        XCTAssertEqual(core.events.count, 1)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(
+            eventIDs(ofType: "vital", in: try typedRUMEvents(from: metadata)),
+            ["ttid-id"]
+        )
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertTrue(event.tags.contains("operation:launch"))
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_discardsLaunchSamples_whenTTIDGracePeriodHasExpired() {
+        // Given
+        let dateProvider = DateProviderMock()
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profiler = customProfiler(
+            isAppLaunchProfilingEnabled: true,
+            dateProvider: dateProvider
+        )
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        let launchTrace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        launchTrace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(dd_profiler_get_profile(), launchTrace, 1)
+        dd_free(launchTrace)
+        XCTAssertGreaterThan(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+
+        dateProvider.now = dateProvider.now.addingTimeInterval(DatadogProfiler.Constants.cutOffTime + 1)
+
+        // When
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+
+        // Then
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+        XCTAssertEqual(dd_pprof_sample_count(dd_profiler_get_profile()), 0)
+        XCTAssertTrue(core.metadata.isEmpty)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testReceiveOperationStart_afterContinuousProfilingSamplesOut_doesNotStartCustomProfiling() {
         // Given
         core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
