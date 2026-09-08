@@ -132,6 +132,7 @@ internal class AppRunner {
         processInfo = nil
         notificationCenter = nil
         dateProvider = nil
+        mediaTimeProvider = nil
         appStateProvider = nil
         appLaunchHandler = nil
         core = nil
@@ -142,6 +143,8 @@ internal class AppRunner {
     private var processInfo: ProcessInfoMock!
     private var notificationCenter: NotificationCenter!
     private var dateProvider: DateProviderMock!
+    /// Only set once RUM is enabled (see `enableRUM()`); advanced alongside `dateProvider` in `advanceTime(by:)`.
+    private var mediaTimeProvider: MediaTimeProviderMock?
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!
     #if !os(watchOS)
@@ -216,6 +219,16 @@ internal class AppRunner {
         dateProvider.now.addTimeInterval(interval)
     }
 
+    /// Advances the mocked media-time clock (`CACurrentMediaTimeProvider`) by the specified interval.
+    ///
+    /// Only meant to be called alongside a *real* sleep (see `.waitRealTime(_:)`), since `FirstFrameReader`
+    /// combines this clock with the real, unmocked `CACurrentMediaTime()` from `CADisplayLink` — advancing
+    /// it during a purely simulated time jump (as `advanceTime(by:)` does) would desync it from that real
+    /// clock and corrupt first-frame date calculations for every other test.
+    func advanceMediaTime(by interval: TimeInterval) {
+        mediaTimeProvider?.current += interval
+    }
+
     /// Returns the current simulated time.
     var currentTime: Date { dateProvider.now }
 
@@ -282,7 +295,9 @@ internal class AppRunner {
     func enableRUM(_ rumSetup: RUMSetup = { _ in }) {
         var config = RUM.Configuration(applicationID: "mock-application-id")
         config.dateProvider = dateProvider
-        config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
+        let mediaTimeProvider = MediaTimeProviderMock(current: 0)
+        self.mediaTimeProvider = mediaTimeProvider
+        config.mediaTimeProvider = mediaTimeProvider
         config.notificationCenter = notificationCenter
         #if !os(watchOS)
         config.frameInfoProviderFactory = { [weak self] in

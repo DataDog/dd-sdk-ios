@@ -51,6 +51,14 @@ class TimeseriesCollectionIntegrationTests: RUMSessionTestsBase {
         return Int(duration / samplingInterval)
     }
 
+    /// Asserts that timestamps across all flushed batches strictly increase and are all distinct, i.e. that
+    /// samples aren't stuck at a frozen clock value.
+    private func assertTimestampsProgress(_ timestampsByBatch: [[Int64]], metric: String) {
+        let all = timestampsByBatch.flatMap { $0 }
+        XCTAssertEqual(all, all.sorted(), "Expected \(metric) timestamps to increase monotonically")
+        XCTAssertEqual(Set(all).count, all.count, "Expected distinct \(metric) timestamps per sample")
+    }
+
     func testGivenTimeseriesEnabled_whenAppIsInForeground_itCollectsMemoryAndCpuAndFlushesOnBackground() throws {
         // Given
         let collectionDuration: TimeInterval = 3.5
@@ -78,6 +86,8 @@ class TimeseriesCollectionIntegrationTests: RUMSessionTestsBase {
         XCTAssertGreaterThan(cpuDataPoints, 0, "Expected at least one CPU data point")
         DDAssertEqual(Double(memoryDataPoints), Double(expected), accuracy: Double(dataPointsTolerance))
         DDAssertEqual(Double(cpuDataPoints), Double(expected), accuracy: Double(dataPointsTolerance))
+        assertTimestampsProgress(memory.map { $0.timeseries.data.timestamps }, metric: "memory")
+        assertTimestampsProgress(cpu.map { $0.timeseries.data.timestamps }, metric: "cpu")
     }
 
     func testGivenTimeseriesEnabled_whenAppBackgroundsAndForegroundsTwice_itPausesAndResumesCollection() throws {
@@ -113,6 +123,8 @@ class TimeseriesCollectionIntegrationTests: RUMSessionTestsBase {
         // One flushed batch per background transition.
         XCTAssertEqual(memory.count, 2, "Expected one flushed batch per background transition")
         XCTAssertEqual(cpu.count, 2, "Expected one flushed batch per background transition")
+        assertTimestampsProgress(memory.map { $0.timeseries.data.timestamps }, metric: "memory")
+        assertTimestampsProgress(cpu.map { $0.timeseries.data.timestamps }, metric: "cpu")
     }
 }
 
