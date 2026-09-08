@@ -178,6 +178,15 @@ void dd_profiler_stop();
  */
 bool dd_profiler_is_running();
 
+/**
+ * Checks whether the profiler successfully started from the process-launch constructor.
+ *
+ * Starting the profiler later with `dd_profiler_start()` does not change this value.
+ *
+ * @return true if profiling started during process launch, false otherwise.
+ */
+bool dd_profiler_was_started_at_launch();
+
 // MARK: - DD Profiler (auto-start) API
 
 /**

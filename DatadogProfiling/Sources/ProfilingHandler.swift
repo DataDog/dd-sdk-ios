@@ -84,11 +84,11 @@ extension ProfilingHandler {
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
-        let durationNs = (end - start).dd.toInt64Nanoseconds
+        let durationMs = (end - start).dd.toInt64Milliseconds
         let size = dd_pprof_serialize(profile, &data)
 
         guard let data else {
-            telemetryController.sendNoData(durationNs: durationNs, for: operation)
+            telemetryController.sendNoData(durationMs: durationMs, for: operation)
             return
         }
 
@@ -133,7 +133,7 @@ extension ProfilingHandler {
             let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(
-                durationNs: durationNs,
+                durationMs: durationMs,
                 fileSize: Int64(clamping: size),
                 for: operation
             )

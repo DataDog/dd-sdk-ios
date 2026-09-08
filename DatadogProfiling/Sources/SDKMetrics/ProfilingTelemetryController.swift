@@ -9,14 +9,6 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
-@_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
-
 internal final class ProfilingTelemetryController {
     /// The default sample rate for "Profiling Session" metric (20%),
     /// applied in addition to the Profiling continuous sample rate (5% by default).
@@ -49,13 +41,18 @@ internal final class ProfilingTelemetryController {
         appStartInfo = context.launchInfo.profilingAppStartInfo
     }
 
+    /// Resets the cycle index used by continuous profiling telemetry.
+    func resetContinuousCycleIndex() {
+        continuousCycleIndex = 0
+    }
+
     /// Sends a metric for a written profile, decorated with shared profiling telemetry state.
-    func sendProfile(durationNs: Int64, fileSize: Int64, for operation: ProfilingOperation) {
+    func sendProfile(durationMs: Int64, fileSize: Int64, for operation: ProfilingOperation) {
         send(
             .init(
                 startReason: operation.startReason,
                 status: .current,
-                durationNs: durationNs,
+                durationMs: durationMs,
                 fileSize: fileSize,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
@@ -64,13 +61,12 @@ internal final class ProfilingTelemetryController {
     }
 
     /// Sends a metric for a profile that could not be serialized.
-    func sendNoData(durationNs: Int64?, for operation: ProfilingOperation) {
+    func sendNoData(durationMs: Int64?, for operation: ProfilingOperation) {
         send(
             .noData(
                 startReason: operation.startReason,
                 status: .current,
-                durationNs: durationNs,
-                errorCode: Int(dd_profiler_get_status().rawValue),
+                durationMs: durationMs,
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
             )
@@ -83,7 +79,6 @@ internal final class ProfilingTelemetryController {
             .noProfile(
                 startReason: operation.startReason,
                 status: .current,
-                errorCode: Int(dd_profiler_get_status().rawValue),
                 cycleIndex: cycleIndex(for: operation),
                 appStartInfo: operation == .appLaunch ? appStartInfo : nil
             )

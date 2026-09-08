@@ -247,8 +247,8 @@ public:
 
         if (!create_profile_and_profiler()) return 0;
 
-        start();
-        return 1;
+        started_at_launch = start() == 1;
+        return started_at_launch ? 1 : 0;
     }
 
     int start() {
@@ -278,6 +278,10 @@ public:
     profile* get_profile() {
         std::lock_guard<std::mutex> lock(profile_mutex);
         return profile;
+    }
+
+    bool was_started_at_launch() const {
+        return started_at_launch;
     }
 
     /**
@@ -407,6 +411,7 @@ private:
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
     int64_t server_time_offset_ns = 0;
     bool record_cpu_time = false;
+    bool started_at_launch = false;
 
     /**
      * Mutex protecting the profile pointer.
@@ -511,6 +516,11 @@ dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
 bool dd_profiler_is_running() {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
     return g_dd_profiler ? g_dd_profiler->status == DD_PROFILER_STATUS_RUNNING : false;
+}
+
+bool dd_profiler_was_started_at_launch() {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    return g_dd_profiler ? g_dd_profiler->was_started_at_launch() : false;
 }
 
 dd_profile_t* dd_profiler_get_profile(void) {
