@@ -26,7 +26,7 @@ aggregation_worker::aggregation_worker(
         worker_qos,
         callback,
         ctx,
-        hard_limit_bytes
+        hard_limit_bytes,
     } {
 }
 
@@ -113,7 +113,7 @@ bool aggregation_worker::request_flush(flush_action_t action) {
 
     flush_barrier barrier{
         flush_id,
-        std::move(action)
+        std::move(action),
     };
 
     if (producer_finished) {
@@ -160,7 +160,7 @@ void aggregation_worker::enqueue_active_buffer(std::vector<stack_trace_t>& activ
             diagnostics.max_pending_bytes = std::max(diagnostics.max_pending_bytes, pending_bytes);
             pending_work.emplace_back(batch_item{
                 std::move(batch),
-                batch_bytes
+                batch_bytes,
             });
         }
     }
