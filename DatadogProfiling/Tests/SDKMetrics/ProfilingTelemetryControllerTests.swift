@@ -15,7 +15,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
 
     func testTrackingProfilingSessionMetric_whileAppLaunchProfilingIsRunning() throws {
         // Given
-        let duration = Int64(123_000_000)
+        let durationMs = Int64(123)
         let fileSize = Int64(1_000_000)
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
@@ -24,7 +24,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
             ProfilingSessionMetric(
                 startReason: .applicationLaunch,
                 status: .running,
-                durationNs: duration,
+                durationMs: durationMs,
                 fileSize: fileSize,
                 appStartInfo: "user_launch"
             )
@@ -33,10 +33,10 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
-        XCTAssertEqual(metric.duration, duration)
+        XCTAssertEqual(metric.duration, durationMs)
         XCTAssertEqual(metric.fileSize, fileSize)
         XCTAssertNil(metric.stoppedReason)
-        XCTAssertNil(metric.errorCode)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertNil(metric.errorMessage)
         XCTAssertNil(metric.cycleIndex)
         XCTAssertEqual(metric.appStartInfo, "user_launch")
@@ -47,7 +47,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
 
     func testTrackingProfilingSessionMetric_afterAppLaunchProfilingManuallyStopped() throws {
         // Given
-        let duration = Int64(123_000_000)
+        let durationMs = Int64(123)
         let fileSize = Int64(1_000_000)
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
@@ -56,7 +56,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
             ProfilingSessionMetric(
                 startReason: .applicationLaunch,
                 status: .stopped(reason: .manual),
-                durationNs: duration,
+                durationMs: durationMs,
                 fileSize: fileSize,
                 appStartInfo: "background_launch"
             )
@@ -65,7 +65,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
-        XCTAssertEqual(metric.duration, duration)
+        XCTAssertEqual(metric.duration, durationMs)
         XCTAssertEqual(metric.fileSize, fileSize)
         XCTAssertEqual(metric.stoppedReason, ProfilingContext.Status.StopReason.manual.rawValue)
         XCTAssertNil(metric.errorMessage)
@@ -84,8 +84,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
             ProfilingSessionMetric.noData(
                 startReason: .applicationLaunch,
                 status: .stopped(reason: .manual),
-                durationNs: nil,
-                errorCode: 3,
+                durationMs: nil,
                 cycleIndex: nil,
                 appStartInfo: "prewarming"
             )
@@ -96,7 +95,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
-        XCTAssertEqual(metric.errorCode, 3)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertFalse(metric.errorMessage?.isEmpty ?? true)
         XCTAssertEqual(metric.appStartInfo, "prewarming")
 
@@ -113,7 +112,6 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
             ProfilingSessionMetric.noProfile(
                 startReason: .applicationLaunch,
                 status: .stopped(reason: .notStarted),
-                errorCode: 1,
                 cycleIndex: nil,
                 appStartInfo: "uncertain"
             )
@@ -124,7 +122,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.applicationLaunch.rawValue)
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
-        XCTAssertEqual(metric.errorCode, 1)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertFalse(metric.errorMessage?.isEmpty ?? true)
         XCTAssertEqual(metric.appStartInfo, "uncertain")
 
@@ -134,7 +132,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
 
     func testTrackingProfilingSessionMetric_whileContinuousProfilingIsRunning() throws {
         // Given
-        let duration = Int64(123_000_000)
+        let durationMs = Int64(123)
         let fileSize = Int64(1_000_000)
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
@@ -143,7 +141,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
             ProfilingSessionMetric(
                 startReason: .continuous,
                 status: .running,
-                durationNs: duration,
+                durationMs: durationMs,
                 fileSize: fileSize,
                 cycleIndex: 0
             )
@@ -152,11 +150,11 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.continuous.rawValue)
-        XCTAssertEqual(metric.duration, duration)
+        XCTAssertEqual(metric.duration, durationMs)
         XCTAssertEqual(metric.fileSize, fileSize)
         XCTAssertEqual(metric.cycleIndex, 0)
         XCTAssertNil(metric.stoppedReason)
-        XCTAssertNil(metric.errorCode)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertNil(metric.errorMessage)
 
         let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
@@ -175,7 +173,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
-        XCTAssertNil(metric.errorCode)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfiledEventsErrorMessage)
 
         let metricTelemetry = try XCTUnwrap(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
@@ -194,7 +192,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
         XCTAssertNil(metric.duration)
         XCTAssertNil(metric.fileSize)
-        XCTAssertNil(metric.errorCode)
+        XCTAssertEqual(metric.errorCode, ProfilingSessionMetric.ErrorCode.none.rawValue)
         XCTAssertEqual(
             metric.errorMessage,
             "\(ProfilingSessionMetric.Constants.quotaErrorMessage) Quota reason: quota_exceeded."
@@ -210,7 +208,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         let diagnosticsKey = AggregationDiagnosticsMetric.Constants.diagnosticsKey
 
         // When
-        controller.sendProfile(durationNs: 1, fileSize: 2, for: .continuousProfiling)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling)
         controller.sendProfileDropped(for: .customProfiling)
 
         // Then
@@ -228,7 +226,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
         // When
-        controller.sendProfile(durationNs: 1, fileSize: 2, for: .continuousProfiling)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.profilingSessionMetric)
@@ -241,8 +239,8 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
         // When
-        controller.sendProfile(durationNs: 1, fileSize: 2, for: .customProfiling)
-        controller.sendNoData(durationNs: 1, for: .customProfiling)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .customProfiling)
+        controller.sendNoData(durationMs: 1, for: .customProfiling)
 
         // Then
         let firstMetric = try XCTUnwrap(telemetry.messages[0]
@@ -277,8 +275,8 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
         // When
-        controller.sendProfile(durationNs: 1, fileSize: 2, for: .continuousProfiling)
-        controller.sendProfile(durationNs: 3, fileSize: 4, for: .continuousProfiling)
+        controller.sendProfile(durationMs: 1, fileSize: 2, for: .continuousProfiling)
+        controller.sendProfile(durationMs: 3, fileSize: 4, for: .continuousProfiling)
 
         // Then
         let firstMetric = try XCTUnwrap(telemetry.messages[0]
@@ -293,7 +291,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         // Given
         let iterations = 10
         let status: ProfilingContext.Status = .running
-        let duration = Int64(123_000_000)
+        let durationMs = Int64(123)
         let controller = ProfilingTelemetryController(telemetry: telemetry)
 
         // When
@@ -302,7 +300,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
                 ProfilingSessionMetric(
                     startReason: .continuous,
                     status: status,
-                    durationNs: duration,
+                    durationMs: durationMs,
                     fileSize: Int64($0),
                     cycleIndex: $0
                 )
@@ -314,7 +312,7 @@ final class ProfilingTelemetryControllerTests: XCTestCase {
         try (0..<iterations).forEach {
             let metric = try XCTUnwrap(telemetry.messages[$0]
                 .asMetric?.attributes[ProfilingSessionMetric.Constants.sessionKey] as? ProfilingSessionMetric.Attributes)
-            XCTAssertEqual(metric.duration, duration)
+            XCTAssertEqual(metric.duration, durationMs)
             XCTAssertEqual(metric.fileSize, Int64($0))
             XCTAssertEqual(metric.cycleIndex, $0)
         }
