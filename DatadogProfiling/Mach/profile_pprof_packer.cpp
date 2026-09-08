@@ -25,6 +25,8 @@
 
 #if defined(__APPLE__) && !TARGET_OS_WATCH
 
+#include <cstdlib>
+
 #include "profile.h"
 #include "profile.pb-c.h"
 
@@ -39,20 +41,20 @@
 /** @brief Allocation function wrapper around malloc */
 static void* sys_malloc(void* allocator_data, size_t size) {
     (void)allocator_data;
-    return malloc(size);
+    return std::malloc(size);
 }
 
 /** @brief Deallocation function wrapper around free */
 static void sys_free(void* allocator_data, void* ptr) {
     (void)allocator_data;
-    free(ptr);
+    std::free(ptr);
 }
 
 /** @brief Global allocator instance used for all protobuf allocations */
 static ProtobufCAllocator profile_allocator = {
     sys_malloc,
     sys_free,
-    nullptr  // allocator_data
+    nullptr,  // allocator_data
 };
 
 /** @brief Allocate memory using the protobuf allocator */
@@ -131,7 +133,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
         return 0;
     }
     
-    uint8_t* buffer = static_cast<uint8_t*>(malloc(packed_size));
+    uint8_t* buffer = static_cast<uint8_t*>(std::malloc(packed_size));
     if (!buffer) {
         perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
         return 0;
@@ -146,7 +148,7 @@ size_t profile_pprof_pack(const profile& prof, uint8_t** data) {
     perftools__profiles__profile__free_unpacked(pprof, &profile_allocator);
     
     if (actual_size == 0) {
-        free(buffer);
+        std::free(buffer);
         return 0;
     }
     

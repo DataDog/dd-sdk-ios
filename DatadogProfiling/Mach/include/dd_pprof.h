@@ -81,7 +81,7 @@ size_t dd_pprof_serialize(dd_pprof_t* profile, uint8_t** data);
  *
  * @param data Pointer to the data to free
  */
-void dd_pprof_free_serialized_data(uint8_t* data);
+void dd_pprof_free_serialized_data(const uint8_t* data);
 
 /**
  * Callback function that resolves binary images and forwards stack traces

@@ -439,10 +439,9 @@ static void walk_frames(
         if (stack_base != 0 && fp_addr < stack_base) break;
 
         frame_pointer_pair_t next_frame = {};
-        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
-            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
-                break;
-            }
+        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)
+            && (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame))) {
+            break;
         }
 
         fp = next_frame.next_frame_pointer;  // saved x29 / rbp
@@ -835,7 +834,7 @@ void mach_sampling_profiler::main() {
         } else {
             thread_act_array_t threads = nullptr;
             mach_msg_type_number_t count = 0;
-            
+
             if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
@@ -849,7 +848,7 @@ void mach_sampling_profiler::main() {
 
                 // Skip profiler-owned threads to avoid self-noise in customer profiles.
                 if (is_profiler_internal_thread(threads[i])) continue;
-                
+
                 sample_thread(threads[i], interval_nanos);
 
                 if (sample_buffer.size() >= config.max_buffer_size) {
