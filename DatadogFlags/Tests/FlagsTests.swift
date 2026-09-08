@@ -18,6 +18,16 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(config.initializationTimeout, 5)
     }
 
+    func testConfigurationInitializerSetsInitializationTimeout() {
+        // When
+        let configured = Flags.Configuration(initializationTimeout: 2.5)
+        let disabled = Flags.Configuration(initializationTimeout: nil)
+
+        // Then
+        XCTAssertEqual(configured.initializationTimeout, 2.5)
+        XCTAssertNil(disabled.initializationTimeout)
+    }
+
     func testWhenNotEnabled() {
         // Given
         let core = FeatureRegistrationCoreMock()

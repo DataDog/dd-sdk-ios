@@ -120,6 +120,7 @@ public enum Flags {
         ///   - gracefulModeEnabled: Controls error handling behavior for API misuse. Default: `true`.
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
+        ///   - initializationTimeout: Maximum time to wait for the first evaluation context. Default: `5` seconds.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
@@ -130,6 +131,7 @@ public enum Flags {
             gracefulModeEnabled: Bool = true,
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
+            initializationTimeout: TimeInterval? = 5,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
@@ -140,7 +142,7 @@ public enum Flags {
             self.gracefulModeEnabled = gracefulModeEnabled
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
-            self.initializationTimeout = Self.defaultInitializationTimeout
+            self.initializationTimeout = initializationTimeout
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint
