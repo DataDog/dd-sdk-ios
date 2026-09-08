@@ -31,6 +31,31 @@ internal final class ProfilingSessionMetric {
         case rumOperation = "rum_operation"
     }
 
+    /// Error codes aligned with `android.os.ProfilingResult`.
+    enum ErrorCode: Int {
+        /// The profiling request completed without an execution or post-processing error.
+        case none = 0
+        /// Profiling could not start because another profiling session was already running.
+        case profilingAlreadyInProgress = 3
+        /// The profiling request executed but failed to produce a profile.
+        case executionFailed = 4
+        /// Profiling failed for an unknown reason.
+        case unknown = 8
+
+        init(status: ProfilingContext.Status) {
+            switch status {
+            case .running, .stopped:
+                self = .none
+            case .error(reason: .alreadyStarted):
+                self = .profilingAlreadyInProgress
+            case .error(reason: .memoryAllocationFailed):
+                self = .executionFailed
+            case .unknown:
+                self = .unknown
+            }
+        }
+    }
+
     enum ProfileDropReason: Equatable {
         case noProfiledEvents
         case profileTooLarge
@@ -57,12 +82,12 @@ internal final class ProfilingSessionMetric {
     let startReason: StartReason
     /// Status of the profiler at the end of the profiling session.
     let status: ProfilingContext.Status
-    /// Duration of the profile in nanoseconds.
-    let durationNs: Int64?
+    /// Duration of the profile in milliseconds.
+    let durationMs: Int64?
     /// Size of the profile file in bytes.
     let fileSize: Int64?
-    /// Error code when the profile is not sent or the profiler is in an error state.
-    let errorCode: Int?
+    /// Error code describing the outcome of the profiling session.
+    let errorCode: ErrorCode
     /// Error message when the profile is not sent.
     var errorMessage: String?
     /// Index of the continuous profiling cycle.
@@ -73,16 +98,16 @@ internal final class ProfilingSessionMetric {
     init(
         startReason: StartReason,
         status: ProfilingContext.Status,
-        durationNs: Int64? = nil,
+        durationMs: Int64? = nil,
         fileSize: Int64? = nil,
-        errorCode: Int? = nil,
+        errorCode: ErrorCode = .none,
         errorMessage: String? = nil,
         cycleIndex: Int? = nil,
         appStartInfo: String? = nil
     ) {
         self.startReason = startReason
         self.status = status
-        self.durationNs = durationNs
+        self.durationMs = durationMs
         self.fileSize = fileSize
         self.errorCode = errorCode
         self.errorMessage = errorMessage
@@ -109,8 +134,8 @@ internal final class ProfilingSessionMetric {
             SDKMetricFields.typeKey: Constants.typeValue,
             Constants.sessionKey: Attributes(
                 startReason: startReason.rawValue,
-                duration: durationNs,
-                errorCode: errorCode,
+                duration: durationMs,
+                errorCode: errorCode.rawValue,
                 errorMessage: errorMessage,
                 fileSize: fileSize,
                 stoppedReason: stoppedReason,
@@ -127,14 +152,13 @@ extension ProfilingSessionMetric {
     static func noProfile(
         startReason: StartReason,
         status: ProfilingContext.Status,
-        errorCode: Int?,
         cycleIndex: Int? = nil,
         appStartInfo: String? = nil
     ) -> ProfilingSessionMetric {
         .init(
             startReason: startReason,
             status: status,
-            errorCode: errorCode,
+            errorCode: .init(status: status),
             errorMessage: Constants.noProfileErrorMessage,
             cycleIndex: cycleIndex,
             appStartInfo: appStartInfo
@@ -144,16 +168,15 @@ extension ProfilingSessionMetric {
     static func noData(
         startReason: StartReason,
         status: ProfilingContext.Status,
-        durationNs: Int64?,
-        errorCode: Int?,
+        durationMs: Int64?,
         cycleIndex: Int?,
         appStartInfo: String? = nil
     ) -> ProfilingSessionMetric {
         .init(
             startReason: startReason,
             status: status,
-            durationNs: durationNs,
-            errorCode: errorCode,
+            durationMs: durationMs,
+            errorCode: .init(status: status),
             errorMessage: Constants.noDataErrorMessage,
             cycleIndex: cycleIndex,
             appStartInfo: appStartInfo
@@ -183,8 +206,9 @@ extension ProfilingSessionMetric {
     /// Container to encode Profiling Session data according to the spec.
     internal struct Attributes: Encodable {
         let startReason: String
+        /// Profile duration in milliseconds.
         let duration: Int64?
-        let errorCode: Int?
+        let errorCode: Int
         let errorMessage: String?
         let fileSize: Int64?
         let stoppedReason: String?
