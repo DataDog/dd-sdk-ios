@@ -3134,4 +3134,4 @@ public enum SRWireframe: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/7cd262a46caa5a3927eda082757eb30673f2b5aa
+// Generated from https://github.com/DataDog/rum-events-format/tree/3eb091af81e4c1a563bcd335222fed86f5bc8bc7

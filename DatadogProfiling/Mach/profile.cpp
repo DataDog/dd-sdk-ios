@@ -81,8 +81,9 @@ std::string uuid_string(const uuid_t uuid) {
  * 
  * @param sampling_interval_ns Sampling interval in nanoseconds
  */
-profile::profile(uint64_t sampling_interval_ns) 
+profile::profile(uint64_t sampling_interval_ns, bool record_cpu_time)
     : _sampling_interval_ns(sampling_interval_ns)
+    , _record_cpu_time(record_cpu_time)
     , _epoch_offset(uptime_epoch_offset())
     , _server_time_offset_ns(0)
     , _start_timestamp(0)
@@ -95,6 +96,7 @@ profile::profile(uint64_t sampling_interval_ns)
     // Pre-intern common strings for performance
     _empty_str_id = intern_string("");
     _wall_time_str_id = intern_string("wall-time");
+    _cpu_time_str_id = _record_cpu_time ? intern_string("cpu-time") : 0;
     _nanoseconds_str_id = intern_string("nanoseconds");
     _end_timestamp_ns_str_id = intern_string("end_timestamp_ns");
     _thread_id_str_id = intern_string("thread id");
@@ -176,6 +178,9 @@ void profile::add_samples(const stack_trace_t* traces, size_t count, binary_imag
         sample.timestamp_uptime_ns = trace.timestamp;
         sample.labels = std::move(labels);
         sample.values = {static_cast<int64_t>(trace.sampling_interval_nanos)};
+        if (_record_cpu_time) {
+            sample.values.push_back(static_cast<int64_t>(trace.cpu_time_nanos));
+        }
         
         _samples.push_back(std::move(sample));
 

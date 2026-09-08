@@ -22,7 +22,6 @@ final class ProfilerFeatureTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         userDefaults = UserDefaults(suiteName: suiteName)!
@@ -32,7 +31,6 @@ final class ProfilerFeatureTests: XCTestCase {
     override func tearDown() {
         userDefaults.removePersistentDomain(forName: suiteName)
         userDefaults = nil
-        DatadogProfiler.resetActiveInstance()
         dd_profiler_stop()
         dd_profiler_destroy()
         super.tearDown()
@@ -57,7 +55,7 @@ final class ProfilerFeatureTests: XCTestCase {
 
     func testInit_setsSampleRateValue() {
         // Given
-        userDefaults.removeObject(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+        userDefaults.setValue(SampleRate(20), forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
         let newSampleRate: SampleRate = 23
 
         // When
@@ -73,46 +71,21 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
     }
 
-    func testInit_overridesPreviousSampleRate_whenNewSampleRateIsLower() {
+    func testInit_setsCPUTimingFeatureFlagValue() {
         // Given
-        let previousSampleRate: SampleRate = 80
-        let lowerSampleRate: SampleRate = 20
-
-        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+        XCTAssertNil(userDefaults.value(forKey: DD_PROFILING_RECORD_CPU_TIME_KEY))
 
         // When
         _ = ProfilerFeature(
             core: core,
-            configuration: .init(applicationLaunchSampleRate: lowerSampleRate),
+            configuration: .init(featureFlags: [.cpuTimeSamples: true]),
             requestBuilder: requestBuilder,
             telemetryController: telemetryController,
             userDefaults: userDefaults
         )
 
         // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, lowerSampleRate)
-    }
-
-    func testInit_keepsPreviousSampleRate_whenNewSampleRateIsHigher() {
-        // Given
-        let previousSampleRate: SampleRate = 20
-        let higherSampleRate: SampleRate = 80
-
-        userDefaults.setValue(previousSampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
-
-        // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(applicationLaunchSampleRate: higherSampleRate),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
-
-        // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, previousSampleRate)
+        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_RECORD_CPU_TIME_KEY) as? Bool, true)
     }
 
     func testMessageReceiver_checksQuota_whenCustomEndpointIsConfigured() {
@@ -136,39 +109,6 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
-    }
-
-    func testMessageReceiver_checksQuotaForAppLaunchProfiler_whenDatadogProfilerIsNotCreated() {
-        // Given
-        let firstFeature = ProfilerFeature(
-            core: PassthroughCoreMock(),
-            configuration: .init(),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
-        let quotaChecker = ProfilingQuotaCheckerMock()
-        let secondCore = PassthroughCoreMock()
-        let secondFeature = ProfilerFeature(
-            core: secondCore,
-            configuration: .init(),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            quotaChecker: quotaChecker,
-            userDefaults: userDefaults
-        )
-        let context: DatadogContext = .mockWith(
-            trackingConsent: .granted,
-            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)]
-        )
-
-        // When
-        _ = secondFeature.messageReceiver.receive(message: .context(context), from: secondCore)
-
-        // Then
-        XCTAssertEqual(quotaChecker.receivedContexts.count, 1)
-        withExtendedLifetime(firstFeature) {}
-        withExtendedLifetime(secondFeature) {}
     }
 
     func testProfilingSamplerProvider_isDeterministicForSameSessionID() {
