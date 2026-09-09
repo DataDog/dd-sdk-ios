@@ -477,7 +477,7 @@ internal class SessionEndedMetric {
 
             if sessionStart < sessionEnd { // sanity check
                 let sessionDuration = sessionEnd.timeIntervalSince(sessionStart)
-                let foregroundDuration = context.applicationStateHistory.foregroundDuration(during: sessionStart...sessionEnd)
+                let foregroundDuration = context.applicationStateHistory.applicationNotSuspendedDuration(during: sessionStart...sessionEnd)
                 let foregroundCoverage = round(Double(foregroundDuration / sessionDuration) * 1_000) / 1_000
 
                 let stateAtStart = context.applicationStateHistory.state(at: sessionStart) ?? context.applicationStateHistory.initialState

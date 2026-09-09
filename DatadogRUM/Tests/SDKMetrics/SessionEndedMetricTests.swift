@@ -725,7 +725,6 @@ class SessionEndedMetricTests: XCTestCase {
 
     // MARK: - Lifecycle Info
 
-    #if !os(macOS)
     func testReportingLifecycleInfo() throws {
         let processLaunchDate = Date()
         let view1Start = processLaunchDate + 1
@@ -734,13 +733,19 @@ class SessionEndedMetricTests: XCTestCase {
         let view2Stop = view2Start + 5 // view2 lasts for 5s
         let validSessionCount: Int = .mockRandom()
 
+        #if os(macOS)
+        let suspendedState = AppState.sleeping
+        #else
+        let suspendedState = AppState.background
+        #endif
+
         let context: DatadogContext = .mockWith(
             launchInfo: .mockWith(processLaunchDate: processLaunchDate),
             applicationStateHistory: .mockWith(
                 initialState: .inactive,
                 date: processLaunchDate,
                 transitions: [
-                    (.background, view1Stop), // background on "view1 stop"
+                    (suspendedState, view1Stop), // background on "view1 stop"
                     (.active, view2Start), // foreground on "view2 start"
                 ]
             )
@@ -778,7 +783,6 @@ class SessionEndedMetricTests: XCTestCase {
         XCTAssertEqual(rse.lifecycleInfo?.appStateAtSessionEnd, "active")
         DDAssertEqual(rse.lifecycleInfo?.foregroundCoverage, (10 + 5) / (10 + 4 + 5), accuracy: 0.001)
     }
-    #endif
 
     // MARK: - Metric Spec
 
