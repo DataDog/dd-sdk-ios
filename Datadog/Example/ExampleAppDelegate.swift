@@ -100,14 +100,21 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
         RUMMonitor.shared().debug = true
 
-        // Set DD_SIGNED_ASSIGNMENTS_POC=1 in the Example scheme to use the
-        // local edge service. The SDK verifies the payload before decoding it.
-        if ProcessInfo.processInfo.environment["DD_SIGNED_ASSIGNMENTS_POC"] == "1" {
+        // These modes exercise the signed-assignment POC. They only change the
+        // example app. The SDK verifies each response before it decodes JSON.
+        let signedAssignmentsMode = ProcessInfo.processInfo.environment["DD_SIGNED_ASSIGNMENTS_POC"]
+        if signedAssignmentsMode == "local" || signedAssignmentsMode == "cloud" {
+            let isCloud = signedAssignmentsMode == "cloud"
             Flags.enable(
                 with: Flags.Configuration(
                     customFlagsEndpoint: URL(
-                        string: "http://127.0.0.1:17676/precompute-assignments"
+                        string: isCloud
+                            ? "https://preview.ff-cdn.datad0g.com/precompute-assignments"
+                            : "http://127.0.0.1:17676/precompute-assignments"
                     ),
+                    customFlagsHeaders: isCloud
+                        ? ["x-dd-ffe-test-drive": "signed-assignments"]
+                        : nil,
                     trackExposures: false,
                     trackEvaluations: false
                 )
@@ -119,12 +126,17 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                     attributes: ["country": .string("US")]
                 )
             ) { result in
-                print("Signed assignment POC result: \(result)")
+                switch result {
+                case .success:
+                    print("SIGNED_ASSIGNMENT_E2E: signature verified; mode=\(signedAssignmentsMode ?? "unknown")")
+                case .failure(let error):
+                    print("SIGNED_ASSIGNMENT_E2E: failed; mode=\(signedAssignmentsMode ?? "unknown"); error=\(error)")
+                }
                 let value = flagsClient.getStringValue(
                     key: "country-message",
                     defaultValue: "unverified"
                 )
-                print("country-message: \(value)")
+                print("SIGNED_ASSIGNMENT_E2E: country-message=\(value)")
             }
         }
 
