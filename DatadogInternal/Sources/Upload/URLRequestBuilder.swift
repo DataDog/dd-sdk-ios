@@ -25,10 +25,6 @@ public struct URLRequestBuilder {
         public static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         public static let ddRequestIDHeaderField = "DD-REQUEST-ID"
         public static let ddIdempotencyKeyHeaderField = "DD-IDEMPOTENCY-KEY"
-        /// Marks a request as originating from the SDK itself, so it can be excluded from automatic
-        /// `URLSession` instrumentation even when it carries no Datadog intake credentials
-        /// (e.g. requests to a public CDN, which must not receive `DD-API-KEY`/`DD-CLIENT-TOKEN`).
-        public static let ddInternalHeaderField = "X-Datadog-Internal"
 
         public enum ContentType {
             case applicationJSON
@@ -115,6 +111,26 @@ public struct URLRequestBuilder {
             return HTTPHeader(field: ddIdempotencyKeyHeaderField, value: { key })
         }
     }
+
+    /// Marks a request as originating from the SDK itself using a local-only `URLProtocol` property
+    /// (never sent over the wire), so it can be recognized as internal by automatic `URLSession`
+    /// instrumentation without requiring Datadog intake credentials on the request - useful for SDK
+    /// requests (e.g. Remote Configuration fetches) that must reach third-party or customer-controlled
+    /// endpoints unmodified.
+    public static func markAsInternal(_ request: inout URLRequest) {
+        guard let mutableRequest = (request as NSURLRequest).mutableCopy() as? NSMutableURLRequest else {
+            return
+        }
+        URLProtocol.setProperty(true, forKey: isInternalRequestPropertyKey, in: mutableRequest)
+        request = mutableRequest as URLRequest
+    }
+
+    /// Checks whether a request was marked internal via `markAsInternal(_:)`.
+    public static func isMarkedInternal(_ request: URLRequest) -> Bool {
+        return URLProtocol.property(forKey: isInternalRequestPropertyKey, in: request) != nil
+    }
+
+    private static let isInternalRequestPropertyKey = "com.datadoghq.is-internal-request"
     /// Upload `URL`.
     private let url: URL
     /// HTTP headers.

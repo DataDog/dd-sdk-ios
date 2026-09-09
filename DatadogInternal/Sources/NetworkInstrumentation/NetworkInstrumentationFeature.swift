@@ -371,12 +371,15 @@ extension NetworkInstrumentationFeature {
         // uploader, which would otherwise pollute interception expectations via the global
         // `__NSCFLocalSessionTask.resume` swizzle in tests).
         //
-        // Some internal requests (e.g. Remote Configuration fetches from a public CDN) must not
-        // carry those intake credentials, so they are marked instead with a dedicated internal
-        // header.
-        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
-            || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
-            || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddInternalHeaderField) != nil
+        // Some internal requests (e.g. Remote Configuration fetches, which may target a public CDN
+        // or a customer-supplied endpoint) must not carry those intake credentials over the wire, so
+        // they are marked instead with a local-only `URLProtocol` property that is never transmitted.
+        guard let request else {
+            return false
+        }
+        return request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
+            || request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
+            || URLRequestBuilder.isMarkedInternal(request)
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this

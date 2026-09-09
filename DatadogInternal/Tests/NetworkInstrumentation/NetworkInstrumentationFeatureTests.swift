@@ -1909,7 +1909,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // fetch), which cannot carry DD-API-KEY/DD-CLIENT-TOKEN since those must not reach a public CDN.
         let cdnURL = URL(string: "http://custom-endpoint.example.com/v1/remote-configuration.json")!
         var request = URLRequest(url: cdnURL)
-        request.setValue("1", forHTTPHeaderField: "X-Datadog-Internal")
+        URLRequestBuilder.markAsInternal(&request)
 
         let taskCompleted = expectation(description: "Task completed")
         let task = session.dataTask(with: request) { _, _, _ in
@@ -1922,7 +1922,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         wait(for: [taskCompleted], timeout: 1)
 
         // Then - Verify SDK request marked internal was not intercepted
-        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with X-Datadog-Internal header")
+        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests marked internal via URLRequestBuilder.markAsInternal")
     }
 
     func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
