@@ -162,6 +162,29 @@ public enum Flags {
         }
     }
 
+    /// Creates a URL session with the default configuration for flag-assignment requests.
+    ///
+    /// Use this helper when a custom session delegate must control TLS validation, client
+    /// authentication, or other connection behavior. The session uses an ephemeral configuration
+    /// without a URL cache. The caller owns the returned session and its lifecycle.
+    ///
+    /// - Parameters:
+    ///   - delegate: Delegate that handles session-level authentication and connection events.
+    ///   - delegateQueue: Operation queue on which the session calls delegate methods.
+    /// - Returns: A URL session configured for flag-assignment requests.
+    public static func makeFlagAssignmentsURLSession(
+        delegate: (any URLSessionDelegate)? = nil,
+        delegateQueue: OperationQueue? = nil
+    ) -> URLSession {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        return URLSession(
+            configuration: configuration,
+            delegate: delegate,
+            delegateQueue: delegateQueue
+        )
+    }
+
     /// Enables the Datadog Flags feature in your application.
     ///
     /// Call this method after initializing the Datadog SDK to enable feature flag evaluation.

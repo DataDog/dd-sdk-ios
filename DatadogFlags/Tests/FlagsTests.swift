@@ -9,6 +9,8 @@ import TestUtilities
 @testable import DatadogFlags
 
 final class FlagsTests: XCTestCase {
+    private final class SessionDelegate: NSObject, URLSessionDelegate {}
+
     func testDefaultConfiguration() {
         // Given
         let config = Flags.Configuration()
@@ -27,6 +29,24 @@ final class FlagsTests: XCTestCase {
         // Then
         XCTAssertEqual(configured.initializationTimeout, 2.5)
         XCTAssertNil(disabled.initializationTimeout)
+    }
+
+    func testMakeFlagAssignmentsURLSession() {
+        // Given
+        let delegate = SessionDelegate()
+        let delegateQueue = OperationQueue()
+
+        // When
+        let session = Flags.makeFlagAssignmentsURLSession(
+            delegate: delegate,
+            delegateQueue: delegateQueue
+        )
+        defer { session.invalidateAndCancel() }
+
+        // Then
+        XCTAssertTrue(session.delegate === delegate)
+        XCTAssertTrue(session.delegateQueue === delegateQueue)
+        XCTAssertNil(session.configuration.urlCache)
     }
 
     func testWhenNotEnabled() {
