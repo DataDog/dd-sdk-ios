@@ -111,6 +111,26 @@ public struct URLRequestBuilder {
             return HTTPHeader(field: ddIdempotencyKeyHeaderField, value: { key })
         }
     }
+
+    /// Marks a request as originating from the SDK itself using a local-only `URLProtocol` property
+    /// (never sent over the wire), so it can be recognized as internal by automatic `URLSession`
+    /// instrumentation without requiring Datadog intake credentials on the request - useful for SDK
+    /// requests (e.g. Remote Configuration fetches) that must reach third-party or customer-controlled
+    /// endpoints unmodified.
+    public static func markAsInternal(_ request: inout URLRequest) {
+        guard let mutableRequest = (request as NSURLRequest).mutableCopy() as? NSMutableURLRequest else {
+            return
+        }
+        URLProtocol.setProperty(true, forKey: isInternalRequestPropertyKey, in: mutableRequest)
+        request = mutableRequest as URLRequest
+    }
+
+    /// Checks whether a request was marked internal via `markAsInternal(_:)`.
+    public static func isMarkedInternal(_ request: URLRequest) -> Bool {
+        return URLProtocol.property(forKey: isInternalRequestPropertyKey, in: request) != nil
+    }
+
+    private static let isInternalRequestPropertyKey = "com.datadoghq.is-internal-request"
     /// Upload `URL`.
     private let url: URL
     /// HTTP headers.

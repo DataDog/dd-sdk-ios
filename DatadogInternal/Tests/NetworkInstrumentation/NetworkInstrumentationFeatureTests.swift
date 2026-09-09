@@ -1894,6 +1894,37 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests with DD-CLIENT-TOKEN header")
     }
 
+    func testAutomaticMode_doesNotTrackSDKRequestsMarkedInternal() throws {
+        // Given - Enable automatic mode
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        let session = URLSession(configuration: .ephemeral)
+
+        var interceptedSDKRequests: [URLSessionTaskInterception] = []
+        handler.onInterceptionDidStart = { interception in
+            interceptedSDKRequests.append(interception)
+        }
+
+        // When - Make a request to a public CDN endpoint marked internal (e.g. Remote Configuration
+        // fetch), which cannot carry DD-API-KEY/DD-CLIENT-TOKEN since those must not reach a public CDN.
+        let cdnURL = URL(string: "http://custom-endpoint.example.com/v1/remote-configuration.json")!
+        var request = URLRequest(url: cdnURL)
+        URLRequestBuilder.markAsInternal(&request)
+
+        let taskCompleted = expectation(description: "Task completed")
+        let task = session.dataTask(with: request) { _, _, _ in
+            taskCompleted.fulfill()
+        }
+        task.resume()
+        task.cancel()
+
+        // Wait for the cancellation completion.
+        wait(for: [taskCompleted], timeout: 1)
+
+        // Then - Verify SDK request marked internal was not intercepted
+        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests marked internal via URLRequestBuilder.markAsInternal")
+    }
+
     func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
         // Given - Enable automatic mode
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
