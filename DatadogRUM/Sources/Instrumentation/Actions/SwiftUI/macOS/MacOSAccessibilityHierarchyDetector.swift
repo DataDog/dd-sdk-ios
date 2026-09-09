@@ -11,7 +11,8 @@ import DatadogInternal
 
 internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetector {
     /// Used to make sure `setupAxClient()` runs only once.
-    @MainActor private static var axSetupPerformed = false
+    @ReadWriteLock
+    private static var axSetupPerformed = false
 
     /// Creates an accessibility client for this application.
     ///
@@ -23,28 +24,33 @@ internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetec
     /// registered. In this case, the application is an accessibility client of itself.
     ///
     /// This method can be called multiple times safely.
-    @MainActor
     private static func setupAxClient() {
-        if axSetupPerformed == false {
-            // Empirically, there is no need to keep `application` around after
-            // creating it and setting the role below. As long as a client registers,
-            // the accessibility machinery stays working even after the client
-            // is gone.
-            let application = AXUIElementCreateApplication(
-                ProcessInfo.processInfo.processIdentifier
-            )
+        guard axSetupPerformed == false else {
+            return
+        }
 
-            var role: CFTypeRef?
-            let result = AXUIElementCopyAttributeValue(
-                application,
-                kAXRoleAttribute as CFString,
-                &role
-            )
+        _axSetupPerformed.mutate { axSetupPerformed in
+            if axSetupPerformed == false {
+                // Empirically, there is no need to keep `application` around after
+                // creating it and setting the role below. As long as a client registers,
+                // the accessibility machinery stays working even after the client
+                // is gone.
+                let application = AXUIElementCreateApplication(
+                    ProcessInfo.processInfo.processIdentifier
+                )
 
-            if result == .success {
-                axSetupPerformed = true
-            } else {
-                consolePrint("⚠️ Error initializing accessibility client for RUM SwiftUI instrumentation. RUM SwiftUI instrumentation may not work.", .error)
+                var role: CFTypeRef?
+                let result = AXUIElementCopyAttributeValue(
+                    application,
+                    kAXRoleAttribute as CFString,
+                    &role
+                )
+
+                if result == .success {
+                    axSetupPerformed = true
+                } else {
+                    consolePrint("⚠️ Error initializing accessibility client for RUM SwiftUI instrumentation. RUM SwiftUI instrumentation may not work.", .error)
+                }
             }
         }
     }
@@ -66,7 +72,6 @@ internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetec
         NSAccessibility.Role.link.rawValue
     ]
 
-    @MainActor
     init() {
         Self.setupAxClient()
     }
@@ -93,18 +98,18 @@ internal struct MacOSAccessibilityHierarchyDetector: AccessibilityHierarchyDetec
             case let coordsInScreen = window.convertPoint(toScreen: event.locationInWindow),
             let accessibilityElement = axHitTesting(window, coordinates: coordsInScreen)
         else {
-            return .noDecision
+            return .noSuitableTargetFound
         }
 
         guard
             let targetElement = bestActionTargetFor(accessibilityElement: accessibilityElement, coordinates: coordsInScreen),
             let role = axRole(targetElement)
         else {
-            return .noDecision
+            return .noSuitableTargetFound
         }
 
         guard let action = predicate.rumAction(accessibilityRole: role, identifier: axIdentifier(targetElement)) else {
-            return .ignore
+            return .rejected
         }
 
         return

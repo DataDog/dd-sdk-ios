@@ -220,7 +220,7 @@ final class RUMActionsHandlerToolbarMacOSTests: XCTestCase, NSToolbarDelegate, N
         let eventCommandsFactory = AppKitCommandFactory(
             dateProvider: dateProvider,
             macOSPredicate: DefaultMacOSRUMActionsPredicate(),
-            accessibilityHierarchyDetectorCreator: { NoDecisionAccessibilityHierarchyDetector() }
+            accessibilityHierarchyDetector: NoTargetFoundAccessibilityHierarchyDetector()
         )
         let handler = RUMActionsHandler(
             dateProvider: dateProvider,
@@ -304,13 +304,13 @@ private final class ToolbarMockNSEvent: NSEvent {
     override var locationInWindow: NSPoint { mockLocationInWindow }
 }
 
-private final class NoDecisionAccessibilityHierarchyDetector: AccessibilityHierarchyDetector {
+private final class NoTargetFoundAccessibilityHierarchyDetector: AccessibilityHierarchyDetector {
     func createActionCommand(
         from event: NSEvent,
         predicate: MacOSRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> AccessibilityCommandResult {
-        return .noDecision
+        return .noSuitableTargetFound
     }
 }
 
