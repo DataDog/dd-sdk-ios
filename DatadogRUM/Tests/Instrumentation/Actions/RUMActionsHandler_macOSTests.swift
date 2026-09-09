@@ -132,6 +132,41 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         XCTAssertEqual(command.instrumentation, .appKit)
     }
 
+    func testGivenDisabledControlsInsideNestedCustomControls_whenLeftMouseDown_itSendsActionForFirstEnabledAncestor() throws {
+        // Given
+        let window = makeWindow()
+        let outerControl = CustomControl(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        let expectedControl = CustomControl(frame: outerControl.bounds)
+        let disabledControl = CustomControl(frame: expectedControl.bounds)
+        disabledControl.isEnabled = false
+        let disabledButton = NSButton(frame: disabledControl.bounds)
+        disabledButton.isEnabled = false
+        disabledControl.addSubview(disabledButton)
+        expectedControl.addSubview(disabledControl)
+        outerControl.addSubview(expectedControl)
+        window.contentView?.addSubview(outerControl)
+
+        let predicate = MacOSRUMActionsPredicateMock()
+        predicate.resultByView[outerControl] = RUMAction(name: "Outer Control", attributes: [:])
+        predicate.resultByView[expectedControl] = RUMAction(name: "First Enabled Control", attributes: [:])
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(.mockSwiftUIAutomatic()))
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
+
+        // When
+        handler.notify_sendEvent(
+            event: MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30))
+        )
+
+        // Then
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.name, "First Enabled Control")
+        XCTAssertEqual(command.actionType, .click)
+        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(predicate.receivedViews.count, 1)
+        XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), expectedControl)
+        XCTAssertTrue(detector.receivedEvents.isEmpty)
+    }
+
     func testGivenTableViewRow_whenLeftMouseDown_itSendsActionForRow() throws {
         // Given
         let window = makeWindow()
@@ -187,6 +222,45 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             XCTAssertEqual(command?.name, "Row Button")
             XCTAssertEqual(command?.actionType, .click)
             XCTAssertEqual(command?.instrumentation, .appKit)
+        }
+    }
+
+    func testGivenDisabledControlInsideTableViewRow_whenLeftMouseDown_itSendsActionForRow() throws {
+        // Given
+        let window = makeWindow()
+        let tableDataSource = TableDataSource()
+        let tableView = makeTableView(dataSource: tableDataSource)
+        window.contentView?.addSubview(tableView.enclosingScrollView!)
+
+        let rowView = try XCTUnwrap(tableView.rowView(atRow: 0, makeIfNecessary: true))
+        let cellView = try XCTUnwrap(tableView.view(atColumn: 0, row: 0, makeIfNecessary: true))
+        let disabledButton = NSButton(frame: .init(x: 10, y: 5, width: 80, height: 20))
+        disabledButton.isEnabled = false
+        cellView.addSubview(disabledButton)
+
+        let predicate = MacOSRUMActionsPredicateMock()
+        predicate.resultByView[rowView] = RUMAction(name: "Row", attributes: [:])
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(.mockSwiftUIAutomatic()))
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
+        let buttonCenterInWindow = disabledButton.convert(
+            .init(x: disabledButton.bounds.midX, y: disabledButton.bounds.midY),
+            to: nil
+        )
+
+        // When
+        handler.notify_sendEvent(
+            event: MockNSEvent.mockWith(window: window, locationInWindow: buttonCenterInWindow)
+        )
+
+        // Then
+        try withExtendedLifetime(tableDataSource) {
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+            XCTAssertEqual(command?.name, "Row")
+            XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(predicate.receivedViews.count, 1)
+            XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), rowView)
+            XCTAssertTrue(detector.receivedEvents.isEmpty)
         }
     }
 
@@ -246,6 +320,70 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             XCTAssertEqual(command?.actionType, .click)
             XCTAssertEqual(command?.instrumentation, .appKit)
         }
+    }
+
+    func testGivenDisabledControlInsideCollectionViewItem_whenLeftMouseDown_itSendsActionForItem() throws {
+        // Given
+        let window = makeWindow()
+        let collectionDataSource = CollectionDataSource()
+        let collectionView = makeCollectionView(dataSource: collectionDataSource)
+        window.contentView?.addSubview(collectionView.enclosingScrollView!)
+
+        let item = try XCTUnwrap(collectionView.item(at: .init(item: 0, section: 0)))
+        let disabledButton = NSButton(frame: .init(x: 10, y: 5, width: 60, height: 30))
+        disabledButton.isEnabled = false
+        item.view.addSubview(disabledButton)
+
+        let predicate = MacOSRUMActionsPredicateMock()
+        predicate.resultByView[item.view] = RUMAction(name: "Item", attributes: [:])
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(.mockSwiftUIAutomatic()))
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
+        let buttonCenterInWindow = disabledButton.convert(
+            .init(x: disabledButton.bounds.midX, y: disabledButton.bounds.midY),
+            to: nil
+        )
+
+        // When
+        handler.notify_sendEvent(
+            event: MockNSEvent.mockWith(window: window, locationInWindow: buttonCenterInWindow)
+        )
+
+        // Then
+        try withExtendedLifetime(collectionDataSource) {
+            let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+            XCTAssertEqual(command?.name, "Item")
+            XCTAssertEqual(command?.actionType, .click)
+            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(predicate.receivedViews.count, 1)
+            XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), item.view)
+            XCTAssertTrue(detector.receivedEvents.isEmpty)
+        }
+    }
+
+    func testGivenDisabledControlWithoutInteractiveAppKitAncestor_whenLeftMouseDown_itUsesAccessibilityHierarchyDetector() throws {
+        // Given
+        let window = makeWindow()
+        let disabledButton = NSButton(frame: .init(x: 20, y: 20, width: 100, height: 40))
+        disabledButton.isEnabled = false
+        window.contentView?.addSubview(disabledButton)
+
+        let expectedCommand = RUMAddUserActionCommand.mockSwiftUIAutomatic()
+        let predicate = MacOSRUMActionsPredicateMock()
+        let detector = AccessibilityHierarchyDetectorMock(result: .command(expectedCommand))
+        let handler = appKitHandler(macOSPredicate: predicate, accessibilityHierarchyDetector: detector)
+        let event = MockNSEvent.mockWith(window: window, locationInWindow: .init(x: 30, y: 30))
+
+        // When
+        handler.notify_sendEvent(event: event)
+
+        // Then
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.name, expectedCommand.name)
+        XCTAssertEqual(command.actionType, .click)
+        XCTAssertEqual(command.instrumentation, .swiftuiAutomatic)
+        XCTAssertTrue(predicate.receivedViews.isEmpty)
+        XCTAssertEqual(detector.receivedEvents.count, 1)
+        XCTAssertIdentical(try XCTUnwrap(detector.receivedEvents.first), event)
     }
 
     func testGivenUnrecognizedAppKitHierarchy_whenLeftMouseDown_itGetsIgnored() {
@@ -620,6 +758,8 @@ private final class HitTestingButton: NSButton {
         return hitTestResult ?? super.hitTest(point)
     }
 }
+
+private final class CustomControl: NSControl { }
 
 private final class CellHostingView: NSView { }
 
