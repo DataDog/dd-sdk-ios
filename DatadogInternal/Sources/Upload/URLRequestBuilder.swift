@@ -25,6 +25,10 @@ public struct URLRequestBuilder {
         public static let ddEVPOriginVersionHeaderField = "DD-EVP-ORIGIN-VERSION"
         public static let ddRequestIDHeaderField = "DD-REQUEST-ID"
         public static let ddIdempotencyKeyHeaderField = "DD-IDEMPOTENCY-KEY"
+        /// Marks a request as originating from the SDK itself, so it can be excluded from automatic
+        /// `URLSession` instrumentation even when it carries no Datadog intake credentials
+        /// (e.g. requests to a public CDN, which must not receive `DD-API-KEY`/`DD-CLIENT-TOKEN`).
+        public static let ddInternalHeaderField = "X-Datadog-Internal"
 
         public enum ContentType {
             case applicationJSON

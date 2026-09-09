@@ -115,8 +115,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                // Skip Datadog's own intake requests to prevent infinite recursion
-                if self.hasDatadogAuthHeader(request: currentRequest) {
+                // Skip Datadog's own internal requests to prevent infinite recursion
+                if self.isDatadogInternalRequest(request: currentRequest) {
                     return
                 }
 
@@ -364,14 +364,19 @@ extension NetworkInstrumentationFeature {
     ///
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
-    private func hasDatadogAuthHeader(request: URLRequest?) -> Bool {
+    private func isDatadogInternalRequest(request: URLRequest?) -> Bool {
         // Datadog internal requests authenticate with either `DD-API-KEY` or `DD-CLIENT-TOKEN`.
         // This catches both this SDK's own uploads (preventing recursion) and other Datadog
         // tooling that may run in the same process (e.g. `DatadogSDKTesting`'s CI Visibility
         // uploader, which would otherwise pollute interception expectations via the global
         // `__NSCFLocalSessionTask.resume` swizzle in tests).
+        //
+        // Some internal requests (e.g. Remote Configuration fetches from a public CDN) must not
+        // carry those intake credentials, so they are marked instead with a dedicated internal
+        // header.
         return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
             || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
+            || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddInternalHeaderField) != nil
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this
