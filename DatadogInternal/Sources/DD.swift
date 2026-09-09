@@ -38,15 +38,11 @@ import OSLog
 /// Function printing `String` content to console.
 nonisolated(unsafe) public var consolePrint: @Sendable (String, CoreLoggerLevel) -> Void = { message, level in
     #if canImport(OSLog)
-    if #available(iOS 14.0, tvOS 14.0, *) {
-        switch level {
-        case .debug: Logger.datadog.debug("\(message, privacy: .private)")
-        case .warn: Logger.datadog.warning("\(message, privacy: .private)")
-        case .error: Logger.datadog.critical("\(message, privacy: .private)")
-        case .critical: Logger.datadog.fault("\(message, privacy: .private)")
-        }
-    } else {
-        print(message)
+    switch level {
+    case .debug: Logger.datadog.debug("\(message, privacy: .private)")
+    case .warn: Logger.datadog.warning("\(message, privacy: .private)")
+    case .error: Logger.datadog.critical("\(message, privacy: .private)")
+    case .critical: Logger.datadog.fault("\(message, privacy: .private)")
     }
     #else
     print(message)
@@ -54,7 +50,6 @@ nonisolated(unsafe) public var consolePrint: @Sendable (String, CoreLoggerLevel)
 }
 
 #if canImport(OSLog)
-@available(iOS 14.0, tvOS 14.0, *)
 extension Logger {
     static let datadog = Logger(subsystem: "dd-sdk-ios", category: "DatadogInternal")
 }

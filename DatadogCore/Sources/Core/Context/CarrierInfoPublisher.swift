@@ -19,18 +19,30 @@ internal struct CarrierInfoPublisher: ContextValuePublisher {
 
     init(networkInfo: CTTelephonyNetworkInfo = .init()) {
         self.networkInfo = networkInfo
-        self.initialValue = CarrierInfo(networkInfo, service: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first)
+
+        guard #available(iOS 16, *) else {
+            self.initialValue = CarrierInfo(networkInfo, service: networkInfo.serviceCurrentRadioAccessTechnology?.keys.first)
+            return
+        }
+
+        // `CTCarrier` and related APIs are deprecated in iOS 16 with no replacement. Apple confirmed
+        // they always return placeholder ("--") or empty values from iOS 16 onward, so there is nothing
+        // meaningful left to report. ref.: https://forums.developer.apple.com/forums/thread/714876
+        self.initialValue = nil
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<CarrierInfo?>) {
-        // The `serviceSubscriberCellularProvidersDidUpdateNotifier` block object executes on the default priority
-        // global dispatch queue when the user’s cellular provider information changes.
-        // This occurs, for example, if a user swaps the device’s SIM card with one from another provider, while the app is running.
-        // ref.: https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/3024512-servicesubscribercellularprovide
-        networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { key in
-            // On iOS12+ `CarrierInfo` subscribers are notified on actual change to cellular provider.
-            let info = CarrierInfo(self.networkInfo, service: key)
-            receiver(info)
+        guard #available(iOS 16, *) else {
+            // The `serviceSubscriberCellularProvidersDidUpdateNotifier` block object executes on the default priority
+            // global dispatch queue when the user’s cellular provider information changes.
+            // This occurs, for example, if a user swaps the device’s SIM card with one from another provider, while the app is running.
+            // ref.: https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/3024512-servicesubscribercellularprovide
+            networkInfo.serviceSubscriberCellularProvidersDidUpdateNotifier = { key in
+                // On iOS12+ `CarrierInfo` subscribers are notified on actual change to cellular provider.
+                let info = CarrierInfo(self.networkInfo, service: key)
+                receiver(info)
+            }
+            return
         }
     }
 

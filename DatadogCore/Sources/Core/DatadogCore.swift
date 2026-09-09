@@ -55,6 +55,13 @@ internal final class DatadogCore {
     /// The message-bus instance.
     let bus = MessageBus()
 
+    /// The remote configuration provider, if configured.
+    let remoteConfigurationProvider: RemoteConfigurationProvider?
+
+    /// The last successfully fetched remote configuration, if any.
+    @ReadWriteLock
+    var remoteConfiguration: RemoteConfiguration?
+
     /// Registry for Features.
     @ReadWriteLock
     private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
@@ -86,21 +93,24 @@ internal final class DatadogCore {
     ///   - encryption: The on-disk data encryption.
     ///   - contextProvider: The core context provider.
     ///   - applicationVersion: The application version.
+    ///   - remoteConfigurationProvider: The remote configuration provider, if configured.
     init(
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-    	performance: PerformancePreset,
-    	httpClient: HTTPClient,
-    	encryption: DataEncryption?,
+        performance: PerformancePreset,
+        httpClient: HTTPClient,
+        encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool = false
+        isRunFromExtension: Bool = false,
+        remoteConfigurationProvider: RemoteConfigurationProvider? = nil
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
+        self.remoteConfigurationProvider = remoteConfigurationProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
@@ -114,7 +124,6 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.accountInfo, to: accountInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
-
         // connect the core to the message bus.
         // the bus will keep a weak ref to the core.
         bus.connect(core: self)
@@ -123,6 +132,13 @@ internal final class DatadogCore {
         self.contextProvider.publish { [weak self] context in
             self?.send(message: .context(context))
         }
+
+        self.remoteConfigurationProvider?.start(
+            { [weak self] remoteConfiguration in
+                self?.remoteConfiguration = remoteConfiguration
+            },
+            telemetry: telemetry
+        )
     }
 
     /// Sets current user information.
@@ -317,6 +333,7 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
     }
@@ -509,7 +526,8 @@ extension DatadogContextProvider {
         serverDateProvider: ServerDateProvider,
         notificationCenter: NotificationCenter,
         appLaunchHandler: AppLaunchHandling,
-        appStateProvider: AppStateProvider
+        appStateProvider: AppStateProvider,
+        remoteConfigurationId: String?
     ) {
         // `ContextProvider` must be initialized on the main thread for two key reasons:
         // - It interacts with UIKit APIs to read the initial app state, which is only safe on the main thread.
@@ -542,7 +560,8 @@ extension DatadogContextProvider {
             localeInfo: locale,
             nativeSourceOverride: nativeSourceOverride,
             launchInfo: launchInfo,
-            applicationStateHistory: appStateHistory
+            applicationStateHistory: appStateHistory,
+            remoteConfigurationId: remoteConfigurationId
         )
 
         self.init(context: context)

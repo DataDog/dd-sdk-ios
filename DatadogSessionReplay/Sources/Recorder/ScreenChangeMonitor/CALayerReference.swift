@@ -26,7 +26,6 @@ internal struct CALayerReference: @unchecked Sendable {
         layer === other
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func resolve() -> CALayer? {
         layer

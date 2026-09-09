@@ -10,7 +10,6 @@ import Foundation
 import UIKit
 
 extension SRWireframe {
-    @available(iOS 13.0, tvOS 13.0, *)
     init(hiddenEmbeddedContentReplayID replayID: Int64, slotID: String) {
         self = .embeddedContentWireframe(
             value: .init(
@@ -25,7 +24,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(hiddenWebViewSlotID slotID: Int) {
         self = .webviewWireframe(
             value: .init(
@@ -40,7 +38,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
         backgroundGradient: SRShapeGradient? = nil,
@@ -67,7 +64,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(
         layerSnapshot: CALayerSnapshot,
         backgroundColor: UIColor,
@@ -89,7 +85,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init?(
         layerSnapshot: CALayerSnapshot,
         label: CALayerSnapshot.SemanticObservation.LabelSemantics,
@@ -119,7 +114,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(
         replayID: Int64,
         imageSnapshot: ContentSnapshot,
@@ -139,7 +133,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(
         placeholderFor layerSnapshot: CALayerSnapshot,
         label: String
@@ -156,7 +149,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(
         layerSnapshot: CALayerSnapshot,
         embeddedContent: CALayerSnapshot.SemanticObservation.EmbeddedContentSemantics
@@ -176,7 +168,6 @@ extension SRWireframe {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     init(
         layerSnapshot: CALayerSnapshot,
         webView: CALayerSnapshot.SemanticObservation.WebViewSemantics
@@ -198,7 +189,6 @@ extension SRWireframe {
 }
 
 extension SRTextPosition {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init(label: CALayerSnapshot.SemanticObservation.LabelSemantics) {
         self.init(
             alignment: .init(systemTextAlignment: label.textAlignment)
@@ -207,7 +197,6 @@ extension SRTextPosition {
 }
 
 extension SRTextStyle {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init(
         label: CALayerSnapshot.SemanticObservation.LabelSemantics,
         frame: CGRect
@@ -232,7 +221,6 @@ extension SRTextStyle {
 }
 
 extension SRShapeBorder {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init?(layerSnapshot: CALayerSnapshot) {
         guard
             let borderColor = layerSnapshot.borderColor,
@@ -248,7 +236,6 @@ extension SRShapeBorder {
 }
 
 extension SRShapeStyle {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
         backgroundGradient: SRShapeGradient? = nil,
@@ -269,7 +256,6 @@ extension SRShapeStyle {
 }
 
 extension SRShapeGradient {
-    @available(iOS 13.0, tvOS 13.0, *)
     init?(
         gradient: CALayerSnapshot.SemanticObservation.GradientSemantics
     ) {

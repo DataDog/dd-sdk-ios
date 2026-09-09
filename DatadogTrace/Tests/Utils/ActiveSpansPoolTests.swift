@@ -81,7 +81,6 @@ class ActiveSpansPoolTests: XCTestCase, Sendable {
         XCTAssertTrue(tracer.activeSpansPool.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13, *)
     func testActiveSpanIsKeptPerTask() async throws {
         let tracer = DatadogTracer.mockAny(in: core)
         let oneSpan = tracer.startSpan(operationName: .mockAny()).setActive()

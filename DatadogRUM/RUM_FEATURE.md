@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-08-19
-sdk_version: 3.16.0
-verified_against_commit: fee1ac701
+last_updated: 2026-09-08
+sdk_version: 3.17.0
+verified_against_commit: ac1c0a102
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
+  - DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift
   - DatadogRUM/Sources/RUMMonitor.swift
   - DatadogRUM/Sources/RUMMonitorProtocol.swift
 ---
@@ -185,7 +186,9 @@ RUM.enable(
         // RUM feature flags
         // Default: .defaults ([.trackScrollAndSwipeActions: true])
         // Set [.trackScrollAndSwipeActions: false] to disable automatic
-        // scroll/swipe action tracking and INV attribution for those gestures
+        // scroll/swipe action tracking and INV attribution for those gestures.
+        // Set [.viewUpdates: true] to send incremental view_update deltas
+        // instead of resending the full view event on every update
         featureFlags: .defaults
     )
 )
@@ -225,6 +228,7 @@ monitor.stopView(key: "ProductList")
   - Sampling rates and performance options
   - Event mappers and callbacks
   - Check this file to understand what customers can configure
+- **`DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift`** - Applies Datadog Remote Configuration on top of the in-code `RUM.Configuration`, once, at `RUM.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API
 - **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`
@@ -250,7 +254,7 @@ Requires configuration to be set, otherwise disabled by default:
 
 ### Performance Monitoring
 - **Long tasks**: `longTaskThreshold` (default: 0.1s)
-- **App hangs**: `appHangThreshold` (default: nil/disabled)
+- **App hangs**: `appHangThreshold` (default: nil/disabled) — stack traces require Crash Reporting, and can be opted out of with `CrashReporting.Configuration.appHangBacktraceEnabled`
 - **Vitals**: `vitalsUpdateFrequency` (default: .average)
 - **Slow frames**: `trackSlowFrames` (default: true) — captures view hitches and attaches them to the corresponding RUM view
 
@@ -271,23 +275,33 @@ Event mappers allow modifying or dropping events before upload:
 ### Feature Flags
 - `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
+- `.viewUpdates`: defaults to `false` (not set). When set to `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)
 - `RUM.Configuration.timeseries` — gated behind `@_spi(Experimental)`; not an init parameter, must be set on the configuration instance before calling `RUM.enable(with:)`. Default: `nil` (disabled).
-- Set it to `RUM.Configuration.Timeseries(collectTypes:)` to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
+- Set it to `RUM.Configuration.Timeseries(collectTypes:)`, or to the built-in `.default`, to sample memory footprint and/or CPU usage roughly once per second during a RUM session, uploaded as timeseries events scoped to the session.
   ```swift
   @_spi(Experimental) import DatadogRUM
 
   var rumConfig = RUM.Configuration(applicationID: "<rum_application_id>")
-  rumConfig.timeseries = RUM.Configuration.Timeseries(
-      // Default: nil (collects all types available on the current platform)
-      collectTypes: [.memory, .cpu]
-  )
+  rumConfig.timeseries = .default // memory + cpu
+  // or, to pick specific types explicitly:
+  // rumConfig.timeseries = RUM.Configuration.Timeseries(collectTypes: [.memory])
   RUM.enable(with: rumConfig)
   ```
+- `collectTypes` is a mandatory `Set<TimeseriesType>` — there is no implicit "collect everything" default and no nil state. Use `RUM.Configuration.Timeseries.default` (`[.memory, .cpu]`) to opt into the standard set explicitly; this constant is stable across SDK versions.
 - `TimeseriesType`: `.memory` (physical memory footprint and % of total device RAM), `.cpu` (usage percentage). `.cpu` is unavailable on watchOS and is filtered out of `collectTypes` automatically there.
 - When enabled, `core.telemetry.usage(event: .timeseries)` is fired once from `RUM.enable(with:)` to report adoption.
+
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `RUM.enable(with:)` runs, it is merged onto the in-code `RUM.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- **`rum` namespace** overrides: `telemetrySampleRate`, `trackAnonymousUser`, `trackBackgroundEvents`, `trackFrustrations`, `longTaskThreshold`/`appHangThreshold` (an explicit `enabled: false` disables the feature regardless of threshold), `trackSlowFrames`, `trackWatchdogTerminations`, `vitalsUpdateFrequency`, and (except on watchOS) `trackMemoryWarnings`/`trackUserInteractions`. `trackResources` and `trackUserInteractions` have no direct stored property — they toggle whether `urlSessionTracking` / the action predicates are present, installing a default implementation only if the developer left them unset.
+- **`trace` namespace** configures distributed tracing on RUM's own URLSession instrumentation (traced hosts, sample rate, header/propagator types, injection strategy), merged field by field onto any in-code `urlSessionTracking.firstPartyHostsTracing`. An explicit `rum.trackResources == false` disables that instrumentation and suppresses `trace` entirely, regardless of the hosts it declares.
+- A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
+- See `RUMConfiguration+RemoteConfiguration.swift` for the full merge rules, and `DatadogTrace/TRACE_FEATURE.md#remote-configuration` for how Trace's own remote `trace.sampleRate` differs from this one (RUM owns propagation enablement; Trace only owns its default tracer's span sample rate).
 
 ## Common Troubleshooting Patterns
 
@@ -314,8 +328,9 @@ Event mappers allow modifying or dropping events before upload:
 
 ## Feature Interactions
 
-- **Crash Reporting**: Enhances App Hang monitoring with stack traces
+- **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
 - **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
+- **Remote Configuration**: when configured, drives RUM's distributed-tracing enablement (`trace` namespace) instead of Trace's own remote configuration — see [Remote Configuration](#remote-configuration)
 - **Session Replay**: RUM must be enabled for Session Replay to work
 - **WebView Tracking**: Enables RUM tracking in web views. Requires:
   - `WebViewTracking.enable(webView:hosts:)` called on the native side

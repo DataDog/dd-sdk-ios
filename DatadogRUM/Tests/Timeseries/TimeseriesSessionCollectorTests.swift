@@ -16,6 +16,14 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     private let featureScope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
     private let memoryReader = SamplingBasedVitalReaderMock()
 
+    /// Blocks the test until `duration` has elapsed on a background queue, giving the collector's sampling
+    /// timer time to fire before assertions run.
+    private func settle(_ duration: TimeInterval = 0.1) {
+        let expectation = self.expectation(description: "settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + duration) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+    }
+
     // MARK: - Memory events
 
     func testWhenBatchSizeIsReached_itWritesMemoryEvent() {
@@ -346,17 +354,15 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
-        let hasReplay = SessionReplayCoreContext.HasReplay(value: true)
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [hasReplay]))
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
-            featureScope: scope,
+            featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
-        let contextReader = RUMActiveContextReaderMock()
+        let contextReader = RUMActiveContextReaderMock(hasReplay: true)
         collector.activeContextReader = contextReader
 
         // When
@@ -369,7 +375,76 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-has-replay")
 
         // Then
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertEqual(events[0].session.hasReplay, true)
+    }
+
+    func testWhenSessionReplayContextNeverObserved_hasReplayStaysNilOnEvent() {
+        // Given — no `hasReplay` value is ever reported by the active context reader (Session Replay not enabled)
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock(hasReplay: nil)
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-no-replay", applicationID: "app-no-replay", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-no-replay")
+
+        // Then — `hasReplay` stays `nil`, not `false`, so the field is omitted rather than misreported
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertNil(events[0].session.hasReplay)
+    }
+
+    func testWhenReplayStopsBeforeFlush_hasReplayStaysTrueForTheBatch() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only `stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock(hasReplay: true)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-replay-stops", applicationID: "app-1", sessionType: .user)
+
+        // When — replay was active for some of the batch window, then stops before the flush
+        let replayActiveExpectation = self.expectation(description: "samples collected while replay is active")
+        replayActiveExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            contextReader.hasReplay = false
+            replayActiveExpectation.fulfill()
+        }
+        waitForExpectations(timeout: 2)
+
+        let moreSamplesExpectation = self.expectation(description: "more samples collected after replay stopped")
+        moreSamplesExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { moreSamplesExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        let syncExpectation = self.expectation(description: "stop completed")
+        collector.stop(sessionID: "session-replay-stops")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.2) { syncExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the whole batch still reports `hasReplay: true`, since replay was active for part of it
+        let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty)
         XCTAssertEqual(events[0].session.hasReplay, true)
     }
@@ -715,6 +790,71 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.stop(sessionID: "session-bg")
     }
 
+    func testWhenResumedAfterPause_reanchorsToAvoidLagOrPrecedeAlreadyFlushedSamples() {
+        // Given — the media clock doesn't advance during real device sleep (unlike the wall clock), so a
+        // pause spanning device sleep leaves a growing gap between the two if the anchor isn't refreshed
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only `pause()`/`stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-clock-jumps", applicationID: "app-1", sessionType: .user)
+
+        collector.pause(sessionID: "session-clock-jumps")
+        settle(0.1)
+
+        // When — simulate a long device sleep: the wall clock jumps forward by an hour, but the monotonic
+        // media clock (paused during real sleep) does not advance — then the collector resumes and samples
+        clock.date = clock.date.addingTimeInterval(3_600)
+        collector.resume(sessionID: "session-clock-jumps")
+        settle(0.3)
+
+        // Then — post-resume samples reflect the real (post-sleep) wall-clock time, not the pre-sleep
+        // anchor lagging behind by ~1 hour. Pause again (flushing this batch) so we have a known
+        // `flushedAfterForwardJump.timeseries.end` to check the next batch against below.
+        collector.pause(sessionID: "session-clock-jumps")
+        settle(0.1)
+
+        let eventsAfterForwardJump = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let flushedAfterForwardJump = eventsAfterForwardJump.last else {
+            XCTFail("Expected at least one memory event with a sample after resume")
+            return
+        }
+        let lastSampleDate = Date(timeIntervalSince1970: Double(flushedAfterForwardJump.timeseries.end) / 1_000_000_000)
+        XCTAssertEqual(lastSampleDate.timeIntervalSince(clock.date), 0, accuracy: 1, "Post-resume sample should be anchored to the real post-sleep wall-clock time, not lag behind by the sleep duration")
+
+        // When — the wall clock then moves backward by an hour while paused/backgrounded (e.g. an NTP
+        // correction), then the collector resumes and samples again
+        clock.date = clock.date.addingTimeInterval(-3_600)
+        collector.resume(sessionID: "session-clock-jumps")
+        settle(0.3)
+
+        collector.stop(sessionID: "session-clock-jumps")
+        settle(0.2)
+
+        // Then — the post-resume batch must not precede the batch already flushed before the pause,
+        // even though the wall clock moved backward while paused
+        let allEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let resumedBatch = allEvents.last, allEvents.count > eventsAfterForwardJump.count else {
+            XCTFail("Expected an additional memory event flushed after resume")
+            return
+        }
+        XCTAssertGreaterThanOrEqual(
+            resumedBatch.timeseries.start,
+            flushedAfterForwardJump.timeseries.end,
+            "Post-resume batch must not start before the batch already flushed prior to the pause"
+        )
+    }
+
     func testWhenPauseCalledBeforeStart_itIsNoOp() {
         // Given — collector not yet started
         let collector = TimeseriesSessionCollector(
@@ -872,6 +1012,64 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.end, timestamps.last)
     }
 
+    func testWhenWallClockJumpsMidSession_backwardStaysMonotonicAndForwardIsHonored() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only `flush()`/`stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-clock-jump", applicationID: "app-1", sessionType: .user)
+
+        settle(0.2)
+
+        // When — the wall clock jumps backward (e.g. an NTP correction), but real time (and thus the
+        // monotonic media clock the collector now anchors to) keeps moving forward normally
+        clock.date = clock.date.addingTimeInterval(-60)
+        clock.mediaTime.current += 0.2
+
+        settle(0.2)
+
+        collector.flush()
+
+        // Then — sample timestamps are unaffected by the backward wall-clock jump and remain monotonically increasing
+        let eventsAfterBackwardJump = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let batchAfterBackwardJump = eventsAfterBackwardJump.first else {
+            XCTFail("Expected at least one memory event")
+            return
+        }
+        let timestamps = batchAfterBackwardJump.timeseries.data.timestamps
+        XCTAssertEqual(timestamps, timestamps.sorted(), "Timestamps should stay monotonically increasing across a backward wall-clock jump")
+        XCTAssertGreaterThanOrEqual(batchAfterBackwardJump.timeseries.end, batchAfterBackwardJump.timeseries.start, "The batch end must not precede its start")
+
+        // When — the wall clock is then corrected forward by an hour (e.g. NTP sync), while the session
+        // stays foregrounded and never pauses/resumes; the monotonic media clock is left untouched
+        clock.date = clock.date.addingTimeInterval(3_600)
+
+        settle(0.2)
+
+        collector.stop(sessionID: "session-clock-jump")
+        settle(0.2)
+
+        // Then — the most recent sample reflects the corrected wall-clock time immediately, without
+        // waiting for a pause/resume cycle to refresh the anchor
+        let allEvents = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
+        guard let batchAfterForwardJump = allEvents.last, allEvents.count > eventsAfterBackwardJump.count else {
+            XCTFail("Expected an additional memory event after the forward jump")
+            return
+        }
+        let lastSampleDate = Date(timeIntervalSince1970: Double(batchAfterForwardJump.timeseries.end) / 1_000_000_000)
+        XCTAssertEqual(lastSampleDate.timeIntervalSince(clock.date), 0, accuracy: 1, "Post-correction sample should advance to the corrected wall-clock time, not lag behind by the correction amount")
+    }
+
     // MARK: - Session lifetime self-enforcement
 
     func testWhenSessionExceedsMaxDuration_itSelfStopsAndFlushes() {
@@ -885,7 +1083,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000,
-            now: clock.now
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
         )
         let startTime = clock.date
         let contextReader = RUMActiveContextReaderMock(sessionID: "session-expired", sessionStartTime: startTime, lastInteractionTime: startTime)
@@ -901,7 +1100,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // When — advance the (injected) clock and the activity reader's snapshot past the session's max
         // duration, mirroring how `Monitor` refreshes its snapshot on every processed command, without ever
         // calling stop() directly
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        clock.advance(by: RUMSessionScope.Constants.sessionMaxDuration)
         contextReader.sessionActivity.lastInteractionTime = clock.date
         let selfStopExpectation = self.expectation(description: "self-stop settled")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
@@ -930,7 +1129,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000,
-            now: clock.now
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
         )
         let startTime = clock.date
         let contextReader = RUMActiveContextReaderMock(sessionID: "session-idle", sessionStartTime: startTime, lastInteractionTime: startTime)
@@ -945,13 +1145,52 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // When — advance the clock past the inactivity timeout while the activity reader's `lastInteractionTime`
         // stays fixed at `startTime` (i.e. no RUM interaction was ever processed)
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let selfStopExpectation = self.expectation(description: "self-stop settled")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
         // Then
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected the collector to self-flush once idle past the inactivity timeout")
+    }
+
+    func testWhenWallClockJumpsBackwardThenFreshInteractionArrives_doesNotFalselyExpireSession() {
+        // Given — a backward wall-clock jump (e.g. NTP correction) happens mid-session, so the anchored
+        // media-clock-derived date and the raw wall clock diverge
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 100, // won't auto-flush — only self-expiry or `stop()` triggers the flush
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
+        )
+        let startTime = clock.date
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-clock-jump", sessionStartTime: startTime, lastInteractionTime: startTime)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-clock-jump", applicationID: "app-1", sessionType: .user)
+
+        // When — the wall clock jumps backward by more than the inactivity timeout, then a fresh interaction
+        // is processed and reported at the new (earlier) wall-clock time, while the anchored/monotonic date
+        // this collector would otherwise compare against keeps climbing on the old anchor
+        clock.date = clock.date.addingTimeInterval(-RUMSessionScope.Constants.sessionTimeoutDuration - 60)
+        clock.mediaTime.current += 0.2
+        contextReader.sessionActivity.lastInteractionTime = clock.date
+
+        let expectation = self.expectation(description: "still sampling after the jump and fresh interaction")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+
+        // Then — the session must not be treated as expired: the expiry check compares against `now()`
+        // (the same wall-clock timeline `lastInteractionTime` lives on), not the sleep/adjustment-immune
+        // anchored date, so a fresh interaction on the new wall-clock timeline keeps the session alive
+        XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Session must not be treated as expired by a stale comparison between the anchored date and the fresh wall-clock interaction")
+        collector.stop(sessionID: "session-clock-jump")
     }
 
     func testWhenActivityReaderReportsRecentInteraction_preventsSelfStopWithinTimeoutWindow() {
@@ -965,7 +1204,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             samplingInterval: 0.05,
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000,
-            now: clock.now
+            now: clock.now,
+            mediaTimeProvider: clock.mediaTime
         )
         let startTime = clock.date
         let contextReader = RUMActiveContextReaderMock(sessionID: "session-active", sessionStartTime: startTime, lastInteractionTime: startTime)
@@ -974,9 +1214,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 
         // When — a RUM interaction is reported right before what would have been the inactivity timeout,
         // resetting the clock the reader exposes to `sample()`
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
         contextReader.sessionActivity.lastInteractionTime = clock.date
-        clock.date = clock.date.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
 
         let expectation = self.expectation(description: "still sampling")
         expectation.assertForOverFulfill = false
@@ -1057,17 +1297,20 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue]
     var activeView: (id: String?, path: String?, name: String?)
     var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?)
+    var hasReplay: Bool?
 
     init(
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil),
         sessionID: String? = nil,
         sessionStartTime: Date? = nil,
-        lastInteractionTime: Date? = nil
+        lastInteractionTime: Date? = nil,
+        hasReplay: Bool? = nil
     ) {
         self.globalAttributes = globalAttributes
         self.activeView = activeView
         self.sessionActivity = (sessionID, sessionStartTime, lastInteractionTime)
+        self.hasReplay = hasReplay
     }
 
     func isSessionExpired(sessionID: String, at date: Date) -> Bool {
@@ -1081,16 +1324,23 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
     }
 }
 
-/// A `Date` provider whose current time can be advanced manually, used to deterministically test the
-/// collector's self-enforced session expiry without waiting on real wall-clock durations.
+/// A manually-advanceable `Date`/`mediaTime` pair, settable independently to simulate wall-clock/media-clock
+/// divergence (e.g. a backward wall-clock jump) or together to simulate normal elapsed time.
 private class MutableClock {
     var date: Date
+    let mediaTime = MediaTimeProviderMock()
 
     init(date: Date = Date()) {
         self.date = date
     }
 
     func now() -> Date { date }
+
+    /// Advances both `date` and `mediaTime` by the same delta, as real elapsed time would.
+    func advance(by interval: TimeInterval) {
+        date = date.addingTimeInterval(interval)
+        mediaTime.current += interval
+    }
 }
 
 #endif

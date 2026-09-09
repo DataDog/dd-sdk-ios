@@ -161,7 +161,6 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertTrue(registry.identifiers.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     func testSnapshotIncludesEveryEmbeddedContentSlot() {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
@@ -185,7 +184,6 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(snapshot.embeddedContentSlots.count, 2)
     }
 
-    @available(iOS 13.0, *)
     func testWhenUIKitViewHasSessionReplaySlotID_itIsRecordedAsEmbeddedContent() {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
@@ -208,7 +206,6 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertFalse(snapshot.nodes.contains { $0.wireframesBuilder is UILabelWireframesBuilder })
     }
 
-    @available(iOS 13.0, *)
     func testDetachedEmbeddedContentViewRemainsCachedWhileAlive() {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
@@ -231,7 +228,6 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         withExtendedLifetime(embeddedContentView) {}
     }
 
-    @available(iOS 13.0, *)
     func testSnapshotExcludesDeallocatedEmbeddedContentViews() {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))

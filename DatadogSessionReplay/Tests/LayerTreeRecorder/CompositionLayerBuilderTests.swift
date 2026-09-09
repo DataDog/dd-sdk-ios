@@ -13,7 +13,6 @@ import UIKit
 
 @MainActor
 struct CompositionLayerBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build maps geometry and children")
     func buildMapsGeometryAndChildren() {
         // Given
@@ -37,7 +36,6 @@ struct CompositionLayerBuilderTests {
         #expect(output.resource == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates mask image resource")
     func buildCreatesMaskImageResource() throws {
         // Given

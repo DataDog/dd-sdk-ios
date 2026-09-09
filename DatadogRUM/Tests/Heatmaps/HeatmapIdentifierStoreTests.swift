@@ -15,7 +15,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct HeatmapIdentifierStoreTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func setHeatmapIdentifiersReplacesCurrentSnapshot() {
         // given

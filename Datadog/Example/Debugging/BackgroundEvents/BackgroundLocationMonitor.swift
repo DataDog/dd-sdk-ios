@@ -163,17 +163,13 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     // MARK: - Helpers
 
     private func authorizationStatusDescription(for manager: CLLocationManager) -> String {
-        if #available(iOS 14.0, *) {
-            switch locationManager.authorizationStatus {
-            case .authorizedAlways: return "authorizedAlways"
-            case .notDetermined: return "notDetermined"
-            case .restricted: return "restricted"
-            case .denied: return "denied"
-            case .authorizedWhenInUse: return "authorizedWhenInUse"
-            @unknown default: return "unrecognized (sth new)"
-            }
-        } else {
-            return "unavailable prior to iOS 14.0"
+        switch locationManager.authorizationStatus {
+        case .authorizedAlways: return "authorizedAlways"
+        case .notDetermined: return "notDetermined"
+        case .restricted: return "restricted"
+        case .denied: return "denied"
+        case .authorizedWhenInUse: return "authorizedWhenInUse"
+        @unknown default: return "unrecognized (sth new)"
         }
     }
 }

@@ -9,7 +9,6 @@ import QuartzCore
 
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerChangeset {
     static func mockChange(for layer: CALayer, aspects: CALayerChange.Aspect.Set) -> CALayerChangeset {
         CALayerChangeset(

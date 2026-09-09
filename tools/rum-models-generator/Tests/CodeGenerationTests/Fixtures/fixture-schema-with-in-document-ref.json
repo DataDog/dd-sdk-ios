@@ -1,0 +1,18 @@
+{
+    "type": "object",
+    "$defs": {
+        "Status": {
+            "type": "string",
+            "description": "The status",
+            "enum": ["pending", "active", "closed"]
+        }
+    },
+    "properties": {
+        "status": {
+            "$ref": "#/$defs/Status"
+        },
+        "name": {
+            "type": "string"
+        }
+    }
+}

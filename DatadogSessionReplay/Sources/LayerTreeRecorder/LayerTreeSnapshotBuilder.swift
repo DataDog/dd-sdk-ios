@@ -13,7 +13,6 @@ import WebKit
 import DatadogInternal
 
 /// Snapshot of a layer tree and the recording context used to capture it.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerTreeSnapshot: Sendable {
     let date: Date
     let context: LayerRecordingContext
@@ -24,14 +23,12 @@ internal struct LayerTreeSnapshot: Sendable {
 }
 
 /// Creates layer tree snapshots on the main actor.
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal protocol LayerTreeSnapshotBuilding: AnyObject {
     func takeSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot?
 }
 
 /// Builds immutable snapshots from the current root layer.
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
     private let layerProvider: any LayerProvider
@@ -75,7 +72,6 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
 }
 
 extension UIView {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate var embeddedContentSlot: (Int64, String)? {
         self.dd.sessionReplaySlotID.map {
             (self.layer.replayID, $0)

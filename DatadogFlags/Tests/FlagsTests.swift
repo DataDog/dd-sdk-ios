@@ -15,6 +15,17 @@ final class FlagsTests: XCTestCase {
 
         // Then
         XCTAssertNil(config.customExposureEndpoint)
+        XCTAssertEqual(config.initializationTimeout, 5)
+    }
+
+    func testConfigurationInitializerSetsInitializationTimeout() {
+        // When
+        let configured = Flags.Configuration(initializationTimeout: 2.5)
+        let disabled = Flags.Configuration(initializationTimeout: nil)
+
+        // Then
+        XCTAssertEqual(configured.initializationTimeout, 2.5)
+        XCTAssertNil(disabled.initializationTimeout)
     }
 
     func testWhenNotEnabled() {
@@ -41,6 +52,7 @@ final class FlagsTests: XCTestCase {
         var config = Flags.Configuration()
         config.customFlagsEndpoint = .mockRandom()
         config.customFlagsHeaders = .mockRandom()
+        config.initializationTimeout = 2.5
         config.customExposureEndpoint = .mockRandom()
         let core = FeatureRegistrationCoreMock()
 
@@ -53,6 +65,7 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flags.performanceOverride?.maxObjectsInFile, 50)
         XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
         XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
+        XCTAssertEqual(flags.initializationTimeout, config.initializationTimeout)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }

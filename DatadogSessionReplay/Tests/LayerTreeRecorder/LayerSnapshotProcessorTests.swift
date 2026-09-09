@@ -17,7 +17,6 @@ import UIKit
 
 @Suite(.datadogTesting)
 struct LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("First layer tree snapshot starts a segment and processes resources")
     func firstLayerTreeSnapshotStartsSegmentAndProcessesResources() throws {
         // Given
@@ -53,7 +52,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Same context writes wireframe, composition tree, viewport, and touch records in order")
     func sameContextWritesMutationViewportAndTouchRecordsInOrder() throws {
         // Given
@@ -123,7 +121,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 7])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("RUM context change starts a new segment")
     func rumContextChangeStartsNewSegment() throws {
         // Given
@@ -151,7 +148,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-1": 3, "view-2": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframe type changes use incremental mutations and update state")
     func wireframeTypeChangesUseIncrementalMutationsAndUpdateState() throws {
         // Given
@@ -216,7 +212,6 @@ struct LayerSnapshotProcessorTests {
 }
 
 private extension LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     final class Fixture {
         let core = PassthroughCoreMock()
         let recordWriter = RecordWriterMock()

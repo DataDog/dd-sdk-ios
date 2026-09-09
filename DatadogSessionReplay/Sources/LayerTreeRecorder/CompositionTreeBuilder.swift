@@ -9,7 +9,6 @@ import CoreGraphics
 import DatadogInternal
 
 /// Builds the composition tree produced by the layer recording pipeline.
-@available(iOS 13.0, tvOS 13.0, *)
 internal class CompositionTreeBuilder {
     private typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
     private typealias VisualEffect = CALayerSnapshot.SemanticObservation.VisualEffect
@@ -178,7 +177,6 @@ internal class CompositionTreeBuilder {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.SemanticObservation {
     var gradient: GradientSemantics? {
         guard case .gradient(let gradient) = semantics else {

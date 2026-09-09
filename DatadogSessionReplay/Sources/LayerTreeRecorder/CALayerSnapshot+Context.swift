@@ -11,7 +11,6 @@ import WebKit
 
 @preconcurrency import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// State shared by all layers captured in one snapshot.
     final class Context {

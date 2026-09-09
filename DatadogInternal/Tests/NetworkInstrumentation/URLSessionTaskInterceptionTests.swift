@@ -210,10 +210,6 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesSingleFetchFromNetwork_thenAllMetricsExceptRedirectionAreCollected() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         let taskInterval = DateInterval(
             start: .mockDecember15th2019At10AMUTC(),
             end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
@@ -253,10 +249,6 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         let taskInterval = DateInterval(
             start: .mockDecember15th2019At10AMUTC(),
             end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 10)
@@ -317,10 +309,6 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskMakesFetchFromLocalCache_thenOnlyFetchMetricIsCollected() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         let taskInterval = DateInterval(
             start: .mockDecember15th2019At10AMUTC(),
             end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
@@ -377,10 +365,6 @@ class ResourceMetricsTests: XCTestCase {
     }
 
     func testWhenTaskFetchTypeVaries_thenLocalCacheHitReflectsOnlyKnownSignals() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         // `.unknown` is documented by Apple as "the fetch manner was not determined" -
         // it must not be reported as a measured cache miss.
         let cases: [(fetchType: URLSessionTaskMetrics.ResourceFetchType, expected: Bool?)] = [

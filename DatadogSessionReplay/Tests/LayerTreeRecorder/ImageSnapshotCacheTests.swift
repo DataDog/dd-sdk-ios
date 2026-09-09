@@ -14,7 +14,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct ImageSnapshotCacheTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns stored snapshot data")
     func returnsStoredSnapshotData() throws {
         // Given
@@ -39,7 +38,6 @@ struct ImageSnapshotCacheTests {
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data")
     func removesStoredSnapshotData() {
         // Given
@@ -53,7 +51,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns stored mask snapshot data")
     func returnsStoredMaskSnapshotData() throws {
         // Given
@@ -76,7 +73,6 @@ struct ImageSnapshotCacheTests {
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored mask snapshot data")
     func removesStoredMaskSnapshotData() {
         // Given
@@ -90,7 +86,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.maskSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Drops snapshot data when cached image is evicted")
     func dropsSnapshotDataWhenCachedImageIsEvicted() {
         // Given
@@ -105,7 +100,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data for direct content changes")
     func removesStoredSnapshotDataForDirectContentChanges() {
         // Given
@@ -121,7 +115,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: layer.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data when dependency changes")
     func removesStoredSnapshotDataWhenDependencyChanges() {
         // Given
@@ -141,7 +134,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: owner.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps stored snapshot data when owner only lays out")
     func keepsStoredSnapshotDataWhenOwnerOnlyLaysOut() {
         // Given
@@ -161,7 +153,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: owner.replayID) != nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored mask snapshot data when dependency changes")
     func removesStoredMaskSnapshotDataWhenDependencyChanges() {
         // Given
@@ -181,7 +172,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.maskSnapshotData(forReplayID: mask.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Expires snapshot data after unobserved frames")
     func expiresSnapshotDataAfterUnobservedFrames() throws {
         // Given

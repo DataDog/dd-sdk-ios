@@ -95,6 +95,22 @@ class RUMViewEndedMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(metrics[1].attributes?.duration.nanosecondsToSeconds, 3)
     }
 
+    func testReportingInstrumentationTypeForCrossPlatformView() throws {
+        RUM.enable(with: rumConfig, in: core)
+
+        // Given
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: "key1", name: "View1", attributes: [CrossPlatformAttributes.instrumentationType: "flutter"])
+        monitor.startView(key: "key2", name: "View2")
+
+        // Then
+        let metrics = try XCTUnwrap(core.waitAndReturnViewEndedMetricEvents())
+        XCTAssertEqual(metrics.count, 2)
+        XCTAssertEqual(metrics[1].attributes?.instrumentationType, .crossPlatform("flutter"))
+    }
+
     func testReportingTNSValue() throws {
         rumConfig.networkSettledResourcePredicate = TimeBasedTNSResourcePredicate(threshold: 2)
         RUM.enable(with: rumConfig, in: core)

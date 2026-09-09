@@ -367,6 +367,27 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
                 try printEncodingImplemenation()
                 writeEmptyLine()
                 try printDecodingImplemenation()
+                if swiftStruct.conformance.contains(where: { $0.name == "Equatable" }) {
+                    writeEmptyLine()
+                    printEquatableImplementation(typeName: typeName)
+                }
+            indentLeft()
+            writeLine("}")
+        }
+
+        func printEquatableImplementation(typeName: String) {
+            writeLine("\(configuration.accessLevel) static func == (lhs: \(typeName), rhs: \(typeName)) -> Bool {")
+            indentRight()
+            let comparisons: [String] = swiftStruct.properties.map { property in
+                if let dict = property.type as? SwiftDictionary, dict.value is SwiftEncodable {
+                    return "lhs.\(property.backtickName).dd == rhs.\(property.backtickName).dd"
+                }
+                return "lhs.\(property.backtickName) == rhs.\(property.backtickName)"
+            }
+            comparisons.enumerated().forEach { index, comparison in
+                let suffix = index < comparisons.count - 1 ? " &&" : ""
+                writeLine("\(comparison)\(suffix)")
+            }
             indentLeft()
             writeLine("}")
         }

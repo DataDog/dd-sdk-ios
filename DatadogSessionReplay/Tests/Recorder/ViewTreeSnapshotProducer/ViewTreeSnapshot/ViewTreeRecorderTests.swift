@@ -299,23 +299,21 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
 
-        if #available(iOS 13, *) {
-            // Given
-            let swiftUI = UIHostingController(rootView: EmptyView())
-            swiftUI.view.addSubview(subview)
-            window.rootViewController?.present(swiftUI, animated: false)
+        // Given
+        let swiftUI = UIHostingController(rootView: EmptyView())
+        swiftUI.view.addSubview(subview)
+        window.rootViewController?.present(swiftUI, animated: false)
 
-            // When
-            _ = recorder.record(swiftUI.view, in: .mockRandom())
+        // When
+        _ = recorder.record(swiftUI.view, in: .mockRandom())
 
-            context = nodeRecorder.queryContextsByView[swiftUI.view]
-            XCTAssertEqual(context?.viewControllerContext.isRootView, true)
-            XCTAssertEqual(context?.viewControllerContext.parentType, .swiftUI)
+        context = nodeRecorder.queryContextsByView[swiftUI.view]
+        XCTAssertEqual(context?.viewControllerContext.isRootView, true)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .swiftUI)
 
-            context = nodeRecorder.queryContextsByView[subview]
-            XCTAssertEqual(context?.viewControllerContext.isRootView, false)
-            XCTAssertEqual(context?.viewControllerContext.parentType, .swiftUI)
-        }
+        context = nodeRecorder.queryContextsByView[subview]
+        XCTAssertEqual(context?.viewControllerContext.isRootView, false)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .swiftUI)
 
         window.rootViewController?.dismiss(animated: false)
     }

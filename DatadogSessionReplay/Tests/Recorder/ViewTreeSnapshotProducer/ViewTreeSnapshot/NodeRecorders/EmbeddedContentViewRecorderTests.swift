@@ -18,7 +18,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct EmbeddedContentViewRecorderTests {
-    @available(iOS 13.0, *)
     @Test("Leaves views without a slot ID to other recorders")
     func viewsWithoutSlotIDAreNotRecorded() {
         // Given
@@ -38,7 +37,6 @@ struct EmbeddedContentViewRecorderTests {
         #expect(context.embeddedContentViewCache.count == 0)
     }
 
-    @available(iOS 13.0, *)
     @Test("Uses the opaque slot ID independently from the generated wireframe ID")
     func embeddedContentViewsUseIndependentSlotAndWireframeIDs() throws {
         // Given
@@ -82,7 +80,6 @@ struct EmbeddedContentViewRecorderTests {
         }
     }
 
-    @available(iOS 13.0, *)
     @Test("Stops traversal below embedded content views")
     func embeddedContentViewSubtreesAreIgnored() {
         // Given
@@ -107,7 +104,6 @@ struct EmbeddedContentViewRecorderTests {
         #expect(fallbackRecorder.queriedViews.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     @Test("Uses the native hidden placeholder without discarding a previously recorded embedded slot")
     func hiddenEmbeddedContentViewsUseNativePlaceholderAndKeepCachedSlot() throws {
         // Given
@@ -148,7 +144,6 @@ struct EmbeddedContentViewRecorderTests {
         )
     }
 
-    @available(iOS 13.0, *)
     @Test("Produces no visible wireframe for invisible embedded content views")
     func invisibleEmbeddedContentViewsProduceNoVisibleWireframe() throws {
         // Given
@@ -180,7 +175,6 @@ struct EmbeddedContentViewRecorderTests {
         )
     }
 
-    @available(iOS 13.0, *)
     @Test("Keeps slots independent for multiple embedded content views")
     func embeddedContentViewsKeepIndependentSlots() throws {
         // Given

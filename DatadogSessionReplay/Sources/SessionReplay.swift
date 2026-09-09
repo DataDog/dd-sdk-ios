@@ -81,6 +81,13 @@ public enum SessionReplay {
             )
         }
 
+        // Merge remote configuration on top of the in-code configuration. Remote values take
+        // precedence for supported behavioral parameters; if no remote configuration is available,
+        // the in-code configuration is used unchanged. Applied before the sample-rate guard so a
+        // remote `sampleRate` can enable or disable recording.
+        var configuration = configuration
+        configuration.apply(remoteConfiguration: core.remoteConfiguration)
+
         guard configuration.replaySampleRate > 0 else {
             return
         }

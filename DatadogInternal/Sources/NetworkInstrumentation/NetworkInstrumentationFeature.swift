@@ -115,8 +115,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                // Skip Datadog's own intake requests to prevent infinite recursion
-                if self.hasDatadogAuthHeader(request: currentRequest) {
+                // Skip Datadog's own internal requests to prevent infinite recursion
+                if self.isDatadogInternalRequest(request: currentRequest) {
                     return
                 }
 
@@ -151,24 +151,16 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         if let delegateClass = configuration?.delegateClass {
             // Swizzle delegate methods for metrics collection and completion detection:
             // - didFinishCollecting: Captures `URLSessionTaskMetrics` for detailed timing information
-            // - didCompleteWithError: Detects completion on pre-iOS 15 where setState doesn't fire
+            // - didCompleteWithError: Detects completion for tasks with completion handlers
             //
             // Completion detection strategy:
-            // For tasks WITHOUT completion handlers:
-            //   - iOS 15+: setState swizzling detects completion (didCompleteWithError is not called by URLSession)
-            //   - Pre-iOS 15: didCompleteWithError delegate detects completion (setState doesn't change to completed)
-            // For tasks WITH completion handlers:
-            //   - All iOS versions: Completion handler swizzling detects completion
+            // - Tasks WITHOUT completion handlers: setState swizzling detects completion
+            //   (didCompleteWithError is not called by URLSession in this case)
+            // - Tasks WITH completion handlers: Completion handler swizzling detects completion
             try swizzler.swizzle(
                 delegateClass: delegateClass,
                 interceptDidFinishCollecting: { [weak self] session, task, metrics in
                     self?.task(task, didFinishCollecting: metrics)
-
-                    if #available(iOS 15, tvOS 15, *), !task.dd.hasCompletion {
-                        // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
-                        // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
-                        self?.task(task, didCompleteWithError: task.error)
-                    }
                 },
                 interceptDidCompleteWithError: { [weak self] session, task, error in
                     self?.task(task, didCompleteWithError: error)
@@ -372,14 +364,22 @@ extension NetworkInstrumentationFeature {
     ///
     /// - Parameter request: The URLRequest to check.
     /// - Returns: `true` if the request is an SDK internal request, `false` otherwise.
-    private func hasDatadogAuthHeader(request: URLRequest?) -> Bool {
+    private func isDatadogInternalRequest(request: URLRequest?) -> Bool {
         // Datadog internal requests authenticate with either `DD-API-KEY` or `DD-CLIENT-TOKEN`.
         // This catches both this SDK's own uploads (preventing recursion) and other Datadog
         // tooling that may run in the same process (e.g. `DatadogSDKTesting`'s CI Visibility
         // uploader, which would otherwise pollute interception expectations via the global
         // `__NSCFLocalSessionTask.resume` swizzle in tests).
-        return request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
-            || request?.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
+        //
+        // Some internal requests (e.g. Remote Configuration fetches, which may target a public CDN
+        // or a customer-supplied endpoint) must not carry those intake credentials over the wire, so
+        // they are marked instead with a local-only `URLProtocol` property that is never transmitted.
+        guard let request else {
+            return false
+        }
+        return request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
+            || request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
+            || URLRequestBuilder.isMarkedInternal(request)
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this

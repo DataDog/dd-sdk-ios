@@ -14,7 +14,6 @@ import Testing
 
 @Suite(.datadogTesting)
 struct CALayerSnapshotFilterTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores unsupported filter values")
     func ignoresUnsupportedFilterValues() {
         // Given
@@ -27,7 +26,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores disabled filters")
     func ignoresDisabledFilters() throws {
         // Given
@@ -41,7 +39,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures gaussian blur filter", arguments: ["gaussianBlur", "variableBlur"])
     func capturesGaussianBlurFilter(type: String) throws {
         // Given
@@ -56,7 +53,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .gaussianBlur(radius))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures color matrix filter")
     func capturesColorMatrixFilter() throws {
         // Given
@@ -78,7 +74,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .colorMatrix(matrix))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures vibrant color matrix filter")
     func capturesVibrantColorMatrixFilter() throws {
         // Given
@@ -100,7 +95,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .vibrantColorMatrix(matrix))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures color saturate filter")
     func capturesColorSaturateFilter() throws {
         // Given
@@ -115,7 +109,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .saturate(amount))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures color brightness filter")
     func capturesColorBrightnessFilter() throws {
         // Given
@@ -130,7 +123,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .brightness(amount))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures multiply color filter")
     func capturesMultiplyColorFilter() throws {
         // Given
@@ -145,7 +137,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .multiplyColor(color))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures unknown filter names")
     func capturesUnknownFilterNames() throws {
         // Given
@@ -160,7 +151,6 @@ struct CALayerSnapshotFilterTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.ColorMatrix {
     var nsValue: NSValue {
         var value = self

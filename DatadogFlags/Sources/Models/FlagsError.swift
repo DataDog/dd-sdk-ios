@@ -30,4 +30,7 @@ public enum FlagsError: Error {
     ///
     /// This may occur if required configuration parameters are missing or malformed.
     case invalidConfiguration
+
+    /// The first evaluation context did not become ready before the configured initialization timeout.
+    case initializationTimedOut
 }

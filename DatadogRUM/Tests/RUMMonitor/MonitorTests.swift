@@ -237,6 +237,55 @@ class MonitorTests: XCTestCase {
 
         XCTAssertTrue(lastView3.view.loadingTime! > old)
     }
+
+    // MARK: - hasReplay snapshot
+
+    func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
+        let dateProvider = DateProviderMock()
+        featureScope = FeatureScopeMock(
+            context: .mockWith(additionalContext: [SessionReplayCoreContext.HasReplay(value: true)])
+        )
+
+        // Given — no timeseries collector configured
+        let monitorWithoutCollector = Monitor(
+            dependencies: .mockWith(featureScope: featureScope),
+            dateProvider: dateProvider
+        )
+
+        // When
+        monitorWithoutCollector.startView(key: "foo")
+
+        // Then — the snapshot is never updated
+        XCTAssertNil((monitorWithoutCollector as RUMActiveContextReader).hasReplay)
+
+        // Given — a timeseries collector configured
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, timeseriesCollector: TimeseriesCollectorStub()),
+            dateProvider: dateProvider
+        )
+        let activeContextReader: RUMActiveContextReader = monitor
+
+        monitor.startView(key: "foo")
+        XCTAssertEqual(activeContextReader.hasReplay, true)
+
+        // When — the session expires (starting a new one within a single `process(command:)` call) while
+        // the context still carries the previous session's (now stale) `hasReplay` value
+        dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1) // exceeds session max duration
+        monitor.startView(key: "bar")
+
+        // Then — the stale value is not carried over into the new session
+        XCTAssertNil(activeContextReader.hasReplay)
+    }
+}
+
+private class TimeseriesCollectorStub: TimeseriesCollecting {
+    weak var activeContextReader: RUMActiveContextReader?
+    func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+    func pause(sessionID: String) {}
+    func resume(sessionID: String) {}
+    func stop(sessionID: String) {}
+    func noteActivity(sessionID: String, at time: Date) {}
+    func flush() {}
 }
 
 // MARK: - Convenience

@@ -9,7 +9,6 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageRenderer {
     private class Key: NSObject {
         private let contents: AnyImageRepresentable

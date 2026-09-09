@@ -17,11 +17,12 @@ class TimeseriesConfigurationTests: XCTestCase {
         #endif
     }
 
-    func testWhenCollectTypesIsNil_effectiveCollectTypesReturnsAllAvailableOnCurrentPlatform() {
+    func testDefault_collectsMemoryAndCpu() {
         // Given
-        let timeseries = RUM.Configuration.Timeseries()
+        let timeseries = RUM.Configuration.Timeseries.default
 
         // Then
+        XCTAssertEqual(timeseries.collectTypes, [.memory, .cpu] as Set<RUM.Configuration.TimeseriesType>)
         XCTAssertEqual(timeseries.effectiveCollectTypes, RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform)
     }
 

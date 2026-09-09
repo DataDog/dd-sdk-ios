@@ -12,6 +12,8 @@ import TestUtilities
 @testable import DatadogTrace
 @testable import DatadogCore
 
+// MARK: DatadogTests
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionSpy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "tests")
@@ -519,6 +521,61 @@ class DatadogTests: XCTestCase {
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.logs"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.traces"))
         XCTAssertThrowsError(try cache.subdirectory(path: "com.datadoghq.rum"))
+    }
+
+    // MARK: Remote Configuration
+
+    func testGivenNoRemoteConfigurationID_cacheIsNotCreated() throws {
+        // When
+        Datadog.initialize(with: defaultConfig, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        XCTAssertNil(core.remoteConfigurationProvider)
+    }
+
+    func testGivenRemoteConfigurationID_remoteConfigurationIsCreated() throws {
+        // Given
+        var config = defaultConfig
+        config.remoteConfiguration = .init(id: "test-id")
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertNotNil(core.remoteConfigurationProvider)
+        XCTAssertEqual(context.remoteConfigurationId, "test-id")
+    }
+
+    func testGivenRemoteConfigurationID_itIsStoredInPersistentDirectoryNotCaches() throws {
+        // Given — distinct injected locations for purgeable caches vs. persistent storage
+        let cachesDirectory = Directory(url: obtainUniqueTemporaryDirectory())
+        let persistentDirectory = Directory(url: obtainUniqueTemporaryDirectory())
+        var config = defaultConfig
+        config.remoteConfiguration = .init(id: "test-id")
+        config.systemDirectory = { cachesDirectory }
+        config.persistentDirectory = { persistentDirectory }
+        config.httpClientFactory = { _ in HTTPClientMock() }
+
+        // When
+        Datadog.initialize(with: config, trackingConsent: .granted)
+        defer { Datadog.flushAndDeinitialize() }
+
+        // Then — remote configuration must live under Application Support, never the purgeable caches
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let rcPath = try XCTUnwrap(core.remoteConfigurationProvider?.directory.url.path)
+        XCTAssertTrue(
+            rcPath.hasPrefix(persistentDirectory.url.path),
+            "Remote configuration must be stored under the persistent (Application Support) directory"
+        )
+        XCTAssertFalse(
+            rcPath.hasPrefix(cachesDirectory.url.path),
+            "Remote configuration must not be stored under the purgeable caches directory"
+        )
     }
 
     func testCustomSDKInstance() throws {

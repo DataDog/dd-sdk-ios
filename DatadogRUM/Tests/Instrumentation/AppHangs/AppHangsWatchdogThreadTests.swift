@@ -212,6 +212,81 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         watchdogThread.cancel()
     }
 
+    func testWhenBacktraceGenerationIsDisabled_itTracksAppHangWithErrorMessageAndDoesNotGenerateBacktrace() {
+        let trackHangStart = expectation(description: "track start of App Hang")
+        let trackHangEnd = expectation(description: "track end of App Hang")
+
+        // Given
+        let appHangThreshold: TimeInterval = 0.25
+        let hangDuration: TimeInterval = appHangThreshold * 2
+        let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
+        let backtraceReporter = BacktraceReporterMock(backtrace: .mockWith(stack: "Main thread stack"))
+
+        let watchdogThread = AppHangsWatchdogThread(
+            appHangThreshold: appHangThreshold,
+            queue: queue,
+            dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: backtraceReporter,
+            telemetry: TelemetryMock(),
+            isAppHangBacktraceEnabled: { false } // backtrace generation disabled
+        )
+        delegate.onHangStarted = { hang in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+            trackHangStart.fulfill()
+        }
+        delegate.onHangEnded = { hang, _ in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+            trackHangEnd.fulfill()
+        }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
+
+        // When
+        queue.async {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        waitForExpectations(timeout: hangDuration * 10)
+        watchdogThread.cancel()
+        XCTAssertEqual(backtraceReporter.generateBacktraceCallsCount, 0, "It must not pay the cost of backtrace generation")
+    }
+
+    func testWhenBacktraceGenerationIsEnabled_itGeneratesBacktrace() {
+        let trackHangEnd = expectation(description: "track end of App Hang")
+
+        // Given
+        let appHangThreshold: TimeInterval = 0.25
+        let hangDuration: TimeInterval = appHangThreshold * 2
+        let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
+        let backtraceReporter = BacktraceReporterMock(backtrace: .mockWith(stack: "Main thread stack"))
+
+        let watchdogThread = AppHangsWatchdogThread(
+            appHangThreshold: appHangThreshold,
+            queue: queue,
+            dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: backtraceReporter,
+            telemetry: TelemetryMock(),
+            isAppHangBacktraceEnabled: { true }
+        )
+        delegate.onHangEnded = { hang, _ in
+            XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
+            trackHangEnd.fulfill()
+        }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
+
+        // When
+        queue.async {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        waitForExpectations(timeout: hangDuration * 10)
+        watchdogThread.cancel()
+        XCTAssertGreaterThan(backtraceReporter.generateBacktraceCallsCount, 0)
+    }
+
     func testWhenHangDurationExceedsFalsePositiveThreshold_itReportsHangCancellation() {
         let trackHangStart = expectation(description: "track start of App Hang")
         let trackHangCancel = expectation(description: "track cancellation of App Hang")

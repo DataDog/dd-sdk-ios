@@ -20,6 +20,14 @@ class DirectoryTests: XCTestCase {
         XCTAssertTrue(fileManager.fileExists(atPath: directory.url.path))
     }
 
+    func testItObtainsApplicationSupportDirectory() throws {
+        let directory = try Directory.applicationSupport()
+        let expectedURL = try XCTUnwrap(fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first)
+        // Unlike `/Library/Caches`, `/Library/Application Support` is not guaranteed to exist,
+        // so we assert on the resolved URL rather than its existence on disk.
+        XCTAssertEqual(directory.url, expectedURL)
+    }
+
     func testGivenSubdirectoryName_itCreatesIt() throws {
         let directory = try Directory.cache().createSubdirectory(path: uniqueSubdirectoryName())
         defer { directory.delete() }

@@ -10,7 +10,6 @@ import XCTest
 import SwiftUI
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 final class ShapeResourceBuilderTests: XCTestCase {
     private enum Fixtures {
         static let path = SwiftUI.Path {

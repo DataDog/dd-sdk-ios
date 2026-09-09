@@ -136,9 +136,7 @@ class UIImageViewRecorderTests: XCTestCase {
 
         // When
         let recorder = UIImageViewRecorder(identifier: UUID())
-        if #available(iOS 13.0, *) {
-            imageView.image = UIImage(systemName: "star")
-        }
+        imageView.image = UIImage(systemName: "star")
         viewAttributes = .mock(fixture: .visible())
 
         // Then

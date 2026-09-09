@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogTrace"
-  s.version      = "3.16.0"
+  s.version      = "3.17.0"
   s.summary      = "Datadog Trace Module."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -15,9 +15,9 @@ Pod::Spec.new do |s|
   }
 
   s.swift_version = '6.0'
-  s.ios.deployment_target = '12.0'
-  s.tvos.deployment_target = '12.0'
-  s.watchos.deployment_target = '7.0'
+  s.ios.deployment_target = '15.0'
+  s.tvos.deployment_target = '15.0'
+  s.watchos.deployment_target = '9.0'
   s.visionos.deployment_target = '1.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }

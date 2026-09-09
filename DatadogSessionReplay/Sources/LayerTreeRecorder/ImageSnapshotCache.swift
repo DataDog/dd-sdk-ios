@@ -11,7 +11,6 @@ import Foundation
 ///
 /// Stores rendered snapshots across image snapshot passes and keeps the render
 /// metadata needed to decide when a cached snapshot can be reused.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class ImageSnapshotCache {
     struct Policy {
         let expirationFrameCount: UInt64

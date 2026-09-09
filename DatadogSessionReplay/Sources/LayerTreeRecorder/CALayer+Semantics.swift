@@ -9,7 +9,6 @@ import Foundation
 import QuartzCore
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     var isBarBackground: Bool {
         delegate?.isKind(of: Classes.barBackground) == true

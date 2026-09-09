@@ -120,7 +120,6 @@ extension SessionReplay.Configuration {
         /// extracted from UIKit and SwiftUI properties. This pipeline uses the rendered
         /// layer tree as its primary source, preserving its structure and rendering
         /// effects to improve replay fidelity in UIKit, SwiftUI, and React Native apps.
-        @available(iOS 13.0, tvOS 13.0, *)
         case compositionTreeRecording = "composition_tree_recording"
     }
 }

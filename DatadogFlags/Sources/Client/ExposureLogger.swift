@@ -43,7 +43,8 @@ internal final class ExposureLogger: ExposureLogging {
                 targetingKey: evaluationContext.targetingKey,
                 flagKey: flagKey,
                 allocationKey: assignment.allocationKey,
-                variationKey: assignment.variationKey
+                variationKey: assignment.variationKey,
+                serialID: assignment.serialID
             )
 
             guard loggedExposures.track(exposure) else {
@@ -56,6 +57,7 @@ internal final class ExposureLogger: ExposureLogging {
                 allocation: .init(key: assignment.allocationKey),
                 flag: .init(key: flagKey),
                 variant: .init(key: assignment.variationKey),
+                serialID: assignment.serialID,
                 subject: .init(
                     id: evaluationContext.targetingKey,
                     attributes: evaluationContext.attributes

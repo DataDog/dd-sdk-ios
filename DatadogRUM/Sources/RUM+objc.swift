@@ -458,6 +458,33 @@ public enum objc_RUMFeatureOperationFailureReason: Int {
     }
 }
 
+@objc(DDRUMTimeseriesType)
+@objcMembers
+@_spi(objc)
+public final class objc_RUMTimeseriesType: NSObject {
+    internal let swiftType: RUM.Configuration.TimeseriesType
+
+    private init(_ swiftType: RUM.Configuration.TimeseriesType) {
+        self.swiftType = swiftType
+    }
+
+    public static let memory = objc_RUMTimeseriesType(.memory)
+    public static let cpu = objc_RUMTimeseriesType(.cpu)
+}
+
+@objc(DDRUMTimeseriesConfiguration)
+@objcMembers
+@_spi(objc)
+public final class objc_RUMTimeseriesConfiguration: NSObject {
+    internal let swiftConfig: RUM.Configuration.Timeseries
+
+    public init(collectTypes: [objc_RUMTimeseriesType]) {
+        swiftConfig = .init(collectTypes: Set(collectTypes.map(\.swiftType)))
+    }
+
+    public static let `default` = objc_RUMTimeseriesConfiguration(collectTypes: [.memory, .cpu])
+}
+
 @objc(DDOperationOptions)
 @objcMembers
 @_spi(objc)
@@ -676,6 +703,10 @@ public class objc_RUMConfiguration: NSObject {
     public var vitalsUpdateFrequency: objc_VitalsFrequency {
         set { swiftConfig.vitalsUpdateFrequency = newValue.swiftType }
         get { objc_VitalsFrequency(swiftType: swiftConfig.vitalsUpdateFrequency) }
+    }
+
+    public func setTimeseriesConfiguration(_ configuration: objc_RUMTimeseriesConfiguration) {
+        swiftConfig.timeseries = configuration.swiftConfig
     }
 
     public func setViewEventMapper(_ mapper: @escaping (objc_RUMViewEvent) -> objc_RUMViewEvent) {

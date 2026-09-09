@@ -11,7 +11,6 @@ import QuartzCore
 import UIKit
 
 /// Captures rendered image snapshots from layer snapshot requests.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol ImageSnapshotting: AnyObject {
     /// Renders images for the optimized layer tree within the given time budget.
     @MainActor
@@ -23,7 +22,6 @@ internal protocol ImageSnapshotting: AnyObject {
 }
 
 /// Rendered snapshots produced by `ImageSnapshotter`.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ImageSnapshotBatch: Sendable {
     let contentSnapshots: [Int64: ContentSnapshotResult]
     let maskSnapshots: [Int64: MaskSnapshotResult]
@@ -37,7 +35,6 @@ internal struct ImageSnapshotBatch: Sendable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal final class ImageSnapshotter: ImageSnapshotting {
     private enum Constants {

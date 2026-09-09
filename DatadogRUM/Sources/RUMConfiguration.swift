@@ -190,6 +190,7 @@ extension RUM {
         ///         some hangs lasting very close to this threshold may not be reported.
         ///
         /// - Note: App Hangs monitoring requires Datadog Crash Reporting to be enabled. Otherwise stack trace will be not reported in App Hang errors.
+        ///         Stack traces can also be opted out of while keeping Crash Reporting enabled, with `CrashReporting.Configuration.appHangBacktraceEnabled`.
         ///
         /// - Default: `nil` (hangs monitoring disabled).
         public var appHangThreshold: TimeInterval?
@@ -418,18 +419,19 @@ extension RUM {
         @_spi(Experimental)
         public struct Timeseries {
             /// The specific timeseries types to collect.
-            ///
-            /// Default: `nil` - which means all available timeseries types are collected.
-            public var collectTypes: [TimeseriesType]?
+            public var collectTypes: Set<TimeseriesType>
 
             /// Creates a timeseries configuration.
             /// - Parameters:
-            ///   - collectTypes: The specific timeseries types to collect. Default: `nil` - all types are collected.
+            ///   - collectTypes: The specific timeseries types to collect.
             public init(
-                collectTypes: [TimeseriesType]? = nil
+                collectTypes: Set<TimeseriesType>
             ) {
                 self.collectTypes = collectTypes
             }
+
+            /// The default timeseries configuration: memory and CPU.
+            public static let `default` = Timeseries(collectTypes: [.memory, .cpu])
         }
 
         /// A timeseries type that can be collected.
@@ -590,10 +592,7 @@ extension RUM.Configuration.Timeseries {
     /// Empty means timeseries collection should be disabled entirely (e.g. `collectTypes: [.cpu]` on watchOS).
     internal var effectiveCollectTypes: Set<RUM.Configuration.TimeseriesType> {
         let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
-        guard let collectTypes else {
-            return available
-        }
-        return Set(collectTypes).intersection(available)
+        return collectTypes.intersection(available)
     }
 }
 
@@ -777,6 +776,12 @@ extension RUM.Configuration {
         /// gestures will no longer count as candidate "last interactions" for INV
         /// (Interaction-to-Next-View) attribution.
         case trackScrollAndSwipeActions
+        /// When `true`, changes how view updates are reported: after the first full `RUMViewEvent`
+        /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
+        /// fields that changed, instead of resending the full event. A full event is still sent every
+        /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
+        /// Defaults to `false`.
+        case viewUpdates
     }
 }
 

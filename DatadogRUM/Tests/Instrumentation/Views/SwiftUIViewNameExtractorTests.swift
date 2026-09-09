@@ -103,7 +103,6 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     }
 
     // MARK: - Controller Detection Tests
-    @available(iOS 13.0, tvOS 13.0, *)
     func testDetectControllerType() {
         // Define test cases with controller, class name and expected controller type
         let testCases: [(String, ControllerType)] = [
@@ -154,10 +153,8 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         XCTAssertNil(extractor.extractName(from: pageViewController))
         XCTAssertNil(extractor.extractName(from: splitViewController))
 
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            let hostingController = UIHostingController(rootView: EmptyView())
-            XCTAssertNotNil(hostingController)
-        }
+        let hostingController = UIHostingController(rootView: EmptyView())
+        XCTAssertNotNil(hostingController)
     }
 }
 

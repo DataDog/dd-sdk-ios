@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 //swiftlint:disable duplicate_imports
@@ -297,6 +298,7 @@ public enum Datadog {
         CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
+
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
@@ -415,16 +417,38 @@ extension DatadogCore {
         )
         let isRunFromExtension = bundleType == .iOSAppExtension
 
-        self.init(
-            directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
+        let directory = try CoreDirectory(
+            in: configuration.systemDirectory(),
+            instanceName: instanceName,
+            site: configuration.site
+        )
+
+        let httpClient = configuration.httpClientFactory(configuration.proxyConfiguration)
+        let remoteConfigurationProvider = try configuration.remoteConfiguration.map { remoteConfiguration in
+            // Remote configuration must survive `/Library/Caches` purges, so it is stored under
+            // `/Library/Application Support` instead of the (purgeable) core directory.
+            let persistentDirectory = try CoreDirectory(
+                in: configuration.persistentDirectory(),
                 instanceName: instanceName,
                 site: configuration.site
-            ),
+            )
+            return RemoteConfigurationProvider(
+                id: remoteConfiguration.id,
+                site: configuration.site,
+                directory: persistentDirectory.coreDirectory,
+                httpClient: httpClient,
+                notificationCenter: configuration.notificationCenter,
+                customURL: remoteConfiguration.customURL,
+                dateProvider: configuration.dateProvider
+            )
+        }
+
+        self.init(
+            directory: directory,
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
+            httpClient: httpClient,
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,
@@ -452,12 +476,14 @@ extension DatadogCore {
                 serverDateProvider: configuration.serverDateProvider,
                 notificationCenter: configuration.notificationCenter,
                 appLaunchHandler: configuration.appLaunchHandler,
-                appStateProvider: configuration.appStateProvider
+                appStateProvider: configuration.appStateProvider,
+                remoteConfigurationId: configuration.remoteConfiguration?.id
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
-            isRunFromExtension: isRunFromExtension
+            isRunFromExtension: isRunFromExtension,
+            remoteConfigurationProvider: remoteConfigurationProvider
         )
 
         telemetry.configuration(

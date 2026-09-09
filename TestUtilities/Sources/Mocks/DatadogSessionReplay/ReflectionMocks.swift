@@ -31,7 +31,6 @@ extension StyledTextContentView: AnyMockable, RandomMockable {
 }
 
 // MARK: Color
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color._Resolved: AnyMockable, RandomMockable {
     public static func mockAny() -> Color._Resolved {
         return SwiftUI.Color._Resolved(
@@ -52,7 +51,6 @@ extension SwiftUI.Color._Resolved: AnyMockable, RandomMockable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ResolvedPaint: AnyMockable, RandomMockable {
     public static func mockAny() -> ResolvedPaint {
         return ResolvedPaint(paint: .mockAny())
@@ -64,7 +62,6 @@ extension ResolvedPaint: AnyMockable, RandomMockable {
 }
 
 // MARK: GraphicsImage
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Contents: Equatable {
     public static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
         switch (lhs, rhs) {
@@ -135,7 +132,6 @@ public struct MockCGImage: RandomMockable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage: AnyMockable, RandomMockable {
     public static func mockAny() -> GraphicsImage {
         return GraphicsImage(
@@ -156,7 +152,6 @@ extension GraphicsImage: AnyMockable, RandomMockable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Contents: AnyMockable, RandomMockable {
     public static func mockAny() -> GraphicsImage.Contents {
         return .cgImage(MockCGImage.mockRandom().cgImage)
@@ -167,7 +162,6 @@ extension GraphicsImage.Contents: AnyMockable, RandomMockable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Image.Orientation: AnyMockable, RandomMockable {
     public static func mockAny() -> SwiftUI.Image.Orientation {
         return SwiftUI.Image.Orientation.up
@@ -179,7 +173,6 @@ extension SwiftUI.Image.Orientation: AnyMockable, RandomMockable {
 }
 
 // MARK: ImageRepresentable
-@available(iOS 13.0, tvOS 13.0, *)
 struct MockImageRepresentable: ImageRepresentable, AnyMockable, RandomMockable {
     private let cgImage: CGImage?
 

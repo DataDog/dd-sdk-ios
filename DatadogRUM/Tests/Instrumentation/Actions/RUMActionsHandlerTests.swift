@@ -254,12 +254,7 @@ class RUMActionsHandlerTests: XCTestCase {
         let handler = touchHandler()
         let view = UIControl().attached(to: mockAppWindow)
 
-        let ignoredTouchPhases: [UITouch.Phase]
-        if #available(iOS 13.4, tvOS 13.4, *) {
-            ignoredTouchPhases = [.began, .moved, .stationary, .cancelled, .regionEntered, .regionMoved, .regionExited]
-        } else {
-            ignoredTouchPhases = [.began, .moved, .stationary, .cancelled]
-        }
+        let ignoredTouchPhases: [UITouch.Phase] = [.began, .moved, .stationary, .cancelled, .regionEntered, .regionMoved, .regionExited]
 
         ignoredTouchPhases.forEach { touchPhase in
             // When

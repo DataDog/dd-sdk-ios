@@ -75,6 +75,11 @@ internal extension RUMViewEvent {
         let duration: Int64?
         /// Index of the view within its session (0 for the first view).
         let indexInSession: Int?
+        /// `true` when this full event is a delta baseline under the `viewUpdates` feature flag — i.e. it is
+        /// followed by `RUMViewUpdateEvent` deltas computed against it. Unlike legacy full-event snapshots,
+        /// `RUMViewEventsFilter` must keep every such event rather than collapsing same-view duplicates,
+        /// since dropping one would leave its dependent deltas unreconstructable.
+        let isDeltaBaseline: Bool?
 
         private enum CodingKeys: String, CodingKey {
             case id = "id"
@@ -82,14 +87,16 @@ internal extension RUMViewEvent {
             case hasAccessibility = "has_accessibility"
             case duration = "duration"
             case indexInSession = "index"
+            case isDeltaBaseline = "is_delta_baseline"
         }
 
-        init(id: String, documentVersion: Int64, hasAccessibility: Bool? = false, duration: Int64? = nil, indexInSession: Int? = nil) {
+        init(id: String, documentVersion: Int64, hasAccessibility: Bool? = false, duration: Int64? = nil, indexInSession: Int? = nil, isDeltaBaseline: Bool? = false) {
             self.id = id
             self.documentVersion = documentVersion
             self.hasAccessibility = hasAccessibility
             self.duration = duration
             self.indexInSession = indexInSession
+            self.isDeltaBaseline = isDeltaBaseline
         }
     }
 
@@ -99,13 +106,14 @@ internal extension RUMViewEvent {
 
     /// Creates `Metadata` from the given `RUMViewEvent`.
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
-    func metadata(viewIndexInSession: Int) -> Metadata {
+    func metadata(viewIndexInSession: Int, isDeltaBaseline: Bool = false) -> Metadata {
         return Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
             hasAccessibility: view.accessibility != nil,
             duration: view.timeSpent,
-            indexInSession: viewIndexInSession
+            indexInSession: viewIndexInSession,
+            isDeltaBaseline: isDeltaBaseline
         )
     }
 }

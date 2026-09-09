@@ -183,6 +183,10 @@ public struct CrossPlatformAttributes {
     /// Indicates whether the resource was served from the device's local cache, captured from native URLSession interception.
     /// Expects `Bool` value.
     public static let localCacheHit = "_dd.local_cache_hit"
+
+    /// Instrumentation type passed from a CP SDK to identify which cross-platform framework started this view (e.g. `"flutter"`, `"react-native"`).
+    /// Expects `String` value.
+    public static let instrumentationType = "_dd.instrumentation_type"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.

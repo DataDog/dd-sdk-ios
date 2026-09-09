@@ -10,7 +10,6 @@ import CoreGraphics
 import SwiftUI
 import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage: Reflection {
     init(from reflector: Reflector) throws {
         scale = try reflector.descendant("scale")
@@ -24,7 +23,6 @@ extension GraphicsImage: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Contents: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {
@@ -38,7 +36,6 @@ extension GraphicsImage.Contents: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.VectorImage: Reflection {
     init(from reflector: Reflector) throws {
         location = try reflector.descendant("location")
@@ -46,7 +43,6 @@ extension GraphicsImage.VectorImage: Reflection {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsImage.Location: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {

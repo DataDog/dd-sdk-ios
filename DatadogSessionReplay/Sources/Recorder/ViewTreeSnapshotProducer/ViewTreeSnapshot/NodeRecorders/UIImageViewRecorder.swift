@@ -20,7 +20,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
     internal init(
         identifier: UUID,
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
+            if let image = imageView.image {
                 return image.isTinted ? imageView.tintColor : nil
             } else {
                 return nil
@@ -174,7 +174,7 @@ fileprivate extension ImagePrivacyLevel {
         switch self {
         case .maskNone: return { _ in true }
         case .maskNonBundledOnly: return { imageView in
-            if #available(iOS 13.0, *), let image = imageView.image {
+            if let image = imageView.image {
                 return image.isContextual || imageView.isSystemControlBackground
             } else {
                 return false

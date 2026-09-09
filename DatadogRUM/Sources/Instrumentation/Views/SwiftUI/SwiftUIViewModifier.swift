@@ -10,7 +10,6 @@ import DatadogInternal
 
 /// `SwiftUI.ViewModifier` which notifes RUM instrumentation when modified view appears and disappears.
 /// It makes an entry point to RUM views instrumentation in SwiftUI.
-@available(iOS 13, tvOS 13, watchOS 7, *)
 internal struct RUMViewModifier: SwiftUI.ViewModifier {
     /// Datadog RUM instrumentation instance
     let instrumentation: RUMInstrumentation?
@@ -45,7 +44,6 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
     }
 }
 
-@available(iOS 13, tvOS 13, watchOS 7, *)
 public extension SwiftUI.View {
     /// Monitor this view with Datadog RUM. A start and stop events will be logged when this view appears
     /// and disappears.

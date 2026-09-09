@@ -87,6 +87,36 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(command.isStackTraceTruncated, hang.backtraceResult.wasTruncated)
     }
 
+    func testDisabledAndNotAvailableStackMessagesAreDistinct() {
+        // Each message is otherwise only asserted against its own constant, so copy-pasting them equal would keep
+        // every test green while silently collapsing "Crash Reporting opted out" into "Crash Reporting never enabled".
+        XCTAssertNotEqual(
+            AppHangsMonitor.Constants.appHangStackDisabledErrorMessage,
+            AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage
+        )
+    }
+
+    func testWhenAppHangEndsWithBacktraceGenerationDisabled_itSendsAppHangCommandWithNoStackTrace() throws {
+        // Given
+        let subscriber = RUMCommandSubscriberMock()
+        monitor.nonFatalHangsHandler.publish(to: subscriber)
+        monitor.start()
+        defer { monitor.stop() }
+
+        // When
+        let hang: AppHang = .mockWith(backtraceResult: .disabled)
+        watchdogThread.delegate?.hangEnded(hang, duration: .mockRandom(min: 1, max: 4))
+
+        // Then
+        let command = try XCTUnwrap(subscriber.lastReceivedCommand as? RUMAddCurrentViewAppHangCommand)
+        XCTAssertEqual(command.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(command.type, AppHangsMonitor.Constants.appHangErrorType)
+        XCTAssertEqual(command.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+        XCTAssertNil(command.threads)
+        XCTAssertNil(command.binaryImages)
+        XCTAssertNil(command.isStackTraceTruncated)
+    }
+
     // MARK: - Fatal App Hangs Monitoring
 
     func testGivenFatalErrorViewContextAvailable_whenAppHangStarts_itSavesPendingAppHangToDataStore() throws {

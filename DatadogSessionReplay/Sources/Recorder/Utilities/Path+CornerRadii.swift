@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Path {
     init(roundedRect rect: CGRect, cornerRadii: CALayerSnapshot.CornerRadii, cornerCurve: CALayerCornerCurve) {
         if cornerRadii == .zero {
@@ -91,7 +90,6 @@ extension CGFloat {
     fileprivate static let bezierKappa: CGFloat = 0.5522847498307933
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.CornerRadii {
     fileprivate func clamped(to rect: CGRect) -> Self {
         .init(
@@ -115,7 +113,6 @@ extension CALayerSnapshot.CornerRadii {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension RoundedCornerStyle {
     fileprivate init(cornerCurve: CALayerCornerCurve) {
         switch cornerCurve {

@@ -11,7 +11,6 @@ import QuartzCore
 @preconcurrency import DatadogInternal
 
 /// Request to render one layer bitmap.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotRequest: Sendable {
     case content(ContentSnapshotRequest)
     case mask(MaskSnapshotRequest)
@@ -36,7 +35,6 @@ internal enum ImageSnapshotRequest: Sendable {
 }
 
 /// Request to render one `CALayerSnapshot` as a content image.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ContentSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
@@ -87,7 +85,6 @@ internal struct ContentSnapshotRequest: Sendable {
 }
 
 /// A content snapshot request with its live layer resolved for rendering.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
     let geometry: CALayerSnapshot.ContentGeometry
@@ -95,7 +92,6 @@ internal struct ResolvedContentSnapshotRequest {
 }
 
 /// Request to render one layer mask as an image.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct MaskSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
@@ -129,7 +125,6 @@ internal struct MaskSnapshotRequest: Sendable {
 }
 
 /// A mask snapshot request resolved against the current layer tree.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedMaskSnapshotRequest {
     let layer: CALayer
     let bounds: CGRect
@@ -138,13 +133,11 @@ internal struct ResolvedMaskSnapshotRequest {
 }
 
 /// Failure reason for resolving an image snapshot request.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotRequestResolutionError: Error {
     case missingLayer
     case invalidRect
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotRequest {
     @MainActor
     func resolved() throws -> ResolvedContentSnapshotRequest {
@@ -198,7 +191,6 @@ extension ContentSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension MaskSnapshotRequest {
     @MainActor
     func resolved() throws -> ResolvedMaskSnapshotRequest {
@@ -223,7 +215,6 @@ extension MaskSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotData {
     fileprivate var isPartial: Bool {
         !renderBounds.equalTo(localRect)

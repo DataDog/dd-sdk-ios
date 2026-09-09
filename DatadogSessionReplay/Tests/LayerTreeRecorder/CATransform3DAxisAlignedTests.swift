@@ -13,7 +13,6 @@ import QuartzCore
 
 @Suite(.datadogTesting)
 struct CATransform3DAxisAlignedTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test(
         "Is not axis-aligned for transforms with rotation or perspective",
         arguments: [
@@ -41,7 +40,6 @@ struct CATransform3DAxisAlignedTests {
         #expect(!transform.isAxisAligned)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is axis-aligned when scaled uniformly")
     func isAxisAlignedWhenScaledUniformly() throws {
         // Given

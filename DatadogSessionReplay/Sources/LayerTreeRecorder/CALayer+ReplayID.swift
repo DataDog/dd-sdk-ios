@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     /// Stable identifier for this layer in Session Replay snapshots.
     ///
@@ -26,7 +25,6 @@ extension CALayer {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ReplayIDGenerator: Sendable {
     var next: @Sendable @MainActor () -> Int64
 
@@ -42,7 +40,6 @@ internal struct ReplayIDGenerator: Sendable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     /// Overrides replay ID generation for deterministic snapshot tests.
     @MainActor
@@ -56,7 +53,6 @@ extension CALayer {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayer {
     fileprivate enum ReplayID {
         enum Context {

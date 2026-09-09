@@ -15,7 +15,6 @@ import UIKit
 
 @MainActor
 struct LayerWireframeBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for layer appearance")
     func buildCreatesShapeWireframeForLayerAppearance() throws {
         // Given
@@ -55,7 +54,6 @@ struct LayerWireframeBuilderTests {
         #expect(output.resource == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates text wireframe for label")
     func buildCreatesTextWireframeForLabel() throws {
         // Given
@@ -97,7 +95,6 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.shapeStyle?.backgroundColor == "#FF0000FF")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build masks label text for mask all privacy")
     func buildMasksLabelTextForMaskAllPrivacy() throws {
         // Given
@@ -130,7 +127,6 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.text == "xxxxx xxxxx")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build skips empty label without appearance")
     func buildSkipsEmptyLabelWithoutAppearance() {
         // Given
@@ -154,7 +150,6 @@ struct LayerWireframeBuilderTests {
         #expect(output == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe for linear gradient")
     func buildCreatesShapeWireframeForLinearGradient() throws {
         // Given
@@ -198,7 +193,6 @@ struct LayerWireframeBuilderTests {
         ])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates visual effect fallbacks")
     func buildCreatesVisualEffectFallbacks() throws {
         // Given
@@ -266,7 +260,6 @@ struct LayerWireframeBuilderTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates automatic capsule fallback")
     func buildCreatesAutomaticCapsuleFallback() throws {
         // Given
@@ -293,7 +286,6 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.shapeStyle?.cornerRadius == 20)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates hidden placeholder for private layer")
     func buildCreatesHiddenPlaceholderForPrivateLayer() throws {
         // Given
@@ -322,7 +314,6 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.label == "Hidden")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build hides embedded content for a private layer")
     func buildHidesEmbeddedContentForPrivateLayer() throws {
         // Given
@@ -355,7 +346,6 @@ struct LayerWireframeBuilderTests {
         #expect(hiddenWireframe.isVisible == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build tracks visible and hidden webviews")
     func buildTracksVisibleAndHiddenWebViews() throws {
         // Given
@@ -396,7 +386,6 @@ struct LayerWireframeBuilderTests {
         #expect(hiddenWireframe.isVisible == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build emits embedded content visibility state")
     func buildEmitsEmbeddedContentVisibilityState() throws {
         // Given
@@ -443,7 +432,6 @@ struct LayerWireframeBuilderTests {
         #expect(hiddenWireframe.isVisible == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates image resource for content snapshot")
     func buildCreatesImageResourceForContentSnapshot() throws {
         // Given
@@ -484,7 +472,6 @@ struct LayerWireframeBuilderTests {
         #expect(resource.calculateData().isEmpty == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates shape wireframe when content redacts to placeholder")
     func buildCreatesShapeWireframeWhenContentRedactsToPlaceholder() throws {
         // Given
@@ -520,7 +507,6 @@ struct LayerWireframeBuilderTests {
         #expect(output.resource == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build handles image semantics without snapshot results")
     func buildHandlesImageSemanticsWithoutSnapshotResults() throws {
         // Given
@@ -553,7 +539,6 @@ struct LayerWireframeBuilderTests {
         #expect(emptyImageOutput == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build handles failed content snapshots")
     func buildHandlesFailedContentSnapshots() throws {
         // Given
@@ -590,7 +575,6 @@ struct LayerWireframeBuilderTests {
         #expect(discardedOutput == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func backgroundColor(in output: LayerWireframeBuilder.Output?) throws -> String? {
         guard case .shapeWireframe(let wireframe) = try #require(output?.wireframe) else {
             Issue.record("Expected a shape wireframe")
@@ -599,7 +583,6 @@ struct LayerWireframeBuilderTests {
         return wireframe.shapeStyle?.backgroundColor
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func cornerRadius(in output: LayerWireframeBuilder.Output?) throws -> Double? {
         guard case .shapeWireframe(let wireframe) = try #require(output?.wireframe) else {
             Issue.record("Expected a shape wireframe")

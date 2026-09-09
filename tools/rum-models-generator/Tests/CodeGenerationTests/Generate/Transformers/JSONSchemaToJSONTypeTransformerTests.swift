@@ -255,4 +255,179 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
         XCTAssertEqual(expected, actual as? JSONObject)
     }
+
+    func testTransformingJSONSchemaWithDiscriminatorUnion() throws {
+        let expected = JSONUnionType(
+            name: "DynamicOption",
+            comment: "Schema with strategy-discriminated anyOf",
+            types: [
+                .init(
+                    name: "js",
+                    type: JSONObject(
+                        name: "js",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "path",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: nil,
+                                isRequired: false,
+                                isReadOnly: true
+                            ),
+                            JSONObject.Property(
+                                name: "strategy",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: .string(value: "js"),
+                                isRequired: false,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                ),
+                .init(
+                    name: "cookie",
+                    type: JSONObject(
+                        name: "cookie",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "name",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: nil,
+                                isRequired: false,
+                                isReadOnly: true
+                            ),
+                            JSONObject.Property(
+                                name: "strategy",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: .string(value: "cookie"),
+                                isRequired: false,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-discriminator-union", withExtension: "json")!
+        let jsonSchema = try JSONSchemaReader().read(file)
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
+        XCTAssertEqual(expected, actual as? JSONUnionType)
+    }
+
+    func testTransformingJSONSchemaWithConstUnion() throws {
+        let expected = JSONObject(
+            name: "LogsConfig",
+            comment: "Schema with const-based union",
+            properties: [
+                JSONObject.Property(
+                    name: "forwardConsoleLogs",
+                    comment: "Console methods",
+                    type: JSONUnionType(
+                        name: "forwardConsoleLogs",
+                        comment: "Console methods",
+                        types: [
+                            .init(
+                                name: "all",
+                                type: JSONPrimitive.string
+                            ),
+                            .init(
+                                name: nil,
+                                type: JSONArray(
+                                    element: JSONEnumeration(
+                                        name: "forwardConsoleLogs",
+                                        comment: nil,
+                                        values: [
+                                            .string(value: "log"),
+                                            .string(value: "debug"),
+                                            .string(value: "info"),
+                                            .string(value: "warn"),
+                                            .string(value: "error")
+                                        ]
+                                    )
+                                )
+                            )
+                        ]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-const-union", withExtension: "json")!
+        let jsonSchema = try JSONSchemaReader().read(file)
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
+        XCTAssertEqual(expected, actual as? JSONObject)
+    }
+
+    func testTransformingJSONSchemaWithTitleTakesPrecedenceOverDiscriminator() throws {
+        let expected = JSONUnionType(
+            name: "TitledUnion",
+            comment: "Schema where title takes precedence over discriminator",
+            types: [
+                .init(
+                    name: "ExplicitTitleA",
+                    type: JSONObject(
+                        name: "ExplicitTitleA",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "kind",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: .string(value: "a"),
+                                isRequired: false,
+                                isReadOnly: true
+                            ),
+                            JSONObject.Property(
+                                name: "value",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: nil,
+                                isRequired: false,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                ),
+                .init(
+                    name: "ExplicitTitleB",
+                    type: JSONObject(
+                        name: "ExplicitTitleB",
+                        comment: nil,
+                        properties: [
+                            JSONObject.Property(
+                                name: "kind",
+                                comment: nil,
+                                type: JSONPrimitive.string,
+                                defaultValue: .string(value: "b"),
+                                isRequired: false,
+                                isReadOnly: true
+                            ),
+                            JSONObject.Property(
+                                name: "value",
+                                comment: nil,
+                                type: JSONPrimitive.integer,
+                                defaultValue: nil,
+                                isRequired: false,
+                                isReadOnly: true
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-title-wins-over-discriminator", withExtension: "json")!
+        let jsonSchema = try JSONSchemaReader().read(file)
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
+        XCTAssertEqual(expected, actual as? JSONUnionType)
+    }
 }

@@ -2878,6 +2878,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos?: self = .macos
         case .linux?: self = .linux
         case .maui?: self = .maui
+        case .nodejs?: self = .nodejs
         }
     }
 
@@ -2897,6 +2898,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos: return .macos
         case .linux: return .linux
         case .maui: return .maui
+        case .nodejs: return .nodejs
         }
     }
 
@@ -2914,6 +2916,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case macos
     case linux
     case maui
+    case nodejs
 }
 
 @objc(DDRUMErrorEventErrorThreads)
@@ -16487,6 +16490,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
     }
 
+    public var useTraceSamplingRules: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTraceSamplingRules as NSNumber?
+    }
+
     public var useTracing: NSNumber? {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
@@ -17539,4 +17546,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/c6b13a3e00dd323c48240bacb6d8e7699b4e8b7f

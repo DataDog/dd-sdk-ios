@@ -64,7 +64,6 @@ internal class NOPOTelSpanBuilder: SpanBuilder {
 
 #if canImport(_Concurrency)
     /// Ref.: https://github.com/open-telemetry/opentelemetry-swift/issues/578
-    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) async throws -> T) async rethrows -> T {
         let span = startSpan()
         defer { span.end() }

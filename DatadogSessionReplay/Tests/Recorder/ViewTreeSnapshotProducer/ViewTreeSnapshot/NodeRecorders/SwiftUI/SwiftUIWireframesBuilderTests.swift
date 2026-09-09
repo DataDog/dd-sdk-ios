@@ -15,7 +15,6 @@ import TestUtilities
 @testable import DatadogSessionReplay
 @testable import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 class SwiftUIWireframesBuilderTests: XCTestCase {
     func testDisplayListWithUnknownContent_itReturnsAPlaceholder() throws {
         // Given

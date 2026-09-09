@@ -406,6 +406,78 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackBackgroundEvents = false
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackBackgroundEvents: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackBackgroundEvents = true
+        core.remoteConfiguration = nil
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+    }
+
+    func testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.urlSessionTracking = nil
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackResources: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trackResources` must enable `NetworkInstrumentationFeature` at enable time"
+        )
+    }
+
+    func testWhenEnabledWithRemoteTrace_itEnablesNetworkInstrumentation() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.urlSessionTracking = nil
+        core.remoteConfiguration = RemoteConfiguration(
+            trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let networkInstrumentation = try XCTUnwrap(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trace` must enable `NetworkInstrumentationFeature` at enable time"
+        )
+        let urlSessionHandler = try XCTUnwrap(
+            networkInstrumentation.handlers.firstElement(of: URLSessionRUMResourcesHandler.self)
+        )
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, ["example.com"])
+    }
+
     // MARK: - Behaviour Tests
 
     func testWhenEnabledWithTimeseries_itSendsUsageTelemetryOnlyAfterFeatureIsRegistered() throws {

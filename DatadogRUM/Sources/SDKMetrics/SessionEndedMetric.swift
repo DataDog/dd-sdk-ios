@@ -604,12 +604,26 @@ private extension Int64 {
 }
 
 extension InstrumentationType: Encodable {
+    /// Native instrumentation types keep encoding as their original `Int` wire values for backward compatibility
+    /// with existing telemetry consumers; only cross-platform types are encoded as their raw string value.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .uikit: try container.encode(0)
+        case .swiftuiAutomatic: try container.encode(1)
+        case .swiftui: try container.encode(2)
+        case .manual: try container.encode(3)
+        case .crossPlatform(let value): try container.encode(value)
+        }
+    }
+
     var metricKey: String {
         switch self {
         case .uikit: return "uikit"
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"
+        case .crossPlatform(let value): return value
         }
     }
 }

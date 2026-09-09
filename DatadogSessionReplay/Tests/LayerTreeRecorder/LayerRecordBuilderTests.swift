@@ -17,7 +17,6 @@ import TestUtilities
 
 @Suite(.datadogTesting)
 struct LayerRecordBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Meta record uses layer snapshot viewport and timestamp")
     func metaRecordUsesLayerSnapshotViewportAndTimestamp() throws {
         // Given
@@ -38,7 +37,6 @@ struct LayerRecordBuilderTests {
         #expect(metaRecord.slotId == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Focus record marks the mobile view as focused")
     func focusRecordMarksMobileViewAsFocused() throws {
         // Given
@@ -55,7 +53,6 @@ struct LayerRecordBuilderTests {
         #expect(focusRecord.slotId == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Full snapshot record includes composition tree and wireframes")
     func fullSnapshotRecordIncludesCompositionTreeAndWireframes() throws {
         // Given
@@ -84,7 +81,6 @@ struct LayerRecordBuilderTests {
         #expect(fullSnapshotRecord.data.wireframes.map { $0.id } == [42])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframe mutation record is nil when wireframes are unchanged")
     func wireframeMutationRecordIsNilWhenWireframesAreUnchanged() throws {
         // Given
@@ -103,7 +99,6 @@ struct LayerRecordBuilderTests {
         #expect(record == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframe mutation record includes additions, removals, and updates")
     func wireframeMutationRecordIncludesAdditionsRemovalsAndUpdates() throws {
         // Given
@@ -145,7 +140,6 @@ struct LayerRecordBuilderTests {
         #expect(shapeUpdate.width == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation record is nil when the composition tree is unchanged")
     func compositionTreeMutationRecordIsNilWhenCompositionTreeIsUnchanged() throws {
         // Given
@@ -166,7 +160,6 @@ struct LayerRecordBuilderTests {
         #expect(record == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation record includes composition tree mutation data")
     func compositionTreeMutationRecordIncludesCompositionTreeMutationData() throws {
         // Given
@@ -208,7 +201,6 @@ struct LayerRecordBuilderTests {
         #expect(mutationData.updates?.first?.children?.map { $0.id } == [42])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Touch records map touches to pointer interaction records")
     func touchRecordsMapTouchesToPointerInteractionRecords() throws {
         // Given
@@ -246,7 +238,6 @@ struct LayerRecordBuilderTests {
         #expect(pointerData.map { $0.y } == [21, 40, 61])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Viewport record follows aspect ratio changes")
     func viewportRecordFollowsAspectRatioChanges() throws {
         // Given
@@ -283,7 +274,6 @@ struct LayerRecordBuilderTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension SRCompositionLayer {
     static func mockWith(
         id: Int64,
