@@ -98,11 +98,11 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         #if !os(watchOS) && !os(macOS)
         if configuration.collectAccessibility {
-             accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
+            accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenterProvider.applicationCenter)
         }
 
         renderLoopObserver = DisplayLinker(
-            notificationCenter: configuration.notificationCenter,
+            notificationCenter: configuration.notificationCenterProvider.applicationCenter,
             frameInfoProviderFactory: configuration.frameInfoProviderFactory
         )
         #endif
@@ -300,7 +300,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
+            notificationCenterProvider: configuration.notificationCenterProvider,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
@@ -318,7 +318,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
+            notificationCenterProvider: configuration.notificationCenterProvider,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
@@ -331,7 +331,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             let memoryWarningReporter = MemoryWarningReporter()
             memoryWarningMonitor = MemoryWarningMonitor(
                 memoryWarningReporter: memoryWarningReporter,
-                notificationCenter: configuration.notificationCenter
+                notificationCenter: configuration.notificationCenterProvider.applicationCenter
             )
         }
 
@@ -354,7 +354,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
+            notificationCenterProvider: configuration.notificationCenterProvider,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
