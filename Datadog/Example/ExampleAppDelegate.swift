@@ -10,6 +10,7 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 import DatadogCrashReporting
+import DatadogFlags
 import OpenTelemetryApi
 
 let serviceName = "ios-sdk-example-app"
@@ -98,6 +99,34 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
         RUMMonitor.shared().debug = true
+
+        // Set DD_SIGNED_ASSIGNMENTS_POC=1 in the Example scheme to use the
+        // local edge service. The SDK verifies the payload before decoding it.
+        if ProcessInfo.processInfo.environment["DD_SIGNED_ASSIGNMENTS_POC"] == "1" {
+            Flags.enable(
+                with: Flags.Configuration(
+                    customFlagsEndpoint: URL(
+                        string: "http://127.0.0.1:17676/precompute-assignments"
+                    ),
+                    trackExposures: false,
+                    trackEvaluations: false
+                )
+            )
+            let flagsClient = FlagsClient.create()
+            flagsClient.setEvaluationContext(
+                FlagsEvaluationContext(
+                    targetingKey: "user123",
+                    attributes: ["country": .string("US")]
+                )
+            ) { result in
+                print("Signed assignment POC result: \(result)")
+                let value = flagsClient.getStringValue(
+                    key: "country-message",
+                    defaultValue: "unverified"
+                )
+                print("country-message: \(value)")
+            }
+        }
 
         URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: DummySessionDataDelegate.self))
 
