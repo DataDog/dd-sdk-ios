@@ -280,62 +280,78 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     /// - Returns: As instance of `BestTarget` indicating if this is a pure AppKit view or if the accessibility detector should
     /// try to obtain the target view. If AppKit, also provides the target view, if any. For SwiftUI, it provides the fallback target view
     /// to be used if the accessibility detector fails to generate a RUM action.
-    private func bestActionTargetFor(view: DDView, event: NSEvent) -> BestTarget {
-        if view.isNSToolbarItemViewer {
-            // In toolbars, if no button was explicitly attributed to item.view, the
-            // class that returns itself from hitTest is NSToolbarItemViewer (or a subclass),
-            // not the synthesized button inside it (NSToolbarButton instance).
-            return .appKit(bestActionTargetForToolbarItem(toolbarItemViewer: view))
-        } else if view is NSTableHeaderView {
-            // In tables, a click on a header hits a view (not control) of class NSTableHeaderView.
-            // We avoid the path of finding the NSTableView parent and then digging in to look for
-            // the clicked header view since we already know it, so we shortcut it here.
-            return .appKit(view)
-        } else if let ddControl = view as? DDControl {
-            // NSTableView interactive element is the row, not the cell. If the click hits a row,
-            // outside of a specific control present in a table cell, it's caught here, as a click
-            // on the NSTableView itself (NSTableView extends NSControl). The bestActionTargetFor(control:event:)
-            // method digs in to find the clicked row.
-            return .appKit(bestActionTargetFor(control: ddControl, event: event))
-        } else {
-            // If the `view` is not an interactive element, check if it's a child of a known view
-            // hierarchy which can be considered as interactive.
-            //
-            // First, check if the target is actually a SwiftUI container. This happens in
-            // situations like a SwiftUI Table, that, in macOS, is implemented by a NSTableView
-            // with possible SwiftUI views inside the cells.
-            let classNameFirstElement = String(describing: type(of: view)).prefix { char in
-                char.isLetter || char.isNumber
-            }
-            let isSwiftUIContainerView = Self.swiftUIContainerViewPrefixes.contains(classNameFirstElement)
+    private func bestActionTargetFor(view originalView: DDView, event: NSEvent) -> BestTarget {
+        var currentView: NSView? = originalView
 
-            var result: NSView?
-
-            // Second, look up the hierarchy for the first interactive element.
-            // Note NSTableView and NSTableRowView extend NSControl so there is no need to test
-            // for those specifically.
-            //
-            // In case `isSwiftUIContainerView` is true, this (plus the processing below) will
-            // be just the fallback view if the accessibility detector cannot create an action.
-            let bestParent = view.findInParentHierarchy { parent in
-                return parent is NSControl
-                    || parent is NSCollectionView
+        while true {
+            guard let view = currentView else {
+                return .appKit(nil)
             }
 
-            if let collectionView = bestParent as? NSCollectionView {
-                // If the user clicked on a collection view outside of a control in a collection
-                // view item, look for the collection view item the user clicked on. If the click
-                // was outside of any item, return the collection view itself.
-                result = collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
-            } else if let control = bestParent as? NSControl {
-                // If the view is inside a control, process that control.
-                // As stated above, this includes NSTableView and NSTableRowView.
-                result = bestActionTargetFor(control: control, event: event)
+            if view.isNSToolbarItemViewer {
+                // In toolbars, if no button was explicitly attributed to item.view, the
+                // class that returns itself from hitTest is NSToolbarItemViewer (or a subclass),
+                // not the synthesized button inside it (NSToolbarButton instance).
+                return .appKit(bestActionTargetForToolbarItem(toolbarItemViewer: view))
+            } else if view is NSTableHeaderView {
+                // In tables, a click on a header hits a view (not control) of class NSTableHeaderView.
+                // We avoid the path of finding the NSTableView parent and then digging in to look for
+                // the clicked header view since we already know it, so we shortcut it here.
+                return .appKit(view)
+            } else if let ddControl = view as? DDControl {
+                // NSTableView interactive element is the row, not the cell. If the click hits a row,
+                // outside of a specific control present in a table cell, it's caught here, as a click
+                // on the NSTableView itself (NSTableView extends NSControl). The bestActionTargetFor(control:event:)
+                // method digs in to find the clicked row.
+                guard let resultView = bestActionTargetFor(control: ddControl, event: event) else {
+                    currentView = view.superview
+                    continue
+                }
+                return .appKit(resultView)
             } else {
-                result = bestParent
-            }
+                // If the `view` is not an interactive element, check if it's a child of a known view
+                // hierarchy which can be considered as interactive.
+                //
+                // First, check if the target is actually a SwiftUI container. This happens in
+                // situations like a SwiftUI Table, that, in macOS, is implemented by a NSTableView
+                // with possible SwiftUI views inside the cells.
+                let classNameFirstElement = String(describing: type(of: view)).prefix { char in
+                    char.isLetter || char.isNumber
+                }
+                let isSwiftUIContainerView = Self.swiftUIContainerViewPrefixes.contains(classNameFirstElement)
 
-            return isSwiftUIContainerView ? .tryAccessibilityHierarchyWithFallbackTo(result) : .appKit(result)
+                var result: NSView?
+
+                // Second, look up the hierarchy for the first interactive element.
+                // Note NSTableView and NSTableRowView extend NSControl so there is no need to test
+                // for those specifically.
+                //
+                // In case `isSwiftUIContainerView` is true, this (plus the processing below) will
+                // be just the fallback view if the accessibility detector cannot create an action.
+                let bestParent = view.findInParentHierarchy { parent in
+                    return parent is NSControl
+                    || parent is NSCollectionView
+                }
+
+                if let collectionView = bestParent as? NSCollectionView {
+                    // If the user clicked on a collection view outside of a control in a collection
+                    // view item, look for the collection view item the user clicked on. If the click
+                    // was outside of any item, return the collection view itself.
+                    result = collectionViewItemView(collectionView: collectionView, windowCoordinates: event.locationInWindow)
+                } else if let control = bestParent as? NSControl {
+                    // If the view is inside a control, process that control.
+                    // As stated above, this includes NSTableView and NSTableRowView.
+                    guard let resultView = bestActionTargetFor(control: control, event: event) else {
+                        currentView = control.superview
+                        continue
+                    }
+                    result = resultView
+                } else {
+                    result = bestParent
+                }
+
+                return isSwiftUIContainerView ? .tryAccessibilityHierarchyWithFallbackTo(result) : .appKit(result)
+            }
         }
     }
 
@@ -388,8 +404,8 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return nil
         }
 
-        let normalizedItemViewerIdentifier = axIdentifier(toolbarItemViewer).map { $0.isEmpty ? nil : $0 }
-        let normalizedControlIdentifier = axIdentifier(control).map { $0.isEmpty ? nil : $0 }
+        let normalizedItemViewerIdentifier = axIdentifier(toolbarItemViewer).flatMap { $0.isEmpty ? nil : $0 }
+        let normalizedControlIdentifier = axIdentifier(control).flatMap { $0.isEmpty ? nil : $0 }
 
         switch (normalizedItemViewerIdentifier, normalizedControlIdentifier) {
         case (.none, .none):
