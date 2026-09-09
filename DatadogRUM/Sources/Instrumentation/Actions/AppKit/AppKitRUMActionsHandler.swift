@@ -37,7 +37,6 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     /// - Parameters:
     ///   - dateProvider: The date provider used to timestamp the events.
     ///   - macOSPredicate: Predicate deciding if a RUM action should be recorded for a given event on a view.
-    @MainActor
     convenience init(
         dateProvider: DateProvider,
         macOSPredicate: MacOSRUMActionsPredicate?
@@ -52,7 +51,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             eventCommandsFactory: AppKitCommandFactory(
                 dateProvider: dateProvider,
                 macOSPredicate: macOSPredicate,
-                accessibilityHierarchyDetectorCreator: { MacOSAccessibilityHierarchyDetector() }
+                accessibilityHierarchyDetector: MacOSAccessibilityHierarchyDetector()
             )
         )
     }

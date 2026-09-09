@@ -46,7 +46,7 @@ internal extension DDView {
     #if os(macOS)
     /// Determines if capturing this view is safe for user privacy
     @objc var isSafeForPrivacy: Bool {
-        guard let window = self.window else {
+        guard self.window != nil else {
             return false // The view is not on a window hierarchy, we can't determine if it's safe
         }
         return true

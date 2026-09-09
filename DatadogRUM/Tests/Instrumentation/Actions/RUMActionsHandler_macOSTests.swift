@@ -19,13 +19,13 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
     private func appKitHandler(
         macOSPredicate: MacOSRUMActionsPredicate? = DefaultMacOSRUMActionsPredicate(),
-        accessibilityHierarchyDetector: AccessibilityHierarchyDetector = AccessibilityHierarchyDetectorMock(result: .noDecision)
+        accessibilityHierarchyDetector: AccessibilityHierarchyDetector = AccessibilityHierarchyDetectorMock(result: .noSuitableTargetFound)
     ) -> RUMActionsHandler {
         let eventCommandsFactory = macOSPredicate.map {
             AppKitCommandFactory(
                 dateProvider: dateProvider,
                 macOSPredicate: $0,
-                accessibilityHierarchyDetectorCreator: { accessibilityHierarchyDetector }
+                accessibilityHierarchyDetector: accessibilityHierarchyDetector
             )
         }
         let handler = RUMActionsHandler(
@@ -652,10 +652,10 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
     // MARK: - Fixtures
 
     private func predicateEvaluatingDetector() -> AccessibilityHierarchyDetectorMock {
-        let detector = AccessibilityHierarchyDetectorMock(result: .noDecision)
+        let detector = AccessibilityHierarchyDetectorMock(result: .noSuitableTargetFound)
         detector.resultFromPredicate = { predicate in
             guard predicate?.rumAction(accessibilityRole: .button, identifier: nil) != nil else {
-                return .ignore
+                return .rejected
             }
             return .command(.mockSwiftUIAutomatic())
         }

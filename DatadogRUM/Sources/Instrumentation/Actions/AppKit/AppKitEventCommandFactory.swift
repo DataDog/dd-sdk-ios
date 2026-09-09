@@ -29,8 +29,6 @@ internal protocol AppKitEventCommandFactory {
 /// macOS-specific implementation that detects user interactions through touches.
 /// Handles both AppKit and SwiftUI components using different detection strategies.
 internal final class AppKitCommandFactory: AppKitEventCommandFactory {
-    typealias AccessibilityHierarchyDetectorCreator = () -> AccessibilityHierarchyDetector
-
     /// The event date provider.
     let dateProvider: DateProvider
 
@@ -38,30 +36,24 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
     /// or menu items.
     let macOSPredicate: MacOSRUMActionsPredicate
 
-    /// Closure that creates a new `AccessibilityHierarchyDetector` when needed.
-    ///
-    /// This avoids creating the `AccessibilityHierarchyDetector` too early, since its creation also creates
-    /// an accessibility client (the app becomes a client of itself).
-    let accessibilityHierarchyDetectorCreator: AccessibilityHierarchyDetectorCreator
-
     /// Accessibility detector, used to instrument the SwiftUI view hierarchy.
-    private(set) lazy var accessibilityHierarchyDetector = accessibilityHierarchyDetectorCreator()
+    let accessibilityHierarchyDetector: AccessibilityHierarchyDetector
 
     /// Creates a new `AppKitCommandFactory`.
     ///
     /// - Parameters:
     ///   - dateProvider: The event date provider.
     ///   - macOSPredicate: The MacOS predicate.
-    ///   - accessibilityHierarchyDetectorCreator: Function used to create the `AccessibilityHierarchyDetector`
-    ///   when needed. This function runs only once during the `AppKitCommandFactory` lifetime.
+    ///   - accessibilityHierarchyDetector: The `AccessibilityHierarchyDetector` used for SwiftUI
+    ///   instrumenting.
     init(
         dateProvider: DateProvider,
         macOSPredicate: MacOSRUMActionsPredicate,
-        accessibilityHierarchyDetectorCreator: @escaping AccessibilityHierarchyDetectorCreator
+        accessibilityHierarchyDetector: AccessibilityHierarchyDetector
     ) {
         self.dateProvider = dateProvider
         self.macOSPredicate = macOSPredicate
-        self.accessibilityHierarchyDetectorCreator = accessibilityHierarchyDetectorCreator
+        self.accessibilityHierarchyDetector = accessibilityHierarchyDetector
     }
 
     func command(from event: NSEvent) -> RUMAddUserActionCommand? {
@@ -84,7 +76,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             // would otherwise be detected by `createAppKitActionCommand`.
             switch accessibilityHierarchyDetector.createActionCommand(from: event, predicate: macOSPredicate, dateProvider: dateProvider) {
             case .command(let command): return command
-            case .ignore, .noDecision:  return nil
+            case .rejected, .noSuitableTargetFound:  return nil
             }
         }
     }
@@ -184,9 +176,9 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             switch accessibilityHierarchyDetector.createActionCommand(from: event, predicate: macOSPredicate, dateProvider: dateProvider) {
             case .command(let command):
                 return .command(command)
-            case .ignore:
+            case .rejected:
                 return .ignore
-            case .noDecision:
+            case .noSuitableTargetFound:
                 if fallback == nil {
                     // If bestTarget result was to try SwiftUI without any fallback view,
                     // if the accessibilityHierarchyDetector fails to generate an action

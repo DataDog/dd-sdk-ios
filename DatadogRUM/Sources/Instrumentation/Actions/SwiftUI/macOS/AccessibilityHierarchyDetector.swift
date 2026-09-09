@@ -32,14 +32,14 @@ internal enum AccessibilityCommandResult {
     /// The accessibility detector could not find a suitable target, and no predicate rejection happened.
     ///
     /// The caller is free to use any AppKit callback, or give up, depending on the current context.
-    case noDecision
+    case noSuitableTargetFound
 
     /// A `RUMAddUserActionCommand` was obtained from the given event.
     case command(RUMAddUserActionCommand)
 
     /// The event should not generate a `RUMAddUserActionCommand` because the predicate
     /// explicitly rejected the proposed target.
-    case ignore
+    case rejected
 }
 
 #endif
