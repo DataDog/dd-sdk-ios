@@ -13,7 +13,7 @@ import TestUtilities
 class RUMViewsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
-    private let notificationCenter = NotificationCenter()
+    private let notificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter())
 
     // MARK: - Helper
     #if !os(watchOS)
@@ -27,14 +27,14 @@ class RUMViewsHandlerTests: XCTestCase {
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIViewNameExtractor: swiftUIViewNameExtractor,
-            notificationCenter: notificationCenter
+            notificationCenterProvider: notificationCenterProvider
         )
         handler.publish(to: commandSubscriber)
         return handler
     }
     #else
     private func createHandler() -> RUMViewsHandler {
-        let handler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, notificationCenterProvider: notificationCenterProvider)
         handler.publish(to: commandSubscriber)
         return handler
     }
@@ -347,9 +347,9 @@ class RUMViewsHandlerTests: XCTestCase {
         handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
 
         // When
-        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -383,9 +383,9 @@ class RUMViewsHandlerTests: XCTestCase {
         handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
 
         // When
-        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -718,9 +718,9 @@ class RUMViewsHandlerTests: XCTestCase {
             attributes: viewAttributes
         )
 
-        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -747,9 +747,9 @@ class RUMViewsHandlerTests: XCTestCase {
         // When
         handler.notify_onDisappear(identity: viewIdentity)
 
-        notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)

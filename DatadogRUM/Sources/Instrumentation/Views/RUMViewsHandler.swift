@@ -55,7 +55,7 @@ internal final class RUMViewsHandler {
     /// The notification center where this handler observes following `DDApplication` notifications:
     /// - `.didEnterBackgroundNotification`
     /// - `.willEnterForegroundNotification`
-    private weak var notificationCenter: NotificationCenter?
+    private var notificationCenterProvider: NotificationCenterProvider?
 
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
@@ -83,22 +83,35 @@ internal final class RUMViewsHandler {
         uiKitPredicate: DDKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
-        notificationCenter: NotificationCenter
+        notificationCenterProvider: NotificationCenterProvider
     ) {
         self.dateProvider = dateProvider
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
-        self.notificationCenter = notificationCenter
+        self.notificationCenterProvider = notificationCenterProvider
 
-        #if !os(macOS)
-        notificationCenter.addObserver(
+        #if os(macOS)
+        notificationCenterProvider.workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: WorkspaceNotifications.willSleep,
+            object: nil
+        )
+        notificationCenterProvider.workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationWillEnterForeground),
+            name: WorkspaceNotifications.didWake,
+            object: nil
+        )
+        #else
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
             name: ApplicationNotifications.willEnterForeground,
@@ -113,17 +126,17 @@ internal final class RUMViewsHandler {
     ///   - dateProvider: The current date provider.
     ///   - notificationCenter: The notification center where this handler
     ///     observes app lifecycle notifications.
-    init(dateProvider: DateProvider, notificationCenter: NotificationCenter) {
+    init(dateProvider: DateProvider, notificationCenterProvider: NotificationCenterProvider) {
         self.dateProvider = dateProvider
-        self.notificationCenter = notificationCenter
+        self.notificationCenterProvider = notificationCenterProvider
 
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
             name: ApplicationNotifications.willEnterForeground,
@@ -132,20 +145,31 @@ internal final class RUMViewsHandler {
     }
     #endif
 
-    #if !os(macOS)
     deinit {
-        notificationCenter?.removeObserver(
+    #if os(macOS)
+        notificationCenterProvider?.workspaceCenter.removeObserver(
+            self,
+            name: WorkspaceNotifications.willSleep,
+            object: nil
+        )
+        notificationCenterProvider?.workspaceCenter.removeObserver(
+            self,
+            name: WorkspaceNotifications.didWake,
+            object: nil
+        )
+    #else
+        notificationCenterProvider?.applicationCenter.removeObserver(
             self,
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter?.removeObserver(
+        notificationCenterProvider?.applicationCenter.removeObserver(
             self,
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
-    }
     #endif
+    }
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
@@ -231,7 +255,8 @@ internal final class RUMViewsHandler {
         )
     }
 
-#if !os(macOS)
+    /// Called when the application enters background state (iOS and similar platforms)
+    /// or when the system enters sleep (macOS).
     @objc
     private func applicationDidEnterBackground() {
         if let current = stack.last {
@@ -246,6 +271,8 @@ internal final class RUMViewsHandler {
         )
     }
 
+    /// Called when the application enters foreground state (iOS and similar platforms)
+    /// or when the system awakes from sleep (macOS).
     @objc
     private func applicationWillEnterForeground() {
         if let current = stack.last {
@@ -259,7 +286,6 @@ internal final class RUMViewsHandler {
             )
         )
     }
-#endif
 }
 
 // MARK: - UIViewControllerHandler
