@@ -87,7 +87,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     #endif
 
     //swiftlint:disable function_default_parameter_at_end
-    @MainActor
     init(
         featureScope: FeatureScope,
         predicates: Predicates,

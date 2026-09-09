@@ -128,7 +128,7 @@ class MacOSAccessibilityHierarchyDetectorTests: XCTestCase {
         )
 
         // Then
-        guard case .noDecision = result else {
+        guard case .noSuitableTargetFound = result else {
             XCTFail("Expected no decision without a predicate")
             return
         }
@@ -148,7 +148,7 @@ class MacOSAccessibilityHierarchyDetectorTests: XCTestCase {
         )
 
         // Then
-        guard case .ignore = result else {
+        guard case .rejected = result else {
             XCTFail("Expected an explicit rejection from the predicate")
             return
         }
@@ -204,7 +204,7 @@ class MacOSAccessibilityHierarchyDetectorTests: XCTestCase {
         )
 
         // Then
-        guard case .noDecision = result else {
+        guard case .noSuitableTargetFound = result else {
             XCTFail("Expected no decision without an interesting accessibility element")
             return
         }
@@ -308,11 +308,11 @@ class MacOSAccessibilityHierarchyDetectorTests: XCTestCase {
         )
 
         // Then
-        guard case .noDecision = resultWithoutWindow else {
+        guard case .noSuitableTargetFound = resultWithoutWindow else {
             XCTFail("Expected no decision without a window")
             return
         }
-        guard case .noDecision = resultWithoutHitTestResult else {
+        guard case .noSuitableTargetFound = resultWithoutHitTestResult else {
             XCTFail("Expected no decision when accessibility hit testing fails")
             return
         }

@@ -42,7 +42,7 @@ internal extension NSView {
 }
 
 /// Obtains the Class object for the AppKit internal `NSToolbarItemViewer` class.
-internal var toolbarItemViewerClass: AnyClass? = {
+internal let toolbarItemViewerClass: AnyClass? = {
     NSClassFromString("NSToolbarItemViewer")
 }()
 
