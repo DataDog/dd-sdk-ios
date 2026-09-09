@@ -35,6 +35,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
+            urlSession: configuration.flagAssignmentsURLSession,
             featureScope: featureScope
         )
         initializationTimeout = configuration.initializationTimeout

@@ -15,6 +15,7 @@ final class FlagsTests: XCTestCase {
 
         // Then
         XCTAssertNil(config.customExposureEndpoint)
+        XCTAssertNil(config.flagAssignmentsURLSession)
         XCTAssertEqual(config.initializationTimeout, 5)
     }
 

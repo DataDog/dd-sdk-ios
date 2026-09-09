@@ -1623,6 +1623,7 @@ public protocol FlagsStateObservable: AnyObject
 public enum Flags
     public struct Configuration
         public var gracefulModeEnabled: Bool
+        public var flagAssignmentsURLSession: URLSession?
         public var customFlagsEndpoint: URL?
         public var customFlagsHeaders: [String: String]?
         public var initializationTimeout: TimeInterval?

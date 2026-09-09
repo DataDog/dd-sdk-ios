@@ -46,6 +46,15 @@ public enum Flags {
         /// Default: `true`.
         public var gracefulModeEnabled: Bool
 
+        /// Custom URL session for retrieving flag assignments.
+        ///
+        /// Use a custom session to control TLS validation, proxies, authentication, and request timeouts.
+        /// The session applies only to flag-assignment requests. Exposure and evaluation uploads continue
+        /// to use their existing transports. The caller owns the session lifecycle.
+        ///
+        /// Default: `nil`.
+        public var flagAssignmentsURLSession: URLSession?
+
         /// Custom server URL for retrieving flag assignments.
         ///
         /// If not set, the SDK uses the default Datadog Flags endpoint for the configured site.
@@ -140,6 +149,7 @@ public enum Flags {
             rumIntegrationEnabled: Bool = true
         ) {
             self.gracefulModeEnabled = gracefulModeEnabled
+            self.flagAssignmentsURLSession = nil
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
             self.initializationTimeout = initializationTimeout

@@ -14,6 +14,36 @@ import DatadogInternal
 final class FlagAssignmentsFetcherTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testFlagAssignmentsWithCustomURLSession() throws {
+        // Given
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockResponseWith(statusCode: 200),
+                data: .mockAnyFlagAssignmentsResponse()
+            )
+        )
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: URL(string: "https://custom-proxy.com/flags"),
+            customHeaders: [:],
+            urlSession: server.getInterceptedURLSession(),
+            featureScope: featureScope
+        )
+        let completed = expectation(description: "completed")
+        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
+
+        // When
+        fetcher.flagAssignments(for: .mockAny()) { result in
+            capturedResult = result
+            completed.fulfill()
+        }
+
+        // Then
+        waitForExpectations(timeout: 1)
+        let requests = server.waitAndReturnRequests(count: 1)
+        XCTAssertEqual(requests.first?.url?.absoluteString, "https://custom-proxy.com/flags")
+        XCTAssertNoThrow(try capturedResult?.get())
+    }
+
     func testFlagAssignments() throws {
         // Given
         featureScope.contextMock = .mockWith(site: .us3)

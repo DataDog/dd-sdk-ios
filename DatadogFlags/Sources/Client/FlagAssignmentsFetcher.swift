@@ -26,18 +26,23 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
+        urlSession: URLSession?,
         featureScope: any FeatureScope
     ) {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-
-        let urlSession = URLSession(configuration: configuration)
+        let session: URLSession
+        if let urlSession {
+            session = urlSession
+        } else {
+            let configuration = URLSessionConfiguration.ephemeral
+            configuration.urlCache = nil
+            session = URLSession(configuration: configuration)
+        }
 
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             featureScope: featureScope,
-            fetch: urlSession.fetch
+            fetch: session.fetch
         )
     }
 
@@ -149,7 +154,7 @@ extension URLSession {
         _ request: URLRequest,
         completion: @escaping (Result<Data, Error>) -> Void
     ) {
-        let task = self.dataTask(with: request) { data, response, error in
+        let task = dataTask(with: request) { data, response, error in
             if let error {
                 completion(.failure(error))
                 return
