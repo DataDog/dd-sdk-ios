@@ -2280,6 +2280,10 @@ public class objc_RUMErrorEventError: NSObject {
     public var wasTruncated: NSNumber? {
         root.swiftModel.error.wasTruncated as NSNumber?
     }
+
+    public var wasmModules: [objc_RUMErrorEventErrorWasmModules]? {
+        root.swiftModel.error.wasmModules?.map { objc_RUMErrorEventErrorWasmModules(swiftModel: $0) }
+    }
 }
 
 @objc(DDRUMErrorEventErrorBinaryImages)
@@ -2867,6 +2871,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case nil: self = .none
         case .android?: self = .android
         case .browser?: self = .browser
+        case .browserWasm?: self = .browserWasm
         case .ios?: self = .ios
         case .reactNative?: self = .reactNative
         case .flutter?: self = .flutter
@@ -2878,6 +2883,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos?: self = .macos
         case .linux?: self = .linux
         case .maui?: self = .maui
+        case .nodejs?: self = .nodejs
         }
     }
 
@@ -2886,6 +2892,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .none: return nil
         case .android: return .android
         case .browser: return .browser
+        case .browserWasm: return .browserWasm
         case .ios: return .ios
         case .reactNative: return .reactNative
         case .flutter: return .flutter
@@ -2897,12 +2904,14 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos: return .macos
         case .linux: return .linux
         case .maui: return .maui
+        case .nodejs: return .nodejs
         }
     }
 
     case none
     case android
     case browser
+    case browserWasm
     case ios
     case reactNative
     case flutter
@@ -2914,6 +2923,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case macos
     case linux
     case maui
+    case nodejs
 }
 
 @objc(DDRUMErrorEventErrorThreads)
@@ -2941,6 +2951,26 @@ public class objc_RUMErrorEventErrorThreads: NSObject {
 
     public var state: String? {
         root.swiftModel.state
+    }
+}
+
+@objc(DDRUMErrorEventErrorWasmModules)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorWasmModules: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.WasmModules
+    internal var root: objc_RUMErrorEventErrorWasmModules { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.WasmModules) {
+        self.swiftModel = swiftModel
+    }
+
+    public var buildId: String {
+        root.swiftModel.buildId
+    }
+
+    public var url: String {
+        root.swiftModel.url
     }
 }
 
@@ -16487,6 +16517,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
     }
 
+    public var useTraceSamplingRules: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTraceSamplingRules as NSNumber?
+    }
+
     public var useTracing: NSNumber? {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
@@ -17539,4 +17573,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/3eb091af81e4c1a563bcd335222fed86f5bc8bc7

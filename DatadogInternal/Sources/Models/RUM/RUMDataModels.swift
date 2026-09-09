@@ -2077,6 +2077,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// A boolean value saying if any of the stack traces was truncated due to minification.
         public let wasTruncated: Bool?
 
+        /// WebAssembly modules available for stack trace symbolication.
+        public let wasmModules: [WasmModules]?
+
         public enum CodingKeys: String, CodingKey {
             case binaryImages = "binary_images"
             case category = "category"
@@ -2097,6 +2100,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case timeSinceAppStart = "time_since_app_start"
             case type = "type"
             case wasTruncated = "was_truncated"
+            case wasmModules = "wasm_modules"
         }
 
         /// Error properties
@@ -2121,6 +2125,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         ///   - timeSinceAppStart: Time since application start when error happened (in milliseconds)
         ///   - type: The type of the error
         ///   - wasTruncated: A boolean value saying if any of the stack traces was truncated due to minification.
+        ///   - wasmModules: WebAssembly modules available for stack trace symbolication.
         public init(
             binaryImages: [BinaryImages]? = nil,
             category: Category? = nil,
@@ -2140,7 +2145,8 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             threads: [Threads]? = nil,
             timeSinceAppStart: Int64? = nil,
             type: String? = nil,
-            wasTruncated: Bool? = nil
+            wasTruncated: Bool? = nil,
+            wasmModules: [WasmModules]? = nil
         ) {
             self.binaryImages = binaryImages
             self.category = category
@@ -2161,6 +2167,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             self.timeSinceAppStart = timeSinceAppStart
             self.type = type
             self.wasTruncated = wasTruncated
+            self.wasmModules = wasmModules
         }
 
         /// Description of the binary image (native library; for Android: .so file) loaded or referenced by the process/application.
@@ -2491,6 +2498,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public enum SourceType: String, Codable {
             case android = "android"
             case browser = "browser"
+            case browserWasm = "browser+wasm"
             case ios = "ios"
             case reactNative = "react-native"
             case flutter = "flutter"
@@ -2502,6 +2510,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case macos = "macos"
             case linux = "linux"
             case maui = "maui"
+            case nodejs = "nodejs"
         }
 
         /// Description of the thread in the process when error happened.
@@ -2542,6 +2551,33 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
                 self.name = name
                 self.stack = stack
                 self.state = state
+            }
+        }
+
+        /// A WebAssembly module loaded by the application.
+        public struct WasmModules: Codable, Equatable {
+            /// Build ID used to identify the WebAssembly debug symbols.
+            public let buildId: String
+
+            /// URL identifying the WebAssembly module.
+            public let url: String
+
+            public enum CodingKeys: String, CodingKey {
+                case buildId = "build_id"
+                case url = "url"
+            }
+
+            /// A WebAssembly module loaded by the application.
+            ///
+            /// - Parameters:
+            ///   - buildId: Build ID used to identify the WebAssembly debug symbols.
+            ///   - url: URL identifying the WebAssembly module.
+            public init(
+                buildId: String,
+                url: String
+            ) {
+                self.buildId = buildId
+                self.url = url
             }
         }
     }
@@ -13434,6 +13470,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             /// Whether a secure session cookie is used
             public let useSecureSessionCookie: Bool?
 
+            /// Whether trace sampling rules are configured
+            public let useTraceSamplingRules: Bool?
+
             /// Whether tracing features are enabled
             public let useTracing: Bool?
 
@@ -13547,6 +13586,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 case useProxy = "use_proxy"
                 case useRemoteConfigurationProxy = "use_remote_configuration_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
+                case useTraceSamplingRules = "use_trace_sampling_rules"
                 case useTracing = "use_tracing"
                 case useTrackGraphQlPayload = "use_track_graph_ql_payload"
                 case useTrackGraphQlResponseErrors = "use_track_graph_ql_response_errors"
@@ -13652,6 +13692,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
             ///   - useProxy: Whether a proxy is used
             ///   - useRemoteConfigurationProxy: Whether a proxy is used for remote configuration
             ///   - useSecureSessionCookie: Whether a secure session cookie is used
+            ///   - useTraceSamplingRules: Whether trace sampling rules are configured
             ///   - useTracing: Whether tracing features are enabled
             ///   - useTrackGraphQlPayload: Whether GraphQL payload tracking is used for at least one GraphQL endpoint
             ///   - useTrackGraphQlResponseErrors: Whether GraphQL response errors tracking is used for at least one GraphQL endpoint
@@ -13753,6 +13794,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 useProxy: Bool? = nil,
                 useRemoteConfigurationProxy: Bool? = nil,
                 useSecureSessionCookie: Bool? = nil,
+                useTraceSamplingRules: Bool? = nil,
                 useTracing: Bool? = nil,
                 useTrackGraphQlPayload: Bool? = nil,
                 useTrackGraphQlResponseErrors: Bool? = nil,
@@ -13854,6 +13896,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel, Equatable {
                 self.useProxy = useProxy
                 self.useRemoteConfigurationProxy = useRemoteConfigurationProxy
                 self.useSecureSessionCookie = useSecureSessionCookie
+                self.useTraceSamplingRules = useTraceSamplingRules
                 self.useTracing = useTracing
                 self.useTrackGraphQlPayload = useTrackGraphQlPayload
                 self.useTrackGraphQlResponseErrors = useTrackGraphQlResponseErrors
@@ -15887,4 +15930,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/864812a245fefa0a4de50bc459646774d5b01f9a
+// Generated from https://github.com/DataDog/rum-events-format/tree/3eb091af81e4c1a563bcd335222fed86f5bc8bc7

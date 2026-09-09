@@ -830,6 +830,7 @@ public class objc_RUMErrorEventError: NSObject
     public var timeSinceAppStart: NSNumber?
     public var type: String?
     public var wasTruncated: NSNumber?
+    public var wasmModules: [objc_RUMErrorEventErrorWasmModules]?
 public class objc_RUMErrorEventErrorBinaryImages: NSObject
     public var arch: String?
     public var isSystem: NSNumber
@@ -949,6 +950,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case none
     case android
     case browser
+    case browserWasm
     case ios
     case reactNative
     case flutter
@@ -960,11 +962,15 @@ public enum objc_RUMErrorEventErrorSourceType: Int
     case macos
     case linux
     case maui
+    case nodejs
 public class objc_RUMErrorEventErrorThreads: NSObject
     public var crashed: NSNumber
     public var name: String
     public var stack: String
     public var state: String?
+public class objc_RUMErrorEventErrorWasmModules: NSObject
+    public var buildId: String
+    public var url: String
 public class objc_RUMErrorEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
 public class objc_RUMErrorEventFreeze: NSObject
@@ -3651,6 +3657,7 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject
     public var useProxy: NSNumber?
     public var useRemoteConfigurationProxy: NSNumber?
     public var useSecureSessionCookie: NSNumber?
+    public var useTraceSamplingRules: NSNumber?
     public var useTracing: NSNumber?
     public var useTrackGraphQlPayload: NSNumber?
     public var useTrackGraphQlResponseErrors: NSNumber?

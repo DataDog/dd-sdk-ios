@@ -51,52 +51,39 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         self.telemetryController = telemetryController
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
+        let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
 
-        var messageReceivers: [FeatureMessageReceiver] = [
-            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider)
-        ]
+        let cpuTimeSamplesEnabled = configuration.featureFlags[.cpuTimeSamples]
+        Self.setProfilingEnabled(in: userDefaults)
+        Self.setCPUTimeSamplesEnabled(cpuTimeSamplesEnabled, in: userDefaults)
+        Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
-        messageReceivers.append(
-            AppLaunchProfiler(
-                core: core,
-                profilingSamplerProvider: profilingSamplerProvider,
-                quotaChecker: quotaChecker,
-                telemetryController: telemetryController
-            )
-        )
-
-        messageReceivers.append(quotaChecker)
-
-        if let datadogProfiler = DatadogProfiler(
+        let datadogProfiler = DatadogProfiler(
             core: core,
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
-            minProfileDuration: configuration.minProfileDuration
-        ) {
-            messageReceivers.append(datadogProfiler)
-        }
-
-        self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
-
-        setProfilingEnabled(in: userDefaults)
-        let sampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        setAppLaunch(sampleRate: sampleRate, in: userDefaults)
+            minProfileDuration: configuration.minProfileDuration,
+            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
+        )
+        self.messageReceiver = CombinedFeatureMessageReceiver([
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            quotaChecker,
+            datadogProfiler
+        ])
     }
 
-    private func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+    private static func setProfilingEnabled(in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(true, forKey: DD_PROFILING_IS_ENABLED_KEY)
     }
 
-    private func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        let previousSampleRate = userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate
+    private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
+    }
 
-        // Profiling will use the lowest sample rate
-        // if there is more than one SDK instance initialized.
-        if previousSampleRate == nil || previousSampleRate ?? .maxSampleRate > sampleRate {
-            userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-        }
+    private static func setCPUTimeSamplesEnabled(_ enabled: Bool, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
+        userDefaults.setValue(enabled, forKey: DD_PROFILING_RECORD_CPU_TIME_KEY)
     }
 }
 

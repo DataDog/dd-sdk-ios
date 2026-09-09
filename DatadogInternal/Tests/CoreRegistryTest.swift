@@ -6,7 +6,7 @@
 
 import XCTest
 @testable import TestUtilities
-
+@_spi(Internal)
 @testable import DatadogInternal
 
 class CoreRegistryTest: XCTestCase {
@@ -60,9 +60,11 @@ class CoreRegistryTest: XCTestCase {
 
         // When
         let isEnabled = CoreRegistry.isFeatureEnabled(feature: MockFeature.self)
+        let instanceName = CoreRegistry.instanceName(for: MockFeature.self)
 
         // Then
         XCTAssertTrue(isEnabled)
+        XCTAssertEqual(instanceName, CoreRegistry.defaultInstanceName)
 
         // Cleanup
         CoreRegistry.unregisterDefault()
@@ -79,9 +81,11 @@ class CoreRegistryTest: XCTestCase {
 
         // When
         let isEnabled = CoreRegistry.isFeatureEnabled(feature: MockFeature.self)
+        let instanceName = CoreRegistry.instanceName(for: MockFeature.self)
 
         // Then
         XCTAssertFalse(isEnabled)
+        XCTAssertNil(instanceName)
 
         // Cleanup
         CoreRegistry.unregisterDefault()

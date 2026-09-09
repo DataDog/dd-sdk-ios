@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 #if !os(watchOS)
@@ -26,12 +27,42 @@ public enum Profiling {
     /// 
     /// This method registers the profiling feature with the Datadog core, setting up
     /// the necessary components.
+    ///
+    /// Profiling supports only one SDK instance. Later calls are ignored with a warning
+    /// identifying the instance where Profiling is already enabled.
     /// 
     /// - Parameters:
     ///   - configuration: The profiling configuration to use.
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
     @available(*, message: "This API is experimental and may change in future releases")
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
+        do {
+            // To ensure the correct registration order between Core and Features,
+            // the entire initialization flow is synchronized on the main thread.
+            try runOnMainThreadSync {
+                try enableOrThrow(with: configuration, in: core)
+            }
+        } catch let error {
+            consolePrint("\(error)", .error)
+        }
+    }
+
+    internal static func enableOrThrow(with configuration: Configuration, in core: DatadogCoreProtocol) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK must be initialized before calling `Profiling.enable(with:)`."
+            )
+        }
+
+        if let instanceName = CoreRegistry.instanceName(for: ProfilerFeature.self) {
+            core.telemetry.debug("Profiling has already been enabled in SDK instance '\(instanceName)'")
+            throw ProgrammerError(
+                description: "Profiling is already enabled in SDK instance '\(instanceName)' " +
+                "and does not support multiple instances. " +
+                "The existing instance will continue to be used."
+            )
+        }
+
         // Merge remote configuration on top of the in-code configuration. Remote values take
         // precedence for supported behavioral parameters; if no remote configuration is available,
         // the in-code configuration is used unchanged.
