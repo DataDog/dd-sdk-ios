@@ -26,6 +26,8 @@
 	<string>$(CUSTOM_TRACE_URL)</string>
 	<key>DatadogClientToken</key>
 	<string>$(DATADOG_CLIENT_TOKEN)</string>
+	<key>DatadogSite</key>
+	<string>$(DATADOG_SITE)</string>
 	<key>DatadogProfiling</key>
 	<dict>
 		<key>AppLaunchProfileSampleRate</key>

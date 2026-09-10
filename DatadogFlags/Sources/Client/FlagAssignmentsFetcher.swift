@@ -144,6 +144,20 @@ extension DatadogSite {
     }
 }
 
+/// An error that carries the HTTP status code and response body snippet for diagnostic logging.
+internal struct FlagAssignmentsHTTPError: Error, CustomStringConvertible {
+    let statusCode: Int
+    let body: String?
+
+    var description: String {
+        var desc = "HTTP \(statusCode)"
+        if let body, !body.isEmpty {
+            desc += ". Response: \(body)"
+        }
+        return desc
+    }
+}
+
 extension URLSession {
     fileprivate func fetch(
         _ request: URLRequest,
@@ -160,7 +174,9 @@ extension URLSession {
                 let httpResponse = response as? HTTPURLResponse,
                 200..<300 ~= httpResponse.statusCode
             else {
-                completion(.failure(URLError(.badServerResponse)))
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let bodySnippet = data.flatMap { String(data: $0.prefix(500), encoding: .utf8) }
+                completion(.failure(FlagAssignmentsHTTPError(statusCode: statusCode, body: bodySnippet)))
                 return
             }
 
