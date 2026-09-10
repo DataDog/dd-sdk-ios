@@ -612,7 +612,7 @@ extension InstrumentationType: Encodable {
 #if canImport(UIKit)
         case .uikit: try container.encode(0)
 #elseif canImport(AppKit)
-        case .appKit: try container.encode(0)
+        case .appkit: try container.encode(0)
 #endif
         case .swiftuiAutomatic: try container.encode(1)
         case .swiftui: try container.encode(2)
@@ -626,7 +626,7 @@ extension InstrumentationType: Encodable {
 #if canImport(UIKit)
         case .uikit: return "uikit"
 #elseif canImport(AppKit)
-        case .appKit: return "appkit"
+        case .appkit: return "appkit"
 #endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"

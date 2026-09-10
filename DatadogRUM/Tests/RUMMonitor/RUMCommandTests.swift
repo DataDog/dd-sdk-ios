@@ -108,8 +108,8 @@ class RUMCommandTests: XCTestCase {
         let uikit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .uikit)
         XCTAssertEqual(uikit.instrumentationType, .uikit)
         #elseif canImport(AppKit)
-        let appkit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .appKit)
-        XCTAssertEqual(appkit.instrumentationType, .appKit)
+        let appkit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .appkit)
+        XCTAssertEqual(appkit.instrumentationType, .appkit)
         #endif
     }
 

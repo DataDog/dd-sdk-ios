@@ -327,7 +327,7 @@ class SessionEndedMetricTests: XCTestCase {
         #if canImport(UIKit)
         XCTAssertEqual(try encodedValue(.uikit) as? Int, 0)
         #elseif canImport(AppKit)
-        XCTAssertEqual(try encodedValue(.appKit) as? Int, 0)
+        XCTAssertEqual(try encodedValue(.appkit) as? Int, 0)
         #endif
         XCTAssertEqual(try encodedValue(.swiftuiAutomatic) as? Int, 1)
         XCTAssertEqual(try encodedValue(.swiftui) as? Int, 2)
@@ -364,7 +364,7 @@ class SessionEndedMetricTests: XCTestCase {
         }
         try (0..<ddkitPredicateViewsCount).forEach { idx in
             #if os(macOS)
-            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "appkit\(idx)"), instrumentationType: .appKit)
+            try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "appkit\(idx)"), instrumentationType: .appkit)
             #else
             try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "uikit\(idx)"), instrumentationType: .uikit)
             #endif
@@ -412,7 +412,7 @@ class SessionEndedMetricTests: XCTestCase {
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: nil)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .swiftui)
         #if os(macOS)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .appKit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .appkit)
         #else
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewID: "view-id"), instrumentationType: .uikit)
         #endif
@@ -505,7 +505,7 @@ class SessionEndedMetricTests: XCTestCase {
             #if os(macOS)
             metric.track(
                 action: .mockWith(sessionID: sessionID.rawValue),
-                instrumentationType: .appKit
+                instrumentationType: .appkit
             )
             #else
             metric.track(
@@ -792,7 +792,7 @@ class SessionEndedMetricTests: XCTestCase {
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .manual)
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .swiftui)
         #if os(macOS)
-        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .appKit)
+        try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .appkit)
         #else
         try metric.track(view: .mockRandomWith(sessionID: sessionID.rawValue, viewTimeSpent: 10), instrumentationType: .uikit)
         #endif
