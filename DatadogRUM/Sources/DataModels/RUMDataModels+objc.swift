@@ -2280,6 +2280,10 @@ public class objc_RUMErrorEventError: NSObject {
     public var wasTruncated: NSNumber? {
         root.swiftModel.error.wasTruncated as NSNumber?
     }
+
+    public var wasmModules: [objc_RUMErrorEventErrorWasmModules]? {
+        root.swiftModel.error.wasmModules?.map { objc_RUMErrorEventErrorWasmModules(swiftModel: $0) }
+    }
 }
 
 @objc(DDRUMErrorEventErrorBinaryImages)
@@ -2867,6 +2871,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case nil: self = .none
         case .android?: self = .android
         case .browser?: self = .browser
+        case .browserWasm?: self = .browserWasm
         case .ios?: self = .ios
         case .reactNative?: self = .reactNative
         case .flutter?: self = .flutter
@@ -2887,6 +2892,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .none: return nil
         case .android: return .android
         case .browser: return .browser
+        case .browserWasm: return .browserWasm
         case .ios: return .ios
         case .reactNative: return .reactNative
         case .flutter: return .flutter
@@ -2905,6 +2911,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case none
     case android
     case browser
+    case browserWasm
     case ios
     case reactNative
     case flutter
@@ -2944,6 +2951,26 @@ public class objc_RUMErrorEventErrorThreads: NSObject {
 
     public var state: String? {
         root.swiftModel.state
+    }
+}
+
+@objc(DDRUMErrorEventErrorWasmModules)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorWasmModules: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.WasmModules
+    internal var root: objc_RUMErrorEventErrorWasmModules { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.WasmModules) {
+        self.swiftModel = swiftModel
+    }
+
+    public var buildId: String {
+        root.swiftModel.buildId
+    }
+
+    public var url: String {
+        root.swiftModel.url
     }
 }
 
@@ -5370,10 +5397,6 @@ public class objc_RUMResourceEventResource: NSObject {
 
     public var id: String? {
         root.swiftModel.resource.id
-    }
-
-    public var localCacheHit: NSNumber? {
-        root.swiftModel.resource.localCacheHit as NSNumber?
     }
 
     public var method: objc_RUMResourceEventResourceRUMMethod {
@@ -17546,4 +17569,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/c6b13a3e00dd323c48240bacb6d8e7699b4e8b7f
+// Generated from https://github.com/DataDog/rum-events-format/tree/29a9b0d28ecb721263cd02d16cd82303d0c106d0

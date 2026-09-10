@@ -1869,73 +1869,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(headers.headersInfo["etag"], "\"abc\"")
     }
 
-    func testWhenStopCommandContainsLocalCacheHit_itPopulatesResourceLocalCacheHit() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/api/data",
-            startTime: .mockDecember15th2019At10AMUTC(),
-            url: "https://api.example.com/data",
-            httpMethod: .get
-        )
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: "/api/data",
-                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
-                    attributes: [
-                        CrossPlatformAttributes.localCacheHit: true
-                    ],
-                    kind: .xhr,
-                    httpStatusCode: 200,
-                    size: nil
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.resource.localCacheHit, true)
-    }
-
-    func testWhenStopCommandDoesNotContainLocalCacheHit_itLeavesResourceLocalCacheHitNil() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/api/data",
-            startTime: .mockDecember15th2019At10AMUTC(),
-            url: "https://api.example.com/data",
-            httpMethod: .get
-        )
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: "/api/data",
-                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
-                    attributes: [:],
-                    kind: .xhr,
-                    httpStatusCode: 200,
-                    size: nil
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertNil(event.resource.localCacheHit)
-    }
-
-    func testWhenResourceMetricsIndicateLocalCacheHitAndStopCommandHasNoAttribute_itPopulatesResourceLocalCacheHit() throws {
+    func testWhenResourceMetricsIndicateCacheDeliveryType_itPopulatesResourceDeliveryTypeAndTransferSize() throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1950,7 +1884,7 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/api/data",
             time: .mockDecember15th2019At10AMUTC(),
             attributes: [:],
-            metrics: .mockWith(isLocalCacheHit: true)
+            metrics: .mockWith(deliveryType: .cache, transferSize: 0)
         )
 
         // When
@@ -1973,10 +1907,11 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.resource.localCacheHit, true)
+        XCTAssertEqual(event.resource.deliveryType, .cache)
+        XCTAssertEqual(event.resource.transferSize, 0)
     }
 
-    func testWhenResourceMetricsHaveNoCacheSignalAndStopCommandHasNoAttribute_itLeavesResourceLocalCacheHitNil() throws {
+    func testWhenResourceMetricsHaveNoCacheSignal_itLeavesResourceDeliveryTypeAndTransferSizeNil() throws {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
@@ -1993,7 +1928,7 @@ class RUMResourceScopeTests: XCTestCase {
             resourceKey: "/api/data",
             time: .mockDecember15th2019At10AMUTC(),
             attributes: [:],
-            metrics: .mockWith(isLocalCacheHit: nil)
+            metrics: .mockWith(deliveryType: nil, transferSize: nil)
         )
 
         // When
@@ -2016,43 +1951,8 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertNil(event.resource.localCacheHit)
-    }
-
-    func testWhenStopWithErrorCommandContainsLocalCacheHit_itDoesNotLeakItIntoErrorContext() throws {
-        // Given
-        let scope = RUMResourceScope.mockWith(
-            parent: provider,
-            dependencies: dependencies,
-            resourceKey: "/resource/1",
-            startTime: .mockDecember15th2019At10AMUTC(),
-            url: "https://foo.com/resource/1",
-            httpMethod: .post
-        )
-
-        // When
-        XCTAssertFalse(
-            scope.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: "/resource/1",
-                    time: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2),
-                    error: ErrorMock("network issue explanation"),
-                    source: .network,
-                    httpStatusCode: 500,
-                    globalAttributes: [:],
-                    attributes: [
-                        "foo": "bar",
-                        CrossPlatformAttributes.localCacheHit: true
-                    ]
-                ),
-                context: context,
-                writer: writer
-            )
-        )
-
-        // Then
-        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertNil(event.resource.deliveryType)
+        XCTAssertNil(event.resource.transferSize)
     }
 
     func testWhenStopCommandContainsRequestHeadersAndBodySizeMetrics_itPopulatesBoth() throws {
