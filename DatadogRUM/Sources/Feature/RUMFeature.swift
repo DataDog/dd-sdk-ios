@@ -139,6 +139,21 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
+        // Create the initial session identity here, synchronously, while still on the main thread inside
+        // `RUM.enable()`. The session scope is still created asynchronously further down the line and adopts
+        // this ID, but deriving the sampler now means `RUMSessionSamplerProvider` resolves by the time
+        // `RUM.enable()` returns instead of staying `nil` until the initial session is created. WebViewTracking
+        // reads it through that protocol, so a WebView instrumented immediately after enable gets a real
+        // tracing decision rather than `null`.
+        //
+        // Trace, Profiling and the URLSession handlers do NOT read this. They still resolve their RUM context
+        // through the message bus and keep their existing behaviour until the centralized sampling service
+        // lands. See RUM-17921.
+        let initialSessionUUID = configuration.uuidGenerator.generateUnique()
+        _rumSessionSampler.mutate {
+            $0 = DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
+        }
+
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
             // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
@@ -227,6 +242,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            initialSessionUUID: initialSessionUUID,
             timeseriesCollector: timeseriesCollector
         )
 
