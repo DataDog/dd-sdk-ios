@@ -87,8 +87,8 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 
         var heatmapAttributes: HeatmapAttributes?
 
-        // Heatmap identifiers are looked up by `tap.view`, not the action target
-        if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(view)) {
+        // Heatmap identifiers are looked up by `tap.view.layer`, not the action target
+        if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) {
             heatmapAttributes = HeatmapAttributes(
                 identifier: heatmapIdentifier,
                 size: view.bounds.size,

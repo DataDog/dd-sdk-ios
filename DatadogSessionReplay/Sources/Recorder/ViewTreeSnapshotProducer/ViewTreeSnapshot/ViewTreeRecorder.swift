@@ -82,7 +82,7 @@ internal struct ViewTreeRecorder {
                     screenName: viewPath,
                     bundleIdentifier: bundleIdentifier() ?? "unknown"
                 )
-                heatmapCache.identifiers[ObjectIdentifier(view)] = identifier
+                heatmapCache.identifiers[ObjectIdentifier(view.layer)] = identifier
                 heatmapIdentifier = identifier
             }
             nodes.append(
