@@ -174,6 +174,106 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 30)
     }
 
+    func testWhenTapHitsRegisteredSublayer_itUsesSublayerHeatmapAttributes() {
+        // Given
+        let view = UIControl(frame: .init(x: 100, y: 200, width: 200, height: 100))
+            .attached(to: mockAppWindow)
+        let targetLayer = CALayer()
+        targetLayer.frame = .init(x: 20, y: 30, width: 80, height: 40)
+        targetLayer.bounds.origin = .init(x: 10, y: 15)
+        view.layer.addSublayer(targetLayer)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(view.layer): HeatmapIdentifier(rawValue: "view-id"),
+            ObjectIdentifier(targetLayer): HeatmapIdentifier(rawValue: "layer-id"),
+        ])
+        let handler = touchHandler(heatmapRegistry: registry)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(
+                touch: UITouchMock(phase: .ended, location: .init(x: 50, y: 50), view: view)
+            )
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.heatmapAttributes?.targetPermanentID, "layer-id")
+        XCTAssertEqual(command?.heatmapAttributes?.targetWidth, 80)
+        XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 40)
+        XCTAssertEqual(command?.heatmapAttributes?.positionX, 30)
+        XCTAssertEqual(command?.heatmapAttributes?.positionY, 20)
+    }
+
+    func testWhenHitSublayerIsNotRegistered_itUsesTapViewLayerHeatmapAttributes() {
+        // Given
+        let view = UIControl(frame: .init(x: 0, y: 0, width: 200, height: 100))
+            .attached(to: mockAppWindow)
+        let sublayer = CALayer()
+        sublayer.frame = .init(x: 20, y: 30, width: 80, height: 40)
+        view.layer.addSublayer(sublayer)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(view.layer): HeatmapIdentifier(rawValue: "view-id"),
+        ])
+        let handler = touchHandler(heatmapRegistry: registry)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(
+                touch: UITouchMock(phase: .ended, location: .init(x: 50, y: 50), view: view)
+            )
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.heatmapAttributes?.targetPermanentID, "view-id")
+        XCTAssertEqual(command?.heatmapAttributes?.targetWidth, 200)
+        XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 100)
+        XCTAssertEqual(command?.heatmapAttributes?.positionX, 50)
+        XCTAssertEqual(command?.heatmapAttributes?.positionY, 50)
+    }
+
+    func testWhenSwiftUIAutomaticTapHitsRegisteredSublayer_itAttachesHeatmapAttributes() {
+        // Given
+        let view = SwiftUIActionViewMock(frame: .init(x: 0, y: 0, width: 200, height: 100))
+        mockAppWindow.addSubview(view)
+        let targetLayer = CALayer()
+        targetLayer.frame = .init(x: 20, y: 30, width: 80, height: 40)
+        view.layer.addSublayer(targetLayer)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(targetLayer): HeatmapIdentifier(rawValue: "layer-id"),
+        ])
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            heatmapIdentifierRegistry: registry,
+            uiKitPredicate: nil,
+            swiftUIPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
+            swiftUIDetector: LegacySwiftUIComponentDetector()
+        )
+        handler.publish(to: commandSubscriber)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(
+                touch: UITouchMock(phase: .ended, location: .init(x: 50, y: 50), view: view)
+            )
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.instrumentation, .swiftuiAutomatic)
+        XCTAssertEqual(command?.heatmapAttributes?.targetPermanentID, "layer-id")
+        XCTAssertEqual(command?.heatmapAttributes?.targetWidth, 80)
+        XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 40)
+        XCTAssertEqual(command?.heatmapAttributes?.positionX, 30)
+        XCTAssertEqual(command?.heatmapAttributes?.positionY, 20)
+    }
+
     func testWhenTapViewLayerIsNotInRegistry_itDoesNotAttachHeatmapAttributes() {
         // Given
         let cell = UITableViewCell()
@@ -552,6 +652,8 @@ private extension UIView {
 
 /// The mock the keyboard window by having the class name contain "UIRemoteKeyboardWindow" string.
 private class MockUIRemoteKeyboardWindow: UIWindow {}
+
+private class SwiftUIActionViewMock: UIView {}
 
 private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPressRUMActionsPredicate {
     private let actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?
