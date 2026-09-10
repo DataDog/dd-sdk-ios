@@ -58,6 +58,7 @@ class EvaluationLoggingTests: XCTestCase {
             firstEvaluation: 1_234_567_890,
             lastEvaluation: 1_234_567_900,
             evaluationCount: 5,
+            serialID: 42,
             variant: .init(key: "variant-a"),
             allocation: .init(key: "allocation-1"),
             targetingRule: nil,
@@ -106,6 +107,7 @@ class EvaluationLoggingTests: XCTestCase {
         XCTAssertNotNil(decodedBatch.context)
         XCTAssertEqual(decodedBatch.flagEvaluations.count, 1)
         XCTAssertEqual(decodedBatch.flagEvaluations.first?.flag.key, "test-flag")
+        XCTAssertEqual(decodedBatch.flagEvaluations.first?.serialID, 42)
 
         XCTAssertEqual(decodedBatch.context?.rum?.application?.id, "rum-app-123")
     }

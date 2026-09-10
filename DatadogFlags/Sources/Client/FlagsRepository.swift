@@ -276,7 +276,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.flags[key]
+        return flagsData?.flagAssignment(for: key)
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
@@ -315,15 +315,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 switch result {
-                case .success(let flags):
+                case .success(let response):
                     guard let self else {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
                     self.flagsData = .init(
-                        flags: flags,
+                        flags: response.flags,
                         context: context,
-                        date: self.dateProvider.now
+                        date: self.dateProvider.now,
+                        obfuscationSalt: response.obfuscated ? response.salt : nil
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()

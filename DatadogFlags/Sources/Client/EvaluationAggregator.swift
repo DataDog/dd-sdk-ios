@@ -48,6 +48,7 @@ internal final class EvaluationAggregator {
             flagKey: flagKey,
             variantKey: assignment.variationKey,
             allocationKey: assignment.allocationKey,
+            serialID: assignment.serialID,
             targetingKey: evaluationContext.targetingKey,
             errorMessage: errorMessage,
             context: evaluationContext.attributes
@@ -67,6 +68,7 @@ internal final class EvaluationAggregator {
                     flagKey: flagKey,
                     variantKey: assignment.variationKey,
                     allocationKey: assignment.allocationKey,
+                    serialID: assignment.serialID,
                     targetingKey: evaluationContext.targetingKey,
                     targetingRuleKey: nil,
                     errorMessage: errorMessage,
@@ -122,6 +124,7 @@ private struct AggregationKey: Hashable {
     let flagKey: String
     let variantKey: String
     let allocationKey: String
+    let serialID: Int?
     let targetingKey: String
     let errorMessage: String?
     let contextHash: Int
@@ -130,6 +133,7 @@ private struct AggregationKey: Hashable {
         flagKey: String,
         variantKey: String,
         allocationKey: String,
+        serialID: Int?,
         targetingKey: String,
         errorMessage: String?,
         context: [String: AnyValue]
@@ -137,6 +141,7 @@ private struct AggregationKey: Hashable {
         self.flagKey = flagKey
         self.variantKey = variantKey
         self.allocationKey = allocationKey
+        self.serialID = serialID
         self.targetingKey = targetingKey
         self.errorMessage = errorMessage
         var hasher = Hasher()
@@ -152,6 +157,7 @@ private struct AggregatedEvaluation {
     let flagKey: String
     let variantKey: String
     let allocationKey: String
+    let serialID: Int?
     let targetingKey: String
     let targetingRuleKey: String?
     let errorMessage: String?
@@ -174,6 +180,7 @@ private struct AggregatedEvaluation {
             firstEvaluation: firstEvaluation,
             lastEvaluation: lastEvaluation,
             evaluationCount: evaluationCount,
+            serialID: serialID,
             variant: runtimeDefaultUsed == true ? nil : .init(key: variantKey),
             allocation: runtimeDefaultUsed == true ? nil : .init(key: allocationKey),
             targetingRule: targetingRuleKey.map { .init(key: $0) },

@@ -12,6 +12,55 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
+    func testDecodingObfuscatedResponseMetadata() throws {
+        let json = """
+        {
+          "data": {
+            "id": "test_subject",
+            "type": "precomputed-assignments",
+            "attributes": {
+              "obfuscated": true,
+              "salt": "00112233445566778899aabbccddeeff",
+              "flags": {
+                "c094eaf9e7ef3c47e20be3b29b8bb3a3a0ec32a9129e5cff6bba8e813cfaa795": {
+                  "allocationKey": "_",
+                  "variationKey": "_",
+                  "variationType": "boolean",
+                  "variationValue": true,
+                  "doLog": true,
+                  "reason": "TARGETING_MATCH",
+                  "serialId": 42
+                }
+              }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder().decode(FlagAssignmentsResponse.self, from: json)
+
+        XCTAssertTrue(response.obfuscated)
+        XCTAssertEqual(response.salt, "00112233445566778899aabbccddeeff")
+        XCTAssertEqual(response.flags.values.first?.serialID, 42)
+    }
+
+    func testObfuscatedResponseWithoutSaltIsRejected() throws {
+        let json = """
+        {
+          "data": {
+            "id": "test_subject",
+            "type": "precomputed-assignments",
+            "attributes": {
+              "obfuscated": true,
+              "flags": {}
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        XCTAssertThrowsError(try JSONDecoder().decode(FlagAssignmentsResponse.self, from: json))
+    }
+
     func testDecoding() throws {
         // Given
         let json = """

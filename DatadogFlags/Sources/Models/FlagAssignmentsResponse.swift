@@ -9,10 +9,19 @@ import Foundation
 internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
     let failedFlags: [String: String] // key -> error description
+    let obfuscated: Bool
+    let salt: String?
 
-    init(flags: [String: FlagAssignment], failedFlags: [String: String] = [:]) {
+    init(
+        flags: [String: FlagAssignment],
+        failedFlags: [String: String] = [:],
+        obfuscated: Bool = false,
+        salt: String? = nil
+    ) {
         self.flags = flags
         self.failedFlags = failedFlags
+        self.obfuscated = obfuscated
+        self.salt = salt
     }
 }
 
@@ -21,12 +30,23 @@ extension FlagAssignmentsResponse: Codable {
         case data
         case attributes
         case flags
+        case obfuscated
+        case salt
     }
 
     init(from decoder: any Decoder) throws {
         let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+
+        self.obfuscated = try attributesContainer.decodeIfPresent(Bool.self, forKey: .obfuscated) ?? false
+        self.salt = try attributesContainer.decodeIfPresent(String.self, forKey: .salt)
+        if obfuscated && salt == nil {
+            throw DecodingError.keyNotFound(
+                CodingKeys.salt,
+                .init(codingPath: attributesContainer.codingPath, debugDescription: "Obfuscated assignments require a salt.")
+            )
+        }
 
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
@@ -51,6 +71,8 @@ extension FlagAssignmentsResponse: Codable {
         var rootContainer = encoder.container(keyedBy: CodingKeys.self)
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
         var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+        try attributesContainer.encode(obfuscated, forKey: .obfuscated)
+        try attributesContainer.encodeIfPresent(salt, forKey: .salt)
         try attributesContainer.encode(flags, forKey: .flags)
     }
 }

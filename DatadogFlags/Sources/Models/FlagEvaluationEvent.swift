@@ -109,6 +109,7 @@ internal struct FlagEvaluationEvent: Equatable, Codable {
     let firstEvaluation: Int64
     let lastEvaluation: Int64
     let evaluationCount: Int
+    let serialID: Int?
     let variant: Identifier?
     let allocation: Identifier?
     let targetingRule: Identifier?
@@ -123,6 +124,7 @@ internal struct FlagEvaluationEvent: Equatable, Codable {
         case firstEvaluation = "first_evaluation"
         case lastEvaluation = "last_evaluation"
         case evaluationCount = "evaluation_count"
+        case serialID = "serial_id"
         case variant
         case allocation
         case targetingRule = "targeting_rule"
