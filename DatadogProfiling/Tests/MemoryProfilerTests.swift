@@ -250,6 +250,110 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - Isolation and cadence invariants
+
+    /// The isolation invariant this whole design rests on: a memory trigger may only ever *add* a
+    /// heap event. It must never start, stop or reschedule the CPU profiler, which
+    /// `DatadogProfiler` alone owns.
+    func testTriggers_neverTouchTheCPUProfiler() throws {
+        let dateProvider = DateProviderMock()
+        let provider = makeSamplerProvider(continuousSampleRate: .maxSampleRate, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+
+        let statusBefore = dd_profiler_get_status()
+
+        try withSampledObject {
+            sendHang(id: "hang-1", to: profiler)
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            sendMemoryWarning(id: "warning-1", to: profiler)
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            sendTTID(to: profiler, at: dateProvider.now)
+        }
+
+        XCTAssertEqual(
+            dd_profiler_get_status(), statusBefore,
+            "A memory trigger must not change CPU profiler state"
+        )
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// A periodic emission stamps the cooldown, so a trigger arriving right behind it folds instead
+    /// of re-uploading a live set that was just reported.
+    func testTriggerImmediatelyAfterPeriodicEmission_isFolded() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            // Close a window the periodic way (a background transition flushes it).
+            enterBackground(at: dateProvider.now)
+            XCTAssertEqual(heapAttachmentCount, 1, "Precondition: the periodic window emitted")
+
+            enterForeground()
+            dateProvider.now.addTimeInterval(1) // inside the cooldown
+            sendHang(id: "hang-1", to: profiler)
+
+            XCTAssertEqual(
+                heapAttachmentCount, 1,
+                "The trigger folds into the periodic emission that just happened"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Recording continues in the background, but uploading must not: the conditions latch allows
+    /// exactly one emission once conditions are lost, and triggers are bound by it too.
+    func testTriggerWhileBackgrounded_doesNotReEmitTheLiveSet() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            enterBackground(at: dateProvider.now) // spends the one allowed emission
+            let afterBackground = heapAttachmentCount
+
+            dateProvider.now.addTimeInterval(30) // well past the cooldown
+            sendHang(id: "hang-1", to: profiler)
+
+            XCTAssertEqual(
+                heapAttachmentCount, afterBackground,
+                "No re-upload of the same live set while backgrounded"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Long tasks stay correlation-only. They are frequent and rarely say anything about the heap,
+    /// so they enrich the next emission rather than forcing one.
+    func testLongTask_doesNotTriggerASnapshot() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            _ = profiler.receive(
+                message: .payload(LongTaskMessage(
+                    attributes: mockRandomAttributes(),
+                    longTask: DurationEvent(id: "long-task-1", type: .longTask, start: 0, duration: 100)
+                )),
+                from: core
+            )
+            flushQueue()
+
+            XCTAssertEqual(heapAttachmentCount, 0, "A long task must not force a heap emission")
+
+            // It still correlates on the next emission.
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let event = try XCTUnwrap(core.events.last as? ProfileEvent)
+            XCTAssertEqual(
+                event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String],
+                ["long-task-1"]
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Helpers
 
     private func makeSamplerProvider(
