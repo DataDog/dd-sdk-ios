@@ -41,7 +41,7 @@ internal final class RUMViewsHandler {
     #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
-    private let uiKitPredicate: DDKitRUMViewsPredicate?
+    private let ddKitPredicate: DDKitRUMViewsPredicate?
 
     /// `SwiftUI` view predicate. `nil` if `SwiftUI` auto-instrumentations is
     /// disabled.
@@ -86,7 +86,7 @@ internal final class RUMViewsHandler {
         notificationCenterProvider: NotificationCenterProvider
     ) {
         self.dateProvider = dateProvider
-        self.uiKitPredicate = uiKitPredicate
+        self.ddKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
         self.notificationCenterProvider = notificationCenterProvider
@@ -288,17 +288,42 @@ internal final class RUMViewsHandler {
     }
 }
 
+// MARK: - NSViewControllerHandler
+#if os(macOS)
+extension RUMViewsHandler: NSViewControllerHandler {
+    func notify_viewDidAppear(viewController: DDViewController) {
+        notify_viewDidAppear_impl(viewController: viewController, ddKitInstrumentationType: .appkit)
+    }
+
+    func notify_viewDidDisappear(viewController: DDViewController) {
+        remove(identity: ViewIdentifier(viewController))
+    }
+}
+#endif
+
 // MARK: - UIViewControllerHandler
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: DDViewController, animated: Bool) {
+        notify_viewDidAppear_impl(viewController: viewController, ddKitInstrumentationType: .uikit)
+    }
+
+    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
+        remove(identity: ViewIdentifier(viewController))
+    }
+}
+#endif
+
+// MARK: - ViewControllerHandler implementation
+#if !os(watchOS)
+extension RUMViewsHandler {
+    func notify_viewDidAppear_impl(viewController: DDViewController, ddKitInstrumentationType: InstrumentationType) {
         let identity = ViewIdentifier(viewController)
         if let view = stack.first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
-        } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
-#if canImport(UIKit)
+        } else if let rumView = ddKitPredicate?.rumView(for: viewController) {
             add(
                 view: .init(
                     identity: identity,
@@ -306,21 +331,9 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .uikit
+                    instrumentationType: ddKitInstrumentationType
                 )
             )
-#elseif canImport(AppKit)
-            add(
-                view: .init(
-                    identity: identity,
-                    name: rumView.name,
-                    path: rumView.path ?? viewController.canonicalClassName,
-                    isUntrackedModal: rumView.isUntrackedModal,
-                    attributes: rumView.attributes,
-                    instrumentationType: .appKit
-                )
-            )
-#endif
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
@@ -337,10 +350,6 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 )
             )
         }
-    }
-
-    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
-        remove(identity: ViewIdentifier(viewController))
     }
 }
 #endif

@@ -7,10 +7,10 @@
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 
-internal protocol UIViewControllerHandler: RUMCommandPublisher {
+internal protocol NSViewControllerHandler: RUMCommandPublisher {
     /// Gets called on `super.viewDidAppear()`.
-    func notify_viewDidAppear(viewController: DDViewController, animated: Bool)
+    func notify_viewDidAppear(viewController: DDViewController)
     /// Gets called on `super.viewDidDisappear()`.
-    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool)
+    func notify_viewDidDisappear(viewController: DDViewController)
 }
 #endif

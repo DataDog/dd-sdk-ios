@@ -35,7 +35,8 @@ internal enum InstrumentationType: Equatable {
     /// Command issued through UIKit predicate-based instrumentation.
     case uikit
     #elseif canImport(AppKit)
-    case appKit
+    /// Command issued through AppKit predicate-based instrumentation.
+    case appkit
     #endif
     /// Command issued through SwiftUI predicate-based instrumentation.
     case swiftuiAutomatic
@@ -55,7 +56,7 @@ internal enum InstrumentationType: Equatable {
             #if canImport(UIKit)
         case .uikit: return 0
             #elseif canImport(AppKit)
-        case .appKit: return 0
+        case .appkit: return 0
             #endif
         case .swiftuiAutomatic: return 1
         case .swiftui: return 2

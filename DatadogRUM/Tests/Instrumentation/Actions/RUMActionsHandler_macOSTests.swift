@@ -53,7 +53,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "NSButton (Some Button)")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(command.attributes.count, 0)
     }
@@ -107,7 +107,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "NSButton")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(command.attributes.count, 0)
     }
@@ -129,7 +129,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "NSButton (Parent Button)")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
     }
 
     func testGivenDisabledControlsInsideNestedCustomControls_whenLeftMouseDown_itSendsActionForFirstEnabledAncestor() throws {
@@ -161,7 +161,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "First Enabled Control")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(predicate.receivedViews.count, 1)
         XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), expectedControl)
         XCTAssertTrue(detector.receivedEvents.isEmpty)
@@ -190,7 +190,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "NSTableRowView (Row 0)")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
         }
     }
 
@@ -221,7 +221,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "Row Button")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
         }
     }
 
@@ -257,7 +257,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "Row")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
             XCTAssertEqual(predicate.receivedViews.count, 1)
             XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), rowView)
             XCTAssertTrue(detector.receivedEvents.isEmpty)
@@ -287,7 +287,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "NSView (Item 0)")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
         }
     }
 
@@ -318,7 +318,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "Item Button")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
         }
     }
 
@@ -353,7 +353,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
             let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
             XCTAssertEqual(command?.name, "Item")
             XCTAssertEqual(command?.actionType, .click)
-            XCTAssertEqual(command?.instrumentation, .appKit)
+            XCTAssertEqual(command?.instrumentation, .appkit)
             XCTAssertEqual(predicate.receivedViews.count, 1)
             XCTAssertIdentical(try XCTUnwrap(predicate.receivedViews.first), item.view)
             XCTAssertTrue(detector.receivedEvents.isEmpty)
@@ -476,7 +476,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "NSMenuItem(File Menu Item)")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(command.attributes.count, 0)
     }
@@ -493,7 +493,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, "NSMenuItem")
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(command.attributes.count, 0)
     }
@@ -540,7 +540,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
 
         // Then
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(detector.receivedEvents.count, 0)
     }
 
