@@ -20,9 +20,29 @@ internal protocol ProfilingHandler {
     var featureScope: FeatureScope { get }
     var telemetryController: ProfilingTelemetryController { get }
     var encoder: JSONEncoder { get }
+
+    /// The `heap.pprof` bytes to attach to a CPU profile event of the given serialized size, or
+    /// `nil` when there is nothing to attach or no room in the shared attachment budget.
+    ///
+    /// Declared here rather than only in the extension so the witness table dispatches to the
+    /// conforming type — `DatadogProfiler` forwards it to `MemoryProfiler`, which owns the heap.
+    func heapAttachment(
+        fittingAlongside cpuProfileSize: Int,
+        attributes: [AttributeKey: AttributeValue],
+        operation: ProfilingOperation
+    ) -> Data?
 }
 
 extension ProfilingHandler {
+    /// A handler with no memory profiling behind it attaches nothing.
+    func heapAttachment(
+        fittingAlongside cpuProfileSize: Int,
+        attributes: [AttributeKey: AttributeValue],
+        operation: ProfilingOperation
+    ) -> Data? {
+        nil
+    }
+
     /// Merges the RUM correlation IDs (vitals, hangs/errors, long tasks) into the base attributes
     /// and builds the matching `[RUMEvent]` timeline. Shared by the coupled (`write`) and heap-only
     /// (`writeHeapOnlyProfile`) paths so both events carry identical RUM correlation.
@@ -122,7 +142,7 @@ extension ProfilingHandler {
         // backend merges into a single profile, so wall/CPU and memory appear together in the UI
         // instead of as two profiles.
         let heapPprof = captureHeapProfile
-            ? heapAttachmentFitting(alongside: serializedProfileSize, attributes: attributes, operation: operation)
+            ? heapAttachment(fittingAlongside: serializedProfileSize, attributes: attributes, operation: operation)
             : nil
 
         featureScope.eventWriteContext { context, writer in
@@ -157,87 +177,6 @@ extension ProfilingHandler {
         }
     }
 
-    /// Captures the heap snapshot for a coupled event, but only if it fits in what the CPU profile
-    /// leaves of the attachment budget. Returns `nil` when there is nothing to attach or no room.
-    ///
-    /// The budget is shared, not per-attachment. All attachments travel in one `ProfileAttachments`
-    /// metadata block, which the core writer caps at `performance.maxObjectSize`; `Data` fields are
-    /// JSON-encoded as base64, so the encoded block is ~4/3 of the raw bytes. Exceeding the cap does
-    /// not fail loudly — `FileWriter` logs, writes the event *without* its metadata, and the upload
-    /// is then rejected for missing metadata, all while this method's caller has already reported a
-    /// successful profile. Keeping the raw total inside `maxObjectSize` keeps the encoded block
-    /// inside the writer's larger limit with room to spare.
-    ///
-    /// When the heap does not fit, the CPU profile is still written: the heap is the supplementary
-    /// attachment, so dropping it preserves the more valuable payload rather than losing both.
-    private func heapAttachmentFitting(
-        alongside serializedProfileSize: Int,
-        attributes: [AttributeKey: AttributeValue],
-        operation: ProfilingOperation
-    ) -> Data? {
-        guard let heapPprof = captureHeapPprof(attributes: attributes) else {
-            return nil
-        }
-        let budget = Int(ProfilerFeature.Constants.maxObjectSize)
-        guard serializedProfileSize + heapPprof.count <= budget else {
-            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
-            return nil
-        }
-        return heapPprof
-    }
-
-    /// Captures a live-heap snapshot on the profiling queue and serializes it to `heap.pprof`
-    /// bytes, tagged with the current RUM correlation IDs. Returns `nil` when there are no live
-    /// heap samples this period (nothing to attach). The caller bundles the returned bytes as a
-    /// `heap.pprof` attachment on the wall/CPU profile event so both land on the same profile.
-    ///
-    /// RUM correlation IDs are attached as per-sample string labels (Go-aligned keys:
-    /// `session_id`, `view_id`, `application_id`). All samples in the snapshot carry the same
-    /// values because it is a point-in-time capture (documented approximation).
-    ///
-    /// `view.id` is stored in the attributes dictionary as `[String]` (the RUM SDK wraps it in
-    /// an array); we take the first element as the label value.
-    private func captureHeapPprof(attributes: [AttributeKey: AttributeValue]) -> Data? {
-        // Live set (inuse_*) — a point-in-time view, never reset.
-        var snapshot = dd_memory_snapshot_capture()
-        defer { dd_memory_snapshot_destroy(&snapshot) }
-
-        // This window's sampled allocations (alloc_*) — captured-and-reset so the
-        // next window accumulates fresh. Independent of the live set: transient
-        // objects allocated and freed within the window show up here but not in
-        // `snapshot`, which is what makes alloc_* diverge from inuse_*.
-        var allocWindow = dd_memory_alloc_window_capture()
-        defer { dd_memory_snapshot_destroy(&allocWindow) }
-
-        // Extract RUM correlation IDs from attributes using the same keys the wall
-        // profiling path receives from the RUM feature message.
-        // `view.id` is sent by the RUM SDK as [String] (array); take the first element.
-        let sessionID     = attributes[RUMCoreContext.IDs.sessionID]     as? String
-        let viewID        = (attributes[RUMCoreContext.IDs.viewID] as? [String])?.first
-        let applicationID = attributes[RUMCoreContext.IDs.applicationID] as? String
-
-        var raw: UnsafeMutablePointer<UInt8>? = nil
-        // Pass each ID as a C string only when non-nil; the converter treats NULL and
-        // empty-string identically (omits the label), so we pass NULL for absent IDs.
-        let size = withOptionalCString(sessionID) { sidPtr in
-            withOptionalCString(viewID) { vidPtr in
-                withOptionalCString(applicationID) { aidPtr in
-                    dd_memory_snapshots_to_pprof(&snapshot, &allocWindow, sidPtr, vidPtr, aidPtr, &raw)
-                }
-            }
-        }
-
-        guard size > 0, let raw else {
-            // No heap samples this period (neither live set nor window allocations)
-            // — nothing to attach.
-            return nil
-        }
-
-        let heapData = Data(bytes: raw, count: Int(size))
-        free(raw)
-        return heapData
-    }
-
     /// Emits a heap-only `ProfileEvent` — used when memory profiling is active but there is no
     /// writable CPU/wall profile this window (Option B independent emission). The event carries
     /// `heap.pprof` and the RUM-events timeline for the correlated vitals/hangs/long tasks (no
@@ -259,16 +198,15 @@ extension ProfilingHandler {
             longTasks: longTasks,
             errors: errors
         )
-        guard let heapPprof = captureHeapPprof(attributes: attributes) else {
-            return
-        }
-
-        // Same shared attachment budget as the coupled path — see `heapAttachmentFitting`. Here the
-        // heap is the *only* pprof, so there is nothing to fall back to: an oversized snapshot is
-        // dropped outright rather than written into a metadata block the writer would silently
+        // Here the heap is the *only* pprof, so it is asked to fit alongside nothing. There is also
+        // nothing to fall back to: an oversized snapshot is dropped outright by `heapAttachment`
+        // (with telemetry) rather than written into a metadata block the writer would silently
         // discard, leaving an event that can never upload.
-        guard heapPprof.count <= Int(ProfilerFeature.Constants.maxObjectSize) else {
-            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
+        guard let heapPprof = heapAttachment(
+            fittingAlongside: 0,
+            attributes: attributes,
+            operation: operation
+        ) else {
             return
         }
 
@@ -352,14 +290,4 @@ private enum Tag {
     }
 }
 
-/// Calls `body` with a `UnsafePointer<CChar>?` for the given optional String.
-/// Passes `nil` when `string` is `nil`; otherwise bridges via `withCString`.
-/// This avoids duplicate `withCString` nesting with sentinel empty strings.
-private func withOptionalCString<R>(
-    _ string: String?,
-    body: (UnsafePointer<CChar>?) -> R
-) -> R {
-    guard let string else { return body(nil) }
-    return string.withCString { body($0) }
-}
 #endif

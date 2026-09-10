@@ -287,6 +287,7 @@
 		11EA5C2E2DC3CCA500E8DFA2 /* DatadogConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2C2DC3CC9900E8DFA2 /* DatadogConfiguration.swift */; };
 		11EA5C342DC5077500E8DFA2 /* InternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */; };
 		11F3DF6F30530C4C00CA54EB /* MemoryWarningMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF6E30530C4C00CA54EB /* MemoryWarningMessage.swift */; };
+		11F3DF723053120400CA54EB /* MemoryProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF713053120400CA54EB /* MemoryProfiler.swift */; };
 		11F55FCE2DCBB4F600DE4944 /* URLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */; };
 		11F55FD42DCBB61A00DE4944 /* TracingHeaderType+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */; };
 		11F55FD62DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
@@ -2226,6 +2227,7 @@
 		11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TracingHeaderType+objc.swift"; sourceTree = "<group>"; };
 		11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InternalLogger+objc.swift"; sourceTree = "<group>"; };
 		11F3DF6E30530C4C00CA54EB /* MemoryWarningMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryWarningMessage.swift; sourceTree = "<group>"; };
+		11F3DF713053120400CA54EB /* MemoryProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfiler.swift; sourceTree = "<group>"; };
 		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -4051,6 +4053,14 @@
 				115624BC3067CF0F007FBEB2 /* ProfilingRequestBuilderError.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		11F3DF703053120400CA54EB /* Memory */ = {
+			isa = PBXGroup;
+			children = (
+				11F3DF713053120400CA54EB /* MemoryProfiler.swift */,
+			);
+			path = Memory;
 			sourceTree = "<group>";
 		};
 		11F55FC22DCBA90100DE4944 /* NetworkInstrumentation */ = {
@@ -7304,6 +7314,7 @@
 				11C4E5912F571F86002196F4 /* Models */,
 				1121FCFA2EE305D900297156 /* SDKMetrics */,
 				119ABE393046EB0F002E68CD /* SwiftAllocInterception.swift */,
+				11F3DF703053120400CA54EB /* Memory */,
 			);
 			name = DatadogProfiling;
 			path = ../DatadogProfiling/Sources;
@@ -9332,6 +9343,7 @@
 				D233E7CC2E46264600E7CFDE /* ProfilerFeature.swift in Sources */,
 				110DD1B22EEB6BBD002F3B8B /* ProfilingConfiguration.swift in Sources */,
 				D233E7C42E4625D400E7CFDE /* RequestBuilder.swift in Sources */,
+				11F3DF723053120400CA54EB /* MemoryProfiler.swift in Sources */,
 				D233E7C52E4625D400E7CFDE /* ProfileEvent.swift in Sources */,
 				115624BD3067CF10007FBEB2 /* ProfilingRequestBuilderError.swift in Sources */,
 				1121FD072F00000100297156 /* AggregationDiagnosticsMetric.swift in Sources */,
