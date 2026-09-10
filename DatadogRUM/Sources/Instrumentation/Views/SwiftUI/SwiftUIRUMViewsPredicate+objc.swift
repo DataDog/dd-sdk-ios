@@ -41,6 +41,7 @@ public class objc_DefaultSwiftUIRUMViewsPredicate: NSObject, objc_SwiftUIRUMView
 
 // MARK: - SwiftUI Actions Predicate Bridge
 
+#if !os(macOS)
 internal struct SwiftUIRUMActionsPredicateBridge: SwiftUIRUMActionsPredicate {
     let objcPredicate: objc_SwiftUIRUMActionsPredicate
 
@@ -75,4 +76,5 @@ public class objc_DefaultSwiftUIRUMActionsPredicate: NSObject, objc_SwiftUIRUMAc
         }
     }
 }
+#endif
 #endif

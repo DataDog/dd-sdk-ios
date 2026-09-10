@@ -52,7 +52,11 @@ internal enum InstrumentationType: Equatable {
     /// from a lower-priority type (e.g., a SwiftUI button tap takes precedence over the touch on its containing UIKit table view cell).
     var priority: Int {
         switch self {
+            #if canImport(UIKit)
         case .uikit: return 0
+            #elseif canImport(AppKit)
+        case .appKit: return 0
+            #endif
         case .swiftuiAutomatic: return 1
         case .swiftui: return 2
         case .manual: return 3

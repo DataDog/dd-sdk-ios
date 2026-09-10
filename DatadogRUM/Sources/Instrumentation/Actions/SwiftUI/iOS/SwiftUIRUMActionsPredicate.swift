@@ -4,11 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(UIKit)
+#if !os(macOS)
 import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 import DatadogInternal
 
 /// Predicate determining which SwiftUI component interactions should be recorded as RUM actions.
@@ -47,3 +44,4 @@ extension DefaultSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
         return nil
     }
 }
+#endif

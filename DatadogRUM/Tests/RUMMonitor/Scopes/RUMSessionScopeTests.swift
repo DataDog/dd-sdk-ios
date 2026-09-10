@@ -174,6 +174,7 @@ class RUMSessionScopeTests: XCTestCase {
 
     // MARK: - Background Events Tracking
 
+    #if !os(macOS)
     func testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope() {
         // Given
         let sessionStartTime = Date()
@@ -290,6 +291,7 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         XCTAssertTrue(scope.viewScopes.isEmpty, "It should not start any view scope")
     }
+    #endif
 
     // MARK: - Application Launch Events Tracking
 
@@ -798,6 +800,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.startCallCount, 0)
     }
 
+    #if !os(macOS)
     func testWhenSessionIsCreatedInBackground_itStartsThenPausesTimeseriesCollector() {
         // Given
         let collector = TimeseriesCollectorSpy()
@@ -817,6 +820,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.startCallCount, 1)
         XCTAssertEqual(collector.pauseCallCount, 1)
     }
+    #endif
 
     func testWhenAppEntersBackground_itPausesTimeseriesCollector() {
         // Given

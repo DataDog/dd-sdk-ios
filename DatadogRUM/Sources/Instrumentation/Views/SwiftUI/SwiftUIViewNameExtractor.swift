@@ -204,10 +204,12 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
             return true
         }
 
+        #if canImport(UIKit)
         // Skip Navigation controllers
-        if viewController is DDNavigationController {
+        if viewController is UINavigationController {
             return true
         }
+        #endif
 
         if className == "SwiftUI.NotifyingMulticolumnSplitViewController" {
             return true

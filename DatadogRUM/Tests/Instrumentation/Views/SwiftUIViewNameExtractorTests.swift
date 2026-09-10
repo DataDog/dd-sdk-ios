@@ -119,6 +119,44 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 
+    #if os(macOS)
+    func testShouldSkipViewController() {
+        let mockViewController = NSViewController()
+
+        // Test cases with controller and class name
+        let testCases: [(NSViewController, String, Bool)] = [
+            // Format: (controller, className, expectedShouldSkipResult)
+            // TabBarController cases
+            (mockViewController, "SwiftUI.UIKitTabBarController", true),
+            (mockViewController, "SwiftUI.TabHostingController", true),
+            (mockViewController, "_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_", true),
+            // Other ViewControllers cases
+            (mockViewController, "SwiftUI.NotifyingMulticolumnSplitViewController", true),
+            (mockViewController, mockViewController.canonicalClassName, false),
+        ]
+
+        for (controller, className, expectedResult) in testCases {
+            let result = extractor.shouldSkipViewController(viewController: controller, className: className)
+            XCTAssertEqual(result, expectedResult, "Skip logic failed for \(className)")
+        }
+    }
+
+    func testExtractNameFilteringForAppKitControllers() {
+        let tabbar = NSTabViewController()
+        let pageViewController = NSPageController()
+        let splitViewController = NSSplitViewController()
+
+        // Should return nil for UIKit bundle controllers
+        XCTAssertNil(extractor.extractName(from: tabbar))
+        XCTAssertNil(extractor.extractName(from: pageViewController))
+        XCTAssertNil(extractor.extractName(from: splitViewController))
+
+        if #available(iOS 13.0, tvOS 13.0, *) {
+            let hostingController = NSHostingController(rootView: EmptyView())
+            XCTAssertNotNil(hostingController)
+        }
+    }
+    #else
     func testShouldSkipViewController() {
         let navigationController = UINavigationController()
         let mockViewController = UIViewController()
@@ -156,6 +194,7 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         let hostingController = UIHostingController(rootView: EmptyView())
         XCTAssertNotNil(hostingController)
     }
+    #endif
 }
 
 #endif

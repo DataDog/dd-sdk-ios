@@ -4,14 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import Foundation
-#if canImport(UIKit)
 import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 import DatadogInternal
 
 internal enum SwiftUIComponentNames {
@@ -96,21 +92,6 @@ internal class SwiftUIComponentHelpers {
         #endif
 
         return defaultName
-    }
-}
-
-/// Protocol defining interface for type description functionality
-@objc
-internal protocol TypeDescribing {
-    /// Returns a string describing the type of the object
-    var typeDescription: String { get }
-}
-
-/// Default implementation for UIKit views
-extension DDView: TypeDescribing {
-    /// Returns a string describing the type of the view
-    @objc var typeDescription: String {
-        return String(describing: type(of: self))
     }
 }
 

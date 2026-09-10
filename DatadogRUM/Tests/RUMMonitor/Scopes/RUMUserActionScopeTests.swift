@@ -760,7 +760,7 @@ class RUMUserActionScopeTests: XCTestCase {
         var callbackCalled = false
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            actionType: .tap,
+            actionType: pointerActionType,
             startTime: currentTime,
             isContinuous: false,
             onActionEventSent: { _ in
@@ -774,7 +774,7 @@ class RUMUserActionScopeTests: XCTestCase {
                     time: currentTime,
                     globalAttributes: [:],
                     attributes: ["foo": "bar"],
-                    actionType: .tap,
+                    actionType: pointerActionType,
                     name: nil
                 ),
                 context: context,
@@ -803,7 +803,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: dependencies,
-            actionType: .tap,
+            actionType: pointerActionType,
             startTime: currentTime,
             isContinuous: false,
             onActionEventSent: { _ in
@@ -818,7 +818,7 @@ class RUMUserActionScopeTests: XCTestCase {
                     time: currentTime,
                     globalAttributes: [:],
                     attributes: ["foo": "bar"],
-                    actionType: .tap,
+                    actionType: pointerActionType,
                     name: nil
                 ),
                 context: context,
@@ -836,7 +836,7 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            actionType: .tap,
+            actionType: pointerActionType,
             startTime: currentTime,
             isContinuous: false
         )
@@ -860,7 +860,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
 
         let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
-        XCTAssertEqual(event.action.frustration?.type.first, .errorTap)
+        XCTAssertEqual(event.action.frustration?.type.first, errorFrustrationType)
     }
 
     func testGivenDisabledFrustration_whenTapUserActionWithError_itDoesNotWriteFrustration() throws {
@@ -870,7 +870,7 @@ class RUMUserActionScopeTests: XCTestCase {
             dependencies: .mockWith(
                 trackFrustrations: false
             ),
-            actionType: .tap,
+            actionType: pointerActionType,
             startTime: currentTime,
             isContinuous: false
         )
@@ -932,7 +932,7 @@ class RUMUserActionScopeTests: XCTestCase {
         var currentTime = Date()
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
-            actionType: .tap,
+            actionType: pointerActionType,
             startTime: currentTime,
             isContinuous: false
         )
@@ -964,7 +964,7 @@ class RUMUserActionScopeTests: XCTestCase {
     func testWhenActionEventIsSent_itTrackActionInINVMetric() throws {
         let actionStartTime: Date = .mockDecember15th2019At10AMUTC()
         let actionName: String = .mockRandom()
-        let actionType: RUMActionType = .tap
+        let actionType: RUMActionType = pointerActionType
 
         // Given
         let metric = INVMetricMock()
@@ -1072,5 +1072,21 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let actionEvent = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first)
         XCTAssertNil(actionEvent.dd.action)
+    }
+
+    private var pointerActionType: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
+    }
+
+    private var errorFrustrationType: RUMActionEvent.Action.Frustration.FrustrationType {
+        #if os(macOS)
+        .errorClick
+        #else
+        .errorTap
+        #endif
     }
 }

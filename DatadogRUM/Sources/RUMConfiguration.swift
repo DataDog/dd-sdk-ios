@@ -81,15 +81,16 @@ extension RUM {
 
         /// The predicate for automatically tracking `NSEvents` as RUM actions.
         ///
-        /// RUM will query this predicate for each `NSView` and `NSMenuItem` that the user interacts with. The predicate
-        /// implementation should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
+        /// RUM will query this predicate for `NSView`s, `AccessibilityElement`s and `NSMenuItem` that the user interacts with.
+        /// The predicate implementation should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
         /// Touch events on the keyboard are ignored for privacy reasons.
         ///
-        /// You can use `DefaultAppKitRUMActionsPredicate` or create your own predicate by
-        /// implementing `AppKitRUMActionsPredicate`.
+        /// Read the documentation of ``MacOSRUMActionsPredicate`` for more details.
         ///
-        /// Default: `nil` - which means automatic RUM action tracking for AppKit is not enabled by default.
-        public var appKitActionsPredicate: AppKitRUMActionsPredicate?
+        /// You can use `DefaultMacOSRUMActionsPredicate` or create your own predicate by implementing `MacOSRUMActionsPredicate`.
+        ///
+        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
+        public var macOSActionsPredicate: MacOSRUMActionsPredicate?
         #elseif !os(watchOS)
         /// The predicate for automatically tracking `UIViewControllers` as RUM views.
         ///
@@ -125,7 +126,7 @@ extension RUM {
         #if !os(watchOS)
         internal var ddKitActionsPredicate: DDKitRUMActionsPredicate? {
             #if os(macOS)
-            return appKitActionsPredicate
+            return macOSActionsPredicate
             #else
             return uiKitActionsPredicate
             #endif
@@ -159,7 +160,7 @@ extension RUM {
         public var swiftUIViewsPredicate: SwiftUIRUMViewsPredicate?
         #endif
 
-        #if !os(watchOS)
+        #if !os(watchOS) && !os(macOS)
         /// The predicate for automatically tracking `UITouch` events as RUM actions.
         ///
         /// RUM will query this predicate for each view that the user interacts with. The predicate implementation
@@ -730,9 +731,8 @@ extension RUM.Configuration {
         applicationID: String,
         sessionSampleRate: SampleRate = .maxSampleRate,
         appKitViewsPredicate: AppKitRUMViewsPredicate? = nil,
-        appKitActionsPredicate: AppKitRUMActionsPredicate? = nil,
+        macOSActionsPredicate: MacOSRUMActionsPredicate? = nil,
         swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = nil,
-        swiftUIActionsPredicate: SwiftUIRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
@@ -759,9 +759,8 @@ extension RUM.Configuration {
         self.applicationID = applicationID
         self.sessionSampleRate = sessionSampleRate
         self.appKitViewsPredicate = appKitViewsPredicate
-        self.appKitActionsPredicate = appKitActionsPredicate
+        self.macOSActionsPredicate = macOSActionsPredicate
         self.swiftUIViewsPredicate = swiftUIViewsPredicate
-        self.swiftUIActionsPredicate = swiftUIActionsPredicate
         self.urlSessionTracking = urlSessionTracking
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents

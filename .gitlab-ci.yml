@@ -278,10 +278,11 @@ Unit Tests (macOS):
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
-    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=0
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
     paths:
-      - "ResultBundles/*.xcresult.zip"
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
     when: always
 
 UI Tests:

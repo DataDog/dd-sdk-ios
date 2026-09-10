@@ -33,8 +33,6 @@ internal typealias DDScreen = UIScreen
 
 // MARK: - View Controllers
 internal typealias DDViewController = UIViewController
-internal typealias DDNavigationController = UINavigationController
-internal typealias DDTabBarController = UITabBarController
 
 // MARK: - Events
 internal typealias DDEvent = UIEvent
@@ -82,10 +80,6 @@ internal typealias DDScreen = NSScreen
 
 // MARK: - View Controllers
 internal typealias DDViewController = NSViewController
-/// No direct AppKit equivalent — aliased to `NSViewController` for compilation purposes.
-internal typealias DDNavigationController = NSViewController
-/// No direct AppKit equivalent — aliased to `NSViewController` for compilation purposes.
-internal typealias DDTabBarController = NSViewController
 
 // MARK: - Events
 /// `NSEvent` covers all input events on macOS (mouse, keyboard, scroll, etc.).
@@ -117,7 +111,7 @@ extension NSApplication {
 }
 
 // MARK: - SDK specific
-internal typealias DDKitRUMActionsPredicate = AppKitRUMActionsPredicate
+internal typealias DDKitRUMActionsPredicate = MacOSRUMActionsPredicate
 internal typealias DDKitRUMViewsPredicate = AppKitRUMViewsPredicate
 
 #if canImport(SwiftUI)

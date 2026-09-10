@@ -6,30 +6,30 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
 @testable import DatadogRUM
 
+#if !os(watchOS)
 // TODO: RUMM-2034 Remove this flag once we have a host application for tests
-#if os(iOS)
-
-class UIApplicationSwizzlerTests: XCTestCase {
+class DDApplicationInstrumentationTests: XCTestCase {
     private let handler = RUMActionsHandlerMock()
-    private lazy var swizzler = try! DDApplicationSwizzler(handler: handler)
+    private lazy var instumentation = try! DDApplicationInstrumentation(handler: handler)
 
     override func setUp() {
         super.setUp()
-        swizzler.swizzle()
+        instumentation.install()
     }
 
     override func tearDown() {
-        swizzler.unswizzle()
+        instumentation.uninstall()
         super.tearDown()
     }
 
     func testWhenSendEventIsCalled_itNotifiesTheHandler() {
         let expectation = self.expectation(description: "Notify handler")
 
-        let anyApplication = UIApplication.shared
-        let anyEvent = UIEvent()
+        let anyApplication = DDApplication.shared
+        let anyEvent = DDEvent()
 
         handler.onSendEvent = { application, event in
             XCTAssertTrue(application === anyApplication)
@@ -42,5 +42,4 @@ class UIApplicationSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 1.5, handler: nil)
     }
 }
-
 #endif
