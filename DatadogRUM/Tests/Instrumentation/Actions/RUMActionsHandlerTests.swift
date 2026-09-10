@@ -174,6 +174,37 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 30)
     }
 
+    func testWhenDescendantLookupIsNotRequired_itUsesTapViewLayerHeatmapAttributes() {
+        // Given
+        let view = UIControl(frame: .init(x: 0, y: 0, width: 200, height: 100))
+            .attached(to: mockAppWindow)
+        let targetLayer = CALayer()
+        targetLayer.frame = .init(x: 20, y: 30, width: 80, height: 40)
+        view.layer.addSublayer(targetLayer)
+
+        let registry = HeatmapIdentifierRegistryMock(identifiers: [
+            ObjectIdentifier(view.layer): HeatmapIdentifier(rawValue: "view-id"),
+            ObjectIdentifier(targetLayer): HeatmapIdentifier(rawValue: "layer-id"),
+        ], requiresDescendantLookup: false)
+        let handler = touchHandler(heatmapRegistry: registry)
+
+        // When
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(
+                touch: UITouchMock(phase: .ended, location: .init(x: 50, y: 50), view: view)
+            )
+        )
+
+        // Then
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.heatmapAttributes?.targetPermanentID, "view-id")
+        XCTAssertEqual(command?.heatmapAttributes?.targetWidth, 200)
+        XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 100)
+        XCTAssertEqual(command?.heatmapAttributes?.positionX, 50)
+        XCTAssertEqual(command?.heatmapAttributes?.positionY, 50)
+    }
+
     func testWhenTapHitsRegisteredSublayer_itUsesSublayerHeatmapAttributes() {
         // Given
         let view = UIControl(frame: .init(x: 100, y: 200, width: 200, height: 100))
@@ -186,7 +217,7 @@ class RUMActionsHandlerTests: XCTestCase {
         let registry = HeatmapIdentifierRegistryMock(identifiers: [
             ObjectIdentifier(view.layer): HeatmapIdentifier(rawValue: "view-id"),
             ObjectIdentifier(targetLayer): HeatmapIdentifier(rawValue: "layer-id"),
-        ])
+        ], requiresDescendantLookup: true)
         let handler = touchHandler(heatmapRegistry: registry)
 
         // When
@@ -216,7 +247,7 @@ class RUMActionsHandlerTests: XCTestCase {
 
         let registry = HeatmapIdentifierRegistryMock(identifiers: [
             ObjectIdentifier(view.layer): HeatmapIdentifier(rawValue: "view-id"),
-        ])
+        ], requiresDescendantLookup: true)
         let handler = touchHandler(heatmapRegistry: registry)
 
         // When
@@ -246,7 +277,7 @@ class RUMActionsHandlerTests: XCTestCase {
 
         let registry = HeatmapIdentifierRegistryMock(identifiers: [
             ObjectIdentifier(targetLayer): HeatmapIdentifier(rawValue: "layer-id"),
-        ])
+        ], requiresDescendantLookup: true)
         let handler = RUMActionsHandler(
             dateProvider: dateProvider,
             heatmapIdentifierRegistry: registry,
