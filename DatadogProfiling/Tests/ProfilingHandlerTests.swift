@@ -178,6 +178,57 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(errorEvent["duration_ns"] as? NSNumber, NSNumber(value: hang.duration))
     }
 
+    // MARK: - Memory warning correlation
+
+    func testWrite_carriesMemoryWarningIDsAlongsideHangs() throws {
+        // Given
+        XCTAssertEqual(dd_profiler_start(), 1)
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let hang = DurationEvent(id: "hang-1", type: .error, start: 0, duration: 100)
+        let warning = DurationEvent(id: "warning-1", type: .error, start: 10, duration: 0)
+
+        // When
+        handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            hangs: [hang],
+            longTasks: nil,
+            errors: [warning]
+        )
+
+        // Then — hangs and memory warnings share one `error.id` correlation list.
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(
+            event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String],
+            ["hang-1", "warning-1"]
+        )
+
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let errorEvents = try typedRUMEvents(from: metadata).filter { $0["type"] as? String == "error" }
+        XCTAssertEqual(errorEvents.compactMap { $0["id"] as? String }, ["hang-1", "warning-1"])
+    }
+
+    func testWrite_withNoErrorsAtAll_omitsErrorIDAttribute() throws {
+        // Given
+        XCTAssertEqual(dd_profiler_start(), 1)
+        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+
+        // When
+        handler.write(
+            profile: profile,
+            operation: .continuousProfiling,
+            rumVitals: [],
+            hangs: [],
+            longTasks: nil,
+            errors: nil
+        )
+
+        // Then — an empty hang list no longer publishes an empty `error.id` array.
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.errorID])
+    }
+
     func testWrite_withServerTimeOffset_updatesExportedProfileDatesAndRumVitalTimestamps() throws {
         // Given
         let serverTimeOffset: TimeInterval = 2

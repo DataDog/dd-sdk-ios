@@ -29,7 +29,8 @@ extension ProfilingHandler {
     private func rumCorrelation(
         rumVitals: [Vital],
         hangs: [DurationEvent]?,
-        longTasks: [DurationEvent]?
+        longTasks: [DurationEvent]?,
+        errors: [DurationEvent]?
     ) -> (attributes: [AttributeKey: AttributeValue], rumEvents: [RUMEvent]) {
         var attributes = self.attributes
 
@@ -37,8 +38,12 @@ extension ProfilingHandler {
             attributes[RUMCoreContext.IDs.vitalID] = rumVitals.map(\.id)
             attributes[RUMCoreContext.IDs.vitalLabel] = rumVitals.map(\.name)
         }
-        if let hangs {
-            attributes[RUMCoreContext.IDs.errorID] = hangs.map { $0.id }
+        // Hangs and memory warnings are both RUM errors and share one correlation list. It is
+        // published only when it holds an id, matching how `vitalID` above already behaves — an
+        // empty `error.id` array carries no information for the backend to join on.
+        let errorIDs = (hangs?.map(\.id) ?? []) + (errors?.map(\.id) ?? [])
+        if errorIDs.isEmpty == false {
+            attributes[RUMCoreContext.IDs.errorID] = errorIDs
         }
         if let longTasks {
             attributes[RUMCoreContext.IDs.longTaskID] = longTasks.map { $0.id }
@@ -47,6 +52,7 @@ extension ProfilingHandler {
         let rumEvents: [RUMEvent] = rumVitals.map(RUMEvent.vital)
             + (hangs?.map(RUMEvent.hang) ?? [])
             + (longTasks?.map(RUMEvent.longTask) ?? [])
+            + (errors?.map(RUMEvent.error) ?? [])
 
         return (attributes, rumEvents)
     }
@@ -57,9 +63,15 @@ extension ProfilingHandler {
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil,
+        errors: [DurationEvent]? = nil,
         captureHeapProfile: Bool = false
     ) {
-        let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
+        let (attributes, rumEvents) = rumCorrelation(
+            rumVitals: rumVitals,
+            hangs: hangs,
+            longTasks: longTasks,
+            errors: errors
+        )
 
         self.writeProfilingEvent(
             with: profile,
@@ -238,9 +250,15 @@ extension ProfilingHandler {
         operation: ProfilingOperation,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
-        longTasks: [DurationEvent]? = nil
+        longTasks: [DurationEvent]? = nil,
+        errors: [DurationEvent]? = nil
     ) {
-        let (attributes, rumEvents) = rumCorrelation(rumVitals: rumVitals, hangs: hangs, longTasks: longTasks)
+        let (attributes, rumEvents) = rumCorrelation(
+            rumVitals: rumVitals,
+            hangs: hangs,
+            longTasks: longTasks,
+            errors: errors
+        )
         guard let heapPprof = captureHeapPprof(attributes: attributes) else {
             return
         }

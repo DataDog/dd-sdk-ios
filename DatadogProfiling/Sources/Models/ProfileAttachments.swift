@@ -34,6 +34,9 @@ internal enum RUMEvent {
     case vital(Vital)
     case hang(DurationEvent)
     case longTask(DurationEvent)
+    /// A point-in-time RUM error — currently a memory warning. Unlike `.hang` it carries no
+    /// meaningful duration, but it correlates through the same `error.id` path.
+    case error(DurationEvent)
 }
 
 extension RUMEvent: Encodable {
@@ -44,6 +47,8 @@ extension RUMEvent: Encodable {
         case .hang(let value):
             try value.encode(to: encoder)
         case .longTask(let value):
+            try value.encode(to: encoder)
+        case .error(let value):
             try value.encode(to: encoder)
         }
     }
