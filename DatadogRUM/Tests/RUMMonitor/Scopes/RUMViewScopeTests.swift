@@ -3566,6 +3566,105 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1)
     }
 
+    // MARK: - Memory warnings
+
+    func testWhenMemoryWarningIsTracked_itSendsMemoryWarningMessageOnTheBus() throws {
+        let featureScope = FeatureScopeMock()
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureScope: featureScope),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewMemoryWarningCommand(
+                    time: currentTime,
+                    globalAttributes: [:],
+                    attributes: [:],
+                    message: "Memory Warning",
+                    type: "MemoryWarning",
+                    stack: nil,
+                    threads: nil,
+                    binaryImages: nil,
+                    isStackTraceTruncated: nil
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let message = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? MemoryWarningMessage }.first,
+            "It should send a MemoryWarningMessage on the bus"
+        )
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(message.error.id, error.error.id, "The message must carry the RUM error's own id")
+        XCTAssertEqual(message.error.type, .error)
+        XCTAssertEqual(message.error.duration, 0, "A memory warning is a point in time, not a duration")
+        XCTAssertEqual(
+            message.error.start,
+            currentTime.timeIntervalSince1970.dd.toInt64Nanoseconds,
+            "The message must carry the warning's own timestamp"
+        )
+    }
+
+    func testWhenOrdinaryErrorIsTracked_itDoesNotSendMemoryWarningMessage() throws {
+        let featureScope = FeatureScopeMock()
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureScope: featureScope),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        currentTime.addTimeInterval(1)
+
+        _ = scope.process(
+            command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: "view error"),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertTrue(
+            featureScope.messagesSent().compactMap { $0.asPayload as? MemoryWarningMessage }.isEmpty,
+            "An ordinary error must not produce a memory-warning message"
+        )
+    }
+
     // MARK: - Long tasks
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {

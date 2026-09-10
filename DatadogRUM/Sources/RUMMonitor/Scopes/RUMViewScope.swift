@@ -776,6 +776,19 @@ extension RUMViewScope {
             dependencies.featureScope.send(message: .payload(AppHangMessage(attributes: rumContextAttributes, hang: appHang)))
         }
 
+        if command is RUMAddCurrentViewMemoryWarningCommand {
+            // A memory warning is a point in time, not a duration — memory profiling uses it to
+            // capture a heap snapshot at the moment the OS reported pressure.
+            let memoryWarning = DurationEvent(
+                id: errorId,
+                type: .error,
+                start: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.dd.toInt64Nanoseconds,
+                duration: 0
+            )
+
+            dependencies.featureScope.send(message: .payload(MemoryWarningMessage(attributes: rumContextAttributes, error: memoryWarning)))
+        }
+
         // Error event attributes
         // Attribute Precedence: global attributes <- view attributes <- event attributes (highest priority)
         var commandAttributes = command.globalAttributes
