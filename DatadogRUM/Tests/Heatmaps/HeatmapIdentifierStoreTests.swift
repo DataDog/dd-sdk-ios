@@ -25,12 +25,19 @@ struct HeatmapIdentifierStoreTests {
         let id2 = HeatmapIdentifier(rawValue: "bbb")
 
         // when
-        store.setHeatmapIdentifiers([ObjectIdentifier(layer1): id1])
-        store.setHeatmapIdentifiers([ObjectIdentifier(layer2): id2])
+        store.setHeatmapIdentifiers(
+            [ObjectIdentifier(layer1): id1],
+            requiresDescendantLookup: false
+        )
+        store.setHeatmapIdentifiers(
+            [ObjectIdentifier(layer2): id2],
+            requiresDescendantLookup: true
+        )
 
         // then
         #expect(store.heatmapIdentifier(for: ObjectIdentifier(layer1)) == nil)
         #expect(store.heatmapIdentifier(for: ObjectIdentifier(layer2)) == id2)
+        #expect(store.requiresDescendantLookup)
     }
 }
 #endif

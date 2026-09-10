@@ -116,6 +116,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Then
         XCTAssertNotNil(registry.identifiers[ObjectIdentifier(view.layer)])
         XCTAssertNil(registry.identifiers[ObjectIdentifier(view)])
+        XCTAssertFalse(registry.requiresDescendantLookup)
     }
 
     func testWhenCreatingSnapshot_withNoViewPath_itDoesNotWriteToRegistry() throws {
