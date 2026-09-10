@@ -187,6 +187,7 @@ extension ProfilingHandler {
         start: Date,
         end: Date,
         operation: ProfilingOperation,
+        trigger: HeapSnapshotTrigger? = nil,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil,
@@ -226,7 +227,7 @@ extension ProfilingHandler {
                     ProfileAttachments.Constants.rumEventsFilename,
                     ProfileAttachments.Constants.heapFilename
                 ],
-                tags: self.profileTags(context: context, operation: operation),
+                tags: self.profileTags(context: context, operation: operation, trigger: trigger),
                 additionalAttributes: attributes
             )
             let rumEventsData = try? self.encoder.encode(rumEvents)
@@ -241,8 +242,15 @@ extension ProfilingHandler {
     }
 
     /// Builds the standard comma-separated profiler tag string shared by all event types.
-    private func profileTags(context: DatadogContext, operation: ProfilingOperation) -> String {
-        [
+    ///
+    /// `trigger` is appended only for an event-triggered heap snapshot. A periodic profile carries
+    /// no `trigger` tag at all — absence means periodic.
+    private func profileTags(
+        context: DatadogContext,
+        operation: ProfilingOperation,
+        trigger: HeapSnapshotTrigger? = nil
+    ) -> String {
+        var tags = [
             tag(Tag.Key.service, context.service),
             tag(Tag.Key.version, context.version),
             tag(Tag.Key.sdkVersion, context.sdkVersion),
@@ -254,7 +262,11 @@ extension ProfilingHandler {
             tag(Tag.Key.format, Tag.Value.format),
             tag(Tag.Key.remoteSymbols, Tag.Value.remoteSymbols),
             tag(Tag.Key.operation, operation.rawValue)
-        ].joined(separator: ",")
+        ]
+        if let trigger {
+            tags.append(tag(Tag.Key.trigger, trigger.rawValue))
+        }
+        return tags.joined(separator: ",")
     }
 
     private func tag(_ key: String, _ value: String) -> String {
@@ -281,6 +293,7 @@ private enum Tag {
         static let format = "format"
         static let remoteSymbols = "remote_symbols"
         static let operation = "operation"
+        static let trigger = "trigger"
     }
 
     enum Value {

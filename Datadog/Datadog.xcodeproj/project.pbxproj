@@ -288,6 +288,8 @@
 		11EA5C342DC5077500E8DFA2 /* InternalLogger+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */; };
 		11F3DF6F30530C4C00CA54EB /* MemoryWarningMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF6E30530C4C00CA54EB /* MemoryWarningMessage.swift */; };
 		11F3DF723053120400CA54EB /* MemoryProfiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF713053120400CA54EB /* MemoryProfiler.swift */; };
+		11F3DF743053163E00CA54EB /* MemoryProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF733053163E00CA54EB /* MemoryProfilerTests.swift */; };
+		11F3DF763053165600CA54EB /* HeapSnapshotTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F3DF753053165600CA54EB /* HeapSnapshotTrigger.swift */; };
 		11F55FCE2DCBB4F600DE4944 /* URLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */; };
 		11F55FD42DCBB61A00DE4944 /* TracingHeaderType+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C2F2DC4FE4500E8DFA2 /* TracingHeaderType+objc.swift */; };
 		11F55FD62DCBBAD700DE4944 /* DDURLSessionInstrumentationTests+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */; };
@@ -2228,6 +2230,8 @@
 		11EA5C322DC5077000E8DFA2 /* InternalLogger+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InternalLogger+objc.swift"; sourceTree = "<group>"; };
 		11F3DF6E30530C4C00CA54EB /* MemoryWarningMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryWarningMessage.swift; sourceTree = "<group>"; };
 		11F3DF713053120400CA54EB /* MemoryProfiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfiler.swift; sourceTree = "<group>"; };
+		11F3DF733053163E00CA54EB /* MemoryProfilerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryProfilerTests.swift; sourceTree = "<group>"; };
+		11F3DF753053165600CA54EB /* HeapSnapshotTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeapSnapshotTrigger.swift; sourceTree = "<group>"; };
 		11F55FD82DCE183500DE4944 /* RUMDataModels+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objc.swift"; sourceTree = "<group>"; };
 		11F55FDB2DCE501A00DE4944 /* OTSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpan+objc.swift"; sourceTree = "<group>"; };
 		11F55FDC2DCE501A00DE4944 /* OTSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -4059,6 +4063,7 @@
 			isa = PBXGroup;
 			children = (
 				11F3DF713053120400CA54EB /* MemoryProfiler.swift */,
+				11F3DF753053165600CA54EB /* HeapSnapshotTrigger.swift */,
 			);
 			path = Memory;
 			sourceTree = "<group>";
@@ -7355,6 +7360,7 @@
 				003384E53EAD37AEF1AF8C35 /* MemorySamplerLoadHarness.swift */,
 				E03B586AE7F3C1AE5FF9293D /* MemorySamplerOverheadBenchmarkTests.swift */,
 				5903F45A6C0D5A3253F27077 /* MemorySamplerPressureConvergenceTests.swift */,
+				11F3DF733053163E00CA54EB /* MemoryProfilerTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -9337,6 +9343,7 @@
 				91BAB55D44F69081BA5D712D /* memory_profiler.cpp in Sources */,
 				91BAB55D44F69081BA5D712E /* objc_alloc_hook.cpp in Sources */,
 				119ABE323046EAFC002E68CD /* fishhook.c in Sources */,
+				11F3DF763053165600CA54EB /* HeapSnapshotTrigger.swift in Sources */,
 				E3CEAE0D612BFA0876A576F3 /* ObjCAllocInterception.swift in Sources */,
 				119ABE2A3046EA4D002E68CD /* memory_to_pprof.cpp in Sources */,
 				D2D0E1F82E3CE73700BA4113 /* mach_sampling_profiler.cpp in Sources */,
@@ -10010,6 +10017,7 @@
 				119ABE303046EAC6002E68CD /* MemoryLiveHeapValidationTests.swift in Sources */,
 				119ABE263046E9AC002E68CD /* HeapPprofPackerTests.swift in Sources */,
 				1166C5952F748138008E34BC /* DDProfilerTests.swift in Sources */,
+				11F3DF743053163E00CA54EB /* MemoryProfilerTests.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
 				D7D2B9CFC9DA2FA55399EFBD /* MemoryProfilerProbe.swift in Sources */,
 				90F5028C3129D8E62FA9A77C /* MemorySamplerLoadHarness.swift in Sources */,

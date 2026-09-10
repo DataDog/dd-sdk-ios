@@ -30,6 +30,18 @@ internal import DatadogMachProfiler
 /// queue, which this type shares. That shared queue — rather than a second one — is what keeps the
 /// two units' ordering deterministic without locks.
 internal final class MemoryProfiler: ProfilingHandler {
+    enum Constants {
+        /// Minimum wall time between two heap emissions from any path.
+        ///
+        /// Hangs and memory warnings arrive in bursts — a memory-pressure storm can post several
+        /// warnings a second — and each emission is an upload. A trigger inside this window is
+        /// folded rather than dropped: its correlation is already recorded, so it still reaches the
+        /// product on the next emission.
+        ///
+        /// Matches the `minProfileDuration` the CPU machine already uses for custom profiling.
+        static let minHeapEmissionInterval: TimeInterval = 5
+    }
+
     let featureScope: FeatureScope
     let telemetryController: ProfilingTelemetryController
     let encoder: JSONEncoder
@@ -81,6 +93,9 @@ internal final class MemoryProfiler: ProfilingHandler {
     /// conditions are blocked would upload the same live set again as a fresh profile.
     /// Re-armed on a genuine return to use (conditions restored and the app `.active`).
     private var hasEmittedSinceConditionsLost = false
+    /// When the last heap profile was emitted, by any path. `nil` until the first one, so the
+    /// launch trigger is never throttled.
+    private var lastEmission: Date?
     private var hasConditionsToProfile = true
     /// Consent remains fail-open while `.pending`; only `.notGranted` disables collection.
     private var isTrackingConsentAllowed = true
@@ -265,8 +280,40 @@ internal extension MemoryProfiler {
         )
     }
 
-    /// Ends the current window: advances its start, clears the correlation it reported, and spends
-    /// the one emission allowed while conditions are lost.
+    /// Captures a heap snapshot for a RUM event of interest, outside the periodic cadence.
+    ///
+    /// Deliberately never touches the periodic timer — `DatadogProfiler` owns it. An event snapshot
+    /// only closes the current memory window early; the next periodic emission still fires on
+    /// schedule, carrying a shorter window. `alloc_*` stays correct because the window reports its
+    /// true duration, and `inuse_*` is a point-in-time view either way.
+    ///
+    /// Must be called on the shared queue.
+    func trigger(_ trigger: HeapSnapshotTrigger, operation: ProfilingOperation) {
+        guard isRecording, canEmitSnapshot else {
+            return
+        }
+        let now = dateProvider.now
+        if let lastEmission, now.timeIntervalSince(lastEmission) < Constants.minHeapEmissionInterval {
+            // Folded. The correlation for this event is already recorded, so it still reaches the
+            // product on the next emission — it just does not get an upload of its own.
+            return
+        }
+
+        writeHeapOnlyProfile(
+            start: windowStart,
+            end: now,
+            operation: operation,
+            trigger: trigger,
+            rumVitals: Array(vitals.values),
+            hangs: hangs,
+            longTasks: longTasks,
+            errors: warnings
+        )
+        closeWindow(at: now)
+    }
+
+    /// Ends the current window: advances its start, clears the correlation it reported, stamps the
+    /// emission cooldown, and spends the one emission allowed while conditions are lost.
     ///
     /// Called once per window the coordinator closes — whether or not the capture produced bytes.
     /// A window whose live set and alloc window were both empty still *happened*, and the native
@@ -276,6 +323,9 @@ internal extension MemoryProfiler {
     /// still running spans this window and the next, so it correlates with both.
     func closeWindow(at date: Date) {
         advanceWindow(to: date)
+        // Stamped for every closed window, periodic or triggered, so a trigger arriving right
+        // behind a periodic emission is folded rather than uploading the same live set again.
+        lastEmission = date
         vitals = vitals.ongoingOperations()
         hangs.removeAll()
         longTasks.removeAll()

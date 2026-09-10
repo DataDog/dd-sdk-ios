@@ -368,6 +368,10 @@ private extension DatadogProfiler {
             hangs.append(message.hang)
             memoryProfiler.update(attributes: message.attributes)
             memoryProfiler.record(hang: message.hang)
+            // A hang often coincides with allocation churn or a live-heap spike, so it gets its own
+            // heap snapshot rather than waiting for the next periodic boundary. This only ever adds
+            // a heap event — the CPU state machine above is untouched by it.
+            memoryProfiler.trigger(.appHang, operation: operation)
         }
     }
 

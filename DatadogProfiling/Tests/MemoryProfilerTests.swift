@@ -1,0 +1,233 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+#if !os(watchOS)
+
+import XCTest
+import DatadogInternal
+import TestUtilities
+@testable import DatadogProfiling
+// swiftlint:disable duplicate_imports
+import DatadogMachProfiler
+import DatadogMachProfiler.Testing
+// swiftlint:enable duplicate_imports
+
+/// Tests event-triggered heap snapshots: a TTID, app hang or RUM memory warning captures a heap
+/// profile at the moment it happened, instead of waiting for the next periodic window boundary.
+///
+/// Two properties matter beyond "a profile came out":
+/// - **Isolation.** A trigger only ever adds a heap event. It never starts, stops or reschedules
+///   the CPU profiler or the periodic timer, both of which `DatadogProfiler` alone owns.
+/// - **Throttling.** Hangs and memory warnings arrive in bursts, so emissions are spaced by
+///   `MemoryProfiler.Constants.minHeapEmissionInterval`. A trigger inside that window is folded:
+///   its correlation is already recorded, so it still reaches the product on the next emission.
+///
+/// The swizzle, the Swift rebinding, and the passive sampler are process-global singletons. Every
+/// test stops them in `tearDown` so state never leaks into the rest of the suite.
+
+/// Pure-Swift class (allocated via swift_allocObject, not +allocWithZone:).
+private final class TriggerSwiftFixture { var payload = (0, 0, 0, 0) }
+
+final class MemoryProfilerTests: XCTestCase {
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let profilerQueue = DispatchQueue(label: "test.profiler.memory.triggers")
+
+    override func setUp() {
+        super.setUp()
+        // Start with a background context so the CPU profiler doesn't auto-start at init. Memory
+        // records in the background, so tests that need it off must use a terminal reason
+        // (unconfigured, consent revoked, quota) rather than app state.
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        ObjCAllocInterception.stop()
+        SwiftAllocInterception.stop()
+        dd_memory_test_reset()
+    }
+
+    override func tearDown() {
+        ObjCAllocInterception.stop()
+        SwiftAllocInterception.stop()
+        dd_memory_test_reset()
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        dd_delete_profiling_defaults()
+        core = nil
+        super.tearDown()
+    }
+
+    // MARK: - App hang
+
+    func testAppHang_emitsHeapSnapshotImmediately() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendHang(id: "hang-1", to: profiler)
+
+            XCTAssertEqual(heapAttachmentCount, 1, "An app hang must emit its own heap snapshot")
+            let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+            XCTAssertTrue(event.tags.contains("trigger:app_hang"))
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], ["hang-1"])
+
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNil(metadata.pprof, "An event-triggered snapshot is heap-only")
+            XCTAssertNotNil(metadata.heapPprof)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testAppHangBurst_emitsOnce_andFoldsTheRestIntoTheNextEmission() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            for id in ["hang-1", "hang-2", "hang-3"] {
+                sendHang(id: id, to: profiler)
+                dateProvider.now.addTimeInterval(1) // all three inside the cooldown
+            }
+
+            XCTAssertEqual(heapAttachmentCount, 1, "A burst inside the cooldown emits exactly one snapshot")
+
+            // The folded hangs are not lost: they ride the next emission.
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 2)
+            let second = try XCTUnwrap(core.events.last as? ProfileEvent)
+            XCTAssertEqual(
+                second.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String],
+                ["hang-2", "hang-3"],
+                "Hangs folded by the cooldown correlate on the next emission"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testAppHangAfterCooldown_emitsAgain() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendHang(id: "hang-1", to: profiler)
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            sendHang(id: "hang-2", to: profiler)
+
+            XCTAssertEqual(heapAttachmentCount, 2, "A hang past the cooldown gets its own snapshot")
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testAppHang_isIgnored_whenMemoryProfilingIsNotConfigured() throws {
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: 0)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+
+        sendHang(id: "hang-1", to: profiler)
+
+        XCTAssertEqual(heapAttachmentCount, 0)
+        withExtendedLifetime(profiler) {}
+    }
+
+    // MARK: - Helpers
+
+    private func makeSamplerProvider(
+        continuousSampleRate: SampleRate = .maxSampleRate,
+        memorySampleRate: SampleRate = 0
+    ) -> ProfilingSamplerProvider {
+        ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate, memorySampleRate: memorySampleRate)
+    }
+
+    private func makeProfiler(
+        profilingSamplerProvider: ProfilingSamplerProvider,
+        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaCheckerMock(),
+        dateProvider: DateProvider = DateProviderMock(),
+        isAppLaunchProfilingEnabled: Bool = false
+    ) -> DatadogProfiler {
+        DatadogProfiler(
+            core: core,
+            profilingSamplerProvider: profilingSamplerProvider,
+            quotaChecker: quotaChecker,
+            queue: profilerQueue,
+            profilingInterval: .infinity,
+            isAppLaunchProfilingEnabled: isAppLaunchProfilingEnabled,
+            dateProvider: dateProvider
+        )
+    }
+
+    /// A heap-only profiler — continuous CPU sampled out, memory sampled in — connected to the core
+    /// and brought to the foreground, so triggers land on a live memory window.
+    private func makeForegroundHeapOnlyProfiler(dateProvider: DateProviderMock) -> DatadogProfiler {
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must record in the foreground")
+        return profiler
+    }
+
+    private func enterForeground() {
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+    }
+
+    private func enterBackground(at date: Date) {
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: date.addingTimeInterval(-1),
+            transitions: [(state: .background, date: date)]
+        ))
+        flushQueue()
+    }
+
+    /// Forces the next allocation to be sampled and keeps that object alive for the duration of
+    /// `body`, so it stays in the live set while the assertions run.
+    private func withSampledObject(_ body: () throws -> Void) rethrows {
+        dd_memory_test_force_next_sample()
+        let object = TriggerSwiftFixture()
+        try withExtendedLifetime(object) { try body() }
+    }
+
+    /// Number of emitted profiles carrying a `heap.pprof` attachment. Counts the heap specifically
+    /// rather than events, so a CPU-only profile emitted alongside cannot skew the assertion.
+    private var heapAttachmentCount: Int {
+        core.metadata
+            .compactMap { $0 as? ProfileAttachments }
+            .filter { $0.heapPprof != nil }
+            .count
+    }
+
+    private func sendHang(id: String, to profiler: DatadogProfiler) {
+        _ = profiler.receive(
+            message: .payload(AppHangMessage(
+                attributes: mockRandomAttributes(),
+                hang: DurationEvent(id: id, type: .error, start: 0, duration: 250)
+            )),
+            from: core
+        )
+        flushQueue()
+    }
+
+    private func connectMessageReceiver(
+        to profiler: DatadogProfiler,
+        profilingSamplerProvider: ProfilingSamplerProvider
+    ) {
+        let messageReceiver = CombinedFeatureMessageReceiver(
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
+            profiler
+        )
+        core.messageReceiver = messageReceiver
+        _ = messageReceiver.receive(message: .context(core.context), from: core)
+        flushQueue()
+    }
+
+    private func flushQueue() {
+        profilerQueue.sync {}
+    }
+}
+
+#endif // !os(watchOS)
