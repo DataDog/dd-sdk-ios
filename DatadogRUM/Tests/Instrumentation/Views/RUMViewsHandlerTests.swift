@@ -743,7 +743,7 @@ class RUMViewsHandlerTests: XCTestCase {
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
         XCTAssertTrue(stopCommand2.identity == ViewIdentifier(view2Identity))
         XCTAssertTrue(startCommand3.identity == ViewIdentifier(view1Identity))
-        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand3.attributes, view1Attributes)
     }
 
     // MARK: - Handling Application Activity

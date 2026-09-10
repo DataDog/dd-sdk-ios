@@ -5,19 +5,33 @@
  */
 
 import XCTest
-import DatadogRUM
+@testable import DatadogRUM
 import TestUtilities
 
-#if !os(watchOS) && !os(macOS)
+#if !os(watchOS)
 
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
 
+#if os(macOS)
+import AppKit
+#endif
+
 class UIKitRUMViewsPredicateTests: XCTestCase {
+    #if os(macOS)
+    func makePredicate() -> AppKitRUMViewsPredicate {
+        DefaultAppKitRUMViewsPredicate()
+    }
+    #else
+    func makePredicate() -> UIKitRUMViewsPredicate {
+        DefaultUIKitRUMViewsPredicate()
+    }
+    #endif
+
     func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = DefaultUIKitRUMViewsPredicate()
+        let predicate = makePredicate()
 
         // When
         let customViewController = createMockView(viewControllerClassName: "CustomSwiftViewController")
@@ -31,7 +45,7 @@ class UIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingForCustomObjcViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = DefaultUIKitRUMViewsPredicate()
+        let predicate = makePredicate()
 
         // When
         let customViewController = CustomObjcViewController()
@@ -45,23 +59,40 @@ class UIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingUIKitViewController_itReturnsNoView() {
         // Given
-        let predicate = DefaultUIKitRUMViewsPredicate()
+        let predicate = makePredicate()
 
         // When
-        let uiKitViewController = UIViewController()
+        let uiKitViewController = DDViewController()
         let rumView = predicate.rumView(for: uiKitViewController)
 
         // Then
         XCTAssertNil(rumView)
     }
 
+    #if os(macOS)
+    private final class CustomCollectionViewItem: NSCollectionViewItem {}
+
+    func testGivenDefaultPredicate_whenAskingForCollectionViewItemOrSubclass_itReturnsNoView() {
+        // Given
+        let predicate = makePredicate()
+
+        // When
+        let collectionViewItem = predicate.rumView(for: NSCollectionViewItem())
+        let customCollectionViewItem = predicate.rumView(for: CustomCollectionViewItem())
+
+        // Then
+        XCTAssertNil(collectionViewItem)
+        XCTAssertNil(customCollectionViewItem)
+    }
+    #endif
+
 #if canImport(SwiftUI)
     func testGivenDefaultPredicate_whenAskingSwiftUIViewController_itReturnsNoView() {
         // Given
-        let predicate = DefaultUIKitRUMViewsPredicate()
+        let predicate = makePredicate()
 
         // When
-        let swiftUIHostingController = UIHostingController<EmptyView>(rootView: EmptyView())
+        let swiftUIHostingController = DDHostingController<EmptyView>(rootView: EmptyView())
         let rumView = predicate.rumView(for: swiftUIHostingController)
 
         // Then

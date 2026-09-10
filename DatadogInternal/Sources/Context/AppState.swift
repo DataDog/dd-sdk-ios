@@ -62,8 +62,8 @@ public enum AppState: AppStateProtocol {
 
     public var applicationMayBeSuspended: Bool {
         switch self {
-        case .sleeping, .terminating: true
-        case .active, .inactive, .hidden, .lockScreen: false
+        case .sleeping: true
+        case .active, .inactive, .hidden, .lockScreen, .terminating: false
         }
     }
 
@@ -88,9 +88,9 @@ public enum AppState: AppStateProtocol {
 
     public var applicationMayBeSuspended: Bool {
         switch self {
-        case .background, .terminated:
+        case .background:
             return true
-        case .active, .inactive:
+        case .active, .inactive, .terminated:
             return false
         }
     }

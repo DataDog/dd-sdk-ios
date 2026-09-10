@@ -1549,7 +1549,7 @@ public class UIKitRUMViewsPredicateMock: DDKitRUMViewsPredicate {
 }
 
 #if os(macOS)
-public class NSKitRUMViewsHandlerMock: NSViewControllerHandler {
+public class AppKitRUMViewsHandlerMock: NSViewControllerHandler {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     public var notifyViewDidAppear: ((DDViewController) -> Void)?
     public var notifyViewDidDisappear: ((DDViewController) -> Void)?
