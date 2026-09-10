@@ -202,7 +202,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
                 RUMAddUserActionCommand(
                 time: dateProvider.now,
                 attributes: action.attributes,
-                instrumentation: .appKit,
+                instrumentation: .appkit,
                 actionType: .click,
                 name: action.name
             )
@@ -227,7 +227,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
-            instrumentation: .appKit,
+            instrumentation: .appkit,
             actionType: .click,
             name: action.name
         )

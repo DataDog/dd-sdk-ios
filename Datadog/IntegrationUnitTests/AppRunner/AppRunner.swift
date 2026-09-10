@@ -300,7 +300,7 @@ internal class AppRunner {
         var config = RUM.Configuration(applicationID: "mock-application-id")
         config.dateProvider = dateProvider
         config.mediaTimeProvider = MediaTimeProviderMock(current: 0)
-        config.notificationCenter = notificationCenterProvider.applicationCenter
+        config.notificationCenterProvider = notificationCenterProvider
         #if !os(watchOS)
         config.frameInfoProviderFactory = { [weak self] in
             let frameInfoProvider = FrameInfoProviderMock(target: $0, selector: $1)
