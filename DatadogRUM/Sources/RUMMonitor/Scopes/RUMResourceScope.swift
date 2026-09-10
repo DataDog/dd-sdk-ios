@@ -129,7 +129,13 @@ internal class RUMResourceScope: RUMScope {
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
         let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
-        let localCacheHit: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)?.dd.decode() ?? resourceMetrics?.isLocalCacheHit
+        let deliveryType: RUMResourceEvent.Resource.DeliveryType? = {
+            switch resourceMetrics?.deliveryType {
+            case .cache: return .cache
+            case .other: return .other
+            case nil: return nil
+            }
+        }()
 
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
@@ -208,7 +214,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 decodedBodySize: decodedBodySize,
-                deliveryType: nil,
+                deliveryType: deliveryType,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.dd.toInt64Nanoseconds,
@@ -231,7 +237,6 @@ internal class RUMResourceScope: RUMScope {
                 },
                 graphql: graphql,
                 id: resourceUUID.toRUMDataFormat,
-                localCacheHit: localCacheHit,
                 method: resourceHTTPMethod,
                 protocol: nil,
                 provider: resourceEventProvider,
@@ -252,7 +257,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
-                transferSize: nil,
+                transferSize: resourceMetrics?.transferSize,
                 type: resourceKindBasedOnRequest ?? command.kind,
                 url: resourceURL,
                 worker: nil
@@ -291,8 +296,6 @@ internal class RUMResourceScope: RUMScope {
 
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         let errorFingerprint: String? = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint)?.dd.decode()
-        // Never leak the internal cache-hit marker into arbitrary error context.
-        attributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)
         let timeSinceAppStart = command.time.timeIntervalSince(context.launchInfo.processLaunchDate).dd.toInt64Milliseconds
 
         // Trace context from cross-platform attributes or spanContext fallback
