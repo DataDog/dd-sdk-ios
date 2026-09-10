@@ -182,6 +182,9 @@ extension DatadogProfiler: FeatureMessageReceiver {
             case let message as AppHangMessage:
                 handleAppHang(message: message)
                 return true
+            case let message as MemoryWarningMessage:
+                handleMemoryWarning(message: message)
+                return true
             case let message as LongTaskMessage:
                 handleLongTask(message: message)
                 return true
@@ -372,6 +375,20 @@ private extension DatadogProfiler {
             // heap snapshot rather than waiting for the next periodic boundary. This only ever adds
             // a heap event — the CPU state machine above is untouched by it.
             memoryProfiler.trigger(.appHang, operation: operation)
+        }
+    }
+
+    /// A memory warning drives memory profiling alone: the CPU state machine neither correlates it
+    /// nor changes state for it. The OS posted it because the process is under pressure, which is
+    /// exactly the moment a heap snapshot explains something.
+    func handleMemoryWarning(message: MemoryWarningMessage) {
+        queue.async { [weak self] in
+            guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
+                return
+            }
+            memoryProfiler.update(attributes: message.attributes)
+            memoryProfiler.record(warning: message.error)
+            memoryProfiler.trigger(.memoryWarning, operation: operation)
         }
     }
 

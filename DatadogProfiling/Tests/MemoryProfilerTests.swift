@@ -133,6 +133,67 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - Memory warning
+
+    /// The case the RFC cares about most: the OS reported pressure, and memory profiling explains
+    /// it — whether or not this session sampled CPU profiling in.
+    func testMemoryWarning_emitsHeapSnapshot_evenWithContinuousCPUSampledOut() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+        XCTAssertNotEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Precondition: CPU profiler off")
+
+        try withSampledObject {
+            sendMemoryWarning(id: "warning-1", to: profiler)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+            let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+            XCTAssertTrue(event.tags.contains("trigger:memory_warning"))
+            XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], ["warning-1"])
+
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNil(metadata.pprof)
+            XCTAssertNotNil(metadata.heapPprof)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testMemoryWarning_isIgnored_whenMemoryProfilingIsNotConfigured() throws {
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: 0)
+        let profiler = makeProfiler(profilingSamplerProvider: provider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+
+        sendMemoryWarning(id: "warning-1", to: profiler)
+
+        XCTAssertEqual(heapAttachmentCount, 0)
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// A warning and a hang inside the same cooldown produce one upload carrying both, not two.
+    func testMemoryWarningAndHang_inSameCooldown_shareOneSnapshot() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendHang(id: "hang-1", to: profiler)
+            dateProvider.now.addTimeInterval(1)
+            sendMemoryWarning(id: "warning-1", to: profiler)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+
+            dateProvider.now.addTimeInterval(10)
+            enterBackground(at: dateProvider.now)
+
+            let second = try XCTUnwrap(core.events.last as? ProfileEvent)
+            XCTAssertEqual(
+                second.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String],
+                ["warning-1"],
+                "The folded warning correlates on the next emission"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Helpers
 
     private func makeSamplerProvider(
@@ -206,6 +267,17 @@ final class MemoryProfilerTests: XCTestCase {
             message: .payload(AppHangMessage(
                 attributes: mockRandomAttributes(),
                 hang: DurationEvent(id: id, type: .error, start: 0, duration: 250)
+            )),
+            from: core
+        )
+        flushQueue()
+    }
+
+    private func sendMemoryWarning(id: String, to profiler: DatadogProfiler) {
+        _ = profiler.receive(
+            message: .payload(MemoryWarningMessage(
+                attributes: mockRandomAttributes(),
+                error: DurationEvent(id: id, type: .error, start: 0, duration: 0)
             )),
             from: core
         )
