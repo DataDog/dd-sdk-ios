@@ -9,6 +9,10 @@ import DatadogInternal
 
 #if !os(watchOS)
 
+// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
+// transitive module dependency, but it is not distributed as an XCFramework.
+@_implementationOnly import DatadogMachProfiler
+
 internal final class ProfilingTelemetryController {
     /// The default sample rate for "Profiling Session" metric (20%),
     /// applied in addition to the Profiling continuous sample rate (5% by default).
