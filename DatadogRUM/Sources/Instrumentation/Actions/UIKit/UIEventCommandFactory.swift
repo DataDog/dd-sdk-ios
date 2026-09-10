@@ -129,13 +129,25 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 }
 
 private extension UITouch {
-    /// Looks for the deepest registered layer at the touch location, up to the touched view's layer.
+    /// Resolves heatmap attributes for the touch.
     func heatmapAttributes(in registry: any HeatmapIdentifierRegistry) -> HeatmapAttributes? {
         guard let view else {
             return nil
         }
 
         let locationInView = location(in: view)
+
+        guard registry.requiresDescendantLookup else {
+            guard let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) else {
+                return nil
+            }
+            return HeatmapAttributes(
+                identifier: heatmapIdentifier,
+                size: view.bounds.size,
+                location: locationInView
+            )
+        }
+
         let hitTestLocation = view.layer.convert(locationInView, to: view.layer.superlayer)
         var candidateLayer: CALayer? = view.layer.hitTest(hitTestLocation) ?? view.layer
 
