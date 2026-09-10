@@ -182,7 +182,31 @@ Memory emits on **every** window in which sampling is active, matching the Go pr
 
 The only thing that suppresses an emission is having nothing to report: when neither the live set nor the alloc window holds a sample, no event is written, so an idle app uploads nothing.
 
-RUM correlation (vitals, app hangs, long tasks) is attached when present, but it does not authorize the emission — allocation data from an uncorrelated window is still real. Memory accumulates that correlation **separately** from the CPU state machine and clears it only when a heap profile is actually emitted. The two cannot share: in a memory-only session (`continuousSampleRate: 0`) the CPU machine treats every operation step and every app-state change as the end of its own window and clears its collections, which would otherwise strip correlation from heap profiles whose window had not ended.
+RUM correlation (vitals, app hangs, long tasks, memory warnings) is attached when present, but it does not authorize the emission — allocation data from an uncorrelated window is still real. Memory accumulates that correlation **separately** from the CPU state machine and clears it only when a heap profile is actually emitted. The two cannot share: in a memory-only session (`continuousSampleRate: 0`) the CPU machine treats every operation step and every app-state change as the end of its own window and clears its collections, which would otherwise strip correlation from heap profiles whose window had not ended.
+
+### Event-triggered heap snapshots
+On top of the periodic windows above, three RUM events capture a heap snapshot at the moment they happen, so a developer investigating one opens the memory picture for that exact point rather than for whatever window it happened to land in:
+
+| Event | Why it triggers a snapshot |
+|---|---|
+| **TTID** | The launch window is where a memory-heavy start shows up. |
+| **App hang** | Hangs often coincide with allocation churn or a live-heap spike. |
+| **RUM memory warning** | The OS reported pressure — the one moment the heap explains the most. |
+
+Long tasks are correlation-only: they are frequent and rarely say anything about the heap, so they enrich the next emission instead of forcing one.
+
+A triggered profile is a standalone heap-only `ProfileEvent` tagged `trigger:ttid`, `trigger:app_hang` or `trigger:memory_warning`. A periodic profile carries **no** `trigger` tag — absence means periodic.
+
+Two rules keep this bounded and predictable:
+
+- **The periodic timer is never rescheduled.** `DatadogProfiler` owns the single 60 s timer; `MemoryProfiler` can only add a heap event, never start, stop or re-time the CPU profiler. A trigger closes the current memory window early, so the next periodic profile simply covers a shorter span. `alloc_*` stays correct because each window reports its true duration, and `inuse_*` is a point-in-time view regardless.
+- **Emissions are spaced by 5 s** (`MemoryProfiler.Constants.minHeapEmissionInterval`). Hangs and memory warnings arrive in bursts, and each emission is an upload. A trigger inside the cooldown is *folded*, not dropped: its correlation is already recorded, so it still reaches the product on the next emission — it just does not get an upload of its own. Periodic emissions stamp the same cooldown, so a trigger landing right behind one folds too.
+
+At TTID the two paths can coincide. When the standalone app-launch harvest runs, it attaches the launch heap to the app-launch CPU profile — that attachment *is* the TTID snapshot, and it stamps the cooldown, so the TTID trigger folds and nothing is uploaded twice. When no harvest runs (continuous CPU sampled in, or app-launch profiling off) the trigger emits the launch snapshot on its own, so the launch data point exists regardless of the CPU sampling decision.
+
+Triggers respect every gate periodic emission respects: they do not fire when memory is not recording, and the background latch still allows only one emission once profiling conditions are lost.
+
+> The `trigger` tag rides the existing `ProfileEvent` tag string, so it costs nothing on intake — but it stays invisible in the product until the profiling backend and web-ui recognise the name. Memory-warning correlation needs no backend change: it travels as an ordinary `error.id`, exactly like an app hang.
 
 ### Quota
 `ProfilingQuotaChecker` checks whether the active RUM session is allowed to write profiles after Profiling has RUM session context and granted consent. Temporary quota lookup failures do not block profiling, while explicit quota rejection stops profiling for that session. A new RUM session triggers a fresh quota decision.
@@ -210,6 +234,12 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 1. Continuous profiles are written only when the RUM session samples continuous profiling in.
 2. A continuous profile needs correlated RUM data currently collected by Profiling: RUM vitals such as TTFD or sampled operation steps, app hangs, or long tasks.
 3. Report TTFD with `monitor.reportAppFullyDisplayed()`, use sampled RUM operation steps, or enable RUM long tasks (`longTaskThreshold`) and app hangs (`appHangThreshold`) if those correlations are expected.
+
+### "No heap snapshot appeared for a hang or memory warning"
+1. Check `memorySampleRate` is greater than zero and the RUM-composed memory decision sampled this session in — the trigger is a no-op when memory is not recording.
+2. Expect at most one snapshot per 5 s. Inside that cooldown a trigger is folded, and its correlation appears on the *next* emission rather than as its own profile.
+3. While the app is backgrounded only one emission is allowed until conditions return, so a hang arriving after that first flush adds correlation but no upload.
+4. A memory warning reaches Profiling only if RUM's `trackMemoryWarnings` is on — the snapshot is driven by the RUM error, not by the notification directly.
 
 ### "App launch profile is missing"
 1. Ensure RUM is enabled early enough to emit the TTID message consumed by `DatadogProfiler`.
