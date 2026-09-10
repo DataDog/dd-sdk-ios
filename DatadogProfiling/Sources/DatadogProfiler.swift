@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 #if !os(watchOS)
 
@@ -17,7 +17,7 @@ internal import DatadogMachProfiler
 #endif
 // swiftlint:enable duplicate_imports
 
-internal final class DatadogProfiler: ProfilingHandler {
+internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     enum Constants {
         /// Default profile duration during continuous profiling.
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles

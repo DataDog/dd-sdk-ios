@@ -6,7 +6,7 @@
 
 import Foundation
 @_spi(Internal)
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 #if !os(watchOS)
 

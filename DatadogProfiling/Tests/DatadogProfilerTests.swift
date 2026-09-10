@@ -1083,7 +1083,7 @@ extension DatadogProfilerTests {
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
             samplingExpectation.fulfill()
         }
-        waitForExpectations(timeout: 1.0)
+        wait(for: [samplingExpectation], timeout: 1.0)
 
         let timedOutProfile = dd_profiler_flush_and_get_profile()
         dd_pprof_destroy(timedOutProfile)
@@ -2779,7 +2779,7 @@ private extension DatadogProfilerTests {
 
         action()
 
-        waitForExpectations(timeout: timeout)
+        wait(for: [expectation], timeout: timeout)
     }
 
     func flushQueue() {
