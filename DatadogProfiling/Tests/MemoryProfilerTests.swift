@@ -273,7 +273,8 @@ final class MemoryProfilerTests: XCTestCase {
         }
 
         XCTAssertEqual(
-            dd_profiler_get_status(), statusBefore,
+            dd_profiler_get_status(),
+            statusBefore,
             "A memory trigger must not change CPU profiler state"
         )
         withExtendedLifetime(profiler) {}
@@ -295,7 +296,8 @@ final class MemoryProfilerTests: XCTestCase {
             sendHang(id: "hang-1", to: profiler)
 
             XCTAssertEqual(
-                heapAttachmentCount, 1,
+                heapAttachmentCount,
+                1,
                 "The trigger folds into the periodic emission that just happened"
             )
         }
@@ -316,7 +318,8 @@ final class MemoryProfilerTests: XCTestCase {
             sendHang(id: "hang-1", to: profiler)
 
             XCTAssertEqual(
-                heapAttachmentCount, afterBackground,
+                heapAttachmentCount,
+                afterBackground,
                 "No re-upload of the same live set while backgrounded"
             )
         }

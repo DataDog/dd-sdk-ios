@@ -62,7 +62,7 @@ internal struct ObjCAllocDiagnostics: Sendable {
 }
 
 internal enum ObjCAllocInterception {
-    static let defaultPoissonRateBytes: UInt64 = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)
+    static let defaultPoissonRateBytes = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)
 
     @discardableResult
     static func start(poissonRateBytes: UInt64 = defaultPoissonRateBytes) -> ObjCAllocHookStatus {

@@ -125,8 +125,8 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
             profilingConditions: profilingConditions,
-            encoder: encoder,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            encoder: encoder
         )
 
         quotaChecker.onQuotaResultUpdate = { [weak self] result in

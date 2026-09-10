@@ -106,8 +106,8 @@ internal final class MemoryProfiler: ProfilingHandler {
         quotaChecker: ProfilingQuotaChecking,
         telemetryController: ProfilingTelemetryController,
         profilingConditions: ProfilingConditions,
-        encoder: JSONEncoder = JSONEncoder(),
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        encoder: JSONEncoder = JSONEncoder()
     ) {
         self.featureScope = core.scope(for: ProfilerFeature.self)
         self.profilingSamplerProvider = profilingSamplerProvider
@@ -303,8 +303,8 @@ internal extension MemoryProfiler {
             start: windowStart,
             end: now,
             operation: operation,
-            trigger: trigger,
             rumVitals: Array(vitals.values),
+            trigger: trigger,
             hangs: hangs,
             longTasks: longTasks,
             errors: warnings
@@ -532,7 +532,9 @@ private func withOptionalCString<R>(
     _ string: String?,
     body: (UnsafePointer<CChar>?) -> R
 ) -> R {
-    guard let string else { return body(nil) }
+    guard let string else {
+        return body(nil)
+    }
     return string.withCString { body($0) }
 }
 

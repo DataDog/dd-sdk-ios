@@ -187,8 +187,8 @@ extension ProfilingHandler {
         start: Date,
         end: Date,
         operation: ProfilingOperation,
-        trigger: HeapSnapshotTrigger? = nil,
         rumVitals: [Vital],
+        trigger: HeapSnapshotTrigger? = nil,
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil,
         errors: [DurationEvent]? = nil

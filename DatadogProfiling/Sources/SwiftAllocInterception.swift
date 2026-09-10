@@ -60,7 +60,7 @@ internal struct SwiftAllocDiagnostics: Sendable {
 /// `ObjCAllocInterception`; the two allocation paths are disjoint (pure-Swift
 /// class -> swift_allocObject; NSObject-rooted -> +allocWithZone:).
 internal enum SwiftAllocInterception {
-    static let defaultPoissonRateBytes: UInt64 = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)
+    static let defaultPoissonRateBytes = UInt64(DD_MEMORY_POISSON_DEFAULT_RATE_BYTES)
 
     @discardableResult
     static func start(poissonRateBytes: UInt64 = defaultPoissonRateBytes) -> SwiftAllocHookStatus {
