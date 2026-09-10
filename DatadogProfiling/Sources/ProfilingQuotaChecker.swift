@@ -259,6 +259,8 @@ private extension QuotaResponse.Attributes {
             decision = .quotaOK
         case .quotaOk, .quotaExceeded, .orgDisabled, .undefined:
             decision = admitted ? .quotaOK : .quotaKO
+        @unknown default:
+            decision = admitted ? .quotaOK : .quotaKO
         }
 
         return .init(decision: decision, reason: reason)
