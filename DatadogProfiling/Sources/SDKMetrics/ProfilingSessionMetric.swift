@@ -128,6 +128,8 @@ internal final class ProfilingSessionMetric {
             errorMessage = errorMessage ?? reason.rawValue
         case .unknown:
             errorMessage = errorMessage ?? "Unknown profiling status."
+        @unknown default:
+            errorMessage = errorMessage ?? "Unknown profiling status."
         }
 
         return [

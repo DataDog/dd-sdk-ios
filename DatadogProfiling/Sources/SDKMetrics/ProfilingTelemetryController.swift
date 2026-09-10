@@ -154,6 +154,8 @@ private extension LaunchInfo {
             "prewarming"
         case .uncertain:
             "uncertain"
+        @unknown default:
+            "uncertain"
         }
     }
 }
