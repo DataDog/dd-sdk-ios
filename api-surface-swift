@@ -1707,4 +1707,5 @@ public enum Profiling
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
         public var continuousSampleRate: SampleRate
-        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5)
+        public var memorySampleRate: SampleRate
+        public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5,memorySampleRate: SampleRate = 0)
