@@ -194,10 +194,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             }
         }
 
-        if interception.metrics?.isLocalCacheHit == true {
-            combinedAttributes[CrossPlatformAttributes.localCacheHit] = true
-        }
-
         if let resourceMetrics = interception.metrics {
             subscriber.process(
                 command: RUMAddResourceMetricsCommand(
@@ -223,8 +219,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         }
 
         if let error = interception.completion?.error {
-            var errorAttributes = combinedAttributes
-            errorAttributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)
+            let errorAttributes = combinedAttributes
             subscriber.process(
                 command: RUMStopResourceWithErrorCommand(
                     resourceKey: interception.identifier.uuidString,
