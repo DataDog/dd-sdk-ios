@@ -14,11 +14,13 @@ class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {
         // Given
         let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
-        let core = PassthroughCoreMock(
-            context: .mockWith(applicationStateHistory: .mockAppInBackground()),
-            messageReceiver: receiver
-        )
+        let core = PassthroughCoreMock()
+        core.messageBus.subscribe(receiver: receiver)
 
+        // When
+        core.context = .mockWith(applicationStateHistory: .mockAppInBackground())
+
+        // Then
         XCTAssertEqual(receiver.context.applicationStateHistory?.currentState, .background)
 
         // When
