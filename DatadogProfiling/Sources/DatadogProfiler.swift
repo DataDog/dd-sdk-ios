@@ -174,6 +174,7 @@ extension DatadogProfiler: FeatureMessageReceiver {
             switch message {
             case let message as TTIDMessage:
                 handleAppLaunch(message: message)
+                handleAppLaunchForMemory(message: message)
                 return true
             case let message as OperationMessage:
                 handleOperation(message: message)
@@ -375,6 +376,25 @@ private extension DatadogProfiler {
             // heap snapshot rather than waiting for the next periodic boundary. This only ever adds
             // a heap event — the CPU state machine above is untouched by it.
             memoryProfiler.trigger(.appHang, operation: operation)
+        }
+    }
+
+    /// Captures the launch heap snapshot, which puts memory profiling in the TTID window.
+    ///
+    /// Ordering here is load-bearing, and is why this is a separate hop rather than a line inside
+    /// `handleAppLaunch`. Both enqueue on the same serial queue, so by the time this runs the
+    /// standalone launch harvest — if one ran at all — has already pulled the heap attachment onto
+    /// the app-launch profile and stamped the emission cooldown, and this trigger folds. When no
+    /// harvest ran (continuous CPU sampled in, or app-launch profiling off) it emits the launch dot
+    /// on its own, so the dot exists regardless of the CPU sampling decision.
+    func handleAppLaunchForMemory(message: TTIDMessage) {
+        queue.async { [weak self] in
+            guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
+                return
+            }
+            memoryProfiler.update(attributes: message.attributes)
+            memoryProfiler.record(vital: message.ttid)
+            memoryProfiler.trigger(.ttid, operation: operation)
         }
     }
 
@@ -634,7 +654,7 @@ private extension DatadogProfiler {
             // window so a subsequent heap-only emission is bounded from TTID, not from launch.
             // Only the window start moves: the accumulated correlation stays for the windows that
             // follow, as it did before this lifecycle moved into `MemoryProfiler`.
-            memoryProfiler.advanceWindow(to: dateProvider.now)
+            memoryProfiler.closeLaunchWindow(at: dateProvider.now)
         }
     }
 }

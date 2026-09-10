@@ -322,7 +322,7 @@ internal extension MemoryProfiler {
     /// Ongoing operations carry forward the way the CPU machine's `cleanUpState` does: an operation
     /// still running spans this window and the next, so it correlates with both.
     func closeWindow(at date: Date) {
-        advanceWindow(to: date)
+        windowStart = date
         // Stamped for every closed window, periodic or triggered, so a trigger arriving right
         // behind a periodic emission is folded rather than uploading the same live set again.
         lastEmission = date
@@ -336,12 +336,17 @@ internal extension MemoryProfiler {
         }
     }
 
-    /// Moves the window start without touching correlation or the conditions latch.
+    /// Closes the launch window after its heap rode out on the app-launch CPU profile.
     ///
-    /// Used by the app-launch harvest, which reports the launch window on the CPU event but leaves
-    /// the accumulated correlation in place for the windows that follow.
-    func advanceWindow(to date: Date) {
+    /// Differs from `closeWindow(at:)` in leaving the accumulated correlation and the conditions
+    /// latch alone: the app-launch harvest reports the launch window on the CPU event but the
+    /// correlation stays live for the windows that follow.
+    ///
+    /// It does stamp the emission cooldown, because a heap *was* uploaded. That is what makes the
+    /// TTID trigger fold into the launch profile instead of uploading the same live set again.
+    func closeLaunchWindow(at date: Date) {
         windowStart = date
+        lastEmission = date
     }
 }
 

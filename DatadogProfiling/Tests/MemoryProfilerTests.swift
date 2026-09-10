@@ -133,6 +133,62 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - TTID
+
+    /// No standalone launch harvest runs here (app-launch profiling off), so TTID must produce the
+    /// launch dot itself — otherwise a memory-heavy start goes unexplained whenever CPU profiling
+    /// is not the one harvesting it.
+    func testTTID_emitsHeapSnapshot_whenNoLaunchProfileIsHarvested() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendTTID(to: profiler, at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+            let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+            XCTAssertTrue(event.tags.contains("trigger:ttid"))
+
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNil(metadata.pprof, "With no launch harvest the TTID dot is heap-only")
+            XCTAssertNotNil(metadata.heapPprof)
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// The launch harvest already attached the heap to the app-launch profile. That attachment IS
+    /// the TTID snapshot, so the trigger must fold rather than upload the same live set twice.
+    func testTTID_foldsIntoTheAppLaunchProfile_whenOneIsHarvested() throws {
+        let dateProvider = DateProviderMock()
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(
+            profilingSamplerProvider: provider,
+            dateProvider: dateProvider,
+            isAppLaunchProfilingEnabled: true
+        )
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground()
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must be recording")
+        XCTAssertEqual(dd_profiler_start(), 1, "Precondition: a CPU profile must exist to harvest")
+
+        try withSampledObject {
+            sendTTID(to: profiler, at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1, "Exactly one heap upload for the launch window")
+            let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+            XCTAssertNotNil(metadata.pprof, "The launch heap rides the app-launch CPU profile")
+            XCTAssertNotNil(metadata.heapPprof)
+
+            let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+            XCTAssertTrue(event.tags.contains("operation:launch"))
+            XCTAssertFalse(
+                event.tags.contains("trigger:"),
+                "A coupled launch profile is not tagged as event-triggered"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Memory warning
 
     /// The case the RFC cares about most: the OS reported pressure, and memory profiling explains
@@ -267,6 +323,17 @@ final class MemoryProfilerTests: XCTestCase {
             message: .payload(AppHangMessage(
                 attributes: mockRandomAttributes(),
                 hang: DurationEvent(id: id, type: .error, start: 0, duration: 250)
+            )),
+            from: core
+        )
+        flushQueue()
+    }
+
+    private func sendTTID(to profiler: DatadogProfiler, at date: Date) {
+        _ = profiler.receive(
+            message: .payload(TTIDMessage(
+                attributes: mockRandomAttributes(),
+                ttid: .mockWith(id: "ttid-id", name: "time_to_initial_display", stepType: nil, date: date)
             )),
             from: core
         )
