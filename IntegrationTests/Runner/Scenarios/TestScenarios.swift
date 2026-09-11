@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import UIKit
 import DatadogCore
 
 protocol TestScenario: AnyObject {
@@ -22,6 +23,15 @@ protocol TestScenario: AnyObject {
     /// Defaults to no-op.
     func configureFeatures()
 
+    /// Creates a programmatic root view controller for a scene.
+    ///
+    /// Returning `nil` keeps the existing storyboard-based scenario setup.
+    func makeRootViewController(
+        for windowScene: UIWindowScene,
+        session: UISceneSession,
+        connectionOptions: UIScene.ConnectionOptions
+    ) -> UIViewController?
+
     init()
 }
 
@@ -30,6 +40,14 @@ extension TestScenario {
     var initialTrackingConsent: TrackingConsent { .granted }
     func override(configuration: inout Datadog.Configuration) { /* no-op */ }
     func configureFeatures() { /* no-op */ }
+
+    func makeRootViewController(
+        for windowScene: UIWindowScene,
+        session: UISceneSession,
+        connectionOptions: UIScene.ConnectionOptions
+    ) -> UIViewController? {
+        nil
+    }
 }
 
 internal func initializeTestScenario(with className: String) -> TestScenario {

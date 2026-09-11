@@ -10,18 +10,32 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Launch initial screen depending on the launch configuration
+        guard let windowScene = scene as? UIWindowScene else {
+            assertionFailure("Expected an application window scene")
+            return
+        }
+
+        if let rootViewController = appConfiguration.testScenario?.makeRootViewController(
+            for: windowScene,
+            session: session,
+            connectionOptions: connectionOptions
+        ) {
+            launch(rootViewController: rootViewController, in: windowScene)
+            return
+        }
+
+        // Launch initial screen depending on the launch configuration.
         guard let storyboard = appConfiguration.initialStoryboard() else {
             assertionFailure("No initial storyboard defined in app configuration")
             return
         }
 
-        launch(storyboard: storyboard, in: scene)
+        launch(rootViewController: storyboard.instantiateInitialViewController()!, in: windowScene)
     }
 
-    func launch(storyboard: UIStoryboard, in scene: UIScene) {
-        let window = UIWindow(windowScene: scene as! UIWindowScene)
-        window.rootViewController = storyboard.instantiateInitialViewController()!
+    private func launch(rootViewController: UIViewController, in windowScene: UIWindowScene) {
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = rootViewController
         window.makeKeyAndVisible()
         self.window = window
     }
