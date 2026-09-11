@@ -31,6 +31,11 @@ private struct RUMDebugInfo {
             .map { View(scope: $0) }
     }
 }
+
+fileprivate enum RUMDebuggingConstants {
+    static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
+    static let inactiveViewColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
+}
 #endif
 
 #if canImport(UIKit)
@@ -144,8 +149,6 @@ internal class RUMDebugging {
 #if !os(watchOS) && !os(macOS)
 internal class RUMViewOutline: RUMDebugView {
     private struct Constants {
-        static let activeViewColor = #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1)
-        static let inactiveViewColor = #colorLiteral(red: 0.6000000238, green: 0.6000000238, blue: 0.6000000238, alpha: 1)
         static let labelHeight: CGFloat = 16
 
         static let viewNameTextAttributes: [NSAttributedString.Key: Any] = [
@@ -170,7 +173,7 @@ internal class RUMViewOutline: RUMDebugView {
         let viewDetails = (viewInfo.isActive ? "ACTIVE" : "INACTIVE")
         let labelText = "\(viewName)\(separator)\(viewDetails)"
         let labelAttributedText = NSMutableAttributedString(string: labelText)
-        let labelBackgroundColor = viewInfo.isActive ? Constants.activeViewColor : Constants.inactiveViewColor
+        let labelBackgroundColor = viewInfo.isActive ? RUMDebuggingConstants.activeViewColor : RUMDebuggingConstants.inactiveViewColor
 
         labelAttributedText.setAttributes(
             Constants.viewNameTextAttributes,
@@ -217,31 +220,175 @@ internal class RUMDebugView: DDView {
 }
 #endif
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+#if os(macOS)
+internal class RUMDebuggingWindow: NSPanel { }
+
 internal class RUMDebugging {
-    init() {}
-    func debug(applicationScope: RUMApplicationScope) {}
+    @MainActor var debuggingViewManager: RUMDebuggingViewManager?
+
+    init() {
+        DispatchQueue.main.async {
+            self.debuggingViewManager = RUMDebuggingViewManager()
+        }
+    }
+
+    func debug(applicationScope: RUMApplicationScope) {
+        // `RUMDebugInfo` must be created on the caller thread.
+        let debugInfo = RUMDebugInfo(applicationScope: applicationScope)
+
+        DispatchQueue.main.async {
+            // `RUMDebugInfo` rendering must be called on the main thread.
+            self.debuggingViewManager?.setDebugInfo(debugInfo: debugInfo)
+        }
+    }
 }
 
-internal class RUMViewOutline: RUMDebugView {
-    fileprivate init(viewInfo: RUMDebugInfo.View, stack: (index: Int, total: Int)) {
-        super.init(frame: .zero)
+@MainActor
+internal class RUMDebuggingViewManager {
+    private let debugWindow: RUMDebuggingWindow
+    private let debugViewController = RUMDebuggingViewController()
+
+    init() {
+        debugWindow = RUMDebuggingWindow(contentViewController: debugViewController)
+        debugWindow.styleMask = [.titled, .miniaturizable, .utilityWindow, .resizable]
+        debugWindow.becomesKeyOnlyIfNeeded = true
+        debugWindow.isFloatingPanel = true
+        debugWindow.title = "RUM View Scopes"
+        debugWindow.setContentSize(.init(width: 450, height: 150))
+        debugWindow.orderFront(nil)
+    }
+
+    deinit {
+        if Thread.isMainThread {
+            debugWindow.close()
+        } else {
+            let window = debugWindow
+
+            DispatchQueue.main.async {
+                window.close()
+            }
+        }
+    }
+
+    fileprivate func setDebugInfo(debugInfo: RUMDebugInfo) {
+        debugViewController.setDebugInfo(debugInfo: debugInfo)
+    }
+}
+
+internal class RUMDebuggingViewController: NSViewController {
+    private let stackView = NSStackView()
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-}
 
-internal class RUMDebugView: DDView {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override func loadView() {
+        let view = NSScrollView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.contentView = FlippedClipView()
+        view.contentView.drawsBackground = false
+        view.drawsBackground = false
+
+        stackView.orientation = .vertical
+        stackView.spacing = 0
+        view.documentView = stackView
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: view.contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.contentView.trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: view.contentView.topAnchor),
+            view.contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            view.contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            view.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+            view.heightAnchor.constraint(greaterThanOrEqualToConstant: 50)
+        ])
+
+        self.view = view
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    fileprivate func setDebugInfo(debugInfo: RUMDebugInfo) {
+        stackView.arrangedSubviews.forEach { view in
+            stackView.removeView(view)
+        }
+
+        debugInfo.views.forEach { view in
+            stackView.addArrangedSubview(labelFor(view))
+        }
+
+        stackView.arrangedSubviews.forEach { subview in
+            NSLayoutConstraint.activate([
+                subview.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+                subview.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
+            ])
+        }
+    }
+
+    private func labelFor(_ view: RUMDebugInfo.View) -> NSView {
+        let wrapperView = NSView()
+        wrapperView.translatesAutoresizingMaskIntoConstraints = false
+        wrapperView.wantsLayer = true
+        wrapperView.layer?.backgroundColor = view.isActive ? RUMDebuggingConstants.activeViewColor.cgColor : RUMDebuggingConstants.inactiveViewColor.cgColor
+
+        let activeLabel = NSTextField(labelWithString: view.isActive ? "ACTIVE" : "INACTIVE")
+        activeLabel.translatesAutoresizingMaskIntoConstraints = false
+        activeLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        activeLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        activeLabel.setContentHuggingPriority(.required, for: .horizontal)
+        activeLabel.setContentHuggingPriority(.required, for: .vertical)
+        activeLabel.textColor = view.isActive ? RUMDebuggingConstants.activeViewColor : RUMDebuggingConstants.inactiveViewColor
+        activeLabel.font = NSFont.boldSystemFont(ofSize: NSFont.smallSystemFontSize)
+
+        let activeLabelWrapper = NSView()
+        activeLabelWrapper.translatesAutoresizingMaskIntoConstraints = false
+        activeLabelWrapper.wantsLayer = true
+        activeLabelWrapper.layer?.backgroundColor = NSColor.white.cgColor
+        activeLabelWrapper.layer?.cornerRadius = 4
+        activeLabelWrapper.layer?.cornerCurve = .continuous
+
+        activeLabelWrapper.addSubview(activeLabel)
+
+        let textField = NSTextField(labelWithString: view.name)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.setContentHuggingPriority(.required, for: .vertical)
+        textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        textField.setContentCompressionResistancePriority(.required, for: .vertical)
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textField.lineBreakMode = .byTruncatingTail
+        textField.usesSingleLineMode = true
+        textField.textColor = .white
+
+        wrapperView.addSubview(textField)
+        wrapperView.addSubview(activeLabelWrapper)
+
+        NSLayoutConstraint.activate([
+            activeLabel.leadingAnchor.constraint(equalTo: activeLabelWrapper.leadingAnchor, constant: 4),
+            activeLabel.trailingAnchor.constraint(equalTo: activeLabelWrapper.trailingAnchor, constant: -4),
+            activeLabel.topAnchor.constraint(equalTo: activeLabelWrapper.topAnchor, constant: 2),
+            activeLabel.bottomAnchor.constraint(equalTo: activeLabelWrapper.bottomAnchor, constant: -2),
+
+            textField.leadingAnchor.constraint(equalTo: wrapperView.leadingAnchor, constant: 20),
+            textField.topAnchor.constraint(equalTo: wrapperView.topAnchor, constant: 8),
+            textField.bottomAnchor.constraint(equalTo: wrapperView.bottomAnchor, constant: -8),
+
+            activeLabelWrapper.leadingAnchor.constraint(equalTo: textField.trailingAnchor, constant: 8),
+            activeLabelWrapper.trailingAnchor.constraint(equalTo: wrapperView.trailingAnchor, constant: -20),
+            activeLabel.firstBaselineAnchor.constraint(equalTo: textField.firstBaselineAnchor)
+        ])
+
+        return wrapperView
+    }
+}
+
+fileprivate class FlippedClipView: NSClipView {
+    override var isFlipped: Bool {
+        true
     }
 }
 #endif
