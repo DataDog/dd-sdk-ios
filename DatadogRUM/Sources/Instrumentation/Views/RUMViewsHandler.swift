@@ -292,10 +292,20 @@ internal final class RUMViewsHandler {
 #if os(macOS)
 extension RUMViewsHandler: NSViewControllerHandler {
     func notify_viewDidAppear(viewController: DDViewController) {
+        guard (viewController is RUMDebuggingViewController) == false else {
+            // Do not consider the RUM view scope debugger as a view that may be active.
+            return
+        }
+
         notify_viewDidAppear_impl(viewController: viewController, ddKitInstrumentationType: .appkit)
     }
 
     func notify_viewDidDisappear(viewController: DDViewController) {
+        guard (viewController is RUMDebuggingViewController) == false else {
+            // Do not consider the RUM view scope debugger as a view that may be active.
+            return
+        }
+
         remove(identity: ViewIdentifier(viewController))
     }
 }
