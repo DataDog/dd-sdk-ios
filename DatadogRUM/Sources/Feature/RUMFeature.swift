@@ -322,7 +322,9 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         )
 
         self.watchdogTerminationMonitor = watchdogTermination
-        self.messageReceiver = NOPFeatureMessageReceiver()
+        // TODO: RUM-16486 Switch to `NOPFeatureMessageReceiver()` once `DatadogWebViewTracking`'s
+        // `MessageEmitter` sends `WebViewRUMMessage` on the typed bus (chain-pr 9/10).
+        self.messageReceiver = webViewEventReceiver
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
