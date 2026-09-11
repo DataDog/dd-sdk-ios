@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 
 /// A type providing core context and writer for writing span events.
@@ -36,6 +37,34 @@ internal final class LazySpanWriteContext: SpanWriteContext {
         }
     }
 
+    /// Captures the current core context while replacing its RUM component with
+    /// the one observed when asynchronous work actually started.
+    init(
+        featureScope: FeatureScope,
+        rumContext: RUMCoreContext?,
+        hasPendingUserAction: Bool = false,
+        excludedUserActionID: String? = nil
+    ) {
+        self.featureScope = featureScope
+
+        featureScope.context { [weak self] context in
+            var context = context
+            let resolvedRUMContext = hasPendingUserAction
+                ? mergeAcceptedUIEventAction(
+                    into: rumContext,
+                    from: context.additionalContext(ofType: RUMCoreContext.self),
+                    excluding: excludedUserActionID
+                )
+                : rumContext
+            if let resolvedRUMContext {
+                context.set(additionalContext: resolvedRUMContext)
+            } else {
+                context.removeContext(ofType: RUMCoreContext.self)
+            }
+            self?.context = context
+        }
+    }
+
     func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
         // Ignore the current context and use the one captured at initialization:
         featureScope.eventWriteContext { _, writer in
@@ -45,4 +74,34 @@ internal final class LazySpanWriteContext: SpanWriteContext {
             block(context, writer)
         }
     }
+}
+
+private func mergeAcceptedUIEventAction(
+    into captured: RUMCoreContext?,
+    from current: RUMCoreContext?,
+    excluding excludedUserActionID: String?
+) -> RUMCoreContext? {
+    guard let captured,
+          let current,
+          let currentActionID = current.userActionID,
+          UUID(uuidString: currentActionID) != nil,
+          currentActionID != excludedUserActionID else {
+        return captured
+    }
+
+    guard captured.applicationID == current.applicationID,
+          captured.sessionID == current.sessionID,
+          captured.viewID == current.viewID else {
+        return captured
+    }
+    return RUMCoreContext(
+        applicationID: captured.applicationID,
+        sessionID: captured.sessionID,
+        sessionSampler: captured.sessionSampler,
+        viewID: captured.viewID,
+        userActionID: currentActionID,
+        viewServerTimeOffset: captured.viewServerTimeOffset,
+        viewPath: captured.viewPath,
+        viewName: captured.viewName
+    )
 }

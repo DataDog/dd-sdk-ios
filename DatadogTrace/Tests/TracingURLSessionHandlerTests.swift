@@ -86,7 +86,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "dd=p:0000000000000064;s:1;t.dm:-1")
-        XCTAssertNil(capturedState)
+        XCTAssertNotNil(capturedState, "It must retain request-time RUM context")
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -94,6 +94,83 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(injectedTraceContext.parentSpanID)
         XCTAssertEqual(injectedTraceContext.sampleRate, 100)
         XCTAssertTrue(injectedTraceContext.samplingPriority.isKept)
+        XCTAssertEqual(injectedTraceContext.rumSessionId, "abcdef01-2345-6789-abcd-ef0123456789")
+    }
+
+    func testGivenExplicitlyEmptyNetworkRUMContext_itDoesNotResurrectStaleContextAtCompletion() throws {
+        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let staleRUMContext = RUMCoreContext(
+            applicationID: UUID().uuidString.lowercased(),
+            sessionID: UUID().uuidString.lowercased(),
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased()
+        )
+        receiver.context = CoreContext(rumContext: staleRUMContext)
+        var coreContext = core.context
+        coreContext.set(additionalContext: staleRUMContext)
+        core.context = coreContext
+        let tracer = DatadogTracer.mockWith(
+            core: core,
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        let (request, traceContext, capturedState) = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: nil)
+        )
+
+        XCTAssertNil(traceContext?.rumSessionId)
+        XCTAssertNotNil(capturedState)
+
+        let interception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: request),
+            isFirstParty: true,
+            trackingMode: .registeredDelegate
+        )
+        interception.register(trace: try XCTUnwrap(traceContext))
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                )
+            )
+        )
+        handler.interceptionDidStart(
+            interception: interception,
+            capturedStates: [try XCTUnwrap(capturedState)]
+        )
+        handler.interceptionDidComplete(interception: interception)
+
+        let span = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).last?.spans.first)
+        XCTAssertNil(span.tags[SpanTags.rumSessionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewID])
+    }
+
+    func testGivenNoHeaders_whenModifyIsCalledForUIEventCapture_itDoesNoTraceWork() {
+        let request: URLRequest = .mockWith(url: "https://www.example.com")
+
+        let (modifiedRequest, traceContext, capturedState) = handler.modify(
+            request: request,
+            headerTypes: [],
+            networkContext: NetworkContext(rumContext: .mockRandom())
+        )
+
+        XCTAssertEqual(modifiedRequest, request)
+        XCTAssertNil(traceContext)
+        XCTAssertNil(capturedState)
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -149,7 +226,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertNil(capturedState)
+        XCTAssertNotNil(capturedState, "It must retain request-time RUM context")
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -192,7 +269,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
         XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
-        XCTAssertNil(capturedState)
+        XCTAssertNotNil(capturedState, "It must retain request-time RUM context")
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -456,6 +533,102 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.samplingRate, sampleRate / 100)
         XCTAssertEqual(span.samplingPriority, samplingDecision.samplingPriority)
         XCTAssertEqual(span.samplingDecisionMaker, samplingDecision.decisionMaker)
+    }
+
+    func testGivenInterleavedRequestsFromDifferentRUMViews_whenTheyComplete_itKeepsTheirRequestTimeViews() throws {
+        // Given
+        let tracer = DatadogTracer.mockWith(
+            core: core,
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: handler.contextReceiver,
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+        let rumA = RUMCoreContext(
+            applicationID: UUID().uuidString.lowercased(),
+            sessionID: UUID().uuidString.lowercased(),
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased()
+        )
+        let rumB = RUMCoreContext(
+            applicationID: rumA.applicationID,
+            sessionID: rumA.sessionID,
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased()
+        )
+        let rumAtCompletion = RUMCoreContext(
+            applicationID: rumA.applicationID,
+            sessionID: rumA.sessionID,
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased()
+        )
+
+        func setCoreRUMContext(_ rumContext: RUMCoreContext) {
+            var context = core.context
+            context.set(additionalContext: rumContext)
+            core.context = context
+        }
+
+        func makeInterception(
+            url: String,
+            rumContext: RUMCoreContext
+        ) throws -> URLSessionTaskInterception {
+            setCoreRUMContext(rumContext)
+            let (request, traceContext, capturedState) = handler.modify(
+                request: .mockWith(url: url),
+                headerTypes: [.datadog],
+                networkContext: NetworkContext(rumContext: rumContext)
+            )
+            let interception = URLSessionTaskInterception(
+                request: ImmutableRequest(request: request),
+                isFirstParty: true,
+                trackingMode: .registeredDelegate
+            )
+            interception.register(trace: try XCTUnwrap(traceContext))
+            interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+            interception.register(
+                metrics: .mockWith(
+                    fetch: .init(
+                        start: .mockDecember15th2019At10AMUTC(),
+                        end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+                    )
+                )
+            )
+            handler.interceptionDidStart(
+                interception: interception,
+                capturedStates: [try XCTUnwrap(capturedState)]
+            )
+            return interception
+        }
+
+        let interceptionA = try makeInterception(
+            url: "https://www.example.com/a",
+            rumContext: rumA
+        )
+        let interceptionB = try makeInterception(
+            url: "https://www.example.com/b",
+            rumContext: rumB
+        )
+        setCoreRUMContext(rumAtCompletion)
+
+        // When: complete in reverse order after the representative RUM view changed.
+        handler.interceptionDidComplete(interception: interceptionB)
+        handler.interceptionDidComplete(interception: interceptionA)
+
+        // Then
+        let spans = core.events(ofType: SpanEventsEnvelope.self).compactMap { $0.spans.first }
+        XCTAssertEqual(spans.count, 2)
+        XCTAssertEqual(spans[0].tags[SpanTags.rumViewID], rumB.viewID)
+        XCTAssertEqual(spans[1].tags[SpanTags.rumViewID], rumA.viewID)
+        XCTAssertNotEqual(spans[0].tags[SpanTags.rumViewID], rumAtCompletion.viewID)
+        XCTAssertNotEqual(spans[1].tags[SpanTags.rumViewID], rumAtCompletion.viewID)
     }
 
     func testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {
