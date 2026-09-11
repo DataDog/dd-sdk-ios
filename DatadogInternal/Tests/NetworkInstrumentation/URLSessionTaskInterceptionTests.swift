@@ -246,7 +246,46 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.requestBodySize?.decoded, taskTransaction.countOfRequestBodyBytesBeforeEncoding)
         XCTAssertEqual(resourceMetrics.requestBodySize?.encoded, taskTransaction.countOfRequestBodyBytesSent)
         XCTAssertEqual(resourceMetrics.deliveryType, .other)
-        XCTAssertEqual(resourceMetrics.transferSize, taskTransaction.countOfResponseBodyBytesReceived)
+        XCTAssertEqual(
+            resourceMetrics.transferSize,
+            taskTransaction.countOfResponseBodyBytesReceived + taskTransaction.countOfResponseHeaderBytesReceived,
+            "`transferSize` must include header bytes, not just the body, so responses with no body (e.g. `204 No Content`) aren't reported as zero-byte transfers."
+        )
+    }
+
+    func testWhenTaskMakesFetchFromNetworkWithUnknownByteCounts_thenTransferSizeIsOmitted() {
+        let cases: [(bodyBytes: Int64, headerBytes: Int64)] = [
+            (bodyBytes: -1, headerBytes: 128),
+            (bodyBytes: 256, headerBytes: -1),
+            (bodyBytes: -1, headerBytes: -1)
+        ]
+
+        for testCase in cases {
+            XCTContext.runActivity(named: "bodyBytes: \(testCase.bodyBytes), headerBytes: \(testCase.headerBytes)") { _ in
+                let taskInterval = DateInterval(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+                )
+                let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+                    start: taskInterval.start,
+                    end: taskInterval.end,
+                    resourceFetchType: .networkLoad,
+                    countOfResponseHeaderBytesReceived: testCase.headerBytes,
+                    countOfResponseBodyBytesReceived: testCase.bodyBytes
+                )
+                let taskMetrics: URLSessionTaskMetrics = .mockWith(
+                    taskInterval: taskInterval,
+                    transactionMetrics: [taskTransaction]
+                )
+
+                let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+                XCTAssertEqual(resourceMetrics.deliveryType, .other)
+                XCTAssertNil(
+                    resourceMetrics.transferSize,
+                    "`transferSize` must be omitted, not clamped to a partial or zero value, when either byte count is unknown."
+                )
+            }
+        }
     }
 
     func testWhenTaskMakesMultipleFetchesFromNetwork_thenAllMetricsAreCollected() {
@@ -366,29 +405,40 @@ class ResourceMetricsTests: XCTestCase {
         XCTAssertEqual(resourceMetrics.transferSize, 0)
     }
 
-    func testWhenTaskGets304RevalidationResponse_thenDeliveryTypeIsCacheWithSentinelTransferSize() {
-        let taskInterval = DateInterval(
-            start: .mockDecember15th2019At10AMUTC(),
-            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
-        )
-        let response: URLResponse = .mockWith(statusCode: 304)
-        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
-            start: taskInterval.start,
-            end: taskInterval.end,
-            resourceFetchType: .networkLoad,
-            response: response
-        )
+    func testWhenTaskGets304RevalidationResponse_thenTransferSizeReflectsMeasuredHeaderBytesOrFallsBackToSentinel() {
+        let cases: [Int64] = [.random(in: 64..<256), 0]
 
-        // When
-        let taskMetrics: URLSessionTaskMetrics = .mockWith(
-            taskInterval: taskInterval,
-            transactionMetrics: [taskTransaction]
-        )
+        for headerBytes in cases {
+            XCTContext.runActivity(named: "headerBytes: \(headerBytes)") { _ in
+                let taskInterval = DateInterval(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+                )
+                let response: URLResponse = .mockWith(statusCode: 304)
+                let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+                    start: taskInterval.start,
+                    end: taskInterval.end,
+                    resourceFetchType: .networkLoad,
+                    response: response,
+                    countOfResponseHeaderBytesReceived: headerBytes
+                )
 
-        // Then
-        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
-        XCTAssertEqual(resourceMetrics.deliveryType, .cache)
-        XCTAssertGreaterThan(resourceMetrics.transferSize ?? 0, 0)
+                // When
+                let taskMetrics: URLSessionTaskMetrics = .mockWith(
+                    taskInterval: taskInterval,
+                    transactionMetrics: [taskTransaction]
+                )
+
+                // Then
+                let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+                XCTAssertEqual(resourceMetrics.deliveryType, .cache)
+                if headerBytes > 0 {
+                    XCTAssertEqual(resourceMetrics.transferSize, headerBytes)
+                } else {
+                    XCTAssertGreaterThan(resourceMetrics.transferSize ?? 0, 0)
+                }
+            }
+        }
     }
 
     func testWhenTaskFetchTypeVaries_thenDeliveryTypeReflectsOnlyKnownSignals() {
@@ -419,6 +469,38 @@ class ResourceMetricsTests: XCTestCase {
 
                 let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
                 XCTAssertEqual(resourceMetrics.deliveryType, testCase.expected)
+            }
+        }
+    }
+
+    func testWhenTaskFetchTypeIsUnknown_thenTransferSizeReflectsMeasuredByteCountsOrIsOmitted() {
+        let cases: [(bodyBytes: Int64, headerBytes: Int64, expectedTransferSize: Int64?)] = [
+            (bodyBytes: 256, headerBytes: 128, expectedTransferSize: 256 + 128),
+            (bodyBytes: -1, headerBytes: 128, expectedTransferSize: nil),
+            (bodyBytes: -1, headerBytes: -1, expectedTransferSize: nil)
+        ]
+
+        for testCase in cases {
+            XCTContext.runActivity(named: "bodyBytes: \(testCase.bodyBytes), headerBytes: \(testCase.headerBytes)") { _ in
+                let taskInterval = DateInterval(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+                )
+                let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+                    start: taskInterval.start,
+                    end: taskInterval.end,
+                    resourceFetchType: .unknown,
+                    countOfResponseHeaderBytesReceived: testCase.headerBytes,
+                    countOfResponseBodyBytesReceived: testCase.bodyBytes
+                )
+                let taskMetrics: URLSessionTaskMetrics = .mockWith(
+                    taskInterval: taskInterval,
+                    transactionMetrics: [taskTransaction]
+                )
+
+                let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+                XCTAssertNil(resourceMetrics.deliveryType, "`.unknown` fetch type must not be reported as a measured cache miss.")
+                XCTAssertEqual(resourceMetrics.transferSize, testCase.expectedTransferSize)
             }
         }
     }

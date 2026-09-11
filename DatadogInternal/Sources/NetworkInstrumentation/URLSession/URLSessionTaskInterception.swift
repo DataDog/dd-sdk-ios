@@ -338,15 +338,30 @@ extension ResourceMetrics {
             transferSize = 0
         case .some(.networkLoad) where is304Revalidated:
             deliveryType = .cache
-            // A `304` revalidation response has no measurable body, but still went over the network
-            // (headers only). Report a small sentinel size so it isn't confused with a full cache hit.
-            transferSize = Self.revalidatedCacheHitTransferSize
+            // A `304` revalidation response has no body, but its headers still went over the network.
+            // Report that measured header size so it isn't confused with a zero-byte local cache hit.
+            // Fall back to a sentinel only if the header size itself wasn't reported.
+            let fallbackTransferSize: Int64 = 300
+            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? 0
+            transferSize = headerBytes > 0 ? headerBytes : fallbackTransferSize
         case .some(.networkLoad), .some(.serverPush):
             deliveryType = .other
-            transferSize = lastTransaction?.countOfResponseBodyBytesReceived
-        case .some(.unknown), .none:
-            // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep it as unknown
-            // rather than asserting a measured cache miss.
+            // `transferSize` represents the entire fetched response, not just the body - a response
+            // with no body (e.g. `204 No Content`) still transfers headers over the network.
+            // `URLSession` reports `-1` (`NSURLSessionTransferSizeUnknown`) when a count can't be
+            // measured; omit `transferSize` rather than reporting a partial or zero value.
+            let bodyBytes = lastTransaction?.countOfResponseBodyBytesReceived ?? -1
+            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? -1
+            transferSize = (bodyBytes >= 0 && headerBytes >= 0) ? bodyBytes + headerBytes : nil
+        case .some(.unknown):
+            // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep `deliveryType`
+            // as unknown rather than asserting a measured cache miss, but the response byte counts are
+            // still valid and worth reporting if they were measured.
+            deliveryType = nil
+            let bodyBytes = lastTransaction?.countOfResponseBodyBytesReceived ?? -1
+            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? -1
+            transferSize = (bodyBytes >= 0 && headerBytes >= 0) ? bodyBytes + headerBytes : nil
+        case .none:
             deliveryType = nil
             transferSize = nil
         default:
@@ -428,8 +443,4 @@ extension ResourceMetrics {
             transferSize: transferSize
         )
     }
-
-    /// Sentinel transfer size (in bytes) reported for a network-validated cache hit (e.g. `304 Not Modified`),
-    /// whose real header-only transfer size isn't measurable via `URLSessionTaskMetrics`.
-    fileprivate static let revalidatedCacheHitTransferSize: Int64 = 300
 }
