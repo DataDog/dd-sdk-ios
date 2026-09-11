@@ -660,7 +660,9 @@ extension URLSessionTaskTransactionMetrics {
         start: Date,
         end: Date,
         resourceFetchType: URLSessionTaskMetrics.ResourceFetchType = .networkLoad,
-        response: URLResponse? = nil
+        response: URLResponse? = nil,
+        countOfResponseHeaderBytesReceived: Int64 = .random(in: 64..<256),
+        countOfResponseBodyBytesReceived: Int64 = .random(in: 256..<512)
     ) -> URLSessionTaskTransactionMetrics {
         let spread = end.timeIntervalSince(start)
 
@@ -678,7 +680,6 @@ extension URLSessionTaskTransactionMetrics {
         let countOfResponseBodyBytesAfterDecoding: Int64 = .random(in: 512..<1_024)
         let countOfRequestBodyBytesBeforeEncoding: Int64 = .random(in: 256..<512)
         let countOfRequestBodyBytesSent: Int64 = .random(in: 128..<256)
-        let countOfResponseBodyBytesReceived: Int64 = .random(in: 256..<512)
 
         return URLSessionTaskTransactionMetricsMock(
             resourceFetchType: resourceFetchType,
@@ -696,6 +697,7 @@ extension URLSessionTaskTransactionMetrics {
             countOfRequestBodyBytesBeforeEncoding: countOfRequestBodyBytesBeforeEncoding,
             countOfRequestBodyBytesSent: countOfRequestBodyBytesSent,
             countOfResponseBodyBytesReceived: countOfResponseBodyBytesReceived,
+            countOfResponseHeaderBytesReceived: countOfResponseHeaderBytesReceived,
             response: response
         )
     }
@@ -714,7 +716,8 @@ extension URLSessionTaskTransactionMetrics {
         responseEndDate: Date? = nil,
         responseBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0),
         requestBodySize: (encoded: Int64, decoded: Int64) = (encoded: 0, decoded: 0),
-        response: URLResponse? = nil
+        response: URLResponse? = nil,
+        countOfResponseHeaderBytesReceived: Int64 = 0
     ) -> URLSessionTaskTransactionMetrics {
         return URLSessionTaskTransactionMetricsMock(
             resourceFetchType: resourceFetchType,
@@ -732,6 +735,7 @@ extension URLSessionTaskTransactionMetrics {
             countOfRequestBodyBytesBeforeEncoding: requestBodySize.decoded,
             countOfRequestBodyBytesSent: requestBodySize.encoded,
             countOfResponseBodyBytesReceived: responseBodySize.encoded,
+            countOfResponseHeaderBytesReceived: countOfResponseHeaderBytesReceived,
             response: response
         )
     }
@@ -810,6 +814,9 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
     private let _countOfResponseBodyBytesReceived: Int64
     override var countOfResponseBodyBytesReceived: Int64 { _countOfResponseBodyBytesReceived }
 
+    private let _countOfResponseHeaderBytesReceived: Int64
+    override var countOfResponseHeaderBytesReceived: Int64 { _countOfResponseHeaderBytesReceived }
+
     private let _response: URLResponse?
     override var response: URLResponse? { _response }
 
@@ -829,6 +836,7 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
         countOfRequestBodyBytesBeforeEncoding: Int64 = 0,
         countOfRequestBodyBytesSent: Int64 = 0,
         countOfResponseBodyBytesReceived: Int64 = 0,
+        countOfResponseHeaderBytesReceived: Int64 = 0,
         response: URLResponse? = nil
     ) {
         self._resourceFetchType = resourceFetchType
@@ -846,6 +854,7 @@ private class URLSessionTaskTransactionMetricsMock: URLSessionTaskTransactionMet
         self._countOfRequestBodyBytesBeforeEncoding = countOfRequestBodyBytesBeforeEncoding
         self._countOfRequestBodyBytesSent = countOfRequestBodyBytesSent
         self._countOfResponseBodyBytesReceived = countOfResponseBodyBytesReceived
+        self._countOfResponseHeaderBytesReceived = countOfResponseHeaderBytesReceived
         self._response = response
     }
 }
