@@ -19,14 +19,18 @@ class RUMViewsHandlerTests: XCTestCase {
     private func createHandler(
         uiKitPredicate: UIKitRUMViewsPredicate? = nil,
         swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
-        swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil
+        swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil,
+        sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { _ in nil },
+        sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { _ in nil }
     ) -> RUMViewsHandler {
         let handler = RUMViewsHandler(
             dateProvider: dateProvider,
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIViewNameExtractor: swiftUIViewNameExtractor,
-            notificationCenter: notificationCenter
+            notificationCenter: notificationCenter,
+            sceneIdentifierProvider: sceneIdentifierProvider,
+            sceneIdentifierFromNotification: sceneIdentifierFromNotification
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -94,6 +98,213 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(stopCommand.attributes as? [String: String], ["key1": "val1"])
         XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
+    }
+
+    func testGivenViewsInDifferentScenes_whenViewDidAppear_itKeepsBothRUMViewsActive() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = createMockViewInWindow()
+        let viewB = createMockViewInWindow()
+
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(
+            uiKitPredicate: uiKitPredicate,
+            sceneIdentifierProvider: { viewController in
+                viewController === viewA ? sceneA : sceneB
+            }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewA, animated: false)
+        handler.notify_viewDidAppear(viewController: viewB, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        let startA = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let startB = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStartViewCommand)
+        XCTAssertEqual(startA.target, .scene(sceneA))
+        XCTAssertEqual(startB.target, .scene(sceneB))
+    }
+
+    func testGivenConcurrentScenes_whenNavigatingAndReturning_itOnlyChangesOwningScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA1 = createMockViewInWindow()
+        let viewA2 = createMockViewInWindow()
+        let viewB = createMockViewInWindow()
+
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(
+            uiKitPredicate: uiKitPredicate,
+            sceneIdentifierProvider: { viewController in
+                viewController === viewB ? sceneB : sceneA
+            }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewA1, animated: false)
+        handler.notify_viewDidAppear(viewController: viewB, animated: false)
+        handler.notify_viewDidAppear(viewController: viewA2, animated: false)
+        handler.notify_viewDidDisappear(viewController: viewA2, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 6)
+        let commands = commandSubscriber.receivedCommands
+        XCTAssertTrue((commands[0] as? RUMStartViewCommand)?.identity == ViewIdentifier(viewA1))
+        XCTAssertTrue((commands[1] as? RUMStartViewCommand)?.identity == ViewIdentifier(viewB))
+        XCTAssertTrue((commands[2] as? RUMStopViewCommand)?.identity == ViewIdentifier(viewA1))
+        XCTAssertTrue((commands[3] as? RUMStartViewCommand)?.identity == ViewIdentifier(viewA2))
+        XCTAssertTrue((commands[4] as? RUMStopViewCommand)?.identity == ViewIdentifier(viewA2))
+        XCTAssertTrue((commands[5] as? RUMStartViewCommand)?.identity == ViewIdentifier(viewA1))
+        XCTAssertEqual((commands[1] as? RUMStartViewCommand)?.target, .scene(sceneB))
+        XCTAssertEqual((commands[2] as? RUMStopViewCommand)?.target, .scene(sceneA))
+        XCTAssertFalse(commands.contains { command in
+            (command as? RUMStopViewCommand)?.identity == ViewIdentifier(viewB)
+        })
+    }
+
+    func testGivenConcurrentScenes_whenSceneLifecycleChanges_itOnlyChangesOwningScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = createMockViewInWindow()
+        let viewB = createMockViewInWindow()
+        let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
+        let handler = createHandler(
+            uiKitPredicate: uiKitPredicate,
+            sceneIdentifierProvider: { $0 === viewA ? sceneA : sceneB },
+            sceneIdentifierFromNotification: { notification in
+                switch notification.object as? String {
+                case "scene-A": return sceneA
+                case "scene-B": return sceneB
+                default: return nil
+                }
+            }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewA, animated: false)
+        handler.notify_viewDidAppear(viewController: viewB, animated: false)
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "scene-A")
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "scene-A")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[2] as? RUMStopViewCommand)?.target,
+            .scene(sceneA)
+        )
+
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 6)
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)?.target,
+            .scene(sceneB)
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[4] as? RUMHandleAppLifecycleEventCommand)?.event,
+            .didEnterBackground
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[5] as? RUMHandleAppLifecycleEventCommand)?.event,
+            .willEnterForeground
+        )
+
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-B")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 8)
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[6] as? RUMStartViewCommand)?.target,
+            .scene(sceneA)
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[7] as? RUMStartViewCommand)?.target,
+            .scene(sceneB)
+        )
+    }
+
+    func testGivenSceneEnteredBackgroundBeforeItsFirstViewAppears_itWaitsForSceneForegroundToStartView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let viewA = createMockViewInWindow()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: "View A")),
+            sceneIdentifierProvider: { _ in sceneA },
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? sceneA : nil
+            }
+        )
+
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "scene-A")
+        handler.notify_viewDidAppear(viewController: viewA, animated: false)
+
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartViewCommand)
+        XCTAssertEqual(start.target, .scene(sceneA))
+    }
+
+    func testGivenApplicationEnteredBackgroundBeforeLegacyViewAppears_itWaitsForForegroundToStartView() throws {
+        let view = createMockViewInWindow()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        )
+
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        handler.notify_viewDidAppear(viewController: view, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertTrue(commandSubscriber.receivedCommands[0] is RUMHandleAppLifecycleEventCommand)
+
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertTrue(commandSubscriber.receivedCommands[1] is RUMStartViewCommand)
+        XCTAssertTrue(commandSubscriber.receivedCommands[2] is RUMHandleAppLifecycleEventCommand)
+    }
+
+    func testGivenReusedViewControllerMovesToAnotherScene_whenItAppears_itMovesRUMViewOwnership() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let view = createMockViewInWindow()
+        var currentScene = sceneA
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: "Shared View")),
+            sceneIdentifierProvider: { _ in currentScene }
+        )
+
+        handler.notify_viewDidAppear(viewController: view, animated: false)
+        currentScene = sceneB
+        handler.notify_viewDidAppear(viewController: view, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual((commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)?.target, .scene(sceneA))
+        XCTAssertEqual((commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)?.target, .scene(sceneA))
+        XCTAssertEqual((commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)?.target, .scene(sceneB))
+    }
+
+    func testGivenConcurrentScenes_whenSceneDisconnects_itStopsOnlyThatSceneOnce() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = createMockViewInWindow()
+        let viewB = createMockViewInWindow()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom())),
+            sceneIdentifierProvider: { $0 === viewA ? sceneA : sceneB },
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-B" ? sceneB : nil
+            }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewA, animated: false)
+        handler.notify_viewDidAppear(viewController: viewB, animated: false)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-B")
+        handler.notify_viewDidDisappear(viewController: viewB, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStopViewCommand)
+        XCTAssertTrue(stop.identity == ViewIdentifier(viewB))
+        XCTAssertEqual(stop.target, .scene(sceneB))
+        XCTAssertFalse(commandSubscriber.receivedCommands.contains { command in
+            (command as? RUMStopViewCommand)?.identity == ViewIdentifier(viewA)
+        })
     }
 
     func testGivenUIKitPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice() {
@@ -487,6 +698,54 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.path, viewPath)
         DDAssertDictionariesEqual(command.attributes, viewAttributes)
+    }
+
+    func testWhenOnAppearInScene_itTargetsThatScene() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+
+        handler.notify_onAppear(
+            identity: "view-A",
+            name: "View A",
+            path: "View A",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        let command = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartViewCommand)
+        XCTAssertEqual(command.target, .scene(scene))
+    }
+
+    func testGivenSameSwiftUIIdentityInTwoScenes_whenOneDisappears_itStopsOnlyThatScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+
+        handler.notify_onAppear(
+            identity: "shared-view",
+            name: "Shared View A",
+            path: "Shared View",
+            attributes: [:],
+            sceneIdentifier: sceneA
+        )
+        handler.notify_onAppear(
+            identity: "shared-view",
+            name: "Shared View B",
+            path: "Shared View",
+            attributes: [:],
+            sceneIdentifier: sceneB
+        )
+        handler.notify_onDisappear(identity: "shared-view", sceneIdentifier: sceneA)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        let stopA = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStopViewCommand)
+        XCTAssertEqual(stopA.target, .scene(sceneA))
+
+        handler.notify_onDisappear(identity: "shared-view", sceneIdentifier: sceneB)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 4)
+        let stopB = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStopViewCommand)
+        XCTAssertEqual(stopB.target, .scene(sceneB))
     }
 
     func testWhenOnAppear_itStopsPreviousRUMView() throws {

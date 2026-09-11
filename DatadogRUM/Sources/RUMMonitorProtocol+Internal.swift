@@ -37,9 +37,11 @@ public struct DatadogInternalInterface {
         source: RUMInternalErrorSource,
         globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
-        binaryImages: [BinaryImage]?
+        binaryImages: [BinaryImage]?,
+        target: RUMCommandTarget = .processRepresentative,
+        userActionTarget: RUMErrorUserActionTarget = .current
     ) {
-        let addErrorCommand = RUMAddCurrentViewErrorCommand(
+        var addErrorCommand = RUMAddCurrentViewErrorCommand(
             time: time,
             message: message,
             type: type,
@@ -53,6 +55,8 @@ public struct DatadogInternalInterface {
             attributes: attributes,
             completionHandler: NOPCompletionHandler
         )
+        addErrorCommand.target = target
+        addErrorCommand.userActionTarget = userActionTarget
         monitor.process(command: addErrorCommand)
     }
 

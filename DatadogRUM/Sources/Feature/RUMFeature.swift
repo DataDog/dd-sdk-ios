@@ -67,6 +67,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         )
 
         let bundleType = BundleType(bundle: configuration.bundle)
+        let isMultiSceneApplication: Bool = {
+            guard let manifest = configuration.bundle.object(
+                forInfoDictionaryKey: "UIApplicationSceneManifest"
+            ) as? [String: Any] else {
+                return false
+            }
+            return manifest["UIApplicationSupportsMultipleScenes"] as? Bool == true
+        }()
         var watchdogTermination: WatchdogTerminationMonitor?
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
@@ -282,6 +290,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             processID: configuration.processID,
             notificationCenter: configuration.notificationCenter,
             bundleType: bundleType,
+            isMultiSceneApplication: isMultiSceneApplication,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,

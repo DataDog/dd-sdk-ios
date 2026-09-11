@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 
@@ -17,14 +18,19 @@ class RUMActionsHandlerTests: XCTestCase {
     private func touchHandler(
         with uiKitPredicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate(),
         swiftUIPredicate: SwiftUIRUMActionsPredicate = DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
-        heatmapRegistry: HeatmapIdentifierRegistryMock = HeatmapIdentifierRegistryMock()
+        heatmapRegistry: HeatmapIdentifierRegistryMock = HeatmapIdentifierRegistryMock(),
+        sceneIdentifierProvider: @escaping (UIView) -> RUMSceneIdentifier? = { _ in nil }
     ) -> RUMActionsHandler {
         let handler = RUMActionsHandler(
             dateProvider: dateProvider,
-            heatmapIdentifierRegistry: heatmapRegistry,
-            uiKitPredicate: uiKitPredicate,
-            swiftUIPredicate: swiftUIPredicate,
-            swiftUIDetector: SwiftUIComponentFactory.createDetector()
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: heatmapRegistry,
+                uiKitPredicate: uiKitPredicate,
+                swiftUIPredicate: swiftUIPredicate,
+                swiftUIDetector: SwiftUIComponentFactory.createDetector(),
+                sceneIdentifierProvider: sceneIdentifierProvider
+            )
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -104,6 +110,201 @@ class RUMActionsHandlerTests: XCTestCase {
             XCTAssertEqual(command?.instrumentation, .uikit)
             XCTAssertEqual(command?.time, .mockDecember15th2019At10AMUTC())
             XCTAssertEqual(command?.attributes.count, 0)
+        }
+    }
+
+    func testGivenUIKitViewInScene_whenSingleTouchEnds_itTargetsThatScene() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = touchHandler(sceneIdentifierProvider: { _ in scene })
+        let view = UIButton().attached(to: mockAppWindow)
+
+        handler.notify_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: view))
+        )
+
+        let command = commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand
+        XCTAssertEqual(command?.target, .scene(scene))
+    }
+
+    func testGivenUIKitViewInScene_whenDispatchingEvent_itScopesThatScenesRUMContext() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-B")
+        let context: RUMCoreContext = .mockWith(viewName: "View B")
+        let subscriber = SceneContextSubscriber(target: .scene(scene), context: context)
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                uiKitPredicate: DefaultUIKitRUMActionsPredicate(),
+                swiftUIPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
+                swiftUIDetector: SwiftUIComponentFactory.createDetector(),
+                sceneIdentifierProvider: { _ in scene }
+            ),
+            isUIEventContextHandoffEnabled: true
+        )
+        handler.publish(to: subscriber)
+        let view = UIButton().attached(to: mockAppWindow)
+
+        let result = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: view))
+        ) {
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, scene)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext?.viewID, context.viewID)
+            XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext?.userActionID)
+            return true
+        }
+
+        XCTAssertTrue(result)
+        XCTAssertEqual(subscriber.receivedCommands.count, 1)
+        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
+        XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext)
+    }
+
+    func testGivenUIEventContextHandoffDisabled_whenDispatchingSceneEvent_itKeepsActionOnlyBehavior() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-B")
+        let context: RUMCoreContext = .mockWith(viewName: "View B")
+        let subscriber = SceneContextSubscriber(target: .scene(scene), context: context)
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                uiKitPredicate: DefaultUIKitRUMActionsPredicate(),
+                swiftUIPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: true),
+                swiftUIDetector: SwiftUIComponentFactory.createDetector(),
+                sceneIdentifierProvider: { _ in scene }
+            )
+        )
+        handler.publish(to: subscriber)
+        let view = UIButton().attached(to: mockAppWindow)
+
+        _ = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: view))
+        ) {
+            XCTAssertNil(RUMContextHandoff.current)
+            return true
+        }
+
+        XCTAssertEqual(subscriber.receivedCommands.count, 1)
+    }
+
+    func testGivenActionPredicateRejectsTouch_whenDispatchingEvent_itStillScopesItsScene() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-B")
+        let context: RUMCoreContext = .mockWith(viewName: "View B")
+        let subscriber = SceneContextSubscriber(target: .scene(scene), context: context)
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                uiKitPredicate: UITouchRUMActionsPredicateMock(result: nil),
+                swiftUIPredicate: nil,
+                swiftUIDetector: nil,
+                sceneIdentifierProvider: { _ in scene }
+            ),
+            isUIEventContextHandoffEnabled: true
+        )
+        handler.publish(to: subscriber)
+        let view = UIButton().attached(to: mockAppWindow)
+
+        _ = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(view: view))
+        ) {
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, scene)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext?.viewID, context.viewID)
+            return true
+        }
+
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
+    }
+
+    func testGivenSceneEventScope_whenCreatingChildTask_itInheritsContextButDetachedTaskDoesNot() async {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let context: RUMCoreContext = .mockWith(viewName: "View A")
+
+        let childTask = RUMUIEventNetworkContext.withValue(
+            sceneIdentifier: scene,
+            rumContext: context
+        ) {
+            Task {
+                (
+                    RUMUIEventNetworkContext.currentSceneIdentifier,
+                    RUMUIEventNetworkContext.currentRUMContext
+                )
+            }
+        }
+        let childValue = await childTask.value
+        XCTAssertEqual(childValue.0, scene)
+        XCTAssertEqual(childValue.1, context)
+
+        let detachedTask = RUMUIEventNetworkContext.withValue(
+            sceneIdentifier: scene,
+            rumContext: context
+        ) {
+            Task.detached {
+                (
+                    RUMUIEventNetworkContext.currentSceneIdentifier,
+                    RUMUIEventNetworkContext.currentRUMContext
+                )
+            }
+        }
+        let detachedValue = await detachedTask.value
+        XCTAssertNil(detachedValue.0)
+        XCTAssertNil(detachedValue.1)
+    }
+
+    func testGivenMultiTouchEvent_whenAllTouchesShareScene_itScopesWithoutCreatingTapAction() {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let firstView = UIView().attached(to: mockAppWindow)
+        let secondView = UIView().attached(to: mockAppWindow)
+        let otherSceneView = UIView().attached(to: mockAppWindow)
+        let subscriber = SceneContextSubscriber(
+            target: .scene(sceneA),
+            context: .mockWith(viewName: "View A")
+        )
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                uiKitPredicate: nil,
+                swiftUIPredicate: nil,
+                swiftUIDetector: nil,
+                sceneIdentifierProvider: { view in
+                    view === otherSceneView ? sceneB : sceneA
+                }
+            ),
+            isUIEventContextHandoffEnabled: true
+        )
+        handler.publish(to: subscriber)
+
+        _ = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touches: [
+                .mockWith(view: firstView),
+                .mockWith(view: secondView)
+            ])
+        ) {
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, sceneA)
+            return true
+        }
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+
+        _ = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touches: [
+                .mockWith(view: firstView),
+                .mockWith(view: otherSceneView)
+            ])
+        ) {
+            XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
+            return true
         }
     }
 
@@ -532,6 +733,22 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         DDAssertReflectionEqual(command.attributes, actionAttributes)
     }
+
+    #if !os(watchOS)
+    func testWhenSwiftUIViewModifierIsTappedInScene_itTargetsThatScene() throws {
+        let handler = touchHandler()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        handler.notify_viewModifierTapped(
+            actionName: "Action in A",
+            actionAttributes: [:],
+            sceneIdentifier: scene
+        )
+
+        let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
+        XCTAssertEqual(command.target, .scene(scene))
+    }
+    #endif
 }
 
 // MARK: - Helpers
@@ -570,6 +787,25 @@ private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPress
 
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
         return rumAction(targetView: targetView)
+    }
+}
+
+private final class SceneContextSubscriber: RUMCommandSubscriber, RUMContextSnapshotProviding {
+    var receivedCommands: [RUMCommand] = []
+    let target: RUMCommandTarget
+    let context: RUMCoreContext
+
+    init(target: RUMCommandTarget, context: RUMCoreContext) {
+        self.target = target
+        self.context = context
+    }
+
+    func process(command: RUMCommand) {
+        receivedCommands.append(command)
+    }
+
+    func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext? {
+        target == self.target ? context : nil
     }
 }
 

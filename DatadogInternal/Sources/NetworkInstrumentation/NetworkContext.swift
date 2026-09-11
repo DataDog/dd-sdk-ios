@@ -6,6 +6,123 @@
 
 import Foundation
 
+/// Request-local RUM context propagated through structured Swift tasks.
+///
+/// This is SPI because it only connects first-party SDK modules. The public
+/// logging, tracing, and networking APIs do not expose or accept this value.
+@_spi(Internal)
+public enum RUMContextHandoff {
+    public struct CurrentValue {
+        public let rumContext: RUMCoreContext?
+        public let sceneIdentifier: String?
+        public let hasPendingUserAction: Bool
+        public let excludedUserActionID: String?
+    }
+
+    private struct Value {
+        let rumContextProvider: () -> RUMCoreContext?
+        let sceneIdentifier: String
+        let hasPendingUserAction: Bool
+        let excludedUserActionID: String?
+    }
+
+    private static let rumContextKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-network-context"
+    private static let sceneIdentifierKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-scene-identifier"
+    private static let pendingUserActionKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-pending-user-action"
+    private static let excludedUserActionIDKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-excluded-user-action-id"
+
+    @TaskLocal private static var value: Value?
+
+    /// Returns the synchronous thread override when present, otherwise the
+    /// value inherited by the current structured Swift task. A non-nil result
+    /// with a nil `rumContext` is intentional: the source scene is known but
+    /// does not yet have a RUM view, so consumers must not use another scene's
+    /// process-representative context.
+    public static var current: CurrentValue? {
+        let dictionary = Thread.current.threadDictionary
+        if dictionary[rumContextKey] != nil {
+            return CurrentValue(
+                rumContext: dictionary[rumContextKey] as? RUMCoreContext,
+                sceneIdentifier: dictionary[sceneIdentifierKey] as? String,
+                hasPendingUserAction: dictionary[pendingUserActionKey] as? Bool == true,
+                excludedUserActionID: dictionary[excludedUserActionIDKey] as? String
+            )
+        }
+        guard let value else {
+            return nil
+        }
+        return CurrentValue(
+            rumContext: value.rumContextProvider(),
+            sceneIdentifier: value.sceneIdentifier,
+            hasPendingUserAction: value.hasPendingUserAction,
+            excludedUserActionID: value.excludedUserActionID
+        )
+    }
+
+    public static func withValue<T>(
+        rumContext: RUMCoreContext?,
+        sceneIdentifier: String,
+        hasPendingUserAction: Bool = false,
+        excludedUserActionID: String? = nil,
+        operation: () throws -> T
+    ) rethrows -> T {
+        try withValue(
+            rumContextProvider: { rumContext },
+            sceneIdentifier: sceneIdentifier,
+            hasPendingUserAction: hasPendingUserAction,
+            excludedUserActionID: excludedUserActionID,
+            operation: operation
+        )
+    }
+
+    public static func withValue<T>(
+        rumContextProvider: @escaping () -> RUMCoreContext?,
+        sceneIdentifier: String,
+        hasPendingUserAction: Bool = false,
+        excludedUserActionID: String? = nil,
+        operation: () throws -> T
+    ) rethrows -> T {
+        try $value.withValue(
+            Value(
+                rumContextProvider: rumContextProvider,
+                sceneIdentifier: sceneIdentifier,
+                hasPendingUserAction: hasPendingUserAction,
+                excludedUserActionID: excludedUserActionID
+            )
+        ) {
+            let dictionary = Thread.current.threadDictionary
+            let previousContext = dictionary[rumContextKey]
+            let previousSceneIdentifier = dictionary[sceneIdentifierKey]
+            let previousPendingUserAction = dictionary[pendingUserActionKey]
+            let previousExcludedUserActionID = dictionary[excludedUserActionIDKey]
+
+            dictionary[rumContextKey] = rumContextProvider() ?? NSNull()
+            dictionary[sceneIdentifierKey] = sceneIdentifier
+            dictionary[pendingUserActionKey] = hasPendingUserAction
+            dictionary[excludedUserActionIDKey] = excludedUserActionID ?? NSNull()
+            defer {
+                restore(previousContext, forKey: rumContextKey, in: dictionary)
+                restore(previousSceneIdentifier, forKey: sceneIdentifierKey, in: dictionary)
+                restore(previousPendingUserAction, forKey: pendingUserActionKey, in: dictionary)
+                restore(previousExcludedUserActionID, forKey: excludedUserActionIDKey, in: dictionary)
+            }
+            return try operation()
+        }
+    }
+
+    private static func restore(
+        _ value: Any?,
+        forKey key: String,
+        in dictionary: NSMutableDictionary
+    ) {
+        if let value {
+            dictionary[key] = value
+        } else {
+            dictionary.removeObject(forKey: key)
+        }
+    }
+}
+
 /// Describes current Datadog SDK context, so the app state information can be attached to
 /// instrumented Network traces.
 public struct NetworkContext {

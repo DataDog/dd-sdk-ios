@@ -21,9 +21,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScopes: [RUMSessionScope] = []
 
-    /// The last active foreground view from the previous session.
-    /// Used to restore the view when a new session starts after `sessionStop()`.
-    private var lastActiveView: RUMViewScope?
+    /// Last active foreground views from the previous session, one per scene.
+    /// Used to restore concurrent views when a new session starts after `sessionStop()`.
+    private var lastActiveViews: [RUMViewScope] = []
 
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
@@ -146,8 +146,19 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         // Store the last foreground view that was active before the session expired or was stopped.
         // This allows the next session to lazily restart the same view if needed.
-        let lastActiveForegroundView = activeSession?.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
-        lastActiveView = lastActiveForegroundView ?? lastActiveView
+        if let activeSession {
+            var activeForegroundViews = activeSession.viewScopes.filter {
+                $0.isActiveView
+                    && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+            }
+            if let representative = activeSession.activeView,
+               let index = activeForegroundViews.firstIndex(where: { $0 === representative }) {
+                activeForegroundViews.append(activeForegroundViews.remove(at: index))
+            }
+            if !activeForegroundViews.isEmpty {
+                lastActiveViews = activeForegroundViews
+            }
+        }
 
         if command is RUMStopSessionCommand {
             applicationState.wasAnySessionStopped = true
@@ -267,7 +278,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         let refreshingInForeground = context.applicationStateHistory.currentState == .active
         let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
-        let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
+        let hasConcurrentActiveForegroundViews = expiredSession.viewScopes.filter {
+            $0.isActiveView
+                && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        }.count > 1
+        let transferActiveView = (command.shouldRestartLastViewAfterSessionExpiration || hasConcurrentActiveForegroundViews)
             && refreshingInForeground
             && lastActiveViewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
 
@@ -280,7 +295,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             applicationState: applicationState
         )
         sessionScopeDidUpdate(refreshedSession)
-        lastActiveView = nil
+        lastActiveViews = []
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, context: context, writer: writer)
         return refreshedSession
@@ -309,12 +324,22 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
 
         let startingInForeground = context.applicationStateHistory.currentState == .active
-        var resumeViewScope = false
+        var viewsToResume: [RUMViewScope] = []
 
         if lastSessionEndReason == .stopAPI {
-            resumeViewScope = command.shouldRestartLastViewAfterSessionStop && startingInForeground
+            if command.shouldRestartLastViewAfterSessionStop && startingInForeground {
+                viewsToResume = lastActiveViews
+            } else if startingInForeground,
+                      command is RUMStartViewCommand || command is RUMStopViewCommand {
+                // A scene-targeted navigation establishes the new View for its
+                // own branch. Preserve every other visible scene across the
+                // explicit session boundary without reviving the replaced View.
+                viewsToResume = lastActiveViews.excludingViewTargeted(by: command.target)
+            }
         } else if lastSessionEndReason == .timeOut || lastSessionEndReason == .maxDuration {
-            resumeViewScope = command.shouldRestartLastViewAfterSessionExpiration && startingInForeground
+            if command.shouldRestartLastViewAfterSessionExpiration && startingInForeground {
+                viewsToResume = lastActiveViews
+            }
         }
 
         let newSession = RUMSessionScope(
@@ -325,9 +350,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             context: context,
             dependencies: dependencies,
             applicationState: applicationState,
-            resumingViewScope: resumeViewScope ? lastActiveView : nil
+            resumingViewScopes: viewsToResume
         )
-        lastActiveView = nil
+        lastActiveViews = []
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
@@ -379,6 +404,22 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 "Starting session in background with unexpected launch reason: \(context.launchInfo.launchReason)"
             )
             return nil
+        }
+    }
+}
+
+private extension Array where Element == RUMViewScope {
+    func excludingViewTargeted(by target: RUMCommandTarget) -> [RUMViewScope] {
+        switch target {
+        case .scene(let sceneIdentifier):
+            return filter { $0.sceneIdentifier != sceneIdentifier }
+        case .view(let viewID):
+            return filter { $0.viewUUID != viewID }
+        case .processRepresentative:
+            // `lastActiveViews` keeps the representative branch last.
+            return isEmpty ? [] : Array(dropLast())
+        case .none, .allActiveViews:
+            return []
         }
     }
 }

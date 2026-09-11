@@ -114,6 +114,39 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
+    #if !os(tvOS)
+    func testWhenApplicationSupportsMultipleScenes_itInstrumentsUIApplicationForCausalHandoff() throws {
+        // When
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: nil,
+            swiftUIRUMViewsPredicate: nil,
+            swiftUIRUMActionsPredicate: nil,
+            longTaskThreshold: nil,
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenter: .default,
+            bundleType: .iOSApp,
+            isMultiSceneApplication: true,
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
+        )
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            DDAssertActiveSwizzlings(["sendEvent:"])
+            XCTAssertTrue(instrumentation.isMultiSceneApplication)
+        }
+    }
+    #endif
+
     func testWhenOnlySwiftUIActionsPredicateIsConfigured_itInstrumentsUIApplication() throws {
         // When
         let instrumentation = RUMInstrumentation(

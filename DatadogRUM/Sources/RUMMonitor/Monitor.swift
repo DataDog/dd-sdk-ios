@@ -5,6 +5,7 @@
  */
 
 import UIKit
+@_spi(Internal)
 import DatadogInternal
 
 internal extension RUMMethod {
@@ -133,6 +134,12 @@ internal class Monitor: RUMCommandSubscriber {
     private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
 
     @ReadWriteLock
+    private var representativeRUMContextSnapshot: RUMCoreContext?
+
+    @ReadWriteLock
+    private var rumContextSnapshotsByScene: [RUMSceneIdentifier: RUMCoreContext] = [:]
+
+    @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
 
     @ReadWriteLock
@@ -162,6 +169,9 @@ internal class Monitor: RUMCommandSubscriber {
     }
 
     func process(command: RUMCommand) {
+        guard command.target != .none else {
+            return
+        }
         var command = command
         command.globalAttributes = attributes
         // process command in event context
@@ -189,7 +199,8 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             if let activeSession = self.applicationScope.activeSession {
-                let viewContext = activeSession.viewScopes.last(where: { $0.isActiveView })?.context ?? activeSession.context
+                let representativeView = activeSession.activeView
+                let viewContext = representativeView?.context ?? activeSession.context
                 self.activeViewSnapshot = (
                     id: viewContext.activeViewID?.toRUMDataFormat,
                     path: viewContext.activeViewPath,
@@ -200,9 +211,26 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionStartTime: activeSession.sessionStartTime,
                     lastInteractionTime: activeSession.lastInteractionTime
                 )
+                self.representativeRUMContextSnapshot = self.makeCoreContext(
+                    session: activeSession,
+                    view: representativeView
+                )
+
+                var contextsByScene: [RUMSceneIdentifier: RUMCoreContext] = [:]
+                for view in activeSession.viewScopes where view.isActiveView {
+                    if let sceneIdentifier = view.sceneIdentifier {
+                        contextsByScene[sceneIdentifier] = self.makeCoreContext(
+                            session: activeSession,
+                            view: view
+                        )
+                    }
+                }
+                self.rumContextSnapshotsByScene = contextsByScene
             } else {
                 self.activeViewSnapshot = (nil, nil, nil)
                 self.sessionActivitySnapshot = (nil, nil, nil)
+                self.representativeRUMContextSnapshot = nil
+                self.rumContextSnapshotsByScene = [:]
             }
         }
 
@@ -217,7 +245,7 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let activeViewScope = activeSession.viewScopes.last(where: { $0.isActiveView })
+                let activeViewScope = activeSession.activeView
                 let context = activeViewScope?.context ?? activeSession.context
 
                 return RUMCoreContext(
@@ -231,6 +259,23 @@ internal class Monitor: RUMCommandSubscriber {
                     viewName: context.activeViewName
                 )
             }
+        )
+    }
+
+    private func makeCoreContext(
+        session: RUMSessionScope,
+        view: RUMViewScope?
+    ) -> RUMCoreContext {
+        let context = view?.context ?? session.context
+        return RUMCoreContext(
+            applicationID: context.rumApplicationID,
+            sessionID: context.sessionID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: context.activeViewID?.toRUMDataFormat,
+            userActionID: context.activeUserActionID?.toRUMDataFormat,
+            viewServerTimeOffset: view?.serverTimeOffset,
+            viewPath: context.activeViewPath,
+            viewName: context.activeViewName
         )
     }
 
@@ -271,6 +316,41 @@ extension Monitor: RUMActiveContextReader {
         }
         return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
             || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
+    }
+}
+
+extension Monitor: RUMContextSnapshotProviding {
+    func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext? {
+        switch target {
+        case .none:
+            return nil
+        case .scene(let sceneIdentifier):
+            return rumContextSnapshotsByScene[sceneIdentifier]
+        case .view(let viewID):
+            return rumContextSnapshotsByScene.values.first {
+                $0.viewID == viewID.toRUMDataFormat
+            }
+        case .processRepresentative, .allActiveViews:
+            return representativeRUMContextSnapshot
+        }
+    }
+
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date) -> RUMCoreContext? {
+        guard let snapshot = rumContextSnapshot(for: target) else {
+            return nil
+        }
+        let activity = sessionActivitySnapshot
+        // Snapshot dictionaries and session activity use independent locks.
+        // If a boundary is being published between these reads, fail closed
+        // instead of returning a context from the previous session.
+        guard activity.sessionID == snapshot.sessionID,
+              let sessionStartTime = activity.sessionStartTime,
+              let lastInteractionTime = activity.lastInteractionTime,
+              !RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date),
+              !RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date) else {
+            return nil
+        }
+        return snapshot
     }
 }
 
@@ -551,8 +631,8 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -574,8 +654,8 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -596,8 +676,8 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -611,6 +691,14 @@ extension Monitor: RUMMonitorProtocol {
 
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+    }
+
+    private func processOperationStep(_ operationStep: RUMOperationStepVitalCommand) {
+        var operationStep = operationStep
+        if let sceneIdentifier = RUMContextHandoff.current?.sceneIdentifier {
+            operationStep.target = .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        process(command: operationStep)
     }
 
     private func instanceSuffix(_ operationKey: String?) -> String {
@@ -711,20 +799,32 @@ extension Monitor: RUMMonitorViewProtocol {
                 path: viewController.canonicalClassName,
                 globalAttributes: self.attributes,
                 attributes: attributes,
-                instrumentationType: .manual
+                instrumentationType: .manual,
+                target: sceneTarget(for: viewController)
             )
         )
     }
 
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
+        var command = RUMStopViewCommand(
                 time: dateProvider.now,
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(viewController)
-            )
         )
+        command.target = sceneTarget(for: viewController)
+        process(command: command)
+    }
+
+    private func sceneTarget(for viewController: UIViewController) -> RUMCommandTarget {
+        guard let identifier = viewController.viewIfLoaded?
+            .window?
+            .windowScene?
+            .session
+            .persistentIdentifier else {
+            return .processRepresentative
+        }
+        return .scene(RUMSceneIdentifier(rawValue: identifier))
     }
     #endif
 

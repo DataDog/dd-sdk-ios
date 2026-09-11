@@ -29,6 +29,17 @@ internal final class RUMViewsHandler {
 
         /// The type of instrumentation that started this view.
         let instrumentationType: InstrumentationType
+
+        /// Scene that owns this view. `nil` preserves the legacy process-wide stack.
+        let sceneIdentifier: RUMSceneIdentifier?
+    }
+
+    /// One navigation stack per scene. A `nil` scene is the legacy stack used
+    /// when scene identity is unavailable (including watchOS).
+    private struct ViewStack {
+        let sceneIdentifier: RUMSceneIdentifier?
+        var views: [View]
+        var isActive: Bool
     }
 
     /// The current date provider.
@@ -46,6 +57,12 @@ internal final class RUMViewsHandler {
     /// `SwiftUI` view name extractor.
     /// Extracts `SwiftUI` view name from view hierarchy.
     private let swiftUIViewNameExtractor: SwiftUIViewNameExtractor?
+
+    /// Resolves the owning scene while the appeared view controller is still
+    /// attached to its window. Injectable to keep scene routing deterministic in tests.
+    private let sceneIdentifierProvider: (UIViewController) -> RUMSceneIdentifier?
+    /// Resolves scene lifecycle notifications. Injectable for deterministic tests.
+    private let sceneIdentifierFromNotification: (Notification) -> RUMSceneIdentifier?
     #endif
 
     /// The notification center where this handler observes app lifecycle notifications:
@@ -57,14 +74,25 @@ internal final class RUMViewsHandler {
     /// this publisher's commands.
     internal weak var subscriber: RUMCommandSubscriber?
 
-    /// The appearing views stack.
+    /// The appearing views stacks, independently keyed by scene.
     ///
     /// This stack allows to track appearing and disappearing views to consistently
     /// publish start and stop commands to the subscriber. The last item of the
     /// stack is the visible one, any items below it have appeared before but not yet
     /// disappeared. Therefore, they are considered not visible but can be revealed
     /// if the last item disappears.
-    private var stack: [View] = []
+    private var stacks: [ViewStack] = []
+
+    /// Process lifecycle fallback for views whose scene is unavailable, and
+    /// for a scene whose lifecycle notification has not arrived yet.
+    private var isApplicationActive = true
+
+    #if !os(watchOS)
+    /// Last lifecycle state observed for each scene, including scenes that do
+    /// not have a tracked view stack yet. Scene notifications can precede
+    /// `viewDidAppear`, especially while creating or restoring a window.
+    private var sceneActivityByIdentifier: [RUMSceneIdentifier: Bool] = [:]
+    #endif
 
     #if !os(watchOS)
     /// Creates a new `SwiftUI.View` handler to publish RUM view commands.
@@ -79,12 +107,30 @@ internal final class RUMViewsHandler {
         uiKitPredicate: UIKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
-        notificationCenter: NotificationCenter
+        notificationCenter: NotificationCenter,
+        sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { viewController in
+            guard let identifier = viewController.viewIfLoaded?
+                .window?
+                .windowScene?
+                .session
+                .persistentIdentifier else {
+                return nil
+            }
+            return RUMSceneIdentifier(rawValue: identifier)
+        },
+        sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { notification in
+            guard let scene = notification.object as? UIScene else {
+                return nil
+            }
+            return RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
+        }
     ) {
         self.dateProvider = dateProvider
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
+        self.sceneIdentifierProvider = sceneIdentifierProvider
+        self.sceneIdentifierFromNotification = sceneIdentifierFromNotification
         self.notificationCenter = notificationCenter
 
         notificationCenter.addObserver(
@@ -97,6 +143,24 @@ internal final class RUMViewsHandler {
             self,
             selector: #selector(applicationWillEnterForeground),
             name: ApplicationNotifications.willEnterForeground,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(sceneDidEnterBackground(_:)),
+            name: UIScene.didEnterBackgroundNotification,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(sceneWillEnterForeground(_:)),
+            name: UIScene.willEnterForegroundNotification,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(sceneDidDisconnect(_:)),
+            name: UIScene.didDisconnectNotification,
             object: nil
         )
     }
@@ -137,6 +201,11 @@ internal final class RUMViewsHandler {
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
+        #if !os(watchOS)
+        notificationCenter?.removeObserver(self, name: UIScene.didEnterBackgroundNotification, object: nil)
+        notificationCenter?.removeObserver(self, name: UIScene.willEnterForegroundNotification, object: nil)
+        notificationCenter?.removeObserver(self, name: UIScene.didDisconnectNotification, object: nil)
+        #endif
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
@@ -144,17 +213,35 @@ internal final class RUMViewsHandler {
     }
 
     private func add(view: View) {
+        let stackIndex: Int
+        if let existingIndex = stacks.firstIndex(where: { $0.sceneIdentifier == view.sceneIdentifier }) {
+            stackIndex = existingIndex
+        } else {
+            #if !os(watchOS)
+            let isActive = view.sceneIdentifier
+                .flatMap { sceneActivityByIdentifier[$0] }
+                ?? isApplicationActive
+            #else
+            let isActive = isApplicationActive
+            #endif
+            stacks.append(ViewStack(sceneIdentifier: view.sceneIdentifier, views: [], isActive: isActive))
+            stackIndex = stacks.endIndex - 1
+        }
+
+        var stack = stacks[stackIndex].views
+        let isActive = stacks[stackIndex].isActive
+
         // Ignore the view if it's already visible
         if view.identity == stack.last?.identity {
             return
         }
 
         // Stop the last appearing view of the stack
-        if let current = stack.last {
+        if isActive, let current = stack.last {
             stop(view: current)
         }
 
-        if !view.isUntrackedModal {
+        if isActive && !view.isUntrackedModal {
             // Start the new appearing view
             start(view: view)
         }
@@ -162,22 +249,46 @@ internal final class RUMViewsHandler {
         // Add/Move the appearing view to the top
         stack.removeAll(where: { $0.identity == view.identity })
         stack.append(view)
+        stacks[stackIndex].views = stack
     }
 
-    private func remove(identity: ViewIdentifier) {
+    private func remove(identity: ViewIdentifier, sceneIdentifier: RUMSceneIdentifier? = nil) {
+        guard let stackIndex = stacks.firstIndex(where: { stack in
+            let matchesScene = sceneIdentifier == nil || stack.sceneIdentifier == sceneIdentifier
+            return matchesScene && stack.views.contains(where: { $0.identity == identity })
+        }) else {
+            return
+        }
+
+        var stack = stacks[stackIndex].views
+        let isActive = stacks[stackIndex].isActive
         guard identity == stack.last?.identity else {
             // Remove any disappearing view from the stack if
             // it's not visible.
-            return stack.removeAll(where: { $0.identity == identity })
+            stack.removeAll(where: { $0.identity == identity })
+            if stack.isEmpty {
+                stacks.remove(at: stackIndex)
+            } else {
+                stacks[stackIndex].views = stack
+            }
+            return
         }
 
         // Stop and remove the visible view from the stack
         let view = stack.removeLast()
-        stop(view: view)
+        if isActive {
+            stop(view: view)
+        }
 
         // Restart the previous view if any.
-        if let current = stack.last {
+        if isActive, let current = stack.last {
             start(view: current)
+        }
+
+        if stack.isEmpty {
+            stacks.remove(at: stackIndex)
+        } else {
+            stacks[stackIndex].views = stack
         }
     }
 
@@ -204,7 +315,8 @@ internal final class RUMViewsHandler {
                 path: view.path,
                 globalAttributes: [:],
                 attributes: view.attributes,
-                instrumentationType: view.instrumentationType
+                instrumentationType: view.instrumentationType,
+                target: target(for: view)
             )
         )
     }
@@ -214,19 +326,54 @@ internal final class RUMViewsHandler {
             return
         }
 
-        subscriber?.process(
-            command: RUMStopViewCommand(
+        var command = RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: view.attributes,
                 identity: view.identity
-            )
         )
+        command.target = target(for: view)
+        subscriber?.process(command: command)
+    }
+
+    private func target(for view: View) -> RUMCommandTarget {
+        view.sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
+    }
+
+    private func suspendStack(at index: Int) {
+        guard stacks[index].isActive else {
+            return
+        }
+        if let current = stacks[index].views.last {
+            stop(view: current)
+        }
+        stacks[index].isActive = false
+    }
+
+    private func resumeStack(at index: Int) {
+        guard !stacks[index].isActive else {
+            return
+        }
+        stacks[index].isActive = true
+        if let current = stacks[index].views.last {
+            start(view: current)
+        }
     }
 
     @objc
     private func applicationDidEnterBackground() {
-        if let current = stack.last {
-            stop(view: current)
+        isApplicationActive = false
+        #if !os(watchOS)
+        for sceneIdentifier in Array(sceneActivityByIdentifier.keys) {
+            sceneActivityByIdentifier[sceneIdentifier] = false
+        }
+        #endif
+        for index in stacks.indices {
+            #if !os(watchOS)
+            if let sceneIdentifier = stacks[index].sceneIdentifier {
+                sceneActivityByIdentifier[sceneIdentifier] = false
+            }
+            #endif
+            suspendStack(at: index)
         }
 
         subscriber?.process(
@@ -239,8 +386,11 @@ internal final class RUMViewsHandler {
 
     @objc
     private func applicationWillEnterForeground() {
-        if let current = stack.last {
-            start(view: current)
+        isApplicationActive = true
+        // Scene-backed stacks resume from their own UIScene notification. The
+        // application notification remains the fallback for the legacy stack.
+        for index in stacks.indices where stacks[index].sceneIdentifier == nil {
+            resumeStack(at: index)
         }
 
         subscriber?.process(
@@ -250,6 +400,47 @@ internal final class RUMViewsHandler {
             )
         )
     }
+
+    #if !os(watchOS)
+    @objc
+    private func sceneDidEnterBackground(_ notification: Notification) {
+        guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
+            return
+        }
+        sceneActivityByIdentifier[sceneIdentifier] = false
+        guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
+            return
+        }
+        suspendStack(at: index)
+    }
+
+    @objc
+    private func sceneWillEnterForeground(_ notification: Notification) {
+        guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
+            return
+        }
+        sceneActivityByIdentifier[sceneIdentifier] = true
+        guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
+            return
+        }
+        resumeStack(at: index)
+    }
+
+    @objc
+    private func sceneDidDisconnect(_ notification: Notification) {
+        guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
+            return
+        }
+        sceneActivityByIdentifier[sceneIdentifier] = false
+        guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
+            sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
+            return
+        }
+        suspendStack(at: index)
+        stacks.remove(at: index)
+        sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
+    }
+    #endif
 }
 
 // MARK: - UIViewControllerHandler
@@ -257,10 +448,26 @@ internal final class RUMViewsHandler {
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
-        if let view = stack.first(where: { $0.identity == identity }) {
+        if let view = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
-            add(view: view)
+            let currentSceneIdentifier = sceneIdentifierProvider(viewController) ?? view.sceneIdentifier
+            if currentSceneIdentifier == view.sceneIdentifier {
+                add(view: view)
+            } else {
+                remove(identity: identity, sceneIdentifier: view.sceneIdentifier)
+                add(
+                    view: .init(
+                        identity: view.identity,
+                        name: view.name,
+                        path: view.path,
+                        isUntrackedModal: view.isUntrackedModal,
+                        attributes: view.attributes,
+                        instrumentationType: view.instrumentationType,
+                        sceneIdentifier: currentSceneIdentifier
+                    )
+                )
+            }
         } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
             add(
                 view: .init(
@@ -269,7 +476,8 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .uikit
+                    instrumentationType: .uikit,
+                    sceneIdentifier: sceneIdentifierProvider(viewController)
                 )
             )
         } else if let swiftUIPredicate,
@@ -284,7 +492,8 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .swiftuiAutomatic
+                    instrumentationType: .swiftuiAutomatic,
+                    sceneIdentifier: sceneIdentifierProvider(viewController)
                 )
             )
         }
@@ -298,13 +507,34 @@ extension RUMViewsHandler: UIViewControllerHandler {
 
 // MARK: - SwiftUIViewHandler
 extension RUMViewsHandler: SwiftUIViewHandler {
+    func notify_onAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        notify_onAppear(
+            identity: identity,
+            name: name,
+            path: path,
+            attributes: attributes,
+            sceneIdentifier: nil
+        )
+    }
+
     /// Respond to a `SwiftUI.View.onAppear` event.
     ///
     /// - Parameters:
     ///   - key: The appearing `SwiftUI.View` key.
     ///   - name: The appearing `SwiftUI.View` name.
     ///   - attributes: The appearing `SwiftUI.View` attributes.
-    func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
+    func notify_onAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier?
+    ) {
         add(
             view: .init(
                 identity: ViewIdentifier(identity),
@@ -312,7 +542,8 @@ extension RUMViewsHandler: SwiftUIViewHandler {
                 path: path,
                 isUntrackedModal: false,
                 attributes: attributes,
-                instrumentationType: .swiftui
+                instrumentationType: .swiftui,
+                sceneIdentifier: sceneIdentifier
             )
         )
     }
@@ -322,5 +553,10 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     /// - Parameter key: The disappearing `SwiftUI.View` key.
     func notify_onDisappear(identity: String) {
         remove(identity: ViewIdentifier(identity))
+    }
+
+    /// Respond to a `SwiftUI.View.onDisappear` event from a known scene.
+    func notify_onDisappear(identity: String, sceneIdentifier: RUMSceneIdentifier?) {
+        remove(identity: ViewIdentifier(identity), sceneIdentifier: sceneIdentifier)
     }
 }

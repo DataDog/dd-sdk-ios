@@ -129,9 +129,11 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             options: ProfilingOptions(sampleRate: .maxSampleRate),
             time: Date()
         )
+        let activeViewParent = RUMContextProviderMock()
+        let activeView = RUMViewScope.mockWith(parent: activeViewParent)
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: activeView)
 
         // Then
         let message = try XCTUnwrap(
@@ -139,6 +141,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
         XCTAssertEqual(message.operation.serverTimeOffset, mockContext.serverTimeOffset)
         XCTAssertEqual(message.operation.date, command.time)
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewID] as? [String],
+            [activeView.viewUUID.toRUMDataFormat]
+        )
 
         let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
         XCTAssertEqual(
@@ -386,6 +392,74 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         // Then
         XCTAssertNil(dd.logger.warnLog)
+    }
+
+    func testGivenOperationsWhoseConcatenatedNamesAndKeysCollide_whenTheyEnd_theyKeepTheirSceneOwnership() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let firstStart = RUMOperationStepVitalCommand.mockWith(name: "ab", operationKey: "c", stepType: .start)
+        let secondStart = RUMOperationStepVitalCommand.mockWith(name: "a", operationKey: "bc", stepType: .start)
+
+        manager.process(firstStart, context: mockContext, writer: mockWriter, activeView: viewA, activeViews: [viewA, viewB])
+        manager.process(secondStart, context: mockContext, writer: mockWriter, activeView: viewB, activeViews: [viewA, viewB])
+        manager.process(
+            .mockWith(name: "ab", operationKey: "c", stepType: .end),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            .mockWith(name: "a", operationKey: "bc", stepType: .end),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 4)
+        XCTAssertEqual(events[2].view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(events[3].view.id, viewB.viewUUID.toRUMDataFormat)
+    }
+
+    func testGivenOperationOwningSceneIsClosed_whenItEnds_itDoesNotFallBackToAnotherScene() throws {
+        let featureScope = FeatureScopeMock()
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        mockParent.context = .mockWith(
+            activeViewID: viewB.viewUUID,
+            activeViewName: viewB.viewName
+        )
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: .mockWith(featureScope: featureScope),
+            sessionSampler: .mockKeepAll()
+        )
+        let start = RUMOperationStepVitalCommand.mockWith(name: "operation", operationKey: "key", stepType: .start)
+
+        manager.process(start, context: mockContext, writer: mockWriter, activeView: viewA, activeViews: [viewA, viewB])
+        let selectedView = manager.process(
+            .mockWith(name: "operation", operationKey: "key", stepType: .end),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewB]
+        )
+
+        XCTAssertNil(selectedView)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, RUMUUID.nullUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "")
+        let message = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }.last
+        )
+        XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewID])
+        XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewName])
     }
 
     // MARK: - Synthetics Test ID Tests

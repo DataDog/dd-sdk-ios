@@ -33,20 +33,68 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     let attributes: [String: Encodable]
 
     func body(content: Content) -> some View {
+        #if os(iOS) || os(visionOS)
+        if core?.get(feature: RUMFeature.self)?.instrumentation.isMultiSceneApplication == true {
+            content.modifier(
+                RUMMultiSceneTapActionModifier(
+                    count: count,
+                    onTap: notifyTap(sceneIdentifier:)
+                )
+            )
+        } else {
+            legacyTrackedContent(content)
+        }
+        #else
+        legacyTrackedContent(content)
+        #endif
+    }
+
+    private func legacyTrackedContent(_ content: Content) -> some View {
         content.simultaneousGesture(
             TapGesture(count: count).onEnded { _ in
-                guard let core = core else {
-                    return // core was deallocated
-                }
-                guard let feature = core.get(feature: RUMFeature.self) else {
-                    return // RUM not enabled
-                }
-                feature.instrumentation.actionsHandler
-                    .notify_viewModifierTapped(actionName: name, actionAttributes: attributes)
+                notifyTap(sceneIdentifier: nil)
             }
         )
     }
+
+    private func notifyTap(sceneIdentifier: RUMSceneIdentifier?) {
+        guard let core else {
+            return // core was deallocated
+        }
+        guard let feature = core.get(feature: RUMFeature.self) else {
+            return // RUM not enabled
+        }
+        feature.instrumentation.actionsHandler
+            .notify_viewModifierTapped(
+                actionName: name,
+                actionAttributes: attributes,
+                sceneIdentifier: sceneIdentifier
+            )
+    }
 }
+
+#if os(iOS) || os(visionOS)
+private struct RUMMultiSceneTapActionModifier: SwiftUI.ViewModifier {
+    let count: Int
+    let onTap: (RUMSceneIdentifier?) -> Void
+
+    @State private var sceneState = RUMSceneTrackingState()
+
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                TapGesture(count: count).onEnded { _ in
+                    onTap(sceneState.sceneIdentifier)
+                }
+            )
+            .background(
+                RUMSceneIdentifierReader(applicationSupportsMultipleScenes: true) { attachment in
+                    sceneState.update(attachment: attachment)
+                }
+            )
+    }
+}
+#endif
 
 public extension SwiftUI.View {
     /// Monitor tap actions on this view with Datadog RUM. An Action event will be logged after the required number of taps.

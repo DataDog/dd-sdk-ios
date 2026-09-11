@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -59,6 +60,109 @@ class MonitorTests: XCTestCase {
         featureScope.context { context = $0 }
         let rumContext = try XCTUnwrap(context?.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertFalse(rumContext.sessionSampler.isSampled)
+    }
+
+    func testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                path: "View A",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneA)
+            )
+        )
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                path: "View B",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneB)
+            )
+        )
+
+        let provider: RUMContextSnapshotProviding = monitor
+        let contextA = try XCTUnwrap(provider.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(provider.rumContextSnapshot(for: .scene(sceneB)))
+
+        XCTAssertEqual(contextA.viewName, "View A")
+        XCTAssertEqual(contextB.viewName, "View B")
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertEqual(
+            provider.rumContextSnapshot(for: .processRepresentative)?.viewID,
+            contextB.viewID
+        )
+        XCTAssertEqual(
+            provider.rumContextSnapshot(for: .scene(sceneA), at: dateProvider.now)?.viewID,
+            contextA.viewID
+        )
+        XCTAssertNil(
+            provider.rumContextSnapshot(for: .scene(sceneA), at: .distantFuture)
+        )
+    }
+
+    func testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                path: "View A",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneA)
+            )
+        )
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                path: "View B",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneB)
+            )
+        )
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startOperation(
+                name: "load_note",
+                operationKey: nil,
+                attributes: [:],
+                options: nil
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let operation = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(operation.view.url, "View A")
     }
 
     #if !os(watchOS)

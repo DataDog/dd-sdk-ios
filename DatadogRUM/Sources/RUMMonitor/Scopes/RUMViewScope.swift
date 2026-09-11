@@ -45,6 +45,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
+    /// Scene branch owning this view. `nil` is the legacy process-wide branch.
+    let sceneIdentifier: RUMSceneIdentifier?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
@@ -85,9 +87,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         didSet {
             if oldValue && !isActiveView {
                 networkSettledMetric.trackViewWasStopped()
+                dependencies.viewCache.markInactive(id: viewUUID.toRUMDataFormat)
             }
         }
     }
+    /// Whether this view owns the single process-wide crash/fatal context.
+    /// Session scope keeps this aligned with its representative active view.
+    var isCrashContextRepresentative = true
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
     private var didReceiveStartCommand = false
@@ -113,6 +119,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     /// The last full view event sent through the mapper, stored for `viewUpdates` projection.
     /// `nil` until the first event is written; non-`nil` after that.
     private var lastSentViewEvent: RUMViewEvent?
+
+    /// Most recent full view state built for this scope, independent of delta encoding.
+    private(set) var latestViewEvent: RUMViewEvent?
 
     /// Number of consecutive `RUMViewUpdateEvent` deltas sent since `lastSentViewEvent` was last a full event.
     /// Reset to `0` whenever a full `RUMViewEvent` is sent.
@@ -150,13 +159,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         interactionToNextViewMetric: INVMetricTracking?,
-        viewIndexInSession: Int
+        viewIndexInSession: Int,
+        sceneIdentifier: RUMSceneIdentifier? = nil
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.hasReplay = false
         self.identity = identity
+        self.sceneIdentifier = sceneIdentifier
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
@@ -214,6 +225,35 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 // MARK: - RUMCommands Processing
 
 extension RUMViewScope {
+    /// Emits a durable view baseline for a branch restored into a new session.
+    /// This bypasses child-scope propagation because the session-boundary
+    /// command belongs to only one source scene.
+    func sendSessionBoundaryViewEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        needsViewUpdate = true
+        sendViewUpdateEvent(on: command, context: context, writer: writer)
+        needsViewUpdate = false
+    }
+
+    /// Advances the action timeout without propagating another scene's command
+    /// through this View's child scopes.
+    func expireUserActionIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard let actionScope = userActionScope else {
+            return
+        }
+
+        var expirationCommand = RUMKeepSessionAliveCommand(time: command.time, attributes: [:])
+        expirationCommand.globalAttributes = command.globalAttributes
+        guard actionScope.expireIfNeeded(on: expirationCommand, context: context, writer: writer) else {
+            return
+        }
+
+        userActionScope = nil
+        if needsViewUpdate {
+            sendViewUpdateEvent(on: expirationCommand, context: context, writer: writer)
+            needsViewUpdate = false
+        }
+    }
+
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
@@ -693,6 +733,7 @@ extension RUMViewScope {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
+            latestViewEvent = event
             if dependencies.featureFlags[.viewUpdates],
                let previousEvent = lastSentViewEvent,
                consecutiveViewUpdatesCount < Constants.maxConsecutiveViewUpdates {
@@ -721,10 +762,17 @@ extension RUMViewScope {
                 }
             }
 
-            // Only update fatal error context when this event describes the still-active view,
-            // an inactive view's terminal event must not clobber the active view's pointer.
-            if isActiveView {
-                dependencies.fatalErrorContext.view = event
+            // Process-wide crash and watchdog storage can only retain one view.
+            // Keep both pinned to the same representative scene so updates from
+            // another concurrently visible view cannot overwrite that context.
+            if isCrashContextRepresentative {
+                // An inactive terminal event must not become live fatal context,
+                // but it remains useful as the latest watchdog snapshot until the
+                // session selects another active representative.
+                if isActiveView {
+                    dependencies.fatalErrorContext.view = event
+                }
+                dependencies.watchdogTermination?.update(viewEvent: event)
             }
 
             // Track this view in Session Ended metric:
@@ -742,11 +790,6 @@ extension RUMViewScope {
             viewEndedMetric.track(viewEvent: event, instrumentationType: instrumentationType)
             viewEndedMetric.track(networkSettledResult: networkSettledTime)
             viewEndedMetric.track(interactionToNextViewResult: interactionToNextViewTime)
-
-            // Update the state of the view in watchdog termination monitor
-            // if a watchdog termination occurs in this session, in the next session
-            // a watchdog termination event will be sent using saved view event.
-            dependencies.watchdogTermination?.update(viewEvent: event)
         } else { // if event was dropped by mapper
             version -= 1
             completionHandler()
@@ -791,6 +834,18 @@ extension RUMViewScope {
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
+        let userActionID: RUMUUID? = {
+            guard let errorCommand = command as? RUMAddCurrentViewErrorCommand else {
+                return self.context.activeUserActionID
+            }
+            switch errorCommand.userActionTarget {
+            case .current:
+                return self.context.activeUserActionID
+            case .captured(let actionID):
+                return actionID
+            }
+        }()
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -802,7 +857,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: userActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),

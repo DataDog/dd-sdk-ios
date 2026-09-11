@@ -158,4 +158,144 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
     }
 }
 
+#if os(iOS) || os(visionOS)
+class RUMViewTrackingStateTests: XCTestCase {
+    private let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+    private let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+    private let identity = "stable-identity"
+
+    func testWhenViewAppearsBeforeWindowAttaches_itStartsAfterAttachment() {
+        let state = RUMViewTrackingState(identity: identity)
+
+        XCTAssertEqual(state.appear(), [])
+        XCTAssertEqual(
+            state.update(attachment: .attached(sceneA)),
+            [.start(identity: identity, sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenWindowAttachesBeforeViewAppears_itStartsOnAppearance() {
+        let state = RUMViewTrackingState(identity: identity)
+
+        XCTAssertEqual(state.update(attachment: .attached(sceneA)), [])
+        XCTAssertEqual(
+            state.appear(),
+            [.start(identity: identity, sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenViewDisappearsBeforeWindowAttaches_itNeverStarts() {
+        let state = RUMViewTrackingState(identity: identity)
+
+        XCTAssertEqual(state.appear(), [])
+        XCTAssertEqual(state.disappear(), [])
+        XCTAssertEqual(state.update(attachment: .attached(sceneA)), [])
+    }
+
+    func testWhenAttachedWindowHasNoScene_itPreservesLegacyUnscopedLifecycle() {
+        let state = RUMViewTrackingState(identity: identity)
+
+        XCTAssertEqual(state.update(attachment: .attached(nil)), [])
+        XCTAssertEqual(
+            state.appear(),
+            [.start(identity: identity, sceneIdentifier: nil)]
+        )
+        XCTAssertEqual(
+            state.disappear(),
+            [.stop(identity: identity, sceneIdentifier: nil)]
+        )
+    }
+
+    func testWhenAppearedViewTransientlyDetachesAndReattachesSameScene_itDoesNotRestart() {
+        let state = RUMViewTrackingState(identity: identity)
+        _ = state.update(attachment: .attached(sceneA))
+        _ = state.appear()
+
+        XCTAssertEqual(state.update(attachment: .detached), [])
+        XCTAssertEqual(state.update(attachment: .attached(sceneA)), [])
+        XCTAssertEqual(
+            state.disappear(),
+            [.stop(identity: identity, sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenAppearedViewDetachesThenDisappears_itStopsOriginalScene() {
+        let state = RUMViewTrackingState(identity: identity)
+        _ = state.update(attachment: .attached(sceneA))
+        _ = state.appear()
+
+        XCTAssertEqual(state.update(attachment: .detached), [])
+        XCTAssertEqual(
+            state.disappear(),
+            [.stop(identity: identity, sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.appear(), [])
+        XCTAssertEqual(
+            state.update(attachment: .attached(sceneB)),
+            [.start(identity: identity, sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenAppearedViewDetachesThenAttachesToAnotherScene_itMigratesOnce() {
+        let state = RUMViewTrackingState(identity: identity)
+        _ = state.update(attachment: .attached(sceneA))
+        _ = state.appear()
+
+        XCTAssertEqual(state.update(attachment: .detached), [])
+        XCTAssertEqual(
+            state.update(attachment: .attached(sceneB)),
+            [
+                .stop(identity: identity, sceneIdentifier: sceneA),
+                .start(identity: identity, sceneIdentifier: sceneB)
+            ]
+        )
+    }
+
+    func testWhenAppearedViewMovesBetweenScenes_itStopsThenStartsWithStableIdentity() {
+        let state = RUMViewTrackingState(identity: identity)
+        _ = state.update(attachment: .attached(sceneA))
+        let initialStart = state.appear()
+
+        XCTAssertEqual(
+            initialStart + state.update(attachment: .attached(sceneB)) + state.disappear(),
+            [
+                .start(identity: identity, sceneIdentifier: sceneA),
+                .stop(identity: identity, sceneIdentifier: sceneA),
+                .start(identity: identity, sceneIdentifier: sceneB),
+                .stop(identity: identity, sceneIdentifier: sceneB)
+            ]
+        )
+        XCTAssertEqual(state.identity, identity)
+    }
+
+    func testObserverReportsAttachmentBeforeDetachment() {
+        var attachments: [RUMViewTrackingState.Attachment] = []
+        let observer = RUMSceneIdentifierReader.ObserverView {
+            attachments.append($0)
+        }
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+
+        window.addSubview(observer)
+        observer.removeFromSuperview()
+
+        XCTAssertEqual(attachments.count, 2)
+        guard case .attached = attachments.first else {
+            return XCTFail("The observer must report its destination window before detachment")
+        }
+        XCTAssertEqual(attachments.last, .detached)
+    }
+
+    func testObserverTreatsSceneLessWindowAsUnresolvedWhenApplicationSupportsMultipleScenes() {
+        XCTAssertEqual(
+            RUMSceneIdentifierReader.attachment(
+                isAttachedToWindow: true,
+                sceneIdentifier: nil,
+                applicationSupportsMultipleScenes: true
+            ),
+            .detached
+        )
+    }
+}
+#endif
+
 #endif

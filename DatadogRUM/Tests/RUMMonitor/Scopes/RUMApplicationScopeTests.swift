@@ -146,6 +146,140 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertTrue(transferredViewScope.identity == ViewIdentifier(view), "Transferred view scope must track the same view")
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
+
+    func testGivenConcurrentScenes_whenSessionExpires_itTransfersEveryActiveSceneView() throws {
+        let startTime = Date()
+        let viewCache = ViewCache(dateProvider: DateProviderMock(now: startTime))
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: startTime,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: startTime),
+            applicationStateHistory: .mockAppInForeground(since: startTime)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(
+                samplingRate: 100,
+                viewCache: viewCache,
+                featureFlags: [.viewUpdates: false]
+            ),
+            sdkContext: sdkContext
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                target: .scene(sceneB)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+
+        let initialSession = try XCTUnwrap(scope.activeSession)
+        let initialViewPairs = try initialSession.viewScopes.map {
+            (try XCTUnwrap($0.sceneIdentifier), $0.viewUUID)
+        }
+        let initialViewsByScene = Dictionary(uniqueKeysWithValues: initialViewPairs)
+        XCTAssertEqual(initialViewsByScene.count, 2)
+
+        let actionTime = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: actionTime,
+                actionType: .custom,
+                name: "Action in A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+
+        let refreshedSession = try XCTUnwrap(scope.activeSession)
+        XCTAssertNotEqual(initialSession.sessionUUID, refreshedSession.sessionUUID)
+        XCTAssertEqual(refreshedSession.viewScopes.filter(\.isActiveView).count, 2)
+        XCTAssertEqual(Set(refreshedSession.viewScopes.compactMap(\.sceneIdentifier)), Set([sceneA, sceneB]))
+        for view in refreshedSession.viewScopes {
+            XCTAssertNotEqual(view.viewUUID, initialViewsByScene[try XCTUnwrap(view.sceneIdentifier)])
+        }
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        let refreshedA = try XCTUnwrap(refreshedSession.viewScopes.first(where: { $0.sceneIdentifier == sceneA }))
+        let refreshedB = try XCTUnwrap(refreshedSession.viewScopes.first(where: { $0.sceneIdentifier == sceneB }))
+        XCTAssertEqual(action.view.id, refreshedA.viewUUID.toRUMDataFormat)
+
+        let refreshedSessionID = refreshedSession.sessionUUID.toRUMDataFormat
+        let refreshedViewEvents = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.session.id == refreshedSessionID
+        }
+        XCTAssertEqual(Set(refreshedViewEvents.map(\.view.id)), Set([
+            refreshedA.viewUUID.toRUMDataFormat,
+            refreshedB.viewUUID.toRUMDataFormat
+        ]))
+
+        let cacheLookupTime = actionTime.addingTimeInterval(0.001).timeIntervalSince1970.dd.toInt64Milliseconds
+        XCTAssertEqual(
+            viewCache.lastView(before: cacheLookupTime, sceneIdentifier: sceneB),
+            refreshedB.viewUUID.toRUMDataFormat
+        )
+    }
+
+    func testGivenConcurrentScenes_whenSessionTimesOutOnOneSceneStopping_itTransfersTheOtherActiveScene() throws {
+        let startTime = Date()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: startTime,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: startTime),
+            applicationStateHistory: .mockAppInForeground(since: startTime)
+        )
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100), sdkContext: sdkContext)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = ViewIdentifier("view-A")
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: viewA,
+                name: "View A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                target: .scene(sceneB)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+
+        var stopA = RUMStopViewCommand.mockWith(
+            time: startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration),
+            identity: viewA
+        )
+        stopA.target = .scene(sceneA)
+        _ = scope.process(command: stopA, context: sdkContext, writer: writer)
+
+        let refreshedSession = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(refreshedSession.context.sessionPrecondition, .inactivityTimeout)
+        XCTAssertEqual(refreshedSession.viewScopes.filter(\.isActiveView).count, 1)
+        XCTAssertEqual(refreshedSession.viewScopes.first?.sceneIdentifier, sceneB)
+        XCTAssertEqual(refreshedSession.viewScopes.first?.viewName, "View B")
+    }
     #endif
 
     // MARK: - RUM Session Sampling
@@ -284,6 +418,148 @@ class RUMApplicationScopeTests: XCTestCase {
         // Then
         XCTAssertEqual(scope.sessionScopes.count, 1)
         XCTAssertNotNil(scope.activeSession)
+    }
+
+    func testGivenStoppedSessionWithConcurrentScenes_whenSceneActionStartsNewSession_itRestoresEveryScene() throws {
+        let startTime = Date()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: startTime,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: startTime),
+            applicationStateHistory: .mockAppInForeground(since: startTime)
+        )
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100), sdkContext: sdkContext)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                target: .scene(sceneB)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: startTime.addingTimeInterval(1)),
+            context: sdkContext,
+            writer: writer
+        )
+        XCTAssertNil(scope.activeSession)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(2),
+                actionType: .custom,
+                name: "Action in A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+
+        let newSession = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(newSession.viewScopes.filter(\.isActiveView).count, 2)
+        XCTAssertEqual(Set(newSession.viewScopes.compactMap(\.sceneIdentifier)), Set([sceneA, sceneB]))
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        let viewA = try XCTUnwrap(newSession.viewScopes.first(where: { $0.sceneIdentifier == sceneA }))
+        XCTAssertEqual(action.view.id, viewA.viewUUID.toRUMDataFormat)
+    }
+
+    func testGivenStoppedSessionWithConcurrentScenes_whenStartingViewInOneScene_itRestoresTheOtherScene() throws {
+        let startTime = Date()
+        let viewCache = ViewCache(dateProvider: DateProviderMock(now: startTime))
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: startTime,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: startTime),
+            applicationStateHistory: .mockAppInForeground(since: startTime)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(
+                samplingRate: 100,
+                viewCache: viewCache,
+                featureFlags: [.viewUpdates: false]
+            ),
+            sdkContext: sdkContext
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                target: .scene(sceneA)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                target: .scene(sceneB)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        let initialSession = try XCTUnwrap(scope.activeSession)
+        let initialA = try XCTUnwrap(initialSession.viewScopes.first(where: { $0.sceneIdentifier == sceneA }))
+
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: startTime.addingTimeInterval(1)),
+            context: sdkContext,
+            writer: writer
+        )
+        XCTAssertNil(scope.activeSession)
+
+        let detailStartTime = startTime.addingTimeInterval(2)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: detailStartTime,
+                identity: ViewIdentifier("detail-B"),
+                name: "Detail B",
+                target: .scene(sceneB)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+
+        let newSession = try XCTUnwrap(scope.activeSession)
+        let activeViews = newSession.viewScopes.filter(\.isActiveView)
+        XCTAssertEqual(activeViews.count, 2)
+        let restoredA = try XCTUnwrap(activeViews.first(where: { $0.sceneIdentifier == sceneA }))
+        let detailB = try XCTUnwrap(activeViews.first(where: { $0.sceneIdentifier == sceneB }))
+        XCTAssertEqual(restoredA.viewName, "View A")
+        XCTAssertNotEqual(restoredA.viewUUID, initialA.viewUUID)
+        XCTAssertEqual(detailB.viewName, "Detail B")
+
+        let newSessionViewEvents = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.session.id == newSession.sessionUUID.toRUMDataFormat
+        }
+        XCTAssertEqual(Set(newSessionViewEvents.map(\.view.id)), Set([
+            restoredA.viewUUID.toRUMDataFormat,
+            detailB.viewUUID.toRUMDataFormat
+        ]))
+
+        let cacheLookupTime = detailStartTime.addingTimeInterval(0.001).timeIntervalSince1970.dd.toInt64Milliseconds
+        XCTAssertEqual(
+            viewCache.lastView(before: cacheLookupTime, sceneIdentifier: sceneA),
+            restoredA.viewUUID.toRUMDataFormat
+        )
     }
 
     func testGivenSessionProcessingResources_whenStopped_itStaysInactive() throws {

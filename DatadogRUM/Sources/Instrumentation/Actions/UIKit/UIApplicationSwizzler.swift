@@ -43,8 +43,15 @@ internal final class UIApplicationSwizzler {
             typealias Signature = @convention(block) (UIApplication, UIEvent) -> Bool
             swizzle(method) { previousImplementation -> Signature in
                 return { [weak handler = self.handler] application, event  in
-                    handler?.notify_sendEvent(application: application, event: event)
-                    return previousImplementation(application, Self.selector, event)
+                    guard let handler else {
+                        return previousImplementation(application, Self.selector, event)
+                    }
+                    return handler.intercept_sendEvent(
+                        application: application,
+                        event: event
+                    ) {
+                        previousImplementation(application, Self.selector, event)
+                    }
                 }
             }
         }
