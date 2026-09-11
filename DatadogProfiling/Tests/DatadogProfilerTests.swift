@@ -1068,10 +1068,11 @@ extension DatadogProfilerTests {
             ["ttid-id"]
         )
 
-        let unpackedProfile = try XCTUnwrap(metadata.pprof.withUnsafeBytes { bytes in
+        let pprof = try XCTUnwrap(metadata.pprof)
+        let unpackedProfile = try XCTUnwrap(pprof.withUnsafeBytes { bytes in
             perftools__profiles__profile__unpack(
                 nil,
-                metadata.pprof.count,
+                pprof.count,
                 bytes.bindMemory(to: UInt8.self).baseAddress
             )
         })

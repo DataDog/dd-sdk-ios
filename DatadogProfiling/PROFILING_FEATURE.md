@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-22
+last_updated: 2026-10-02
 sdk_version: 3.18.0
-verified_against_commit: 72b56e859
+verified_against_commit: 0f9f36fb5
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -12,10 +12,11 @@ tracked_files:
 
 ## Overview
 
-Profiling captures pprof wall-time and CPU-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
+Profiling captures pprof wall-time, CPU-time, and sampled heap allocations from Apple application processes and correlates them with RUM context. It supports three profiling paths:
 
 - **Application launch profiling**: captures process startup and writes the launch profile when RUM emits the TTID app-launch vital.
 - **Continuous Profiling**: periodically records profiles for sampled-in RUM sessions and links long tasks and app hangs.
+- **Memory profiling**: records sampled allocations for eligible RUM sessions and emits periodic heap profiles or snapshots triggered by TTID, app hangs, and memory warnings.
 
 Profiling requires `Datadog.initialize()` before `Profiling.enable()`. RUM is not a compile-time module dependency, but the feature depends on RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
 
@@ -72,7 +73,12 @@ Profiling.enable(
         // Continuous Profiling sample rate, composed with the RUM session sampler.
         // 100 = all sampled-in RUM sessions eligible, 0 = continuous profiling disabled.
         // Default: 5.0
-        continuousSampleRate: 5.0
+        continuousSampleRate: 5.0,
+
+        // Memory profiling sample rate, composed with the RUM session sampler.
+        // 0 disables heap collection; values above 0 opt in.
+        // Default: 0.0
+        memorySampleRate: 0.0
     )
 )
 
@@ -132,7 +138,7 @@ flowchart TD
 - **`DatadogProfiling/Sources/Profiling.swift`** - Main entry point. Call `Profiling.enable(with:in:)` to register the feature with core.
 
 ### Configuration
-- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`. Also defines `apply(remoteConfiguration:)` (see [Remote Configuration](#remote-configuration)).
+- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, `continuousSampleRate`, and `memorySampleRate`. Also defines `apply(remoteConfiguration:)` (see [Remote Configuration](#remote-configuration)).
 
 ### Runtime Orchestration
 - **`DatadogProfiling/Sources/ProfilerFeature.swift`** - Internal feature composition. Registers message receivers, configures app-launch UserDefaults, creates samplers and quota checks.
@@ -158,6 +164,7 @@ flowchart TD
 ### Sampling
 - **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch.
 - **Continuous Profiling**: `continuousSampleRate` default is `5.0`. A value above zero configures continuous profiling. The final decision is composed with the current RUM session sampler via `RUMCoreContext.sessionSampler.combined(with: continuousSampleRate)`.
+- **Memory profiling**: `memorySampleRate` default is `0.0` (disabled). A value above zero opts in, with a separate session decision composed with the RUM session sampler. The native launch hook reads the configured rate on the next process launch; memory collection can also start when `Profiling.enable(with:)` runs in the current launch.
 - **Operations**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Sampled operation steps are attached to the continuous profile while Continuous Profiling is running.
 
 ### Runtime Conditions
@@ -197,10 +204,13 @@ Long tasks are correlation-only: they are frequent and rarely say anything about
 
 A triggered profile is a standalone heap-only `ProfileEvent` tagged `trigger:ttid`, `trigger:app_hang` or `trigger:memory_warning`. A periodic profile carries **no** `trigger` tag — absence means periodic.
 
-Two rules keep this bounded and predictable:
+Three rules keep this bounded and predictable:
 
-- **The periodic timer is never rescheduled.** `DatadogProfiler` owns the single 60 s timer; `MemoryProfiler` can only add a heap event, never start, stop or re-time the CPU profiler. A trigger closes the current memory window early, so the next periodic profile simply covers a shorter span. `alloc_*` stays correct because each window reports its true duration, and `inuse_*` is a point-in-time view regardless.
+- **`alloc_*` belongs to the 60 s cycle alone.** A triggered snapshot reports `inuse_*` only: it is a point-in-time view of the live set, which is what memory correlation means for a moment. The native alloc capture is destructive, so if a trigger drained it the trigger would carry a *prefix* of the periodic window's delta and the periodic profile would under-report everything allocated before it — two overlapping deltas the backend would double-count. Leaving the window alone keeps each delta reported exactly once, by exactly one profile.
+- **The periodic timer is never rescheduled**, and a trigger does not move the window start either. `DatadogProfiler` owns the single 60 s timer; `MemoryProfiler` can only add a heap event, never start, stop or re-time the CPU profiler. The periodic profile still spans from the last drain to now, so the duration it reports always matches the delta it carries.
 - **Emissions are spaced by 5 s** (`MemoryProfiler.Constants.minHeapEmissionInterval`). Hangs and memory warnings arrive in bursts, and each emission is an upload. A trigger inside the cooldown is *folded*, not dropped: its correlation is already recorded, so it still reaches the product on the next emission — it just does not get an upload of its own. Periodic emissions stamp the same cooldown, so a trigger landing right behind one folds too.
+
+Correlation is consumed only by a profile that was actually written. A capture that produced no bytes, or a profile a size guard dropped, reported nothing — so its hang or memory warning stays pending for the next emission rather than being discarded. Memory warnings matter most here: the CPU state machine never records one, so when the coupled path is the emitter it carries memory's pending warnings itself, or they would have no carrier at all.
 
 At TTID the two paths can coincide. When the standalone app-launch harvest runs, it attaches the launch heap to the app-launch CPU profile — that attachment *is* the TTID snapshot, and it stamps the cooldown, so the TTID trigger folds and nothing is uploaded twice. When no harvest runs (continuous CPU sampled in, or app-launch profiling off) the trigger emits the launch snapshot on its own, so the launch data point exists regardless of the CPU sampling decision.
 
@@ -239,7 +249,8 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 1. Check `memorySampleRate` is greater than zero and the RUM-composed memory decision sampled this session in — the trigger is a no-op when memory is not recording.
 2. Expect at most one snapshot per 5 s. Inside that cooldown a trigger is folded, and its correlation appears on the *next* emission rather than as its own profile.
 3. While the app is backgrounded only one emission is allowed until conditions return, so a hang arriving after that first flush adds correlation but no upload.
-4. A memory warning reaches Profiling only if RUM's `trackMemoryWarnings` is on — the snapshot is driven by the RUM error, not by the notification directly.
+4. Event-triggered snapshots carry `inuse_*` only. If you are looking for allocation churn around a hang, read it off the periodic profile whose window contains the hang — `alloc_*` is reported only there.
+5. A memory warning reaches Profiling only if RUM's `trackMemoryWarnings` is on — the snapshot is driven by the RUM error, not by the notification directly.
 
 ### "App launch profile is missing"
 1. Ensure RUM is enabled early enough to emit the TTID message consumed by `DatadogProfiler`.

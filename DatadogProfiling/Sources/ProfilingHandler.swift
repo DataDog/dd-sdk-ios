@@ -26,10 +26,14 @@ internal protocol ProfilingHandler {
     ///
     /// Declared here rather than only in the extension so the witness table dispatches to the
     /// conforming type — `DatadogProfiler` forwards it to `MemoryProfiler`, which owns the heap.
+    /// - Parameter drainingAllocWindow: whether to consume the native `alloc_*` delta. Only the
+    ///   periodic cycle may: the capture is destructive, so an event-triggered snapshot takes the
+    ///   live set alone and leaves the delta for the profile that owns it.
     func heapAttachment(
         fittingAlongside cpuProfileSize: Int,
         attributes: [AttributeKey: AttributeValue],
-        operation: ProfilingOperation
+        operation: ProfilingOperation,
+        drainingAllocWindow: Bool
     ) -> Data?
 }
 
@@ -38,7 +42,8 @@ extension ProfilingHandler {
     func heapAttachment(
         fittingAlongside cpuProfileSize: Int,
         attributes: [AttributeKey: AttributeValue],
-        operation: ProfilingOperation
+        operation: ProfilingOperation,
+        drainingAllocWindow: Bool
     ) -> Data? {
         nil
     }
@@ -146,7 +151,13 @@ extension ProfilingHandler {
         // backend merges into a single profile, so wall/CPU and memory appear together in the UI
         // instead of as two profiles.
         let heapPprof = captureHeapProfile
-            ? heapAttachment(fittingAlongside: serializedProfileSize, attributes: attributes, operation: operation)
+            ? heapAttachment(
+                fittingAlongside: serializedProfileSize,
+                attributes: attributes,
+                operation: operation,
+                // The coupled profile is the periodic cycle's event, so it owns the delta.
+                drainingAllocWindow: true
+            )
             : nil
 
         featureScope.eventWriteContext { context, writer in
@@ -212,7 +223,10 @@ extension ProfilingHandler {
         guard let heapPprof = heapAttachment(
             fittingAlongside: 0,
             attributes: attributes,
-            operation: operation
+            operation: operation,
+            // A `trigger` is exactly what distinguishes an event snapshot from the periodic cycle,
+            // and only the periodic cycle consumes the `alloc_*` delta.
+            drainingAllocWindow: trigger == nil
         ) else {
             return false
         }
@@ -220,7 +234,7 @@ extension ProfilingHandler {
         let offset = currentServerTimeOffset
         let serverStart = start.addingTimeInterval(offset)
         let serverEnd = end.addingTimeInterval(offset)
-        let durationNs = (serverEnd.timeIntervalSince1970 - serverStart.timeIntervalSince1970).dd.toInt64Nanoseconds
+        let durationMs = (serverEnd.timeIntervalSince1970 - serverStart.timeIntervalSince1970).dd.toInt64Milliseconds
 
         featureScope.eventWriteContext { context, writer in
             let event = ProfileEvent(
@@ -240,7 +254,7 @@ extension ProfilingHandler {
             let attachments = ProfileAttachments(pprof: nil, rumEvents: rumEventsData, heapPprof: heapPprof)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(
-                durationNs: durationNs,
+                durationMs: durationMs,
                 fileSize: Int64(clamping: heapPprof.count),
                 for: operation
             )

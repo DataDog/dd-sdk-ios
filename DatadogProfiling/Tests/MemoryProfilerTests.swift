@@ -164,6 +164,9 @@ final class MemoryProfilerTests: XCTestCase {
     func testTTID_foldsIntoTheAppLaunchProfile_whenOneIsHarvested() throws {
         let dateProvider = DateProviderMock()
         let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        // Model the native pre-main start before the Swift coordinator captures its launch state.
+        dd_profiler_start_testing(100, false, 60.seconds.dd.toInt64Nanoseconds, 0)
+        XCTAssertTrue(dd_profiler_was_started_at_launch())
         let profiler = makeProfiler(
             profilingSamplerProvider: provider,
             dateProvider: dateProvider,
@@ -172,7 +175,7 @@ final class MemoryProfilerTests: XCTestCase {
         connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
         enterForeground()
         XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must be recording")
-        XCTAssertEqual(dd_profiler_start(), 1, "Precondition: a CPU profile must exist to harvest")
+        XCTAssertEqual(dd_profiler_start(), 1, "Precondition: a launch CPU profile exists")
 
         try withSampledObject {
             sendTTID(to: profiler, at: dateProvider.now)
@@ -183,7 +186,7 @@ final class MemoryProfilerTests: XCTestCase {
             XCTAssertNotNil(metadata.heapPprof)
 
             let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-            XCTAssertTrue(event.tags.contains("operation:launch"))
+            XCTAssertTrue(event.tags.contains("operation:application_launch"))
             XCTAssertFalse(
                 event.tags.contains("trigger:"),
                 "A coupled launch profile is not tagged as event-triggered"
@@ -248,6 +251,77 @@ final class MemoryProfilerTests: XCTestCase {
                 second.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String],
                 ["warning-1"],
                 "The folded warning correlates on the next emission"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    // MARK: - The alloc window belongs to the periodic cycle
+
+    /// `alloc_*` is a delta, and the delta belongs to the 60 s cycle. A triggered snapshot is a
+    /// point-in-time view of the live set, so it must NOT drain the native alloc window — draining
+    /// it would hand the trigger a prefix of the periodic window's delta and leave the periodic
+    /// profile under-reporting the allocations that preceded the trigger.
+    func testTrigger_doesNotDrainTheAllocWindow() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendHang(id: "hang-1", to: profiler)
+            XCTAssertEqual(heapAttachmentCount, 1, "Precondition: the trigger emitted a snapshot")
+
+            // Draining here is the assertion: the sample must still be in the window.
+            var window = dd_memory_alloc_window_capture()
+            defer { dd_memory_snapshot_destroy(&window) }
+            XCTAssertGreaterThan(
+                window.sample_count,
+                0,
+                "A triggered snapshot must leave the alloc window intact for the periodic cycle"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// The counterpart: the periodic cycle is what consumes the delta.
+    func testPeriodicEmission_drainsTheAllocWindow() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            enterBackground(at: dateProvider.now) // flushes the window the periodic way
+            XCTAssertEqual(heapAttachmentCount, 1, "Precondition: the periodic window emitted")
+
+            var window = dd_memory_alloc_window_capture()
+            defer { dd_memory_snapshot_destroy(&window) }
+            XCTAssertEqual(
+                window.sample_count,
+                0,
+                "The periodic emission owns the delta and must drain it"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// Because a trigger does not drain the window, it must not move the window start either —
+    /// the periodic profile still has to claim the span its delta actually covers.
+    func testTrigger_doesNotMoveTheWindowStart() throws {
+        let dateProvider = DateProviderMock()
+        let start = dateProvider.now
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            dateProvider.now.addTimeInterval(10)
+            sendHang(id: "hang-1", to: profiler)
+
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            enterBackground(at: dateProvider.now)
+
+            let periodic = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.last)
+            XCTAssertEqual(
+                periodic.start.timeIntervalSince1970,
+                start.timeIntervalSince1970,
+                accuracy: 1,
+                "The periodic profile must still span from the last drain, not from the trigger"
             )
         }
         withExtendedLifetime(profiler) {}

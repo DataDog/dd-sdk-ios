@@ -8,13 +8,7 @@ import Foundation
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
-@_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
+import DatadogMachProfiler
 
 // =====================================================================
 // Memory profiler introspection bridge (RUM-16460)

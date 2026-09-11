@@ -9,13 +9,7 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
 @_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
 
 /// Owns the memory (heap) profiling lifecycle: allocation interception, the emission window, the
 /// RUM correlation accumulated for that window, and the capture and upload of `heap.pprof`.
@@ -322,9 +316,9 @@ internal extension MemoryProfiler {
             longTasks: longTasks,
             errors: warnings
         )
-        // The window advances either way — `captureHeapPprof` drains the native alloc window even
-        // when it yields nothing — but correlation is only consumed once something reported it.
-        advanceWindow(to: now)
+        // The window start deliberately does NOT move: this snapshot took no delta, so the
+        // periodic profile must still claim the full span its `alloc_*` covers. Correlation is
+        // consumed only once something reported it.
         if didEmit {
             recordEmission(at: now)
         }
@@ -383,9 +377,10 @@ extension MemoryProfiler {
     func heapAttachment(
         fittingAlongside cpuProfileSize: Int,
         attributes: [AttributeKey: AttributeValue],
-        operation: ProfilingOperation
+        operation: ProfilingOperation,
+        drainingAllocWindow: Bool
     ) -> Data? {
-        guard let heapPprof = captureHeapPprof(attributes: attributes) else {
+        guard let heapPprof = captureHeapPprof(attributes: attributes, drainingAllocWindow: drainingAllocWindow) else {
             return nil
         }
         let budget = Int(ProfilerFeature.Constants.maxObjectSize)
@@ -489,16 +484,26 @@ private extension MemoryProfiler {
     ///
     /// `view.id` is stored in the attributes dictionary as `[String]` (the RUM SDK wraps it in
     /// an array); we take the first element as the label value.
-    func captureHeapPprof(attributes: [AttributeKey: AttributeValue]) -> Data? {
+    func captureHeapPprof(
+        attributes: [AttributeKey: AttributeValue],
+        drainingAllocWindow: Bool
+    ) -> Data? {
         // Live set (inuse_*) — a point-in-time view, never reset.
         var snapshot = dd_memory_snapshot_capture()
         defer { dd_memory_snapshot_destroy(&snapshot) }
 
-        // This window's sampled allocations (alloc_*) — captured-and-reset so the
-        // next window accumulates fresh. Independent of the live set: transient
-        // objects allocated and freed within the window show up here but not in
-        // `snapshot`, which is what makes alloc_* diverge from inuse_*.
-        var allocWindow = dd_memory_alloc_window_capture()
+        // This window's sampled allocations (alloc_*) — captured-and-reset so the next window
+        // accumulates fresh. Independent of the live set: transient objects allocated and freed
+        // within the window show up here but not in `snapshot`, which is what makes alloc_*
+        // diverge from inuse_*.
+        //
+        // The delta belongs to the periodic cycle alone. An event-triggered snapshot passes an
+        // empty window and reports `inuse_*` only: the native capture is destructive, so draining
+        // it here would hand the trigger a prefix of the periodic window's delta and leave the
+        // periodic profile under-reporting everything allocated before the trigger — two
+        // overlapping deltas the backend would double-count. A trigger is a point-in-time view of
+        // the live set, which is what memory correlation means for a moment.
+        var allocWindow = drainingAllocWindow ? dd_memory_alloc_window_capture() : dd_memory_snapshot_t()
         defer { dd_memory_snapshot_destroy(&allocWindow) }
 
         // Extract RUM correlation IDs from attributes using the same keys the wall

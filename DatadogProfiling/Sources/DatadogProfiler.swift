@@ -152,12 +152,14 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     func heapAttachment(
         fittingAlongside cpuProfileSize: Int,
         attributes: [AttributeKey: AttributeValue],
-        operation: ProfilingOperation
+        operation: ProfilingOperation,
+        drainingAllocWindow: Bool
     ) -> Data? {
         memoryProfiler.heapAttachment(
             fittingAlongside: cpuProfileSize,
             attributes: attributes,
-            operation: operation
+            operation: operation,
+            drainingAllocWindow: drainingAllocWindow
         )
     }
 }
