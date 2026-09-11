@@ -149,6 +149,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         // Trace, Profiling and the URLSession handlers do NOT read this. They still resolve their RUM context
         // through the message bus and keep their existing behaviour until the centralized sampling service
         // lands. See RUM-17921.
+        //
+        // Note this derives the sampler in a second place: `RUMSessionScope` still derives its own for every
+        // other session, from the same UUID and sampling rate, so the two always agree. The centralized
+        // service removes the duplication by becoming the only owner of the session identity.
         let initialSessionUUID = configuration.uuidGenerator.generateUnique()
         _rumSessionSampler.mutate {
             $0 = DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
