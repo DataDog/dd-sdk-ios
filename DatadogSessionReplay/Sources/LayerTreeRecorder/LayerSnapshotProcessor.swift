@@ -67,7 +67,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
             embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
-            imageSnapshots: imageSnapshots
+            imageSnapshots: imageSnapshots,
+            screenName: layerTreeSnapshot.context.viewPath
         ).build()
 
         var records = records(
