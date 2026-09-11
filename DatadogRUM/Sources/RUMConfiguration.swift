@@ -507,7 +507,7 @@ extension RUM {
         /// Identifier of the current process, used to check if fatal App Hang originated in a previous process instance.
         internal var processID: UUID = currentProcessID
         /// The default notification center used for subscribing to app lifecycle events and system notifications.
-        internal var notificationCenter: NotificationCenter = .default
+        internal var notificationCenterProvider: NotificationCenterProvider = .default
         #if canImport(UIKit) && !os(watchOS)
         /// The factory to create the frame info provider. Defaults to the `CADisplayLink`.
         internal var frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider = { CADisplayLink(target: $0, selector: $1) }

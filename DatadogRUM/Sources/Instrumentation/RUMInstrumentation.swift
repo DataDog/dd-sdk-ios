@@ -98,7 +98,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        notificationCenter: NotificationCenter,
+        notificationCenterProvider: NotificationCenterProvider,
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
@@ -113,7 +113,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             uiKitPredicate: predicates.rumViewsPredicate,
             swiftUIPredicate: predicates.swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
-            notificationCenter: notificationCenter
+            notificationCenterProvider: notificationCenterProvider
         )
         let viewControllerSwizzler: DDViewControllerSwizzler? = {
             do {
@@ -244,7 +244,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        notificationCenter: NotificationCenter,
+        notificationCenterProvider: NotificationCenterProvider,
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
@@ -252,7 +252,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by manual instrumentation)
-        self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
+        self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenterProvider: notificationCenterProvider)
         // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
         self.actionsHandler = RUMActionsHandler(dateProvider: dateProvider)
         self.longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
