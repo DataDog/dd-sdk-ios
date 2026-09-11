@@ -327,7 +327,7 @@ private extension ProfilingQuotaCheckerTests {
 final class ProfilingQuotaCheckerMock: ProfilingQuotaChecking {
     private(set) var receivedContexts: [DatadogContext] = []
     var quotaResult: ProfilingQuotaResult?
-    var onQuotaResultUpdate: (@Sendable (ProfilingQuotaResult?) -> Void)?
+    var onQuotaResultUpdate: ProfilingQuotaResultListener?
     var receiveHandler: ((DatadogContext) -> ProfilingQuotaResult?)?
     private var currentSessionID: String?
 

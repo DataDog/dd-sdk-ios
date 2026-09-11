@@ -52,6 +52,8 @@ internal final class ProfilingSessionMetric {
                 self = .executionFailed
             case .unknown:
                 self = .unknown
+            @unknown default:
+                self = .unknown
             }
         }
     }

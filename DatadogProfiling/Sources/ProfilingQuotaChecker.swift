@@ -28,6 +28,8 @@ internal struct ProfilingQuotaResult: Equatable, Sendable {
     }
 }
 
+internal typealias ProfilingQuotaResultListener = @Sendable (ProfilingQuotaResult?) -> Void
+
 internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver {
     var quotaResult: ProfilingQuotaResult? { get }
 
@@ -35,7 +37,7 @@ internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver {
     ///
     /// The callback emits `nil` when a new session starts and the previous result is cleared,
     /// then emits the resolved result once the quota request completes.
-    var onQuotaResultUpdate: (@Sendable (ProfilingQuotaResult?) -> Void)? { get set }
+    var onQuotaResultUpdate: ProfilingQuotaResultListener? { get set }
 }
 
 extension ProfilingQuotaChecking {
@@ -68,11 +70,11 @@ internal final class ProfilingQuotaChecker: ProfilingQuotaChecking, Sendable {
 
     private let urlSession: URLSession
     private let state = ReadWriteLock(wrappedValue: State.idle)
-    private let quotaResultUpdate = ReadWriteLock<(@Sendable (ProfilingQuotaResult?) -> Void)?>(wrappedValue: nil)
+    private let quotaResultUpdate = ReadWriteLock<ProfilingQuotaResultListener?>(wrappedValue: nil)
 
     var quotaResult: ProfilingQuotaResult? { state.wrappedValue.quotaResult }
 
-    var onQuotaResultUpdate: (@Sendable (ProfilingQuotaResult?) -> Void)? {
+    var onQuotaResultUpdate: ProfilingQuotaResultListener? {
         get { quotaResultUpdate.wrappedValue }
         set { quotaResultUpdate.wrappedValue = newValue }
     }
