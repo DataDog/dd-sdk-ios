@@ -20,4 +20,4 @@ export DD_ENV="ci"
 datadog-ci junit upload \
     --service "dd-sdk-ios" \
     --git-repository-url "git@github.com:DataDog/dd-sdk-ios.git" \
-    "$reports_path"
+    "${report_files[@]}"
