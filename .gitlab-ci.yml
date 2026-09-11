@@ -122,6 +122,7 @@ ENV check:
 Build Dependencies:
   stage: pre
   rules:
+    - if: '$FLAKY_TEST_STRESS == "1"'
     - !reference [.test-pipeline-job, rules]
     - !reference [.release-pipeline-job, rules]
   artifacts:
@@ -204,6 +205,8 @@ Flaky Test Stress (iOS):
   stage: test
   rules:
     - if: '$FLAKY_TEST_STRESS == "1"'
+  dependencies:
+    - "Build Dependencies"
   timeout: 55m
   variables:
     PLATFORM: "iOS Simulator"
