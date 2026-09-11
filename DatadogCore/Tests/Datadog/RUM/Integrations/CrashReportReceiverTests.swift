@@ -34,7 +34,7 @@ class CrashReportReceiverTests: XCTestCase {
     func testReceiveCrashAndViewEvent() throws {
         // Given
         let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope)
-        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // When
         let message: FeatureMessage = .payload(
