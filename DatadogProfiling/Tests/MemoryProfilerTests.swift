@@ -52,6 +52,9 @@ final class MemoryProfilerTests: XCTestCase {
         ObjCAllocInterception.stop()
         SwiftAllocInterception.stop()
         dd_memory_test_reset()
+        // Process-global and not covered by `dd_memory_test_reset()`; these tests sample Swift
+        // allocations, which would otherwise inflate another suite's diagnostics assertions.
+        dd_swift_alloc_test_reset()
         dd_profiler_stop()
         dd_profiler_destroy()
         dd_delete_profiling_defaults()
@@ -250,6 +253,143 @@ final class MemoryProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    // MARK: - Correlation is never consumed without being reported
+
+    /// A folded trigger's correlation must survive until something actually reports it — including
+    /// when the next emission is a *coupled* CPU profile. Memory warnings live only in
+    /// `MemoryProfiler`, so if the coupled path does not carry them they are lost outright.
+    func testFoldedMemoryWarning_reachesTheNextCoupledProfile() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundCoupledProfiler(dateProvider: dateProvider)
+        XCTAssertEqual(dd_profiler_start(), 1, "Precondition: a CPU profile must exist")
+
+        try withSampledObject {
+            // First emission stamps the cooldown.
+            sendHang(id: "hang-1", to: profiler)
+            // Folded — no upload of its own.
+            dateProvider.now.addTimeInterval(1)
+            sendMemoryWarning(id: "warning-1", to: profiler)
+
+            // The coupled flush: a CPU profile is writable (the hang correlates it) and the heap
+            // rides along as an attachment.
+            dateProvider.now.addTimeInterval(1)
+            enterBackground(at: dateProvider.now)
+
+            let coupled = try XCTUnwrap(
+                core.events.compactMap { $0 as? ProfileEvent }.last,
+                "the coupled profile must be written"
+            )
+            let errorIDs = coupled.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String] ?? []
+            XCTAssertTrue(
+                errorIDs.contains("warning-1"),
+                "The folded memory warning must correlate on the coupled profile that consumed its window, got \(errorIDs)"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// When a trigger produces no bytes (nothing sampled this window), its correlation must be kept
+    /// for the next emission rather than silently dropped.
+    func testTriggerThatEmitsNothing_keepsItsCorrelationForTheNextEmission() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        // No sampled allocation yet, so the capture yields nothing and no event is written.
+        sendHang(id: "hang-1", to: profiler)
+        XCTAssertEqual(heapAttachmentCount, 0, "Precondition: nothing to report, so nothing emitted")
+
+        try withSampledObject {
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            enterBackground(at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1)
+            let event = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.last)
+            XCTAssertEqual(
+                event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String],
+                ["hang-1"],
+                "A hang whose snapshot could not be produced must still correlate on the next emission"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// A trigger that emitted nothing must not stamp the cooldown either — there was no upload to
+    /// throttle against.
+    func testTriggerThatEmitsNothing_doesNotStampTheCooldown() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        sendHang(id: "hang-1", to: profiler) // nothing sampled → no emission
+        XCTAssertEqual(heapAttachmentCount, 0)
+
+        try withSampledObject {
+            dateProvider.now.addTimeInterval(1) // still inside the cooldown window
+            sendHang(id: "hang-2", to: profiler)
+
+            XCTAssertEqual(
+                heapAttachmentCount,
+                1,
+                "The cooldown must not be spent by a trigger that uploaded nothing"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// A heap-only profile emitted before any context update must still be stamped in server time.
+    /// TTID carries its own offset, and memory now owns the value the heap-only path reads.
+    func testTriggerBeforeFirstContextUpdate_usesTheTTIDServerTimeOffset() throws {
+        let serverTimeOffset: TimeInterval = 120
+        let dateProvider = DateProviderMock()
+        let provider = makeSamplerProvider(continuousSampleRate: 0, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory records during the launch grace")
+
+        try withSampledObject {
+            // No context update at all — only the TTID message, which carries its own offset.
+            _ = profiler.receive(
+                message: .payload(TTIDMessage(
+                    attributes: mockRandomAttributes(),
+                    ttid: .mockWith(
+                        id: "ttid-id",
+                        name: "time_to_initial_display",
+                        stepType: nil,
+                        date: dateProvider.now,
+                        serverTimeOffset: serverTimeOffset
+                    )
+                )),
+                from: core
+            )
+            flushQueue()
+
+            let event = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.last)
+            XCTAssertEqual(
+                event.end.timeIntervalSince1970,
+                dateProvider.now.addingTimeInterval(serverTimeOffset).timeIntervalSince1970,
+                accuracy: 0.001,
+                "The heap-only event must be stamped in server time, not device time"
+            )
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
+    /// A duplicate TTID must not produce a second launch snapshot. `handleAppLaunch` already
+    /// dedupes; the memory hop must inherit that, not run beside it.
+    func testDuplicateTTID_doesNotEmitASecondSnapshot() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = makeForegroundHeapOnlyProfiler(dateProvider: dateProvider)
+
+        try withSampledObject {
+            sendTTID(to: profiler, at: dateProvider.now)
+            XCTAssertEqual(heapAttachmentCount, 1)
+
+            dateProvider.now.addTimeInterval(MemoryProfiler.Constants.minHeapEmissionInterval + 1)
+            sendTTID(to: profiler, at: dateProvider.now)
+
+            XCTAssertEqual(heapAttachmentCount, 1, "A repeat TTID must be ignored, cooldown or not")
+        }
+        withExtendedLifetime(profiler) {}
+    }
+
     // MARK: - Isolation and cadence invariants
 
     /// The isolation invariant this whole design rests on: a memory trigger may only ever *add* a
@@ -394,8 +534,22 @@ final class MemoryProfilerTests: XCTestCase {
         return profiler
     }
 
-    private func enterForeground() {
-        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+    /// Continuous CPU *and* memory both sampled in, so a window with correlated RUM data writes a
+    /// coupled `profile.pprof` + `heap.pprof` event rather than a heap-only one.
+    private func makeForegroundCoupledProfiler(dateProvider: DateProviderMock) -> DatadogProfiler {
+        let provider = makeSamplerProvider(continuousSampleRate: .maxSampleRate, memorySampleRate: .maxSampleRate)
+        let profiler = makeProfiler(profilingSamplerProvider: provider, dateProvider: dateProvider)
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: provider)
+        enterForeground(sampledIn: true)
+        XCTAssertTrue(dd_memory_profiler_is_running(), "Precondition: memory must record in the foreground")
+        return profiler
+    }
+
+    private func enterForeground(sampledIn: Bool = false) {
+        core.context = .mockWith(
+            applicationStateHistory: .mockAppInForeground(),
+            additionalContext: sampledIn ? [RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)] : []
+        )
         flushQueue()
     }
 

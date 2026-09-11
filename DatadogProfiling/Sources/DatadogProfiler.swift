@@ -174,7 +174,6 @@ extension DatadogProfiler: FeatureMessageReceiver {
             switch message {
             case let message as TTIDMessage:
                 handleAppLaunch(message: message)
-                handleAppLaunchForMemory(message: message)
                 return true
             case let message as OperationMessage:
                 handleOperation(message: message)
@@ -501,15 +500,21 @@ private extension DatadogProfiler {
         if let cpuProfile {
             if canWriteProfile {
                 // Coupled path: CPU/wall profile; heap is attached when memory is active. The event
-                // carries the CPU machine's correlation, unchanged.
-                write(
+                // carries the CPU machine's correlation — plus memory's pending warnings, which
+                // have no other carrier: the CPU machine never records one, so a warning folded by
+                // the emission cooldown would otherwise be wiped unreported when this window closes.
+                let didWrite = write(
                     profile: cpuProfile,
                     operation: operation,
                     rumVitals: Array(self.currentRUMVitals.values),
                     hangs: hangs,
                     longTasks: longTasks,
+                    errors: wantsHeap ? memoryProfiler.pendingWarnings : nil,
                     captureHeapProfile: wantsHeap
                 )
+                if wantsHeap {
+                    closeMemoryWindow(at: windowEnd, reported: didWrite)
+                }
             } else if wantsHeap {
                 // CPU profile isn't writable this window — emit a heap-only profile carrying
                 // memory's own correlation.
@@ -524,15 +529,20 @@ private extension DatadogProfiler {
             telemetryController.sendNoProfile(for: operation)
         }
 
-        // The alloc window is captured-and-reset by the heap capture, so the delta this window
-        // reported is gone; close the window so the next one is bounded from here. This runs
-        // whenever memory was asked for a heap — including a window that turned out to hold no
-        // samples, whose capture attempt still drained the native alloc window.
-        if wantsHeap {
-            memoryProfiler.closeWindow(at: windowEnd)
-        }
-
         cleanUpState()
+    }
+
+    /// Ends the memory window the emitter just consumed.
+    ///
+    /// The window start always advances — the heap capture drains the native alloc window even
+    /// when the profile is then dropped by a guard — but the correlation and the emission cooldown
+    /// only move when an event actually reached the writer. Consuming them on a dropped profile
+    /// would discard a hang or memory warning that nothing ever carried.
+    func closeMemoryWindow(at date: Date, reported: Bool) {
+        memoryProfiler.advanceWindow(to: date)
+        if reported {
+            memoryProfiler.recordEmission(at: date)
+        }
     }
 
     func cleanUpState(preservingOngoingOperations: Bool = true) {
@@ -562,6 +572,9 @@ private extension DatadogProfiler {
         }
         hasReceivedAppLaunchVital = true
         currentServerTimeOffset = message.ttid.serverTimeOffset
+        // Memory owns the offset its heap-only events are stamped with, and a TTID-triggered
+        // profile can be emitted before the first context update ever lands.
+        memoryProfiler.update(serverTimeOffset: message.ttid.serverTimeOffset)
         dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
         queue.async { [weak self] in
@@ -596,6 +609,12 @@ private extension DatadogProfiler {
                 }
             }
         }
+
+        // Enqueued last, and from inside the `hasReceivedAppLaunchVital` guard above: the guard
+        // means a repeat TTID cannot produce a second launch snapshot, and enqueuing after the
+        // block above means the launch harvest has already run by the time memory looks — see
+        // `handleAppLaunchForMemory`.
+        handleAppLaunchForMemory(message: message)
     }
 
     func stopAndWriteAppLaunchProfile() {
@@ -640,7 +659,7 @@ private extension DatadogProfiler {
         // the load-time constructor installed the hooks. This is what puts memory profiling in the
         // app-launch / TTID window. The live set is NOT reset here — capturing the alloc window is
         // capture-and-reset, but the live set carries forward into the continuous windows.
-        write(
+        let didWrite = write(
             profile: profile,
             operation: .appLaunch,
             rumVitals: Array(currentRUMVitals.values),
@@ -652,9 +671,19 @@ private extension DatadogProfiler {
         if memoryProfiler.isRecording {
             // The launch allocations were just captured (alloc window reset); advance the memory
             // window so a subsequent heap-only emission is bounded from TTID, not from launch.
-            // Only the window start moves: the accumulated correlation stays for the windows that
-            // follow, as it did before this lifecycle moved into `MemoryProfiler`.
-            memoryProfiler.closeLaunchWindow(at: dateProvider.now)
+            memoryProfiler.advanceWindow(to: dateProvider.now)
+
+            // Stamp the cooldown only if the launch profile really was written — that stamp is
+            // what makes the TTID trigger queued behind this fold into the launch profile. When a
+            // size or serialization guard dropped the profile, nothing carried the launch heap, so
+            // the trigger must be left free to emit the launch snapshot itself.
+            //
+            // Correlation is deliberately NOT consumed: the launch profile carries the CPU
+            // machine's vitals, and memory's own accumulation stays live for the windows after
+            // TTID, as it did before this lifecycle moved into `MemoryProfiler`.
+            if didWrite {
+                memoryProfiler.recordEmission(at: dateProvider.now, consumingCorrelation: false)
+            }
         }
     }
 }

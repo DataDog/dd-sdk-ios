@@ -47,6 +47,11 @@ final class DatadogProfilerMemoryTests: XCTestCase {
         ObjCAllocInterception.stop()
         SwiftAllocInterception.stop()
         dd_memory_test_reset()
+        // `dd_memory_test_reset()` clears the sampler's counters but NOT the Swift hook's, which
+        // are process-global and survive every other reset. `testSwiftTypeNameResolvesOnlyFor...`
+        // asserts on `nameResolutions` from zero, so any earlier test in the process that sampled
+        // a Swift allocation would break it.
+        dd_swift_alloc_test_reset()
     }
 
     override func tearDown() {

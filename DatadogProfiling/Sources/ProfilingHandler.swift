@@ -77,6 +77,7 @@ extension ProfilingHandler {
         return (attributes, rumEvents)
     }
 
+    @discardableResult
     func write(
         profile: OpaquePointer,
         operation: ProfilingOperation,
@@ -85,7 +86,7 @@ extension ProfilingHandler {
         longTasks: [DurationEvent]? = nil,
         errors: [DurationEvent]? = nil,
         captureHeapProfile: Bool = false
-    ) {
+    ) -> Bool {
         let (attributes, rumEvents) = rumCorrelation(
             rumVitals: rumVitals,
             hangs: hangs,
@@ -93,7 +94,7 @@ extension ProfilingHandler {
             errors: errors
         )
 
-        self.writeProfilingEvent(
+        return self.writeProfilingEvent(
             with: profile,
             operation: operation,
             rumEvents: rumEvents,
@@ -102,13 +103,16 @@ extension ProfilingHandler {
         )
     }
 
+    /// - Returns: `true` when a `ProfileEvent` was handed to the writer. Callers use this to
+    ///   decide whether the correlation they passed in has actually been reported — the guards
+    ///   below can drop the profile entirely.
     private func writeProfilingEvent(
         with profile: OpaquePointer,
         operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue],
         captureHeapProfile: Bool
-    ) {
+    ) -> Bool {
         let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
         dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
 
@@ -120,14 +124,14 @@ extension ProfilingHandler {
 
         guard let data else {
             telemetryController.sendNoData(durationMs: durationMs, for: operation)
-            return
+            return false
         }
 
         let serializedProfileSize = Int(clamping: size)
         guard serializedProfileSize <= Int(ProfilerFeature.Constants.maxObjectSize) else {
             dd_pprof_free_serialized_data(data)
             telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
-            return
+            return false
         }
 
         let pprof = Data(bytes: data, count: serializedProfileSize)
@@ -175,6 +179,7 @@ extension ProfilingHandler {
                 for: operation
             )
         }
+        return true
     }
 
     /// Emits a heap-only `ProfileEvent` — used when memory profiling is active but there is no
@@ -183,6 +188,7 @@ extension ProfilingHandler {
     /// `profile.pprof`); the transport already supports a nil CPU pprof. `start`/`end` bound the
     /// memory window (device time, adjusted to server time via the current offset). No-op when there
     /// are no heap samples this window.
+    @discardableResult
     func writeHeapOnlyProfile(
         start: Date,
         end: Date,
@@ -192,7 +198,7 @@ extension ProfilingHandler {
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil,
         errors: [DurationEvent]? = nil
-    ) {
+    ) -> Bool {
         let (attributes, rumEvents) = rumCorrelation(
             rumVitals: rumVitals,
             hangs: hangs,
@@ -208,7 +214,7 @@ extension ProfilingHandler {
             attributes: attributes,
             operation: operation
         ) else {
-            return
+            return false
         }
 
         let offset = currentServerTimeOffset
@@ -239,6 +245,7 @@ extension ProfilingHandler {
                 for: operation
             )
         }
+        return true
     }
 
     /// Builds the standard comma-separated profiler tag string shared by all event types.

@@ -234,6 +234,15 @@ internal extension MemoryProfiler {
         warnings.append(warning)
     }
 
+    /// Memory warnings awaiting a profile to correlate on.
+    ///
+    /// Unlike vitals, hangs and long tasks, a memory warning is recorded *only* here — the CPU
+    /// state machine never sees one. So when the coupled path is the emitter for this window it
+    /// must carry these, or the warning is lost outright.
+    var pendingWarnings: [DurationEvent] {
+        warnings
+    }
+
     /// Reconciles the interception state with `shouldRecord()`, starting or stopping only on an
     /// actual transition. Safe to call repeatedly.
     func updateState() {
@@ -269,7 +278,7 @@ internal extension MemoryProfiler {
     /// `operation` is supplied per call rather than stored: the coordinator decides it, and it can
     /// change during the very context update that drives this emission.
     func emitPeriodicHeapProfile(end: Date, operation: ProfilingOperation) {
-        writeHeapOnlyProfile(
+        let didEmit = writeHeapOnlyProfile(
             start: windowStart,
             end: end,
             operation: operation,
@@ -278,6 +287,10 @@ internal extension MemoryProfiler {
             longTasks: longTasks,
             errors: warnings
         )
+        advanceWindow(to: end)
+        if didEmit {
+            recordEmission(at: end)
+        }
     }
 
     /// Captures a heap snapshot for a RUM event of interest, outside the periodic cadence.
@@ -299,7 +312,7 @@ internal extension MemoryProfiler {
             return
         }
 
-        writeHeapOnlyProfile(
+        let didEmit = writeHeapOnlyProfile(
             start: windowStart,
             end: now,
             operation: operation,
@@ -309,44 +322,45 @@ internal extension MemoryProfiler {
             longTasks: longTasks,
             errors: warnings
         )
-        closeWindow(at: now)
+        // The window advances either way — `captureHeapPprof` drains the native alloc window even
+        // when it yields nothing — but correlation is only consumed once something reported it.
+        advanceWindow(to: now)
+        if didEmit {
+            recordEmission(at: now)
+        }
     }
 
-    /// Ends the current window: advances its start, clears the correlation it reported, stamps the
-    /// emission cooldown, and spends the one emission allowed while conditions are lost.
-    ///
-    /// Called once per window the coordinator closes — whether or not the capture produced bytes.
-    /// A window whose live set and alloc window were both empty still *happened*, and the native
-    /// alloc window was drained by the attempt, so the next window must start from here.
-    ///
-    /// Ongoing operations carry forward the way the CPU machine's `cleanUpState` does: an operation
-    /// still running spans this window and the next, so it correlates with both.
-    func closeWindow(at date: Date) {
+    /// Advances the window start. Called after every capture attempt, because the native alloc
+    /// window is captured-and-reset even when the attempt yields no bytes — so the next window
+    /// genuinely does begin here.
+    func advanceWindow(to date: Date) {
         windowStart = date
-        // Stamped for every closed window, periodic or triggered, so a trigger arriving right
-        // behind a periodic emission is folded rather than uploading the same live set again.
+    }
+
+    /// Records that a profile carrying this window's heap was actually written: stamps the
+    /// emission cooldown, spends the one emission allowed while conditions are lost, and (unless
+    /// the caller opts out) consumes the correlation that profile reported.
+    ///
+    /// Only call this when an event reached the writer. A capture that produced no bytes, or a
+    /// profile dropped by a size guard, reported nothing — consuming the correlation there would
+    /// discard a hang or memory warning that no profile ever carried.
+    ///
+    /// Ongoing operations carry forward the way the CPU machine's `cleanUpState` does: an
+    /// operation still running spans this window and the next, so it correlates with both.
+    func recordEmission(at date: Date, consumingCorrelation: Bool = true) {
         lastEmission = date
-        vitals = vitals.ongoingOperations()
-        hangs.removeAll()
-        longTasks.removeAll()
-        warnings.removeAll()
 
         if !hasConditionsToProfile {
             hasEmittedSinceConditionsLost = true
         }
-    }
 
-    /// Closes the launch window after its heap rode out on the app-launch CPU profile.
-    ///
-    /// Differs from `closeWindow(at:)` in leaving the accumulated correlation and the conditions
-    /// latch alone: the app-launch harvest reports the launch window on the CPU event but the
-    /// correlation stays live for the windows that follow.
-    ///
-    /// It does stamp the emission cooldown, because a heap *was* uploaded. That is what makes the
-    /// TTID trigger fold into the launch profile instead of uploading the same live set again.
-    func closeLaunchWindow(at date: Date) {
-        windowStart = date
-        lastEmission = date
+        guard consumingCorrelation else {
+            return
+        }
+        vitals = vitals.ongoingOperations()
+        hangs.removeAll()
+        longTasks.removeAll()
+        warnings.removeAll()
     }
 }
 
