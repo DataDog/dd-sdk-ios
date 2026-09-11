@@ -51,6 +51,16 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     @ReadWriteLock
     private var swizzlers: [ObjectIdentifier: NetworkInstrumentationSwizzler] = [:]
 
+    /// Tasks which have already entered request instrumentation.
+    ///
+    /// `resume()` may be called repeatedly while a task is running or after it was
+    /// suspended. Request mutation is not repeatable: handlers can allocate trace
+    /// contexts or synchronously publish lifecycle commands from `modify`. Claiming
+    /// the task before mutation keeps those side effects exactly-once while the
+    /// asynchronous interception is being installed on `queue`.
+    @ReadWriteLock
+    private var preparedTaskIDs: Set<ObjectIdentifier> = []
+
     /// Tracks delegate classes registered via `enableDurationBreakdown(with:)`.
     /// Used to prevent automatic mode from processing tasks that are handled by registered delegate mode.
     /// Maps ObjectIdentifier to the actual class type for isKind(of:) checks.
@@ -134,6 +144,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                // A task represents one network operation even when customer code
+                // calls `resume()` more than once. Deduplicate before invoking any
+                // handler because `modify` itself can have synchronous side effects.
+                guard self.claimTaskForInterception(task) else {
+                    return
+                }
+
                 // Only perform interception if this swizzler should handle this task
                 // This allows the swizzler chain to continue for tasks we don't handle
                 var injectedTraceContexts = [RequestInstrumentationContext]()
@@ -143,7 +160,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 task.dd.override(currentRequest: request)
                 injectedTraceContexts = traceContexts
 
-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                self.intercept(
+                    task: task,
+                    with: injectedTraceContexts,
+                    additionalFirstPartyHosts: configuredFirstPartyHosts,
+                    trackingMode: trackingMode,
+                    request: request
+                )
             }
         )
 
@@ -360,6 +383,14 @@ extension NetworkInstrumentationFeature {
         }
     }
 
+    private func claimTaskForInterception(_ task: URLSessionTask) -> Bool {
+        var wasInserted = false
+        _preparedTaskIDs.mutate {
+            wasInserted = $0.insert(ObjectIdentifier(task)).inserted
+        }
+        return wasInserted
+    }
+
     /// Checks if a URLRequest is an SDK internal request that should not be tracked
     ///
     /// - Parameter request: The URLRequest to check.
@@ -401,17 +432,40 @@ extension NetworkInstrumentationFeature {
     func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
+        let rumContextHandoff = RUMContextHandoff.current
 
-        guard !headerTypes.isEmpty else {
+        // Historically `modify` is skipped for third-party requests. Preserve
+        // that behavior unless RUM installed an exact request-local context:
+        // RUM needs one synchronous callback to carry scene ownership across
+        // the later asynchronous task-start callback.
+        guard !headerTypes.isEmpty || rumContextHandoff != nil else {
             return (request, [])
         }
 
-        let networkContext = self.networkContextProvider.currentNetworkContext
+        var networkContext = self.networkContextProvider.currentNetworkContext
+        if let rumContextHandoff {
+            if networkContext == nil {
+                networkContext = NetworkContext(
+                    rumContext: nil,
+                    activeSpanProvider: nil,
+                    userConfigurationContext: nil,
+                    accountConfigurationContext: nil
+                )
+            }
+            // A present handoff with no RUM snapshot is an intentional nil
+            // override. Omitting correlation is safer than attaching another
+            // window's representative context.
+            networkContext?.rumContext = rumContextHandoff.rumContext
+        }
         var request = request
 
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         var instrumentationContexts: [RequestInstrumentationContext] = [] // each handler can inject distinct instrumentation context
         for handler in handlers {
+            if headerTypes.isEmpty,
+               !(handler is DatadogURLSessionHandlerCapturingRUMContext) {
+                continue
+            }
             let (nextRequest, nextTraceContext, capturedState) = handler.modify(request: request, headerTypes: headerTypes, networkContext: networkContext)
             request = nextRequest
             instrumentationContexts.append(.init(traceContext: nextTraceContext, capturedState: capturedState))
@@ -430,11 +484,21 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
+    ///   - preparedRequest: The request already modified for this task, used only if `currentRequest` becomes unavailable.
+    func intercept(
+        task: URLSessionTask,
+        with instrumentationContexts: [RequestInstrumentationContext],
+        additionalFirstPartyHosts: FirstPartyHosts?,
+        trackingMode: TrackingMode,
+        request preparedRequest: URLRequest? = nil
+    ) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
-        guard let currentRequest = task.currentRequest else {
+        // Re-read after the task override so URLSession configuration headers are
+        // preserved. The prepared request is only a fallback for an unusual task
+        // subclass that makes `currentRequest` disappear between both callbacks.
+        guard let currentRequest = task.currentRequest ?? preparedRequest else {
             return
         }
         let request = ImmutableRequest(request: currentRequest)
@@ -446,11 +510,7 @@ extension NetworkInstrumentationFeature {
         let startTime = Date()
         let startMediaTime = mediaTimeProvider.current
 
-        queue.async { [weak self] in
-            guard let self = self else {
-                return
-            }
-
+        queue.async {
             let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
 
             // Check if interception already exists for this task
@@ -629,6 +689,7 @@ extension NetworkInstrumentationFeature {
 
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
         interceptions[task] = nil
+        _preparedTaskIDs.mutate { $0.remove(ObjectIdentifier(task)) }
     }
 
     /// Tells the interceptors that the task's state has changed.

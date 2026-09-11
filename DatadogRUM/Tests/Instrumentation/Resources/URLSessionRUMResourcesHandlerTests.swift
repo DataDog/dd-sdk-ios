@@ -558,6 +558,337 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(spanContext.samplingRate, Double(traceSamplingRate / 100), accuracy: 0.01)
     }
 
+    func testGivenCapturedRUMView_whenInterceptionStartsAndCompletes_itKeepsTheResourceOnThatView() throws {
+        let receiveCommands = expectation(description: "Receive 3 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 3
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        // Given
+        let rumViewID = UUID()
+        let request: URLRequest = .mockWith(url: "https://www.example.com/resource")
+        let (modifiedRequest, _, capturedState) = handler.modify(
+            request: request,
+            headerTypes: [],
+            networkContext: NetworkContext(
+                rumContext: .mockWith(viewID: rumViewID.uuidString)
+            )
+        )
+        let unwrappedCapturedState = try XCTUnwrap(capturedState)
+        let taskInterception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: modifiedRequest),
+            isFirstParty: false,
+            trackingMode: .registeredDelegate
+        )
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [unwrappedCapturedState])
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5)
+
+        let expectedTarget = RUMCommandTarget.view(RUMUUID(rawValue: rumViewID))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand).target,
+            expectedTarget
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMAddResourceMetricsCommand).target,
+            expectedTarget
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStopResourceCommand).target,
+            expectedTarget
+        )
+    }
+
+    func testGivenPrestartedResource_whenAnotherHandlerTraceWins_itUsesTheWinningTraceContext() throws {
+        let receiveCommands = expectation(description: "Receive start and stop")
+        receiveCommands.expectedFulfillmentCount = 2
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+        let handler = createHandler(
+            distributedTracing: .init(
+                samplingRate: .maxSampleRate,
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 1, idLo: 2)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 3, advancingByCount: 0),
+                traceContextInjection: .all
+            )
+        )
+        let request: URLRequest = .mockWith(url: "https://www.example.com/resource")
+        let result = handler.modify(
+            request: request,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: .mockWith(viewID: UUID().uuidString))
+        )
+        let capturedState = result.2
+        let winningTrace = TraceContext(
+            traceID: .init(idHi: 10, idLo: 20),
+            spanID: .init(rawValue: 30),
+            parentSpanID: .init(rawValue: 40),
+            sampleRate: 42,
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate,
+            rumSessionId: .mockAny()
+        )
+        let interception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: result.0),
+            isFirstParty: true,
+            trackingMode: .automatic
+        )
+        interception.register(trace: winningTrace)
+        interception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+
+        handler.interceptionDidStart(
+            interception: interception,
+            capturedStates: [try XCTUnwrap(capturedState)]
+        )
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceCommand)
+        XCTAssertNil(start.spanContext)
+        XCTAssertEqual(
+            stop.attributes[CrossPlatformAttributes.traceID] as? String,
+            winningTrace.traceID.toString(representation: .hexadecimal)
+        )
+        XCTAssertEqual(
+            stop.attributes[CrossPlatformAttributes.spanID] as? String,
+            winningTrace.spanID.toString(representation: .decimal)
+        )
+        XCTAssertEqual(
+            stop.attributes[CrossPlatformAttributes.parentSpanID] as? String,
+            winningTrace.parentSpanID?.toString(representation: .decimal)
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(stop.attributes[CrossPlatformAttributes.rulePSR] as? Double),
+            0.42,
+            accuracy: 0.001
+        )
+    }
+
+    func testGivenSourceSceneWithoutRUMView_whenInterceptionRuns_itKeepsTheResourceOnThatScene() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        let sceneIdentifier = RUMSceneIdentifier(rawValue: "scene-B")
+        let request: URLRequest = .mockWith(url: "https://www.example.com/resource")
+        let result = RUMUIEventNetworkContext.withValue(
+            sceneIdentifier: sceneIdentifier,
+            rumContext: nil
+        ) {
+            handler.modify(request: request, headerTypes: [], networkContext: nil)
+        }
+        let capturedState = result.2
+        let synchronousStart = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartResourceCommand)
+        XCTAssertEqual(synchronousStart.target, .scene(sceneIdentifier))
+        let taskInterception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: result.0),
+            isFirstParty: false,
+            trackingMode: .automatic
+        )
+        taskInterception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+
+        handler.interceptionDidStart(
+            interception: taskInterception,
+            capturedStates: [try XCTUnwrap(capturedState)]
+        )
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        waitForExpectations(timeout: 0.5)
+
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand).target,
+            .scene(sceneIdentifier)
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceCommand).target,
+            .scene(sceneIdentifier)
+        )
+    }
+
+    func testGivenThirdPartyRequestDuringUIEvent_whenNetworkFeatureIntercepts_itCarriesSourceScene() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        let provider = NetworkContextCoreProvider()
+        let networkFeature = NetworkInstrumentationFeature(
+            networkContextProvider: provider,
+            messageReceiver: provider
+        )
+        networkFeature.handlers = [handler]
+        let sceneIdentifier = RUMSceneIdentifier(rawValue: "scene-B")
+        let request: URLRequest = .mockWith(url: "https://third-party.example/resource")
+
+        let interceptionResult = RUMUIEventNetworkContext.withValue(
+            sceneIdentifier: sceneIdentifier,
+            rumContext: nil
+        ) {
+            networkFeature.intercept(request: request, additionalFirstPartyHosts: nil)
+        }
+        XCTAssertEqual(interceptionResult.1.count, 1)
+        let synchronousStart = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartResourceCommand)
+        XCTAssertEqual(synchronousStart.target, .scene(sceneIdentifier))
+        let taskInterception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: interceptionResult.0),
+            isFirstParty: false,
+            trackingMode: .automatic
+        )
+        taskInterception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+        let capturedStates = interceptionResult.1.compactMap(\.capturedState)
+
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: capturedStates)
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        waitForExpectations(timeout: 0.5)
+
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand).target,
+            .scene(sceneIdentifier)
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceCommand).target,
+            .scene(sceneIdentifier)
+        )
+    }
+
+    func testGivenInterleavedCapturedRUMViews_whenInterceptionsComplete_itDoesNotSwapResourceOwners() throws {
+        let receiveCommands = expectation(description: "Receive 4 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 4
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        // Given
+        let viewAID = UUID()
+        let viewBID = UUID()
+
+        func makeInterception(viewID: UUID, url: String) throws -> (URLSessionTaskInterception, URLSessionHandlerCapturedState) {
+            let request: URLRequest = .mockWith(url: url)
+            let (modifiedRequest, _, capturedState) = handler.modify(
+                request: request,
+                headerTypes: [],
+                networkContext: NetworkContext(rumContext: .mockWith(viewID: viewID.uuidString))
+            )
+            let interception = URLSessionTaskInterception(
+                request: ImmutableRequest(request: modifiedRequest),
+                isFirstParty: false,
+                trackingMode: .automatic
+            )
+            interception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+            return (interception, try XCTUnwrap(capturedState))
+        }
+
+        let (interceptionA, capturedStateA) = try makeInterception(
+            viewID: viewAID,
+            url: "https://www.example.com/a"
+        )
+        let (interceptionB, capturedStateB) = try makeInterception(
+            viewID: viewBID,
+            url: "https://www.example.com/b"
+        )
+
+        // When: B starts after A, but A completes first.
+        handler.interceptionDidStart(interception: interceptionA, capturedStates: [capturedStateA])
+        handler.interceptionDidStart(interception: interceptionB, capturedStates: [capturedStateB])
+        handler.interceptionDidComplete(interception: interceptionA)
+        handler.interceptionDidComplete(interception: interceptionB)
+
+        // Then
+        waitForExpectations(timeout: 0.5)
+
+        let startA = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand)
+        let startB = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStartResourceCommand)
+        let stopA = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStopResourceCommand)
+        let stopB = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopResourceCommand)
+        XCTAssertEqual(startA.target, .view(RUMUUID(rawValue: viewAID)))
+        XCTAssertEqual(startB.target, .view(RUMUUID(rawValue: viewBID)))
+        XCTAssertEqual(stopA.target, startA.target)
+        XCTAssertEqual(stopB.target, startB.target)
+    }
+
+    func testGivenCapturedRUMView_whenInterceptionCompletesWithError_itKeepsTheErrorOnThatView() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        // Given
+        let rumViewID = UUID()
+        let request: URLRequest = .mockWith(url: "https://www.example.com/failure")
+        let (modifiedRequest, _, capturedState) = handler.modify(
+            request: request,
+            headerTypes: [],
+            networkContext: NetworkContext(rumContext: .mockWith(viewID: rumViewID.uuidString))
+        )
+        let taskInterception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: modifiedRequest),
+            isFirstParty: false,
+            trackingMode: .automatic
+        )
+        taskInterception.register(response: nil, error: ErrorMock())
+
+        // When
+        handler.interceptionDidStart(
+            interception: taskInterception,
+            capturedStates: [try XCTUnwrap(capturedState)]
+        )
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5)
+
+        let expectedTarget = RUMCommandTarget.view(RUMUUID(rawValue: rumViewID))
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand).target,
+            expectedTarget
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceWithErrorCommand).target,
+            expectedTarget
+        )
+    }
+
+    func testGivenNoValidCapturedRUMView_whenInterceptionRuns_itKeepsLegacyRepresentativeTarget() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
+
+        // Given
+        let request: URLRequest = .mockWith(url: "https://www.example.com/resource")
+        let (modifiedRequest, _, capturedState) = handler.modify(
+            request: request,
+            headerTypes: [],
+            networkContext: NetworkContext(rumContext: .mockWith(viewID: "not-a-uuid"))
+        )
+        XCTAssertNil(capturedState)
+        let taskInterception = URLSessionTaskInterception(
+            request: ImmutableRequest(request: modifiedRequest),
+            isFirstParty: false,
+            trackingMode: .automatic
+        )
+        taskInterception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5)
+
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartResourceCommand).target,
+            .processRepresentative
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceCommand).target,
+            .processRepresentative
+        )
+    }
+
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
         let receiveCommands = expectation(description: "Receive 2 RUM commands")
         receiveCommands.expectedFulfillmentCount = 2

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 internal struct DistributedTracing {
@@ -33,11 +34,34 @@ internal struct DistributedTracing {
     }
 }
 
-internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupportingDistributedTracing, RUMCommandPublisher {
+internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupportingDistributedTracing, DatadogURLSessionHandlerCapturingRUMContext, RUMCommandPublisher {
     /// Captured state for RUM URL session handler
     struct RUMURLSessionHandlerCapturedState: URLSessionHandlerCapturedState {
         /// Whether GraphQL headers were detected in the request
         let hasGraphQLHeaders: Bool
+        /// Exact RUM view that was representative when the task was created.
+        let rumViewID: RUMUUID?
+        /// Source scene of a request created synchronously by a tracked UI event.
+        let sceneIdentifier: RUMSceneIdentifier?
+        /// Internal resource key when start was enqueued synchronously from `modify`.
+        let prestartedResourceKey: String?
+
+        init(
+            hasGraphQLHeaders: Bool,
+            rumViewID: RUMUUID? = nil,
+            sceneIdentifier: RUMSceneIdentifier? = nil,
+            prestartedResourceKey: String? = nil
+        ) {
+            self.hasGraphQLHeaders = hasGraphQLHeaders
+            self.rumViewID = rumViewID
+            self.sceneIdentifier = sceneIdentifier
+            self.prestartedResourceKey = prestartedResourceKey
+        }
+    }
+
+    private struct ResourceOwner {
+        let resourceKey: String
+        let target: RUMCommandTarget
     }
 
     /// The date provider
@@ -53,6 +77,11 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
     let headerProcessor: HeaderProcessor?
     /// The disallow-list of URLs excluded from RUM resource tracking.
     let disallowList: DisallowList?
+
+    /// Retains the captured owner until the intercepted task completes. URLSession
+    /// callbacks may arrive on different threads, so access must be synchronized.
+    @ReadWriteLock
+    private var resourceOwners: [UUID: ResourceOwner] = [:]
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -100,7 +129,39 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
 
         // Note: DistributedTracing.modify() currently returns nil for captured state.
         // If this changes, we'll need to merge captured states instead of replacing.
-        let capturedState: URLSessionHandlerCapturedState? = modifiedRequest.hasGraphQLHeaders ? RUMURLSessionHandlerCapturedState(hasGraphQLHeaders: true) : nil
+        let rumViewID = networkContext?.rumContext?.viewID
+            .flatMap(UUID.init(uuidString:))
+            .map(RUMUUID.init(rawValue:))
+        let sceneIdentifier = RUMUIEventNetworkContext.currentSceneIdentifier
+        let target = rumViewID.map(RUMCommandTarget.view)
+            ?? sceneIdentifier.map(RUMCommandTarget.scene)
+            ?? .processRepresentative
+        var prestartedResourceKey: String?
+        if rumViewID != nil || sceneIdentifier != nil {
+            let resourceKey = UUID().uuidString
+            // Network instrumentation selects the winning trace context only after
+            // all handlers run. Correlation is therefore attached on completion.
+            if startResource(
+                key: resourceKey,
+                request: modifiedRequest,
+                target: target,
+                spanContext: nil
+            ) {
+                prestartedResourceKey = resourceKey
+            }
+        }
+
+        let hasGraphQLHeaders = modifiedRequest.hasGraphQLHeaders
+        let capturedState: URLSessionHandlerCapturedState? = hasGraphQLHeaders
+            || rumViewID != nil
+            || sceneIdentifier != nil
+            ? RUMURLSessionHandlerCapturedState(
+                hasGraphQLHeaders: hasGraphQLHeaders,
+                rumViewID: rumViewID,
+                sceneIdentifier: sceneIdentifier,
+                prestartedResourceKey: prestartedResourceKey
+            )
+            : nil
 
         return (modifiedRequest, traceContext, capturedState)
     }
@@ -110,29 +171,65 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             return
         }
 
-        let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
 
-        // Check if GraphQL was detected in the captured states
-        if let capturedState = capturedStates.compactMap({ $0 as? RUMURLSessionHandlerCapturedState }).first,
-           capturedState.hasGraphQLHeaders {
+        let capturedState = capturedStates.compactMap { $0 as? RUMURLSessionHandlerCapturedState }.first
+        if capturedState?.hasGraphQLHeaders == true {
             telemetry.usage(event: .addGraphQLRequest)
         }
 
-        subscriber?.process(
-            command: RUMStartResourceCommand(
-                resourceKey: interception.identifier.uuidString,
-                time: dateProvider.now,
-                attributes: [:],
-                url: url,
-                httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
-                kind: RUMResourceType(request: interception.request.unsafeOriginal),
+        let target = capturedState?.rumViewID.map(RUMCommandTarget.view)
+            ?? capturedState?.sceneIdentifier.map(RUMCommandTarget.scene)
+            ?? .processRepresentative
+        let resourceKey = capturedState?.prestartedResourceKey ?? interception.identifier.uuidString
+        _resourceOwners.mutate {
+            $0[interception.identifier] = ResourceOwner(resourceKey: resourceKey, target: target)
+        }
+
+        if capturedState?.prestartedResourceKey == nil {
+            startResource(
+                key: resourceKey,
+                request: interception.request.unsafeOriginal,
+                target: target,
                 spanContext: distributedTracing?.trace(from: interception)
             )
+        }
+    }
+
+    private func startResource(
+        key: String,
+        request: URLRequest,
+        target: RUMCommandTarget,
+        spanContext: RUMSpanContext?
+    ) -> Bool {
+        guard let subscriber else {
+            return false
+        }
+        var command = RUMStartResourceCommand(
+            resourceKey: key,
+            time: dateProvider.now,
+            attributes: [:],
+            url: request.url?.absoluteString ?? "unknown_url",
+            httpMethod: RUMMethod(httpMethod: request.httpMethod),
+            kind: RUMResourceType(request: request),
+            spanContext: spanContext
         )
+        command.target = target
+        subscriber.process(command: command)
+        return true
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        var owner = ResourceOwner(
+            resourceKey: interception.identifier.uuidString,
+            target: .processRepresentative
+        )
+        _resourceOwners.mutate {
+            owner = $0.removeValue(forKey: interception.identifier) ?? owner
+        }
+        let resourceKey = owner.resourceKey
+        let target = owner.target
+
         guard !isDisallowed(url: interception.request.url) else {
             return
         }
@@ -156,6 +253,24 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
 
         // Extract GraphQL attributes from trace context
         var combinedAttributes = userAttributes
+        if let traceContext = interception.trace {
+            // Cross-platform trace attributes take precedence over the
+            // start-time span context in `RUMResourceScope`. Supplying the
+            // interception's winning context here keeps an eagerly-started
+            // resource aligned with the headers selected across all handlers.
+            if combinedAttributes[CrossPlatformAttributes.traceID] == nil {
+                combinedAttributes[CrossPlatformAttributes.traceID] = traceContext.traceID.toString(representation: .hexadecimal)
+            }
+            if combinedAttributes[CrossPlatformAttributes.spanID] == nil {
+                combinedAttributes[CrossPlatformAttributes.spanID] = traceContext.spanID.toString(representation: .decimal)
+            }
+            if combinedAttributes[CrossPlatformAttributes.parentSpanID] == nil, let parentSpanID = traceContext.parentSpanID {
+                combinedAttributes[CrossPlatformAttributes.parentSpanID] = parentSpanID.toString(representation: .decimal)
+            }
+            if combinedAttributes[CrossPlatformAttributes.rulePSR] == nil {
+                combinedAttributes[CrossPlatformAttributes.rulePSR] = Double(traceContext.sampleRate.percentageProportion)
+            }
+        }
         if let graphqlAttributes = interception.trace?.graphql {
             if let operationName = graphqlAttributes.operationName {
                 combinedAttributes[CrossPlatformAttributes.graphqlOperationName] = operationName
@@ -199,43 +314,43 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         }
 
         if let resourceMetrics = interception.metrics {
-            subscriber.process(
-                command: RUMAddResourceMetricsCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    attributes: [:],
-                    metrics: resourceMetrics
-                )
+            var command = RUMAddResourceMetricsCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.now,
+                attributes: [:],
+                metrics: resourceMetrics
             )
+            command.target = target
+            subscriber.process(command: command)
         }
 
         if let httpResponse = interception.completion?.httpResponse {
-            subscriber.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    attributes: combinedAttributes,
-                    kind: RUMResourceType(response: httpResponse),
-                    httpStatusCode: httpResponse.statusCode,
-                    size: interception.mostAccurateResponseSize
-                )
+            var command = RUMStopResourceCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.now,
+                attributes: combinedAttributes,
+                kind: RUMResourceType(response: httpResponse),
+                httpStatusCode: httpResponse.statusCode,
+                size: interception.mostAccurateResponseSize
             )
+            command.target = target
+            subscriber.process(command: command)
         }
 
         if let error = interception.completion?.error {
             var errorAttributes = combinedAttributes
             errorAttributes.removeValue(forKey: CrossPlatformAttributes.localCacheHit)
-            subscriber.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    error: error,
-                    source: .network,
-                    httpStatusCode: interception.completion?.httpResponse?.statusCode,
-                    globalAttributes: [:],
-                    attributes: errorAttributes
-                )
+            var command = RUMStopResourceWithErrorCommand(
+                resourceKey: resourceKey,
+                time: dateProvider.now,
+                error: error,
+                source: .network,
+                httpStatusCode: interception.completion?.httpResponse?.statusCode,
+                globalAttributes: [:],
+                attributes: errorAttributes
             )
+            command.target = target
+            subscriber.process(command: command)
         }
     }
 
@@ -274,6 +389,15 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
 }
 
 extension DistributedTracing {
+    fileprivate static func rumSpanContext(from traceContext: TraceContext) -> RUMSpanContext {
+        .init(
+            traceID: traceContext.traceID,
+            spanID: traceContext.spanID,
+            parentSpanID: traceContext.parentSpanID,
+            samplingRate: Double(traceContext.sampleRate.percentageProportion)
+        )
+    }
+
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
         // Per RUM-15310: If there is an active span, and that span is sampled, we use it as the parent span,
         // and set everything in the RUM resource span to be consistent with it.
@@ -381,14 +505,7 @@ extension DistributedTracing {
     }
 
     fileprivate func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
-        return interception.trace.map {
-            .init(
-                traceID: $0.traceID,
-                spanID: $0.spanID,
-                parentSpanID: $0.parentSpanID,
-                samplingRate: Double($0.sampleRate.percentageProportion)
-            )
-        }
+        interception.trace.map(Self.rumSpanContext)
     }
 
     /// Creates a sampler that makes consistent sampling decisions per session.

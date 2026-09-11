@@ -86,6 +86,111 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Registered Delegate Mode
 
+    func testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope() throws {
+        let provider = NetworkContextCoreProvider()
+        let feature = NetworkInstrumentationFeature(
+            networkContextProvider: provider,
+            messageReceiver: provider
+        )
+        let url = try XCTUnwrap(URL(string: "https://example.com/resource"))
+        let handler = RUMContextCapturingURLSessionHandlerMock()
+        let customHandler = URLSessionHandlerMock()
+        feature.handlers = [handler, customHandler]
+
+        let representativeContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        let sourceSceneContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        provider.currentNetworkContext = NetworkContext(rumContext: representativeContext)
+
+        var capturedContexts: [RUMCoreContext?] = []
+        var capturedHeaderTypes: [Set<TracingHeaderType>] = []
+        var customHandlerHeaderTypes: [Set<TracingHeaderType>] = []
+        handler.onRequestMutation = { _, headerTypes, networkContext in
+            capturedHeaderTypes.append(headerTypes)
+            capturedContexts.append(networkContext?.rumContext)
+        }
+        customHandler.onRequestMutation = { _, headerTypes, _ in
+            customHandlerHeaderTypes.append(headerTypes)
+        }
+
+        RUMContextHandoff.withValue(
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+        }
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: "scene-B") {
+            _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+        }
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+
+        XCTAssertEqual(capturedContexts.count, 3)
+        XCTAssertEqual(capturedHeaderTypes, [[], [], [.datadog]])
+        XCTAssertEqual(capturedContexts[0]?.viewID, sourceSceneContext.viewID)
+        XCTAssertNil(capturedContexts[1])
+        XCTAssertEqual(capturedContexts[2]?.viewID, representativeContext.viewID)
+        XCTAssertEqual(customHandlerHeaderTypes, [[.datadog]])
+    }
+
+    func testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext() async throws {
+        let provider = NetworkContextCoreProvider()
+        let feature = NetworkInstrumentationFeature(
+            networkContextProvider: provider,
+            messageReceiver: provider
+        )
+        let handler = RUMContextCapturingURLSessionHandlerMock()
+        feature.handlers = [handler]
+        let sourceSceneContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        provider.currentNetworkContext = NetworkContext(rumContext: .mockWith(viewID: UUID().uuidString))
+        let request = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/resource")))
+
+        let task = RUMContextHandoff.withValue(
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            Task {
+                _ = feature.intercept(request: request, additionalFirstPartyHosts: nil)
+            }
+        }
+        await task.value
+
+        let capturedContext = try XCTUnwrap(handler.capturedNetworkContexts.last ?? nil)
+        XCTAssertEqual(capturedContext.rumContext?.viewID, sourceSceneContext.viewID)
+    }
+
+    func testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue() {
+        let outerContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        XCTAssertNil(RUMContextHandoff.current)
+
+        RUMContextHandoff.withValue(
+            rumContext: outerContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            XCTAssertEqual(RUMContextHandoff.current?.rumContext?.viewID, outerContext.viewID)
+            XCTAssertEqual(RUMContextHandoff.current?.sceneIdentifier, "scene-A")
+
+            RUMContextHandoff.withValue(
+                rumContext: nil,
+                sceneIdentifier: "scene-B",
+                hasPendingUserAction: true,
+                excludedUserActionID: "action-B"
+            ) {
+                XCTAssertNotNil(RUMContextHandoff.current)
+                XCTAssertNil(RUMContextHandoff.current?.rumContext)
+                XCTAssertEqual(RUMContextHandoff.current?.sceneIdentifier, "scene-B")
+                XCTAssertEqual(RUMContextHandoff.current?.hasPendingUserAction, true)
+                XCTAssertEqual(RUMContextHandoff.current?.excludedUserActionID, "action-B")
+            }
+
+            XCTAssertEqual(RUMContextHandoff.current?.rumContext?.viewID, outerContext.viewID)
+            XCTAssertEqual(RUMContextHandoff.current?.sceneIdentifier, "scene-A")
+        }
+
+        XCTAssertNil(RUMContextHandoff.current)
+    }
+
     func testRegisteredDelegate_capturesMetricsForDataTaskWithURL() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
 
@@ -687,6 +792,35 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
         XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
+    }
+
+    func testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+        let requestMutation = expectation(description: "Mutate request once")
+        requestMutation.assertForOverFulfill = true
+        let url = try XCTUnwrap(URL(string: "https://example.com/repeated-resume-\(UUID().uuidString)"))
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url {
+                requestMutation.fulfill()
+            }
+        }
+
+        let task = session.dataTask(with: url)
+        task.resume()
+        task.resume()
+
+        wait(
+            for: [requestMutation, notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: false
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(handler.interceptions.count, 1)
     }
 
     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
@@ -2409,4 +2543,28 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     class DelegateSubClass: DelegateBaseClass {
     }
+}
+
+private final class RUMContextCapturingURLSessionHandlerMock: DatadogURLSessionHandlerCapturingRUMContext {
+    var firstPartyHosts = FirstPartyHosts()
+    var onRequestMutation: ((URLRequest, Set<TracingHeaderType>, NetworkContext?) -> Void)?
+    @ReadWriteLock
+    private(set) var capturedNetworkContexts: [NetworkContext?] = []
+
+    func modify(
+        request: URLRequest,
+        headerTypes: Set<TracingHeaderType>,
+        networkContext: NetworkContext?
+    ) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        capturedNetworkContexts.append(networkContext)
+        onRequestMutation?(request, headerTypes, networkContext)
+        return (request, nil, nil)
+    }
+
+    func interceptionDidStart(
+        interception: URLSessionTaskInterception,
+        capturedStates: [any URLSessionHandlerCapturedState]
+    ) {}
+
+    func interceptionDidComplete(interception: URLSessionTaskInterception) {}
 }
