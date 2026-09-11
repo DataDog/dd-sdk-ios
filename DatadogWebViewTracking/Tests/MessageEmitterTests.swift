@@ -100,6 +100,29 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
     }
 
+    func testWhenReceivingRUMEventFromScene_itForwardsPrivateSceneRoutingMetadata() throws {
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+
+        emitter.send(
+            body: """
+            {
+              "eventType": "rum",
+              "event": { "type": "view" }
+            }
+            """,
+            slotId: nil,
+            sceneIdentifier: "scene-A"
+        )
+
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .rum(event) = message else {
+            return XCTFail("not a rum message")
+        }
+        XCTAssertEqual(event[MessageEmitter.nativeSceneIdentifierKey] as? String, "scene-A")
+    }
+
     func testWhenReceivingTelemetryEvent_itForwardsToTelemetry() throws {
         // Given
         let receiverMock = FeatureMessageReceiverMock()

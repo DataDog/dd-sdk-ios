@@ -11,6 +11,9 @@ internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
 internal final class WebViewEventReceiver: FeatureMessageReceiver {
+    /// Private routing metadata injected by DatadogWebViewTracking.
+    static let nativeSceneIdentifierKey = "_dd.internal.native_scene_id"
+
     /// RUM feature scope.
     let featureScope: FeatureScope
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
@@ -76,6 +79,8 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
             var webViewContext = context.additionalContext(ofType: RUMWebViewContext.self) ?? .init()
             var event = event
+            let sceneIdentifier = (event.removeValue(forKey: Self.nativeSceneIdentifierKey) as? String)
+                .map(RUMSceneIdentifier.init(rawValue:))
 
             event["ddtags"] = DDTag.merge(context.ddTags, with: event["ddtags"] as? String)
 
@@ -98,7 +103,12 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["date"] = correctedDate
 
                 // Inject the container source and view id
-                if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
+                if let viewID = self.viewCache.lastView(
+                    before: correctedDate,
+                    hasReplay: true,
+                    sceneIdentifier: sceneIdentifier,
+                    allowAmbiguousScene: false
+                ) {
                     event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                         source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                         view: RUMViewEvent.Container.View(id: viewID)
