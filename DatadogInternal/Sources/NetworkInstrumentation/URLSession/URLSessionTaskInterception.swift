@@ -266,9 +266,13 @@ public struct ResourceMetrics {
     /// - `decoded`: Size before encoding (original content size).
     public let requestBodySize: (encoded: Int64, decoded: Int64)?
 
-    /// Indicates whether the resource was served from the device's local cache.
+    /// Delivery type of the resource, mirroring the RUM Resource event `delivery_type` values relevant to mobile.
     /// `nil` when this signal isn't known, e.g. metrics reported without real `URLSessionTaskMetrics`.
-    public let isLocalCacheHit: Bool?
+    public let deliveryType: DeliveryType?
+
+    /// Size in bytes of the resource as actually transferred over the network.
+    /// `0` for a resource served entirely from the local cache. `nil` when this signal isn't known.
+    public let transferSize: Int64?
 
     public init(
         fetch: DateInterval,
@@ -280,7 +284,8 @@ public struct ResourceMetrics {
         download: DateInterval?,
         responseBodySize: (encoded: Int64, decoded: Int64)? = nil,
         requestBodySize: (encoded: Int64, decoded: Int64)? = nil,
-        isLocalCacheHit: Bool? = nil
+        deliveryType: DeliveryType? = nil,
+        transferSize: Int64? = nil
     ) {
         self.fetch = fetch
         self.redirection = redirection
@@ -291,7 +296,19 @@ public struct ResourceMetrics {
         self.download = download
         self.responseBodySize = responseBodySize
         self.requestBodySize = requestBodySize
-        self.isLocalCacheHit = isLocalCacheHit
+        self.deliveryType = deliveryType
+        self.transferSize = transferSize
+    }
+}
+
+extension ResourceMetrics {
+    /// Delivery type of a resource, based on how its response was fetched.
+    public enum DeliveryType {
+        /// The resource was served from cache: a full local cache hit, or a network-validated cache hit
+        /// (e.g. server responded `304 Not Modified` to a conditional request).
+        case cache
+        /// The resource was fetched over the network.
+        case other
     }
 }
 
@@ -311,19 +328,40 @@ extension ResourceMetrics {
         // * if `200 OK` was preceded by `301` redirection, it will contain 2 transactions.
         let mainTransaction = transactions.last
         let redirectionTransactions = transactions.dropLast()
-        let isLocalCacheHit: Bool?
-        switch taskMetrics.transactionMetrics.last?.resourceFetchType {
+        let lastTransaction = taskMetrics.transactionMetrics.last
+        let is304Revalidated = (lastTransaction?.response as? HTTPURLResponse)?.statusCode == 304
+        let deliveryType: DeliveryType?
+        let transferSize: Int64?
+        switch lastTransaction?.resourceFetchType {
         case .some(.localCache):
-            isLocalCacheHit = true
+            deliveryType = .cache
+            transferSize = 0
+        case .some(.networkLoad) where is304Revalidated:
+            deliveryType = .cache
+            // A `304` revalidation response has no body, but its headers still went over the network.
+            // Report that measured header size so it isn't confused with a zero-byte local cache hit.
+            // Fall back to a sentinel only if the header size itself wasn't reported.
+            let fallbackTransferSize: Int64 = 300
+            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? 0
+            transferSize = headerBytes > 0 ? headerBytes : fallbackTransferSize
         case .some(.networkLoad), .some(.serverPush):
-            isLocalCacheHit = false
+            deliveryType = .other
+            // `transferSize` represents the entire fetched response, not just the body - a response
+            // with no body (e.g. `204 No Content`) still transfers headers over the network.
+            // `URLSession` reports `-1` (`NSURLSessionTransferSizeUnknown`) when a count can't be
+            // measured; treat that as unavailable rather than letting it corrupt the sum.
+            let bodyBytes = max(lastTransaction?.countOfResponseBodyBytesReceived ?? 0, 0)
+            let headerBytes = max(lastTransaction?.countOfResponseHeaderBytesReceived ?? 0, 0)
+            transferSize = bodyBytes + headerBytes
         case .some(.unknown), .none:
             // `.unknown` means the fetch manner wasn't determined by `URLSession` - keep it as unknown
             // rather than asserting a measured cache miss.
-            isLocalCacheHit = nil
+            deliveryType = nil
+            transferSize = nil
         default:
             // Any fetch type not yet known to this SDK - keep as unknown rather than guessing.
-            isLocalCacheHit = nil
+            deliveryType = nil
+            transferSize = nil
         }
 
         var redirection: DateInterval? = nil
@@ -395,7 +433,8 @@ extension ResourceMetrics {
             download: download,
             responseBodySize: responseBodySize,
             requestBodySize: requestBodySize,
-            isLocalCacheHit: isLocalCacheHit
+            deliveryType: deliveryType,
+            transferSize: transferSize
         )
     }
 }
