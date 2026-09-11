@@ -516,6 +516,269 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.attributes.internalAttributes?["user_action.id"] as? String, actionID)
     }
 
+    func testWhenErrorIsLoggedWithRUMIntegration_itSendsCapturedViewToRUMMessage() throws {
+        // Given
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        let viewID = UUID().uuidString.lowercased()
+        let actionID = UUID().uuidString.lowercased()
+        featureScope.contextMock = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: .mockRandom(),
+                    sessionID: UUID().uuidString.lowercased(),
+                    sessionSampler: .mockKeepAll(),
+                    viewID: viewID,
+                    userActionID: actionID
+                )
+            ]
+        )
+
+        // When
+        logger.error("message")
+
+        // Then
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_view_id"] as? String,
+            viewID
+        )
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_action_id"] as? String,
+            actionID
+        )
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.context_captured"] as? Bool,
+            true
+        )
+        let log = try XCTUnwrap(featureScope.eventsWritten(ofType: LogEvent.self).first)
+        XCTAssertNil(log.attributes.userAttributes["_dd.internal.rum.error.target_view_id"])
+        XCTAssertNil(log.attributes.userAttributes["_dd.internal.rum.error.target_action_id"])
+        XCTAssertNil(log.attributes.userAttributes["_dd.internal.rum.error.context_captured"])
+    }
+
+    func testWhenErrorIsLoggedWithRUMSessionButNoView_itKeepsLegacyOffViewRouting() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        featureScope.contextMock = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: UUID().uuidString.lowercased(),
+                    sessionID: UUID().uuidString.lowercased(),
+                    sessionSampler: .mockKeepAll()
+                )
+            ]
+        )
+
+        logger.error("message")
+
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_view_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_scene_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.context_captured"])
+    }
+
+    func testWhenErrorIsLoggedWhileRUMViewIDIsEmpty_itKeepsLegacyOffViewRouting() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        featureScope.contextMock = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: UUID().uuidString.lowercased(),
+                    sessionID: UUID().uuidString.lowercased(),
+                    sessionSampler: .mockKeepAll(),
+                    viewID: ""
+                )
+            ]
+        )
+
+        logger.error("message")
+
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_view_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.context_captured"])
+    }
+
+    func testWhenCustomerAttributesCollideWithRUMRoutingMetadata_theyCannotControlMirrorRouting() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        let reservedAttributes: [String: Encodable] = [
+            "_dd.internal.rum.error.target_view_id": UUID().uuidString,
+            "_dd.internal.rum.error.target_action_id": UUID().uuidString,
+            "_dd.internal.rum.error.target_scene_id": "customer-scene",
+            "_dd.internal.rum.error.context_captured": true,
+            "customer-key": "customer-value"
+        ]
+
+        logger.error("message", attributes: reservedAttributes)
+
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_view_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_action_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_scene_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.context_captured"])
+        XCTAssertEqual(errorMessage.attributes["customer-key"] as? String, "customer-value")
+
+        let log = try XCTUnwrap(featureScope.eventsWritten(ofType: LogEvent.self).first)
+        XCTAssertEqual(log.attributes.userAttributes["_dd.internal.rum.error.target_scene_id"] as? String, "customer-scene")
+    }
+
+    func testWhenErrorIsLoggedDuringSceneUIEvent_itUsesRequestLocalRUMContextForLogAndMirror() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        let representativeContext = RUMCoreContext(
+            applicationID: UUID().uuidString.lowercased(),
+            sessionID: UUID().uuidString.lowercased(),
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased()
+        )
+        let sourceSceneContext = RUMCoreContext(
+            applicationID: representativeContext.applicationID,
+            sessionID: representativeContext.sessionID,
+            sessionSampler: .mockKeepAll(),
+            viewID: UUID().uuidString.lowercased(),
+            userActionID: UUID().uuidString.lowercased()
+        )
+        featureScope.contextMock = .mockWith(additionalContext: [representativeContext])
+        RUMContextHandoff.withValue(
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-B"
+        ) {
+            logger.error("message")
+        }
+
+        let log = try XCTUnwrap(featureScope.eventsWritten(ofType: LogEvent.self).first)
+        XCTAssertEqual(log.attributes.internalAttributes?["view.id"] as? String, sourceSceneContext.viewID)
+        XCTAssertEqual(log.attributes.internalAttributes?["user_action.id"] as? String, sourceSceneContext.userActionID)
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_view_id"] as? String,
+            sourceSceneContext.viewID
+        )
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_action_id"] as? String,
+            sourceSceneContext.userActionID
+        )
+    }
+
+    func testWhenLoggedDuringUIEventWithoutSceneSnapshot_itDoesNotUseRepresentativeRUMContext() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        featureScope.contextMock = .mockWith(
+            additionalContext: [
+                RUMCoreContext(
+                    applicationID: UUID().uuidString.lowercased(),
+                    sessionID: UUID().uuidString.lowercased(),
+                    sessionSampler: .mockKeepAll(),
+                    viewID: UUID().uuidString.lowercased()
+                )
+            ]
+        )
+        let sceneIdentifier = "scene-B"
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneIdentifier) {
+            logger.error("message")
+        }
+
+        let log = try XCTUnwrap(featureScope.eventsWritten(ofType: LogEvent.self).first)
+        XCTAssertNil(log.attributes.internalAttributes?["application_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["session_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["view.id"])
+        XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_scene_id"] as? String,
+            sceneIdentifier
+        )
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.context_captured"] as? Bool,
+            true
+        )
+    }
+
+    func testWhenPendingActionHasNoSceneSnapshot_itDoesNotAdoptRepresentativeAction() throws {
+        let logger = RemoteLogger(
+            featureScope: featureScope,
+            globalAttributes: .mockAny(),
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: true,
+            activeSpanIntegration: false,
+            backtraceReporter: BacktraceReporterMock()
+        )
+        let representativeContext: RUMCoreContext = .mockWith(
+            viewID: UUID().uuidString,
+            userActionID: UUID().uuidString
+        )
+        featureScope.contextMock = .mockWith(additionalContext: [representativeContext])
+
+        RUMContextHandoff.withValue(
+            rumContext: nil,
+            sceneIdentifier: "scene-B",
+            hasPendingUserAction: true
+        ) {
+            logger.error("message")
+        }
+
+        let log = try XCTUnwrap(featureScope.eventsWritten(ofType: LogEvent.self).first)
+        XCTAssertNil(log.attributes.internalAttributes?["application_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["session_id"])
+        XCTAssertNil(log.attributes.internalAttributes?["view.id"])
+        XCTAssertNil(log.attributes.internalAttributes?["user_action.id"])
+        let errorMessage = try XCTUnwrap(featureScope.messagesSent().firstPayload as? RUMErrorMessage)
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_view_id"])
+        XCTAssertNil(errorMessage.attributes["_dd.internal.rum.error.target_action_id"])
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.target_scene_id"] as? String,
+            "scene-B"
+        )
+        XCTAssertEqual(
+            errorMessage.attributes["_dd.internal.rum.error.context_captured"] as? Bool,
+            true
+        )
+    }
+
     func testWhenRUMIntegrationIsEnabled_withRUMContext_butSampledOut_itDoesNotSendTelemetryError() throws {
         // Given
         let logger = RemoteLogger(

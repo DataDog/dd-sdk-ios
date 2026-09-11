@@ -5,7 +5,15 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
+
+/// Private message-bus metadata. It is removed by RUM before customer attributes
+/// are written and does not change the public or intake event format.
+private let rumErrorTargetViewIDAttribute = "_dd.internal.rum.error.target_view_id"
+private let rumErrorTargetActionIDAttribute = "_dd.internal.rum.error.target_action_id"
+private let rumErrorTargetSceneIDAttribute = "_dd.internal.rum.error.target_scene_id"
+private let rumErrorCapturedContextAttribute = "_dd.internal.rum.error.context_captured"
 
 /// `Logger` sending logs to Datadog.
 internal final class RemoteLogger: LoggerProtocol, Sendable {
@@ -111,6 +119,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
+        let rumContextHandoff = RUMContextHandoff.current
 
         // capture current tags and attributes before opening the write event context
         let tags = loggerTags.getTags()
@@ -134,13 +143,37 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             }
 
             var internalAttributes: [String: Encodable] = [:]
+            var rumViewID: String?
+            var rumActionID: String?
+            // A present handoff with no RUM snapshot means the source scene is
+            // known but its view is not ready. Preserve that fact for the
+            // mirrored RUM error instead of falling back to another window.
+            var didCaptureRUMContext = rumContextHandoff != nil
 
             // When bundle with RUM is enabled, link RUM context (if available):
-            if self.rumContextIntegration, let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled {
+            var rum = rumContextHandoff != nil
+                ? rumContextHandoff?.rumContext
+                : context.additionalContext(ofType: RUMCoreContext.self)
+            if rumContextHandoff?.hasPendingUserAction == true {
+                rum = mergeAcceptedUIEventAction(
+                    into: rum,
+                    from: context.additionalContext(ofType: RUMCoreContext.self),
+                    excluding: rumContextHandoff?.excludedUserActionID
+                )
+            }
+            if self.rumContextIntegration, let rum, rum.sessionSampler.isSampled {
                 internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
                 internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
                 internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
                 internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
+                rumViewID = rum.viewID.flatMap { UUID(uuidString: $0) == nil ? nil : $0 }
+                rumActionID = rum.userActionID.flatMap { UUID(uuidString: $0) == nil ? nil : $0 }
+                // A normal core snapshot with no view is not an authoritative
+                // absence: RUM's legacy off-view / background-event handling
+                // must still decide where the mirrored error belongs. Only a
+                // concrete view or the explicit UI-event tri-state handoff is
+                // frozen for delayed message-bus delivery.
+                didCaptureRUMContext = rumContextHandoff != nil || rumViewID != nil
             }
 
             // When bundle with Trace is enabled, link Trace context (if available):
@@ -189,11 +222,30 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
 
                 // Add back in fingerprint and error source type
                 var busCombinedAttributes = combinedAttributes
+                // These keys are an SDK-private routing envelope. Customer
+                // attributes with the same spelling must never become control
+                // data for ErrorMessageReceiver.
+                busCombinedAttributes.removeValue(forKey: rumErrorTargetViewIDAttribute)
+                busCombinedAttributes.removeValue(forKey: rumErrorTargetActionIDAttribute)
+                busCombinedAttributes.removeValue(forKey: rumErrorTargetSceneIDAttribute)
+                busCombinedAttributes.removeValue(forKey: rumErrorCapturedContextAttribute)
                 if let errorSourcetype = error?.sourceType {
                     busCombinedAttributes[CrossPlatformAttributes.errorSourceType] = errorSourcetype
                 }
                 if let errorFingerprint = errorFingerprint {
                     busCombinedAttributes[Logs.Attributes.errorFingerprint] = errorFingerprint
+                }
+                if let rumViewID {
+                    busCombinedAttributes[rumErrorTargetViewIDAttribute] = rumViewID
+                }
+                if let rumActionID {
+                    busCombinedAttributes[rumErrorTargetActionIDAttribute] = rumActionID
+                }
+                if let uiEventSceneIdentifier = rumContextHandoff?.sceneIdentifier {
+                    busCombinedAttributes[rumErrorTargetSceneIDAttribute] = uiEventSceneIdentifier
+                }
+                if didCaptureRUMContext {
+                    busCombinedAttributes[rumErrorCapturedContextAttribute] = true
                 }
 
                 self.featureScope.send(
@@ -212,6 +264,36 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
             }
         }
     }
+}
+
+private func mergeAcceptedUIEventAction(
+    into captured: RUMCoreContext?,
+    from current: RUMCoreContext?,
+    excluding excludedUserActionID: String?
+) -> RUMCoreContext? {
+    guard let captured,
+          let current,
+          let currentActionID = current.userActionID,
+          UUID(uuidString: currentActionID) != nil,
+          currentActionID != excludedUserActionID else {
+        return captured
+    }
+
+    guard captured.applicationID == current.applicationID,
+          captured.sessionID == current.sessionID,
+          captured.viewID == current.viewID else {
+        return captured
+    }
+    return RUMCoreContext(
+        applicationID: captured.applicationID,
+        sessionID: captured.sessionID,
+        sessionSampler: captured.sessionSampler,
+        viewID: captured.viewID,
+        userActionID: currentActionID,
+        viewServerTimeOffset: captured.viewServerTimeOffset,
+        viewPath: captured.viewPath,
+        viewName: captured.viewName
+    )
 }
 
 extension RemoteLogger: InternalLoggerProtocol {
