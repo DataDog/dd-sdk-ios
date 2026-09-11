@@ -16,6 +16,7 @@ extension CALayerSnapshot {
     final class Context {
         let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
         let imagePrivacyLevel: ImagePrivacyLevel
+        let heatmapsEnabled: Bool
 
         /// Weak references to web views found while capturing the layer tree.
         let webViewCache: NSHashTable<WKWebView>
@@ -26,11 +27,13 @@ extension CALayerSnapshot {
         init(
             textAndInputPrivacyLevel: TextAndInputPrivacyLevel,
             imagePrivacyLevel: ImagePrivacyLevel,
+            heatmapsEnabled: Bool = false,
             webViewCache: NSHashTable<WKWebView> = .weakObjects(),
             embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
         ) {
             self.textAndInputPrivacyLevel = textAndInputPrivacyLevel
             self.imagePrivacyLevel = imagePrivacyLevel
+            self.heatmapsEnabled = heatmapsEnabled
             self.webViewCache = webViewCache
             self.embeddedContentViewCache = embeddedContentViewCache
         }
