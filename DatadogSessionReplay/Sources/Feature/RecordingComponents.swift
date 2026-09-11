@@ -140,7 +140,10 @@ internal struct RecordingComponents {
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
         let screenChangeFilter = ScreenChangeFilter()
         let layerRecorder = LayerRecorder(
-            snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
+            snapshotBuilder: LayerTreeSnapshotBuilder(
+                layerProvider: keyWindowObserver,
+                heatmapsEnabled: configuration.featureFlags[.heatmaps]
+            ),
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             touchSnapshotProducer: touchSnapshotProducer,
             imageSnapshotter: ImageSnapshotter(
