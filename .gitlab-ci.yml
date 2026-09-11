@@ -21,6 +21,7 @@ variables:
   DEFAULT_TVOS_OS: "26.0"
   DEFAULT_WATCHOS_OS: "26.0"
   DEFAULT_VISIONOS_OS: "26.0"
+  FLAKY_TEST_STRESS_BRANCH: "cgcote/flaky-test-stress"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -39,6 +40,11 @@ default:
 # the previous pipeline when a new commit is pushed to that branch.
 workflow:
   rules:
+    - if: '$CI_COMMIT_BRANCH == $FLAKY_TEST_STRESS_BRANCH'
+      variables:
+        FLAKY_TEST_STRESS: "1"
+      auto_cancel:
+        on_new_commit: interruptible
     - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH !~ /^(develop|master|dogfooding|release\/.*|hotfix\/.*)$/'
       auto_cancel:
         on_new_commit: interruptible
@@ -58,6 +64,8 @@ workflow:
 
 .test-pipeline-job:
   rules:
+    - if: '$FLAKY_TEST_STRESS == "1"'
+      when: never
     - if: '$CI_COMMIT_BRANCH == $DEVELOP_BRANCH || $CI_COMMIT_BRANCH == $MAIN_BRANCH' # always on main branches
     - if: '$CI_COMMIT_BRANCH' # when on other branch with following changes compared to develop
       changes:
@@ -186,6 +194,31 @@ Unit Tests (iOS):
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean repo-setup ENV=ci
     - make test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
+    when: always
+
+Flaky Test Stress (iOS):
+  stage: test
+  rules:
+    - if: '$FLAKY_TEST_STRESS == "1"'
+  timeout: 55m
+  variables:
+    PLATFORM: "iOS Simulator"
+    DEVICE: "iPhone 17 Pro"
+    TEST_ITERATIONS: "100"
+    RUNNER_SCRIPT_TIMEOUT: "50m"
+  parallel:
+    matrix:
+      - TEST_IDENTIFIER:
+          - "DatadogCoreTests/DataUploadWorkerTests/testWhenCancelled_itPerformsNoMoreUploads"
+          - "DatadogCoreTests/CrashReportReceiverTests/testReceiveCrashAndViewEvent"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - USE_TEST_VISIBILITY=1 ./tools/test.sh --scheme "DatadogCore" --os "$DEFAULT_IOS_OS" --platform "$PLATFORM" --device "$DEVICE" --only-testing "$TEST_IDENTIFIER" --test-iterations "$TEST_ITERATIONS" --run-tests-until-failure
   artifacts:
     paths:
       - "ResultBundles/*.xcresult"
@@ -353,6 +386,8 @@ SR Layer Snapshot Tests:
 Tools Tests:
   stage: test
   rules:
+    - if: '$FLAKY_TEST_STRESS == "1"'
+      when: never
     - if: '$CI_COMMIT_BRANCH' # when on branch with following changes compared to develop
       changes:
         paths:
@@ -620,5 +655,9 @@ Publish CP podspec (Profiling):
 # It syncs the GitLab pipeline status with GitHub status checks.
 Sync GH Checks:
   stage: post
+  rules:
+    - if: '$FLAKY_TEST_STRESS == "1"'
+      when: never
+    - when: always
   script:
     - echo "All good"
