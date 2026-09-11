@@ -32,11 +32,16 @@ internal protocol LayerTreeSnapshotBuilding: AnyObject {
 @MainActor
 internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
     private let layerProvider: any LayerProvider
+    private let heatmapsEnabled: Bool
     private let webViewCache: NSHashTable<WKWebView> = .weakObjects()
     private let embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
 
-    init(layerProvider: any LayerProvider) {
+    init(
+        layerProvider: any LayerProvider,
+        heatmapsEnabled: Bool = false
+    ) {
         self.layerProvider = layerProvider
+        self.heatmapsEnabled = heatmapsEnabled
     }
 
     func takeSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot? {
@@ -47,6 +52,7 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
         let snapshotContext = CALayerSnapshot.Context(
             textAndInputPrivacyLevel: context.textAndInputPrivacy,
             imagePrivacyLevel: context.imagePrivacy,
+            heatmapsEnabled: heatmapsEnabled,
             webViewCache: webViewCache,
             embeddedContentViewCache: embeddedContentViewCache
         )

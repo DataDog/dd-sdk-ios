@@ -26,6 +26,7 @@ internal struct CALayerSnapshot: Sendable {
     let layerClass: AnyClass
     let delegateClass: AnyClass?
     let contentsClass: AnyClass?
+    let heatmapKey: String?
 
     let textAndInputPrivacyLevel: TextAndInputPrivacyLevel
     let imagePrivacyLevel: ImagePrivacyLevel
@@ -101,17 +102,19 @@ extension CALayerSnapshot {
             rootLayer: root,
             visibleBounds: root.bounds,
             privacy: privacy,
-            context: context
+            context: context,
+            heatmapTypeIndex: context.heatmapsEnabled ? 0 : nil
         )
     }
 
     @MainActor
-    private init?(
+    fileprivate init?(
         from layer: CALayer,
         rootLayer: CALayer,
         visibleBounds: CGRect,
         privacy: ResolvedPrivacy,
-        context: Context
+        context: Context,
+        heatmapTypeIndex: Int?
     ) {
         guard !layer.isHidden, layer.opacity > 0 else {
             return nil
@@ -144,15 +147,13 @@ extension CALayerSnapshot {
         let sublayers = if observation.ignoresSublayers || childVisibleBounds.isEmpty {
             [CALayerSnapshot]()
         } else {
-            layer.sublayers?.compactMap {
-                CALayerSnapshot(
-                    from: $0,
-                    rootLayer: rootLayer,
-                    visibleBounds: childVisibleBounds,
-                    privacy: privacy,
-                    context: context
-                )
-            } ?? []
+            [CALayerSnapshot](
+                sublayersOf: layer,
+                rootLayer: rootLayer,
+                visibleBounds: childVisibleBounds,
+                privacy: privacy,
+                context: context
+            )
         }
 
         let dependencies: [CALayer] = if observation.ignoresSublayers && !childVisibleBounds.isEmpty {
@@ -197,6 +198,7 @@ extension CALayerSnapshot {
             layerClass: type(of: layer),
             delegateClass: layer.delegate.map { type(of: $0) },
             contentsClass: layer.contents.map { type(of: $0 as AnyObject) },
+            heatmapKey: heatmapTypeIndex.map { layer.heatmapKey(typeIndex: $0) },
             textAndInputPrivacyLevel: privacy.textAndInputPrivacyLevel,
             imagePrivacyLevel: privacy.imagePrivacyLevel,
             isPrivate: privacy.isPrivate,
@@ -286,8 +288,26 @@ extension CALayerSnapshot {
 }
 
 extension CALayer {
+    @MainActor fileprivate var heatmapTypeIdentifier: ObjectIdentifier {
+        if let view = delegate as? UIView {
+            return ObjectIdentifier(type(of: view))
+        }
+        return ObjectIdentifier(type(of: self))
+    }
+
     @MainActor fileprivate var privacyOverrides: SessionReplayPrivacyOverrides? {
         (delegate as? UIView)?.dd._privacyOverrides
+    }
+
+    @MainActor
+    fileprivate func heatmapKey(typeIndex: Int) -> String {
+        if let view = delegate as? UIView {
+            if let accessibilityIdentifier = view.accessibilityIdentifier, !accessibilityIdentifier.isEmpty {
+                return accessibilityIdentifier
+            }
+            return "cls:\(String(describing: type(of: view)))#\(typeIndex)"
+        }
+        return "cls:\(String(describing: type(of: self)))#\(typeIndex)"
     }
 
     @MainActor
@@ -321,6 +341,49 @@ extension CALayer {
         }
 
         return CollectionOfOne(self) + sublayerDependencies
+    }
+}
+
+extension Array where Element == CALayerSnapshot {
+    @MainActor
+    fileprivate init(
+        sublayersOf layer: CALayer,
+        rootLayer: CALayer,
+        visibleBounds: CGRect,
+        privacy: CALayerSnapshot.ResolvedPrivacy,
+        context: CALayerSnapshot.Context
+    ) {
+        let sublayers = layer.sublayers ?? []
+
+        guard context.heatmapsEnabled else {
+            self = sublayers.compactMap {
+                CALayerSnapshot(
+                    from: $0,
+                    rootLayer: rootLayer,
+                    visibleBounds: visibleBounds,
+                    privacy: privacy,
+                    context: context,
+                    heatmapTypeIndex: nil
+                )
+            }
+            return
+        }
+
+        var typeCounts: [ObjectIdentifier: Int] = [:]
+        self = sublayers.compactMap { sublayer in
+            let typeIdentifier = sublayer.heatmapTypeIdentifier
+            let typeIndex = typeCounts[typeIdentifier, default: 0]
+            typeCounts[typeIdentifier] = typeIndex + 1
+
+            return CALayerSnapshot(
+                from: sublayer,
+                rootLayer: rootLayer,
+                visibleBounds: visibleBounds,
+                privacy: privacy,
+                context: context,
+                heatmapTypeIndex: typeIndex
+            )
+        }
     }
 }
 #endif

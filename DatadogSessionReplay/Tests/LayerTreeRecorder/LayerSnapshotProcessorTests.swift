@@ -52,6 +52,41 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 3])
     }
 
+    @Test("Publishes heatmap identifiers with descendant lookup")
+    @MainActor
+    func publishesHeatmapIdentifiersWithDescendantLookup() throws {
+        // Given
+        let fixture = Fixture()
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        rootView.accessibilityIdentifier = "root"
+
+        let button = UIView(frame: CGRect(x: 10, y: 20, width: 30, height: 40))
+        button.accessibilityIdentifier = "button"
+        button.backgroundColor = .red
+        rootView.addSubview(button)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+        let snapshot = LayerTreeSnapshot.mockWith(root: root)
+
+        // When
+        fixture.processor.process(
+            layerTreeSnapshot: snapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+
+        // Then
+        #expect(fixture.heatmapIdentifierRegistry.requiresDescendantLookup)
+        #expect(fixture.heatmapIdentifierRegistry.identifiers.count == 1)
+        #expect(
+            fixture.heatmapIdentifierRegistry.heatmapIdentifier(
+                for: ObjectIdentifier(button.layer)
+            ) != nil
+        )
+    }
+
     @Test("Same context writes wireframe, composition tree, viewport, and touch records in order")
     func sameContextWritesMutationViewportAndTouchRecordsInOrder() throws {
         // Given
@@ -216,6 +251,7 @@ private extension LayerSnapshotProcessorTests {
         let core = PassthroughCoreMock()
         let recordWriter = RecordWriterMock()
         let resourceProcessor = ResourceProcessorSpy()
+        let heatmapIdentifierRegistry = HeatmapIdentifierRegistryMock()
         let telemetry = TelemetryMock()
         let processor: LayerSnapshotProcessor
 
@@ -225,6 +261,7 @@ private extension LayerSnapshotProcessorTests {
                 recordWriter: recordWriter,
                 resourceProcessor: resourceProcessor,
                 replayContextPublisher: SRContextPublisher(core: core),
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 telemetry: telemetry
             )
         }

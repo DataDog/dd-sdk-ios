@@ -226,6 +226,72 @@ struct CompositionTreeBuilderTests {
         #expect(visibleWireframe.isVisible == true)
     }
 
+    @Test("Build computes heatmap identifiers from layer paths")
+    func buildComputesHeatmapIdentifiersFromLayerPaths() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        rootView.accessibilityIdentifier = "root"
+
+        let containerView = UIView(frame: CGRect(x: 10, y: 20, width: 80, height: 60))
+        containerView.accessibilityIdentifier = "container"
+        containerView.backgroundColor = .blue
+        rootView.addSubview(containerView)
+
+        let leafView = UIView(frame: CGRect(x: 10, y: 10, width: 40, height: 20))
+        leafView.accessibilityIdentifier = "button"
+        leafView.backgroundColor = .red
+        containerView.addSubview(leafView)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+        let container = try #require(root.sublayers.first)
+        let leaf = try #require(container.sublayers.first)
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init(),
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let containerIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        let leafIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container", "button"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        #expect(output.heatmapIdentifiers == [
+            container.layer.identifier: containerIdentifier,
+            leaf.layer.identifier: leafIdentifier
+        ])
+
+        let containerWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: container.replayID)
+        })
+        let leafWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: leaf.replayID)
+        })
+        guard
+            case .shapeWireframe(let containerShape) = containerWireframe,
+            case .shapeWireframe(let leafShape) = leafWireframe
+        else {
+            Issue.record("Expected shape wireframes")
+            return
+        }
+        #expect(containerShape.permanentId == containerIdentifier.rawValue)
+        #expect(leafShape.permanentId == leafIdentifier.rawValue)
+    }
+
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given

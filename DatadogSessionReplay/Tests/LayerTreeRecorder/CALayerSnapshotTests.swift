@@ -108,6 +108,63 @@ struct CALayerSnapshotTests {
         #expect(capturedLayers.elementsEqual([backLayer, middleLayer, frontLayer]) { $0.matches($1) })
     }
 
+    @Test("Captures heatmap keys from view-backed layers")
+    func capturesHeatmapKeysFromViewBackedLayers() throws {
+        final class HeatmapTestView: UIView {}
+
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+
+        let identifiedView = HeatmapTestView(frame: CGRect(x: 0, y: 0, width: 50, height: 50))
+        identifiedView.accessibilityIdentifier = "identified-view"
+        rootView.addSubview(identifiedView)
+
+        let siblingView = HeatmapTestView(frame: CGRect(x: 50, y: 0, width: 50, height: 50))
+        rootView.addSubview(siblingView)
+
+        // When
+        let snapshot = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+
+        // Then
+        let identifiedSnapshot = try #require(snapshot.sublayers.first)
+        let siblingSnapshot = try #require(snapshot.sublayers.last)
+
+        #expect(identifiedSnapshot.layer.identifier == ObjectIdentifier(identifiedView.layer))
+        #expect(identifiedSnapshot.heatmapKey == "identified-view")
+        #expect(siblingSnapshot.layer.identifier == ObjectIdentifier(siblingView.layer))
+        #expect(siblingSnapshot.heatmapKey == "cls:\(String(describing: HeatmapTestView.self))#1")
+    }
+
+    @Test("Uses original same-type sibling index for layer-backed heatmap keys")
+    func usesOriginalSiblingIndexForLayerBackedHeatmapKey() throws {
+        final class HeatmapTestLayer: CALayer {}
+
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let hiddenSibling = HeatmapTestLayer()
+        hiddenSibling.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
+        hiddenSibling.isHidden = true
+        root.addSublayer(hiddenSibling)
+
+        let visibleSibling = HeatmapTestLayer()
+        visibleSibling.frame = CGRect(x: 50, y: 0, width: 50, height: 50)
+        root.addSublayer(visibleSibling)
+
+        // When
+        let snapshot = try #require(
+            CALayerSnapshot(from: root, in: .mockAny(heatmapsEnabled: true))
+        )
+
+        // Then
+        let visibleSnapshot = try #require(snapshot.sublayers.first)
+        #expect(visibleSnapshot.layer.identifier == ObjectIdentifier(visibleSibling))
+        #expect(visibleSnapshot.heatmapKey == "cls:\(String(describing: HeatmapTestLayer.self))#1")
+    }
+
     @Test("Captures nested hierarchy with absolute frames")
     func capturesNestedHierarchyWithAbsoluteFrames() throws {
         // Given
