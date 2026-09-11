@@ -18,6 +18,12 @@ ECHO_ERROR=$(REPO_ROOT)/tools/utils/echo-color.sh --err
 ECHO_WARNING=$(REPO_ROOT)/tools/utils/echo-color.sh --warn
 ECHO_SUCCESS=$(REPO_ROOT)/tools/utils/echo-color.sh --succ
 
+# Formats xcodebuild output and optionally produces a JUnit report. Callers can
+# enable the report by supplying JUNIT_REPORTS_PATH and an optional subdirectory.
+define XCBEAUTIFY
+xcbeautify $(if $(JUNIT_REPORTS_PATH),--report junit --report-path "$(JUNIT_REPORTS_PATH)$(if $(1),/$(1))")
+endef
+
 define require_param
     if [ -z "$${$(1)}" ]; then \
         $(ECHO_ERROR) "Error:" "$(1) parameter is required but not provided."; \
