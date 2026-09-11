@@ -9,6 +9,9 @@
 #   --scheme: Identifies the test scheme to execute
 #   --platform: Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'
 #   --os: Sets the operating system version for the tests, e.g. '17.5'
+#   --only-testing: Constrains execution to one test identifier.
+#   --test-iterations: Sets the maximum number of test iterations.
+#   --run-tests-until-failure: Repeats tests until the first failure.
 
 set -eo pipefail
 source ./tools/utils/argparse.sh
@@ -21,6 +24,9 @@ define_arg "scheme" "" "Identifies the test scheme to execute" "string" "true"
 define_arg "os" "" "Sets the operating system version for the tests, e.g. '17.5'" "string" "true"
 define_arg "platform" "" "Defines the type of simulator platform for the tests, e.g. 'iOS Simulator'" "string" "true"
 define_arg "device" "" "Specifies the simulator device for running tests, e.g. 'iPhone 15 Pro'" "string" "true"
+define_arg "only-testing" "" "Constrains execution to one test identifier" "string" "false"
+define_arg "test-iterations" "" "Sets the maximum number of test iterations" "string" "false"
+define_arg "run-tests-until-failure" "false" "Repeats tests until the first failure" "store_true" "false"
 
 check_for_help "$@"
 parse_args "$@"
@@ -28,6 +34,17 @@ parse_args "$@"
 WORKSPACE="Datadog.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME=$scheme
+
+TEST_ARGUMENTS=()
+if [[ -n "$only_testing" ]]; then
+    TEST_ARGUMENTS+=("-only-testing:$only_testing")
+fi
+if [[ -n "$test_iterations" ]]; then
+    TEST_ARGUMENTS+=("-test-iterations" "$test_iterations")
+fi
+if [[ "$run_tests_until_failure" == "true" ]]; then
+    TEST_ARGUMENTS+=("-run-tests-until-failure" "-test-repetition-relaunch-enabled" "YES")
+fi
 
 # Enables Datadog Test Visibility to trace tests execution
 # Ref.: https://docs.datadoghq.com/tests/setup/swift/
@@ -109,7 +126,7 @@ if [ "$CI" = "true" ]; then
     # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test. The raw
     # .xcresult bundle and this log are uploaded as-is (no need to zip): GitLab's artifact
     # uploader already archives whatever paths match, zip or not.
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" -resultBundlePath "$RESULT_BUNDLE_PATH" "${TEST_ARGUMENTS[@]}" test 2>&1 | tee "ResultBundles/${SCHEME}.log" | xcbeautify
 else
-    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" test 2>&1 | xcbeautify
+    xcodebuild -workspace "$WORKSPACE" -destination "$DESTINATION" -scheme "$SCHEME" "${TEST_ARGUMENTS[@]}" test 2>&1 | xcbeautify
 fi
