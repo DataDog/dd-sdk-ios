@@ -129,13 +129,12 @@ internal class RUMResourceScope: RUMScope {
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
         let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
-        let deliveryType: RUMResourceEvent.Resource.DeliveryType? = {
+        let deliveryType: RUMResourceEvent.Resource.DeliveryType? =
             switch resourceMetrics?.deliveryType {
-            case .cache: return .cache
-            case .other: return .other
-            case nil: return nil
+            case .cache: .cache
+            case .other: .other
+            case nil: nil
             }
-        }()
 
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
