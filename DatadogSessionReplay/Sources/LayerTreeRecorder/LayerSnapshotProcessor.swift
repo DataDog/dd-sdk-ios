@@ -23,6 +23,7 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private let recordWriter: RecordWriting
     private let resourceProcessor: ResourceProcessing
     private let replayContextPublisher: SRContextPublisher
+    private let heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?
     private let telemetry: Telemetry
     private let recordBuilder = LayerRecordBuilder()
 
@@ -35,12 +36,14 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         recordWriter: RecordWriting,
         resourceProcessor: ResourceProcessing,
         replayContextPublisher: SRContextPublisher,
+        heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?,
         telemetry: Telemetry
     ) {
         self.queue = queue
         self.recordWriter = recordWriter
         self.resourceProcessor = resourceProcessor
         self.replayContextPublisher = replayContextPublisher
+        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.telemetry = telemetry
     }
 
@@ -70,6 +73,11 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
             imageSnapshots: imageSnapshots,
             screenName: layerTreeSnapshot.context.viewPath
         ).build()
+
+        heatmapIdentifierRegistry?.setHeatmapIdentifiers(
+            output.heatmapIdentifiers,
+            requiresDescendantLookup: true
+        )
 
         var records = records(
             from: layerTreeSnapshot,

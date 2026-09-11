@@ -133,6 +133,9 @@ internal struct RecordingComponents {
             recordWriter: RecordWriter(core: core),
             resourceProcessor: resourceProcessor,
             replayContextPublisher: srContextPublisher,
+            heatmapIdentifierRegistry: configuration.featureFlags[.heatmaps]
+                ? core.heatmapIdentifierRegistry
+                : nil,
             telemetry: telemetry
         )
 
