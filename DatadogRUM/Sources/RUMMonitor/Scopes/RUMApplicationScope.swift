@@ -217,6 +217,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if didCreateInitialSessionCount > 0 { // Sanity check
             dependencies.telemetry.error("Creating initial session \(didCreateInitialSessionCount) extra time(s) due to \(type(of: command)) (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
+        let isFirstInitialSession = didCreateInitialSessionCount == 0
         didCreateInitialSessionCount += 1
 
         var startPrecondition: RUMSessionPrecondition? = nil
@@ -241,7 +242,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,
-            applicationState: applicationState
+            applicationState: applicationState,
+            // Adopt the ID created in `RUM.enable()` rather than generating a new one. Only the very first
+            // initial session may adopt it; the sanity path above can run again, and reusing the same ID
+            // would produce two sessions sharing an identity.
+            presetSessionUUID: isFirstInitialSession ? dependencies.initialSessionUUID : nil
         )
 
         lastSessionEndReason = nil

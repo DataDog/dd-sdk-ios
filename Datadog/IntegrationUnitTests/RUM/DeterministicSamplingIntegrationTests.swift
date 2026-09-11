@@ -74,6 +74,43 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         XCTAssertTrue(events.isEmpty, "Unsampled session must produce no RUM events")
     }
 
+    // MARK: - Initial session adopts the synchronously created identity
+
+    /// Verifies the initial session adopts the session ID created in `RUM.enable()` instead of generating
+    /// its own once the asynchronous session-creation flow runs.
+    ///
+    /// The generator hands out a different UUID on every call, so if the initial session generated its own
+    /// ID the sampler published by `onSessionUpdate` would differ from the one exposed synchronously. This
+    /// is what guarantees an early request and the rest of the session share one decision. See RUM-17921.
+    func testInitialSession_adoptsTheIdentityCreatedAtEnableTime() throws {
+        // Given
+        let presetUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        let nextUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a5221003fa41")!
+        let generator = SequencedRUMUUIDGeneratorMock(uuids: [RUMUUID(rawValue: presetUUID), RUMUUID(rawValue: nextUUID)])
+
+        var rumConfig = RUM.Configuration(applicationID: "test-app-id")
+        rumConfig.sessionSampleRate = 60
+        rumConfig.uuidGenerator = generator
+
+        // When
+        RUM.enable(with: rumConfig, in: core)
+
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let synchronousSampler = try XCTUnwrap(rum.rumSessionSampler, "Sampler must exist before any flush")
+
+        // Let the asynchronous session-creation flow run
+        RUMMonitor.shared(in: core).startView(key: "test-view", name: "TestView")
+        core.flush()
+
+        // Then - the session published by `onSessionUpdate` must be the one created at enable time
+        XCTAssertEqual(
+            rum.rumSessionSampler,
+            synchronousSampler,
+            "The initial session must adopt the preset identity, not generate a new one"
+        )
+        XCTAssertEqual(synchronousSampler, DeterministicSampler(uuid: presetUUID, samplingRate: 60))
+    }
+
     // MARK: - Session Replay child-rate correction
 
     #if os(iOS)
@@ -267,5 +304,24 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
 
         let dd = try XCTUnwrap(span.context.dd)
         XCTAssert(dd.samplingDecision.samplingPriority.isKept == spansExist)
+    }
+}
+
+/// A `RUMUUIDGenerator` that returns a different UUID on each call, then repeats the last one.
+///
+/// `RUMUUIDGeneratorMock` always returns the same value, which cannot distinguish "the session adopted the
+/// preset ID" from "the session generated a new one".
+private final class SequencedRUMUUIDGeneratorMock: RUMUUIDGenerator {
+    private var uuids: [RUMUUID]
+    private var index = 0
+
+    init(uuids: [RUMUUID]) {
+        precondition(!uuids.isEmpty)
+        self.uuids = uuids
+    }
+
+    func generateUnique() -> RUMUUID {
+        defer { index = min(index + 1, uuids.count - 1) }
+        return uuids[index]
     }
 }

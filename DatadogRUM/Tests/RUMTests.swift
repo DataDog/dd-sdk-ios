@@ -77,6 +77,45 @@ class RUMTests: XCTestCase {
 
     // MARK: - Configuration Tests
 
+    func testWhenEnabled_thenSessionSamplerIsAvailableBeforeEnableReturns() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        config.sessionSampleRate = 60
+        config.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then - deliberately no `flush()` and no waiting: the sampling decision must already be resolved
+        // by the time `RUM.enable()` returns, otherwise Features instrumenting a request right here (e.g.
+        // WebViewTracking) get no decision at all. See RUM-17921.
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let sampler = try XCTUnwrap(
+            rum.rumSessionSampler,
+            "The session sampler must be available synchronously, without waiting for the initial session"
+        )
+        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 60))
+        XCTAssertTrue(sampler.isSampled)
+    }
+
+    func testWhenEnabledWithDebugSDK_thenSessionSamplerUsesTheOverriddenRate() throws {
+        // Given
+        let sessionUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        config.sessionSampleRate = 0
+        config.debugSDK = true
+        config.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then - `debugSDK` forces 100%, and the synchronous sampler must honour it like the session does
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let sampler = try XCTUnwrap(rum.rumSessionSampler)
+        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 100))
+        XCTAssertTrue(sampler.isSampled)
+    }
+
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
         let applicationID: String = .mockRandom()

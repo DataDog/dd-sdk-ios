@@ -128,9 +128,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
         applicationState: RUMApplicationState,
-        resumingViewScope: RUMViewScope? = nil
+        resumingViewScope: RUMViewScope? = nil,
+        presetSessionUUID: RUMUUID? = nil
     ) {
-        let sessionUUID = dependencies.rumUUIDGenerator.generateUnique()
+        // `presetSessionUUID` is created synchronously in `RUM.enable()` for the initial session, so the
+        // sampler derived from it is exposed through `RUMSessionSamplerProvider` before `RUM.enable()` returns.
+        // Every other session generates its ID here, as before.
+        let sessionUUID = presetSessionUUID ?? dependencies.rumUUIDGenerator.generateUnique()
 
         self.parent = parent
         self.dependencies = dependencies
