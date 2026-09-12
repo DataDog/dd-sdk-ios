@@ -58,5 +58,7 @@ The first native runs on iPadOS 27 established two distinct problems:
   `.task` work are attributed to scene A's `ProbeDetailView`. B obtains its own
   navigation-host view only afterward.
 
-Exact run and session IDs belong in `DatadogRUM/MULTI_SCENE_SUPPORT.md`, which is
-the authoritative experiment ledger and support assessment.
+Exact run and session IDs belong in the
+[experiment history](../../../DatadogRUM/MultiSceneSupport/EXPERIMENTS.md). Start
+at the [canonical overview](../../../DatadogRUM/MULTI_SCENE_SUPPORT.md) for the
+current support verdict and resume point.
