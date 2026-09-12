@@ -11,6 +11,7 @@ import DatadogTrace
 
 struct RUMMultiSceneProbeSwiftUIRoot: View {
     let context: RUMMultiSceneProbeContext
+    @State private var isAutomaticDetailPresented = false
 
     var body: some View {
         Group {
@@ -20,6 +21,12 @@ struct RUMMultiSceneProbeSwiftUIRoot: View {
                         context: context,
                         screen: .home(depth: 0)
                     )
+                    .navigationDestination(isPresented: $isAutomaticDetailPresented) {
+                        RUMMultiSceneProbeSwiftUIScreen(
+                            context: context,
+                            screen: .detail(depth: 1)
+                        )
+                    }
                 }
             } else {
                 NavigationView {
@@ -32,6 +39,16 @@ struct RUMMultiSceneProbeSwiftUIRoot: View {
             }
         }
         .accessibilityIdentifier("probe.swiftui.root.\(context.sceneLabel)")
+        .task {
+            guard RUMMultiSceneProbeState.automaticallyNavigatesSwiftUIDetail else {
+                return
+            }
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard !Task.isCancelled else {
+                return
+            }
+            isAutomaticDetailPresented = true
+        }
     }
 }
 

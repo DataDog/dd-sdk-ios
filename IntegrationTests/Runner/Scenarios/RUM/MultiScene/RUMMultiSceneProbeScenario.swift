@@ -171,6 +171,8 @@ enum RUMMultiSceneProbeState {
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"]
         ?? "manual"
     static let usesAutomaticSwiftUIViewTracking = swiftUIViewTrackingMode == "automatic"
+    static let automaticallyNavigatesSwiftUIDetail =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL"] == "1"
 
     enum Attribute {
         static let runID = "probe.run_id"

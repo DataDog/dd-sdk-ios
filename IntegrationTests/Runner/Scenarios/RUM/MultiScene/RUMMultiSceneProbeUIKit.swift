@@ -37,6 +37,9 @@ final class RUMMultiSceneProbeRootViewController: UITabBarController {
         )
 
         viewControllers = [uiKitNavigation, swiftUIRoot]
+        if RUMMultiSceneProbeState.usesAutomaticSwiftUIViewTracking {
+            selectedIndex = 1
+        }
         view.accessibilityIdentifier = "probe.root.\(context.sceneLabel)"
     }
 
