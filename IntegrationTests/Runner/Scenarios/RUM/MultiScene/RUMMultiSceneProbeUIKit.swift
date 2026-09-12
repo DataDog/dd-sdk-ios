@@ -116,6 +116,26 @@ final class RUMMultiSceneProbeUIKitViewController:
         self.screen = screen
         super.init(nibName: nil, bundle: nil)
         title = "\(context.sceneLabel): \(screen.title)"
+
+        let activateOtherWindowItem = UIBarButtonItem(
+            title: "Other Window",
+            style: .plain,
+            target: self,
+            action: #selector(activateOtherWindow)
+        )
+        activateOtherWindowItem.accessibilityIdentifier =
+            "probe.\(context.sceneLabel).activate-other-window-toolbar"
+        navigationItem.rightBarButtonItem = activateOtherWindowItem
+
+        let closeWindowItem = UIBarButtonItem(
+            title: "Close",
+            style: .plain,
+            target: self,
+            action: #selector(closeWindow)
+        )
+        closeWindowItem.accessibilityIdentifier =
+            "probe.\(context.sceneLabel).close-window-toolbar"
+        navigationItem.leftBarButtonItem = closeWindowItem
     }
 
     @available(*, unavailable)
@@ -196,6 +216,13 @@ final class RUMMultiSceneProbeUIKitViewController:
 
         stack.addArrangedSubview(
             button(title: "Open another window", id: "open-window", action: #selector(openWindow))
+        )
+        stack.addArrangedSubview(
+            button(
+                title: "Activate other window",
+                id: "activate-other-window",
+                action: #selector(activateOtherWindow)
+            )
         )
         stack.addArrangedSubview(
             button(title: "Close this window", id: "close-window", action: #selector(closeWindow))
@@ -301,6 +328,11 @@ final class RUMMultiSceneProbeUIKitViewController:
     @objc private func openWindow() {
         mark("requested another window")
         RUMMultiSceneProbeState.requestNewScene(after: context)
+    }
+
+    @objc private func activateOtherWindow() {
+        mark("requested other window activation")
+        RUMMultiSceneProbeState.activateOtherScene(from: context)
     }
 
     @objc private func closeWindow() {

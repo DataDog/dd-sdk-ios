@@ -115,6 +115,12 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
                 }
                 .accessibilityIdentifier(identifier("open-window"))
 
+                Button("Activate other window") {
+                    mark("requested other window activation")
+                    RUMMultiSceneProbeState.activateOtherScene(from: context)
+                }
+                .accessibilityIdentifier(identifier("activate-other-window"))
+
                 Button("Close this window") {
                     mark("requested scene close")
                     RUMMultiSceneProbeState.closeScene(context: context)
@@ -272,6 +278,22 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
             .padding(20)
         }
         .navigationTitle("\(context.sceneLabel): \(screen.title)")
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Close") {
+                    mark("requested scene close from toolbar")
+                    RUMMultiSceneProbeState.closeScene(context: context)
+                }
+                .accessibilityIdentifier(identifier("close-window-toolbar"))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Other Window") {
+                    mark("requested other window activation from toolbar")
+                    RUMMultiSceneProbeState.activateOtherScene(from: context)
+                }
+                .accessibilityIdentifier(identifier("activate-other-window-toolbar"))
+            }
+        }
         .sheet(isPresented: $isModalPresented) {
             NavigationView {
                 RUMMultiSceneProbeSwiftUIScreen(context: context, screen: .modal)

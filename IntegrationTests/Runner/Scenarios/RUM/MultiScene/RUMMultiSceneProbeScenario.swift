@@ -251,6 +251,26 @@ enum RUMMultiSceneProbeState {
         }
     }
 
+    static func activateOtherScene(from context: RUMMultiSceneProbeContext) {
+        guard let session = UIApplication.shared.openSessions.first(
+            where: { $0.persistentIdentifier != context.sceneSessionID }
+        ) else {
+            record("scene activation ignored from=\(context.sceneLabel) reason=no-other-session")
+            return
+        }
+        let targetLabel = self.context(for: session)?.sceneLabel ?? "unknown"
+        record("scene activation from=\(context.sceneLabel) target=\(targetLabel)")
+        UIApplication.shared.requestSceneSessionActivation(
+            session,
+            userActivity: nil,
+            options: nil
+        ) { error in
+            record(
+                "scene activation failed target=\(targetLabel) error=\(type(of: error))"
+            )
+        }
+    }
+
     static func closeScene(context: RUMMultiSceneProbeContext) {
         guard let session = UIApplication.shared.openSessions.first(
             where: { $0.persistentIdentifier == context.sceneSessionID }
