@@ -31,12 +31,16 @@ final class RUMMultiSceneProbeScenario: TestScenario {
         let applicationID = Environment.isRunningInteractive()
             ? Environment.readRUMApplicationID()
             : "rum-multi-scene-probe-application-id"
+        let swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? =
+            RUMMultiSceneProbeState.usesAutomaticSwiftUIViewTracking
+            ? DefaultSwiftUIRUMViewsPredicate()
+            : nil
 
         let rumConfiguration = RUM.Configuration(
             applicationID: applicationID,
             uiKitViewsPredicate: RUMMultiSceneProbeUIKitViewsPredicate(),
             uiKitActionsPredicate: RUMMultiSceneProbeUIKitActionsPredicate(),
-            swiftUIViewsPredicate: nil,
+            swiftUIViewsPredicate: swiftUIViewsPredicate,
             swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(isLegacyDetectionEnabled: false),
             urlSessionTracking: .init(
                 firstPartyHostsTracing: .traceWithHeaders(
@@ -113,7 +117,8 @@ final class RUMMultiSceneProbeScenario: TestScenario {
         )
 
         RUMMultiSceneProbeState.record(
-            "configured service=\(RUMMultiSceneProbeState.serviceName)"
+            "configured service=\(RUMMultiSceneProbeState.serviceName) "
+                + "swiftui_views=\(RUMMultiSceneProbeState.swiftUIViewTrackingMode)"
         )
     }
 
@@ -162,6 +167,10 @@ enum RUMMultiSceneProbeState {
     static let activityType = "com.datadoghq.ios-sdk.rum-multi-scene-probe"
     static let runID = ProcessInfo.processInfo.environment["DD_MULTI_SCENE_RUN_ID"]
         ?? UUID().uuidString.lowercased()
+    static let swiftUIViewTrackingMode =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"]
+        ?? "manual"
+    static let usesAutomaticSwiftUIViewTracking = swiftUIViewTrackingMode == "automatic"
 
     enum Attribute {
         static let runID = "probe.run_id"

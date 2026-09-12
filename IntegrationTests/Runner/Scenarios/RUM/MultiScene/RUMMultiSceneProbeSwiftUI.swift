@@ -307,9 +307,11 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
                     }
             }
         }
-        .trackRUMView(
-            name: rumViewName,
-            attributes: context.attributes
+        .modifier(
+            RUMMultiSceneProbeSwiftUIViewTrackingModifier(
+                name: rumViewName,
+                attributes: context.attributes
+            )
         )
         .accessibilityIdentifier(
             "probe.swiftui.\(context.sceneLabel).\(screen.pathComponent)"
@@ -435,6 +437,20 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
             RUMMultiSceneProbeState.record(
                 "control source=\(context.sceneLabel) swiftui operation finished key=\(operationKey)"
             )
+        }
+    }
+}
+
+private struct RUMMultiSceneProbeSwiftUIViewTrackingModifier: ViewModifier {
+    let name: String
+    let attributes: [String: Encodable]
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if RUMMultiSceneProbeState.usesAutomaticSwiftUIViewTracking {
+            content
+        } else {
+            content.trackRUMView(name: name, attributes: attributes)
         }
     }
 }
