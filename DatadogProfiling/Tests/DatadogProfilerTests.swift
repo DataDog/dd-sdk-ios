@@ -40,6 +40,16 @@ final class DatadogProfilerTests: XCTestCase {
 
     // MARK: - receive(message:from:)
 
+    func testRUMVitalIdentityKeepsOperationNameAndKeySeparate() {
+        let first = Vital.mockWith(name: "a-b", operationKey: "c")
+        let second = Vital.mockWith(name: "a", operationKey: "b-c")
+        let omittedKey = Vital.mockWith(name: "a-b", operationKey: nil)
+        let emptyKey = Vital.mockWith(name: "a-b", operationKey: "")
+
+        XCTAssertNotEqual(RUMVitalIdentity(first), RUMVitalIdentity(second))
+        XCTAssertNotEqual(RUMVitalIdentity(omittedKey), RUMVitalIdentity(emptyKey))
+    }
+
     func testReceiveRUMEvents() {
         // Given
         let profiler = continuousProfiler()

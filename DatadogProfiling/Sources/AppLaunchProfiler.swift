@@ -36,7 +36,7 @@ internal final class AppLaunchProfiler: ProfilingHandler {
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     // Interval between device and server time.
     private(set) var currentServerTimeOffset: TimeInterval = .zero
-    private var currentRUMVitals: [String: Vital] = [:]
+    private var currentRUMVitals: [RUMVitalIdentity: Vital] = [:]
     private var hasProcessedAppLaunch: Bool = false
 
     init(
@@ -98,7 +98,7 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
                 self.updateProfilingContext()
             }
 
-            currentRUMVitals[message.ttid.key] = message.ttid
+            currentRUMVitals[RUMVitalIdentity(message.ttid)] = message.ttid
 
             guard let profile = appLaunchProfile() else {
                 telemetryController.sendNoProfile(for: operation)
@@ -110,14 +110,14 @@ extension AppLaunchProfiler: FeatureMessageReceiver {
         } else if case let .payload(message as OperationMessage) = message {
             // Capture vitals like TTFD that are not operation steps.
             if message.operation.stepType == nil {
-                currentRUMVitals[message.operation.key] = message.operation
+                currentRUMVitals[RUMVitalIdentity(message.operation)] = message.operation
             } else if message.operation.stepType == .start {
-                currentRUMVitals[message.operation.key] = message.operation
-            } else if var startVital = currentRUMVitals[message.operation.key] {
+                currentRUMVitals[RUMVitalIdentity(message.operation)] = message.operation
+            } else if var startVital = currentRUMVitals[RUMVitalIdentity(message.operation)] {
                 // Add duration to vital to help Profiling backend label correctly the samples of this vital
                 let duration = message.operation.date.timeIntervalSince(startVital.date)
                 startVital.duration = duration.dd.toInt64Nanoseconds
-                currentRUMVitals[message.operation.key] = startVital
+                currentRUMVitals[RUMVitalIdentity(message.operation)] = startVital
             }
             return false
         }
@@ -217,13 +217,26 @@ extension ProfilingContext.Status {
     }
 }
 
-extension Dictionary where Key == String, Value == Vital {
+/// Exact identity used to correlate operation steps inside profiling. Keeping
+/// `name` and `operationKey` as separate fields avoids delimiter collisions such
+/// as (`a-b`, `c`) and (`a`, `b-c`).
+internal struct RUMVitalIdentity: Hashable {
+    let name: String
+    let operationKey: String?
+
+    init(_ vital: Vital) {
+        self.name = vital.name
+        self.operationKey = vital.operationKey
+    }
+}
+
+extension Dictionary where Key == RUMVitalIdentity, Value == Vital {
     func didCompleteOperations() -> Bool {
         let vitals = self.values
         return vitals.contains { $0.duration == nil } == false
     }
 
-    func ongoingOperations() -> [String: Vital] {
+    func ongoingOperations() -> [RUMVitalIdentity: Vital] {
         filter { $0.1.duration == nil }
     }
 }
