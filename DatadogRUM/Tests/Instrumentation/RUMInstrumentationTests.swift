@@ -143,7 +143,59 @@ class RUMInstrumentationTests: XCTestCase {
         withExtendedLifetime(instrumentation) {
             DDAssertActiveSwizzlings(["sendEvent:"])
             XCTAssertTrue(instrumentation.isMultiSceneApplication)
+            #if os(iOS) || os(visionOS)
+            if #available(iOS 17.0, visionOS 1.0, *) {
+                XCTAssertNotNil(instrumentation.sceneIdentifierTraitPublisher)
+            } else {
+                XCTAssertNil(instrumentation.sceneIdentifierTraitPublisher)
+            }
+            #endif
         }
+    }
+    #endif
+
+    #if os(iOS) || os(visionOS)
+    func testWhenApplicationDoesNotSupportMultipleScenes_itDoesNotPublishSceneIdentifierTrait() throws {
+        // When
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: nil,
+            swiftUIRUMViewsPredicate: nil,
+            swiftUIRUMActionsPredicate: nil,
+            longTaskThreshold: nil,
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenter: .default,
+            bundleType: .iOSApp,
+            watchdogTermination: .mockRandom(),
+            memoryWarningMonitor: .mockRandom(),
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock()
+        )
+
+        // Then
+        XCTAssertFalse(instrumentation.isMultiSceneApplication)
+        XCTAssertNil(instrumentation.sceneIdentifierTraitPublisher)
+    }
+
+    @available(iOS 17.0, visionOS 1.0, *)
+    func testSceneIdentifierTrait_itCarriesValueThroughTraitCollection() {
+        // Given
+        let sceneIdentifier = String.mockRandom()
+
+        // When
+        let traitCollection = UITraitCollection { mutableTraits in
+            mutableTraits[RUMSceneIdentifierTrait.self] = sceneIdentifier
+        }
+
+        // Then
+        XCTAssertEqual(RUMSceneIdentifierTrait.defaultValue, nil)
+        XCTAssertEqual(traitCollection[RUMSceneIdentifierTrait.self], sceneIdentifier)
     }
     #endif
 

@@ -59,6 +59,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Scene-only instrumentation stays disabled for ordinary applications.
     let isMultiSceneApplication: Bool
 
+    #if canImport(SwiftUI)
+    #if os(iOS) || os(visionOS)
+    /// Publishes scene identity into the UIKit and SwiftUI trait hierarchy on
+    /// systems that support custom traits.
+    let sceneIdentifierTraitPublisher: AnyObject?
+    #endif
+    #endif
+
     // MARK: - Initialization
 
     #if !os(watchOS)
@@ -86,6 +94,20 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
+        #if canImport(SwiftUI)
+        #if os(iOS) || os(visionOS)
+        let sceneIdentifierTraitPublisher: AnyObject? = {
+            guard isMultiSceneApplication else {
+                return nil
+            }
+            if #available(iOS 17.0, visionOS 1.0, *) {
+                return RUMSceneIdentifierTraitPublisher(notificationCenter: notificationCenter)
+            }
+            return nil
+        }()
+        #endif
+        #endif
+
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
         let viewsHandler = RUMViewsHandler(
@@ -208,6 +230,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
         self.isMultiSceneApplication = isMultiSceneApplication
+        #if canImport(SwiftUI)
+        #if os(iOS) || os(visionOS)
+        self.sceneIdentifierTraitPublisher = sceneIdentifierTraitPublisher
+        #endif
+        #endif
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()

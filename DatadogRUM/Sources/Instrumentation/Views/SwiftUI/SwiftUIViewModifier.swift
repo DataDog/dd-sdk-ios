@@ -11,6 +11,96 @@ import DatadogInternal
 #if os(iOS) || os(visionOS)
 import UIKit
 
+@available(iOS 17.0, visionOS 1.0, *)
+internal enum RUMSceneIdentifierTrait: UITraitDefinition {
+    static let defaultValue: String? = nil
+    static let identifier = "com.datadoghq.rum.scene-identifier"
+}
+
+@available(iOS 17.0, visionOS 1.0, *)
+private struct RUMSceneIdentifierEnvironmentKey: UITraitBridgedEnvironmentKey {
+    static let defaultValue: String? = nil
+
+    static func read(from traitCollection: UITraitCollection) -> String? {
+        traitCollection[RUMSceneIdentifierTrait.self]
+    }
+
+    static func write(to mutableTraits: inout any UIMutableTraits, value: String?) {
+        mutableTraits[RUMSceneIdentifierTrait.self] = value
+    }
+}
+
+@available(iOS 17.0, visionOS 1.0, *)
+private extension EnvironmentValues {
+    var rumSceneIdentifier: String? {
+        get { self[RUMSceneIdentifierEnvironmentKey.self] }
+        set { self[RUMSceneIdentifierEnvironmentKey.self] = newValue }
+    }
+}
+
+/// Publishes each real scene identifier as an inherited UIKit trait. UIKit
+/// bridges the trait into SwiftUI before the hidden attachment reader joins the
+/// view hierarchy, allowing RUM to enqueue its view transition from the earliest
+/// supported SwiftUI appearance callback. The reader remains a fail-safe for
+/// delayed or missing trait propagation.
+@available(iOS 17.0, visionOS 1.0, *)
+internal final class RUMSceneIdentifierTraitPublisher: NSObject {
+    private weak var notificationCenter: NotificationCenter?
+
+    init(notificationCenter: NotificationCenter) {
+        self.notificationCenter = notificationCenter
+        super.init()
+
+        notificationCenter.addObserver(
+            self,
+            selector: #selector(sceneWillConnect(_:)),
+            name: UIScene.willConnectNotification,
+            object: nil
+        )
+        seedConnectedScenes()
+    }
+
+    deinit {
+        notificationCenter?.removeObserver(
+            self,
+            name: UIScene.willConnectNotification,
+            object: nil
+        )
+    }
+
+    @objc
+    private func sceneWillConnect(_ notification: Notification) {
+        guard Thread.isMainThread else {
+            scheduleConnectedSceneSeed()
+            return
+        }
+        guard let windowScene = notification.object as? UIWindowScene else {
+            return
+        }
+        seed(windowScene)
+    }
+
+    private func seedConnectedScenes() {
+        guard Thread.isMainThread else {
+            scheduleConnectedSceneSeed()
+            return
+        }
+        UIApplication.dd.managedShared?.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .forEach(seed)
+    }
+
+    private func scheduleConnectedSceneSeed() {
+        DispatchQueue.main.async { [weak self] in
+            self?.seedConnectedScenes()
+        }
+    }
+
+    private func seed(_ scene: UIWindowScene) {
+        scene.traitOverrides[RUMSceneIdentifierTrait.self] = scene.session.persistentIdentifier
+    }
+}
+
 /// Resolves the `UIWindowScene` hosting a SwiftUI view without exposing UIKit in
 /// the public modifier API. SwiftUI does not guarantee that this attachment is
 /// reported before its appearance callbacks.
@@ -251,6 +341,102 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
 
 #if os(iOS) || os(visionOS)
 private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
+    let instrumentation: RUMInstrumentation?
+    let name: String
+    let path: String
+    let attributes: [AttributeKey: AttributeValue]
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, visionOS 1.0, *) {
+            content.modifier(
+                RUMTraitBackedMultiSceneViewModifier(
+                    instrumentation: instrumentation,
+                    name: name,
+                    path: path,
+                    attributes: attributes
+                )
+            )
+        } else {
+            content.modifier(
+                RUMAttachmentBackedMultiSceneViewModifier(
+                    instrumentation: instrumentation,
+                    name: name,
+                    path: path,
+                    attributes: attributes
+                )
+            )
+        }
+    }
+}
+
+@available(iOS 17.0, visionOS 1.0, *)
+private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
+    let instrumentation: RUMInstrumentation?
+    let name: String
+    let path: String
+    let attributes: [AttributeKey: AttributeValue]
+
+    @Environment(\.rumSceneIdentifier)
+    private var sceneIdentifier
+    @State private var trackingState = RUMViewTrackingState()
+    @State private var didReceiveInitialSceneIdentifier = false
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RUMSceneIdentifierReader(applicationSupportsMultipleScenes: true) { attachment in
+                    apply(trackingState.update(attachment: attachment))
+                }
+            )
+            .onChange(of: sceneIdentifier, initial: true) { _, sceneIdentifier in
+                apply(trackingState.update(attachment: attachment(for: sceneIdentifier)))
+                // SwiftUI defines the initial callback as part of this view's
+                // appearance. Enqueue once from this supported signal so the
+                // scene-aware transition reaches RUM's serial queue as early as
+                // possible; relative ordering with outer modifiers is not
+                // guaranteed by SwiftUI.
+                if !didReceiveInitialSceneIdentifier {
+                    didReceiveInitialSceneIdentifier = true
+                    apply(trackingState.appear())
+                }
+            }
+            .onAppear {
+                apply(trackingState.update(attachment: attachment(for: sceneIdentifier)))
+                apply(trackingState.appear())
+            }
+            .onDisappear {
+                apply(trackingState.disappear())
+            }
+    }
+
+    private func apply(_ transitions: [RUMViewTrackingState.Transition]) {
+        transitions.forEach { transition in
+            switch transition {
+            case .start(let identity, let sceneIdentifier):
+                instrumentation?.viewsHandler.notify_onAppear(
+                    identity: identity,
+                    name: name,
+                    path: path,
+                    attributes: attributes,
+                    sceneIdentifier: sceneIdentifier
+                )
+            case .stop(let identity, let sceneIdentifier):
+                instrumentation?.viewsHandler.notify_onDisappear(
+                    identity: identity,
+                    sceneIdentifier: sceneIdentifier
+                )
+            }
+        }
+    }
+
+    private func attachment(for sceneIdentifier: String?) -> RUMViewTrackingState.Attachment {
+        sceneIdentifier
+            .map { .attached(RUMSceneIdentifier(rawValue: $0)) }
+            ?? .detached
+    }
+}
+
+private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let instrumentation: RUMInstrumentation?
     let name: String
     let path: String
