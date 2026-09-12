@@ -1,0 +1,48 @@
+name: RUMNativeMultiSceneProbe
+
+options:
+  minimumXcodeGenVersion: 2.46.0
+
+configs:
+  Debug: debug
+  Release: release
+
+packages:
+  Datadog:
+    path: ../../..
+
+targets:
+  RUMNativeMultiSceneProbe:
+    type: application
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: Sources
+    configFiles:
+      Debug: ../../../xcconfigs/Datadog.xcconfig
+      Release: ../../../xcconfigs/Datadog.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.datadoghq.rum-native-multi-scene-probe
+        PRODUCT_NAME: RUMNativeMultiSceneProbe
+        SWIFT_VERSION: 5.9
+        IPHONEOS_DEPLOYMENT_TARGET: 27.0
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Sources/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+    dependencies:
+      - package: Datadog
+        product: DatadogCore
+      - package: Datadog
+        product: DatadogRUM
+
+schemes:
+  RUMNativeMultiSceneProbe:
+    build:
+      targets:
+        RUMNativeMultiSceneProbe: all
+    run:
+      config: Debug

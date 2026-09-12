@@ -1,0 +1,359 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2B5981885706E364F5011A3D /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = B687B5705E5D4BD0978C21DF /* DatadogCore */; };
+		69702433B9BF742BDCBE5D93 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 862E13E4F94AF015BBE28727 /* DatadogRUM */; };
+		C6F68B81972458BCE62765AE /* RUMNativeMultiSceneProbeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */; };
+		DEC28959E5D32D8307EB096E /* ProbeWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		410FD6B2EE19433933438E6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8B96630475BEA11CBB1F7E7B /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../../..; sourceTree = SOURCE_ROOT; };
+		9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeWindowView.swift; sourceTree = "<group>"; };
+		A25A69F4B400932E134CAE6D /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		C8C347315337A830830F39F1 /* RUMNativeMultiSceneProbe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RUMNativeMultiSceneProbe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNativeMultiSceneProbeApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3C7D086F779787FC5DCFF798 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B5981885706E364F5011A3D /* DatadogCore in Frameworks */,
+				69702433B9BF742BDCBE5D93 /* DatadogRUM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1223CCFC2032E3D097930F69 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C8C347315337A830830F39F1 /* RUMNativeMultiSceneProbe.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		22E3DFDB95449D2E8A719F03 = {
+			isa = PBXGroup;
+			children = (
+				3DF4389894DEA008C1596FB1 /* Packages */,
+				371ABB6011FEF069AB067739 /* Sources */,
+				B0F8C05F2DF672721CAED804 /* xcconfigs */,
+				1223CCFC2032E3D097930F69 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		371ABB6011FEF069AB067739 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				410FD6B2EE19433933438E6C /* Info.plist */,
+				9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */,
+				EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		3DF4389894DEA008C1596FB1 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				8B96630475BEA11CBB1F7E7B /* dd-sdk-ios */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		B0F8C05F2DF672721CAED804 /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				A25A69F4B400932E134CAE6D /* Datadog.xcconfig */,
+			);
+			name = xcconfigs;
+			path = ../../../xcconfigs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5692526293BD5297DA4609A5 /* RUMNativeMultiSceneProbe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B94D8D4CA73C2B45DD3DC6B1 /* Build configuration list for PBXNativeTarget "RUMNativeMultiSceneProbe" */;
+			buildPhases = (
+				32A827C45427C91962C3D7D9 /* Sources */,
+				3C7D086F779787FC5DCFF798 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RUMNativeMultiSceneProbe;
+			packageProductDependencies = (
+				B687B5705E5D4BD0978C21DF /* DatadogCore */,
+				862E13E4F94AF015BBE28727 /* DatadogRUM */,
+			);
+			productName = RUMNativeMultiSceneProbe;
+			productReference = C8C347315337A830830F39F1 /* RUMNativeMultiSceneProbe.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2A599B1586F9EB865A05FC51 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = C06D967C3141427CD91C8C26 /* Build configuration list for PBXProject "RUMNativeMultiSceneProbe" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 22E3DFDB95449D2E8A719F03;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				288E2E104DAE37EC516E7EFA /* XCLocalSwiftPackageReference "../../.." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1223CCFC2032E3D097930F69 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5692526293BD5297DA4609A5 /* RUMNativeMultiSceneProbe */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		32A827C45427C91962C3D7D9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DEC28959E5D32D8307EB096E /* ProbeWindowView.swift in Sources */,
+				C6F68B81972458BCE62765AE /* RUMNativeMultiSceneProbeApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1D308B9861CA6495AC9BCCFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2E93663BE0745D182878D14C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A25A69F4B400932E134CAE6D /* Datadog.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.rum-native-multi-scene-probe";
+				PRODUCT_NAME = RUMNativeMultiSceneProbe;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		383BEE1311B0C1F14E037873 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A25A69F4B400932E134CAE6D /* Datadog.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.rum-native-multi-scene-probe";
+				PRODUCT_NAME = RUMNativeMultiSceneProbe;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8CF515F8EDDE93EE8DCB4603 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B94D8D4CA73C2B45DD3DC6B1 /* Build configuration list for PBXNativeTarget "RUMNativeMultiSceneProbe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E93663BE0745D182878D14C /* Debug */,
+				383BEE1311B0C1F14E037873 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C06D967C3141427CD91C8C26 /* Build configuration list for PBXProject "RUMNativeMultiSceneProbe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8CF515F8EDDE93EE8DCB4603 /* Debug */,
+				1D308B9861CA6495AC9BCCFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		288E2E104DAE37EC516E7EFA /* XCLocalSwiftPackageReference "../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		862E13E4F94AF015BBE28727 /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogRUM;
+		};
+		B687B5705E5D4BD0978C21DF /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 2A599B1586F9EB865A05FC51 /* Project object */;
+}
