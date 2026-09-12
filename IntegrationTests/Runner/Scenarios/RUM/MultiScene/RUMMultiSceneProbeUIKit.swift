@@ -228,6 +228,27 @@ final class RUMMultiSceneProbeUIKitViewController:
             button(title: "Close this window", id: "close-window", action: #selector(closeWindow))
         )
         stack.addArrangedSubview(
+            button(
+                title: "Start/duplicate-start cross-window operation",
+                id: "operation-cross-start",
+                action: #selector(startOrDuplicateCrossWindowOperation)
+            )
+        )
+        stack.addArrangedSubview(
+            button(
+                title: "Succeed cross-window operation",
+                id: "operation-cross-succeed",
+                action: #selector(succeedCrossWindowOperation)
+            )
+        )
+        stack.addArrangedSubview(
+            button(
+                title: "Fail cross-window operation",
+                id: "operation-cross-fail",
+                action: #selector(failCrossWindowOperation)
+            )
+        )
+        stack.addArrangedSubview(
             button(title: "Push UIKit detail", id: "push-detail", action: #selector(pushDetail))
         )
         stack.addArrangedSubview(
@@ -338,6 +359,33 @@ final class RUMMultiSceneProbeUIKitViewController:
     @objc private func closeWindow() {
         mark("requested scene close")
         RUMMultiSceneProbeState.closeScene(for: view)
+    }
+
+    @objc private func startOrDuplicateCrossWindowOperation() {
+        let operationKey = RUMMultiSceneProbeState.startOrDuplicateCrossWindowOperation(
+            context: context
+        )
+        mark("cross-window operation started key=\(operationKey)")
+    }
+
+    @objc private func succeedCrossWindowOperation() {
+        guard let operationKey = RUMMultiSceneProbeState.succeedCrossWindowOperation(
+            context: context
+        ) else {
+            mark("no cross-window operation to succeed")
+            return
+        }
+        mark("cross-window operation succeeded key=\(operationKey)")
+    }
+
+    @objc private func failCrossWindowOperation() {
+        guard let operationKey = RUMMultiSceneProbeState.failCrossWindowOperation(
+            context: context
+        ) else {
+            mark("no cross-window operation to fail")
+            return
+        }
+        mark("cross-window operation failed key=\(operationKey)")
     }
 
     @objc private func pushDetail() {

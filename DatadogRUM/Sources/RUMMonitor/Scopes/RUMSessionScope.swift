@@ -382,7 +382,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     context: context,
                     writer: writer,
                     activeView: operationTargetView(for: operationStepVitalCommand),
-                    activeViews: viewScopes
+                    activeViews: viewScopes,
+                    processRepresentativeView: activeView
                 )
                 if let operationView {
                     operationStepVitalCommand.target = .view(operationView.viewUUID)

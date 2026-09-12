@@ -188,6 +188,8 @@ enum RUMMultiSceneProbeState {
     private static var preparedNetworkTasksByScene: [String: URLSessionDataTask] = [:]
     private static var sharedNetworkTask: URLSessionDataTask?
     private static var sharedNetworkUsers: Set<String> = []
+    private static var crossWindowOperationKey: String?
+    private static let crossWindowOperationName = "probe-cross-window-operation"
     private static let probeLogger = Logger(
         subsystem: "com.datadoghq.ios-sdk.multi-scene-probe",
         category: "probe"
@@ -320,6 +322,82 @@ enum RUMMultiSceneProbeState {
             from: [Attribute.requestedScene: context.sceneLabel]
         )
         return activity
+    }
+
+    static func startOrDuplicateCrossWindowOperation(
+        context: RUMMultiSceneProbeContext
+    ) -> String {
+        let operationKey: String
+        lock.lock()
+        if let activeKey = crossWindowOperationKey {
+            operationKey = activeKey
+        } else {
+            operationKey = UUID().uuidString
+            crossWindowOperationKey = operationKey
+        }
+        lock.unlock()
+
+        RUMMonitor.shared().startOperation(
+            name: crossWindowOperationName,
+            operationKey: operationKey,
+            attributes: operationAttributes(
+                context: context,
+                origin: "cross-window-operation-start"
+            )
+        )
+        return operationKey
+    }
+
+    static func succeedCrossWindowOperation(
+        context: RUMMultiSceneProbeContext
+    ) -> String? {
+        guard let operationKey = takeCrossWindowOperationKey() else {
+            return nil
+        }
+        RUMMonitor.shared().succeedOperation(
+            name: crossWindowOperationName,
+            operationKey: operationKey,
+            attributes: operationAttributes(
+                context: context,
+                origin: "cross-window-operation-success"
+            )
+        )
+        return operationKey
+    }
+
+    static func failCrossWindowOperation(
+        context: RUMMultiSceneProbeContext
+    ) -> String? {
+        guard let operationKey = takeCrossWindowOperationKey() else {
+            return nil
+        }
+        RUMMonitor.shared().failOperation(
+            name: crossWindowOperationName,
+            operationKey: operationKey,
+            reason: .error,
+            attributes: operationAttributes(
+                context: context,
+                origin: "cross-window-operation-failure"
+            )
+        )
+        return operationKey
+    }
+
+    private static func takeCrossWindowOperationKey() -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        let operationKey = crossWindowOperationKey
+        crossWindowOperationKey = nil
+        return operationKey
+    }
+
+    private static func operationAttributes(
+        context: RUMMultiSceneProbeContext,
+        origin: String
+    ) -> [String: Encodable] {
+        var attributes = context.attributes
+        attributes[Attribute.origin] = origin
+        return attributes
     }
 
     static func networkAttributes(from request: URLRequest) -> [String: Encodable] {

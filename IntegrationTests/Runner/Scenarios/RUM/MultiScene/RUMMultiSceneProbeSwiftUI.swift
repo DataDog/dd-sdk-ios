@@ -127,6 +127,21 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
                 }
                 .accessibilityIdentifier(identifier("close-window"))
 
+                Button("Start/duplicate-start cross-window operation") {
+                    startOrDuplicateCrossWindowOperation()
+                }
+                .accessibilityIdentifier(identifier("operation-cross-start"))
+
+                Button("Succeed cross-window operation") {
+                    succeedCrossWindowOperation()
+                }
+                .accessibilityIdentifier(identifier("operation-cross-succeed"))
+
+                Button("Fail cross-window operation") {
+                    failCrossWindowOperation()
+                }
+                .accessibilityIdentifier(identifier("operation-cross-fail"))
+
                 NavigationLink {
                     RUMMultiSceneProbeSwiftUIScreen(
                         context: context,
@@ -413,6 +428,33 @@ private struct RUMMultiSceneProbeSwiftUIScreen: View {
                 "control source=\(context.sceneLabel) swiftui trace finished"
             )
         }
+    }
+
+    private func startOrDuplicateCrossWindowOperation() {
+        let operationKey = RUMMultiSceneProbeState.startOrDuplicateCrossWindowOperation(
+            context: context
+        )
+        mark("cross-window operation started key=\(operationKey)")
+    }
+
+    private func succeedCrossWindowOperation() {
+        guard let operationKey = RUMMultiSceneProbeState.succeedCrossWindowOperation(
+            context: context
+        ) else {
+            mark("no cross-window operation to succeed")
+            return
+        }
+        mark("cross-window operation succeeded key=\(operationKey)")
+    }
+
+    private func failCrossWindowOperation() {
+        guard let operationKey = RUMMultiSceneProbeState.failCrossWindowOperation(
+            context: context
+        ) else {
+            mark("no cross-window operation to fail")
+            return
+        }
+        mark("cross-window operation failed key=\(operationKey)")
     }
 
     private func startOperation() {

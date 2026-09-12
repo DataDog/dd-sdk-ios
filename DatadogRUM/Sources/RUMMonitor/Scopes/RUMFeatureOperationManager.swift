@@ -67,16 +67,13 @@ internal class RUMFeatureOperationManager {
     }
 
     private struct ActiveOperation {
-        /// The scene that owned the operation start. Subsequent steps use the
-        /// current view in this scene instead of the process representative.
-        let sceneIdentifier: RUMSceneIdentifier?
-        /// Last view proven to belong to the operation's scene. Retaining this
-        /// lightweight snapshot lets an end step preserve its source after the
-        /// scene closes without retaining the completed `RUMViewScope`.
+        /// Last view proven at an operation step's call site. Retaining this
+        /// lightweight snapshot lets a later step preserve its most recent
+        /// trustworthy context without retaining a completed `RUMViewScope`.
         var viewContext: OperationViewContext?
     }
 
-    /// Active operation state for tracking, warnings, and scene ownership.
+    /// Active operation state for tracking, warnings, and last-proven view attribution.
     private var activeOperations: [OperationIdentity: ActiveOperation] = [:]
     private let maxActiveOperations = 500
 
@@ -103,7 +100,8 @@ internal class RUMFeatureOperationManager {
         context: DatadogContext,
         writer: Writer,
         activeView: RUMViewScope?,
-        activeViews: [RUMViewScope] = []
+        activeViews: [RUMViewScope] = [],
+        processRepresentativeView: RUMViewScope? = nil
     ) -> RUMViewScope? {
         // Validate command parameters
         guard validateCommand(command) else {
@@ -114,8 +112,9 @@ internal class RUMFeatureOperationManager {
         let operationView = view(
             for: command,
             identity: identity,
-            representativeView: activeView,
-            activeViews: activeViews
+            resolvedView: activeView,
+            activeViews: activeViews,
+            processRepresentativeView: processRepresentativeView
         )
         let operationViewContext = viewContext(
             for: command,
@@ -142,8 +141,11 @@ internal class RUMFeatureOperationManager {
                 name: command.name,
                 operationKey: command.operationKey,
                 identity: identity,
-                sceneIdentifier: operationView?.sceneIdentifier,
-                viewContext: operationViewContext
+                provenViewContext: provenViewContext(
+                    for: command,
+                    directlyResolvedView: activeView,
+                    viewContext: operationViewContext
+                )
             )
 
         case .end, .update, .retry:
@@ -152,7 +154,11 @@ internal class RUMFeatureOperationManager {
                 operationKey: command.operationKey,
                 identity: identity,
                 stepType: command.stepType,
-                viewContext: operationViewContext
+                provenViewContext: provenViewContext(
+                    for: command,
+                    directlyResolvedView: activeView,
+                    viewContext: operationViewContext
+                )
             )
         }
 
@@ -271,21 +277,24 @@ internal class RUMFeatureOperationManager {
         name: String,
         operationKey: String?,
         identity: OperationIdentity,
-        sceneIdentifier: RUMSceneIdentifier?,
-        viewContext: OperationViewContext?
+        provenViewContext: OperationViewContext?
     ) {
         // Check if operation is already being tracked
         if activeOperations[identity] != nil {
             // Warning: Operation appears to be started multiple times
-            DD.logger.warn("Operation \(formatOperationName(name, operationKey: operationKey)) has already been started. This may result in the backend terminating the previous instance with an `auto_restart` failure. Note that the SDK only tracks operations locally and not across sessions.")
+            DD.logger.warn(
+                "Operation \(formatOperationName(name, operationKey: operationKey)) has already been started. "
+                + "The SDK will track only the latest start; the earlier backend operation will remain open "
+                + "until its four-hour timeout. Use a unique `operationKey` for each concurrent operation "
+                + "instance. Note that the SDK only tracks operations locally and not across sessions."
+            )
         }
 
         cleanUpActiveOperations()
 
         // Add operation to local tracking for future reference
         activeOperations[identity] = ActiveOperation(
-            sceneIdentifier: sceneIdentifier,
-            viewContext: viewContext?.retainedSnapshot
+            viewContext: provenViewContext?.retainedSnapshot
         )
     }
 
@@ -294,7 +303,7 @@ internal class RUMFeatureOperationManager {
         operationKey: String?,
         identity: OperationIdentity,
         stepType: RUMVitalOperationStepEvent.Vital.StepType,
-        viewContext: OperationViewContext?
+        provenViewContext: OperationViewContext?
     ) {
         // Check if operation is currently being tracked
         if activeOperations[identity] == nil {
@@ -302,8 +311,8 @@ internal class RUMFeatureOperationManager {
             DD.logger.warn("`\(stepType.rawValue)` was called, but operation \(formatOperationName(name, operationKey: operationKey)) is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:options:)` first. Note that the SDK only tracks operations locally and not across sessions.")
         }
 
-        if var operation = activeOperations[identity], let viewContext {
-            operation.viewContext = viewContext.retainedSnapshot
+        if var operation = activeOperations[identity], let provenViewContext {
+            operation.viewContext = provenViewContext.retainedSnapshot
             activeOperations[identity] = operation
         }
 
@@ -389,21 +398,26 @@ internal class RUMFeatureOperationManager {
     private func view(
         for command: RUMOperationStepVitalCommand,
         identity: OperationIdentity,
-        representativeView: RUMViewScope?,
-        activeViews: [RUMViewScope]
+        resolvedView: RUMViewScope?,
+        activeViews: [RUMViewScope],
+        processRepresentativeView: RUMViewScope?
     ) -> RUMViewScope? {
-        guard command.stepType != .start,
-              let operation = activeOperations[identity] else {
-            return representativeView
+        if hasTrustworthyViewTarget(command), let resolvedView {
+            return resolvedView
         }
 
-        guard let sceneIdentifier = operation.sceneIdentifier else {
-            return representativeView
+        if command.stepType != .start,
+           let retainedView = activeOperations[identity]?.viewContext {
+            return activeViews.last {
+                $0.isActiveView && $0.viewUUID == retainedView.id
+            }
         }
 
-        return activeViews.last {
-            $0.isActiveView && $0.sceneIdentifier == sceneIdentifier
+        guard command.target != .none else {
+            return nil
         }
+
+        return processRepresentativeView ?? resolvedView
     }
 
     private func viewContext(
@@ -416,12 +430,34 @@ internal class RUMFeatureOperationManager {
         }
 
         guard command.stepType != .start,
-              let operation = activeOperations[identity],
-              operation.sceneIdentifier != nil else {
+              let operation = activeOperations[identity] else {
             return nil
         }
 
         return operation.viewContext
+    }
+
+    /// A scene or exact-view target came from customer intent or call-site
+    /// inference. Process-representative routing is a compatibility fallback,
+    /// so it must not replace an operation's last proven view context.
+    private func hasTrustworthyViewTarget(_ command: RUMOperationStepVitalCommand) -> Bool {
+        switch command.target {
+        case .scene, .view:
+            return true
+        case .none, .processRepresentative, .allActiveViews:
+            return false
+        }
+    }
+
+    private func provenViewContext(
+        for command: RUMOperationStepVitalCommand,
+        directlyResolvedView: RUMViewScope?,
+        viewContext: OperationViewContext?
+    ) -> OperationViewContext? {
+        guard hasTrustworthyViewTarget(command), directlyResolvedView != nil else {
+            return nil
+        }
+        return viewContext
     }
 
     /// Formats operation name and key for consistent warning message display

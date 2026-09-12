@@ -1008,7 +1008,7 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
     }
 
-    func testGivenOperationStartedInOneScene_whenAnotherSceneInteracts_itKeepsFollowingTheOwningSceneNavigation() throws {
+    func testGivenOperationStartedInOneScene_whenItEndsThereAfterNavigation_itOverridesAnotherProcessRepresentative() throws {
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
@@ -1068,16 +1068,18 @@ class RUMSessionScopeTests: XCTestCase {
         )
         XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneB)
 
+        var operationEnd = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "load_note",
+            operationKey: operationKey,
+            stepType: .end,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationEnd.target = .scene(sceneA)
         _ = scope.process(
-            command: RUMOperationStepVitalCommand(
-                vitalId: UUID().uuidString,
-                name: "load_note",
-                operationKey: operationKey,
-                stepType: .end,
-                failureReason: nil,
-                time: Date(),
-                attributes: [:]
-            ),
+            command: operationEnd,
             context: context,
             writer: writer
         )
@@ -1086,6 +1088,100 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(operationEvents.count, 2)
         XCTAssertEqual(operationEvents[0].view.url, "View A1")
         XCTAssertEqual(operationEvents[1].view.url, "View A2")
+    }
+
+    func testGivenOperationStartedInSceneA_whenItEndsInSceneB_itUsesEachScenesCurrentView() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "Message List",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "Full Thread",
+                sceneIdentifier: sceneB
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var operationStart = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "thread_open",
+            operationKey: "key-123",
+            stepType: .start,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationStart.target = .scene(sceneA)
+        _ = scope.process(command: operationStart, context: context, writer: writer)
+
+        var operationEnd = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "thread_open",
+            operationKey: "key-123",
+            stepType: .end,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationEnd.target = .scene(sceneB)
+        _ = scope.process(command: operationEnd, context: context, writer: writer)
+
+        let operationEvents = writer.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operationEvents.count, 2)
+        XCTAssertEqual(operationEvents[0].view.url, "Message List")
+        XCTAssertEqual(operationEvents[1].view.url, "Full Thread")
+    }
+
+    func testGivenOperationTargetSceneHasNoView_whenNoSnapshot_itUsesProcessRepresentative() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var operationStart = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "operation",
+            operationKey: "key",
+            stepType: .start,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationStart.target = .scene(RUMSceneIdentifier(rawValue: "missing-scene"))
+        _ = scope.process(command: operationStart, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.url, "View B")
     }
 
     func testGivenConcurrentScenes_whenSessionStops_itStopsEverySceneView() {
