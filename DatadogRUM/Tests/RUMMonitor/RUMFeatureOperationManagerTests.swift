@@ -425,7 +425,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(events[3].view.id, viewB.viewUUID.toRUMDataFormat)
     }
 
-    func testGivenOperationOwningSceneIsClosed_whenItEnds_itDoesNotFallBackToAnotherScene() throws {
+    func testGivenOperationOwningSceneIsClosed_whenItEnds_itRetainsItsOriginatingView() throws {
         let featureScope = FeatureScopeMock()
         let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
@@ -453,13 +453,96 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         XCTAssertNil(selectedView)
         let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
-        XCTAssertEqual(event.view.id, RUMUUID.nullUUID.toRUMDataFormat)
-        XCTAssertEqual(event.view.url, "")
+        XCTAssertEqual(event.view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, viewA.viewPath)
         let message = try XCTUnwrap(
             featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }.last
         )
-        XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewID])
-        XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewName])
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewID] as? [String],
+            [viewA.viewUUID.toRUMDataFormat]
+        )
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewName] as? [String],
+            [viewA.viewName]
+        )
+    }
+
+    func testGivenOperationNavigatesThenOwningSceneCloses_whenItEnds_itRetainsLastOriginatingView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA1 = RUMViewScope.mockWith(name: "View A1", sceneIdentifier: sceneA)
+        let viewA2 = RUMViewScope.mockWith(name: "View A2", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let start = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .start
+        )
+        let update = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .update
+        )
+        let end = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .end
+        )
+
+        manager.process(
+            start,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA1,
+            activeViews: [viewA1, viewB]
+        )
+        manager.process(
+            update,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA2, viewB]
+        )
+        let selectedView = manager.process(
+            end,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewB]
+        )
+
+        XCTAssertNil(selectedView)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, viewA2.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, viewA2.viewPath)
+    }
+
+    func testGivenLegacyOperationViewIsClosed_whenItEnds_itPreservesNoViewBehavior() throws {
+        let view = RUMViewScope.mockWith(name: "Legacy View", sceneIdentifier: nil)
+        let start = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .start
+        )
+        let end = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .end
+        )
+
+        manager.process(start, context: mockContext, writer: mockWriter, activeView: view)
+        let selectedView = manager.process(
+            end,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: nil
+        )
+
+        XCTAssertNil(selectedView)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, RUMUUID.nullUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "")
     }
 
     // MARK: - Synthetics Test ID Tests
