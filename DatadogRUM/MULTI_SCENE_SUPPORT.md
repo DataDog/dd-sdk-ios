@@ -33,27 +33,63 @@ multi-scene support is not claimed.
 ## Current verdict
 
 **The released baseline is not semantically multi-scene-safe. This branch now has
-an experimental core-RUM implementation that fixes confirmed view, navigation,
-action, and lifecycle failures. A real two-window iPad run and the ingested backend
-session validate the core view model, but the branch is not ready for a general
-multi-scene support claim.** The most recent complete RUM suite passed 1,018/1,018,
-including the SwiftUI attachment and normal-app gating changes. Logs passed 95/95,
-Internal 477/477, Trace 147/147, and
-WebView 31/31. Alternating interaction between both visible windows, scrolls, and
-per-scene background/foreground/disconnect transitions still need one complete
-fixed-runtime pass.
+an experimental core-RUM implementation that fixes the reproduced view,
+navigation, action, lifecycle, resource-completion, trace-correlation, and
+feature-operation ownership failures. Multiple real two-window iPad runs and
+their ingested backend sessions validate the core model, but the branch is not
+ready for a general support claim until the remaining matrix and normal-app
+regressions pass.** The pre-trait RUM suite passed 1,018/1,018 after the SwiftUI
+attachment and normal-app gating changes. After adding the iOS 17+ trait bridge,
+the complete RUM suite passed 1,020/1,020. Logs passed 95/95, Internal 477/477,
+Trace 147/147, and WebView 31/31. After the operation-teardown fix and two added
+regressions, the complete RUM suite passes 1,022/1,022; its focused manager suite
+passes 17/17.
+
+The iOS 17+ custom-trait experiment now works as an early scene-identity bridge,
+but it does not change SwiftUI's outer-to-inner lifecycle modifier ordering. In
+two iOS 27 runs, trait-backed tracking made all six Home/Detail lifecycle resources
+land on the correct views and `onChange(initial:)` reduced the first-view delay
+from about 35 ms to about 3 ms. Customer outer `.onAppear` and the synchronous
+prefix of `.task` still ran first. This is a useful attribution improvement, not
+a supported view-before-callback guarantee. A stricter follow-up invoked four
+synchronous custom RUM actions in those customer callbacks. The view commands
+were processed first, all four actions were emitted on the intended new
+Home/Detail view, and backend intake agreed. The residual timing gap has therefore
+not produced a semantic attribution failure in the tested iOS 27 command/resource
+paths.
+
+These SwiftUI runtime results exercise the public `.trackRUMView` modifier. The
+probe configures `swiftUIViewsPredicate: nil` and hosts SwiftUI inside the
+integration runner's UIKit `UISceneDelegate`; it does not yet validate transparent
+SwiftUI view discovery or a native SwiftUI `WindowGroup`/`openWindow` lifecycle.
+Automatic SwiftUI tracking is therefore a P0 experiment, not part of the current
+runtime support claim.
 
 The baseline verdict is supported by source inspection and a reproduced iPad
 simulator failure: opening scene B emitted a final inactive update for scene A's
 still-visible Home view before starting scene B's Home view. In the fixed iPadOS
 26.5 probe, opening scene B created a second active RUM view without stopping A;
-navigating B then stopped and replaced only B. Datadog intake preserved both scene
-view IDs in one session. The branch keeps one active view branch per scene and has
-focused coverage for UIKit and SwiftUI view lifetimes, duplicate identities,
-navigation, taps, scrolls, scene lifecycle, session rollover, and
-interaction-to-next-view attribution. Mirrored log errors, unique-key feature
-operations, WebView native-container correlation, and the representative fatal
-context have focused ownership tests.
+navigating, presenting, dismissing, scrolling, and closing B affected only B.
+UIKit and manually tracked SwiftUI duplicate-name views retained distinct IDs,
+and actions plus delayed work stayed on their source windows. Datadog intake
+preserved all scene view IDs in one session. The branch keeps one active view
+branch per scene and has focused coverage for UIKit and explicit SwiftUI view
+lifetimes, duplicate identities, navigation, taps, scrolls, scene lifecycle,
+session rollover, and interaction-to-next-view attribution. Mirrored log errors,
+WebView native-container correlation, and the representative fatal context have
+focused ownership tests.
+
+A teardown-specific experiment found one additional failure after the first core
+fix: a scene-owned feature operation emitted its start vital on the correct view,
+but closing that scene before the end left no active matching view, so the end
+vital was not retained by intake and no reduced operation was created. The manager
+now stores only the last proven originating view ID, name, and path with the
+operation. It uses that lightweight snapshot after scene closure without
+resurrecting or updating the stopped `RUMViewScope`, and it never falls through to
+another scene. Run `c8d2aa31-127a-4d4c-a910-8e56eea5fb48` proves both raw steps
+and one successful reduced operation retain scene D view
+`547eb0b9-5743-47f7-ab07-c309e5b5bb29`. Legacy source-less operation behavior is
+unchanged.
 
 Generic automatic Resource and Trace attribution is **not solved**. An arbitrary
 `URLSession` request has no intrinsic `UIWindowScene` identity. The current
@@ -66,53 +102,92 @@ button-local resource/span probe show that ownership can be preserved when a
 source is known; they do not justify a general automatic-attribution claim.
 
 Important limits remain explicit. Source-less manual APIs and feature-flag
-messages use the most recently interacted representative view. UI-triggered manual
-APIs can participate in the bounded event handoff only when the relevant
-instrumentation is enabled and the runtime experiment proves inheritance; callers
-outside that path remain inherently ambiguous.
-Main-run-loop long tasks, hangs, and other process-wide signals also use one
-representative rather than being duplicated. Session Replay scene-correctness is
-out of scope for this work; the required contract here is crash-free coexistence,
-not correct recording of every concurrent window. Profiling correlation and
-external-display refresh-rate collection remain partial.
+messages use the process representative, which normally follows the most recently
+tracked interaction. Early scene
+connection and `viewDidAppear` requests can also reach the previous representative
+before the new scene's first RUM view exists; this matches the approved fallback
+but is not exact attribution. UI-triggered manual APIs can participate in the
+bounded event handoff only when the relevant instrumentation is enabled and the
+runtime experiment proves inheritance; callers outside that path remain
+inherently ambiguous. Main-run-loop long tasks, hangs, and other process-wide
+signals also use one representative rather than being duplicated. Automatic and
+native SwiftUI tracking, split-view navigation, restoration, profiling
+correlation, external-display refresh rate, and iPhone Duo validation remain open.
+Session Replay scene-correctness is out of scope; repeated two-window runs uploaded
+replay data without an SDK crash, which is the required contract here.
 
 ## Resume here
 
 This branch is a working experimental implementation, not a release-ready support
 claim. A new session should continue from this order of work:
 
-1. Preserve the current 1,018/1,018 `DatadogRUM` result as the regression
-   baseline, then rerun any module affected by later edits.
-2. Rebuild the probe and verify the transient SwiftUI detach correction at
-   runtime. Add ordered attachment/appearance transition logging before changing
-   that state machine again.
-3. Spike the iOS 17+ custom UIKit-trait bridge described in the implementation
-   plan. It must prove on iOS 27/27.1 that a real scene identifier exists before
-   the customer's outer `.onAppear` and the synchronous prefix of `.task`;
-   source inspection or a modifier-local callback is not sufficient. Do not add
-   an explicit iOS 15/16 integration solely to extend the support range.
-4. Use the iPadOS 26.5 simulator for the complete two-window matrix: alternating
-   A/B taps, scroll/deceleration, modal and split navigation, per-scene
-   background/foreground/disconnect, reverse completions, and origin-scene close
-   before completion.
-5. Re-evaluate each provisional Resource/Trace mechanism against the completed
-   matrix and remove anything that lacks a reproduced failure and compatibility
-   justification. Do not expand this work to defensive request rewriting.
-6. Finish normal-app regression, swizzle overhead/recursion, lint, and supported
-   platform builds before changing the verdict.
+1. **P0 — finish primary UI semantics:** enable transparent SwiftUI view tracking
+   in a dedicated probe variant and cover both the current UIKit-hosted scene and
+   a native SwiftUI `WindowGroup`/`openWindow` lifecycle. Then run
+   `NavigationSplitView`, UIKit `UISplitViewController`/adaptive collapse, UIKit
+   scroll/deceleration, per-scene background/foreground, and restoration on the
+   stable two-window runtime. Repeat the resulting release matrix on iOS 27/27.1
+   and iPhone Duo when that destination is available. Do not repeat already-proven
+   manual SwiftUI stack navigation, modals, duplicate names, taps, SwiftUI scroll,
+   or scene destruction unless a later edit can affect them.
+2. **P0 — prove no normal-app degradation:** run a live single-scene app with and
+   without automatic action tracking, measure the additional `sendEvent` path for
+   overhead and recursion, and exercise legacy manual views plus an ordinary
+   custom URLSession handler. Preserve the complete 1,022/1,022 `DatadogRUM`
+   result and the passing generic iOS Swift Package build.
+3. **P1 — close only the missing causal-boundary rows:** isolate SwiftUI Button ->
+   structured `Task`, shared/coalesced requests, reverse-order completion from two
+   scenes, and trace-only URLSession spans in console plus backend data. Generic
+   source discovery is not a goal; detached/GCD/timer and early lifecycle fallback
+   are already classified and must not be reworked into guessed ownership.
+4. **P1 — exercise the remaining downstream surfaces:** logs plus mirrored errors,
+   WebView native-container correlation, vitals/TNS/INV, and fatal/exported RUM
+   context need targeted two-window runtime checks. Two scenes starting operations
+   with the same `(name, key)` need an explicit contract experiment because local
+   ownership intentionally matches the backend identity and is not scene-keyed.
+   Feature-operation teardown for unique identities, delayed resources/traces,
+   session rollover, and Session Replay crash-free coexistence already have
+   backend proof and need rerunning only after related edits. Profiling remains an
+   explicitly documented process-level limitation.
+5. **P2 — simplify and define the release contract:** after the matrix is complete,
+   remove provisional Resource/Trace machinery that did not change a supported
+   result. Do not add distributed-header repair or defensive request rewriting.
+   Update this document from experimental to supported only when the completion
+   gates are met.
+
+Preserve the trait-backed SwiftUI result as a semantic attribution guarantee,
+not a callback-order guarantee. Run
+`c77883d4-80fe-4730-a3ff-575221a3c262` proved synchronous manual actions and
+URLSession resources from outer lifecycle callbacks reach the new view even
+though invocation precedes the view payload by 0.3-4 ms. The focused
+operation-manager result remains 17/17.
 
 Current implementation state:
 
 - Scene identifiers and routing targets are internal and never serialized.
-- UIKit and SwiftUI view stacks, session branches, navigation, actions, scrolls,
-  INV, lifecycle, session rollover, exact delayed completions, WebView containers,
-  feature operations, and representative fatal context are scene-aware.
+- Core UIKit and explicit SwiftUI view stacks, session branches, navigation,
+  actions, scrolls, INV, lifecycle, session rollover, exact delayed completions,
+  WebView containers, feature operations, and representative fatal context accept
+  scene-aware routing. Runtime proof varies by surface as recorded below.
 - The hidden SwiftUI scene reader and the extra `UIApplication.sendEvent`
   causal handoff are enabled only when the configured application bundle declares
-  `UIApplicationSupportsMultipleScenes = true`. Ordinary apps retain the original
-  direct SwiftUI modifier lifecycle and swizzling conditions.
+  `UIApplicationSupportsMultipleScenes = true`. Ordinary apps therefore retain
+  the original direct SwiftUI modifier and do not activate the extra causal
+  handoff. UIKit commands may still carry an internal scene target; live
+  single-scene behavior and overhead remain release gates.
+- On iOS 17+, a scene-level custom UIKit trait bridges each real scene identifier
+  into SwiftUI. An initial trait callback can start tracking before the hidden
+  reader attaches and is availability-gated away from the iOS 15/16 build path.
+  It does not make an inner tracking modifier run before customer lifecycle
+  modifiers applied outside it.
+- Runtime SwiftUI evidence currently covers explicit `.trackRUMView` modifiers,
+  not `swiftUIViewsPredicate` discovery or a native SwiftUI app scene lifecycle.
 - Source-less work still uses the process representative as compatibility
   behavior. This preserves event volume but is not exact multi-scene attribution.
+- Scene-owned feature operations retain a lightweight last-proven view snapshot
+  for steps emitted after the source scene closes. The stopped live view scope is
+  not retained or reactivated, and legacy source-less operation behavior remains
+  unchanged.
 - Session Replay is required only to coexist without an SDK crash. Its recording
   semantics remain explicitly out of scope.
 
@@ -134,20 +209,24 @@ Workspace safety for handoff: do not stage or commit
 `xcconfigs/Datadog.local.xcconfig`; they predate this work, and the latter contains
 local credentials. The integration-test project change is part of the probe.
 
-Checkpoint validation on 2026-09-12, after the final review cleanup:
+Checkpoint validation on 2026-09-12:
 
-- `DatadogRUM`: 1,018/1,018 tests passed.
+- `DatadogRUM`: 1,022/1,022 tests passed after the trait bridge and operation
+  teardown fix.
+- `RUMFeatureOperationManagerTests`: 17/17 tests passed after the teardown fix.
 - `DatadogInternal`: 477/477 tests passed.
 - `DatadogLogs`: 95/95 tests passed.
 - `DatadogTrace`: 147/147 tests passed.
 - `DatadogWebViewTracking`: 31/31 tests passed.
-- `RUM MultiScene Probe`: built successfully through Xcode 27 in 14.997 seconds
-  with zero build errors.
-- Repository lint and `git diff --check`: clean.
+- `RUM MultiScene Probe`: rebuilt successfully through Xcode 27 after adding
+  fixed toolbar controls and the operation fix, with zero build errors.
+- `Datadog-Package`: generic iOS Swift Package build passed through Xcode 27.
+- Repository lint and `git diff --check`: clean after the current changes.
 
 ## Checkpoint commit structure
 
-The checkpoint is intentionally split by rollback boundary, in this order:
+The branch history and current checkpoint are intentionally split by rollback
+boundary, in this order:
 
 | Order | Commit subject | Boundary |
 | --- | --- | --- |
@@ -158,6 +237,10 @@ The checkpoint is intentionally split by rollback boundary, in this order:
 | 5 | `Preserve native scene ownership for WebView RUM` | Native container snapshots forwarded with WebView events |
 | 6 | `Add a multi-scene RUM integration probe` | Runner scenario, multi-window scene delegate support, scheme, and project wiring |
 | 7 | `Document the multi-scene support checkpoint` | This assessment, experiment ledger, rejected paths, plan review, questions, and resume instructions |
+| 8 | `Bridge native scene identity into SwiftUI` | iOS 17+ custom trait publication, SwiftUI environment bridge, normal-app gating, and focused tests |
+| 9 | `Preserve feature operations after scene teardown` | Last-proven source-view snapshot, teardown/navigation/legacy tests, and no live-view resurrection |
+| 10 | `Add fixed multi-scene probe controls` | Fixed UIKit/SwiftUI activation and close controls used by delayed-work and teardown experiments |
+| 11 | `Update the multi-scene runtime assessment` | Consolidated run/session evidence, operation failure and fix, current gaps, validation, and resume plan |
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 each checkpoint commit must use an exact path list. Do not use a broad `git commit`
@@ -170,59 +253,141 @@ authoritative index of runs that currently support decisions:
 
 | Probe run | RUM session | Runtime | What it established |
 | --- | --- | --- | --- |
-| `a9fab1c4-5cb6-4468-9d1a-dc0936116c46` | `18e48c14-7073-4353-9b85-0121b93c74e0`, then `5fc61f1f-9253-4c12-9917-d1568e4ca9d5` | iPadOS 27 | Single-window harness, payload markers, and backend queries work. The second process showed baseline scene B replacing still-visible A before the compositor restarted. |
+| `a9fab1c4-5cb6-4468-9d1a-dc0936116c46` | `18e48c14-7073-4353-9b85-0121b93c74e0`, `5fc61f1f-9253-4c12-9917-d1568e4ca9d5`, and `86a1a492-24db-485c-80dc-1a4a21dab1e7` | iPadOS 27 | Single-window harness, payload markers, and backend queries work. Three second-window attempts ended in simulator-wide `backboardd` respawns; the second captured baseline scene B replacing still-visible A first. |
 | `574be7dd-4482-48e5-b4cc-eaaa332179bd` | `59a3329e-1a21-486c-9ee5-190d111bfbf3` | iPadOS 26.5 | First fixed two-window proof: A and B views coexist; B navigation does not stop A; delayed resource/span/operation retain the intended B lifecycle. |
 | `4d7dc23b-721d-4038-8c89-3b29a1c373c9` | `0caa932a-7c4c-4c9d-9fb5-4acb691118f9` | iPadOS 26.5 | Manual B action emits once instead of fanning into A; mixed UIKit/SwiftUI navigation remains scene-isolated. |
 | `6a0b61d0-85a8-4915-b02e-63ab53fa13db` | `2b282934-aae9-4495-b7fc-797736f58735` | iPadOS 26.5 | Concurrent UIKit and SwiftUI views coexist; Session Replay uploads are accepted with no SDK crash. |
 | `e7bf0f3e-2e46-4487-af4f-072cd7ba8ab8` | `feb94679-4b2e-4821-8146-a531e8608672` | iPadOS 27 | Physical SwiftUI navigation action and destination are correct in one scene; opening B reproduces the simulator compositor crash, not an SDK crash. |
 | `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f` | `5e65abff-6999-45b2-b8ca-cf199b1b13e4` | iPadOS 26.5 | Actual URLSession boundary: synchronous UIKit work and task resume can retain B; scene connection and `viewDidAppear` loading can fall to representative A. |
+| `8a71b04b-ee69-4670-bdb1-28a6a3625662` | `462f633d-b3fb-4fd5-83e6-bd83123187ee`, then `2df86288-72c8-43dc-ab53-7d13d70c6367` | iPadOS 26.5 | Structured requests retained B and correctly kept/dropped their action at 20/200 ms. The same run exposed the pre-fix explicit-session-stop loss of still-visible scene A. |
 | `e03e31d3-eb19-4955-9782-1b583f37b28f` | `29784a34-5196-4ed1-8c56-8e3337f31205` | iPadOS 26.5 | Explicit session stop restores both active scene branches; delayed B work remains on B after navigation. |
 | `70ccd6cf-1514-4387-86ef-25cc255744c4` | `8ea9108c-3fb3-4cdf-ae76-c429348b16b0` | iPadOS 26.5 | Three-minute causality proof: structured `Task` retains B; detached task, GCD, and timer use representative A. RUM and APM agree. |
 | `5ebc59df-6fc1-4620-bcb2-1177d9ab3409` | `d49d1cdf-5a6d-4787-af1e-1422ec841ea4` | iPadOS 27 | SwiftUI `.onAppear` requests precede the tracked view and land on the preceding view; delayed task work is correct. |
 | `fd44bcd2-cde3-4488-a9f4-7756683d85f4` | `dab21bf2-8fee-406a-bd84-81b7211e934e` | iPadOS 27 | `UIView.willMove(toWindow:)` remains too late for `.onAppear` and immediate `.task`; pre-correction navigation emitted a 0.79 ms duplicate Home. |
 | `16e48aa6-6826-49ea-b764-6c0af6f16c0b` | `c8c5b90c-ef71-4bbe-842a-fa22ed5587fd` | iPadOS 27 | Child-controller bridge also remains too late. It avoided synthetic/duplicate views in this run and stayed crash-free, but offered no ordering benefit and was removed. |
+| `68786559-42b4-4087-8e34-997e77d081c5` | `799d975d-9597-4b2e-9c4e-833835aed5de` | iPadOS 27 | Scene custom trait reached SwiftUI before the hidden reader and all six Home/Detail lifecycle resources resolved to the correct view, but outer callbacks still preceded the RUM view by 35/34 ms on Home and 2/1 ms on Detail. |
+| `92326a81-441e-48b9-97b3-3db2b00bc3ab` | `4bd7fa85-dda2-4712-9cce-33cb23f73a3c` | iPadOS 27 | Adding `onChange(initial:)` reduced the callback-to-view gap to 2-3 ms for both Home and Detail. It still did not invert lifecycle ordering; backend intake nevertheless preserved all six resources, the source Home navigation action, four expected views, and zero errors/crashes. |
+| `c77883d4-80fe-4730-a3ff-575221a3c262` | `67fdbd11-1d6a-440d-afd0-db11ff6bc6c4` | iPadOS 27 | Four synchronous custom RUM actions invoked in customer outer `.onAppear`/immediate `.task` before the view payload were all processed on the intended new Home/Detail view. Six lifecycle resources were also correct; five total actions, zero drops, zero errors/crashes. |
+| `91864fb5-cace-4f29-a348-5769bf2ffa65` | `02b150f8-3b2f-43fd-b032-8cac2ef91cd9` | iPadOS 26.5 | SwiftUI scene B navigation and delayed operation/resource work remained on B while scene C opened. Scene C's connection and initial lifecycle resources used the previous representative B view, confirming the source-less early-scene boundary. |
+| `31d0a951-095a-4a71-8c48-b6e4fb4d0af2` | `3160c14e-95d7-4a0e-a40b-204060cfae45` | iPadOS 26.5 | UIKit modal presentation/dismissal and duplicate-name A/B views remained independent. The first delayed-work switch attempt was invalidated by a stale scrolled control, which led to fixed toolbar controls in both probe UIs. |
+| `76599137-09c8-4fb1-b54a-92b3c9ff04d1` | `725418d9-aae5-4570-8bd0-1bad452bbb8c` | iPadOS 26.5 | Using the fixed toolbar switch, a UIKit B trace and operation kept B Home ownership while A became active. APM trace `6aa50e250000000095c6c6caacd03265` retained resource `probe-span-scene-B`. |
+| `972c83f7-9c13-4ea3-b5b6-d43857bb7815` | `3a8b0c3b-53e4-4426-b4b1-12e92ec715d5` | iPadOS 26.5 | Broad UIKit/SwiftUI teardown matrix: 18 views, 17 actions, 33 resources, 4 long tasks, zero errors/crashes, and replay available. Duplicate views, modals, SwiftUI scroll, delayed resources, and both UIKit/SwiftUI traces stayed scene-correct. Raw operation starts survived, but operation ends after scene closure did not, exposing the teardown gap. |
+| `c8d2aa31-127a-4d4c-a910-8e56eea5fb48` | `6c05508c-18fc-41df-85e8-32c573fbf37e` | iPadOS 26.5 | Post-fix teardown proof. Operation key `206E691E-33AC-4BF1-8D26-E48D81315D9A` started in scene D, D closed one second later, and intake retained both raw steps on D Home view `547eb0b9-5743-47f7-ab07-c309e5b5bb29`. The reducer produced one successful 3.15-second operation with the same start/end view. Session counts: 8 resources, 8 views, 7 actions, 3 vitals, 1 long task, 1 operation, 1 session; replay available. |
+
+## Objective progress review
+
+This review measures the branch against the initial support objective rather than
+against the amount of implementation completed:
+
+| Objective | Current evidence | Remaining release work |
+| --- | --- | --- |
+| Concurrent view creation and lifetime | UIKit and explicit SwiftUI `.trackRUMView` windows coexist in one RUM session; opening, navigating, and closing one no longer replaces another | Transparent `swiftUIViewsPredicate` tracking, a native SwiftUI multi-window lifecycle, restoration, and iPhone Duo |
+| UIKit and SwiftUI navigation | UIKit push/pop/modal and manually tracked SwiftUI `NavigationStack`/modal flows have independent backend view chains, including duplicate names | `NavigationSplitView`, UIKit split/adaptive collapse, restoration, and automatic SwiftUI navigation |
+| Action attribution | UIKit/SwiftUI taps emit once on the source view; SwiftUI scroll, action rejection, action expiry, and overlapping-action fixes have backend or focused-test proof | UIKit scroll through deceleration and the filtered-physical-interaction representative edge |
+| Scene lifecycle and sessions | Requested scene destruction/close affects only its scene; focused tests cover disconnect; explicit stop and expiry restore concurrent branches; overlapping views reached raw intake and the reducer | Temporary disconnect/reconnect, per-scene background/foreground, restoration, and product UI presentation of overlapping views |
+| Resources, traces, and operations | Known UI provenance is frozen consistently through RUM/APM completion, navigation, rollover, and source-scene teardown; uniquely identified operations remain reducible after teardown | Four unrun causal rows below, the concurrent identical-operation contract, and generic source-less representative fallback |
+| Errors, logs, WebView, vitals, fatal/exported context, and profiling | Scene-aware source or focused tests exist for each except profiling, whose process-level limitation is known | Targeted two-window runtime/backend evidence; profiling needs an explicit support statement, not guessed per-scene ownership |
+| Normal-app compatibility | Full RUM/Internal/Logs/Trace/WebView suites, gating regressions, probe build, lint, and generic iOS package build pass | Live single-scene behavior, custom-handler integration, and `sendEvent` overhead/recursion measurement |
+| Session Replay | Multiple UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK crash | No scene-correctness work required for this objective |
+
+The core model is no longer the largest unknown. The release-critical work is now
+automatic SwiftUI view tracking, the remaining navigation/lifecycle/action rows,
+and proof that ordinary apps do not pay a behavioral or performance cost. No
+additional distributed-tracing or header-repair work is justified unless one of
+the pending causal experiments reproduces a RUM/APM ownership disagreement.
+
+### Required causal-boundary experiment status
+
+This table records every case requested by the product clarification. “Classified”
+means the observed representative fallback is the intended compatibility result,
+not exact source attribution.
+
+| Required case | Evidence | Status / next action |
+| --- | --- | --- |
+| Synchronous URLSession request in a UIKit tap | Run `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f` kept RUM Resource, APM span, source view, and accepted action together | Backend-pass |
+| Structured `Task` created in a tap, including suspension | Run `8a71b04b-ee69-4670-bdb1-28a6a3625662` proved 20/200 ms action validity; run `70ccd6cf-1514-4387-86ef-25cc255744c4` retained scene B across three minutes and a representative switch | Backend-pass |
+| `Task.detached`, GCD, and timer | Run `70ccd6cf-1514-4387-86ef-25cc255744c4` put all three on representative A rather than source B | Backend-classified as source-less |
+| SwiftUI Button followed by structured `Task` | The control exists, but no isolated two-window backend result distinguishes it from the broader SwiftUI delayed-work runs | Pending |
+| SwiftUI `.task` and `onAppear` loading | Pre-trait runs `5ebc59df-6fc1-4620-bcb2-1177d9ab3409`, `fd44bcd2-cde3-4488-a9f4-7756683d85f4`, and `16e48aa6-6826-49ea-b764-6c0af6f16c0b` failed; trait runs `68786559-42b4-4087-8e34-997e77d081c5`, `92326a81-441e-48b9-97b3-3db2b00bc3ab`, and `c77883d4-80fe-4730-a3ff-575221a3c262` achieved correct semantic attribution | Backend-pass for explicit tracking on iOS 27; callback ordering and automatic tracking are not proven |
+| Scene connection and UIKit `viewDidAppear` loading | Runs `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f` and `91864fb5-cace-4f29-a348-5769bf2ffa65` used the prior representative before the new view existed | Backend-classified as source-less |
+| Pre-created URLSession task resumed from a UI action | Run `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f` selected B Detail and the resume action at interception rather than object creation | Backend-pass |
+| One shared/coalesced request used by both scenes | Probe control exists; no conclusive two-window run | Pending; expected to remain ambiguous |
+| Navigation and session rollover before actual request start | Navigation-at-resume passed in `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f`; `8a71b04b-ee69-4670-bdb1-28a6a3625662` exposed rollover loss and `e03e31d3-eb19-4955-9782-1b583f37b28f` verified the fix | Backend-pass |
+| Reverse-order completion from two scenes | RUM and Trace focused tests pass with frozen A/B owners | Runtime/backend pending |
+| Source scene closes before completion | Run `972c83f7-9c13-4ea3-b5b6-d43857bb7815` preserved delayed resources and traces; run `c8d2aa31-127a-4d4c-a910-8e56eea5fb48` preserved the fixed operation | Backend-pass |
+| Concurrent operations with identical `(name, key)` | Local tracking and the backend intentionally use the same identity, so the second start can replace the first owner | Contract experiment and product decision pending; unique keys pass |
+| Trace-only URLSession span | Probe control and four Trace ownership regressions exist | Runtime/backend pending |
+| Action accepted, rejected, already active, and expired | Runs `da902d8a-f16e-4fa9-b82c-8dcdbaa6dc5f`, `574be7dd-4482-48e5-b4cc-eaaa332179bd`, `4d7dc23b-721d-4038-8c89-3b29a1c373c9`, and `8a71b04b-ee69-4670-bdb1-28a6a3625662` cover accepted/filtered, fan-out failure/fix, and expiry | Backend-pass; filtered-tap representative persistence remains separate |
+| Single-scene and custom URLSession-handler compatibility | Complete module suites and 43 resource-handler tests pass; the rejected request-rewrite experiment was removed | Live single-scene, custom-handler integration, and performance pending |
 
 ## Plan alignment review
 
-The plan still matches the original goal after three corrections:
+The plan still matches the original goal after this goal-backward review:
 
 - View creation, independent navigation, action attribution, and scene lifecycle
-  remain the primary workstream and have the strongest runtime/backend evidence.
+  remain the primary workstream. UIKit and explicit SwiftUI tracking have the
+  strongest runtime/backend evidence; automatic and native SwiftUI multi-window
+  tracking are now correctly called out as P0 gaps.
 - Resource and Trace work is bounded to preserving trustworthy start-time
   provenance and consistent RUM/APM correlation. Generic source discovery and
   defensive customer-request mutation are not goals.
 - Session Replay is evaluated only for crash-free coexistence.
+- Scene-owned feature operations with unique identities must remain reducible
+  after their source window closes. This requires retaining the last proven view
+  identity, not a live view scope and not another scene's representative. The
+  identical `(name, key)` multi-scene contract is still open.
 
-The remaining mismatch is SwiftUI lifecycle ordering. The transparent attachment
-reader solves scene ownership only after UIKit attaches it; it does not guarantee
-that the RUM view exists before customer outer lifecycle callbacks. The next trait
-experiment is therefore directly aligned with proper view creation rather than an
-expansion of networking work. Its APIs require iOS 17 and must be availability
-gated because the SDK deployment target is iOS 15. The supported multi-scene
-contract should guarantee correct attribution before outer `.onAppear` and the
-synchronous prefix of `.task` wherever this mechanism can provide it without a
-compatibility or lifecycle compromise. No semantic multi-scene guarantee is
-required on iOS 15/16, and pre-iOS-27 support does not gate the iPhone Duo goal.
+The principal semantic caveat is SwiftUI lifecycle ordering. The transparent
+attachment reader solves scene ownership only after UIKit attaches it. The custom
+trait now provides the real scene earlier and is correctly availability-gated for
+the SDK's iOS 15 deployment target, but the iOS 27 probe disproves a stronger conclusion:
+neither the trait nor `onChange(initial:)` guarantees that an inner RUM tracking
+modifier emits its view before customer outer `.onAppear` or the synchronous
+prefix of `.task`. Requiring side effects during `body` evaluation, wrapping
+customer content in a hosting controller, or swizzling SwiftUI internals would be
+a lifecycle/compatibility compromise. No such path is planned. A stricter probe
+invoked synchronous custom RUM actions before the view payload and found that the
+RUM queue processed the new view first: all four actions and all six URLSession
+resources reached the intended new views in console payloads and backend intake.
+The branch can therefore claim tested semantic attribution for these callbacks
+when explicit `.trackRUMView` is used, but not observable callback ordering or
+automatic SwiftUI discovery. No semantic multi-scene guarantee is required on
+iOS 15/16, and pre-iOS-27 support does not gate the iPhone Duo goal.
+
+The broad fixed-runtime pass now covers primary UIKit and explicitly tracked
+SwiftUI views, navigation, modals, duplicate names, actions, SwiftUI scroll, scene
+destruction, delayed resources/traces, and unique-operation teardown. The remaining
+plan is narrower and still aligned with the original goal: automatic/native
+SwiftUI tracking, split/adaptive navigation, restoration, UIKit scroll,
+per-scene background/foreground, the filtered-interaction representative edge,
+same-identity operations, less common downstream signals, normal-app
+regression/performance, and iPhone Duo validation on iOS 27.1.
 
 The relevant Apple references are
 [Providing data to the view hierarchy with custom traits](https://developer.apple.com/documentation/uikit/providing-data-to-the-view-hierarchy-with-custom-traits)
-and [`UIScene.willConnectNotification`](https://developer.apple.com/documentation/uikit/uiscene/willconnectnotification).
-Neither reference promises ordering relative to SwiftUI `.onAppear`, so the probe
-remains the acceptance criterion.
+[`UIScene.willConnectNotification`](https://developer.apple.com/documentation/uikit/uiscene/willconnectnotification),
+and [`onChange(of:initial:_:)`](https://developer.apple.com/documentation/swiftui/view/onchange(of:initial:_:)-8wgw9).
+Apple documents the initial change callback as running when the view initially
+appears, which makes it an appropriate appearance signal rather than a body-time
+side effect. None of these references promises ordering relative to another
+SwiftUI lifecycle modifier, so the probe remains the acceptance criterion.
 
 ## Product decisions from the checkpoint review
 
-1. Source-less work keeps the last-interacted representative view. This preserves
-   existing instrumentation volume and behavior even though the attribution can
-   be ambiguous in a concurrent-scene application. It must be documented as a
-   fallback, not described as exact scene ownership.
+1. Source-less work keeps the process representative, intended to be the
+   last-interacted view. This preserves existing instrumentation volume even
+   though attribution can be ambiguous. A predicate-filtered physical interaction
+   may not persistently advance that representative, so “last-interacted” must not
+   be claimed more broadly until the focused experiment resolves that edge.
 2. Semantic multi-scene support before iOS 27 is not required for this project.
    The priority is iPhone Duo on iOS 27.1. An explicit scene/root integration for
    iOS 15/16 is therefore not part of the plan.
-3. If the iOS 17+ trait mechanism can establish the RUM view before customer outer
-   `.onAppear` and the synchronous prefix of `.task` without compromising normal
-   apps, the supported contract should guarantee that ordering. Prefer narrowing
-   the multi-scene support range over weakening the guarantee for iOS 15/16.
+3. Prefer correct iOS 17+ support over extending a compromised solution to iOS
+   15/16. The trait experiment could not guarantee observable view emission
+   before customer outer `.onAppear` or the synchronous prefix of `.task` without
+   unsupported SwiftUI techniques. The narrower supported result is semantic:
+   synchronous RUM work in those callbacks is processed on the new scene-aware
+   view, while relative callback and payload ordering is not guaranteed.
 
 ## Baseline environment
 
@@ -380,14 +545,18 @@ documented as ambiguous unless an application supplies one:
 - shared repositories, caches, background workers, global prefetching, push, and
   background refresh;
 - framework-created tasks and observers whose execution context is not inherited;
-- SwiftUI synchronous `onAppear` loading, which two iOS 27 runs attributed to the
-  preceding view, including after moving scene resolution to
-  `willMove(toWindow:)`;
-- the synchronous prefix of SwiftUI `.task`, which the rebuilt iOS 27 probe also
-  attributed to the preceding view; only work after suspension currently sees
-  the intended RUM view;
 - scene connection or `viewDidAppear` work without a scoped callback;
 - a request shared or coalesced by multiple scenes.
+
+SwiftUI outer `.onAppear` and the synchronous prefix of `.task` are not UI-event
+handoff contexts and still invoke before the inner RUM modifier's appearance
+callback. Attachment-only, `willMove(toWindow:)`, and child-controller experiments
+therefore misattributed them to the preceding view. On iOS 17+, the later
+trait-backed explicit-tracking path gave the RUM queue enough scene-aware state to
+attribute all tested lifecycle actions and resources to the destination view.
+That is backend-validated semantic behavior, not TaskLocal inheritance or a
+guarantee about observable callback/view-command ordering. Transparent automatic
+SwiftUI tracking remains untested.
 
 Thread-local storage is only a synchronous bridge around event dispatch. Thread
 identity must never be interpreted as asynchronous scene ownership. The SDK must
@@ -417,22 +586,23 @@ work may be attributed to the wrong concurrent scene.
 | Area | Baseline risk | Source evidence | Simulator evidence | Backend evidence | Status |
 | --- | --- | --- | --- | --- | --- |
 | UIKit view lifetime | A view in one scene stops a still-visible view in another | Baseline global stack; branch scene-keyed stacks/scopes | Fixed run opened B without stopping A | Both scene view IDs coexist in one session | Fixed in branch; tests and runtime pass |
-| UIKit navigation | Navigation histories from all scenes interleave | Baseline global stack; branch isolates navigation per scene | B Home -> Detail -> Shared replaced only B | B view chain preserved; A retained independently | Fixed in branch; tests and runtime pass |
-| SwiftUI view lifetime | Modifier identities can collide, detach can retain stale scene state, and synchronous lifecycle work can precede the RUM start | Branch resolves the hosting scene only for apps declaring multi-scene support, keeps a stable lifecycle identity, and distinguishes detach from legacy nil-scene attachment; both `willMove(toWindow:)` and a child-controller bridge were tested and are still too late | The rebuilt iOS 27 probe attributes both `.onAppear` and pre-suspension `.task` requests to the preceding view; it also exposed a duplicate 0.79 ms Home view during navigation before transient-detach handling was corrected | Backend view/resource IDs confirm both misattribution and the pre-correction duplicate view | Ten lifecycle-state tests and three normal-app gating/swizzle tests pass; lifecycle ordering remains open and the duplicate-view correction needs rebuilt runtime proof |
-| SwiftUI navigation | Hosting controllers from all windows share one active history | Automatic hosting controllers and manual modifiers now resolve scene | `NavigationStack` B Home -> Detail passed; alternating A/B and split-view pending | B Home closed and B Detail opened without cross-scene IDs | Core path fixed; `NavigationSplitView` runtime coverage pending |
-| Tap actions | Touch window is available but not propagated to RUM scope routing | Branch retains the touch/modifier scene; new actions no longer fan out to older scene action scopes | UIKit B automatic actions pass; an iPadOS 27 physical SwiftUI tap and `NavigationLink` pass in scene A; alternating physical A/B taps remain pending | UIKit actions correct; manual B action changed from two cross-scene events before fix to exactly one B event after fix; SwiftUI A action used its originating Home | Core path fixed; full two-window physical action matrix pending |
-| Scroll actions | Scroll callbacks have a view/window but no scene reaches the command | Branch retains source scene through drag and deceleration | Pending fixed-runtime rerun | Pending | Fixed in branch; focused tests pass |
-| Resources and traces | A generic request/span has no intrinsic scene; representative fallback can be wrong | Branch has an experimental `sendEvent`/TaskLocal causal bridge, synchronous owner capture, and frozen completion routing; GCD, detached, timer, repository, lifecycle, and shared work remain ambiguous | With B as source and A made representative before start, structured `Task` stayed on B while detached/GCD/timer work moved to A; scene-B connection and `viewDidAppear` work also use representative A | Intake reproduces the exact boundary: inherited structured work uses B, while the three source-less schedulers and lifecycle work use A | Partial and bounded; generic automatic attribution is confirmed wrong when provenance is absent |
-| Manual errors and process-wide long tasks | Source-less APIs/signals have no unique scene | Branch uses one last-interacted representative; no broadcast | Pending | Pending | Explicit fallback policy; not source-attributed |
-| Logs and mirrored errors | A log and its later RUM error can resolve different global views | Logger snapshots singular context; error message originally dropped captured view | Pending fixed-runtime rerun | Pending fixed-runtime rerun | Captured-view mirroring fixed and unit-validated; source-scene inference still uses representative context |
+| UIKit navigation | Navigation histories from all scenes interleave | Baseline global stack; branch isolates navigation per scene | Pushes, duplicate-name views, modal presentation/dismissal, and scene closure affected only the source window | Independent A/B view chains and IDs persisted | Fixed in branch; tests and runtime pass |
+| Explicit SwiftUI view lifetime | Modifier identities can collide, detach can retain stale scene state, and synchronous lifecycle work can precede the RUM start | Branch resolves the hosting scene only for declared multi-scene apps, keeps stable lifecycle identity, ignores transient detach, and on iOS 17+ bridges a scene custom trait into SwiftUI; `willMove(toWindow:)`, child-controller, and trait lifecycle hooks were all tested | Trait-backed `onChange(initial:)` reduced the outer-callback gap from 35 ms to 2-3 ms without duplicate views; four synchronous lifecycle actions and six resources all resolved to their intended new views despite earlier invocation | Backend view/action/resource IDs confirm the earlier misattribution, the removed duplicate, and correct semantic attribution in both trait runs plus the synchronous-action run | Explicit `.trackRUMView` semantic attribution passes; view-before-callback ordering is not guaranteed |
+| Automatic SwiftUI view lifetime | Transparent hosting-controller discovery can still select a process-global history or miss native scene transitions | Core scene routing can accept hosting-controller scene identity, but the current probe disables `swiftUIViewsPredicate` | No concurrent automatic-tracking or native `WindowGroup` run | None | P0 runtime gap; no support claim yet |
+| SwiftUI navigation | Hosting controllers from all windows share one active history | Scene-keyed scope support and manual modifiers now resolve scene | Manually tracked concurrent `NavigationStack`, duplicate-name destinations, and modal presentation/dismissal passed across windows | Source-scene view chains and actions remained independent | Manual core path passes; automatic tracking, `NavigationSplitView`, and restoration pending |
+| Tap actions | Touch window is available but not propagated to RUM scope routing | Branch retains the touch/modifier scene; new actions no longer fan out to older scene action scopes | UIKit and SwiftUI source-window taps, navigation links, duplicate-name controls, fixed-toolbar activation, and close actions passed | Actions emitted once on their originating view; the pre-fix manual B fan-out did not recur | Core path passes; filtered physical interaction followed by a later source-less API remains open |
+| Scroll actions | Scroll callbacks have a view/window but no scene reaches the command | Branch retains source scene through drag and deceleration | SwiftUI scene D swipe emitted on D while another scene survived; UIKit scroll/deceleration remains to be repeated | SwiftUI D action retained D view | SwiftUI runtime passes; UIKit matrix remains open; focused tests pass |
+| Resources and traces | A generic request/span has no intrinsic scene; representative fallback can be wrong | Branch has an experimental `sendEvent`/TaskLocal causal bridge, synchronous owner capture, and frozen completion routing; GCD, detached, timer, repository, lifecycle, and shared work remain ambiguous | Structured tasks and UI-local work retain source ownership; detached/GCD/timer and early scene lifecycle use the representative. Delayed UIKit/SwiftUI resources and traces survive source-scene closure | RUM and APM agree on the boundary; teardown traces `6aa50f23000000001829c0dfb272bbb9` and `6aa5128c0000000048ed46829eb03478` retained their source scenes | Partial and bounded; known provenance and completion routing pass, while generic source discovery remains impossible |
+| Manual errors and process-wide long tasks | Source-less APIs/signals have no unique scene | Branch uses one process representative; no broadcast | Pending | Pending | Explicit fallback policy; not source-attributed |
+| Logs and mirrored errors | A log and its later RUM error can resolve different global views | Branch snapshots request-local RUM context and preserves exact or same-scene routing for the mirrored error; legacy no-scene work retains representative fallback | Pending fixed-runtime rerun | Pending fixed-runtime rerun | Captured-view mirroring fixed and unit-validated; targeted two-window runtime proof remains open |
 | Vitals, TNS, and INV | Process vitals overlap; navigation edges could cross scenes | Branch has one INV tracker per scene; TNS follows resource owner; vitals remain process-derived per view | Pending | Pending | INV/TNS fixed; vitals policy and external displays remain partial |
-| Feature operations and flags | Delayed steps receive the global active view; equal keys can collide | Targetless commands and process-global keys | B operation started on Detail 1, navigated, and ended on Shared Detail | Operation start/end views are B Detail 1/B Shared Detail | Unique-key operation lifecycle passes; collisions and flags remain open |
-| Session rollover | A process-wide stop/expiry can lose still-visible views or revive the view being replaced | Branch snapshots every active foreground scene and now restores only branches unaffected by a scene-targeted start/stop | Explicit stop followed by B Home -> Detail initially dropped A; fixed rerun emits new A Home and B Detail views | New explicit-stop session contains both raw view documents and the delayed B request remains on B Detail | Fixed in branch for explicit stop, inactivity, and max duration; reducer summary semantics for overlapping views remain under investigation |
-| Session Replay | Recorder/context mapping may follow an arbitrary scene's key window | First key window across an unordered scene set; one coordinator | Two-window iPadOS 26.5 probe uploaded replay payloads without an SDK crash | Not required for core RUM support | Out of scope except crash safety; coexistence smoke passes, broader crash regression remains |
+| Feature operations and flags | Delayed steps receive the global active view; string-concatenated identities can collide; closing the owner can drop the end step | Branch uses typed `(name, key)` identity, follows the start scene's current view, and retains a lightweight last-proven snapshot after closure | Navigation updates the operation to the source scene's current view; post-fix scene D teardown emitted both steps after D closed | Reducer produced a successful operation keyed `206E691E-33AC-4BF1-8D26-E48D81315D9A` with identical source-scene start/end view | Concatenation collision, unique-tuple lifecycle, and teardown fixed; identical `(name, key)` across scenes remains one backend-contract operation; flags remain open |
+| Session rollover | A process-wide stop/expiry can lose still-visible views or revive the view being replaced | Branch snapshots every active foreground scene and now restores only branches unaffected by a scene-targeted start/stop | Explicit stop followed by B Home -> Detail initially dropped A; fixed rerun emits new A Home and B Detail views | New explicit-stop session contains both raw view documents and the delayed B request remains on B Detail; reducer converged to `view.count:2` | Fixed for explicit stop, inactivity, and max duration; product UI rendering of overlap remains unchecked |
+| Session Replay | Recorder/context mapping may follow an arbitrary scene's key window | First key window across an unordered scene set; one coordinator | Repeated two-window UIKit/SwiftUI runs, navigation, and scene teardown completed without an SDK crash | Replay was available on the broad and post-fix sessions | Out of scope except crash safety; coexistence requirement passes for the exercised matrix |
 | WebView correlation | Browser events can be stitched to another scene's native container | Branch carries private source-scene metadata and queries scene-keyed view history | Pending fixed-runtime rerun | Pending | Fixed in branch; three focused tests pass |
 | Profiling | Profile-level RUM attributes are last-writer-wins across views | One mutable correlation snapshot | Pending | Pending | Confirmed by source |
 | Crash/fatal context | Any view update can overwrite one process crash context | Branch restricts updates to the representative and restores another active scene when needed | Pending | Pending | Fixed to representative policy; focused tests pass |
-| App/scene lifecycle | Per-scene transitions are invisible to view ownership | Branch observes background, foreground, and disconnect per scene | Pending fixed-runtime rerun | Pending | Fixed in branch; focused tests pass |
+| App/scene lifecycle | Per-scene transitions are invisible to view ownership | Branch observes background, foreground, and disconnect per scene | Requesting UIKit and SwiftUI scene destruction stopped only the source views and surviving scenes continued | Destroyed-scene views became inactive without replacing the survivor | Scene close/destruction passes; temporary disconnect, reconnect/restoration, and per-scene background/foreground remain open |
 
 ## Experimental application plan
 
@@ -440,6 +610,14 @@ The probe must use the SDK sources in this checkout and real local RUM
 configuration. Every run will use a unique run identifier attached to events so
 that console output, locally observed payloads, and backend sessions can be joined
 without relying on timestamps alone.
+
+The current runner is a UIKit scene-delegate host and explicitly disables
+`swiftUIViewsPredicate`; its SwiftUI screens use `.trackRUMView`. Before claiming
+transparent SwiftUI support, add a dedicated automatic-tracking configuration and
+a native SwiftUI `@main`/`WindowGroup` host using `openWindow`. Before running the
+remaining downstream rows, also add the controls that do not yet exist: split
+navigation, restoration, WebView, mirrored `logger.error`, fatal context, and
+exported RUM-context inspection.
 
 The minimum probe contains two independently identifiable windows. Each window
 must expose:
@@ -500,20 +678,27 @@ crashes is not sufficient semantic evidence.
   `RUMViewsHandler` stacks.
 - Maintain one active view branch per scene in `RUMSessionScope`; leave unrelated
   branches untouched during navigation and lifecycle changes.
-- Finish UIKit and SwiftUI tap/scroll attribution plus disconnect coverage. Action
-  timeout/stop ownership, duplicate identities, session rollover, and restoration
-  now have focused coverage; retain them as regression gates.
+- Retain the passing UIKit and explicit SwiftUI tap, navigation, modal,
+  duplicate-identity, and scene-destruction flows as regression gates. Keep the
+  focused disconnect tests, but finish temporary disconnect/reconnect at runtime
+  together with UIKit scroll/deceleration, `NavigationSplitView`, restoration,
+  and per-scene background/foreground. Action timeout/stop ownership and session
+  rollover already have focused and live coverage.
 - Preserve the legacy no-scene and single-scene paths without meaningful hot-path
   overhead.
 - Gate the hidden SwiftUI scene reader and UI-event-only causal instrumentation
   behind the configured bundle's explicit multi-scene declaration. Normal apps
-  retain the original direct modifier lifecycle and swizzling conditions.
-- For iOS 17+, experiment with an internal custom `UITraitDefinition` bridged by
-  `UITraitBridgedEnvironmentKey`, seeded from each real `UIWindowScene`. Verify
-  its value inside customer outer lifecycle callbacks before treating it as the
-  missing early provenance. Availability-gate the mechanism so the SDK remains
-  compatible with its iOS 15 deployment target, but do not build a separate
-  iOS 15/16 multi-scene integration or infer a scene from global/window ordering.
+  retain the original direct modifier and do not activate the extra causal
+  handoff, while scene-aware UIKit command routing remains internal. Validate the
+  total single-scene path live before calling it behaviorally identical.
+- On iOS 17+, retain the internal `UITraitDefinition` bridged by
+  `UITraitBridgedEnvironmentKey` and seeded from each real `UIWindowScene` while
+  its full matrix remains stable. The iOS 27 probe proves this supplies earlier
+  scene identity and materially reduces the attachment race, but not that an
+  inner modifier runs before customer outer lifecycle callbacks. Keep the hidden
+  reader as a late-start/fallback path and availability-gate the trait mechanism
+  so the SDK remains compatible with its iOS 15 deployment target. Do not build a
+  separate iOS 15/16 integration or infer a scene from global/window ordering.
   Validate the supported behavior on iOS 27/27.1; earlier semantic support is a
   bonus only when it comes from the same uncompromised path.
 
@@ -541,8 +726,12 @@ Resource/Trace investigation.
 - Keep the pending-action merge only if it cannot revive another scene from an
   intentional nil, capture the previous action, depend on queue timing, or create
   an action ID that never receives a RUM action event. Intentional nil is now
-  covered for both Logs and Trace; accepted/rejected and 100 ms expiry boundaries
-  still require the split live probe.
+  covered for both Logs and Trace. The live URLSession runs prove accepted versus
+  filtered actions and the 20/200 ms action-validity boundary; the earlier
+  overlapping-action run and its fixed rerun prove new actions no longer fan out.
+  One separate case remains: a filtered physical interaction supplies synchronous
+  scene provenance but emits no action command, so it may not persistently change
+  the process representative for later source-less manual APIs.
 
 The current `RUMContextHandoff`, thread-dictionary bridge, synchronous resource
 pre-start, captured owner maps, and altered third-party-handler callback path are
@@ -559,6 +748,14 @@ the experiment matrix proves which pieces are necessary.
   closed for unknown work beside concurrent scene-backed views.
 - Pin live cache entries, retain inactive ownership for a bounded TTL, and keep
   eviction fair across scenes.
+- For feature operations, retain the last proven originating view identity after
+  the source scene closes so the backend can reduce the end step. Keep this
+  snapshot separate from the stopped view scope, strip view attributes, and
+  never use it to update or resurrect the old view.
+- Exercise two concurrent scenes using the same operation `(name, key)`. Do not
+  silently add scene identity to the local key unless the backend contract can
+  represent two such operations; decide whether unique keys are required or
+  whether a different safe conflict policy is needed.
 
 These rules improve correctness after an owner is already known and do not claim
 that the SDK can discover a scene for arbitrary work.
@@ -566,7 +763,7 @@ that the SDK can discover a scene for arbitrary work.
 ### 4. Defer explicit customer attribution contracts
 
 An explicit resolver is not required for the current support goal. Source-less
-work retains the last-interacted representative for compatibility. Keep these as
+work retains the process representative for compatibility. Keep these as
 future options only if customer evidence later justifies deterministic attribution:
 
 - A fast, thread-safe request-start Resource context resolver receiving the
@@ -586,8 +783,18 @@ distinguish a scene.
 
 ### 5. Validate, simplify, and regress
 
-- Run the full causal-boundary matrix on the two-window probe and inspect backend
-  Resources and Spans.
+- Extend the probe before running cases for which no control currently exists:
+  automatic SwiftUI `WindowGroup`, split navigation, restoration, WebView,
+  fatal/exported context, and mirrored logger errors.
+- Finish only the untested causal-boundary rows: SwiftUI Button -> structured
+  `Task`, shared/coalesced work, two-scene reverse completion, and trace-only
+  URLSession. Do not repeat structured-task inheritance, source-less schedulers,
+  lifecycle fallback, trace teardown, accepted/rejected action, action expiry, or
+  operation teardown unless a later change can affect them.
+- Before using the fixed “Other Window” control with more than two sessions,
+  select a target explicitly or verify the logged target: the current helper takes
+  the first other member of an unordered `openSessions` set. Relaunch or reset the
+  one-shot shared-request state before repeating that experiment.
 - Remove speculative machinery that does not move a supported case from wrong to
   correct.
 - Rerun complete RUM, Internal, Logs, Trace, and WebView suites, plus legacy
@@ -598,15 +805,21 @@ distinguish a scene.
 
 ## Working policies and product decisions
 
-1. **Working policy:** a source-less manual API uses the most recently interacted
-   representative view. It is emitted once, never broadcast. This is the approved
-   compatibility fallback for the current project.
+1. **Working policy:** a source-less manual API uses the process representative
+   view and is emitted once, never broadcast. The intended policy is the
+   last-interacted view. Today the representative advances when RUM processes a
+   scene-targeted view or interaction command; a predicate-filtered physical tap
+   scopes synchronous work but emits no action command, so its effect on later
+   source-less APIs still needs an explicit experiment and, if reproduced, a
+   product decision or internal representative-update mechanism.
 2. **Working policy:** entering the background ends that scene's visible RUM view;
    foregrounding restarts it. Merely losing focus while still visible does not.
 3. **Working policy:** concurrent views overlap inside one application RUM session.
-   Backend/UI acceptance of overlapping active views still needs validation.
+   Raw intake and the session reducer accepted both views and converged to
+   `view.count:2`; product UI presentation and analytics semantics remain to be
+   reviewed.
 4. **Working policy:** process-wide long tasks, hangs, memory warnings, and crashes
-   emit once against the last-interacted representative. CPU/memory/display samples
+   emit once against the process representative. CPU/memory/display samples
    remain per-visible-view summaries of shared process/render-loop data. Confirm
    whether any event requires a different policy.
 5. **Decision for this work:** Session Replay does not need correct multi-window
@@ -624,10 +837,27 @@ distinguish a scene.
    behavior on older multi-scene systems is useful but does not gate support.
    Normal and single-scene apps on the SDK's older deployment targets must still
    avoid regression.
-9. **Product decision:** on the supported OS range, transparent SwiftUI tracking
-   should establish the destination RUM view before outer `.onAppear` and the
-   synchronous prefix of `.task` when that can be achieved without compromise.
-   No equivalent guarantee is required for iOS 15/16.
+9. **Product decision:** on the supported OS range, SwiftUI lifecycle work must be
+   attributed to the destination RUM view. The accepted iOS 17+/iOS 27 result is
+   semantic attribution, not a guarantee that an inner modifier callback or RUM
+   payload is observable before customer outer `.onAppear` or the synchronous
+   prefix of `.task`. No equivalent multi-scene guarantee is required for iOS
+   15/16, and unsupported SwiftUI internals are not an acceptable ordering fix.
+
+## Open product questions from the goal review
+
+- Should a physical interaction rejected by the RUM action predicate still make
+  its window the persistent representative for later source-less APIs? The chosen
+  “last-interacted” policy suggests yes, while the current command model may mean
+  “last RUM-tracked interaction.” Reproduce this before changing behavior.
+- For `NavigationSplitView` or `UISplitViewController`, does “proper view” mean one
+  current destination/detail view per scene, or separate simultaneously active RUM
+  views for visible panes? The current architecture intentionally supports one
+  active view branch per scene, so the latter would be a separate model change.
+- Is correct event-to-view attribution inside one RUM session sufficient product
+  representation for parallel window histories, or must the RUM product visibly
+  distinguish window branches? Raw intake and the reducer accept overlap, but no
+  scene identifier is serialized and product UI presentation has not been reviewed.
 
 ## Experiment log
 
@@ -789,12 +1019,12 @@ distinguish a scene.
   across the asynchronous feature-message bus. RUM removes this private routing
   metadata before event encoding and targets the exact still-active view. Sender
   and receiver tests pass with two concurrent scene branches. If asynchronous
-  delivery outlives the captured view, exact-view routing deliberately falls
-  back to the representative branch; two scope tests verify that delayed errors
-  and resources retain the legacy no-drop behavior, including completion on a
-  pending resource's actual owner. This aligns the log and mirrored RUM error
-  when the originating concurrent window is still present without degrading the
-  sequential-navigation fallback.
+  delivery outlives the captured view, routing may move only to a newer active
+  view in the same scene. If the captured scene is gone while another survives,
+  the mirrored error is dropped rather than crossing scenes. Only legacy no-scene
+  work retains representative fallback. Resource completion separately retains
+  its cached owner. This aligns the log and mirrored RUM error without silently
+  misattributing a delayed error to another window.
 - Manual and OpenTelemetry spans freeze the RUM context selected at span creation,
   but the process-wide exported context is not necessarily their originating
   scene. Trace-only URLSession spans are created at completion with an earlier
@@ -808,8 +1038,10 @@ distinguish a scene.
   current view. This permits navigation A1 -> A2 during an operation while an
   interaction makes B process-representative: start remains on A1 and end lands
   on A2. The same selected view is used for the operation vital, its containing
-  view update, and the profiling operation message. The focused multi-scene test
-  and three manager regressions pass. Identical name/key pairs remain one
+  view update, and the profiling operation message. Local tracking now uses a
+  typed `(name, key)` identity instead of string concatenation; a regression proves
+  formerly colliding pairs remain independent. The focused multi-scene test and
+  manager regressions pass. Identical `(name, key)` pairs across scenes remain one
   operation by backend contract and still warn/restart rather than being silently
   rewritten with scene identity.
 - The first profiling-message assertion exposed that feature-operation profiling
@@ -1127,6 +1359,135 @@ distinguish a scene.
   keeps that compatibility boundary without representative fallback: it adds no
   RUM session baggage to a pre-traced request while retaining the source-scene RUM
   context for the local span.
+- Added an iOS 17+/visionOS 1+ scene trait publisher for apps declaring multiple
+  scenes. It seeds `UIWindowScene.traitOverrides` with the real persistent scene
+  identifier and bridges that private trait into SwiftUI. Ordinary apps do not
+  construct the publisher; iOS 15/16 continue through the attachment-backed path.
+  Three focused activation/value tests and ten existing lifecycle-state tests pass.
+- First trait run `68786559-42b4-4087-8e34-997e77d081c5`, RUM session
+  `799d975d-9597-4b2e-9c4e-833835aed5de`, started SwiftUI Home after customer
+  `.onAppear`/immediate `.task` by 35/34 ms and Detail by 2/1 ms. Unlike the
+  attachment-only and child-controller runs, all six resulting URLSession
+  resources were ultimately indexed on their correct Home or Detail view. The
+  source Home navigation action also remained correct, and intake reported zero
+  errors/crashes with Session Replay present.
+- Second trait run `92326a81-441e-48b9-97b3-3db2b00bc3ab`, RUM session
+  `4bd7fa85-dda2-4712-9cce-33cb23f73a3c`, used
+  `onChange(of:initial:)` as the earliest supported lifecycle callback. Home
+  outer `.onAppear` and immediate `.task` still preceded the RUM view by 2.825 ms
+  and 2.222 ms; Detail preceded it by 3.468 ms and 2.696 ms. The later modifier
+  tasks ran about 100 ms after their views. Datadog intake again contains all six
+  resources on the correct views, the navigation action on source Home, four
+  expected views, and a session with zero errors/crashes. This narrows but does
+  not eliminate the ordering gap.
+- Synchronous-action run `c77883d4-80fe-4730-a3ff-575221a3c262`, RUM session
+  `67fdbd11-1d6a-440d-afd0-db11ff6bc6c4`, temporarily invoked custom RUM actions
+  at the beginning of customer outer `.onAppear` and immediate `.task`. The four
+  invocations preceded their Home/Detail view payloads by 0.292-4.128 ms, but the
+  serial RUM queue processed the view transitions first. All four actions were
+  emitted once on their intended new views; the navigation action stayed on
+  source Home, all six lifecycle resources were correct, and Datadog intake
+  reports five actions with zero errors/crashes. The probe-only actions were then
+  removed to avoid perturbing the broader interaction matrix.
+- The complete post-trait `DatadogRUM` suite passed 1,020/1,020 on the iOS 27
+  simulator. This supersedes the 13-test focused checkpoint while retaining
+  1,018/1,018 as the pre-trait baseline.
+
+### 2026-09-12 — Broad fixed-runtime matrix and scene teardown
+
+- Run `91864fb5-cace-4f29-a348-5769bf2ffa65`, RUM session
+  `02b150f8-3b2f-43fd-b032-8cac2ef91cd9`, produced 46 events: 9 views,
+  16 actions, 14 resources, 2 long tasks, zero errors/crashes, and replay. A
+  SwiftUI scene-B operation and manual resource retained B Detail while scene C
+  opened. Scene C connection and initial lifecycle resources landed on the
+  previous representative B Detail because they began before C's first RUM view;
+  this is the approved source-less fallback boundary, not a header-injection
+  defect.
+- Run `31d0a951-095a-4a71-8c48-b6e4fb4d0af2`, RUM session
+  `3160c14e-95d7-4a0e-a40b-204060cfae45`, proved UIKit modal
+  presentation/dismissal and duplicate-name A/B views remain independent. The
+  first delayed switch result was invalid because the scrolled control tree was
+  stale. Both UIKit and SwiftUI probe screens now expose fixed Close and Other
+  Window toolbar controls so switching and teardown do not depend on scroll
+  position. SwiftUI uses the non-deprecated `.topBarLeading` and
+  `.topBarTrailing` placements.
+- Run `76599137-09c8-4fb1-b54a-92b3c9ff04d1`, RUM session
+  `725418d9-aae5-4570-8bd0-1bad452bbb8c`, repeated the delayed UIKit flow with
+  the fixed controls. The B Home trace and operation kept B ownership while A
+  became active. APM trace `6aa50e250000000095c6c6caacd03265` retained resource
+  `probe-span-scene-B` and the B source view.
+- Broad run `972c83f7-9c13-4ea3-b5b6-d43857bb7815`, RUM session
+  `3a8b0c3b-53e4-4426-b4b1-12e92ec715d5`, reached 18 views, 17 actions,
+  33 resources, 4 long tasks, zero errors/crashes, and replay. UIKit and SwiftUI
+  modal/dismiss flows, duplicate-name views, SwiftUI scroll, delayed resources,
+  and origin-scene closure retained their source windows. UIKit trace
+  `6aa50f23000000001829c0dfb272bbb9` and SwiftUI trace
+  `6aa5128c0000000048ed46829eb03478` retained their destroyed source scenes.
+- Closing a nested SwiftUI scene D caused customer `.onAppear` and `.task`
+  callbacks to run again after its tracked view stopped; three lifecycle requests
+  then used the Background representative. Closing another SwiftUI scene from
+  Home did not reproduce it. The callbacks no longer expose a public source-scene
+  identity once detached, so tombstoning them in the SDK would risk dropping
+  legitimate work. Keep this as a targeted teardown/restoration experiment rather
+  than inferring a fix from one nested callback sequence.
+- The broad run exposed a distinct operation defect. Raw start vitals for UIKit B
+  key `5EC831AF-0135-4AE6-B74A-088B292787BE` and SwiftUI E key
+  `EC54293B-2ED0-4D97-8C89-B308FCE020BC` reached intake on their correct source
+  views, but no end vital arrived and no reduced operation existed. The manager
+  deliberately selected no active view after the owner scene closed; a null-view
+  end step was therefore not sufficient to preserve the operation.
+- `RUMFeatureOperationManager` now retains a lightweight last-proven view ID,
+  name, and path for scene-owned operations. A later step uses the current view in
+  that same scene when one exists, refreshes the snapshot after source-scene
+  navigation, or uses the snapshot after teardown. It never selects another scene
+  and still returns no live scope after closure, so the stopped view cannot be
+  updated or resurrected. Legacy operations with no scene keep their previous
+  null-view behavior. Seventeen focused manager tests pass, including teardown,
+  navigation-then-teardown, and legacy compatibility.
+- Post-fix run `c8d2aa31-127a-4d4c-a910-8e56eea5fb48`, RUM session
+  `6c05508c-18fc-41df-85e8-32c573fbf37e`, used one ordered HID batch to start
+  operation key `206E691E-33AC-4BF1-8D26-E48D81315D9A` in UIKit scene D and
+  close D one second later. Intake contains start at `09:31:59.034Z` and end at
+  `09:32:02.184Z`, both on D Home view
+  `547eb0b9-5743-47f7-ab07-c309e5b5bb29`. The reducer created one successful
+  3.15-second operation whose start and end views are that same D view. The final
+  session contains 8 resources, 8 views, 7 actions, 3 vitals, 1 long task,
+  1 operation, and 1 session; replay is available.
+- The first complete command-line RUM rerun reported one timing-sensitive failure
+  in the unrelated timeseries pause test: its pause flush increased the event
+  count from two to three. Xcode then spent several minutes collecting simulator
+  diagnostics, so that run was interrupted after all 980 XCTest cases had
+  otherwise completed. The exact test immediately passed 1/1 through Xcode MCP.
+  A fresh complete Xcode MCP run then passed 1,022/1,022 with zero failures,
+  skips, or tests not run. The generic iOS `Datadog-Package` Swift Package build
+  also succeeded through Xcode 27 and restored the temporarily hidden workspace.
+  Repository lint and `git diff --check` are clean.
+
+### 2026-09-12 — Goal-backward review
+
+- Auditing the probe against the original objective found that all SwiftUI runtime
+  view evidence so far uses explicit `.trackRUMView`; `swiftUIViewsPredicate` is
+  disabled and SwiftUI is hosted by the runner's UIKit scene delegate. Automatic
+  SwiftUI tracking and a native `WindowGroup` lifecycle have not been tried and
+  are now P0 rather than silently included in the support claim.
+- The accepted “last-interacted” fallback currently means the RUM process
+  representative. A predicate-filtered touch supplies scene provenance to work
+  executed inside dispatch but emits no interaction command that would necessarily
+  advance the later representative. No focused post-dispatch manual-API experiment
+  has been run; it is now an explicit edge rather than an assumed guarantee.
+- The explicit-session-stop experiment already proved raw intake and the backend
+  session reducer accept overlapping scene views: the reducer converged to
+  `view.count:2`. Only product UI presentation and analytics semantics remain
+  unchecked.
+- Operation teardown is fixed for unique identities. Local and backend operation
+  identity intentionally omit scene, so two windows using identical `(name, key)`
+  have not been validated and require a contract decision rather than an implicit
+  scene suffix.
+- The remaining downstream runtime plan requires probe work first. The current
+  logger control emits `.info` rather than a mirrored RUM error, and there are no
+  WebView, split-navigation, restoration, fatal-context, or exported-context
+  controls. The shared-request helper is one-shot, and “Other Window” is ambiguous
+  once more than two sessions exist.
 
 ### Attempts not to repeat
 
@@ -1159,6 +1520,10 @@ distinguish a scene.
 - Do not retry a child `UIViewControllerRepresentable` as a transparent ordering
   fix. The controller run remained 4-35 ms behind customer lifecycle work, and
   UIKit does not guarantee an ancestor window is available at `viewWillAppear`.
+- Do not describe a scene custom trait or `onChange(initial:)` as a transparent
+  view-before-callback guarantee. The trait supplies early scene identity and the
+  initial callback materially narrows the gap, but two iOS 27 runs still emitted
+  the RUM view after customer outer `.onAppear` and immediate `.task`.
 - Do not invent a provisional scene ID or rebind an existing RUM view piecemeal.
   Ownership is immutable across the view scope, INV tracker, cache, operations,
   lifecycle maps, and snapshots; ordinary stop/start also allocates a new view ID.
@@ -1166,25 +1531,53 @@ distinguish a scene.
   before addressing an element by index. A cached B button can still invoke B's
   controller while the screenshot visibly shows A, leaving the representative
   unchanged and invalidating a delayed-provenance experiment.
+- The fixed “Other Window” control is predictable only when exactly two sessions
+  exist: it selects the first other member of unordered `openSessions`. With more
+  windows, verify the recorded target or add explicit target selection first.
+- The shared/coalesced request helper stores one task and does not clear it after
+  completion. Relaunch or reset/fix that state before a second shared-request run,
+  or it can silently join an already completed task.
+- Do not look for split navigation, restoration, WebView, fatal/exported-context,
+  or mirrored `logger.error` controls in the current probe. They do not exist yet;
+  extend the harness before scheduling those rows.
+- Do not use separate simulator-driver processes to race a three-second operation
+  against scene closure. Process initialization can reverse the taps. Use AXe's
+  ordered `batch` command and fixed toolbar controls; the final teardown run
+  proves the intended start-then-close order in console and backend data.
+- Do not attribute a missing reduced operation to reducer lag without inspecting
+  raw `@type:vital` operation steps. The pre-fix teardown runs had a source-scene
+  start and no retained end; the post-fix run has both steps and a reduced event.
 
 ## Completion gates
 
 The assessment can change to supported only when:
 
-- concurrent UIKit and SwiftUI windows keep independent, correct view lifetimes;
-- navigation and actions are attributed to their originating windows;
+- concurrent UIKit, explicit SwiftUI, and automatically tracked native SwiftUI
+  windows keep independent, correct view lifetimes;
+- stack, modal, split/adaptive, and restored navigation plus tap and scroll actions
+  are attributed to their originating windows;
+- the trait-backed SwiftUI semantic result survives repeated cold-launch and
+  navigation stress; three successful runs are evidence, not a deterministic
+  callback-order contract;
 - bounded Resource/Trace provenance is validated with actual URLSession timing,
   while unknown-provenance work is explicitly classified and follows the approved
-  last-interacted representative fallback;
+  process-representative fallback;
 - RUM Resource and Trace freeze and share one request-start selection whenever a
   trustworthy owner exists, including navigation, rollover, reverse completion,
   and scene closure;
-- operations, errors, vitals, and fatal/exported context have explicit support
-  levels and no silent misattribution claims; Session Replay coexists without a
-  crash even though scene-correct replay is not claimed;
-- scene lifecycle transitions do not disturb unrelated windows;
+- operations, manual errors, logs and mirrored errors, WebView containers,
+  feature flags, INV/TNS/vitals, fatal/exported context, profiling, and process-wide
+  long tasks/hangs have explicit support levels and targeted runtime evidence or
+  an explicit process-representative limitation; Session Replay coexists without
+  a crash even though scene-correct replay is not claimed;
+- background, foreground, destruction, disconnect, reconnect, and restoration do
+  not disturb unrelated windows;
 - tests cover duplicate identities, disconnect, restoration, session expiration,
   and foreground/background transitions;
-- single-scene and legacy lifecycle tests demonstrate no regression;
+- single-scene and legacy lifecycle tests plus a live ordinary-app flow demonstrate
+  no regression; the extra `UIApplication.sendEvent` path has measured acceptable
+  overhead and passes recursion/reentrancy stress with and without action tracking;
+- raw intake, reducer output, and product UI give a coherent representation of
+  overlapping views inside one application session;
 - the iPad probe and backend session both confirm the intended model, followed by
   iPhone Duo validation on iOS 27.1 when that runtime is available.
