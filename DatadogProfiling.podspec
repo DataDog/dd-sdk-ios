@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = "Datadog, Inc."
 
-  s.swift_version = '5.9'
+  s.swift_version = '6.0'
   s.ios.deployment_target = '15.0'
   s.tvos.deployment_target = '15.0'
   s.visionos.deployment_target = '1.0'

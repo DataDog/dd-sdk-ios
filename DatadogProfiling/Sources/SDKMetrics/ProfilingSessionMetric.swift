@@ -52,6 +52,8 @@ internal final class ProfilingSessionMetric {
                 self = .executionFailed
             case .unknown:
                 self = .unknown
+            @unknown default:
+                self = .unknown
             }
         }
     }
@@ -127,6 +129,8 @@ internal final class ProfilingSessionMetric {
         case .error(reason: let reason):
             errorMessage = errorMessage ?? reason.rawValue
         case .unknown:
+            errorMessage = errorMessage ?? "Unknown profiling status."
+        @unknown default:
             errorMessage = errorMessage ?? "Unknown profiling status."
         }
 

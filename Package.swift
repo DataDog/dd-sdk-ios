@@ -221,7 +221,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: internalSwiftSettings
+            swiftSettings: [.swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
         .target(
             name: "DatadogMachProfiler",
@@ -235,7 +235,7 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
-            swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
+            swiftSettings: [.interoperabilityMode(.Cxx), .swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
 
         .target(

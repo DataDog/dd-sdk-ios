@@ -9,15 +9,26 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-internal struct ProfilingQuotaResult: Equatable {
-    internal enum Decision: Equatable {
+internal struct ProfilingQuotaResult: Equatable, Sendable {
+    internal enum Decision: Equatable, Sendable {
         case quotaOK
         case quotaKO
     }
 
     let decision: Decision
-    let reason: DDProfiling.QuotaReason
+    private let reasonRawValue: String
+
+    var reason: DDProfiling.QuotaReason {
+        DDProfiling.QuotaReason(rawValue: reasonRawValue) ?? .undefined
+    }
+
+    init(decision: Decision, reason: DDProfiling.QuotaReason) {
+        self.decision = decision
+        self.reasonRawValue = reason.rawValue
+    }
 }
+
+internal typealias ProfilingQuotaResultListener = @Sendable (ProfilingQuotaResult?) -> Void
 
 internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver {
     var quotaResult: ProfilingQuotaResult? { get }
@@ -26,7 +37,7 @@ internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver {
     ///
     /// The callback emits `nil` when a new session starts and the previous result is cleared,
     /// then emits the resolved result once the quota request completes.
-    var onQuotaResultUpdate: ((ProfilingQuotaResult?) -> Void)? { get set }
+    var onQuotaResultUpdate: ProfilingQuotaResultListener? { get set }
 }
 
 extension ProfilingQuotaChecking {
@@ -42,7 +53,7 @@ extension ProfilingQuotaChecking {
 /// It starts a quota request when a sampled-in RUM session id is observed with granted
 /// tracking consent, ignores stale responses for previous sessions and fails open
 /// on request or decoding errors.
-internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
+internal final class ProfilingQuotaChecker: ProfilingQuotaChecking, Sendable {
     private enum Constants {
         static let quotaPath = "/api/v2/profiling/quota"
         static let sessionIDQueryItem = "session_id"
@@ -58,12 +69,15 @@ internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
     }
 
     private let urlSession: URLSession
+    private let state = ReadWriteLock(wrappedValue: State.idle)
+    private let quotaResultUpdate = ReadWriteLock<ProfilingQuotaResultListener?>(wrappedValue: nil)
 
-    @ReadWriteLock
-    private var state: State = .idle
-    var quotaResult: ProfilingQuotaResult? { state.quotaResult }
+    var quotaResult: ProfilingQuotaResult? { state.wrappedValue.quotaResult }
 
-    var onQuotaResultUpdate: ((ProfilingQuotaResult?) -> Void)?
+    var onQuotaResultUpdate: ProfilingQuotaResultListener? {
+        get { quotaResultUpdate.wrappedValue }
+        set { quotaResultUpdate.wrappedValue = newValue }
+    }
 
     init(urlSession: URLSession = ProfilingQuotaChecker.urlSession) {
         self.urlSession = urlSession
@@ -87,7 +101,7 @@ extension ProfilingQuotaChecker: FeatureMessageReceiver {
     private func checkIfNeeded(sessionID: String, context: DatadogContext) {
         var shouldStartRequest = false
 
-        _state.mutate {
+        state.mutate {
             switch $0 {
             case .idle:
                 $0 = .pending(sessionID: sessionID)
@@ -147,7 +161,7 @@ extension ProfilingQuotaChecker: FeatureMessageReceiver {
     private func storeIfCurrentSession(result: ProfilingQuotaResult, sessionID: String) -> Bool {
         var didStore = false
 
-        _state.mutate {
+        state.mutate {
             switch $0 {
             case .pending(let currentSessionID) where currentSessionID == sessionID,
                     .resolved(let currentSessionID, _) where currentSessionID == sessionID:
@@ -246,6 +260,8 @@ private extension QuotaResponse.Attributes {
         case .backendUnavailable, .timeout, .apiError:
             decision = .quotaOK
         case .quotaOk, .quotaExceeded, .orgDisabled, .undefined:
+            decision = admitted ? .quotaOK : .quotaKO
+        @unknown default:
             decision = admitted ? .quotaOK : .quotaKO
         }
 
