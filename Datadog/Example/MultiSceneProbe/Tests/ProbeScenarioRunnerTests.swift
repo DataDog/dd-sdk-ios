@@ -27,6 +27,41 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
     }
 
+    func testUIKitSplitScenariosTreatPrimaryAsStructuralContext() throws {
+        for identifier in [
+            "uikit.split.replacement",
+            "uikit.split.subclass",
+            "uikit.split.pop-automatic",
+            "uikit.split.pop-cancel",
+            "uikit.split.pop-finish",
+            "uikit.split.native-pop-control",
+            "uikit.split.native-pop-cancel",
+            "uikit.split.native-pop-finish",
+            "uikit.split.concurrent-scenes"
+        ] {
+            let scenario = try XCTUnwrap(
+                ProbeScenarioCatalog.scenario(identifier: identifier)
+            )
+
+            XCTAssertTrue(
+                scenario.expectedSemanticTimeline.contains(
+                    ProbeExpectation(
+                        .noViewStarted,
+                        scene: "scene-A",
+                        screen: "primary"
+                    )
+                ),
+                "\(identifier) must not model the structural Primary pane as a RUM view"
+            )
+            XCTAssertFalse(
+                scenario.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted && $0.screen == "primary"
+                },
+                "\(identifier) must model only the current destination"
+            )
+        }
+    }
+
     func testEveryCatalogScenarioResolvesWithItsDefaultRunMode() {
         for scenario in ProbeScenarioCatalog.all {
             let resolution = ProbeScenarioRunner.resolve(

@@ -415,6 +415,7 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
         ],
         expectedSemanticTimeline: [
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
             ProbeExpectation(
                 .noViewStarted,
@@ -458,7 +459,7 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "secondary-2")
         ],
         expectedSemanticTimeline: [
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1)
         ],
@@ -477,6 +478,7 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
         ],
         expectedSemanticTimeline: [
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
             ProbeExpectation(
                 .noViewStarted,
@@ -527,7 +529,10 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2),
             ProbeExpectation(.viewStarted, scene: "scene-B", screen: "secondary-1", occurrence: 2)
         ],
-        expectedSemanticTimeline: [],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
+            ProbeExpectation(.noViewStarted, scene: "scene-B", screen: "primary")
+        ],
         runtimeOptions: runtime {
             $0.automaticallyOpensSecondWindow = true
         }
@@ -847,7 +852,7 @@ enum ProbeScenarioCatalog {
 
     private static func uikitSplitTimeline() -> [ProbeExpectation] {
         [
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1)
         ]
@@ -855,7 +860,7 @@ enum ProbeScenarioCatalog {
 
     private static func uikitPopTimeline() -> [ProbeExpectation] {
         [
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
