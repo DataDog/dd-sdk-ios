@@ -47,13 +47,13 @@ remount fix and its four added regressions bring the current RUM plan to
 1,151/1,151; Trace remains 151/151, including 4/4 focused OpenTelemetry handoff
 tests. Repository lint passed all 713 source and 699 test files at the split
 checkpoint; focused lint for the retained-route source and tests has zero
-violations. The structured probe recorder, mapper reducer, semantic oracle, and
-exact main-actor scene registry now pass 31/31 tests (`EXP-108`). A clean iPadOS
-27 run emitted one exact native scene identity, readiness, activation, geometry,
-size classes, disconnect generation, and Home → Detail route. Backend intake
-agrees on the two semantic view UUIDs and all six action/Resource owners. The
-required Xcode interaction skill remains unavailable, so a live Home-return
-oracle verdict remains open.
+violations. The structured probe recorder, mapper reducer, semantic oracle, exact
+main-actor scene registry, and first observable driver now pass 35/35 tests
+(`EXP-108`, `EXP-109`). Three clean iPadOS 27 Home → Detail → Home runs each
+emitted one 7/7 local `PASS`, distinct Home₁/Detail/Home₂ UUIDs, and post-return
+action/Resource ownership on Home₂. Backend intake independently agrees for all
+three sessions and reports no errors. Native gesture synthesis remains
+unavailable, but it no longer blocks exact programmatic scenario driving.
 The prior `EXP-062` full attempt's sole unchanged timeseries timing failure passed
 in isolation and in its clean rerun.
 
@@ -518,8 +518,9 @@ against the amount of implementation completed:
 | Normal-app compatibility | RUM 1,151/1,151 and Trace 151/151 pass; complete Internal/Logs/WebView suites, probe builds, package build, repository checkpoint lint, and focused retained-route lint pass | Live single-scene behavior, custom-handler integration, and `sendEvent` overhead/recursion measurement |
 | Session Replay | Multiple UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK crash | No scene-correctness work required for this objective |
 
-The probe registry in `EXP-108` is an evidence-harness improvement, not a shipping
-SDK fix. The initial Home mapper snapshot still precedes native scene resolution;
+The probe registry and observable driver in `EXP-108`/`EXP-109` are
+evidence-harness improvements, not shipping SDK fixes. The initial Home mapper
+snapshot can still precede native scene resolution;
 the stable logical scene label can be joined to the exact native session once the
 scene becomes ready, while release support still requires the production RUM
 scope to preserve its own reliable scene ownership.
@@ -535,9 +536,9 @@ lifecycle, and ordinary-app behavior remain.
 `EXP-068`/`EXP-069` reproduce route-owned and automatic SwiftUI split failures;
 `EXP-090`, `EXP-098`/`EXP-099`, and `EXP-102` through `EXP-105` now prove the
 RUM-only identity, retained return, same-type split replacement, and retained
-split-remount mechanics without customer-state reset. The named recorder and
-fixture-backed oracle and registry now have mapper/backend agreement for one live
-prefix but no driven Home-return verdict (`EXP-107`/`EXP-108`). The debug source
+split-remount mechanics without customer-state reset. The named recorder,
+fixture-backed oracle, registry, and driver now have three-run mapper/backend
+agreement for a complete Home₁ → Detail → Home₂ timeline (`EXP-109`). The debug source
 moves toward the approved optional container-level semantic SwiftUI integration,
 which must coexist with automatic discovery and suppress duplicates only in its
 target. Real-device and

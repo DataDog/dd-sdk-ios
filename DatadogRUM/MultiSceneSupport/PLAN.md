@@ -102,30 +102,33 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-1. Connect observable step acknowledgements to the structured recorder and
-   oracle, then produce a local terminal result before backend confirmation. The
-   catalog, JSONL/oracle, and exact main-actor scene-registry phases are complete
-   in `EXP-106` through `EXP-108`; keep harness and production SDK commits
-   separate.
-2. Turn the debug per-window occurrence source into the approved optional iOS 27
+1. Completed in `34ba7eabf` and `EXP-109`: connect observable scene, route,
+   destination, and RUM-occurrence acknowledgements to the recorder and oracle.
+   Three clean Home → Detail → Home runs each produced one 7/7 local `PASS` before
+   matching backend confirmation; the probe plan passes 35/35. Keep harness and
+   production SDK commits separate.
+2. Extend the driver across deterministic stack abort/replacement, split
+   selection, UIKit cancel/finish, and exact scene open/activate/close steps.
+   Keep native gesture proof in the real-device/human queue.
+3. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
    duplicates only in its authoritative container. No public API lands without
    RFC/API review.
-3. Design the required scene-aware manual view start/stop overloads and Objective-C
+4. Design the required scene-aware manual view start/stop overloads and Objective-C
    companion. The same key must coexist independently in A and B while existing
    APIs preserve inferred/last-interacted compatibility.
-4. Suppress structural UIKit Primary/sidebar/container views so each scene has one
+5. Suppress structural UIKit Primary/sidebar/container views so each scene has one
    current destination. Retain the passing fresh return-occurrence and transition
    cancellation behavior.
-5. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+6. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-6. Preserve the passing retained split return from `EXP-105`, then validate
+7. Preserve the passing retained split return from `EXP-105`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-7. Validate simultaneous visible A/B transitions, then genuine disconnect,
+8. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-8. Complete Operation public targeting and its live backend matrix.
-9. Close the bounded causal/downstream rows and live normal-app compatibility.
+9. Complete Operation public targeting and its live backend matrix.
+10. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -159,20 +162,28 @@ experiment; it does not itself change the SDK support verdict.
    Window Execution Context seam is not serialized. The probe plan passes 31/31;
    a clean iPadOS 27 run and backend session validate the Home → Detail prefix.
    Exact open, activate, close, and wait step execution remains part of phase 4.
-4. Drive SwiftUI path/split changes and UIKit deterministic transitions through
-   observable `ProbeStep` acknowledgements. Keep deterministic state-machine proof
-   separate from genuine native gesture proof. A drag without transition/path
-   recognition is `INCONCLUSIVE`.
+4. Initial slice completed in `34ba7eabf` and `EXP-109`: drive
+   `swiftui.stack.return` through observable scene, path, destination, and
+   RUM-occurrence acknowledgements. The driver emits exactly one terminal result,
+   all 35 tests pass, and three clean iPadOS 27 runs each passed 7/7 locally and
+   in backend intake. View-stop mapper snapshots may arrive after the next view
+   start during animation, so the oracle requires those eventual lifecycle facts
+   without mistaking callback order for navigation order. Remaining phase-4 work
+   is exact open/activate/close execution, split selection, stack abort and
+   replacement, and deterministic UIKit transitions. Keep deterministic
+   state-machine proof separate from genuine native gesture proof; a drag without
+   transition/path recognition is `INCONCLUSIVE`.
 5. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The first harness acceptance loop is a clean one-window Home → Detail → Home run
-repeated three times with the same semantic result, plus a deliberately wrong
-view UUID that fails locally with an actionable reason. Hardware-only rows remain
-prepared but unclosed in the experiment rerun queue.
+The first harness acceptance loop is complete in `EXP-109`: three clean
+one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
+the deliberately wrong-view fixture continues to fail locally with an actionable
+reason. Hardware-only rows remain prepared but unclosed in the experiment rerun
+queue.
 
 ### 1. Stabilize views, navigation, and actions
 

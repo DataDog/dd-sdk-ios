@@ -82,11 +82,13 @@ also remain open.
 
 The structured probe records versioned JSONL, separates call-site source from
 mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
-It now also has an exact main-actor scene registry with weak window ownership,
-readiness, activation, geometry, route, and disconnect generations (`EXP-108`,
-31/31 tests). A clean iPadOS 27 run and backend intake agree on the resulting
-ApplicationLaunch → Home → Detail prefix. The required interaction skill remains
-unavailable, so a driven Home return and live final verdict are still open.
+It also has an exact main-actor scene registry with weak window ownership,
+readiness, activation, geometry, route, and disconnect generations. Its first
+signal-driven scenario now passes 35/35 tests and three clean iPadOS 27 runs with
+distinct Home₁ → Detail → Home₂ UUIDs, exact post-return ownership, one local
+terminal verdict, and matching backend intake per run (`EXP-108`, `EXP-109`).
+Native gesture synthesis remains unavailable and is kept separate from this
+deterministic programmatic proof.
 Detailed conclusions live in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md);
 exact runs and rejected paths live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
@@ -185,8 +187,9 @@ customer workflow, and required tests live only in
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `60da5316b` (`Preserve revealed SwiftUI view occurrences across
 remount`). The latest implementation checkpoints are `acca8907f` (`Model one RUM
-destination per scene`) and `abfb93d45` (`Add exact scene registry to multi-scene
-probe`). All are unsigned local development commits and must not be pushed. The
+destination per scene`), `abfb93d45` (`Add exact scene registry to multi-scene
+probe`), and `34ba7eabf` (`Drive probe navigation through observed signals`). All
+are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
@@ -200,9 +203,10 @@ without customer-state reset in one and two scenes. `EXP-104` records the duplic
 returned Detail failure, and `EXP-105` proves the source-started UUID survives a
 SwiftUI subtree remount with exact action/resource ownership. This remains an
 experimental branch, not a release-ready support claim. `EXP-106` through
-`EXP-108` now cover deterministic configuration, structured mapper evidence,
-fixture-based semantic reduction, exact scene registration, and backend
-acceptance; they do not yet execute a full live scenario through the oracle.
+`EXP-109` cover deterministic configuration, structured mapper evidence,
+fixture-based semantic reduction, exact scene registration, signal-driven step
+execution, three repeatable local verdicts, and backend acceptance. Only the
+Home-return scenario is fully driven so far.
 
 ### Exact next work
 
@@ -216,33 +220,36 @@ for the shipping integration:
    geometry/size classes, current route, readiness, and disconnect generation.
    It never chooses an unordered `UIApplication.openSessions` member. Its future
    Window Execution Context seam is internal and absent from emitted signals.
-2. Wire observable step acknowledgements and the pure oracle into one clean
-   Home → Detail → Home run repeated three times. The structured recorder and
-   reducer plus scene registry pass 31/31 fixture/unit tests; the next run must
-   produce a real local terminal verdict before its backend confirmation.
-3. Prepare RFC/API review for the optional container-level SwiftUI semantic
+2. Completed in `34ba7eabf`/`EXP-109`: observable scene, route, destination, and
+   mapper-occurrence signals drive Home → Detail → Home without arbitrary delays.
+   Three clean runs each produced one 7/7 local `PASS`, distinct H1/D1/H2 UUIDs,
+   and matching backend action/Resource ownership; the probe plan passes 35/35.
+3. Extend the same driver to stack abort and replacement, split selection, UIKit
+   deterministic transitions, and exact scene open/activate/close steps. Keep
+   native gesture rows explicitly hardware/human-driven.
+4. Prepare RFC/API review for the optional container-level SwiftUI semantic
    integration. It must consume a customer path/router and centralized resolver,
    coexist with automatic tracking, preserve customer state, and suppress
    duplicate automatic views only within its target container.
-4. Prepare the scene-aware manual view start/stop API and Objective-C companion.
+5. Prepare the scene-aware manual view start/stop API and Objective-C companion.
    The same manual key must coexist in A and B, and stopping A must not stop B.
-5. Update UIKit split tracking to exclude structural Primary/container views,
+6. Update UIKit split tracking to exclude structural Primary/container views,
    while retaining the already-correct fresh Secondary return occurrences and
    cancelled-transition behavior.
-6. Obtain a recognized native interactive SwiftUI pop and prove both cancellation
+7. Obtain a recognized native interactive SwiftUI pop and prove both cancellation
    and completion. Keep the focused arbiter tests, but do not reuse `EXP-100`'s
    ignored edge drags as evidence.
-7. Preserve the passing retained split return from `EXP-105`, then validate
+8. Preserve the passing retained split return from `EXP-105`, then validate
    adaptive collapse/expansion on a capable destination.
-8. Repeat simultaneous A/B navigation in a topology where both windows are visibly
+9. Repeat simultaneous A/B navigation in a topology where both windows are visibly
    active and can complete independently. Retain the iOS 27 UIKit handoff and
    review the separate application-subclass predicate issue.
-9. Run genuine scene disconnect/reconnect, per-scene background/foreground, and
+10. Run genuine scene disconnect/reconnect, per-scene background/foreground, and
    concurrent restoration. A retained scene snapshot is fallback evidence only;
    disconnect must fence it until a new concrete mount.
-10. Complete Operations public-target API review and live A-to-B/duplicate-start
+11. Complete Operations public-target API review and live A-to-B/duplicate-start
    validation. Keep application-wide `(name, operationKey)` identity.
-11. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
+12. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
    live single-scene/custom-handler compatibility and measure event-handoff
    recursion and overhead. Repeat the release matrix on iOS 27.1 and iPhone Duo.
 
@@ -281,8 +288,10 @@ for the shipping integration:
   initialization. It records ordered versioned JSONL signals, keeps call-site
   source separate from mapper-observed RUM ownership, derives view start/stop from
   snapshots, and evaluates ordered/negative expectations using only `PASS`,
-  `FAIL`, `SKIPPED`, and `INCONCLUSIVE`. This improves evidence quality but does
-  not change the RUM support verdict.
+  `FAIL`, `SKIPPED`, and `INCONCLUSIVE`. Its first observable driver waits for
+  exact scene, path, destination, and RUM-occurrence signals; Home → Detail → Home
+  passes 35/35 tests and three clean live runs with one final verdict per run.
+  This improves evidence quality but does not change the RUM support verdict.
 - UIKit split scenario manifests now forbid Primary as a RUM view. Primary
   lifecycle is retained as structural diagnostic evidence, while Secondary is
   the scene's current destination.
@@ -296,12 +305,14 @@ As of 2026-09-13:
 - Focused retained-route, occurrence-isolation, transition-arbiter, Operations,
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
-- The named runner validates fail-closed startup (`EXP-106`); its recorder,
-  oracle, and exact scene registry pass 31/31. Clean run
-  `scene-registry-live-20260913-1647` emitted scene readiness, geometry,
-  lifecycle, and Home → Detail route signals for one native scene, and backend
-  session `de29d1e3-0ff6-44bb-a3e6-14c17047429a` confirms the matching views,
-  six actions, and six Resources. It does not prove Home return (`EXP-108`).
+- The named runner validates fail-closed startup (`EXP-106`), and its recorder,
+  oracle, scene registry, and observable driver pass 35/35. Three clean
+  `swiftui.stack.return` runs produced one 7/7 local `PASS` each, distinct
+  Home₁/Detail/Home₂ UUIDs, and post-return action/Resource ownership on Home₂.
+  Backend sessions `272c5006-bf32-4ee9-9adb-3b75f9a39639`,
+  `25cc4383-8f80-4ad8-9c44-0ef65771896b`, and
+  `11dba044-6d97-4095-a607-25ee742aa804` independently confirm those timelines
+  with no errors (`EXP-109`).
 - Backend split runs preserve exact destination occurrences and markers, including
   the retained-return remount fix (`EXP-102` through `EXP-105`). UIKit history
   still contains the now-forbidden initial structural Primary.
@@ -323,10 +334,11 @@ The iOS 27 integration-runner half-and-half layout repeatedly respawned
 `backboardd`, although the standalone native `WindowGroup` probe opens two windows.
 The current iPad simulator also rejects `devicectl appResize` because it lacks
 Resizable App Management; adaptive width proof needs a capable destination.
-The current Xcode device-interaction request also returns `Skill not found`, so
-the structured live run could not issue or acknowledge synthetic navigation
-input. Console evidence that the destination materialized is retained, but no
-visual UI claim is made from it.
+The current Xcode device-interaction request returns `Skill not found`, so native
+gesture synthesis and visual interaction claims remain unavailable. This no
+longer blocks structured programmatic navigation: the signal-driven driver uses
+exact scene controls and observable acknowledgements. It does not turn those
+programmatic runs into native-gesture evidence.
 Ignored native edge drags, fullscreen-only peer-window layouts, partial scene
 restoration, and unsupported resize are tracked in the dedicated
 [real-device and human-driven rerun queue](MultiSceneSupport/EXPERIMENTS.md#real-device-and-human-driven-rerun-queue).

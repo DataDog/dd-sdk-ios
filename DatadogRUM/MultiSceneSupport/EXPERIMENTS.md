@@ -61,8 +61,9 @@ boundary, in this order:
 | 44 | `Record and validate multi-scene probe timelines` | Versioned JSONL recorder, mapper snapshot reduction, semantic oracle, five fixtures, and 24-test probe plan |
 | 45 | `Model one RUM destination per scene` | UIKit split manifests forbid structural Primary RUM views and retain Primary lifecycle only as negative diagnostic evidence |
 | 46 | `Add exact scene registry to multi-scene probe` | Main-actor logical/native scene registry, weak window ownership, lifecycle/geometry/route snapshots, disconnect fencing, and schema-version compatibility |
+| 47 | `Drive probe navigation through observed signals` | Signal-driven Home → Detail → Home execution, exact scene/path/destination/RUM-occurrence waits, one terminal verdict, deferred lifecycle-fact reduction, and focused driver/oracle tests |
 
-Rows 1-46 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-47 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -72,6 +73,7 @@ Rows 1-46 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
 `4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
+Row 47 is `34ba7eabf`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -86,7 +88,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-nineteen exact-path commits in rows 28-46 use that policy. This is local
+twenty exact-path commits in rows 28-47 use that policy. This is local
 checkpoint history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -209,6 +211,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-106 | `harness-phase1-valid-20260913`; `harness-phase1-invalid-20260913` | `6f556658-1444-4ddf-8d9f-82ce0d5dea91`; none | iPadOS 27 | Named-scenario harness startup proof. The valid `regression.single-scene` launch emitted its complete resolved manifest as the first structured record, then initialized Datadog and produced the expected Home/Detail payload. The unknown-scenario launch emitted only a manifest plus rejection: no Datadog initialization, session, or RUM payload. The catalog contains 35 stable scenarios; strict resolver/catalog tests pass 15/15 and probe build-for-testing succeeds. This validates harness configuration, not a new SDK support surface. |
 | EXP-107 | `structured-recorder-live-20260913` | `6b194ceb-b0d8-4d0c-8848-ab293594cb79` | iPadOS 27 | Structured-recorder/oracle phase. Versioned JSONL keeps probe source separate from mapper-observed RUM ownership; snapshot reduction derives first-observed starts and active-to-inactive stops. Five fixtures plus source tests pass 24/24. The live `regression.single-scene` prefix emitted ApplicationLaunch → Home `081e6f2c…` → Detail `f86c6dce…`; backend returned 18 events and exact Home/Detail action/Resource ownership. Xcode's device-interaction request returned `Skill not found`, so no synthetic navigation input or final live oracle result was produced and Home-return remains unproven. |
 | EXP-108 | `scene-registry-live-20260913-1647` | `de29d1e3-0ff6-44bb-a3e6-14c17047429a` | iPadOS 27 | Exact probe scene-registry phase. Seven new tests cover logical/native identity, alias rejection, disconnect/reconnect generations, stale-handle rejection, weak windows, scene-local route/presentation/future-context state, and peer isolation; the full probe plan passes 31/31. After a clean uninstall, schema-v2 JSONL emitted scene A ready as native `E32B88D1…`, generation 0, 955×1253 regular/regular, then foreground activation and Home → Detail mutation. Local mapper UUIDs Home `91826d58…` and Detail `3d91c699…` match 18 backend events, including all six actions and six Resources. The initial Home mapper snapshot preceded native resolution and is joined later through its stable logical scene; this harness seam is not a shipping SDK fix. Xcode install/run recovered, but its required `device-interaction` skill is still unavailable, so no Home-return or final live oracle claim is added. |
+| EXP-109 | `observable-home-return-20260913-1736-c`; `observable-home-return-20260913-1739-d`; `observable-home-return-20260913-1741-e` | `272c5006-bf32-4ee9-9adb-3b75f9a39639`; `25cc4383-8f80-4ad8-9c44-0ef65771896b`; `11dba044-6d97-4095-a607-25ee742aa804` | iPadOS 27 | Signal-driven Home → Detail → Home acceptance. After a clean uninstall, all three runs produced exactly one local `PASS` with 7/7 expectations and six acknowledged steps. The view UUID chains were `30ff5793…` → `4ca6ef28…` → `03f41a11…`, `bc6d76ab…` → `d3d7648a…` → `6352a4d2…`, and `f5cf4344…` → `51c3c342…` → `d5edb3a6…`; each post-return action and Resource belonged to Home₂. Backend intake independently contains launch plus one Home₁, Detail, and Home₂ per run, the exact post-return owners, and no errors. Two harness-only failures are retained: root `onAppear` did not repeat because SwiftUI retained Home even while RUM correctly created Home₂, and one repeat delivered Home₁'s stop mapper snapshot after Detail's start during animation. The driver now waits for the new RUM occurrence, and the oracle requires eventual stop facts without treating callback order as navigation order. The probe plan passes 35/35. This validates deterministic occurrence/attribution behavior on the experimental SDK, not automatic zero-code SwiftUI support or genuine native gestures. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -227,7 +230,6 @@ real simultaneous-window layout is useful for earlier discrimination.
 
 | Priority | Experiments | Why the simulator or driver was insufficient | Appropriate rerun | Evidence required to close the row |
 | --- | --- | --- | --- | --- |
-| P0 | `EXP-107`, `EXP-108` | Xcode can now install and run through an interaction session, but the session requires a `device-interaction` skill that is not installed; no synthetic tap/path acknowledgement was sent. Console materialization is not visual proof | Retry after that skill becomes available, use `xcui`, or use a human-driven tap while the agent records JSONL and backend intake | Produce acknowledged Home → Detail → Home steps, one final local oracle result, distinct H1/D1/H2 UUIDs, exact markers, and matching backend events in three clean runs |
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
@@ -249,9 +251,10 @@ driver reached the native navigation gesture.
 
 - Confirmed Xcode 27.0 and a booted iOS 27.0 iPad simulator.
 - Connected to Xcode's tool server through `xcrun mcpbridge`; workspace, schemes,
-  destinations, build, run, console, and test calls work. Device-interaction
-  install/run now works, but the session-mandated `device-interaction` skill is
-  not installed (`EXP-108`), so synthesized input is not currently usable.
+  destinations, build, run, console, and test calls work. The requested
+  `device-interaction` skill is not installed, so synthesized native gestures and
+  visual UI input are unavailable. Exact programmatic scenario driving is
+  available through the probe registry and observable driver (`EXP-109`).
 - Confirmed Datadog RUM backend search/aggregation access is available.
 - Confirmed the integration host opts out of multiple scenes and the Example host
   has no scene manifest.
@@ -2489,6 +2492,54 @@ ran the app, but required the unavailable `device-interaction` skill for any UI
 event. No synthesized input, visual claim, Home return, or final live oracle
 result is attached to `EXP-108`.
 
+`34ba7eabf` completes the first observable-driver slice. The driver addresses the
+exact logical scene through `ProbeSceneRegistry`, executes only after declared
+signals become observable, records every step acknowledgement, and emits exactly
+one terminal semantic result. For `swiftui.stack.return`, it waits for scene A,
+the Detail path mutation and destination, the returned empty path, and the second
+mapper-observed Home occurrence. The final marker is emitted only after Home₂ is
+proven, rather than after an arbitrary delay or a source-only lifecycle callback.
+
+The first attempted run, `observable-home-return-20260913-1725`, exposed a
+harness assumption rather than an SDK failure: SwiftUI retained the root Home
+value, so its outer `onAppear` did not fire again even though the RUM state
+correctly created a distinct Home₂. The wait was changed from
+`destination:home#2` to the second mapper-observed `rum-view:home#2` occurrence.
+The next clean run passed locally. A repeat,
+`observable-home-return-20260913-1733-b`, then exposed a second evidence-ordering
+assumption: during the navigation animation, the mapper delivered Home₁'s inactive
+snapshot after Detail's start snapshot. Both required lifecycle facts existed,
+but a strictly consuming sequence incorrectly failed them. View starts and work
+attribution remain ordered; stops are now required eventual lifecycle facts that
+may be observed after the next start. The wrong-view fixture still fails with an
+actionable attribution reason, and the new ordering case has a focused test.
+
+`EXP-109` is the corrected three-run acceptance set. Each run followed a clean
+uninstall, acknowledged all six driver steps, and emitted one 7/7 `PASS`:
+
+- `observable-home-return-20260913-1736-c`, session
+  `272c5006-bf32-4ee9-9adb-3b75f9a39639`: Home₁
+  `30ff5793-fead-441f-bbfa-725a9af94a7c` → Detail
+  `4ca6ef28-651d-4ce4-abf3-b0740fddd8b4` → Home₂
+  `03f41a11-e94b-4068-a31d-e72f98695344`.
+- `observable-home-return-20260913-1739-d`, session
+  `25cc4383-8f80-4ad8-9c44-0ef65771896b`: Home₁
+  `bc6d76ab-1d35-467e-b7c7-38b33913b854` → Detail
+  `d3d7648a-5a1f-4112-8e47-65cf73088b23` → Home₂
+  `6352a4d2-44a8-4659-899b-a3ff6585136d`.
+- `observable-home-return-20260913-1741-e`, session
+  `11dba044-6d97-4095-a607-25ee742aa804`: Home₁
+  `f5cf4344-c85e-49ed-b29d-d88d65f64c22` → Detail
+  `51c3c342-0370-4e26-833c-d66f659837dd` → Home₂
+  `d5edb3a6-ce21-448b-972f-eca980252811`.
+
+Backend aggregation independently reports one launch, Home₁, Detail, and Home₂
+view event in every run, exactly one post-return action and matching Resource on
+that run's Home₂, and no error bucket. All 35 probe tests pass. This closes the
+structured Home-return acceptance loop. It does not close automatic zero-code
+SwiftUI semantics or the native interactive-pop rows; those still require their
+own integration and recognized gesture evidence.
+
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
@@ -2538,9 +2589,12 @@ ownership is safe in the exercised fullscreen topology.
   structured run first observed Home at version 1, so semantic start is derived
   from the first observed UUID and stop from an active-to-false transition.
 - Do not claim visual UI state because console logs say a destination materialized.
-  `EXP-108` could install and run through Xcode interaction, but the required
-  `device-interaction` skill was unavailable and no synthetic input occurred;
-  use an acknowledged driver action, hierarchy/screenshot, or human observation.
+  The requested `device-interaction` skill remains unavailable for synthesized
+  native gestures or visual UI input. That does not block exact programmatic
+  driving: `EXP-109` uses acknowledged registry/path/destination/RUM-occurrence
+  signals. Use hierarchy/screenshot or human observation for claims that are
+  specifically visual, and recognized coordinator/path evidence for native
+  gesture claims.
 - Do not treat the probe scene registry as a shipping SDK fix or serialize its
   future Execution Context seam. It makes exact experiment addressing and joins
   deterministic; production RUM scopes must still preserve their own scene
