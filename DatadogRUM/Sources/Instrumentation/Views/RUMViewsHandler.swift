@@ -15,6 +15,17 @@ internal final class RUMViewsHandler {
     internal struct UIKitSplitViewContext: Equatable {
         let splitViewController: ObjectIdentifier
         let column: Int
+        let isStructural: Bool
+
+        init(
+            splitViewController: ObjectIdentifier,
+            column: Int,
+            isStructural: Bool = false
+        ) {
+            self.splitViewController = splitViewController
+            self.column = column
+            self.isStructural = isStructural
+        }
     }
 
     #if os(iOS)
@@ -483,8 +494,37 @@ internal final class RUMViewsHandler {
 
         return UIKitSplitViewContext(
             splitViewController: ObjectIdentifier(splitViewController),
-            column: column.rawValue
+            column: column.rawValue,
+            isStructural: Self.isStructuralUIKitSplitColumn(
+                column,
+                in: splitViewController
+            )
         )
+    }
+
+    private static func isStructuralUIKitSplitColumn(
+        _ column: UISplitViewController.Column,
+        in splitViewController: UISplitViewController
+    ) -> Bool {
+        guard
+            column == .primary || column == .supplementary,
+            splitViewController.traitCollection.horizontalSizeClass == .regular
+        else {
+            return false
+        }
+
+        switch splitViewController.displayMode {
+        case .oneBesideSecondary,
+             .oneOverSecondary,
+             .twoBesideSecondary,
+             .twoOverSecondary,
+             .twoDisplaceSecondary:
+            return true
+        case .automatic, .secondaryOnly:
+            return false
+        @unknown default:
+            return false
+        }
     }
 
     private static func belongsToSplitColumn(
@@ -532,17 +572,6 @@ internal final class RUMViewsHandler {
               let outgoingContext = uiKitSplitViewContext(for: identity) else {
             return false
         }
-        guard stack.views.dropLast().contains(where: { candidate in
-            guard candidate.instrumentationType == .uikit,
-                  let candidateContext = uiKitSplitViewContext(for: candidate.identity) else {
-                return false
-            }
-            return candidateContext.splitViewController == outgoingContext.splitViewController
-                && candidateContext.column != outgoingContext.column
-        }) else {
-            return false
-        }
-
         if let pending = pendingUIKitSplitViewRemovals.first(where: {
             $0.sceneIdentifier == sceneIdentifier
         }) {
@@ -835,6 +864,16 @@ internal final class RUMViewsHandler {
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
+        #if os(iOS)
+        if isMultiSceneApplication,
+            #available(iOS 27.0, *),
+            uiKitSplitViewContextProvider(viewController)?.isStructural == true {
+            // In a regular-width split hierarchy, primary and supplementary
+            // columns are structural navigation context. The scene's semantic
+            // RUM destination is the independently visible detail column.
+            return
+        }
+        #endif
         if let view = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.

@@ -39,7 +39,8 @@ class RUMViewsHandlerTests: XCTestCase {
 
     private func createUIKitSplitViewContextProvider(
         fixture: UIKitSplitViewFixture,
-        additionalSecondaryControllers: [UIViewController] = []
+        additionalSecondaryControllers: [UIViewController] = [],
+        primaryIsStructural: Bool = false
     ) -> (UIViewController) -> RUMViewsHandler.UIKitSplitViewContext? {
         let splitViewController = ObjectIdentifier(fixture.splitViewController)
         let secondaryControllers = [fixture.secondaryRoot] + additionalSecondaryControllers
@@ -47,7 +48,8 @@ class RUMViewsHandlerTests: XCTestCase {
             if viewController === fixture.primary {
                 return RUMViewsHandler.UIKitSplitViewContext(
                     splitViewController: splitViewController,
-                    column: UISplitViewController.Column.primary.rawValue
+                    column: UISplitViewController.Column.primary.rawValue,
+                    isStructural: primaryIsStructural
                 )
             }
             if secondaryControllers.contains(where: { $0 === viewController }) {
@@ -345,6 +347,74 @@ class RUMViewsHandlerTests: XCTestCase {
         let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
         XCTAssertEqual(starts.map(\.name), ["Primary", "Secondary 1", "Secondary 2"])
         XCTAssertFalse(starts.dropFirst().contains { $0.name == "Primary" })
+    }
+
+    func testGivenMultiSceneRegularSplitView_whenPrimaryIsStructural_itTracksOnlyDestinations() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let replacement = UIViewController()
+        let predicate = UIKitRUMViewsPredicateMock()
+        predicate.resultByViewController = [
+            fixture.primary: .init(name: "Primary"),
+            fixture.secondaryRoot: .init(name: "Secondary 1"),
+            replacement: .init(name: "Secondary 2"),
+        ]
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                additionalSecondaryControllers: [replacement],
+                primaryIsStructural: true
+            ),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        fixture.splitViewController.setViewController(replacement, for: .secondary)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: replacement, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Secondary 1", "Secondary 2"])
+        XCTAssertEqual(stops.map(\.identity), [ViewIdentifier(fixture.secondaryRoot)])
+        XCTAssertFalse(starts.contains { $0.name == "Primary" })
+    }
+
+    func testGivenOrdinaryApplication_whenPrimaryIsMarkedStructural_itKeepsLegacyTracking() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock()
+        predicate.resultByViewController = [
+            fixture.primary: .init(name: "Primary"),
+            fixture.secondaryRoot: .init(name: "Secondary"),
+        ]
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: false,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                primaryIsStructural: true
+            )
+        )
+
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Primary", "Secondary"])
     }
 
     func testGivenMultiSceneSplitView_whenNewControllerAppearsBeforeOldDisappears_itKeepsDirectPath() throws {
