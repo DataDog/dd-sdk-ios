@@ -333,6 +333,53 @@ internal final class ProbeScenarioDriver {
         commandSequence: UInt64
     ) async -> StepOutcome {
         switch step.kind {
+        case .openWindow:
+            guard
+                let sourceScene = step.scene,
+                let targetScene = step.value
+            else {
+                return .failed("source or target scene is missing")
+            }
+            guard sourceScene != targetScene else {
+                return .failed("source and target scene must differ")
+            }
+            guard sceneRegistry.handle(logicalSceneID: targetScene) == nil else {
+                return .failed("scene \(targetScene) is already live")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: sourceScene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .sceneReady(scene: targetScene),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("timed out waiting for scene-ready in \(targetScene)")
+            }
+            return .acknowledged(signal)
+
+        case .closeWindow:
+            guard let scene = step.scene else {
+                return .failed("scene is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: scene, value: "scene:disconnected"),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("timed out waiting for disconnect in \(scene)")
+            }
+            return .acknowledged(signal)
+
         case .waitForSceneReady:
             guard let scene = step.scene else {
                 return .failed("scene is missing")

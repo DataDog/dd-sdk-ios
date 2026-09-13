@@ -585,6 +585,183 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testOpensAndClosesExactPeerBeforeContinuingOnSourceScene() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-scene-lifecycle",
+            scenarioID: "driver-scene-lifecycle",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let windowA = UIWindow()
+        let windowB = UIWindow()
+        let handleA = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: windowA,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handleA))
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: "scene-A",
+                    nativeSceneID: "native-A",
+                    screen: "home"
+                ),
+                scenePhase: ProbeSceneReadiness.ready.rawValue
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "driver-scene-lifecycle",
+            trackingMode: .manual,
+            layout: .stack,
+            initialWindows: ["scene-A", "scene-B"],
+            steps: [
+                ProbeStep(.waitForSceneReady, scene: "scene-A"),
+                ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+                ProbeStep(
+                    .emitMarker,
+                    scene: "scene-B",
+                    value: "before-close"
+                ),
+                ProbeStep(.closeWindow, scene: "scene-B"),
+                ProbeStep(
+                    .emitMarker,
+                    scene: "scene-A",
+                    value: "after-peer-close"
+                )
+            ],
+            completionConditions: [],
+            expectedSemanticTimeline: []
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        let executorA = ProbeSceneStepExecutor()
+        let executorB = ProbeSceneStepExecutor()
+        var commandsA: [ProbeStepKind] = []
+        var commandsB: [ProbeStepKind] = []
+        var registeredHandleB: ProbeSceneHandle?
+
+        executorA.configure(handle: handleA) { step in
+            commandsA.append(step.kind)
+            switch step.kind {
+            case .openWindow:
+                guard
+                    step.scene == "scene-A",
+                    step.value == "scene-B"
+                else {
+                    return .rejected(reason: "wrong scene open command")
+                }
+                let registration = registry.register(
+                    logicalSceneID: "scene-B",
+                    nativeSceneID: "native-B",
+                    window: windowB,
+                    currentRoute: ["home"]
+                )
+                guard case .registered(let handleB) = registration else {
+                    return .rejected(reason: "failed to register scene-B")
+                }
+                registeredHandleB = handleB
+                XCTAssertNotNil(registry.markReady(handleB))
+                executorB.configure(handle: handleB) { step in
+                    commandsB.append(step.kind)
+                    switch step.kind {
+                    case .emitMarker:
+                        recorder.record(
+                            ProbeSignal(
+                                kind: .rumAction,
+                                evidenceSource: .rumMapper,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: "scene-B",
+                                    nativeSceneID: "native-B",
+                                    screen: "home"
+                                ),
+                                name: "before-close"
+                            )
+                        )
+                    case .closeWindow:
+                        guard let snapshot = registry.disconnect(handleB) else {
+                            return .rejected(reason: "failed to disconnect scene-B")
+                        }
+                        recorder.record(
+                            ProbeSignal(
+                                kind: .sceneLifecycle,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: "scene-B",
+                                    nativeSceneID: "native-B"
+                                ),
+                                scenePhase: snapshot.readiness.rawValue,
+                                sceneDisconnectGeneration: snapshot.disconnectGeneration
+                            )
+                        )
+                        driver.unregister(handle: handleB)
+                    default:
+                        return .rejected(reason: "unexpected scene-B command")
+                    }
+                    return .accepted
+                }
+                driver.register(handle: handleB, executor: executorB)
+                recorder.record(
+                    ProbeSignal(
+                        kind: .sceneReady,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: "scene-B",
+                            nativeSceneID: "native-B",
+                            screen: "home"
+                        ),
+                        scenePhase: ProbeSceneReadiness.ready.rawValue
+                    )
+                )
+            case .emitMarker:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .rumAction,
+                        evidenceSource: .rumMapper,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: "scene-A",
+                            nativeSceneID: "native-A",
+                            screen: "home"
+                        ),
+                        name: "after-peer-close"
+                    )
+                )
+            default:
+                return .rejected(reason: "unexpected scene-A command")
+            }
+            return .accepted
+        }
+
+        driver.register(handle: handleA, executor: executorA)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+        XCTAssertEqual(commandsA, [.openWindow, .emitMarker])
+        XCTAssertEqual(commandsB, [.emitMarker, .closeWindow])
+        XCTAssertEqual(registry.handle(logicalSceneID: "scene-A"), handleA)
+        XCTAssertNil(registry.handle(logicalSceneID: "scene-B"))
+        XCTAssertNotNil(registeredHandleB)
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            5
+        )
+    }
+
     func testMissingCommandAcknowledgementFailsInsteadOfSleepingThrough() async throws {
         let lines = DriverLockedLines()
         let recorder = ProbeEventRecorder(

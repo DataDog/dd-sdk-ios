@@ -77,7 +77,8 @@ enum ProbeRuntime {
             "swiftui.split.same-type-selection",
             "swiftui.split.retained-return",
             "uikit.split.pop-cancel",
-            "uikit.split.pop-finish"
+            "uikit.split.pop-finish",
+            "windows.close-with-resource"
         ].contains($0.identifier)
     } ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {

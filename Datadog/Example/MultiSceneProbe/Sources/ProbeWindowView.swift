@@ -284,6 +284,7 @@ struct ProbeWindowRoot: View {
                 didShowDetail,
                 window.opensPeer,
                 ProbeRuntime.automaticallyOpensSecondWindow,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didOpenPeer
             else {
                 return
@@ -301,6 +302,7 @@ struct ProbeWindowRoot: View {
                 ProbeRuntime.usesAnySplitLayout,
                 window.opensPeer,
                 ProbeRuntime.automaticallyOpensSecondWindow,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didOpenPeer
             else {
                 return
@@ -351,6 +353,7 @@ struct ProbeWindowRoot: View {
             guard
                 ProbeRuntime.automaticallyClosesSceneB,
                 window.label == "scene-B",
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didScheduleClose
             else {
                 return
@@ -894,6 +897,34 @@ struct ProbeWindowRoot: View {
                 )
             }
             switch step.kind {
+            case .openWindow:
+                guard
+                    window.opensPeer,
+                    let targetSceneID = step.value,
+                    targetSceneID != logicalSceneID,
+                    ProbeRuntime.sceneRegistry.handle(
+                        logicalSceneID: targetSceneID
+                    ) == nil
+                else {
+                    return .rejected(
+                        reason: "\(logicalSceneID) cannot open \(step.value ?? "nil")"
+                    )
+                }
+                let requestedWindow = ProbeWindow(
+                    runID: window.runID,
+                    label: targetSceneID,
+                    opensPeer: false
+                )
+                ProbeRuntime.record(
+                    "openWindow invoked source=\(logicalSceneID) "
+                        + "requested=\(targetSceneID)"
+                )
+                openWindow(
+                    id: ProbeWindow.windowGroupID,
+                    value: requestedWindow
+                )
+            case .closeWindow:
+                closeCurrentWindow()
             case .setSwiftUIPath, .replaceSwiftUIDestination:
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI path is missing")

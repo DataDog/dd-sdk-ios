@@ -489,6 +489,43 @@ enum ProbeScenarioRunner {
                     "scenario \(scenario.identifier) has transition percentage outside 0...1"
                 )
             }
+            switch step.kind {
+            case .openWindow:
+                guard
+                    let sourceScene = normalized(step.scene),
+                    let targetScene = normalized(step.value)
+                else {
+                    errors.append(
+                        "scenario \(scenario.identifier) open-window requires source and target scenes"
+                    )
+                    continue
+                }
+                if sourceScene == targetScene {
+                    errors.append(
+                        "scenario \(scenario.identifier) open-window source and target must differ"
+                    )
+                }
+                for scene in [sourceScene, targetScene]
+                where !scenario.initialWindows.contains(scene) {
+                    errors.append(
+                        "scenario \(scenario.identifier) open-window uses undeclared scene \(scene)"
+                    )
+                }
+            case .activateWindow, .closeWindow:
+                guard let scene = normalized(step.scene) else {
+                    errors.append(
+                        "scenario \(scenario.identifier) \(step.kind.rawValue) requires a scene"
+                    )
+                    continue
+                }
+                if !scenario.initialWindows.contains(scene) {
+                    errors.append(
+                        "scenario \(scenario.identifier) \(step.kind.rawValue) uses undeclared scene \(scene)"
+                    )
+                }
+            default:
+                break
+            }
         }
         for expectation in scenario.completionConditions + scenario.expectedSemanticTimeline {
             if let occurrence = expectation.occurrence, occurrence < 1 {

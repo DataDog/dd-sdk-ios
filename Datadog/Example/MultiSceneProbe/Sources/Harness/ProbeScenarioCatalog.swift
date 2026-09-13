@@ -558,8 +558,7 @@ enum ProbeScenarioCatalog {
         requiredCapabilities: [.multipleScenes],
         steps: [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(
                 .waitForSignal,
                 scene: "scene-A",
@@ -607,32 +606,57 @@ enum ProbeScenarioCatalog {
         trackingMode: .manual,
         layout: .stack,
         initialWindows: ["scene-A", "scene-B"],
-        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        requiredCapabilities: [.multipleScenes],
         steps: [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.emitMarker, scene: "scene-B", value: "before-close"),
             ProbeStep(.closeWindow, scene: "scene-B"),
-            ProbeStep(.waitForSignal, scene: "scene-B", signal: "scene:disconnected"),
             ProbeStep(.emitMarker, scene: "scene-A", value: "after-peer-close")
         ],
         completionConditions: [
             ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
-            ProbeExpectation(.action, scene: "scene-A", screen: "home", name: "after-peer-close")
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "after-peer-close"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "after-peer-close"
+            )
         ],
         expectedSemanticTimeline: [
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1),
-            ProbeExpectation(.resource, scene: "scene-B", screen: "home", name: "before-close"),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "before-close"
+            ),
             ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
-            ProbeExpectation(.action, scene: "scene-A", screen: "home", name: "after-peer-close")
-        ],
-        runtimeOptions: runtime {
-            $0.automaticallyNavigates = true
-            $0.automaticallyOpensSecondWindow = true
-            $0.automaticallyClosesSceneB = true
-        }
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "after-peer-close"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "after-peer-close"
+            )
+        ]
     )
 
     private static let actionsExactSourceHandoff = ProbeScenario(
@@ -643,8 +667,7 @@ enum ProbeScenarioCatalog {
         requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
         steps: [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.activateWindow, scene: "scene-B"),
             ProbeStep(.emitMarker, scene: "scene-A", value: "scoped-manual")
         ],
@@ -690,8 +713,7 @@ enum ProbeScenarioCatalog {
         steps: [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
             ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1"),
             ProbeStep(.disconnectRetainedReader, scene: "scene-B"),
             ProbeStep(.waitForSignal, scene: "scene-B", signal: "reader:remounted")
@@ -908,8 +930,7 @@ enum ProbeScenarioCatalog {
     private static func parallelSplitSelectionSteps() -> [ProbeStep] {
         [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:placeholder"),
             ProbeStep(.waitForSignal, scene: "scene-B", signal: "split:placeholder")
         ]
@@ -1010,8 +1031,7 @@ enum ProbeScenarioCatalog {
         [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
             ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
-            ProbeStep(.openWindow, scene: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1")
         ]
     }
