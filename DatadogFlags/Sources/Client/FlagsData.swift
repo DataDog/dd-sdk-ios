@@ -10,8 +10,26 @@ internal struct FlagsData: Equatable, Codable {
     var flags: [String: FlagAssignment]
     var context: FlagsEvaluationContext
     var date: Date
-    var authorizationBinding: AssignmentAuthorizationBinding? = nil
-    var payloadVerificationVersion: Int? = currentPayloadVerificationVersion
+    var signedPayload: PersistedSignedAssignmentPayload? = nil
+}
 
-    static let currentPayloadVerificationVersion = 2
+/// Exact signed bytes and scope needed to reverify protected assignments after restart.
+///
+/// This type never stores the client token or customer bearer token.
+internal struct PersistedSignedAssignmentPayload: Equatable, Codable {
+    let protection: Flags.AssignmentProtection
+    let endpoint: URL
+    let environment: String
+    let subject: String
+    let clientTokenSHA256: String
+    let authorizationBinding: AssignmentAuthorizationBinding?
+    let requestBody: Data
+    let requestHeaders: [String: String]
+    let responseStatus: Int
+    let responseBody: Data
+    let responseHeaders: [String: String]
+    let certificateID: String
+    let rulesRevision: String
+    let issuedAt: Date
+    let expiresAt: Date
 }

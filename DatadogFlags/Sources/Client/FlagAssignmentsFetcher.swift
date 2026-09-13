@@ -15,15 +15,16 @@ internal struct AssignmentAuthorizationBinding: Codable, Equatable {
 }
 
 internal struct AssignmentAuthorizationSnapshot {
-    let isEnabled: Bool
+    let protection: Flags.AssignmentProtection
     let authorization: Flags.AssignmentAuthorization?
 }
 
 internal final class AssignmentAuthorizationStore {
     private struct State {
-        var isEnabled: Bool
         var authorization: Flags.AssignmentAuthorization?
     }
+
+    let protection: Flags.AssignmentProtection
 
     @ReadWriteLock
     private var state: State
@@ -31,11 +32,12 @@ internal final class AssignmentAuthorizationStore {
     private var expirationWorkItem: DispatchWorkItem?
     private var expirationHandler: (() -> Void)?
 
-    init(initialAuthorization: Flags.AssignmentAuthorization?) {
-        state = State(
-            isEnabled: initialAuthorization != nil,
-            authorization: initialAuthorization
-        )
+    init(
+        initialAuthorization: Flags.AssignmentAuthorization?,
+        protection: Flags.AssignmentProtection = .disabled
+    ) {
+        self.protection = protection
+        state = State(authorization: initialAuthorization)
         scheduleExpiration(for: initialAuthorization)
     }
 
@@ -43,7 +45,7 @@ internal final class AssignmentAuthorizationStore {
         let state = state
         let authorization = state.authorization.flatMap { $0.expiresAt > date ? $0 : nil }
         return AssignmentAuthorizationSnapshot(
-            isEnabled: state.isEnabled,
+            protection: protection,
             authorization: authorization
         )
     }
@@ -51,7 +53,6 @@ internal final class AssignmentAuthorizationStore {
     func update(_ authorization: Flags.AssignmentAuthorization?) {
         expirationLock.lock()
         _state.mutate {
-            $0.isEnabled = true
             $0.authorization = authorization
         }
         scheduleExpirationLocked(for: authorization)
@@ -120,9 +121,9 @@ internal final class AssignmentAuthorizationStore {
     }
 
     static func digest(of compactJWT: String) -> String {
-        Data(SHA256.hash(data: Data(compactJWT.utf8))).map {
-            String(format: "%02x", $0)
-        }.joined()
+        Data(SHA256.hash(data: Data(compactJWT.utf8)))
+            .map { String(format: "%02x", $0) }
+            .joined()
     }
 }
 
@@ -136,11 +137,17 @@ internal protocol FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<VerifiedFlagAssignments, FlagsError>) -> Void
     )
+
+    func validatePersistedFlagAssignments(
+        _ flagsData: FlagsData,
+        at date: Date,
+        completion: @escaping (Bool) -> Void
+    )
 }
 
 internal struct VerifiedFlagAssignments {
     let flags: [String: FlagAssignment]
-    let authorizationBinding: AssignmentAuthorizationBinding?
+    let signedPayload: PersistedSignedAssignmentPayload?
 }
 
 extension FlagAssignmentsFetching {
@@ -149,8 +156,16 @@ extension FlagAssignmentsFetching {
         completion: @escaping (Result<VerifiedFlagAssignments, FlagsError>) -> Void
     ) {
         flagAssignments(for: evaluationContext) { result in
-            completion(result.map { VerifiedFlagAssignments(flags: $0, authorizationBinding: nil) })
+            completion(result.map { VerifiedFlagAssignments(flags: $0, signedPayload: nil) })
         }
+    }
+
+    func validatePersistedFlagAssignments(
+        _ flagsData: FlagsData,
+        at date: Date,
+        completion: @escaping (Bool) -> Void
+    ) {
+        completion(flagsData.signedPayload == nil)
     }
 }
 
@@ -160,7 +175,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     private let featureScope: any FeatureScope
     private let fetch: (URLRequest, @escaping (Result<FetchedFlagAssignments, Error>) -> Void) -> Void
-    private let verify: (URLRequest, FetchedFlagAssignments, String) throws -> Void
+    private let verify: (
+        URLRequest,
+        FetchedFlagAssignments,
+        String,
+        Flags.AssignmentProtection,
+        Int64
+    ) throws -> SignedAssignmentVerificationMetadata
     private let makeNonce: () throws -> String
     private let authorizationStore: AssignmentAuthorizationStore
 
@@ -175,14 +196,24 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
 
-        let urlSession = URLSession(configuration: configuration)
+        let fetch: (URLRequest, @escaping (Result<FetchedFlagAssignments, Error>) -> Void) -> Void
+        if authorizationStore.protection == .disabled {
+            let urlSession = URLSession(configuration: configuration)
+            fetch = urlSession.fetch
+        } else {
+            let httpClient = FlagAssignmentsHTTPClient(
+                configuration: configuration,
+                maximumResponseBytes: SignedAssignmentVerifier.maximumResponseBodyBytes
+            )
+            fetch = httpClient.fetch
+        }
 
         self.init(
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             featureScope: featureScope,
             authorizationStore: authorizationStore,
-            fetch: urlSession.fetch,
+            fetch: fetch,
             verify: SignedAssignmentVerifier.verify,
             makeNonce: SignedAssignmentVerifier.makeNonce
         )
@@ -194,7 +225,13 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         featureScope: any FeatureScope,
         authorizationStore: AssignmentAuthorizationStore = AssignmentAuthorizationStore(initialAuthorization: nil),
         fetch: @escaping (URLRequest, @escaping (Result<FetchedFlagAssignments, Error>) -> Void) -> Void,
-        verify: @escaping (URLRequest, FetchedFlagAssignments, String) throws -> Void,
+        verify: @escaping (
+            URLRequest,
+            FetchedFlagAssignments,
+            String,
+            Flags.AssignmentProtection,
+            Int64
+        ) throws -> SignedAssignmentVerificationMetadata,
         makeNonce: @escaping () throws -> String
     ) {
         self.customEndpoint = customEndpoint
@@ -232,11 +269,29 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     customHeaders: self.customHeaders
                 )
                 let authorizationSnapshot = self.authorizationStore.snapshot()
-                if authorizationSnapshot.isEnabled {
+                switch authorizationSnapshot.protection {
+                case .disabled:
+                    break
+                case .signed:
+                    try SignedAssignmentVerifier.validateRequestBeforeAddingProtectionHeaders(
+                        request: request,
+                        clientToken: context.clientToken,
+                        protection: .signed,
+                        compactJWT: nil
+                    )
+                    request.setValue("2", forHTTPHeaderField: SignedAssignmentVerifier.signatureVersionHeader)
+                    request.setValue(try self.makeNonce(), forHTTPHeaderField: SignedAssignmentVerifier.requestNonceHeader)
+                case .signedAndAuthorized:
                     guard let authorization = authorizationSnapshot.authorization else {
                         completion(.failure(.invalidConfiguration))
                         return
                     }
+                    try SignedAssignmentVerifier.validateRequestBeforeAddingProtectionHeaders(
+                        request: request,
+                        clientToken: context.clientToken,
+                        protection: .signedAndAuthorized,
+                        compactJWT: authorization.bearerToken
+                    )
                     request.setValue("Bearer \(authorization.bearerToken)", forHTTPHeaderField: "Authorization")
                     request.setValue("2", forHTTPHeaderField: SignedAssignmentVerifier.signatureVersionHeader)
                     request.setValue(try self.makeNonce(), forHTTPHeaderField: SignedAssignmentVerifier.requestNonceHeader)
@@ -245,8 +300,17 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     switch result {
                     case .success(let fetched):
                         do {
-                            if authorizationSnapshot.isEnabled {
-                                try self.verify(request, fetched, context.clientToken)
+                            let verificationMetadata: SignedAssignmentVerificationMetadata?
+                            if authorizationSnapshot.protection == .disabled {
+                                verificationMetadata = nil
+                            } else {
+                                verificationMetadata = try self.verify(
+                                    request,
+                                    fetched,
+                                    context.clientToken,
+                                    authorizationSnapshot.protection,
+                                    Int64(Date().timeIntervalSince1970)
+                                )
                             }
                             let response = try Self.decoder.decode(
                                 FlagAssignmentsResponse.self,
@@ -271,21 +335,24 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                                 }
                             }
 
-                            if authorizationSnapshot.isEnabled,
+                            if authorizationSnapshot.protection != .disabled,
                                response.subject != evaluationContext.targetingKey {
                                 throw SignedAssignmentVerificationError.invalidSubject
                             }
-                            let binding = authorizationSnapshot.authorization.map {
-                                AssignmentAuthorizationBinding(
-                                    compactJWTSHA256: AssignmentAuthorizationStore.digest(of: $0.bearerToken),
-                                    policyVersion: fetched.response.value(
-                                        forHTTPHeaderField: SignedAssignmentVerifier.authorizationPolicyVersionHeader
-                                    ) ?? ""
+                            let signedPayload = try verificationMetadata.map {
+                                try self.makePersistedSignedPayload(
+                                    protection: authorizationSnapshot.protection,
+                                    authorization: authorizationSnapshot.authorization,
+                                    request: request,
+                                    fetched: fetched,
+                                    context: context,
+                                    subject: evaluationContext.targetingKey,
+                                    metadata: $0
                                 )
                             }
                             completion(.success(VerifiedFlagAssignments(
                                 flags: response.flags,
-                                authorizationBinding: binding
+                                signedPayload: signedPayload
                             )))
                         } catch let error as SignedAssignmentVerificationError {
                             DD.logger.error("Rejected an unverified flag assignments response.", error: error)
@@ -308,11 +375,170 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     }
                 }
             } catch let error {
-                DD.logger.error("Failed to encode flag assignments request body.", error: error)
-                featureScope.telemetry.error("Failed to encode flag assignments request body.", error: error)
+                DD.logger.error("Failed to create a valid flag assignments request.", error: error)
+                featureScope.telemetry.error("Failed to create a valid flag assignments request.", error: error)
                 completion(.failure(.invalidConfiguration))
             }
         }
+    }
+
+    func validatePersistedFlagAssignments(
+        _ flagsData: FlagsData,
+        at date: Date,
+        completion: @escaping (Bool) -> Void
+    ) {
+        let authorizationSnapshot = authorizationStore.snapshot(at: date)
+        guard authorizationSnapshot.protection != .disabled else {
+            completion(flagsData.signedPayload == nil)
+            return
+        }
+        guard let signedPayload = flagsData.signedPayload,
+              signedPayload.protection == authorizationSnapshot.protection else {
+            completion(false)
+            return
+        }
+
+        featureScope.context { [weak self] context in
+            guard let self else {
+                completion(false)
+                return
+            }
+            do {
+                guard signedPayload.endpoint == self.url(with: context),
+                      signedPayload.environment == context.env,
+                      signedPayload.subject == flagsData.context.targetingKey,
+                      signedPayload.clientTokenSHA256 == AssignmentAuthorizationStore.digest(of: context.clientToken),
+                      signedPayload.expiresAt > date,
+                      signedPayload.issuedAt <= date.addingTimeInterval(SignedAssignmentVerifier.maximumClockSkew) else {
+                    completion(false)
+                    return
+                }
+
+                var request = URLRequest(url: signedPayload.endpoint)
+                request.httpMethod = "POST"
+                request.httpBody = signedPayload.requestBody
+                request.setValue(context.clientToken, forHTTPHeaderField: "dd-client-token")
+                for (name, value) in signedPayload.requestHeaders {
+                    request.setValue(value, forHTTPHeaderField: name)
+                }
+
+                switch authorizationSnapshot.protection {
+                case .disabled:
+                    completion(false)
+                    return
+                case .signed:
+                    guard authorizationSnapshot.authorization == nil,
+                          signedPayload.authorizationBinding == nil else {
+                        completion(false)
+                        return
+                    }
+                case .signedAndAuthorized:
+                    guard let authorization = authorizationSnapshot.authorization,
+                          signedPayload.authorizationBinding?.compactJWTSHA256
+                            == AssignmentAuthorizationStore.digest(of: authorization.bearerToken) else {
+                        completion(false)
+                        return
+                    }
+                    request.setValue("Bearer \(authorization.bearerToken)", forHTTPHeaderField: "Authorization")
+                }
+
+                guard let response = HTTPURLResponse(
+                    url: signedPayload.endpoint,
+                    statusCode: signedPayload.responseStatus,
+                    httpVersion: nil,
+                    headerFields: signedPayload.responseHeaders
+                ) else {
+                    completion(false)
+                    return
+                }
+                let fetched = FetchedFlagAssignments(data: signedPayload.responseBody, response: response)
+                let metadata = try self.verify(
+                    request,
+                    fetched,
+                    context.clientToken,
+                    authorizationSnapshot.protection,
+                    Int64(date.timeIntervalSince1970)
+                )
+                let requestBody = try Self.decoder.decode(
+                    FlagAssignmentsRequestBody.self,
+                    from: signedPayload.requestBody
+                )
+                let responseBody = try Self.decoder.decode(
+                    FlagAssignmentsResponse.self,
+                    from: signedPayload.responseBody
+                )
+                let expectedBinding = authorizationSnapshot.authorization.map {
+                    AssignmentAuthorizationBinding(
+                        compactJWTSHA256: AssignmentAuthorizationStore.digest(of: $0.bearerToken),
+                        policyVersion: metadata.authorizationPolicyVersion ?? ""
+                    )
+                }
+                let isValid = requestBody.environment.datadogEnvironment == context.env
+                    && requestBody.subject.targetingKey == flagsData.context.targetingKey
+                    && requestBody.subject.targetingAttributes == flagsData.context.attributes
+                    && responseBody.subject == flagsData.context.targetingKey
+                    && responseBody.flags == flagsData.flags
+                    && metadata.certificateID == signedPayload.certificateID
+                    && metadata.rulesRevision == signedPayload.rulesRevision
+                    && Date(timeIntervalSince1970: TimeInterval(metadata.issuedAt)) == signedPayload.issuedAt
+                    && Date(timeIntervalSince1970: TimeInterval(metadata.expiresAt)) == signedPayload.expiresAt
+                    && expectedBinding == signedPayload.authorizationBinding
+                completion(isValid)
+            } catch {
+                completion(false)
+            }
+        }
+    }
+
+    private func makePersistedSignedPayload(
+        protection: Flags.AssignmentProtection,
+        authorization: Flags.AssignmentAuthorization?,
+        request: URLRequest,
+        fetched: FetchedFlagAssignments,
+        context: DatadogContext,
+        subject: String,
+        metadata: SignedAssignmentVerificationMetadata
+    ) throws -> PersistedSignedAssignmentPayload {
+        guard let endpoint = request.url else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        let authorizationBinding: AssignmentAuthorizationBinding?
+        switch protection {
+        case .disabled:
+            throw SignedAssignmentVerificationError.invalidMetadata
+        case .signed:
+            guard authorization == nil, metadata.authorizationPolicyVersion == nil else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            authorizationBinding = nil
+        case .signedAndAuthorized:
+            guard let authorization,
+                  let policyVersion = metadata.authorizationPolicyVersion,
+                  !policyVersion.isEmpty else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            authorizationBinding = AssignmentAuthorizationBinding(
+                compactJWTSHA256: AssignmentAuthorizationStore.digest(of: authorization.bearerToken),
+                policyVersion: policyVersion
+            )
+        }
+        return PersistedSignedAssignmentPayload(
+            protection: protection,
+            endpoint: endpoint,
+            environment: context.env,
+            subject: subject,
+            clientTokenSHA256: AssignmentAuthorizationStore.digest(of: context.clientToken),
+            authorizationBinding: authorizationBinding,
+            requestBody: request.httpBody ?? Data(),
+            requestHeaders: SignedAssignmentVerifier.persistedRequestHeaders(from: request),
+            responseStatus: fetched.response.statusCode,
+            responseBody: fetched.data,
+            responseHeaders: SignedAssignmentVerifier.persistedResponseHeaders(from: fetched.response),
+            certificateID: metadata.certificateID,
+            rulesRevision: metadata.rulesRevision,
+            issuedAt: Date(timeIntervalSince1970: TimeInterval(metadata.issuedAt)),
+            expiresAt: Date(timeIntervalSince1970: TimeInterval(metadata.expiresAt))
+        )
     }
 
     private func url(with context: DatadogContext) -> URL {
@@ -370,6 +596,144 @@ extension URLSession {
     }
 }
 
+/// Buffers protected responses up to a fixed limit.
+///
+/// `URLSession.dataTask(with:completionHandler:)` buffers the complete body before the callback.
+/// This delegate stops accumulation when the declared or received body exceeds the limit.
+internal final class FlagAssignmentsHTTPClient {
+    private let delegate: FlagAssignmentsSessionDelegate
+    private let session: URLSession
+
+    init(configuration: URLSessionConfiguration, maximumResponseBytes: Int) {
+        let delegate = FlagAssignmentsSessionDelegate(maximumResponseBytes: maximumResponseBytes)
+        self.delegate = delegate
+        session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }
+
+    deinit {
+        session.invalidateAndCancel()
+    }
+
+    func fetch(
+        _ request: URLRequest,
+        completion: @escaping (Result<FetchedFlagAssignments, Error>) -> Void
+    ) {
+        let task = session.dataTask(with: request)
+        delegate.register(task: task, completion: completion)
+        task.resume()
+    }
+}
+
+private final class FlagAssignmentsSessionDelegate: NSObject, URLSessionDataDelegate {
+    private final class TaskState {
+        let completion: (Result<FetchedFlagAssignments, Error>) -> Void
+        var response: HTTPURLResponse?
+        var data = Data()
+        var terminalError: Error?
+
+        init(completion: @escaping (Result<FetchedFlagAssignments, Error>) -> Void) {
+            self.completion = completion
+        }
+    }
+
+    private let maximumResponseBytes: Int
+    private let lock = NSLock()
+    private var states: [Int: TaskState] = [:]
+
+    init(maximumResponseBytes: Int) {
+        precondition(maximumResponseBytes >= 0)
+        self.maximumResponseBytes = maximumResponseBytes
+    }
+
+    func register(
+        task: URLSessionDataTask,
+        completion: @escaping (Result<FetchedFlagAssignments, Error>) -> Void
+    ) {
+        lock.lock()
+        states[task.taskIdentifier] = TaskState(completion: completion)
+        lock.unlock()
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive response: URLResponse,
+        completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
+    ) {
+        var disposition: URLSession.ResponseDisposition = .allow
+        lock.lock()
+        if let state = states[dataTask.taskIdentifier] {
+            guard let response = response as? HTTPURLResponse,
+                  200..<300 ~= response.statusCode else {
+                state.terminalError = URLError(.badServerResponse)
+                lock.unlock()
+                completionHandler(.cancel)
+                return
+            }
+            if response.expectedContentLength > Int64(maximumResponseBytes) {
+                state.terminalError = URLError(.dataLengthExceedsMaximum)
+                disposition = .cancel
+            } else {
+                state.response = response
+                if response.expectedContentLength > 0 {
+                    state.data.reserveCapacity(Int(response.expectedContentLength))
+                }
+            }
+        }
+        lock.unlock()
+        completionHandler(disposition)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        var shouldCancel = false
+        lock.lock()
+        if let state = states[dataTask.taskIdentifier], state.terminalError == nil {
+            if data.count > maximumResponseBytes
+                || state.data.count > maximumResponseBytes - data.count {
+                state.terminalError = URLError(.dataLengthExceedsMaximum)
+                shouldCancel = true
+            } else {
+                state.data.append(data)
+            }
+        }
+        lock.unlock()
+        if shouldCancel {
+            dataTask.cancel()
+        }
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didCompleteWithError error: Error?
+    ) {
+        lock.lock()
+        let state = states.removeValue(forKey: task.taskIdentifier)
+        lock.unlock()
+
+        guard let state else {
+            return
+        }
+        if let error = state.terminalError ?? error {
+            state.completion(.failure(error))
+        } else if let response = state.response {
+            state.completion(.success(FetchedFlagAssignments(data: state.data, response: response)))
+        } else {
+            state.completion(.failure(URLError(.badServerResponse)))
+        }
+    }
+}
+
 internal struct FetchedFlagAssignments {
     let data: Data
     let response: HTTPURLResponse
@@ -384,24 +748,45 @@ internal enum SignedAssignmentVerificationError: Error {
     case invalidSubject
 }
 
-internal enum SignedAssignmentVerifier {
-    static let signatureVersionHeader = "x-dd-ffe-signature-version"
-    static let requestNonceHeader = "x-dd-ffe-request-nonce"
-    static let authorizationPolicyVersionHeader = "x-dd-ffe-authorization-policy-version"
+internal struct SignedAssignmentVerificationMetadata: Equatable {
+    let certificateID: String
+    let rulesRevision: String
+    let issuedAt: Int64
+    let expiresAt: Int64
+    let authorizationPolicyVersion: String?
+}
 
-    private static let signatureHeader = "x-dd-ffe-signature"
-    private static let certificateHeader = "x-dd-ffe-signing-certificate"
-    private static let certificateIDHeader = "x-dd-ffe-certificate-id"
-    private static let issuedAtHeader = "x-dd-ffe-issued-at"
-    private static let expiresAtHeader = "x-dd-ffe-expires-at"
-    private static let signatureDomain = "datadog.ffe.precomputed-assignments.v2"
+internal enum SignedAssignmentVerifier {
+    static let signatureVersionHeader = "x-datadog-feature-flags-signature-version"
+    static let requestNonceHeader = "x-datadog-feature-flags-request-nonce"
+    static let authorizationPolicyVersionHeader = "x-datadog-feature-flags-authorization-policy-version"
+    static let rulesRevisionHeader = "x-datadog-feature-flags-rules-revision"
+    static let maximumClockSkew: TimeInterval = 30
+
+    private static let signatureHeader = "x-datadog-feature-flags-signature"
+    private static let certificateHeader = "x-datadog-feature-flags-signing-certificate"
+    private static let certificateIDHeader = "x-datadog-feature-flags-certificate-id"
+    private static let issuedAtHeader = "x-datadog-feature-flags-issued-at"
+    private static let expiresAtHeader = "x-datadog-feature-flags-expires-at"
+    private static let signatureDomain = "datadog.feature-flags.precomputed-assignments.v2"
     private static let semanticRequestHeaders = [
         "content-type",
         "dd-application-id",
         "x-rkyv",
-        "x-use-cache",
-        "x-dd-ffe-test-drive"
+        "x-use-cache"
     ]
+    private static let maximumCertificateHeaderBytes = 8_192
+    private static let maximumSignatureHeaderBytes = 256
+    private static let maximumCertificateBytes = 4_096
+    private static let maximumSignatureBytes = 80
+    private static let maximumAuthorizationBytes = 4_096
+    private static let maximumClientTokenBytes = 512
+    private static let maximumRequestBodyBytes = 1_024 * 1_024
+    static let maximumResponseBodyBytes = 2 * 1_024 * 1_024
+    private static let maximumURLComponentBytes = 2_048
+    private static let maximumPolicyVersionBytes = 256
+    private static let maximumRulesRevisionBytes = 256
+    private static let maximumTimestampBytes = 20
     private static let rootCertificateBase64 = "MIIBzTCCAXSgAwIBAgIUMaYCojzGfYGo+3+sbHh9qbEf0N0wCgYIKoZIzj0EAwIwMzExMC8GA1UEAwwoRGF0YWRvZyBGRkUgRWRnZSBBc3NpZ25tZW50cyBQT0MgUm9vdCBLMTAeFw0yNjA5MTEwMzE4MDhaFw0zNjA5MDgwMzE4MDhaMDMxMTAvBgNVBAMMKERhdGFkb2cgRkZFIEVkZ2UgQXNzaWdubWVudHMgUE9DIFJvb3QgSzEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASd8AStJsI0bU1Cwnl3bjgrdXAsFAkZdyX1/LSRbBrnP4aodCpiHsWP0kspNx7/Q0U0Cyk/k7FGjCPe5ViukGnno2YwZDAdBgNVHQ4EFgQUca1+zBtEI45yELrJkdqSGS1J2rgwHwYDVR0jBBgwFoAUca1+zBtEI45yELrJkdqSGS1J2rgwEgYDVR0TAQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAQYwCgYIKoZIzj0EAwIDRwAwRAIgA3JkZVvLCmyUu3r9yyEAYufb12dItZfiA4f7KuUnqekCIFX3MOkLKGosREDoBKmdVPr0rbMh8qgF3t1aKlciltOG"
 
     static func makeNonce() throws -> String {
@@ -412,43 +797,109 @@ internal enum SignedAssignmentVerifier {
         return bytes.map { String(format: "%02x", $0) }.joined()
     }
 
-    static func verify(
+    static func validateRequestBeforeAddingProtectionHeaders(
         request: URLRequest,
-        fetched: FetchedFlagAssignments,
-        clientToken: String
+        clientToken: String,
+        protection: Flags.AssignmentProtection,
+        compactJWT: String?
     ) throws {
-        try verify(
-            request: request,
-            fetched: fetched,
-            clientToken: clientToken,
-            currentTime: Int64(Date().timeIntervalSince1970)
-        )
+        guard protection != .disabled,
+              request.value(forHTTPHeaderField: "Authorization") == nil,
+              request.value(forHTTPHeaderField: signatureVersionHeader) == nil,
+              request.value(forHTTPHeaderField: requestNonceHeader) == nil,
+              request.value(forHTTPHeaderField: "dd-client-token") == clientToken else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        _ = try requestComponents(request: request, clientToken: clientToken)
+        switch protection {
+        case .disabled:
+            throw SignedAssignmentVerificationError.invalidMetadata
+        case .signed:
+            guard compactJWT == nil else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+        case .signedAndAuthorized:
+            guard let compactJWT else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            try validateCompactJWT(compactJWT)
+        }
     }
 
     static func verify(
         request: URLRequest,
         fetched: FetchedFlagAssignments,
         clientToken: String,
+        protection: Flags.AssignmentProtection,
         currentTime: Int64
-    ) throws {
+    ) throws -> SignedAssignmentVerificationMetadata {
+        guard protection != .disabled,
+              fetched.data.count <= maximumResponseBodyBytes,
+              request.value(forHTTPHeaderField: signatureVersionHeader) == "2",
+              fetched.response.url == request.url else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        _ = try requestComponents(request: request, clientToken: clientToken)
+
+        let authorization: String?
+        let policyVersion: String?
+        guard let rulesRevision = fetched.response.value(forHTTPHeaderField: rulesRevisionHeader),
+              rulesRevision.utf8.count <= maximumRulesRevisionBytes else {
+            throw SignedAssignmentVerificationError.missingMetadata
+        }
+        switch protection {
+        case .disabled:
+            throw SignedAssignmentVerificationError.invalidMetadata
+        case .signed:
+            guard request.value(forHTTPHeaderField: "Authorization") == nil,
+                  fetched.response.value(forHTTPHeaderField: authorizationPolicyVersionHeader) == nil else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            authorization = nil
+            policyVersion = nil
+        case .signedAndAuthorized:
+            guard let header = request.value(forHTTPHeaderField: "Authorization"),
+                  header.hasPrefix("Bearer "),
+                  header.utf8.count <= maximumAuthorizationBytes + "Bearer ".utf8.count,
+                  let responsePolicyVersion = fetched.response.value(
+                    forHTTPHeaderField: authorizationPolicyVersionHeader
+                  ),
+                  !responsePolicyVersion.isEmpty,
+                  responsePolicyVersion.utf8.count <= maximumPolicyVersionBytes else {
+                throw SignedAssignmentVerificationError.missingMetadata
+            }
+            let compactJWT = String(header.dropFirst("Bearer ".count))
+            try validateCompactJWT(compactJWT)
+            authorization = compactJWT
+            policyVersion = responsePolicyVersion
+        }
+
         guard
             fetched.response.value(forHTTPHeaderField: signatureVersionHeader) == "2",
             let nonceHex = request.value(forHTTPHeaderField: requestNonceHeader),
-            let nonce = Data(hexadecimal: nonceHex), nonce.count == 16,
-            let authorization = request.value(forHTTPHeaderField: "Authorization"),
-            authorization.hasPrefix("Bearer "),
-            !authorization.dropFirst("Bearer ".count).isEmpty,
-            let policyVersion = fetched.response.value(forHTTPHeaderField: authorizationPolicyVersionHeader),
-            !policyVersion.isEmpty,
+            nonceHex.utf8.count == 32,
+            let nonce = Data(hexadecimal: nonceHex),
+            nonce.count == 16,
             let issuedString = fetched.response.value(forHTTPHeaderField: issuedAtHeader),
+            issuedString.utf8.count <= maximumTimestampBytes,
             let issuedAt = Int64(issuedString),
+            String(issuedAt) == issuedString,
             let expiresString = fetched.response.value(forHTTPHeaderField: expiresAtHeader),
+            expiresString.utf8.count <= maximumTimestampBytes,
             let expiresAt = Int64(expiresString),
+            String(expiresAt) == expiresString,
             let certificateString = fetched.response.value(forHTTPHeaderField: certificateHeader),
+            certificateString.utf8.count <= maximumCertificateHeaderBytes,
             let certificateData = Data(base64Encoded: certificateString),
+            !certificateData.isEmpty,
+            certificateData.count <= maximumCertificateBytes,
             let certificateID = fetched.response.value(forHTTPHeaderField: certificateIDHeader),
+            certificateID.utf8.count == 64,
             let signatureString = fetched.response.value(forHTTPHeaderField: signatureHeader),
-            let signature = Data(base64Encoded: signatureString)
+            signatureString.utf8.count <= maximumSignatureHeaderBytes,
+            let signature = Data(base64Encoded: signatureString),
+            !signature.isEmpty,
+            signature.count <= maximumSignatureBytes
         else {
             throw SignedAssignmentVerificationError.missingMetadata
         }
@@ -459,10 +910,10 @@ internal enum SignedAssignmentVerifier {
 
         guard
             issuedAt >= 0,
-            issuedAt <= currentTime + 30,
+            issuedAt <= currentTime + Int64(maximumClockSkew),
             expiresAt >= issuedAt,
-            expiresAt >= currentTime,
-            expiresAt - issuedAt <= 600
+            expiresAt > currentTime,
+            expiresAt - issuedAt <= 300
         else {
             throw SignedAssignmentVerificationError.expired
         }
@@ -471,14 +922,18 @@ internal enum SignedAssignmentVerifier {
             throw SignedAssignmentVerificationError.invalidMetadata
         }
 
-        let publicKey = try trustedPublicKey(certificateData: certificateData)
-        let input = signatureInput(
+        let publicKey = try trustedPublicKey(
+            certificateData: certificateData,
+            verificationTime: currentTime
+        )
+        let input = try signatureInput(
             nonce: nonce,
             request: request,
             requestBody: request.httpBody ?? Data(),
-            compactJWT: String(authorization.dropFirst("Bearer ".count)),
+            compactJWT: authorization,
             clientToken: clientToken,
             policyVersion: policyVersion,
+            rulesRevision: rulesRevision,
             responseStatus: responseStatus,
             issuedAt: issuedAt,
             expiresAt: expiresAt,
@@ -493,9 +948,19 @@ internal enum SignedAssignmentVerifier {
         ) else {
             throw SignedAssignmentVerificationError.invalidSignature
         }
+        return SignedAssignmentVerificationMetadata(
+            certificateID: certificateID,
+            rulesRevision: rulesRevision,
+            issuedAt: issuedAt,
+            expiresAt: expiresAt,
+            authorizationPolicyVersion: policyVersion
+        )
     }
 
-    private static func trustedPublicKey(certificateData: Data) throws -> SecKey {
+    private static func trustedPublicKey(
+        certificateData: Data,
+        verificationTime: Int64
+    ) throws -> SecKey {
         guard
             let certificate = SecCertificateCreateWithData(nil, certificateData as CFData),
             let rootData = Data(base64Encoded: rootCertificateBase64),
@@ -509,60 +974,168 @@ internal enum SignedAssignmentVerifier {
               let trust else {
             throw SignedAssignmentVerificationError.untrustedCertificate
         }
-        SecTrustSetAnchorCertificates(trust, [rootCertificate] as CFArray)
-        SecTrustSetAnchorCertificatesOnly(trust, true)
+        guard SecTrustSetAnchorCertificates(trust, [rootCertificate] as CFArray) == errSecSuccess,
+              SecTrustSetAnchorCertificatesOnly(trust, true) == errSecSuccess,
+              SecTrustSetVerifyDate(
+                trust,
+                Date(timeIntervalSince1970: TimeInterval(verificationTime)) as CFDate
+              ) == errSecSuccess else {
+            throw SignedAssignmentVerificationError.untrustedCertificate
+        }
         guard SecTrustEvaluateWithError(trust, nil),
               let publicKey = SecCertificateCopyKey(certificate) else {
+            throw SignedAssignmentVerificationError.untrustedCertificate
+        }
+        guard let attributes = SecKeyCopyAttributes(publicKey) as? [CFString: Any],
+              attributes[kSecAttrKeyType] as? String == String(kSecAttrKeyTypeECSECPrimeRandom),
+              attributes[kSecAttrKeySizeInBits] as? Int == 256 else {
             throw SignedAssignmentVerificationError.untrustedCertificate
         }
         return publicKey
     }
 
-    private static func signatureInput(
-        nonce: Data,
+    private static func requestComponents(
         request: URLRequest,
-        requestBody: Data,
-        compactJWT: String,
-        clientToken: String,
-        policyVersion: String,
-        responseStatus: UInt16,
-        issuedAt: Int64,
-        expiresAt: Int64,
-        responseBody: Data
-    ) -> Data {
+        clientToken: String
+    ) throws -> (method: String, scheme: String, authority: String, path: String) {
         guard let url = request.url,
               url.query == nil,
+              url.fragment == nil,
+              url.user == nil,
+              url.password == nil,
+              let scheme = url.scheme?.lowercased(),
+              scheme == "https",
               let host = url.host,
-              let method = request.httpMethod?.uppercased() else {
-            return Data()
+              !host.isEmpty,
+              let method = request.httpMethod?.uppercased(),
+              method == "POST",
+              request.value(forHTTPHeaderField: "dd-client-token") == clientToken else {
+            throw SignedAssignmentVerificationError.invalidMetadata
         }
         let authority: String
-        if let port = url.port,
-           !((url.scheme == "https" && port == 443) || (url.scheme == "http" && port == 80)) {
+        if let port = url.port, port != 443 {
             authority = "\(host.lowercased()):\(port)"
         } else {
             authority = host.lowercased()
         }
-        let path = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath ?? url.path
+        let encodedPath = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath ?? url.path
+        let path = encodedPath.isEmpty ? "/" : encodedPath
+        guard method.utf8.count <= maximumURLComponentBytes,
+              scheme.utf8.count <= maximumURLComponentBytes,
+              authority.utf8.count <= maximumURLComponentBytes,
+              path.utf8.count <= maximumURLComponentBytes,
+              (request.httpBody?.count ?? 0) <= maximumRequestBodyBytes,
+              clientToken.utf8.count <= maximumClientTokenBytes else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        return (method, scheme, authority, path)
+    }
+
+    private static func validateCompactJWT(_ compactJWT: String) throws {
+        guard !compactJWT.isEmpty,
+              compactJWT.utf8.count <= maximumAuthorizationBytes else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        let segments = compactJWT.split(separator: ".", omittingEmptySubsequences: false)
+        guard segments.count == 3,
+              segments.allSatisfy({ segment in
+                  !segment.isEmpty && segment.unicodeScalars.allSatisfy { scalar in
+                      switch scalar.value {
+                      case 45, 48...57, 65...90, 95, 97...122:
+                          return true
+                      default:
+                          return false
+                      }
+                  }
+              }) else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+    }
+
+    static func signatureInput(
+        nonce: Data,
+        request: URLRequest,
+        requestBody: Data,
+        compactJWT: String?,
+        clientToken: String,
+        policyVersion: String?,
+        rulesRevision: String,
+        responseStatus: UInt16,
+        issuedAt: Int64,
+        expiresAt: Int64,
+        responseBody: Data
+    ) throws -> Data {
+        let components = try requestComponents(request: request, clientToken: clientToken)
+        guard requestBody == (request.httpBody ?? Data()),
+              requestBody.count <= maximumRequestBodyBytes,
+              responseBody.count <= maximumResponseBodyBytes,
+              (compactJWT?.utf8.count ?? 0) <= maximumAuthorizationBytes,
+              (policyVersion?.utf8.count ?? 0) <= maximumPolicyVersionBytes,
+              rulesRevision.utf8.count <= maximumRulesRevisionBytes else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
         var result = Data(signatureDomain.utf8)
         result.append(0)
-        result.appendLengthPrefixed(Data(method.utf8))
-        result.appendLengthPrefixed(Data(authority.utf8))
-        result.appendLengthPrefixed(Data(path.utf8))
-        result.appendLengthPrefixed(nonce)
+        try result.appendLengthPrefixed(Data(components.method.utf8))
+        try result.appendLengthPrefixed(Data(components.scheme.utf8))
+        try result.appendLengthPrefixed(Data(components.authority.utf8))
+        try result.appendLengthPrefixed(Data(components.path.utf8))
+        try result.appendLengthPrefixed(nonce)
         result.append(contentsOf: SHA256.hash(data: requestBody))
-        result.append(contentsOf: SHA256.hash(data: Data(compactJWT.utf8)))
-        result.append(contentsOf: SHA256.hash(data: Data(clientToken.utf8)))
-        result.appendLengthPrefixed(Data(policyVersion.utf8))
+        if let compactJWT {
+            guard let policyVersion else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            result.append(1)
+            result.append(contentsOf: SHA256.hash(data: Data(compactJWT.utf8)))
+            result.append(contentsOf: SHA256.hash(data: Data(clientToken.utf8)))
+            try result.appendLengthPrefixed(Data(policyVersion.utf8))
+        } else {
+            guard policyVersion == nil else {
+                throw SignedAssignmentVerificationError.invalidMetadata
+            }
+            result.append(0)
+            result.append(contentsOf: SHA256.hash(data: Data(clientToken.utf8)))
+        }
+        try result.appendLengthPrefixed(Data(rulesRevision.utf8))
         for name in semanticRequestHeaders {
-            result.appendOptionalHeader(request.value(forHTTPHeaderField: name))
+            try result.appendOptionalHeader(request.value(forHTTPHeaderField: name))
         }
         result.appendBigEndian(responseStatus)
-        result.appendBigEndian(UInt64(issuedAt))
-        result.appendBigEndian(UInt64(expiresAt))
+        guard let encodedIssuedAt = UInt64(exactly: issuedAt),
+              let encodedExpiresAt = UInt64(exactly: expiresAt) else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        result.appendBigEndian(encodedIssuedAt)
+        result.appendBigEndian(encodedExpiresAt)
         result.appendBigEndian(UInt64(responseBody.count))
         result.append(contentsOf: SHA256.hash(data: responseBody))
         return result
+    }
+
+    static func persistedRequestHeaders(from request: URLRequest) -> [String: String] {
+        ([signatureVersionHeader, requestNonceHeader] + semanticRequestHeaders).reduce(into: [:]) { result, name in
+            if let value = request.value(forHTTPHeaderField: name) {
+                result[name] = value
+            }
+        }
+    }
+
+    static func persistedResponseHeaders(from response: HTTPURLResponse) -> [String: String] {
+        [
+            signatureVersionHeader,
+            authorizationPolicyVersionHeader,
+            rulesRevisionHeader,
+            signatureHeader,
+            certificateHeader,
+            certificateIDHeader,
+            issuedAtHeader,
+            expiresAtHeader
+        ].reduce(into: [:]) { result, name in
+            if let value = response.value(forHTTPHeaderField: name) {
+                result[name] = value
+            }
+        }
     }
 }
 
@@ -593,17 +1166,20 @@ private extension Data {
         Swift.withUnsafeBytes(of: &bigEndian) { append(contentsOf: $0) }
     }
 
-    mutating func appendLengthPrefixed(_ value: Data) {
-        appendBigEndian(UInt32(value.count))
+    mutating func appendLengthPrefixed(_ value: Data) throws {
+        guard let size = UInt32(exactly: value.count) else {
+            throw SignedAssignmentVerificationError.invalidMetadata
+        }
+        appendBigEndian(size)
         append(value)
     }
 
-    mutating func appendOptionalHeader(_ value: String?) {
+    mutating func appendOptionalHeader(_ value: String?) throws {
         guard let value else {
             append(0)
             return
         }
         append(1)
-        appendLengthPrefixed(Data(value.utf8))
+        try appendLengthPrefixed(Data(value.utf8))
     }
 }

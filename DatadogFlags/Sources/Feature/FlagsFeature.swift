@@ -17,6 +17,7 @@ internal struct FlagsFeature: DatadogRemoteFeature {
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
     let assignmentAuthorizationStore: AssignmentAuthorizationStore
+    let assignmentProtection: Flags.AssignmentProtection
     let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
@@ -34,9 +35,11 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol
     ) {
         let assignmentAuthorizationStore = AssignmentAuthorizationStore(
-            initialAuthorization: configuration.assignmentAuthorization
+            initialAuthorization: configuration.assignmentAuthorization,
+            protection: configuration.assignmentProtection
         )
         self.assignmentAuthorizationStore = assignmentAuthorizationStore
+        assignmentProtection = configuration.assignmentProtection
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
@@ -104,6 +107,12 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     }
 
     func setAssignmentAuthorization(_ authorization: Flags.AssignmentAuthorization?) {
+        guard assignmentProtection == .signedAndAuthorized else {
+            DD.logger.error(
+                "Assignment authorization requires signed-and-authorized response protection."
+            )
+            return
+        }
         assignmentAuthorizationStore.update(authorization)
         for client in clientRegistry.allClients() {
             (client as? FlagsClient)?.assignmentAuthorizationDidChange()

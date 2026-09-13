@@ -36,11 +36,16 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
+        let signedAssignmentsMode = ProcessInfo.processInfo.environment["DD_SIGNED_ASSIGNMENTS_POC"]
+        let datadogEnvironment = signedAssignmentsMode == nil
+            ? "tests"
+            : ProcessInfo.processInfo.environment["FFE_STAGING_ENV"] ?? "staging"
+
         // Initialize Datadog SDK
         Datadog.initialize(
             with: Datadog.Configuration(
                 clientToken: Environment.readClientToken(),
-                env: "tests",
+                env: datadogEnvironment,
                 service: serviceName,
                 batchSize: .small,
                 uploadFrequency: .frequent
@@ -102,19 +107,39 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
         // These modes exercise the signed-assignment POC. They only change the
         // example app. The SDK verifies each response before it decodes JSON.
-        let signedAssignmentsMode = ProcessInfo.processInfo.environment["DD_SIGNED_ASSIGNMENTS_POC"]
-        if signedAssignmentsMode == "local" || signedAssignmentsMode == "cloud" {
-            let isCloud = signedAssignmentsMode == "cloud"
+        var assignmentProtection: Flags.AssignmentProtection?
+        var assignmentAuthorization: Flags.AssignmentAuthorization?
+        switch signedAssignmentsMode {
+        case "signed":
+            assignmentProtection = .signed
+        case "signed-and-authorized":
+            if let token = ProcessInfo.processInfo.environment["FFE_STAGING_ASSIGNMENT_JWT"],
+               let expirationValue = ProcessInfo.processInfo.environment["FFE_STAGING_ASSIGNMENT_JWT_EXPIRES_AT"],
+               let expiration = TimeInterval(expirationValue),
+               Date(timeIntervalSince1970: expiration) > Date() {
+                assignmentProtection = .signedAndAuthorized
+                assignmentAuthorization = Flags.AssignmentAuthorization(
+                    bearerToken: token,
+                    expiresAt: Date(timeIntervalSince1970: expiration)
+                )
+            } else {
+                print("SIGNED_ASSIGNMENT_E2E: invalid or missing authorization configuration")
+            }
+        case .some(let mode):
+            print("SIGNED_ASSIGNMENT_E2E: unsupported protection mode=\(mode)")
+        case .none:
+            break
+        }
+
+        if let assignmentProtection {
+            let endpoint = ProcessInfo.processInfo.environment["FFE_STAGING_ASSIGNMENTS_ENDPOINT"]
+                .flatMap(URL.init(string:))
+                ?? URL(string: "https://preview.ff-cdn.datad0g.com/precompute-assignments")
             Flags.enable(
                 with: Flags.Configuration(
-                    customFlagsEndpoint: URL(
-                        string: isCloud
-                            ? "https://preview.ff-cdn.datad0g.com/precompute-assignments"
-                            : "http://127.0.0.1:17676/precompute-assignments"
-                    ),
-                    customFlagsHeaders: isCloud
-                        ? ["x-dd-ffe-test-drive": "signed-assignments"]
-                        : nil,
+                    customFlagsEndpoint: endpoint,
+                    assignmentProtection: assignmentProtection,
+                    assignmentAuthorization: assignmentAuthorization,
                     trackExposures: false,
                     trackEvaluations: false
                 )
@@ -128,9 +153,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             ) { result in
                 switch result {
                 case .success:
-                    print("SIGNED_ASSIGNMENT_E2E: signature verified; mode=\(signedAssignmentsMode ?? "unknown")")
+                    print("SIGNED_ASSIGNMENT_E2E: verification=accepted; mode=\(signedAssignmentsMode ?? "unknown")")
                 case .failure(let error):
-                    print("SIGNED_ASSIGNMENT_E2E: failed; mode=\(signedAssignmentsMode ?? "unknown"); error=\(error)")
+                    print("SIGNED_ASSIGNMENT_E2E: verification=rejected; mode=\(signedAssignmentsMode ?? "unknown"); error=\(error)")
                 }
                 let value = flagsClient.getStringValue(
                     key: "country-message",

@@ -32,14 +32,6 @@ internal struct FlagsDataStore {
 
             do {
                 let flagsData = try Self.decoder.decode(FlagsData.self, from: data)
-                guard flagsData.payloadVerificationVersion == FlagsData.currentPayloadVerificationVersion else {
-                    DD.logger.warn("Ignored feature flag cache without verified payload provenance.")
-                    featureScope.telemetry.debug(
-                        "Ignored feature flag cache without verified payload provenance"
-                    )
-                    callback(nil)
-                    return
-                }
                 callback(flagsData)
             } catch let error {
                 DD.logger.error("Failed to decode \(FlagsData.self) from Flags Data Store", error: error)

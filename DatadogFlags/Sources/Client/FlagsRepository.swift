@@ -99,6 +99,7 @@ internal final class FlagsRepository {
         var generation: UInt64 = 0
         var desiredContext: FlagsEvaluationContext?
         var flagsData: FlagsData?
+        var initialCacheInvalidated = false
     }
 
     @ReadWriteLock
@@ -223,41 +224,57 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.requestCommitLock.lock()
-            let snapshot = self.authorizationStore.snapshot()
-            let expectedDigest = snapshot.authorization.map {
-                AssignmentAuthorizationStore.digest(of: $0.bearerToken)
-            }
-            self._protectedState.mutate { state in
-                if let desiredContext = state.desiredContext,
-                   data?.context != desiredContext {
+            let finishRead: (FlagsData?) -> Void = { [weak self, readSemaphore] validatedData in
+                guard let self else {
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        readSemaphore.signal()
+                    }
                     return
                 }
-                let bindingMatches = !snapshot.isEnabled
-                    || data?.authorizationBinding?.compactJWTSHA256 == expectedDigest
-                state.flagsData = bindingMatches ? data : nil
-                if state.desiredContext == nil {
-                    state.desiredContext = state.flagsData?.context
+                self.requestCommitLock.lock()
+                self._protectedState.mutate { state in
+                    guard !state.initialCacheInvalidated else {
+                        return
+                    }
+                    if let desiredContext = state.desiredContext,
+                       validatedData?.context != desiredContext {
+                        return
+                    }
+                    state.flagsData = validatedData
+                    if state.desiredContext == nil {
+                        state.desiredContext = validatedData?.context
+                    }
+                }
+                self.requestCommitLock.unlock()
+
+                var callbacks: [() -> Void] = []
+                self._diskReadState.mutate { state in
+                    state.isComplete = true
+                    callbacks = state.pendingCallbacks
+                    state.pendingCallbacks = []
+                }
+
+                DispatchQueue.global(qos: .userInitiated).async {
+                    readSemaphore.signal()
+                }
+
+                for callback in callbacks {
+                    callback()
                 }
             }
-            self.requestCommitLock.unlock()
 
-            // Mark complete and grab pending callbacks atomically
-            var callbacks: [() -> Void] = []
-            self._diskReadState.mutate { state in
-                state.isComplete = true
-                callbacks = state.pendingCallbacks
-                state.pendingCallbacks = []
+            guard let data else {
+                finishRead(nil)
+                return
             }
-
-            // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
-            DispatchQueue.global(qos: .userInitiated).async {
-                readSemaphore.signal()
-            }
-
-            // Execute async callbacks outside the lock
-            for callback in callbacks {
-                callback()
+            self.flagAssignmentsFetcher.validatePersistedFlagAssignments(
+                data,
+                at: self.dateProvider.now
+            ) { [featureScope] isValid in
+                if !isValid {
+                    featureScope.flagsDataStore.removeFlagsData(forClientNamed: self.clientName)
+                }
+                finishRead(isValid ? data : nil)
             }
         }
     }
@@ -293,7 +310,31 @@ internal final class FlagsRepository {
     }
 
     private var currentFlagsData: FlagsData? {
-        protectedState.flagsData
+        let data = protectedState.flagsData
+        guard let data else {
+            return nil
+        }
+        let authorizationSnapshot = authorizationStore.snapshot(at: dateProvider.now)
+        switch authorizationSnapshot.protection {
+        case .disabled:
+            return data.signedPayload == nil ? data : nil
+        case .signed:
+            guard data.signedPayload?.protection == .signed,
+                  data.signedPayload?.authorizationBinding == nil,
+                  (data.signedPayload?.expiresAt ?? .distantPast) > dateProvider.now else {
+                return nil
+            }
+            return data
+        case .signedAndAuthorized:
+            guard let authorization = authorizationSnapshot.authorization,
+                  data.signedPayload?.protection == .signedAndAuthorized,
+                  data.signedPayload?.authorizationBinding?.compactJWTSHA256
+                    == AssignmentAuthorizationStore.digest(of: authorization.bearerToken),
+                  (data.signedPayload?.expiresAt ?? .distantPast) > dateProvider.now else {
+                return nil
+            }
+            return data
+        }
     }
 
     private func beginRequest(for context: FlagsEvaluationContext) -> UInt64 {
@@ -326,10 +367,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             return nil
         }
         let state = protectedState
-        guard state.flagsData?.context == state.desiredContext else {
+        let flagsData = currentFlagsData
+        guard flagsData?.context == state.desiredContext else {
             return nil
         }
-        return state.flagsData?.context
+        return flagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
@@ -338,10 +380,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             return nil
         }
         let state = protectedState
-        guard state.flagsData?.context == state.desiredContext else {
+        let flagsData = currentFlagsData
+        guard flagsData?.context == state.desiredContext else {
             return nil
         }
-        return state.flagsData?.flags[key]
+        return flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
@@ -350,10 +393,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             return nil
         }
         let state = protectedState
-        guard state.flagsData?.context == state.desiredContext else {
+        let flagsData = currentFlagsData
+        guard flagsData?.context == state.desiredContext else {
             return nil
         }
-        return state.flagsData?.flags
+        return flagsData?.flags
     }
 
     func setEvaluationContext(
@@ -396,7 +440,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         flags: verifiedAssignments.flags,
                         context: context,
                         date: self.dateProvider.now,
-                        authorizationBinding: verifiedAssignments.authorizationBinding
+                        signedPayload: verifiedAssignments.signedPayload
                     )
                     self.requestCommitLock.lock()
                     var committed = false
@@ -480,6 +524,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.generation &+= 1
             state.desiredContext = nil
             state.flagsData = nil
+            state.initialCacheInvalidated = true
         }
         stateManager.updateState(.notReady)
     }
@@ -492,6 +537,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _protectedState.mutate { state in
             state.generation &+= 1
             state.flagsData = nil
+            state.initialCacheInvalidated = true
         }
         guard let context, authorizationStore.snapshot().authorization != nil else {
             stateManager.updateState(.notReady)

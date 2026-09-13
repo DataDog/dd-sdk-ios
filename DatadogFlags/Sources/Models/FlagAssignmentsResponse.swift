@@ -11,7 +11,7 @@ internal struct FlagAssignmentsResponse: Equatable {
     let flags: [String: FlagAssignment]
     let failedFlags: [String: String] // key -> error description
 
-    init(subject: String? = nil, flags: [String: FlagAssignment], failedFlags: [String: String] = [:]) {
+    init(flags: [String: FlagAssignment], subject: String? = nil, failedFlags: [String: String] = [:]) {
         self.subject = subject
         self.flags = flags
         self.failedFlags = failedFlags

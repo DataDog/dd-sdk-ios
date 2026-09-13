@@ -19,6 +19,18 @@ import DatadogInternal
 /// 3. Set the evaluation context with user/session information
 /// 4. Evaluate flags throughout your application
 public enum Flags {
+    /// The minimum response protection that the SDK accepts for flag assignments.
+    public enum AssignmentProtection: String, Codable, Equatable, Sendable {
+        /// Uses the existing assignment delivery without response verification.
+        case disabled
+
+        /// Requires a valid Datadog signature for every assignment response.
+        case signed
+
+        /// Requires a valid Datadog signature and a customer authorization token.
+        case signedAndAuthorized
+    }
+
     /// A cached customer token that authorizes protected assignment requests.
     public struct AssignmentAuthorization: Equatable, Sendable {
         /// The exact compact JWT sent in the HTTP Authorization header.
@@ -90,9 +102,18 @@ public enum Flags {
         /// Default: `5` seconds.
         public var initializationTimeout: TimeInterval?
 
+        /// The minimum response protection that the SDK accepts.
+        ///
+        /// Set this value explicitly when your application requires protected assignments.
+        /// Supplying `assignmentAuthorization` with the default value selects ``AssignmentProtection/signedAndAuthorized``.
+        ///
+        /// Default: ``AssignmentProtection/disabled``.
+        public var assignmentProtection: AssignmentProtection
+
         /// A cached customer token for protected assignment delivery.
         ///
         /// The SDK keeps this token in memory. The application owns durable storage and refresh.
+        /// This authorization applies to all named clients in the same Datadog core instance.
         public var assignmentAuthorization: AssignmentAuthorization?
 
         /// Custom server url for sending Flags exposure data.
@@ -140,6 +161,7 @@ public enum Flags {
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
         ///   - initializationTimeout: Maximum time to wait for the first evaluation context. Default: `5` seconds.
+        ///   - assignmentProtection: Minimum accepted assignment response protection. Default: `.disabled`.
         ///   - assignmentAuthorization: Cached authorization for protected assignments. Default: `nil`.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
@@ -152,6 +174,7 @@ public enum Flags {
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
             initializationTimeout: TimeInterval? = 5,
+            assignmentProtection: AssignmentProtection = .disabled,
             assignmentAuthorization: AssignmentAuthorization? = nil,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
@@ -164,6 +187,9 @@ public enum Flags {
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
             self.initializationTimeout = initializationTimeout
+            self.assignmentProtection = assignmentProtection == .disabled && assignmentAuthorization != nil
+                ? .signedAndAuthorized
+                : assignmentProtection
             self.assignmentAuthorization = assignmentAuthorization
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
@@ -217,6 +243,7 @@ public enum Flags {
     /// Replaces the cached authorization for protected assignment delivery.
     ///
     /// Pass `nil` during logout. Existing clients immediately stop using prior assignments.
+    /// The authorization applies to all named clients in the same Datadog core instance.
     public static func setAssignmentAuthorization(
         _ authorization: AssignmentAuthorization?,
         in core: DatadogCoreProtocol = CoreRegistry.default
@@ -235,6 +262,13 @@ public enum Flags {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `Flags.enable(with:)`."
+            )
+        }
+
+        guard configuration.assignmentProtection == .signedAndAuthorized
+                || configuration.assignmentAuthorization == nil else {
+            throw ProgrammerError(
+                description: "Assignment authorization requires signed-and-authorized response protection."
             )
         }
 
