@@ -36,6 +36,7 @@ DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=1
 DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=none
 DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=detail-1
 DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=1
+DD_MULTI_SCENE_UI_EVENT_HANDOFF=0
 DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT=none
 ```
 
@@ -125,6 +126,16 @@ set `DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=cancel` or `finish`. The probe
 then drives a real `UIPercentDrivenInteractiveTransition` through 35 percent and
 resolves it with the requested outcome. This deterministic public-UIKit control
 exists only to validate lifecycle and RUM semantics; it is not SDK behavior.
+Set `DD_MULTI_SCENE_UI_EVENT_HANDOFF=1` to add an “Emit scoped manual marker”
+button to each UIKit split child. The probe enables automatic UIKit actions but
+deliberately filters this button from action recording. A physical tap still
+provides the SDK with the source scene and exact view while UIKit synchronously
+dispatches the target action. The callback emits one synchronous manual action
+and resource, followed by another pair after the UI-event scope ends. In a
+two-window run where another scene remains the process representative, the
+synchronous pair must use the tapped scene's exact current view; the delayed
+pair must preserve the compatible process-representative fallback. No automatic
+tap action should be emitted for the filtered control.
 For any split layout, `DD_MULTI_SCENE_AUTORUN_OPEN_SECOND_WINDOW=1` opens scene B
 from scene A one second after scene resolution. Both scenes then run their own
 split sequence, allowing pending transitions and occurrence ownership to overlap.

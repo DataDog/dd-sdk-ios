@@ -1525,13 +1525,69 @@ private class ProbeUIKitSplitChildViewController: UIViewController {
         titleLabel.numberOfLines = 0
         titleLabel.text = "UIKit split RUM probe\n\(window.label): \(screen)"
         view.addSubview(titleLabel)
-        NSLayoutConstraint.activate([
+        var constraints = [
             titleLabel.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
             titleLabel.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24)
-        ])
+        ]
+
+        if ProbeRuntime.exercisesUIEventContextHandoff {
+            let handoffButton = UIButton(type: .system)
+            handoffButton.translatesAutoresizingMaskIntoConstraints = false
+            handoffButton.configuration = .filled()
+            handoffButton.configuration?.title = "Emit scoped manual marker"
+            handoffButton.accessibilityIdentifier = [
+                ProbeRuntime.uiEventHandoffControlAccessibilityIdentifier,
+                window.label,
+                screen
+            ].joined(separator: ".")
+            handoffButton.accessibilityLabel = "Emit scoped marker \(window.label) \(screen)"
+            handoffButton.addTarget(
+                self,
+                action: #selector(emitUIEventHandoffMarkers),
+                for: .touchUpInside
+            )
+            view.addSubview(handoffButton)
+            constraints.append(contentsOf: [
+                handoffButton.leadingAnchor.constraint(
+                    equalTo: view.layoutMarginsGuide.leadingAnchor
+                ),
+                handoffButton.topAnchor.constraint(
+                    equalTo: titleLabel.bottomAnchor,
+                    constant: 24
+                )
+            ])
+        }
+
+        NSLayoutConstraint.activate(constraints)
         view.accessibilityIdentifier = "probe.native.\(window.label).\(screen)"
         recordLifecycle("viewDidLoad")
+    }
+
+    @objc
+    private func emitUIEventHandoffMarkers() {
+        ProbeRuntime.record(
+            "uikit ui-event handoff control invoked source=\(window.label) "
+                + "native=\(sceneSessionID) screen=\(screen)"
+        )
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: screen,
+            phase: "ui-event-synchronous"
+        )
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            guard let self else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: self.window,
+                sceneSessionID: self.sceneSessionID,
+                screen: self.screen,
+                phase: "post-ui-event-async"
+            )
+        }
     }
 
     override func willMove(toParent parent: UIViewController?) {

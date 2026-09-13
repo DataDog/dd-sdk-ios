@@ -81,6 +81,10 @@ enum ProbeRuntime {
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION"] == "none"
     static let automaticallyAdvancesSplitSelection =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE"] != "0"
+    static let exercisesUIEventContextHandoff =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_UI_EVENT_HANDOFF"] == "1"
+    static let uiEventHandoffControlAccessibilityIdentifier =
+        "probe.native.uikit-ui-event-handoff"
     static let usesAnySplitLayout =
         usesSplitSelectionLayout
         || usesUIKitSplitLayout
@@ -131,6 +135,9 @@ enum ProbeRuntime {
             with: RUM.Configuration(
                 applicationID: applicationID,
                 uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+                uiKitActionsPredicate: exercisesUIEventContextHandoff
+                    ? ProbeUIKitActionsPredicate()
+                    : nil,
                 swiftUIViewsPredicate: usesAutomaticSwiftUIViewTracking
                     ? DefaultSwiftUIRUMViewsPredicate()
                     : nil,
@@ -177,6 +184,7 @@ enum ProbeRuntime {
                 + "\(uiKitSplitInteractivePopOutcome?.rawValue ?? "none") "
                 + "split_initial_selection=\(startsSplitWithoutSelection ? "none" : "detail-1") "
                 + "split_automatic_sequence=\(automaticallyAdvancesSplitSelection) "
+                + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
         )
@@ -297,5 +305,22 @@ enum ProbeRuntime {
             return nil
         }
         return trimmed
+    }
+}
+
+private struct ProbeUIKitActionsPredicate: UIKitRUMActionsPredicate {
+    private let defaultPredicate = DefaultUIKitRUMActionsPredicate()
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        if targetView.accessibilityIdentifier?.hasPrefix(
+            ProbeRuntime.uiEventHandoffControlAccessibilityIdentifier
+        ) == true {
+            ProbeRuntime.record(
+                "uikit automatic action filtered target="
+                    + "\(targetView.accessibilityIdentifier ?? "unresolved")"
+            )
+            return nil
+        }
+        return defaultPredicate.rumAction(targetView: targetView)
     }
 }
