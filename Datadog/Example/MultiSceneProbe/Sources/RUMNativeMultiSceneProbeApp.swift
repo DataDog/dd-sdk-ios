@@ -37,6 +37,7 @@ enum ProbeRuntime {
         static let screen = "probe.screen"
         static let phase = "probe.phase"
         static let uptime = "probe.uptime"
+        static let readerControlGeneration = "probe.reader_control_generation"
     }
 
     static let serviceName = "ios-sdk-native-multi-scene-probe"
@@ -46,6 +47,40 @@ enum ProbeRuntime {
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL"] == "1"
     static let automaticallyOpensSecondWindow =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_OPEN_SECOND_WINDOW"] == "1"
+    static let automaticallyClosesSceneB =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_CLOSE_SCENE_B"] == "1"
+    static let automaticallyAbortsDetail =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_ABORT_DETAIL"] == "1"
+    static let automaticallyReplacesDetail =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL"] == "1"
+    static let automaticallyReplacesDetailInstance =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL_INSTANCE"] == "1"
+    static let forcesNavigationRouteIdentity =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY"] == "1"
+    static let syntheticReaderDisconnectTarget =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT"]
+    static let usesSplitSelectionLayout =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "split-selection"
+    static let usesUIKitSplitLayout =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split"
+    static let usesUIKitSplitSubclass =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-subclass"
+    static let usesUIKitSplitNavigationLayout =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-navigation"
+    static let swiftUIViewTrackingMode: String = {
+        switch ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"] {
+        case "manual":
+            return "manual"
+        case "navigation-path":
+            return "navigation-path"
+        default:
+            return "automatic"
+        }
+    }()
+    static let usesAutomaticSwiftUIViewTracking = swiftUIViewTrackingMode == "automatic"
+    static let usesNavigationPathSwiftUIViewTracking = swiftUIViewTrackingMode == "navigation-path"
+    static let usesTabPreloadStress =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_STRESS"] == "tab-preload"
 
     private static let logger = Logger(
         subsystem: "com.datadoghq.rum-native-multi-scene-probe",
@@ -77,7 +112,9 @@ enum ProbeRuntime {
             with: RUM.Configuration(
                 applicationID: applicationID,
                 uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
-                swiftUIViewsPredicate: DefaultSwiftUIRUMViewsPredicate(),
+                swiftUIViewsPredicate: usesAutomaticSwiftUIViewTracking
+                    ? DefaultSwiftUIRUMViewsPredicate()
+                    : nil,
                 swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(
                     isLegacyDetectionEnabled: false
                 ),
@@ -106,9 +143,35 @@ enum ProbeRuntime {
 
         record(
             "configured service=\(serviceName) "
+                + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
+                + "swiftui_stress=\(usesTabPreloadStress ? "tab-preload" : "none") "
                 + "automatic_detail=\(automaticallyNavigates) "
-                + "automatic_second_window=\(automaticallyOpensSecondWindow)"
+                + "automatic_second_window=\(automaticallyOpensSecondWindow) "
+                + "automatic_close_scene_b=\(automaticallyClosesSceneB) "
+                + "automatic_abort_detail=\(automaticallyAbortsDetail) "
+                + "automatic_replace_detail=\(automaticallyReplacesDetail) "
+                + "automatic_replace_detail_instance=\(automaticallyReplacesDetailInstance) "
+                + "force_route_identity=\(forcesNavigationRouteIdentity) "
+                + "swiftui_layout=\(layoutDescription) "
+                + "synthetic_reader_disconnect_target="
+                + "\(syntheticReaderDisconnectTarget ?? "none")"
         )
+    }
+
+    private static var layoutDescription: String {
+        if usesSplitSelectionLayout {
+            return "split-selection"
+        }
+        if usesUIKitSplitLayout {
+            return "uikit-split"
+        }
+        if usesUIKitSplitSubclass {
+            return "uikit-split-subclass"
+        }
+        if usesUIKitSplitNavigationLayout {
+            return "uikit-split-navigation"
+        }
+        return "stack"
     }
 
     static func emitLifecycleMarker(
