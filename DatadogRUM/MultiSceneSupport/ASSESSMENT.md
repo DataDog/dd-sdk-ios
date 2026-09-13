@@ -586,11 +586,13 @@ correlation, external-display refresh rate, and iPhone Duo validation remain ope
 Session Replay scene-correctness is out of scope; repeated two-window runs uploaded
 replay data without an SDK crash, which is the required contract here.
 
-The product contract now removes two earlier ambiguities. First, a scene has one
+The product contract now removes the earlier ambiguities. First, a scene has one
 current destination: split sidebars, tab bars, and containers are structural, not
 parallel RUM views. Second, scene-aware manual view start/stop is required so the
 same customer key can exist in A and B and an exact stop closes only its targeted
 scene; existing source-less methods keep their inferred/last-interacted behavior.
+Targeted start and stop must be paired; a legacy source-less stop is not an escape
+hatch for a targeted start, and no public UUID or returned handle is introduced.
 `EXP-120` proves this cannot be implemented as a scene-targeted copy of the
 existing direct commands. Targeted manual entries need per-scene stack ownership
 and must remain authoritative over automatic candidates until exact removal.
@@ -598,6 +600,20 @@ That internal requirement is implemented by `ddfc38008` and hardened by
 `94075aa47`; `EXP-122` validates its one-scene H1/M1/H2 behavior. The scene-A/B
 same-key behavior passes focused tests but still needs live capable-hardware
 evidence before the support claim.
+
+Navigation may commit beneath manual authority. Only the latest committed
+underlying destination is eligible for reveal; intermediates that were never the
+scene's current visible destination emit nothing. Exact stop starts the revealed
+destination as a fresh occurrence. Different manual keys form a legitimate
+suffix—Compose -> Attachment Preview -> fresh Compose—while a duplicate active
+`(scene, key)` start is instrumentation misuse requiring crash safety rather than
+new product semantics.
+
+Third, the initial semantic SwiftUI integration is not stack-only. Its centralized
+router/resolver describes the complete scene destination, including sheets and
+full-screen covers. A presentation replaces the current destination, and dismissal
+must create a fresh revealed occurrence before post-dismiss customer work while
+preventing its automatic duplicate.
 Both the manual Swift/Objective-C surface and the optional container-level SwiftUI
 semantic integration require normal API review. Internal scene ownership must
 also remain suitable for a future Window Execution Context ID, but this project
@@ -612,7 +628,7 @@ against the amount of implementation completed:
 | Objective | Current evidence | Remaining release work |
 | --- | --- | --- |
 | Concurrent view creation and lifetime | UIKit and explicit SwiftUI windows coexist in one session; the iOS 27 early-mount candidate preserves exact A/B lifecycle work; route-owned controls publish semantic roots and destinations; `EXP-090` proves a RUM-only occurrence change preserves customer SwiftUI state, `EXP-098` reveals retained Home before immediate work, and `EXP-105` preserves that occurrence across a subtree remount. `EXP-115` keeps automatic tracking enabled while an active explicit subtree owns H1/D1/H2 without duplicates; `EXP-116` moves the path and resolver to one probe-container call site; both clean `EXP-118` prefixes keep A semantic while independently creating B automatic views; `EXP-119` creates automatic H1, explicit S1, and fresh automatic H2 without a duplicate. `EXP-120` proves direct keyed M1 is preempted by an automatic fallback; `EXP-122` proves the internal exact-scene stack instead preserves authoritative M1 and reveals one fresh H2 | Resolve immediate exceptional-Sheet return ownership, take the proven container/builder and manual-view overloads through API review, complete live same-key A/B and decisive scene-B markers on physical hardware, then cover simultaneous visibility, construction, restoration, and iPhone Duo validation |
-| UIKit and SwiftUI navigation | UIKit push/pop/modal and explicit SwiftUI stack/modal flows preserve one UUID per committed path occurrence; signal-driven stack return, abort, same-/different-type replacement, split replacement, retained split return, and UIKit cancel/finish pass locally and in backend intake. `EXP-116` repeats return, abort, and same-type replacement through one centralized container resolver. `EXP-119` shows automatic restoration after an explicit Sheet but immediate `onDismiss` work precedes H2. The matching automatic SwiftUI split control fails with no semantic destination views. Stock regular-width UIKit splits no longer start or restart structural Primary/supplementary views; cancellation retains S2 and completion creates fresh S1 | Review stack plus presentation-state semantics, fix the `onDismiss` boundary without speculative views, prove recognized native SwiftUI cancel/finish and exact activation on hardware, then cover startup/subclass containers, adaptive resize, simultaneous-visible A/B completion, restoration, and ordinary-app compatibility |
+| UIKit and SwiftUI navigation | UIKit push/pop/modal and explicit SwiftUI stack/modal flows preserve one UUID per committed path occurrence; signal-driven stack return, abort, same-/different-type replacement, split replacement, retained split return, and UIKit cancel/finish pass locally and in backend intake. `EXP-116` repeats return, abort, and same-type replacement through one centralized container resolver. `EXP-119` shows automatic restoration after an explicit Sheet but immediate `onDismiss` work precedes H2. The matching automatic SwiftUI split control fails with no semantic destination views. Stock regular-width UIKit splits no longer start or restart structural Primary/supplementary views; cancellation retains S2 and completion creates fresh S1 | Implement the approved complete-destination router semantics for stack paths, sheets, and full-screen covers; fix the `onDismiss` boundary without speculative or intermediate views; prove recognized native SwiftUI cancel/finish and exact activation on hardware; then cover startup/subclass containers, adaptive resize, simultaneous-visible A/B completion, restoration, and ordinary-app compatibility |
 | Action attribution | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions update the representative; execution-local manual action/error/view mutations and internal view work prefer exact handoff view/scene; `EXP-098` attributes immediate returned-Home work correctly and source-less work keeps last-interacted fallback. `EXP-119` attributes all Sheet work to S1 and settled return work to H2, but immediate Home work remains on S1. `EXP-122` attributes exact-scene M1 active work correctly and gives immediate plus settled post-stop work to one fresh H2 | Fix the exceptional-Sheet return boundary, repeat manual-handoff precedence with B representative and A visibly interactive, and finish UIKit scroll/deceleration plus downstream runtime rows |
 | Scene lifecycle and sessions | Requested destruction/close preserves delayed ownership; exact A-to-B open and B close wait for B readiness/disconnect, and post-close A work keeps A's original Home UUID; exact activation and current-state lifecycle conditions are implemented in the probe; disconnect invalidation, retained-reader rearming, migration, and stale-observer isolation pass; explicit stop/expiry restore concurrent branches; the probe registry models exact logical/native identity without retaining windows or serializing its future Execution Context seam | Prove activation plus peer background and stable simultaneous-visible peer close on capable hardware, then genuine OS disconnect/reconnect, per-scene background/foreground, concurrent restoration, and the equivalent shipping ownership path ready for future Window Execution Context mapping; backend visualization is follow-up work |
 | Resources, traces, and operations | Start provenance and Resource completion ownership are frozen; manual Resource starts, automatic URLSession completion, and native/OpenTelemetry span starts use scene handoff; Operations use application-wide typed identities and per-step resolution with focused cross-window tests | Finish bounded live causal/reverse-completion rows, exact different-representative proof, live Operation A-to-B/duplicate-start proof, and public Operation target review |

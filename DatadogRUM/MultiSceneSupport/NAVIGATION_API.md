@@ -25,6 +25,13 @@ The approved behavior is:
   Home H1 -> Detail D1 -> Home H2 uses three distinct IDs;
 - a semantic container or exceptional manual view is authoritative only within
   its target and suppresses only its duplicate automatic view;
+- navigation may continue beneath manual authority, but only the latest committed
+  underlying destination can be revealed and it starts as a fresh occurrence;
+- different manual keys may nest, while re-starting an active `(scene, key)` is
+  instrumentation misuse and receives only crash-safe handling;
+- targeted starts pair only with targeted stops for the same scene and key;
+- the first semantic integration resolves the complete current destination,
+  including sheets and full-screen covers;
 - each scene has one current destination; structural panes and tabs are not
   parallel RUM views;
 - the same manual key can be active independently in different scenes; and
@@ -112,6 +119,12 @@ unchanged and keep inferred/last-interacted behavior. A default such as
 `scene: nil` would make the distinction less visible and risks overload
 ambiguity.
 
+A targeted start must be stopped through the targeted overload using the same
+scene and key. Mixing a targeted start with `stopView(key:)` is unsupported; the
+legacy call retains its source-less inferred behavior and must not search every
+scene for a matching key. The initial design deliberately returns no handle and
+exposes no internal RUM UUID.
+
 The initial proposal does not add a scene argument to the view-controller forms.
 An attached controller already identifies its scene, and accepting both a
 controller and a contradictory scene creates an avoidable precedence rule. The
@@ -182,11 +195,18 @@ The smallest internal design is implemented as a weak scene-targeted manual-view
 capability on `Monitor`, bound to `RUMViewsHandler` when instrumentation is
 published. Targeted start and stop use the handler's per-scene stack. While a
 manual suffix is active, later trustworthy automatic appearances are staged
-immediately below it without emitting RUM commands; removing the exact scene/key
-manual entry applies stop-call attributes and reveals the newest valid underlying
-entry as a fresh occurrence. Nested manuals keep the entire manual suffix
-authoritative. Existing source-less methods remain on their inferred
-direct-command path.
+without emitting RUM commands. Only the latest committed current destination is
+eligible immediately below the suffix; other navigation-history entries stay
+dormant and do not emit merely because they were staged. Removing the exact
+scene/key manual entry applies stop-call attributes and reveals only that latest
+destination as a fresh occurrence.
+
+Nested manuals with distinct keys keep the entire manual suffix authoritative.
+Stopping Attachment Preview above Compose starts a fresh Compose occurrence; it
+does not resume the old Compose view ID. Starting the same `(scene, key)` while it
+is already active is instrumentation misuse. The implementation must remain
+crash-safe but need not invent restart, reference-counting, or handle semantics.
+Existing source-less methods remain on their inferred direct-command path.
 
 `EXP-121` validates the authority portion: M1 owns its active action/Resource,
 but the first implementation staged and revealed a generic hosting fallback
@@ -289,12 +309,13 @@ the container/router integration can provide that earlier signal.
 
 ### Presentation state
 
-The first API review must decide whether the navigation integration observes only
-the stack path or the router's complete current destination, including sheets and
-full-screen covers. A stack-only API can satisfy push/pop semantics but cannot by
-itself close the immediate-dismiss gap from `EXP-119`. Do not silently treat a
-presented destination as a second concurrent view; it replaces the scene's one
-current destination until dismissal.
+The first navigation integration must consume the router's complete current
+destination, including sheets and full-screen covers. Stack-only coverage is not
+an acceptable first semantic release. A presented destination replaces the
+scene's one current destination; it is never a second concurrent RUM view.
+Dismissal must start a fresh underlying occurrence before post-dismiss customer
+work is attributed and must suppress the presented destination's automatic
+duplicate. A same-turn presentation mutation that never commits starts no view.
 
 ## Required review and test matrix
 
@@ -307,7 +328,14 @@ Scene-aware manual views require:
 - manual exceptional view over automatic H1 -> M1 -> fresh H2;
 - automatic appearance or replacement while M1 is active is staged beneath M1
   and emits no intervening current view;
-- nested targeted manual entries preserve an authoritative manual suffix;
+- several underlying commits while M1 is active emit none of the intermediate
+  destinations and reveal only the latest committed destination as a fresh view;
+- nested targeted manual entries preserve an authoritative manual suffix and
+  stopping Preview above Compose starts a fresh Compose occurrence;
+- duplicate active `(scene, key)` starts remain crash-safe without restart,
+  reference-counting, or handle semantics;
+- a targeted start followed by a legacy source-less stop does not act as a
+  supported pair or search another scene;
 - automatic tracking continuing in another scene and sibling container;
 - scene close while the manual view is active;
 - stop-call attributes are applied to M1's stop event;
@@ -324,6 +352,8 @@ Semantic SwiftUI navigation requires:
 - state preservation when only the RUM occurrence rotates;
 - root, destination, modal, and retained-return lifecycle work on the intended
   occurrence;
+- Sheet and full-screen-cover present/dismiss sequences driven by the complete
+  router destination, with a fresh reveal before immediate post-dismiss work;
 - coexistence with automatic tracking, a manual exception, a sibling container,
   and another scene without duplicate or global suppression;
 - one current destination for split/tab structures;
@@ -332,21 +362,21 @@ Semantic SwiftUI navigation requires:
 
 ## API-review questions
 
+No product-behavior decision blocks the next internal manual-authority or
+presentation experiment. The remaining questions are public shape, compatibility,
+and implementation-boundary review:
+
 1. Wrapper, modifier with destination builders, or another shape that provides
    the proven materialization boundary?
-2. Typed `[Route]` only in the first release, or a router protocol that can also
-   describe heterogeneous paths and presentation state?
+2. Typed path plus presentation bindings, or a router protocol that describes the
+   required complete destination while supporting heterogeneous routes?
 3. Reuse `RUMView` as route metadata or introduce a smaller navigation-specific
    descriptor with an explicit tracked/untracked decision?
 4. Extension-only manual overload with private capability, or defaulted public
    protocol requirements after library-evolution review?
-5. Does the first semantic API own modal presentation state, or does the manual
-   reveal mechanism close `EXP-119` independently?
-6. Can the authority registry isolate sibling containers inside one hosting
+5. Can the authority registry isolate sibling containers inside one hosting
    controller without unsupported SwiftUI hierarchy assumptions?
-7. Do targeted manual keys share the existing keyed namespace with semantic
-   SwiftUI occurrences, and what is the exact duplicate targeted-start behavior?
-8. How should Objective-C callers that invoke a `UIWindowScene` overload away
+6. How should Objective-C callers that invoke a `UIWindowScene` overload away
    from the main thread be handled without retaining or asynchronously dereferencing
    the scene?
 

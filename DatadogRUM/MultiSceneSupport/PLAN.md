@@ -103,6 +103,10 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
+No product decision blocks the next internal manual-authority or complete-
+destination presentation slice. Public names and exact Swift/Objective-C
+signatures remain gated on normal API review.
+
 1. Completed in `34ba7eabf` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
    Three clean Home → Detail → Home runs each produced one 7/7 local `PASS` before
@@ -147,9 +151,10 @@ Current execution order:
    simulator-capable experiments. No public API lands without normal review.
 7. `EXP-119` exercises one exceptional explicit Sheet over automatic Home.
    Dedup and eventual H1 -> S1 -> H2 restoration work, but immediate Home work in
-   `onDismiss` still owns S1. Use the review starting points in
-   [NAVIGATION_API.md](NAVIGATION_API.md) to test a presentation-aware semantic
-   boundary or manual-stack reveal. Do not weaken the failing expectation.
+   `onDismiss` still owns S1. The approved successor consumes the application's
+   complete current destination—not only its stack path—and must cover Sheet and
+   full-screen-cover presentation/reveal. Do not weaken the failing expectation,
+   emit intermediate destinations, or start an uncommitted presentation.
 8. Completed as a negative discriminator in `dc863758f` and `EXP-120`: direct
    keyed manual start/stop over automatic H1 does not provide manual authority.
    Automatic discovery displaced M1 within 31–48 ms, and the intended M1
@@ -164,9 +169,13 @@ Current execution order:
    fallback reveal. The hardened run passes 16/16 with H1 -> M1 -> fresh H2,
    exact active/immediate/settled ownership, and matching backend intake. Existing
    source-less APIs remain on their inferred direct-command path.
-10. Take scene-aware Swift/Objective-C overloads through API review before
-   exposing the validated internal path. The same key must coexist independently
-   in A and B and a stop must affect only its exact scene/key.
+10. Extend the internal manual-authority matrix with the now-approved rules:
+    several navigation commits beneath M1 reveal only the latest destination;
+    stopping nested Preview reveals a fresh Compose occurrence; duplicate active
+    `(scene, key)` start remains crash-safe without new lifecycle semantics; and a
+    targeted start is paired only with a targeted stop. Then take scene-aware
+    Swift/Objective-C overloads through API review. The same key must coexist
+    independently in A and B and a stop must affect only its exact scene/key.
 11. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
 12. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
@@ -716,13 +725,19 @@ inferred. Focused tests cover H1/M1/H2 order, automatic replacement, nested
 manuals, same key in A/B, wrong-scene stop, stop attributes, disconnect, and a
 fresh restarted UUID. `EXP-121` isolates generic-fallback reveal after authority
 was fixed; `EXP-122` then passes 16/16 locally and in backend intake. Resolve
-key-collision and duplicate-targeted-start behavior before turning this seam into
-public API, then obtain live same-key A/B proof on capable hardware.
+the approved edge cases before turning this seam into public API: multiple
+underlying commits retain and reveal only the latest without emitting
+intermediates; a nested Preview stop creates a fresh Compose occurrence; duplicate
+active `(scene, key)` starts stay crash-safe without restart/reference-counting;
+and legacy source-less stop is not paired with targeted start. Then obtain live
+same-key A/B proof on capable hardware.
 
 `EXP-119` is the related modifier-based presentation boundary: it eventually
 restores H2 without a duplicate, but immediate `onDismiss` work still owns S1.
-Preserve that separate failure until a presentation-aware semantic signal or the
-manual reveal path starts H2 first.
+Preserve that separate failure until the approved complete-destination router
+integration covers both Sheet and full-screen-cover state and starts H2 first.
+The presentation replaces the scene's current RUM destination and dismissal must
+reveal a fresh underlying occurrence before post-dismiss customer work.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
@@ -880,9 +895,10 @@ The assessment can change to supported only when:
   container, native-host startup fallback, compact/adaptive transitions, and tab
   modeling remain open;
 - `Home → Detail → Home` produces distinct H1/D1/H2 occurrences, and the optional
-  semantic integration consumes an existing path/router through one centralized
-  resolver, coexists with automatic tracking, and suppresses duplicate automatic
-  views only within its authoritative container;
+  semantic integration consumes an existing router's complete destination through
+  one centralized resolver, including sheets and full-screen covers, coexists
+  with automatic tracking, and suppresses duplicate automatic views only within
+  its authoritative container;
 - the iOS 27 explicit early-mount result survives the remaining aborted,
   split, restoration, stable visible-peer close, and preloaded-container stress;
   modal navigation and closing-scene ownership already pass. Its three successful
@@ -907,7 +923,11 @@ The assessment can change to supported only when:
   `(name, operationKey)` identity, and provide the reviewed explicit target API;
 - reviewed scene-aware manual view APIs let the same key coexist in A and B and
   stop only the targeted scene, have Objective-C counterparts, preserve existing
-  inferred APIs, and coexist with automatic tracking elsewhere;
+  inferred APIs, pair targeted start only with targeted stop, and coexist with
+  automatic tracking elsewhere. Underlying navigation emits no intermediate view
+  while a manual suffix is authoritative and reveals only the latest committed
+  destination as a fresh occurrence; nested distinct keys return as fresh manual
+  occurrences; duplicate active keys remain crash-safe misuse;
 - manual errors, logs and mirrored errors, WebView containers, feature flags,
   INV/TNS/vitals, fatal/exported context, profiling, and process-wide long
   tasks/hangs have explicit support levels and targeted runtime evidence or an

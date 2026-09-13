@@ -236,21 +236,38 @@ Status: approved for multi-window iPad and iPhone applications.
     exist independently in A and B; an explicit scene wins over inferred process
     context; existing APIs retain their current inferred behavior; and Swift and
     Objective-C surfaces require normal API review without exposing RUM UUIDs.
-14. Resource and Trace work is limited to preserving trustworthy provenance and a
-   shared frozen owner. The SDK does not guess after causality is lost and does
-   not defend developer-written handlers that rewrite a request across automatic
-   capture or first-party header-injection boundaries.
-15. Operations use exact application-wide `(name, operationKey)` identity; scenes
+14. Automatic navigation may continue beneath a scene-targeted manual view, but
+    only the latest committed underlying destination is retained. Intermediate
+    destinations that were never current and visible emit no RUM view. Exact stop
+    reveals the latest destination as a fresh occurrence with a new view ID.
+15. Different manual keys may nest. Stopping Attachment Preview above Compose
+    creates a fresh Compose occurrence. Re-starting the same `(scene, key)` while
+    it is active is instrumentation misuse: remain crash-safe, but add no elaborate
+    lifecycle semantics for it.
+16. A scene-targeted start pairs only with a scene-targeted stop for the same
+    scene and key. Mixing it with a legacy source-less stop is unsupported. The
+    existing source-less API continues to use inferred/last-interacted behavior;
+    this design adds neither public RUM UUIDs nor returned view handles.
+17. The first optional SwiftUI semantic integration covers the router's complete
+    current destination, including `NavigationStack` paths, sheets, and full-screen
+    covers. A presentation replaces the scene's destination. Dismissal reveals a
+    fresh underlying occurrence before post-dismiss customer work, without a
+    duplicate automatic view.
+18. Resource and Trace work is limited to preserving trustworthy provenance and a
+    shared frozen owner. The SDK does not guess after causality is lost and does
+    not defend developer-written handlers that rewrite a request across automatic
+    capture or first-party header-injection boundaries.
+19. Operations use exact application-wide `(name, operationKey)` identity; scenes
    never namespace it. Every step resolves its view independently. A last-proven
    snapshot is a fallback, not permanent ownership by the start scene.
-16. Starting the same Operation identity twice tracks only the latest start in
+20. Starting the same Operation identity twice tracks only the latest start in
     the client. A later success or failure ends only that instance; the earlier
     backend operation remains open until its four-hour timeout. The SDK emits no
     synthetic end. Customers must use a unique key for every concurrent instance.
-17. The Operation view-target escape hatch requires normal Swift, Objective-C,
+21. The Operation view-target escape hatch requires normal Swift, Objective-C,
     protocol-compatibility, and RFC review. Existing APIs retain inferred behavior,
     and no internal RUM view UUID becomes public.
-18. Delivery priority is view occurrence/lifecycle and navigation; scene-aware
+22. Delivery priority is view occurrence/lifecycle and navigation; scene-aware
     manual views; downstream ownership; normal-app compatibility; then Session
     Replay crash safety. Multi-pane modeling and Execution Context serialization
     remain follow-up work.
@@ -311,8 +328,10 @@ The deterministic harness is complete through `EXP-122`; [PLAN.md](MultiSceneSup
 owns the finished phases and full release matrix. Continue in this order:
 
 1. Resolve the separate `EXP-119` presentation-return boundary through the
-   reviewed container/router presentation signal or the same proven manual-stack
-   reveal. Do not weaken either failing oracle and do not start speculative views.
+   approved complete-destination router contract. Cover both Sheet and full-screen
+   presentation: the presented destination replaces Home, and dismissal must
+   reveal a fresh Home occurrence before post-dismiss work. Do not weaken either
+   failing oracle, emit intermediate destinations, or start speculative views.
 2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
    hardware. The simulator prefix already proves B automatic discovery remains
    eligible; require the final B marker and backend owner before closing it.
@@ -326,7 +345,8 @@ owns the finished phases and full release matrix. Continue in this order:
    iPad. Require the activated scene to become foreground-active and the peer to
    become background before asserting fresh view occurrences or marker ownership.
 6. After API approval, land the optional container-level SwiftUI semantic
-   integration. It must consume a customer path/router and centralized resolver,
+   integration. It must consume a customer path/router's complete current
+   destination—including sheets and full-screen covers—and a centralized resolver,
    coexist with automatic tracking, preserve customer state, and suppress
    duplicate automatic views only within its target container.
 7. Route recognized native gestures, adaptive resize, and stable simultaneous A/B
