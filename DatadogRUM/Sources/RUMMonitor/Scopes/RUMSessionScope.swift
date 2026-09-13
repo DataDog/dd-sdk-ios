@@ -328,9 +328,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if command.isUserInteraction {
             lastInteractionTime = command.time
-            if case .scene(let sceneIdentifier) = command.target,
+            let interactedSceneIdentifier: RUMSceneIdentifier?
+            switch command.target {
+            case .scene(let sceneIdentifier):
+                interactedSceneIdentifier = sceneIdentifier
+            case .view(let viewID):
+                interactedSceneIdentifier = viewScopes.first(where: {
+                    $0.viewUUID == viewID
+                })?.sceneIdentifier ?? dependencies.viewCache.sceneIdentifier(
+                    forViewID: viewID.toRUMDataFormat
+                )
+            case .none, .processRepresentative, .allActiveViews:
+                interactedSceneIdentifier = nil
+            }
+            if let interactedSceneIdentifier,
                !(command is RUMStartViewCommand) {
-                representativeSceneIdentifier = sceneIdentifier
+                representativeSceneIdentifier = interactedSceneIdentifier
                 updateRepresentativeView()
             }
         }

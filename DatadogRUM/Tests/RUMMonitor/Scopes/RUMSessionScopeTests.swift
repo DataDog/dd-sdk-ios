@@ -751,6 +751,59 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneA)
     }
 
+    func testGivenConcurrentScenes_whenActionTargetsExactEarlierView_itBecomesRepresentativeForLaterSourceLessWork() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .tap,
+                name: "Exact action in A",
+                target: .view(viewAID)
+            ),
+            context: context,
+            writer: writer
+        )
+        let resourceStartTime = Date().addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(
+                resourceKey: "later-resource",
+                time: resourceStartTime
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: "later-resource",
+                time: resourceStartTime.addingTimeInterval(1)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(actionEvents.first?.view.id, viewAID.toRUMDataFormat)
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.first?.view.id, viewAID.toRUMDataFormat)
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneA)
+    }
+
     func testGivenConcurrentScenes_whenUnscopedActionIsAdded_itDoesNotDuplicateIt() throws {
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
