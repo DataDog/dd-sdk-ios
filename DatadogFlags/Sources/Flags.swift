@@ -19,6 +19,20 @@ import DatadogInternal
 /// 3. Set the evaluation context with user/session information
 /// 4. Evaluate flags throughout your application
 public enum Flags {
+    /// A cached customer token that authorizes protected assignment requests.
+    public struct AssignmentAuthorization: Equatable, Sendable {
+        /// The exact compact JWT sent in the HTTP Authorization header.
+        public let bearerToken: String
+
+        /// The token expiration time.
+        public let expiresAt: Date
+
+        public init(bearerToken: String, expiresAt: Date) {
+            self.bearerToken = bearerToken
+            self.expiresAt = expiresAt
+        }
+    }
+
     /// Configuration options for the Datadog Flags feature.
     ///
     /// Use this type to customize the behavior of feature flag evaluation, including custom endpoints,
@@ -76,6 +90,11 @@ public enum Flags {
         /// Default: `5` seconds.
         public var initializationTimeout: TimeInterval?
 
+        /// A cached customer token for protected assignment delivery.
+        ///
+        /// The SDK keeps this token in memory. The application owns durable storage and refresh.
+        public var assignmentAuthorization: AssignmentAuthorization?
+
         /// Custom server url for sending Flags exposure data.
         ///
         /// Default: `nil`.
@@ -121,6 +140,7 @@ public enum Flags {
         ///   - customFlagsEndpoint: Custom server URL for retrieving flag assignments. Default: `nil`.
         ///   - customFlagsHeaders: Additional HTTP headers for requests to `customFlagsEndpoint`. Default: `nil`.
         ///   - initializationTimeout: Maximum time to wait for the first evaluation context. Default: `5` seconds.
+        ///   - assignmentAuthorization: Cached authorization for protected assignments. Default: `nil`.
         ///   - customExposureEndpoint: Custom server URL for sending exposure data. Default: `nil`.
         ///   - trackExposures: Enables exposure logging to the exposures intake endpoint. Default: `true`.
         ///   - customEvaluationEndpoint: Custom server URL for sending evaluation data. Default: `nil`.
@@ -132,6 +152,7 @@ public enum Flags {
             customFlagsEndpoint: URL? = nil,
             customFlagsHeaders: [String: String]? = nil,
             initializationTimeout: TimeInterval? = 5,
+            assignmentAuthorization: AssignmentAuthorization? = nil,
             customExposureEndpoint: URL? = nil,
             trackExposures: Bool = true,
             customEvaluationEndpoint: URL? = nil,
@@ -143,6 +164,7 @@ public enum Flags {
             self.customFlagsEndpoint = customFlagsEndpoint
             self.customFlagsHeaders = customFlagsHeaders
             self.initializationTimeout = initializationTimeout
+            self.assignmentAuthorization = assignmentAuthorization
             self.customExposureEndpoint = customExposureEndpoint
             self.trackExposures = trackExposures
             self.customEvaluationEndpoint = customEvaluationEndpoint
@@ -190,6 +212,20 @@ public enum Flags {
         } catch let error {
             consolePrint("\(error)", .error)
         }
+    }
+
+    /// Replaces the cached authorization for protected assignment delivery.
+    ///
+    /// Pass `nil` during logout. Existing clients immediately stop using prior assignments.
+    public static func setAssignmentAuthorization(
+        _ authorization: AssignmentAuthorization?,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) {
+        guard let feature = core.get(feature: FlagsFeature.self) else {
+            consolePrint("Flags must be enabled before setting assignment authorization.", .error)
+            return
+        }
+        feature.setAssignmentAuthorization(authorization)
     }
 
     internal static func enableOrThrow(

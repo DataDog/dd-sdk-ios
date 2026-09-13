@@ -31,4 +31,8 @@ internal final class FlagsClientRegistry {
     func client(named name: String) -> FlagsClientProtocol? {
         clients[name]
     }
+
+    func allClients() -> [FlagsClientProtocol] {
+        Array(clients.values)
+    }
 }

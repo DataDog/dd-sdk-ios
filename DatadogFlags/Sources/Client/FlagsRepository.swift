@@ -24,6 +24,12 @@ internal protocol FlagsRepositoryProtocol {
     func flagAssignments() -> [String: FlagAssignment]?
 
     func reset()
+
+    func assignmentAuthorizationDidChange()
+}
+
+extension FlagsRepositoryProtocol {
+    func assignmentAuthorizationDidChange() {}
 }
 
 internal typealias FlagsInitializationTimeoutCancellation = () -> Void
@@ -83,17 +89,20 @@ internal final class FlagsRepository {
     private let featureScope: any FeatureScope
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+    private let authorizationStore: AssignmentAuthorizationStore
 
     private let initializationLock = NSLock()
+    private let requestCommitLock = NSRecursiveLock()
     private var didStartInitialization = false
 
-    @ReadWriteLock
-    private var flagsData: FlagsData?
+    private struct ProtectedState {
+        var generation: UInt64 = 0
+        var desiredContext: FlagsEvaluationContext?
+        var flagsData: FlagsData?
+    }
 
-    /// Version counter for `flagsData`. Incremented on every write to detect
-    /// when a newer request has succeeded while an older request was in-flight.
     @ReadWriteLock
-    private var flagsDataVersion: UInt64 = 0
+    private var protectedState = ProtectedState()
 
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
@@ -116,6 +125,7 @@ internal final class FlagsRepository {
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
+        authorizationStore: AssignmentAuthorizationStore = AssignmentAuthorizationStore(initialAuthorization: nil),
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
@@ -123,6 +133,7 @@ internal final class FlagsRepository {
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.authorizationStore = authorizationStore
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         readState()
@@ -154,6 +165,7 @@ internal final class FlagsRepository {
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
         context: FlagsEvaluationContext,
+        generation: UInt64,
         beforeScheduling: () -> Void
     ) -> InitializationCompletion? {
         initializationLock.lock()
@@ -180,13 +192,20 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
+            self.requestCommitLock.lock()
+            guard self.isCurrent(generation: generation, context: context) else {
+                self.requestCommitLock.unlock()
+                completion(.failure(.networkError(URLError(.cancelled))))
+                return
+            }
+            let timeoutState: FlagsClientState = self.currentFlagsData?.context == context ? .stale : .error
             let accepted = self.stateManager.updateState(
                 timeoutState,
                 unlessCurrentStateIs: [.ready, .stale]
             ) {
                 completion(.failure(.initializationTimedOut))
             }
+            self.requestCommitLock.unlock()
             if !accepted {
                 completion(.failure(.initializationTimedOut))
             }
@@ -204,7 +223,24 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            self.requestCommitLock.lock()
+            let snapshot = self.authorizationStore.snapshot()
+            let expectedDigest = snapshot.authorization.map {
+                AssignmentAuthorizationStore.digest(of: $0.bearerToken)
+            }
+            self._protectedState.mutate { state in
+                if let desiredContext = state.desiredContext,
+                   data?.context != desiredContext {
+                    return
+                }
+                let bindingMatches = !snapshot.isEnabled
+                    || data?.authorizationBinding?.compactJWTSHA256 == expectedDigest
+                state.flagsData = bindingMatches ? data : nil
+                if state.desiredContext == nil {
+                    state.desiredContext = state.flagsData?.context
+                }
+            }
+            self.requestCommitLock.unlock()
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -252,11 +288,32 @@ internal final class FlagsRepository {
         }
     }
 
-    private func writeState() {
-        guard let flagsData else {
-            return
-        }
+    private func writeState(_ flagsData: FlagsData) {
         featureScope.flagsDataStore.setFlagsData(flagsData, forClientNamed: clientName)
+    }
+
+    private var currentFlagsData: FlagsData? {
+        protectedState.flagsData
+    }
+
+    private func beginRequest(for context: FlagsEvaluationContext) -> UInt64 {
+        requestCommitLock.lock()
+        defer { requestCommitLock.unlock() }
+        var generation: UInt64 = 0
+        _protectedState.mutate { state in
+            state.generation &+= 1
+            state.desiredContext = context
+            generation = state.generation
+        }
+        stateManager.updateState(.reconciling)
+        return generation
+    }
+
+    private func isCurrent(generation: UInt64, context: FlagsEvaluationContext) -> Bool {
+        requestCommitLock.lock()
+        defer { requestCommitLock.unlock() }
+        let state = protectedState
+        return state.generation == generation && state.desiredContext == context
     }
 }
 
@@ -268,7 +325,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.context
+        let state = protectedState
+        guard state.flagsData?.context == state.desiredContext else {
+            return nil
+        }
+        return state.flagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
@@ -276,7 +337,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.flags[key]
+        let state = protectedState
+        guard state.flagsData?.context == state.desiredContext else {
+            return nil
+        }
+        return state.flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
@@ -284,16 +349,23 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.flags
+        let state = protectedState
+        guard state.flagsData?.context == state.desiredContext else {
+            return nil
+        }
+        return state.flagsData?.flags
     }
 
     func setEvaluationContext(
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
-            stateManager.updateState(.reconciling)
-        }
+        let generation = beginRequest(for: context)
+        let initializationCompletion = makeInitializationCompletion(
+            completion,
+            context: context,
+            generation: generation
+        ) {}
         let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {
             initializationCompletion?.take()
                 ?? (initializationCompletion == nil ? completion : nil)
@@ -306,27 +378,42 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 return
             }
 
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
-            let versionAtStart = self.flagsDataVersion
-            if initializationCompletion == nil {
-                self.stateManager.updateState(.reconciling)
+            guard self.isCurrent(generation: generation, context: context) else {
+                takeCompletion()?(.failure(.networkError(URLError(.cancelled))))
+                return
             }
-
-            self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+            let cachedFlagsData = self.currentFlagsData
+            let hadFlags = cachedFlagsData != nil
+            let cachedContext = cachedFlagsData?.context
+            self.flagAssignmentsFetcher.verifiedFlagAssignments(for: context) { [weak self] result in
                 switch result {
-                case .success(let flags):
+                case .success(let verifiedAssignments):
                     guard let self else {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
-                    self.flagsData = .init(
-                        flags: flags,
+                    let flagsData = FlagsData(
+                        flags: verifiedAssignments.flags,
                         context: context,
-                        date: self.dateProvider.now
+                        date: self.dateProvider.now,
+                        authorizationBinding: verifiedAssignments.authorizationBinding
                     )
-                    self._flagsDataVersion.mutate { $0 += 1 }
-                    self.writeState()
+                    self.requestCommitLock.lock()
+                    var committed = false
+                    self._protectedState.mutate { state in
+                        guard state.generation == generation,
+                              state.desiredContext == context else {
+                            return
+                        }
+                        state.flagsData = flagsData
+                        committed = true
+                    }
+                    guard committed else {
+                        self.requestCommitLock.unlock()
+                        takeCompletion()?(.failure(.networkError(URLError(.cancelled))))
+                        return
+                    }
+                    self.writeState(flagsData)
                     let operationCompletion = takeCompletion()
                     if initializationCompletion != nil {
                         self.stateManager.updateState(.ready) {
@@ -336,12 +423,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         self.stateManager.updateState(.ready)
                         operationCompletion?(.success(()))
                     }
+                    self.requestCommitLock.unlock()
                 case .failure(let error):
-                    // Only update state if no newer request has succeeded.
-                    // This prevents an older failing request from clearing data
-                    // written by a newer successful request.
-                    guard self?.flagsDataVersion == versionAtStart else {
-                        takeCompletion()?(.failure(error))
+                    guard let self else {
+                        takeCompletion()?(.failure(.clientNotInitialized))
+                        return
+                    }
+                    self.requestCommitLock.lock()
+                    guard self.isCurrent(generation: generation, context: context) else {
+                        self.requestCommitLock.unlock()
+                        takeCompletion()?(.failure(.networkError(URLError(.cancelled))))
                         return
                     }
                     // State must be updated before calling completion —
@@ -356,28 +447,56 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         // Clear cached data to prevent cross-context flag leakage.
                         // Without this, flagAssignment() could return the previous
                         // user's flags while in .error state.
-                        self?.flagsData = nil
+                        self._protectedState.mutate { state in
+                            guard state.generation == generation else {
+                                return
+                            }
+                            state.flagsData = nil
+                        }
                         newState = .error
                     }
                     if initializationCompletion != nil {
-                        self?.stateManager.updateState(newState) {
+                        self.stateManager.updateState(newState) {
                             operationCompletion?(.failure(error))
                         }
                     } else {
-                        self?.stateManager.updateState(newState)
+                        self.stateManager.updateState(newState)
                         operationCompletion?(.failure(error))
                     }
+                    self.requestCommitLock.unlock()
                 }
             }
         }
     }
 
     func reset() {
+        requestCommitLock.lock()
+        defer { requestCommitLock.unlock() }
         // Clear disk first, then memory, then update state.
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        flagsData = nil
+        _protectedState.mutate { state in
+            state.generation &+= 1
+            state.desiredContext = nil
+            state.flagsData = nil
+        }
         stateManager.updateState(.notReady)
+    }
+
+    func assignmentAuthorizationDidChange() {
+        requestCommitLock.lock()
+        defer { requestCommitLock.unlock() }
+        let context = protectedState.desiredContext ?? currentFlagsData?.context
+        featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
+        _protectedState.mutate { state in
+            state.generation &+= 1
+            state.flagsData = nil
+        }
+        guard let context, authorizationStore.snapshot().authorization != nil else {
+            stateManager.updateState(.notReady)
+            return
+        }
+        setEvaluationContext(context) { _ in }
     }
 }

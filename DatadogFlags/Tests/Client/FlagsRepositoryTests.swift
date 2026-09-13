@@ -50,6 +50,34 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
     }
 
+    func testInitIgnoresCacheWithoutVerifiedPayloadProvenance() throws {
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        let encoded = try JSONEncoder().encode(cachedData)
+        var oldCache = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+        oldCache.removeValue(forKey: "payloadVerificationVersion")
+        try featureScope.dataStoreMock.setValue(
+            JSONSerialization.data(withJSONObject: oldCache),
+            forKey: .mockAny()
+        )
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        featureScope.dataStore.flush()
+
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
     func testSetEvaluationContext() throws {
         // Given
         let evaluationContext = FlagsEvaluationContext.mockAny()
@@ -338,8 +366,9 @@ final class FlagsRepositoryTests: XCTestCase {
         try XCTUnwrap(timeoutAction)()
 
         // Then
-        guard case .failure(.initializationTimedOut) = firstResult else {
-            return XCTFail("Expected the first request to time out")
+        guard case .failure(.networkError(let error)) = firstResult,
+              (error as? URLError)?.code == .cancelled else {
+            return XCTFail("Expected the superseded request to be cancelled")
         }
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
@@ -846,6 +875,38 @@ final class FlagsRepositoryTests: XCTestCase {
             "Request B's flags should not be cleared by request A's failure"
         )
         XCTAssertEqual(flagsRepository.context, contextB, "Context should be from request B")
+    }
+
+    func testOverlappingContextUpdates_olderSuccessCannotReplaceNewerState() {
+        var capturedCompletions: [(
+            context: FlagsEvaluationContext,
+            completion: (Result<[String: FlagAssignment], FlagsError>) -> Void
+        )] = []
+        let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
+            capturedCompletions.append((context, completion))
+        }
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        let completedA = expectation(description: "request A completed")
+        let completedB = expectation(description: "request B completed")
+        flagsRepository.setEvaluationContext(contextA) { _ in completedA.fulfill() }
+        flagsRepository.setEvaluationContext(contextB) { _ in completedB.fulfill() }
+
+        XCTAssertNil(flagsRepository.context)
+        capturedCompletions[1].completion(.success(["new": .mockAny()]))
+        capturedCompletions[0].completion(.success(["old": .mockAny()]))
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "new"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old"))
     }
 
     // MARK: - State-Before-Completion Ordering

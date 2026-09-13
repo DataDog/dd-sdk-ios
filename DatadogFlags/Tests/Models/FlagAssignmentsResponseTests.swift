@@ -104,6 +104,7 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(
             response,
             FlagAssignmentsResponse(
+                subject: "test_subject",
                 flags: [
                     "string-flag": .init(
                         allocationKey: "allocation-123",

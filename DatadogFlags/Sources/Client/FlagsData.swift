@@ -10,4 +10,8 @@ internal struct FlagsData: Equatable, Codable {
     var flags: [String: FlagAssignment]
     var context: FlagsEvaluationContext
     var date: Date
+    var authorizationBinding: AssignmentAuthorizationBinding? = nil
+    var payloadVerificationVersion: Int? = currentPayloadVerificationVersion
+
+    static let currentPayloadVerificationVersion = 2
 }
