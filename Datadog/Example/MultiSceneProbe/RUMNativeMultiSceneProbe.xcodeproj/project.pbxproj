@@ -12,6 +12,9 @@
 		0D516852A5B5DA83F90F3FAA /* ProbeScenarioRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */; };
 		0F0F73340064B9984FB794B3 /* ProbeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2650C73317A64214B77300AA /* ProbeStep.swift */; };
 		15F3958E3D257745B782A89A /* forbidden-view-start.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 98D75AA30A615CC0F681F85E /* forbidden-view-start.jsonl */; };
+		267927E83056EB41002C9CED /* ProbeSceneRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267927E73056EB41002C9CED /* ProbeSceneRegistry.swift */; };
+		267927E93056EB41002C9CED /* ProbeSceneRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267927E73056EB41002C9CED /* ProbeSceneRegistry.swift */; };
+		267927EB3056EB78002C9CED /* ProbeSceneRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 267927EA3056EB78002C9CED /* ProbeSceneRegistryTests.swift */; };
 		2B5981885706E364F5011A3D /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = B687B5705E5D4BD0978C21DF /* DatadogCore */; };
 		31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */; };
 		3447F361E1070B801CBD3DA9 /* ProbeSemanticOracleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */; };
@@ -42,6 +45,8 @@
 /* Begin PBXFileReference section */
 		25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracleTests.swift; sourceTree = "<group>"; };
 		2650C73317A64214B77300AA /* ProbeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeStep.swift; sourceTree = "<group>"; };
+		267927E73056EB41002C9CED /* ProbeSceneRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSceneRegistry.swift; sourceTree = "<group>"; };
+		267927EA3056EB78002C9CED /* ProbeSceneRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSceneRegistryTests.swift; sourceTree = "<group>"; };
 		341303B1C383D8BAAAB80BC9 /* exp-098-pass.jsonl */ = {isa = PBXFileReference; path = "exp-098-pass.jsonl"; sourceTree = "<group>"; };
 		3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioCatalog.swift; sourceTree = "<group>"; };
 		410FD6B2EE19433933438E6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -138,6 +143,7 @@
 			children = (
 				E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */,
 				25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */,
+				267927EA3056EB78002C9CED /* ProbeSceneRegistryTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -163,6 +169,7 @@
 				F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */,
 				49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */,
 				2650C73317A64214B77300AA /* ProbeStep.swift */,
+				267927E73056EB41002C9CED /* ProbeSceneRegistry.swift */,
 			);
 			path = Harness;
 			sourceTree = "<group>";
@@ -270,6 +277,7 @@
 				F0653AB971C90BD3CA791B4F /* ProbeScenarioRunner.swift in Sources */,
 				5F048A36A049F99C80DCD55A /* ProbeSemanticOracle.swift in Sources */,
 				474753A8459F5DC4D3FE60D8 /* ProbeSemanticTimeline.swift in Sources */,
+				267927E83056EB41002C9CED /* ProbeSceneRegistry.swift in Sources */,
 				713DBF2CBCC5C4A4DE6E3875 /* ProbeSignal.swift in Sources */,
 				FED0604E6D6F348735C12F87 /* ProbeStep.swift in Sources */,
 				DEC28959E5D32D8307EB096E /* ProbeWindowView.swift in Sources */,
@@ -291,6 +299,8 @@
 				3447F361E1070B801CBD3DA9 /* ProbeSemanticOracleTests.swift in Sources */,
 				051A3319FAD022CC5035148E /* ProbeSemanticTimeline.swift in Sources */,
 				7C42ECF72D3AC02D3B0B6360 /* ProbeSignal.swift in Sources */,
+				267927E93056EB41002C9CED /* ProbeSceneRegistry.swift in Sources */,
+				267927EB3056EB78002C9CED /* ProbeSceneRegistryTests.swift in Sources */,
 				0F0F73340064B9984FB794B3 /* ProbeStep.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

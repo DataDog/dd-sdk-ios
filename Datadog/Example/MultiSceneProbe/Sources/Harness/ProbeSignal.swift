@@ -189,7 +189,8 @@ internal struct ProbeGeometry: Codable, Equatable {
 }
 
 internal struct ProbeSignal: Codable, Equatable {
-    static let schemaVersion = 1
+    static let schemaVersion = 2
+    static let supportedSchemaVersions = 1 ... schemaVersion
 
     let schemaVersion: Int
     let sequence: UInt64
@@ -203,6 +204,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let rumContext: ProbeRUMContext?
     let scenePhase: String?
     let activationState: String?
+    let sceneDisconnectGeneration: UInt64?
     let geometry: ProbeGeometry?
     let horizontalSizeClass: String?
     let verticalSizeClass: String?
@@ -237,6 +239,7 @@ internal struct ProbeSignal: Codable, Equatable {
         rumContext: ProbeRUMContext? = nil,
         scenePhase: String? = nil,
         activationState: String? = nil,
+        sceneDisconnectGeneration: UInt64? = nil,
         geometry: ProbeGeometry? = nil,
         horizontalSizeClass: String? = nil,
         verticalSizeClass: String? = nil,
@@ -271,6 +274,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.rumContext = rumContext
         self.scenePhase = scenePhase
         self.activationState = activationState
+        self.sceneDisconnectGeneration = sceneDisconnectGeneration
         self.geometry = geometry
         self.horizontalSizeClass = horizontalSizeClass
         self.verticalSizeClass = verticalSizeClass
@@ -312,6 +316,7 @@ internal struct ProbeSignal: Codable, Equatable {
             rumContext: rumContext,
             scenePhase: scenePhase,
             activationState: activationState,
+            sceneDisconnectGeneration: sceneDisconnectGeneration,
             geometry: geometry,
             horizontalSizeClass: horizontalSizeClass,
             verticalSizeClass: verticalSizeClass,

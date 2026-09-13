@@ -65,6 +65,7 @@ enum ProbeRuntime {
         runID: runID,
         scenarioID: scenario?.identifier ?? "invalid"
     )
+    @MainActor static let sceneRegistry = ProbeSceneRegistry()
 
     static let automaticallyNavigates = options.automaticallyNavigates
     static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow
@@ -266,6 +267,7 @@ enum ProbeRuntime {
         logger.notice("\(line, privacy: .public)")
     }
 
+    @MainActor
     static func recordDestination(
         window: ProbeWindow,
         sceneSessionID: String,
@@ -273,6 +275,10 @@ enum ProbeRuntime {
         isCommitted: Bool,
         occurrence: Int? = nil
     ) {
+        if let handle = sceneRegistry.handle(logicalSceneID: window.label),
+           handle.nativeSceneID == sceneSessionID {
+            _ = sceneRegistry.updateRoute([screen], for: handle)
+        }
         eventRecorder.record(
             ProbeSignal(
                 kind: isCommitted
@@ -286,6 +292,30 @@ enum ProbeRuntime {
                     screen: screen,
                     occurrence: occurrence
                 )
+            )
+        )
+    }
+
+    @MainActor
+    static func recordSceneSnapshot(
+        _ snapshot: ProbeSceneSnapshot,
+        kind: ProbeSignalKind
+    ) {
+        eventRecorder.record(
+            ProbeSignal(
+                kind: kind,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: snapshot.logicalSceneID,
+                    nativeSceneID: snapshot.nativeSceneID,
+                    screen: snapshot.currentRoute.last
+                ),
+                scenePhase: snapshot.readiness.rawValue,
+                activationState: snapshot.presentation.activationState.rawValue,
+                sceneDisconnectGeneration: snapshot.disconnectGeneration,
+                geometry: snapshot.presentation.geometry,
+                horizontalSizeClass: snapshot.presentation.horizontalSizeClass,
+                verticalSizeClass: snapshot.presentation.verticalSizeClass,
+                navigationPath: snapshot.currentRoute
             )
         )
     }

@@ -153,7 +153,9 @@ internal enum ProbeSemanticOracle {
             )
         }
 
-        if let unsupported = signals.first(where: { $0.schemaVersion != ProbeSignal.schemaVersion }) {
+        if let unsupported = signals.first(where: {
+            !ProbeSignal.supportedSchemaVersions.contains($0.schemaVersion)
+        }) {
             return ProbeSemanticIssue(
                 expectationIndex: nil,
                 expectation: nil,

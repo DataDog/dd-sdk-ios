@@ -17,6 +17,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
         let timeline = ProbeSemanticTimeline(signals: signals)
 
+        XCTAssertEqual(Set(signals.map(\.schemaVersion)), [1])
         XCTAssertEqual(result.state, .pass, result.issues.map(\.reason).joined(separator: "\n"))
         XCTAssertEqual(
             timeline.viewID(scene: "scene-A", screen: "home", occurrence: 1),
@@ -130,7 +131,12 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 name: "marker"
             )
         )
-        recorder.record(ProbeSignal(kind: .sceneReady))
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                sceneDisconnectGeneration: 3
+            )
+        )
 
         let recorded = recorder.snapshot()
         let encoded = lines.snapshot()
@@ -140,6 +146,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
 
         XCTAssertEqual(recorded.map(\.sequence), [1, 2])
+        XCTAssertEqual(recorded.map(\.schemaVersion), [2, 2])
         XCTAssertEqual(recorded.map(\.timestampMilliseconds), [42, 42])
         XCTAssertEqual(recorded.map(\.runID), ["recorder-run", "recorder-run"])
         XCTAssertEqual(
@@ -149,6 +156,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertEqual(first.signal.sourceContext?.logicalSceneID, "scene-A")
         XCTAssertEqual(first.signal.rumContext?.viewID, "view-detail")
         XCTAssertNil(first.signal.semanticContext)
+        XCTAssertEqual(recorded[1].sceneDisconnectGeneration, 3)
     }
 
     private func scenario(named identifier: String) throws -> ProbeScenario {

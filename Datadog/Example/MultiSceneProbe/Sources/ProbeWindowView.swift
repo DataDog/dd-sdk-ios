@@ -167,6 +167,8 @@ struct ProbeWindowRoot: View {
 
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.scenePhase)
+    private var scenePhase
     @State private var path: [ProbeRoute] = []
     @State private var navigationMutation: UInt64 = 0
     @State private var rumViewBindingGeneration: UInt64 = 0
@@ -174,7 +176,7 @@ struct ProbeWindowRoot: View {
     @State private var destinationBindingGeneration: UInt64 = 0
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var sceneSessionID = "unresolved"
-    @State private var sceneWindow: UIWindow?
+    @State private var sceneHandle: ProbeSceneHandle?
     @State private var readerControlGeneration = 0
     @State private var didScheduleNavigation = false
     @State private var didShowDetail = false
@@ -226,34 +228,34 @@ struct ProbeWindowRoot: View {
         }
         .background(
             SceneSessionReader { resolvedWindow in
-                let identifier = resolvedWindow.windowScene?.session.persistentIdentifier
-                    ?? "unresolved"
-                sceneWindow = resolvedWindow
-                guard sceneSessionID != identifier else {
-                    return
-                }
-                sceneSessionID = identifier
-                advanceRUMViewBindingGeneration(for: path)
-                ProbeRuntime.eventRecorder.record(
-                    ProbeSignal(
-                        kind: .sceneReady,
-                        semanticContext: ProbeSemanticContext(
-                            logicalSceneID: window.label,
-                            nativeSceneID: identifier,
-                            screen: currentNavigationScreen
-                        ),
-                        scenePhase: "ready",
-                        activationState: activationStateDescription(
-                            resolvedWindow.windowScene?.activationState
-                        )
-                    )
-                )
-                ProbeRuntime.record(
-                    "scene resolved source=\(window.label) native=\(identifier)"
-                )
+                registerScene(resolvedWindow)
             }
         )
         .accessibilityIdentifier("probe.native.root.\(window.label)")
+        .onChange(of: scenePhase, initial: true) { _, _ in
+            updateScenePresentation(kind: .sceneLifecycle)
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIScene.didDisconnectNotification
+            )
+        ) { notification in
+            guard
+                let handle = sceneHandle,
+                let disconnectedScene = notification.object as? UIWindowScene,
+                disconnectedScene.session.persistentIdentifier == handle.nativeSceneID,
+                let snapshot = ProbeRuntime.sceneRegistry.disconnect(handle)
+            else {
+                return
+            }
+            ProbeRuntime.recordSceneSnapshot(snapshot, kind: .sceneLifecycle)
+            ProbeRuntime.record(
+                "scene disconnected source=\(window.label) "
+                    + "native=\(handle.nativeSceneID) "
+                    + "generation=\(snapshot.disconnectGeneration)"
+            )
+            sceneHandle = nil
+        }
         .task {
             guard
                 ProbeRuntime.automaticallyNavigates,
@@ -415,8 +417,9 @@ struct ProbeWindowRoot: View {
             try? await Task.sleep(for: .seconds(2.5))
             guard
                 !Task.isCancelled,
-                let sceneWindow,
-                let windowScene = sceneWindow.windowScene,
+                let handle = sceneHandle,
+                let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+                let windowScene = resolvedWindow.windowScene,
                 windowScene.session.persistentIdentifier == sceneSessionID
             else {
                 ProbeRuntime.record(
@@ -449,6 +452,7 @@ struct ProbeWindowRoot: View {
             readerControlGeneration += 1
             advanceRUMViewBindingGeneration(for: path)
             await Task.yield()
+            registerScene(resolvedWindow)
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else {
                 return
@@ -637,6 +641,7 @@ struct ProbeWindowRoot: View {
                 path = newPath
                 navigationMutation += 1
                 advanceRUMViewBindingGeneration(for: newPath)
+                updateSceneRoute()
                 ProbeRuntime.eventRecorder.record(
                     ProbeSignal(
                         kind: .navigationPathMutation,
@@ -750,23 +755,98 @@ struct ProbeWindowRoot: View {
         }
     }
 
-    private func activationStateDescription(
-        _ activationState: UIScene.ActivationState?
-    ) -> String? {
-        switch activationState {
-        case .unattached:
-            return "unattached"
-        case .foregroundActive:
-            return "foreground-active"
-        case .foregroundInactive:
-            return "foreground-inactive"
-        case .background:
-            return "background"
-        case nil:
-            return nil
-        @unknown default:
-            return "unknown"
+    private func registerScene(_ resolvedWindow: UIWindow) {
+        guard let windowScene = resolvedWindow.windowScene else {
+            return
         }
+        let identifier = windowScene.session.persistentIdentifier
+        let previousSnapshot = ProbeRuntime.sceneRegistry.snapshot(
+            logicalSceneID: window.label
+        )
+        let result = ProbeRuntime.sceneRegistry.register(
+            logicalSceneID: window.label,
+            nativeSceneID: identifier,
+            window: resolvedWindow,
+            currentRoute: navigationPathDescription(for: path)
+        )
+
+        guard case .registered(let handle) = result else {
+            if case .rejected(let reason) = result {
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: identifier,
+                            screen: currentNavigationScreen
+                        ),
+                        result: .fail,
+                        reason: "scene registry rejected: \(reason)"
+                    )
+                )
+                ProbeRuntime.record(
+                    "scene registry rejected source=\(window.label) "
+                        + "native=\(identifier) reason=\(reason)"
+                )
+            }
+            return
+        }
+
+        let wasReady = previousSnapshot?.nativeSceneID == identifier
+            && previousSnapshot?.disconnectGeneration == handle.disconnectGeneration
+            && previousSnapshot?.readiness == .ready
+        let didChangeIdentity = sceneHandle != handle
+        sceneHandle = handle
+        if sceneSessionID != identifier {
+            sceneSessionID = identifier
+            advanceRUMViewBindingGeneration(for: path)
+        }
+
+        guard let snapshot = ProbeRuntime.sceneRegistry.markReady(handle) else {
+            return
+        }
+        if !wasReady {
+            ProbeRuntime.recordSceneSnapshot(snapshot, kind: .sceneReady)
+        } else if previousSnapshot?.presentation != snapshot.presentation {
+            ProbeRuntime.recordSceneSnapshot(snapshot, kind: .sceneGeometry)
+        }
+        if didChangeIdentity {
+            ProbeRuntime.record(
+                "scene resolved source=\(window.label) native=\(identifier) "
+                    + "generation=\(handle.disconnectGeneration)"
+            )
+        }
+    }
+
+    private func updateScenePresentation(kind: ProbeSignalKind) {
+        guard
+            let handle = sceneHandle,
+            let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+            let previous = ProbeRuntime.sceneRegistry.snapshot(
+                logicalSceneID: window.label
+            ),
+            let snapshot = ProbeRuntime.sceneRegistry.updatePresentation(
+                from: resolvedWindow,
+                for: handle
+            ),
+            previous.presentation != snapshot.presentation || kind == .sceneLifecycle
+        else {
+            return
+        }
+        ProbeRuntime.recordSceneSnapshot(snapshot, kind: kind)
+    }
+
+    private func updateSceneRoute() {
+        guard
+            let handle = sceneHandle,
+            handle.nativeSceneID == sceneSessionID
+        else {
+            return
+        }
+        _ = ProbeRuntime.sceneRegistry.updateRoute(
+            navigationPathDescription(for: path),
+            for: handle
+        )
     }
 }
 
@@ -2489,11 +2569,25 @@ private struct SceneSessionReader: UIViewRepresentable {
 }
 
 private final class SceneSessionReaderView: UIView {
+    private struct Resolution: Equatable {
+        let windowID: ObjectIdentifier
+        let nativeSceneID: String
+        let frame: CGRect
+        let horizontalSizeClass: UIUserInterfaceSizeClass
+        let verticalSizeClass: UIUserInterfaceSizeClass
+        let activationState: ProbeSceneActivationState
+    }
+
     var resolve: ((UIWindow) -> Void)?
-    private var lastIdentifier: String?
+    private var lastResolution: Resolution?
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
+        resolveIfPossible()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
         resolveIfPossible()
     }
 
@@ -2504,10 +2598,20 @@ private final class SceneSessionReaderView: UIView {
         else {
             return
         }
-        guard identifier != lastIdentifier else {
+        let resolution = Resolution(
+            windowID: ObjectIdentifier(window),
+            nativeSceneID: identifier,
+            frame: window.frame,
+            horizontalSizeClass: window.traitCollection.horizontalSizeClass,
+            verticalSizeClass: window.traitCollection.verticalSizeClass,
+            activationState: ProbeSceneActivationState(
+                window.windowScene?.activationState
+            )
+        )
+        guard resolution != lastResolution else {
             return
         }
-        lastIdentifier = identifier
+        lastResolution = resolution
         resolve?(window)
     }
 }
