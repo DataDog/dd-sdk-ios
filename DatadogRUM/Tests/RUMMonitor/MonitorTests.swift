@@ -198,6 +198,69 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(actions.map(\.view.url), ["View B", "View A", "View A", "View A"])
     }
 
+    func testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startAction(type: .tap, name: "Tap A", attributes: [:])
+        }
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.startAction(type: .tap, name: "Tap B", attributes: [:])
+        }
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                message: "exact A error",
+                type: nil,
+                stack: nil,
+                source: .source,
+                attributes: [:],
+                file: nil,
+                line: nil
+            )
+        }
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addError(error: ErrorMock("scene A error"), source: .source, attributes: [:])
+        }
+        var didComplete = false
+        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                error: ErrorMock("completion A error"),
+                source: .source,
+                attributes: [:],
+                completionHandler: { didComplete = true }
+            )
+        }
+        monitor.addError(
+            message: "representative B error",
+            type: nil,
+            stack: nil,
+            source: RUMInternalErrorSource.source,
+            attributes: [:]
+        )
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = featureScope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.url), ["View A", "View A", "View A", "View B"])
+        let actionIDs: [RUMActionID?] = errors.map { $0.action?.id }
+        let actionAID = contextA.userActionID.map { RUMActionID.string(value: $0) }
+        let actionBID = contextB.userActionID.map { RUMActionID.string(value: $0) }
+        XCTAssertEqual(actionIDs, [
+            actionAID,
+            actionAID,
+            actionAID,
+            actionBID
+        ])
+        XCTAssertTrue(didComplete)
+    }
+
     func testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

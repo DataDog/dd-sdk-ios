@@ -419,8 +419,8 @@ extension Monitor: RUMMonitorProtocol {
             }
             return nil
         }()
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 message: message,
                 type: type,
@@ -434,8 +434,8 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
@@ -711,6 +711,12 @@ extension Monitor: RUMMonitorProtocol {
         process(command: operationStep)
     }
 
+    private func processCurrentViewError(_ error: RUMAddCurrentViewErrorCommand) {
+        var error = error
+        error.target = currentExecutionTarget
+        process(command: error)
+    }
+
     private var currentExecutionTarget: RUMCommandTarget {
         guard let handoff = RUMContextHandoff.current else {
             return .processRepresentative
@@ -761,8 +767,8 @@ extension Monitor: RUMMonitorProtocol {
         attributes: [AttributeKey: AttributeValue],
         completionHandler: @escaping CompletionHandler
     ) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
@@ -917,8 +923,8 @@ extension Monitor {
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 message: message,
                 type: type,
