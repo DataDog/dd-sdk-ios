@@ -106,8 +106,9 @@ Current execution order:
    SwiftUI integration contract; no public API lands without RFC review.
 2. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-3. Extend the occurrence source to same-type `NavigationSplitView` selection
-   without customer `.id` or state reset.
+3. Preserve the passing same-type `NavigationSplitView` occurrence source from
+   `EXP-102`/`EXP-103`, then validate returning to a previously selected retained
+   detail and adaptive collapse/expand without customer `.id` or state reset.
 4. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
 5. Complete Operation public targeting and its live backend matrix.
@@ -149,7 +150,12 @@ real-device/human queue instead of repeated on the current simulator.
   physical committed pop and deterministic cancel/finish pair without false
   Primary occurrences. `EXP-086` proves A/B transition overlap, but B becoming
   fullscreen stalls A without activation-state evidence; repeat with both windows
-  demonstrably visible and able to finish. `EXP-072` separately proves an
+  demonstrably visible and able to finish. `EXP-102`/`EXP-103` now pass
+  same-type SwiftUI split replacement in one and two windows while preserving
+  each retained Detail witness and exact marker ownership. The final `EXP-103`
+  hierarchy capture crashed simulator `backboardd` only after telemetry intake,
+  so stable simultaneous-visible proof remains routed to hardware. `EXP-072`
+  separately proves an
   application-subclassed split container becomes a view, which needs explicit
   predicate-compatibility review. Keep these controls. Verify one UUID per
   committed path occurrence, no
@@ -157,8 +163,8 @@ real-device/human queue instead of repeated on the current simulator.
   attribution. `EXP-087` proves the new initial-nil/sequence-disable mode creates
   no Detail occurrence. CoreDevice reports that this simulator lacks Resizable
   App Management, so run regular → compact → regular on a capable destination.
-  Then finish UIKit
-  scroll/deceleration and per-scene background/foreground. Action timeout/stop
+  Then finish UIKit scroll/deceleration and per-scene background/foreground.
+  Action timeout/stop
   ownership and session rollover already have focused and live coverage.
 - Preserve the automatic SwiftUI mode and `EXP-021` as the failing baseline.
   Separate two
@@ -328,8 +334,13 @@ the unmaterialized-abort rule. `EXP-092` through `EXP-097` isolate retained Home
 return ordering and detached reader. `EXP-098`/`EXP-099` pass the debug per-window
 occurrence source through runtime and backend: Home₂ starts before immediate
 post-pop work without replacing customer state. `EXP-100` leaves recognized native
-gesture validation open because both synthetic drags were ignored. The next step
-is reviewable iOS 27 integration design, not another lifecycle-discovery hook;
+gesture validation open because both synthetic drags were ignored. `EXP-102` and
+`EXP-103` then extend the same occurrence input to `NavigationSplitView`: one and
+two windows each keep a retained Detail witness while Detail₁, Detail₂, and
+Placeholder receive distinct exact RUM occurrences without customer `.id`. The
+next split row is returning to a previously selected retained detail, followed by
+adaptive collapse/expand on capable hardware. The broader next step remains a
+reviewable iOS 27 integration design, not another lifecycle-discovery hook;
 genuine OS reconnect/restoration remains a separate lifecycle gate.
 
 The implementation must satisfy these constraints:
@@ -390,9 +401,11 @@ attachment deduplication, disconnect rearming, and success/cancellation behavior
 are focused-test covered. `EXP-066` provides a synthetic reconnect pass;
 `EXP-090`/`EXP-091` pass same-type replacement and abort without customer-content
 identity changes; `EXP-098`/`EXP-099` pass retained Home return and immediate work.
-Genuine OS reconnect/restoration and a recognized native interactive gesture
-remain open. Shipping acceptance still requires the same behavior through a
-reviewed iOS 27 integration, plus simultaneous A/B and split replacement.
+`EXP-102`/`EXP-103` pass same-type split replacement in one and two windows.
+Returning to a retained split selection, genuine OS reconnect/restoration, and a
+recognized native interactive gesture remain open. Shipping acceptance still
+requires the same behavior through a reviewed iOS 27 integration, plus
+simultaneous-visible A/B and adaptive split validation.
 
 The internal state and arbiter checkpoints pass 34/34 and 38/38, with two targeted
 handler tests. The later retained-route source passes 13/13 focused cases. This
@@ -553,7 +566,9 @@ The assessment can change to supported only when:
   destination before lifecycle work is attributed, in both native `WindowGroup`
   and UIKit-hosted applications;
 - stack, modal, split/adaptive, and restored navigation plus tap and scroll actions
-  are attributed to their originating windows;
+  are attributed to their originating windows; same-type split replacement now
+  passes experimentally, while retained split return and adaptive hardware remain
+  open;
 - the iOS 27 explicit early-mount result survives the remaining aborted,
   split, restoration, stable visible-peer close, and preloaded-container stress;
   modal navigation and closing-scene ownership already pass. Its three successful

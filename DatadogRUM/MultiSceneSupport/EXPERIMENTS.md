@@ -52,14 +52,17 @@ boundary, in this order:
 | 35 | `Add keyed SwiftUI navigation probe` | Native probe supplies route keys and generations for replacement, abort, and retained-return experiments |
 | 36 | `Route OpenTelemetry spans through scene handoff` | Native and OpenTelemetry span builders share exact, scene-local, and representative start-context selection |
 | 37 | `Reveal retained SwiftUI navigation occurrences` | A weak per-window route source starts a fresh retained occurrence before outer lifecycle work and uses the interactive-transition gate |
+| 38 | `Add keyed SwiftUI split navigation probe` | Split selection supplies RUM-only occurrence keys and generations without replacing customer content identity |
+| 39 | `Document split navigation runtime evidence` | `EXP-102`/`EXP-103`, updated assessment and plan, simulator-system-crash boundary, and the real-device/human rerun queue |
 
-Rows 1-37 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-39 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
 `adaec8bdb`, row 26 is `e124ae72c`, and row 27 is `8cb8661af`. Rows 28-37 are
 `85da8fa9c`, `c657f15fd`, `149e58655`, `917bc36b3`, `798a2228a`, `79aefb836`,
-`119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively.
+`119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
+`96222a6b1`; row 39 is this documentation checkpoint.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -74,7 +77,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-ten exact-path commits in rows 28-37 use that policy. This is local checkpoint
+twelve exact-path commits in rows 28-39 use that policy. This is local checkpoint
 history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -190,6 +193,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-099 | `nav-occurrence-arbiter-button-20260913-1258` | `11bdae75-fc4e-4873-ab0a-95de7179591c` | iPadOS 27 | After routing source delivery through the interactive-transition arbiter, a normal Back-button pop retained the pass: Home `24453c4e…` → Detail `8de298b6…` → fresh Home `e20f3c08…`, with the same Home state token and both immediate marker events on Home2. The backend query returned 26 exact-session events. |
 | EXP-100 | `nav-occurrence-arbiter-interactive-cancel-20260913-1258`; `nav-occurrence-arbiter-interactive-finish-20260913-1320` | `9c36e499-14a9-4579-9855-3d0139649370`; `bca36b14-70dc-49e8-9301-23f37295b74d` | iPadOS 27 | Both single, bounded edge drags were ignored by the simulator: Detail remained active and no path, coordinator, source, or lifecycle signal followed either gesture. They make no cancellation or completion claim. The production-shaped arbiter path is covered instead by focused cancel/finish tests, but a recognized native SwiftUI interactive gesture remains an explicit live gap. |
 | EXP-101 | `post-checkpoint-attribution-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Commits `85da8fa9c` through `08126fedd` close exact-view representative updates, Resource completion ownership, manual error/view/mutation routing, internal view-command handoff, and native/OpenTelemetry span-start parity. The final RUM plan passes 1,147/1,147; the Trace plan passes 151/151, including 4/4 focused OpenTelemetry handoff tests. Focused changed-file lint has zero violations and the final probe build succeeds. These are compatibility and ownership proofs, not substitutes for the still-pending simultaneous-window runtime discriminators. |
+| EXP-102 | `split-occurrence-source-20260913-1345` | `d7c4fb96-161a-4dd9-b376-628b1172238e` | iPadOS 27 | Regular-width single-scene split occurrence pass without customer `.id`. One retained Detail witness moved from Detail 1 to Detail 2 while the keyed generation advanced 1 → 2 → 3. Backend emitted exactly launch → Detail₁ `cafa2f12…` → Detail₂ `70a9f413…` → Placeholder `fa8ce9d7…`, with three exact action/Resource marker pairs and zero errors/crashes. The retained-route source returned false as expected because Detail₁ → Detail₂ was an active in-place keyed replacement, not a reveal of an inactive retained route. |
+| EXP-103 | `split-occurrence-two-window-20260913-1400` | `a354f09b-557c-43a7-815c-95379ea3504d` | iPadOS 27 | Both native scenes reached regular width and independently retained their Detail witness while advancing generation 1 → 2 → 3. Backend emitted seven views: launch plus distinct A and B Detail₁, Detail₂, and Placeholder UUIDs; all six action/Resource pairs used their exact scene occurrence and no RUM error appeared. Both upload batches completed before final hierarchy capture triggered the known simulator `backboardd` Metal crash. The probe app produced no crash report; this is a concurrent telemetry pass plus a simulator-stability limitation, not an SDK crash-safety failure. |
 
 ## Real-device and human-driven rerun queue
 
@@ -204,7 +209,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | --- | --- | --- | --- | --- |
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
-| P0 | `EXP-086` | Opening B made it fullscreen and stalled A without an activation-state signal, so simultaneous progress was not observable | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states and both transition completions. Each scene must keep its own path and immediate markers with no false sibling or cross-scene stop |
+| P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own path and immediate markers with no false sibling or cross-scene stop |
 | P0 | `EXP-041`, `EXP-089` | Fullscreen switching backgrounded or reactivated A, preventing visible-peer close continuity and a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed path without false Primary/Sidebar intervals |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
@@ -2301,6 +2306,39 @@ The final focused set passes 13/13. The complete RUM result is
 `RunAllTests/AE2B46B1-C858-4045-8AA5-855A8C020E0A.txt`; the final probe build is
 `BuildProject-Log-20260913-131828.txt`.
 
+`96222a6b1` extends the keyed occurrence input to regular-width
+`NavigationSplitView` without applying `.id` to customer content. Each split root
+owns its source and generation counter. An active Detail 1 → Detail 2 replacement
+updates the stable hidden reader in place; the source correctly reports
+`delivered=false` because no inactive retained route needs early reveal. The keyed
+state still atomically replaces the RUM occurrence before the selection marker.
+
+`EXP-102` proves this first in one scene. The same Detail tracking witness
+`0x108cd0c40` survived the change, generation advanced 1 → 2 → 3, and backend
+intake contained exactly four views, three actions, and three Resources. Detail 1
+`cafa2f12…`, Detail 2 `70a9f413…`, and Placeholder `fa8ce9d7…` each owned their
+marker pair; no error or crash appeared. The first launch inherited a compact
+375-point Stage Manager window and skipped the sequence, so its separate session
+`b51c1f30-d04b-4fd3-9d0a-c0fc0029eae3` is setup-only and must not be combined
+with the authoritative session.
+
+`EXP-103` repeats the result concurrently. Scene A
+`343ABCC2-E15F-4BBA-ADC4-4A4214516C8D` and scene B
+`E2F1B50F-904F-4DDC-9DF2-5D6EA81844AF` both logged regular width, stable but
+scene-distinct Detail witnesses, independent generations, and exact local
+markers. Backend session `a354f09b-557c-43a7-815c-95379ea3504d` contains launch
+plus six semantic views, six exact actions, six exact Resources, and zero RUM
+errors. A's path is `cdb5d2ba… → e5bd8c83… → 0c2e5910…`; B's is
+`dad91422… → 4b20cd87… → b6fca157…`.
+
+The two sequences and upload HTTP 202 responses completed roughly ten seconds
+before the final hierarchy capture crashed simulator `backboardd`. Crash report
+`backboardd-2026-09-13-134940.ips`, incident
+`42E33D3B-0889-431B-B2FC-9C5165409157`, attributes SIGABRT to Core Animation's
+Metal simulator device. There is no probe-app crash report. This does not weaken
+the completed RUM telemetry result, but it does leave stable simultaneous-window
+presentation for physical-device validation.
+
 Focused legacy and keyed state-machine coverage is now 34/34 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
@@ -2407,7 +2445,13 @@ ownership is safe in the exercised fullscreen topology.
   can share them.
 - Do not prescribe `.id(route)` as the customer fix. `EXP-058` proves that route
   identity is the missing input, but `.id` also resets customer SwiftUI state.
-  A reviewed SDK token must rotate only the internal RUM generation.
+  `EXP-102`/`EXP-103` now prove the same for split selection: a reviewed SDK token
+  can rotate only the internal RUM generation while the Detail witness survives.
+- Do not classify `delivered=false` from the retained-route source as a failed
+  active replacement. Detail₁ → Detail₂ updates one active keyed state and uses
+  atomic occurrence replacement; the source is for revealing a previously
+  inactive retained route. `EXP-102`/`EXP-103` prove both windows take the former
+  path correctly.
 - Do not implement token rollover as a normal stop followed by start in
   `RUMViewsHandler`. Removing the top view intentionally restarts the underlying
   stack entry and can synthesize Home between Detail₁ and Detail₂. Replace the
