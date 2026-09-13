@@ -85,7 +85,37 @@ and following the chosen compatibility policy, not by accidentally matching the
 representative window. A build, callback count, TaskLocal unit test, or absence of
 crashes is not sufficient semantic evidence.
 
+### Device and human validation routing
+
+Do not spend simulator time retrying interactions or topologies it cannot
+express. The authoritative rerun queue is in
+[EXPERIMENTS.md](EXPERIMENTS.md#real-device-and-human-driven-rerun-queue). Route
+native SwiftUI and UIKit edge-pop cancellation to a human on a physical device;
+route simultaneous visible-window navigation, representative discrimination,
+peer-window close, adaptive resize, and two-scene restoration to iPhone Duo or a
+physical iPad topology that exposes the needed state. An agent should still own
+the deterministic setup, unique run ID, console/payload capture, and backend
+verification. A human gesture closes a row only when path, coordinator, lifecycle,
+and RUM UUID evidence distinguish it from an ignored touch.
+
 ## Implementation plan
+
+Current execution order:
+
+1. Convert the debug per-window keyed-occurrence source into a reviewable iOS 27
+   SwiftUI integration contract; no public API lands without RFC review.
+2. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+   hardware or with human input.
+3. Extend the occurrence source to same-type `NavigationSplitView` selection
+   without customer `.id` or state reset.
+4. Validate simultaneous visible A/B transitions, then genuine disconnect,
+   restoration, and adaptive topology on capable hardware.
+5. Complete Operation public targeting and its live backend matrix.
+6. Close the bounded causal/downstream rows and live normal-app compatibility.
+
+The UIKit split and exact-owner fixes remain regression gates, but they no longer
+precede the automatic SwiftUI P0. Device-limited rows are routed through the
+real-device/human queue instead of repeated on the current simulator.
 
 ### 1. Stabilize views, navigation, and actions
 
@@ -292,9 +322,15 @@ disconnect injection without replacing the still-live scene or reader.
 `EXP-079`/`EXP-080` repeat nested push/pop and stock replacement without bundling
 `EXP-072`'s predicate change. `EXP-082` through `EXP-084` close committed and
 cancelled nested-transition controls; `EXP-086`/`EXP-087` leave simultaneous
-visibility and capable-destination adaptive resize open. Complete those plus
-lifecycle/normal-app checks, then continue RFC review and SwiftUI occurrence
-delivery; genuine OS reconnect/restoration remains a separate lifecycle gate.
+visibility and capable-destination adaptive resize open. `EXP-090` then proves
+same-type keyed replacement can preserve customer state, and `EXP-091` preserves
+the unmaterialized-abort rule. `EXP-092` through `EXP-097` isolate retained Home's
+return ordering and detached reader. `EXP-098`/`EXP-099` pass the debug per-window
+occurrence source through runtime and backend: Home₂ starts before immediate
+post-pop work without replacing customer state. `EXP-100` leaves recognized native
+gesture validation open because both synthetic drags were ignored. The next step
+is reviewable iOS 27 integration design, not another lifecycle-discovery hook;
+genuine OS reconnect/restoration remains a separate lifecycle gate.
 
 The implementation must satisfy these constraints:
 
@@ -302,8 +338,9 @@ The implementation must satisfy these constraints:
   even when attachment has not changed. It rebinds and re-registers its observer
   idempotently; the committed state owns semantic deduplication and the observer
   suppresses unchanged ordinary attachment notifications. This source path is now
-  covered by `EXP-064`/`EXP-065`; keyed configuration delivery remains behind the
-  API gate.
+  covered by `EXP-064`/`EXP-065`. `EXP-090` proves keyed configuration delivery at
+  runtime without resetting customer state; a supported customer-facing entry
+  point remains behind the API gate.
 - A new key while appeared and attached creates a fresh internal identity and new
   descriptor without replacing customer content or `@State`.
 - Do not express this as ordinary stop then start calls through
@@ -315,17 +352,19 @@ The implementation must satisfy these constraints:
   same-name cases.
 - Replacement below another visible item updates only the covered slot. Combined
   occurrence and scene migration stops the old identity in A and starts the fresh
-  identity in B. A detached change stops using the last proven scene and waits for
-  a new attachment before starting.
+  identity in B. An arbitrary detached configuration still cannot guess a scene.
+  The narrower retained-route reveal may use the reader's last concrete scene only
+  after that occurrence previously started there; disconnect clears the proof and
+  requires a newer concrete mount.
 - The interactive arbiter retains the final candidate key and descriptor alongside
   attachment/appearance. Success commits one replacement; cancellation changes
   neither key, identity, descriptor, nor handler stack. Multiple candidates reduce
   to the final one, and scene disconnect discards them. The internal state and
   exact deferred-transaction checks now satisfy this in `EXP-062`; the committed
   occurrence owns an immutable descriptor, and its publisher regression rejects a
-  stale modifier fallback. Reader-delivered keyed occurrence configuration
-  remains part of the reviewed API integration; ordinary retained-reader delivery
-  is covered by `EXP-064`/`EXP-065`.
+  stale modifier fallback. Reader-delivered keyed occurrence configuration is now
+  exercised by `EXP-090`; `EXP-098`/`EXP-099` add the early retained-route source.
+  Both remain debug integration evidence pending reviewed API and mixing rules.
 - Tag lifecycle work by generation so a late disappear from Detail₁ cannot stop
   Detail₂. Keep the same state object across generations because deferred arbiter
   membership uses its object identity.
@@ -348,24 +387,24 @@ replacement, same-name identities, A/B isolation, successful/cancelled interacti
 replacement, multiple candidate keys, disconnect invalidation/remount, and
 concurrent coordinators. Retained-reader update/re-registration, unchanged
 attachment deduplication, disconnect rearming, and success/cancellation behavior
-are focused-test covered, and `EXP-066` provides a synthetic runtime/backend
-integration pass. Genuine OS reconnect/restoration remains open.
-Runtime acceptance keeps customer content unkeyed, replaces Detail(1) with
-Detail(2) through only the RUM occurrence key, requires a fresh UUID without
-replaying customer lifecycle/state, and reruns aborted/cancelled navigation plus
-simultaneous A/B replacement.
+are focused-test covered. `EXP-066` provides a synthetic reconnect pass;
+`EXP-090`/`EXP-091` pass same-type replacement and abort without customer-content
+identity changes; `EXP-098`/`EXP-099` pass retained Home return and immediate work.
+Genuine OS reconnect/restoration and a recognized native interactive gesture
+remain open. Shipping acceptance still requires the same behavior through a
+reviewed iOS 27 integration, plus simultaneous A/B and split replacement.
 
-The internal portion now passes 34/34 state tests, 38/38 arbiter tests, and two
-targeted handler tests (74/74 combined). This includes keyed A/B
+The internal state and arbiter checkpoints pass 34/34 and 38/38, with two targeted
+handler tests. The later retained-route source passes 13/13 focused cases. This
+includes keyed A/B
 cancellation-versus-commit isolation, exact publisher scene targets, silent
 disconnect invalidation, N-to-N+1 remount fencing, peer-scene preservation,
 source-A disconnect during a pending migration to B, cancellation rearming,
-reader-mount/disappear ordering, and stale A-observer isolation from B's
-coordinator. Reader-delivered keyed configuration and mixing with the existing
-automatic tracker remain behind the reviewed integration. The retained-reader
-source path is closed for the tested state transitions, but runtime acceptance is
-still open; do not convert `EXP-062` through `EXP-065` into a customer-support
-claim.
+reader-mount/disappear ordering, stale A-observer isolation from B's coordinator,
+ordinary detach, explicit unresolved attachment rejection, stale/duplicate source
+generation, and same-key A/B source isolation. Mixing with the existing automatic
+tracker and the supported entry point remain behind reviewed integration. Do not
+convert the passing debug path into a customer-support claim.
 
 This phase is implemented experimentally and has the strongest unit, simulator,
 and backend evidence. It remains the primary workstream independent of the
@@ -482,10 +521,11 @@ context do not distinguish a scene.
   lifecycle fallback, trace teardown, accepted/rejected action, action expiry, or
   operation teardown unless a later change can affect them.
 - Repeat the `EXP-089` filtered UIKit event with A/B simultaneously visible. Keep
-  B representative, tap A without triggering A appearance, and verify the
-  synchronous manual action and each Resource-start shape select exact A while a
-  delayed GCD call remains on representative B. Fullscreen switching is invalid
-  because it creates a fresh A occurrence before the tap.
+  B representative, tap A without triggering A appearance, and invoke at least
+  one synchronous Resource start before any exact action can update the
+  representative. That Resource and the manual action must select exact A; after
+  the interaction, delayed source-less work must use last-interacted A. Fullscreen
+  switching is invalid because it creates a fresh A occurrence before the tap.
 - Run the new cross-window Operation controls independently of the Resource/Trace
   matrix: start in A then succeed in B, start in A then fail in B, and duplicate
   the same identity before ending it. Capture console warnings, raw vital view IDs,
@@ -522,8 +562,9 @@ The assessment can change to supported only when:
 - cancelled interactive SwiftUI navigation does not create a RUM occurrence for
   a path the user never completed, while completed pop/push continues to create
   one new occurrence per path transition; focused recreated-view and unrelated
-  same-scene isolation must also pass, and simultaneous A/B transitions need live
-  proof;
+  same-scene isolation pass, but a recognized human-driven native cancellation
+  and completion plus simultaneous A/B transitions still need live proof; ignored
+  synthetic drags do not satisfy this gate;
 - bounded Resource/Trace provenance is validated with actual URLSession timing,
   while unknown-provenance work is explicitly classified and follows the approved
   process-representative fallback;

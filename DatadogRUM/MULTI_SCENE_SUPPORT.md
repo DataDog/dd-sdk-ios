@@ -85,59 +85,54 @@ distinct Home UUIDs around Detail—even if SwiftUI reuses the same platform ite
 A cancelled or unmaterialized transition creates none.
 
 Probe-only typed-path experiments (`EXP-046` through `EXP-059`) establish that
-semantic route input must be installed at every materialized destination, and
-that it needs an occurrence identity independent of platform lifetime. Root-only
+semantic route input must be installed at every materialized destination and
+needs an occurrence identity independent of platform lifetime. Root-only
 placements fail; different-type replacement passes; same-type Detail₁ → Detail₂
-collapses until probe-only `.id(route)` supplies that missing identity. `.id` is
-diagnostic evidence, not the customer solution, because it also resets customer
+collapses until probe-only `.id(route)` supplies the missing identity. `.id` is
+diagnostic evidence, not the customer solution, because it resets customer
 SwiftUI state.
 
-The dormant internal implementation (`EXP-060` through `EXP-065`) adds atomic
-scene-local occurrence replacement, retained-scope isolation, keyed occurrence
-state, disconnect invalidation, retained-reader re-registration, cancellation
-rearming, migration preservation, and stale-observer isolation. Its final focused
-set passes 74/74 and the complete RUM plan passes 1,108/1,108. `EXP-066` then
-passes the same retained-reader path through probe fault injection, emitted
-payloads, and backend intake while clearly stopping short of a genuine OS
-disconnect/reconnect claim. `EXP-067` identifies a separate split-navigation
-gap: the SDK has one callback-ordered stack per scene, but no pane or committed
-route-occurrence model. `EXP-068` reproduces that gap in regular-width SwiftUI:
-same-type Detail(1) → Detail(2) reuses one RUM UUID and misattributes Detail(2)'s
-action/resource, while different-type Placeholder starts correctly. `EXP-069`
-shows automatic mode is worse: all three semantic selections are absent and
-their markers use launch or hosting-controller views. `EXP-070` restores the
-exact three-selection chain with probe-only `.id(selection)`, while also proving
-that control replaces customer content lifetime. No public occurrence key is
-wired. `EXP-071` then confirms that stock UIKit split replacement manufactures a
-fresh Primary occurrence between two secondaries even though Primary never
-reappears. `EXP-072` adds a distinct compatibility issue: an application subclass
-of the split container itself becomes a short-lived RUM view. `EXP-073` extends
-the ordering failure to nested push/pop. `EXP-074`/`EXP-075` validate an iOS 27
-multi-scene-only handoff candidate: both backend paths lose the false Primary,
-and a reused controller returning on pop still receives a fresh RUM UUID.
-`EXP-077` hardens unrelated callback/background/disconnect ordering in 57/57
-handler tests; `EXP-079`/`EXP-080` repeat both native passes on that revision.
-`EXP-082` through `EXP-084` add a physical committed pop and deterministic
-cancel/finish pair: cancellation emits nothing speculative; committed paths give
-the reused controller a fresh UUID. `EXP-086` proves A/B overlap but exposes fullscreen
-harness limits. `EXP-087` passes the empty-detail baseline; simulator resize remains
-unavailable. `EXP-089` physically exercises the filtered manual-event path, but fullscreen activation
-makes A representative before its tap and leaves exact precedence unproven.
+The internal keyed-occurrence implementation (`EXP-060` through `EXP-066`) adds
+atomic scene-local replacement, retained-scope isolation, disconnect fencing,
+retained-reader registration, interactive cancellation, migration preservation,
+and stale-observer isolation. The later probe source proves the missing runtime
+property without resetting customer state: `EXP-090` gives same-type Detail₁ and
+Detail₂ distinct RUM UUIDs while preserving one SwiftUI state token, and
+`EXP-091` creates no occurrence for a coalesced push/revert. `EXP-092` through
+`EXP-097` isolate returned-route ordering and show that SwiftUI detaches the
+retained Home reader before it becomes visible again. `EXP-098` and `EXP-099`
+then synchronously reveal that retained Home through a per-window occurrence
+source, producing Home₁ → Detail → Home₂ and attributing immediate post-pop
+action/resource work to Home₂ before `onAppear`. The source uses the last
+concrete scene attachment only as a fallback, clears it on disconnect, and routes
+through the interactive arbiter. It is an internal debug experiment, not a public
+or automatic shipping integration.
+
+`EXP-067` through `EXP-087` retain the separate split-navigation and UIKit
+ordering evidence. The SwiftUI split still collapses same-type selection without
+an occurrence source; automatic mode still creates no semantic selection views.
+The iOS 27 UIKit handoff removes false Primary intervals and preserves fresh
+returned-controller occurrences, while simultaneous visible topology and resize
+remain open. `EXP-089` exercises filtered manual-event fallback. `EXP-100` does
+not prove native interactive cancel/finish because both synthetic edge drags were
+ignored; focused arbiter cancellation and completion paths do pass. `EXP-101`
+records the broader exact-view routing hardening and the current full-suite
+results: DatadogRUM 1,147/1,147 and DatadogTrace 151/151.
 [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md) owns the full conclusions;
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) owns each run and rejected draft.
 
 | Surface | Current branch status | Remaining release condition |
 | --- | --- | --- |
 | UIKit views and navigation | Experimental pass for independent stacks, push/pop, modal, duplicate names, and teardown; iOS 27 split replacement, physical pop, deterministic cancel/finish, and an overlapping B sequence pass without false sibling views while retaining fresh returned-path UUIDs; an app-subclassed split still adds a container view | Prove both scenes complete in a simultaneously visible topology, complete adaptive/lifecycle/normal-app validation, review subclass-container compatibility, then restoration and iPhone Duo validation |
-| Explicit SwiftUI tracking | Experimental iOS 27 early-start pass across three A/B runs, dormant/unselected controls, repeated push/pop, modal occurrence navigation, crash-safe B teardown, one restored native scene, a native/backend cancellation-gate pass, focused reconnect hardening, and a synthetic retained-reader runtime/backend pass; same-type split selection collapses without identity and passes with state-resetting `.id` control | Occurrence-aware split correction that preserves customer state, live simultaneous-transition isolation, aborted/preloaded containers, concurrent restoration, genuine OS reconnect, and visible-peer continuity on close |
-| Automatic native SwiftUI | Transparent discovery fails; route-owned controls pass initial A/B creation, push/cancel/pop, abort, and different-type replacement; same-type replacement fails without a token and passes with probe-only route identity; automatic split has no semantic selection views; Xcode 27 exposes no transparent semantic hook | Review and connect an occurrence-token API without changing customer SwiftUI identity; then cover retained-customer-state runtime, split/adaptive navigation, restoration, mixing rules, and unsupported shapes |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; execution-local manual calls now prefer exact handoff view/scene; `EXP-089` physically validates filtered capture and later last-interacted fallback; SwiftUI scroll passes | Repeat with simultaneously visible A/B and a different representative; finish UIKit deceleration |
-| Resources and traces | Correct when trustworthy provenance exists and is frozen at start; manual Resource starts consume the same owner and completion stays key-owned; `EXP-089` passes live capture but not the differing-representative discriminator | Four causal cases, simultaneous-window handoff, reverse completion, compatibility, and overhead proof |
+| Explicit SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; returned Home is a fresh RUM occurrence before immediate work; focused arbiter cancel/finish paths pass | Turn the debug occurrence source into a reviewed integration, prove a recognized native interactive gesture, then cover split/adaptive navigation, simultaneous visibility, genuine reconnect, and concurrent restoration |
+| Automatic native SwiftUI | Transparent discovery still fails; route-owned controls prove initial creation, abort, different- and same-type replacement, and retained Home without resetting customer state, but only through an internal debug source; automatic split has no semantic selection views | Define and review the iOS 27 integration and mixing rules, then connect it to automatic root/destination creation and validate split, restoration, and unsupported shapes |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback | Repeat exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
+| Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
-| Lifecycle and sessions | Independent close, state/handler disconnect alignment, fresh or retained-reader remount, cancellation rearming, and rollover are covered; synthetic retained-reader teardown/remount passes runtime, payload, and backend validation | Genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
+| Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | Full module suites, lint, and package build pass | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | DatadogRUM 1,147/1,147, DatadogTrace 151/151, focused lint, and both probes build | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -198,79 +193,47 @@ customer workflow, and required tests live only in
 
 ### Checkpoint
 
-The branch is `valpertui/multiple-windows-scenes`. The native probe is `e56262485`,
-assessment `2fb8dd9b5`, documentation split `6fa2baf24`, and checkpoint `adaec8bdb`. Local
-implementation/probe checkpoints are `4ddfa9a3a`, `1eea12c27`,
-`61031e16f`, `77dd05c4a`, `bce1cdbd4`, `7d7bc0814`, and `e124ae72c`. These seven
-unsigned development commits must not be pushed. The native lifecycle/reflection experiment is `EXP-029`; explicit baseline,
-early-mount, stress, cancellation-control, final-repeat, and gate-hardening work
-is `EXP-030` through `EXP-045`; typed-path placement, occurrence, and aborted
-mutation experiments continue through `EXP-059`; internal occurrence,
-disconnect, and retained-reader hardening continues through `EXP-065`; the
-synthetic retained-reader integration control is `EXP-066`; and split-navigation
-source analysis, failures, controls, hardening, and native reruns continue through
-`EXP-087`. `EXP-088` is the manual handoff fix and `EXP-089` its first live control.
-This remains an experimental branch, not a release-ready support claim.
+The branch is `valpertui/multiple-windows-scenes`; the latest implementation
+checkpoint is `eece6ec17` (`Reveal retained SwiftUI navigation occurrences`). It
+follows the exact-view routing checkpoints through `08126fedd`. All are unsigned
+local development commits and must not be pushed. The chronological checkpoint
+table in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
+
+`EXP-090` through `EXP-099` are the latest SwiftUI occurrence loop: same-type
+replacement preserves customer state, coalesced abort creates no view, retained
+Home ordering and failed approaches are isolated, and the per-window source gives
+returned Home a fresh RUM UUID before immediate work. `EXP-100` records two ignored
+native edge drags, so it is not cancellation/finish evidence. `EXP-101` records
+the wider routing hardening and final suite status. This remains an experimental
+branch, not a release-ready support claim.
 
 ### Exact next work
 
-The next loop should finish the bounded UIKit split regression matrix, then return
-directly to the automatic-tracking P0 integration.
+The next loop stays on the automatic SwiftUI P0 rather than returning to a broad
+UIKit sweep:
 
-1. Keep the `EXP-077` UIKit candidate double-gated to iOS 27 and declared
-   multi-scene applications. `EXP-082` through `EXP-084` validate nested paths.
-   `EXP-086` overlaps A/B, but fullscreen replacement stalls A without
-   activation-state evidence. Repeat with both scenes demonstrably visible, then
-   finish lifecycle and ordinary-app checks.
-   Treat `EXP-072`'s subclass container as a separate compatibility decision.
-2. Preserve `EXP-068` as the failing route-owned regular-width
-   `NavigationSplitView` baseline: Detail(1) → Detail(2) reused one RUM UUID and
-   misattributed Detail(2)'s markers. `EXP-069` separately proves automatic mode
-   creates no semantic selection views. `EXP-070` proves an occurrence identity
-   restores the exact chain but `.id` also resets customer content. `EXP-087`
-   proves stable no-selection creates no Detail. CoreDevice reports this simulator
-   lacks Resizable App Management; rerun regular/compact/regular on a capable
-   destination and repeat A/B replacement.
-3. Turn the passing probe-only boundary from `EXP-050`/`EXP-051` into the
-   smallest reviewable iOS 27 SwiftUI integration proposal. The path binding is
-   semantic input, not the occurrence: `EXP-052` observed two same-turn writes
-   without creating a view. The view start must be installed at the root and each
-   typed destination builder; `EXP-047` through `EXP-049` reject detached root
-   siblings/wrappers. `EXP-054` and `EXP-056` pass a materialized
-   Detail-to-Alternate replacement in one and two scenes. `EXP-057` then proves
-   that replacing one Detail value with another through the same SwiftUI type and
-   RUM name reuses platform state and loses the second RUM occurrence. `EXP-058`
-   proves a probe-only `.id(route)` control restores distinct UUIDs and exact
-   marker attribution; `EXP-059` preserves those branches concurrently in A/B.
-   Specify an occurrence token that resets only RUM tracking, not customer
-   SwiftUI state, then validate that implementation against retained state and
-   the split-navigation results.
-   Then define route-descriptor and mixing rules for automatic discovery,
-   per-screen explicit tracking, and unsupported `NavigationLink(destination:)`
-   shapes. `EXP-029` rules out titles, reflection, and controller appearance;
-   `EXP-085` confirms no supported Xcode 27 API fills that transparent semantic
-   boundary. Do not add public API before normal RFC/API review.
-4. Run a genuine iOS 27 OS disconnect/reconnect or restoration case where the
-   platform lifecycle is observable. `EXP-066` validates runtime, payload, and
-   backend integration only under synthetic notification injection while the
-   scene and reader remain alive; it is not a platform lifecycle result.
-5. Complete the Operations public-target API review, including the scene-aware
-   manual-key prerequisite. Then run live A-to-B success, A-to-B failure, and
-   duplicate-start flows; inspect raw vitals, reduced Operations, and warnings.
-6. Prove no normal-app degradation with a live single-scene app, automatic action
-   tracking on and off, an ordinary custom URLSession handler, and measured
-   `sendEvent` recursion and overhead.
-7. Finish the explicit construction/visibility matrix with a demonstrably
-   constructed-but-not-presented destination, visible-peer close continuity,
-   simultaneous A/B transitions, `NavigationSplitView`, UIKit split/adaptive
-   collapse, UIKit scroll through deceleration, per-scene background/foreground,
-   disconnect/reconnect, and concurrent restoration. `EXP-052` covers only a
-   coalesced unmaterialized write; `EXP-039` never constructed its rejected child;
-   and `EXP-042` restored only one scene. Repeat the release matrix on iOS 27.1
-   and iPhone Duo when that destination is available.
-8. Close only the missing Resource/Trace causal rows and downstream runtime rows
-   in [PLAN.md](MultiSceneSupport/PLAN.md). Remove provisional machinery that does
-   not change a supported result.
+1. Turn the `EXP-098`/`EXP-099` debug keyed-occurrence source into the smallest
+   reviewable iOS 27 integration contract. Preserve customer SwiftUI identity and
+   state, keep one source per window root, install tracking at the root and every
+   materialized destination, and define how it mixes with automatic discovery and
+   explicit `.trackRUMView`. Do not add public API before normal RFC/API review.
+2. Obtain a recognized native interactive SwiftUI pop and prove both cancellation
+   and completion. Keep the focused arbiter tests, but do not reuse `EXP-100`'s
+   ignored edge drags as evidence.
+3. Apply the same occurrence source to regular-width `NavigationSplitView` so
+   Detail(1) → Detail(2) creates distinct RUM views without `.id` or customer-state
+   reset. Then cover adaptive collapse on a capable destination.
+4. Repeat simultaneous A/B navigation in a topology where both windows are visibly
+   active and can complete independently. Retain the iOS 27 UIKit handoff and
+   review the separate application-subclass predicate issue.
+5. Run genuine scene disconnect/reconnect, per-scene background/foreground, and
+   concurrent restoration. A retained scene snapshot is fallback evidence only;
+   disconnect must fence it until a new concrete mount.
+6. Complete Operations public-target API review and live A-to-B/duplicate-start
+   validation. Keep application-wide `(name, operationKey)` identity.
+7. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
+   live single-scene/custom-handler compatibility and measure event-handoff
+   recursion and overhead. Repeat the release matrix on iOS 27.1 and iPhone Duo.
 
 ### Proven and implemented
 
@@ -289,6 +252,10 @@ directly to the automatic-tracking P0 integration.
   customer work. iOS 15-26, visionOS, and single-scene applications retain their
   prior lifecycle path. Three clean final-code A/B runs and focused stress pass,
   while the construction/visibility matrix remains incomplete.
+- The internal keyed-occurrence seam can replace a RUM occurrence without
+  replacing customer SwiftUI content. Its debug per-window source now reveals a
+  retained returned route before immediate post-pop work and preserves the same
+  customer state token. This is integration evidence, not a shipped API.
 - Operations resolve every step independently. Trustworthy new context replaces
   the last-proven snapshot; the snapshot and then process representative are
   fallbacks. Identity is the exact application-wide `(name, operationKey)` tuple.
@@ -307,11 +274,15 @@ does not yet have either semantic result.
 
 As of 2026-09-13:
 
-- `DatadogRUM`: 1,122/1,122 passed after execution-local manual action/Resource
-  targeting, with zero failures, skips, or not-run tests.
-- Explicit SwiftUI transition arbiter: 38/38 focused tests passed; legacy and
-  dormant keyed view state-machine coverage is 34/34, plus two passing targeted
-  handler regressions (74/74 total).
+- `DatadogRUM`: 1,147/1,147 passed after the retained-route source and broader
+  exact-view routing hardening, with zero failures.
+- Retained-route source: 13/13 focused tests passed, including ordinary detach,
+  explicit unresolved attachment rejection, disconnect fencing, scene migration,
+  stale/duplicate generation rejection, A/B same-key isolation, and arbiter
+  cancellation/completion.
+- Explicit SwiftUI transition arbiter: its focused cancellation/completion paths
+  pass; native gesture recognition remains unproven because both `EXP-100` drags
+  were ignored before any navigation signal.
 - Session/application-scope occurrence isolation: 75/75 and 27/27 tests passed,
   including retained Home₁ pending work across a distinct Home₂ occurrence
   and restored same-identity replacement.
@@ -319,12 +290,14 @@ As of 2026-09-13:
   `RUMFeatureOperationManagerTests` and 73/73 `RUMSessionScopeTests`.
 - `DatadogInternal`: 477/477 passed.
 - `DatadogLogs`: 95/95 passed.
-- `DatadogTrace`: 147/147 passed.
+- `DatadogTrace`: 151/151 passed, including 4/4 focused OpenTelemetry handoff
+  tests.
 - `DatadogWebViewTracking`: 31/31 passed.
 - `DatadogProfiling`: 233/233 passed.
 - The native SwiftUI probe and integration probe build through Xcode 27.
-- The generic iOS Swift Package build and repository lint pass; lint covered 713
-  source and 699 test files.
+- The generic iOS Swift Package build and repository lint pass at their recorded
+  checkpoints; focused source/test lint for the retained-route slice has zero
+  violations.
 
 These are regression and implementation checks, not substitutes for the missing
 runtime rows. Detailed run evidence remains in
@@ -341,6 +314,11 @@ The iOS 27 integration-runner half-and-half layout repeatedly respawned
 `backboardd`, although the standalone native `WindowGroup` probe opens two windows.
 The current iPad simulator also rejects `devicectl appResize` because it lacks
 Resizable App Management; adaptive width proof needs a capable destination.
+Ignored native edge drags, fullscreen-only peer-window layouts, partial scene
+restoration, and unsupported resize are tracked in the dedicated
+[real-device and human-driven rerun queue](MultiSceneSupport/EXPERIMENTS.md#real-device-and-human-driven-rerun-queue).
+Those rows require observable path/coordinator/lifecycle evidence, not more
+unverified simulator touches.
 
 Do not stage, commit, revert, or expose
 `Datadog/Datadog.xcodeproj/project.pbxproj` or
