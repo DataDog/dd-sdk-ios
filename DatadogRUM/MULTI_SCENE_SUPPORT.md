@@ -119,9 +119,10 @@ and a reused controller returning on pop still receives a fresh RUM UUID.
 handler tests; `EXP-079`/`EXP-080` repeat both native passes on that revision.
 `EXP-082` through `EXP-084` add a physical committed pop and deterministic
 cancel/finish pair: cancellation emits nothing speculative; committed paths give
-the reused controller a fresh UUID. `EXP-086` proves A/B overlap but exposes
-fullscreen harness limits and the approved source-less fallback. `EXP-087` passes
-the empty-detail baseline; simulator resize remains unavailable.
+the reused controller a fresh UUID. `EXP-086` proves A/B overlap but exposes fullscreen
+harness limits. `EXP-087` passes the empty-detail baseline; simulator resize remains
+unavailable. `EXP-089` physically exercises the filtered manual-event path, but fullscreen activation
+makes A representative before its tap and leaves exact precedence unproven.
 [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md) owns the full conclusions;
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) owns each run and rejected draft.
 
@@ -130,8 +131,8 @@ the empty-detail baseline; simulator resize remains unavailable.
 | UIKit views and navigation | Experimental pass for independent stacks, push/pop, modal, duplicate names, and teardown; iOS 27 split replacement, physical pop, deterministic cancel/finish, and an overlapping B sequence pass without false sibling views while retaining fresh returned-path UUIDs; an app-subclassed split still adds a container view | Prove both scenes complete in a simultaneously visible topology, complete adaptive/lifecycle/normal-app validation, review subclass-container compatibility, then restoration and iPhone Duo validation |
 | Explicit SwiftUI tracking | Experimental iOS 27 early-start pass across three A/B runs, dormant/unselected controls, repeated push/pop, modal occurrence navigation, crash-safe B teardown, one restored native scene, a native/backend cancellation-gate pass, focused reconnect hardening, and a synthetic retained-reader runtime/backend pass; same-type split selection collapses without identity and passes with state-resetting `.id` control | Occurrence-aware split correction that preserves customer state, live simultaneous-transition isolation, aborted/preloaded containers, concurrent restoration, genuine OS reconnect, and visible-peer continuity on close |
 | Automatic native SwiftUI | Transparent discovery fails; route-owned controls pass initial A/B creation, push/cancel/pop, abort, and different-type replacement; same-type replacement fails without a token and passes with probe-only route identity; automatic split has no semantic selection views; Xcode 27 exposes no transparent semantic hook | Review and connect an occurrence-token API without changing customer SwiftUI identity; then cover retained-customer-state runtime, split/adaptive navigation, restoration, mixing rules, and unsupported shapes |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; execution-local manual action calls now prefer exact handoff view/scene; SwiftUI scroll passes | Live handoff validation, UIKit deceleration, and later source-less work remaining representative |
-| Resources and traces | Correct when trustworthy provenance exists and is frozen at start; manual Resource starts now consume the same exact execution-local owner, while completions remain key-owned | Four pending causal cases, live handoff/reverse completion, compatibility, and overhead proof |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; execution-local manual calls now prefer exact handoff view/scene; `EXP-089` physically validates filtered capture and later last-interacted fallback; SwiftUI scroll passes | Repeat with simultaneously visible A/B and a different representative; finish UIKit deceleration |
+| Resources and traces | Correct when trustworthy provenance exists and is frozen at start; manual Resource starts consume the same owner and completion stays key-owned; `EXP-089` passes live capture but not the differing-representative discriminator | Four causal cases, simultaneous-window handoff, reverse completion, compatibility, and overhead proof |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
 | Lifecycle and sessions | Independent close, state/handler disconnect alignment, fresh or retained-reader remount, cancellation rearming, and rollover are covered; synthetic retained-reader teardown/remount passes runtime, payload, and backend validation | Genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
@@ -197,19 +198,18 @@ customer workflow, and required tests live only in
 
 ### Checkpoint
 
-The branch is `valpertui/multiple-windows-scenes`. The native probe is committed
-at `e56262485`, reconciled assessment at `2fb8dd9b5`, and documentation split at
-`6fa2baf24`. Local implementation checkpoints are `4ddfa9a3a`, `1eea12c27`,
-`61031e16f`, `77dd05c4a`, `bce1cdbd4`, and `7d7bc0814`. These six development
-commits are unsigned and must not be pushed.
-The native lifecycle/reflection experiment is `EXP-029`; explicit baseline,
+The branch is `valpertui/multiple-windows-scenes`. The native probe is `e56262485`,
+assessment `2fb8dd9b5`, documentation split `6fa2baf24`, and checkpoint `adaec8bdb`. Local
+implementation/probe checkpoints are `4ddfa9a3a`, `1eea12c27`,
+`61031e16f`, `77dd05c4a`, `bce1cdbd4`, `7d7bc0814`, and `e124ae72c`. These seven
+unsigned development commits must not be pushed. The native lifecycle/reflection experiment is `EXP-029`; explicit baseline,
 early-mount, stress, cancellation-control, final-repeat, and gate-hardening work
 is `EXP-030` through `EXP-045`; typed-path placement, occurrence, and aborted
 mutation experiments continue through `EXP-059`; internal occurrence,
 disconnect, and retained-reader hardening continues through `EXP-065`; the
 synthetic retained-reader integration control is `EXP-066`; and split-navigation
 source analysis, failures, controls, hardening, and native reruns continue through
-`EXP-087`. `EXP-088` is the manual handoff fix and focused/full-suite checkpoint.
+`EXP-087`. `EXP-088` is the manual handoff fix and `EXP-089` its first live control.
 This remains an experimental branch, not a release-ready support claim.
 
 ### Exact next work

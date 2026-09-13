@@ -383,7 +383,11 @@ Resource/Trace investigation.
 - Retain `EXP-088`: public manual action calls and all manual Resource starts use
   an available execution-local exact view, then its scene, before falling back to
   the representative. Resource metrics/stops/errors stay key-owner routed so a
-  completion in B cannot abandon a Resource started in A. Add live backend proof.
+  completion in B cannot abandon a Resource started in A. `EXP-089` proves the
+  physical filtered-control path, backend capture, owner completion, and later
+  last-interacted fallback, but fullscreen A activation had already made A
+  representative. Repeat with both windows simultaneously visible to prove exact
+  precedence over a different representative.
 - Treat custom handlers that later rewrite an eligible request across
   first-party or disallow boundaries as developer misuse, outside this project.
   Do not add final-request header rollback, GraphQL reconstruction, or a generic
@@ -400,14 +404,17 @@ Resource/Trace investigation.
   overlapping-action run and its fixed rerun prove new actions no longer fan out.
   `EXP-088` closes the synchronous filtered-interaction case in source/focused
   tests because manual calls made during dispatch now consume its scene handoff.
-  Later calls after that scope remain source-less and intentionally use the
-  representative; do not persist scene ownership beyond the causal boundary.
+  `EXP-089` physically rejects the automatic action and confirms that a later GCD
+  call uses last-interacted A. It does not compare the synchronous call against a
+  different representative because switching windows first created a new A view.
+  Do not persist scene ownership beyond the causal boundary.
 
 The current `RUMContextHandoff`, thread-dictionary bridge, synchronous Resource
 pre-start, captured owner maps, and altered third-party-handler callback path remain
 experimental. `EXP-088` validates Monitor consumption in source and focused tests;
-no additional Resource/Trace routing should be layered on this path until the
-remaining live matrix proves which pieces are necessary.
+`EXP-089` validates live dispatch but leaves the differing-representative
+discriminator open. No additional Resource/Trace routing should be layered on
+this path until the remaining live matrix proves which pieces are necessary.
 
 ### 3. Fix core owner routing independently of source discovery
 
@@ -474,9 +481,11 @@ context do not distinguish a scene.
   URLSession. Do not repeat structured-task inheritance, source-less schedulers,
   lifecycle fallback, trace teardown, accepted/rejected action, action expiry, or
   operation teardown unless a later change can affect them.
-- Add one live filtered UIKit event whose synchronous customer callback calls a
-  manual action and each manual Resource-start shape. Verify `EXP-088` selects the
-  exact source view while a delayed post-scope call still uses the representative.
+- Repeat the `EXP-089` filtered UIKit event with A/B simultaneously visible. Keep
+  B representative, tap A without triggering A appearance, and verify the
+  synchronous manual action and each Resource-start shape select exact A while a
+  delayed GCD call remains on representative B. Fullscreen switching is invalid
+  because it creates a fresh A occurrence before the tap.
 - Run the new cross-window Operation controls independently of the Resource/Trace
   matrix: start in A then succeed in B, start in A then fail in B, and duplicate
   the same identity before ending it. Capture console warnings, raw vital view IDs,

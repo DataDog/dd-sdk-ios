@@ -40,12 +40,15 @@ boundary, in this order:
 | 23 | `Add concurrent and adaptive split probe controls` | Concurrent split-window launch plus empty-selection and sequence-disable controls for overlap and resize experiments |
 | 24 | `Use scene handoff for manual RUM work` | Exact-view/scene routing for manual actions and Resource starts invoked inside trustworthy UI-event context |
 | 25 | `Update the multi-scene support checkpoint` | Current backend evidence, assessment, plan, rejected paths, validation, and exact resume state |
+| 26 | `Add UI event handoff probe` | Predicate-filtered physical UIKit control with synchronous and post-scope manual action/Resource markers |
+| 27 | `Update the multi-scene support checkpoint` | `EXP-089` backend evidence, corrected discriminator status, and exact resume state |
 
-Rows 1-24 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-26 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
-`77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`. Row 25 is this
-documentation checkpoint and intentionally does not self-reference its commit ID.
+`77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
+`adaec8bdb`, and row 26 is `e124ae72c`. Row 27 is this documentation checkpoint
+and intentionally does not self-reference its commit ID.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -59,7 +62,7 @@ fatal: failed to write commit object
 ```
 
 The user subsequently approved unsigned development-cycle commits with the
-explicit restriction that they must not be pushed. The six exact-path commits
+explicit restriction that they must not be pushed. The eight exact-path commits
 above use that policy. This is a local checkpoint only, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -162,6 +165,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-086 | `native-uikit-split-concurrent-scenes-20260913-093545` | `ce5c7cc2-53e7-40ba-a127-f1887269c3da` | iPadOS 27 | Two scene-owned split sequences overlapped: B's S2 push began 0.714 ms after A's pop started. B completed push/pop with a fresh returned-S1 UUID and no false Primary; A's pop stalled after `willMove(nil)` once B became fullscreen, with no activation-state callback captured, so that stall is a topology observation rather than an SDK verdict. A's S2 manual lifecycle marker was attributed to B S1 because it called source-less public `addAction`/`startResource` after B became representative. Its diagnostic scene attributes are not SDK provenance; this is the approved last-interacted fallback, not a scene-routing regression. Backend: eight views, seven actions, seven resources, zero errors/crashes. |
 | EXP-087 | `e3c21695-d4a3-4a05-a606-7f192836e577` | `d2f7b981-9877-47e9-9147-ea6b01712c6a` | iPadOS 27 | The new initial-nil/sequence-disable split control passed its empty-detail baseline: the UI showed only Selections and backend intake contained no Detail occurrence, error, or crash. Deterministic regular → compact → regular remains blocked because both `devicectl device appResize start` and `info appResize` return CoreDevice error 1001: this simulator lacks `com.apple.coredevice.feature.resizableappmanagement`. No adaptive-transition claim is attached. |
 | EXP-088 | `manual-rum-handoff-targeting-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Public manual `addAction`/`startAction`/`stopAction` and all three `startResource` overloads now prefer the exact RUM view in a trustworthy execution-local handoff, then its scene, then the unchanged process representative. Resource metrics/stops/errors deliberately retain resource-key owner routing. `MonitorTests` pass 15/15, the complete RUM plan passes 1,122/1,122, build-for-testing has zero diagnostics, and focused source/test lint has zero violations. A source-less lifecycle call such as EXP-086 remains representative by design. |
+| EXP-089 | `ui-event-handoff-20260913-1013` | `f6db73e2-46eb-44dc-9d20-5c2edfa88485` | iPadOS 27 | First physical filtered-control run on the `EXP-088` implementation. The predicate rejected the probe button and emitted no automatic tap. Its synchronous manual action/resource and delayed GCD pair all used A S2 `62562932…`; Resource completion retained its start owner and backend reported zero errors. This does not discriminate handoff routing: switching from fullscreen B back to A had already created a fresh A S2 occurrence and made it the process representative roughly 13 seconds before the tap. It does prove the live interception/control path and the approved rule that later source-less work uses the last-interacted view. Repeat with A/B simultaneously visible so B can remain representative while A receives the tap. |
 
 ## Experiment log
 
@@ -2177,6 +2181,30 @@ Artifacts are `BuildProject-Log-20260913-095316.txt`,
 `EXP-086`: its lifecycle marker ran after the UI-event scope and remains correctly
 source-less.
 
+`EXP-089` adds a physical UIKit control whose predicate deliberately returns
+`nil` while `UIApplication.sendEvent` still resolves the touched scene. Build
+artifact `BuildProject-Log-20260913-101118.txt` passed. The clean run used native
+scene IDs `343ABCC2-E15F-4BBA-ADC4-4A4214516C8D` for A and
+`37D00025-9F80-474C-BC1C-2264798BE001` for B. Initial A S2
+`246bf6a4-c43f-44a5-b9e0-176cefa2752c` yielded to B S2
+`fc07dc1c-7c7b-4395-bff2-975c5454318c` in the fullscreen topology. Switching
+back to A created fresh A S2 `62562932-7ce3-44a1-b8d8-4f7c01d9f82e` at
+08:13:01.366Z; B became inactive by 08:13:02.302Z. The physical button tap did
+not occur until 08:13:15.935Z, so A was already the process representative.
+
+The predicate logged the exact filtered A control and backend intake contains no
+automatic tap. Synchronous manual action `e24189eb-56ec-4328-b5fe-70e7fb8d4911`
+and Resource `70368cdb-b899-46ea-b54d-1e2c80b25317` used fresh A S2. The GCD
+post-scope action `c0646d2b-37f8-4e4b-9146-ed79cbbdc66c` and Resource
+`1cf9c043-ca22-4b50-ae03-4a8a91040344` also used A S2, correctly following the
+last-interacted representative after losing the event handoff. Resource
+completion stayed with each start owner. Backend totals were ten views, eight
+actions, eight Resources, and zero RUM errors; no crash was observed. The run is
+live proof of the interception/control path and compatible fallback, but not of
+exact-handoff precedence over a different representative. Repeating fullscreen
+window activation cannot provide that discriminator because activation itself
+materializes a new occurrence. Arrange both windows simultaneously visible first.
+
 Focused legacy and keyed state-machine coverage is now 34/34 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
@@ -2387,6 +2415,10 @@ ownership is safe in the exercised fullscreen topology.
   before addressing an element by index. A cached B button can still invoke B's
   controller while the screenshot visibly shows A, leaving the representative
   unchanged and invalidating a delayed-provenance experiment.
+- Do not switch from fullscreen B to fullscreen A to prove that an A touch
+  overrides representative B. `EXP-089` shows the switch creates a fresh A view
+  occurrence and makes it representative before the touch. Keep both scenes
+  visibly materialized and interact with A without an intervening appearance.
 - The fixed “Other Window” control is predictable only when exactly two sessions
   exist: it selects the first other member of unordered `openSessions`. With more
   windows, verify the recorded target or add explicit target selection first.
