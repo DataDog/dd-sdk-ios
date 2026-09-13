@@ -841,6 +841,32 @@ class RUMViewTrackingStateTests: XCTestCase {
         XCTAssertEqual(reboundAttachments, [.detached, .attached(sceneA)])
     }
 
+    func testReaderUpdateReconcilesRetainedObserverWithLatestBinding() {
+        var attachmentChanges: [RUMViewTrackingState.Attachment] = []
+        let observer = RUMSceneIdentifierReader.ObserverView(
+            onChange: { attachmentChanges.append($0) },
+            applicationSupportsMultipleScenes: true
+        )
+        var reconciledGenerations: [UInt64] = []
+        var reconciledAttachments: [RUMViewTrackingState.Attachment] = []
+
+        for generation: UInt64 in [1, 2] {
+            let reader = RUMSceneIdentifierReader(
+                applicationSupportsMultipleScenes: true,
+                onReconcile: { attachment in
+                    reconciledGenerations.append(generation)
+                    reconciledAttachments.append(attachment)
+                },
+                onChange: { attachmentChanges.append($0) }
+            )
+            reader.update(observer: observer)
+        }
+
+        XCTAssertEqual(reconciledGenerations, [1, 2])
+        XCTAssertEqual(reconciledAttachments, [.detached, .detached])
+        XCTAssertEqual(attachmentChanges, [.detached])
+    }
+
     private func keyedConfiguration(
         _ key: String,
         generation: UInt64
@@ -996,6 +1022,52 @@ class RUMSwiftUIInteractiveTransitionArbiterTests: XCTestCase {
         XCTAssertEqual(recorder.entries, [])
         XCTAssertEqual(state.attachment, .detached)
         XCTAssertFalse(state.isAppeared)
+    }
+
+    func testWhenKeyedInitialMountIsCancelled_itCanStartOnTheNextCommittedMount() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["home-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-home",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let configuration = keyedConfiguration("home", generation: 1)
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .keyedInitialMount(
+                configuration: configuration,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "home", transitions: $0)
+        }
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertNil(state.configuration)
+        XCTAssertEqual(identities.invocationCount, 0)
+
+        coordinator.complete(isCancelled: true)
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .keyedInitialMount(
+                configuration: configuration,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "home", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "home-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, configuration)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
     }
 
     func testWhenDisconnectedViewRemountIsDeferred_itStartsAfterSuccessfulCompletion() {

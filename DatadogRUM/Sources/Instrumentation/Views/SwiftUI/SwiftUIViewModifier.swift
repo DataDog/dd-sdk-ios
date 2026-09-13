@@ -112,6 +112,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
     let onCreate: ((ObserverView) -> Void)?
     let onInitialMount: ((RUMSceneIdentifier) -> Void)?
     let onMount: ((RUMSceneIdentifier) -> Void)?
+    let onReconcile: ((RUMViewTrackingState.Attachment) -> Void)?
     let onChange: (RUMViewTrackingState.Attachment) -> Void
 
     init(
@@ -120,6 +121,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onCreate: ((ObserverView) -> Void)? = nil,
         onInitialMount: ((RUMSceneIdentifier) -> Void)? = nil,
         onMount: ((RUMSceneIdentifier) -> Void)? = nil,
+        onReconcile: ((RUMViewTrackingState.Attachment) -> Void)? = nil,
         onChange: @escaping (RUMViewTrackingState.Attachment) -> Void
     ) {
         self.applicationSupportsMultipleScenes = applicationSupportsMultipleScenes
@@ -127,6 +129,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         self.onCreate = onCreate
         self.onInitialMount = onInitialMount
         self.onMount = onMount
+        self.onReconcile = onReconcile
         self.onChange = onChange
     }
 
@@ -169,6 +172,7 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
         onCreate?(observer)
         observer.onMount = onMount
         observer.onChange = onChange
+        onReconcile?(observer.currentAttachment)
         observer.notifyCurrentAttachment()
     }
 
@@ -252,6 +256,10 @@ internal struct RUMSceneIdentifierReader: UIViewRepresentable {
                 return nil
             }
             return sceneIdentifier
+        }
+
+        var currentAttachment: RUMViewTrackingState.Attachment {
+            currentAttachment(for: window)
         }
 
         private func currentAttachment(for window: UIWindow?) -> RUMViewTrackingState.Attachment {
@@ -480,6 +488,32 @@ internal final class RUMViewTrackingState {
             expectedRevision: nil,
             allowsRemount: true
         )
+    }
+
+    func mountFromReader(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration
+    ) -> [Transition] {
+        guard acceptsReaderMount else {
+            return []
+        }
+        return reconcile(
+            configuration: configuration,
+            attachment: .attached(sceneIdentifier),
+            isAppeared: appearanceForReaderMount,
+            expectedRevision: nil,
+            allowsRemount: true
+        )
+    }
+
+    func mountFromInitialTrait(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration
+    ) -> [Transition] {
+        guard acceptsInitialTraitMount else {
+            return []
+        }
+        return mount(in: sceneIdentifier, configuration: configuration)
     }
 
     func appear(configuration: Configuration) -> [Transition] {
@@ -1036,6 +1070,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         case update(RUMViewTrackingState.Attachment)
         case initialMount(RUMSceneIdentifier)
         case mount(RUMSceneIdentifier)
+        case keyedInitialMount(
+            configuration: RUMViewTrackingState.Configuration,
+            sceneIdentifier: RUMSceneIdentifier
+        )
+        case keyedMount(
+            configuration: RUMViewTrackingState.Configuration,
+            sceneIdentifier: RUMSceneIdentifier
+        )
         case appear
         case disappear
         case reconcile(
@@ -1046,7 +1088,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
 
         fileprivate var configuration: RUMViewTrackingState.Configuration? {
             switch self {
-            case .reconcile(let configuration, _, _):
+            case .keyedInitialMount(let configuration, _),
+                 .keyedMount(let configuration, _),
+                 .reconcile(let configuration, _, _):
                 return configuration
             case .update, .initialMount, .mount, .appear, .disappear:
                 return nil
@@ -1061,6 +1105,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 return .attached(sceneIdentifier)
             case .initialMount(let sceneIdentifier):
                 return .attached(sceneIdentifier)
+            case .keyedInitialMount(_, let sceneIdentifier),
+                 .keyedMount(_, let sceneIdentifier):
+                return .attached(sceneIdentifier)
             case .appear, .disappear:
                 return nil
             case .reconcile(_, let attachment, _):
@@ -1070,7 +1117,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
 
         fileprivate var isAppeared: Bool? {
             switch self {
-            case .initialMount, .mount, .appear:
+            case .initialMount, .mount, .keyedInitialMount, .keyedMount, .appear:
                 return true
             case .disappear:
                 return false
@@ -1084,6 +1131,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         fileprivate var sceneIdentifier: RUMSceneIdentifier? {
             switch self {
             case .initialMount(let sceneIdentifier), .mount(let sceneIdentifier):
+                return sceneIdentifier
+            case .keyedInitialMount(_, let sceneIdentifier),
+                 .keyedMount(_, let sceneIdentifier):
                 return sceneIdentifier
             case .update(.attached(let sceneIdentifier)):
                 return sceneIdentifier
@@ -1104,6 +1154,16 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 return state.mountFromInitialTrait(in: sceneIdentifier)
             case .mount(let sceneIdentifier):
                 return state.mountFromReader(in: sceneIdentifier)
+            case .keyedInitialMount(let configuration, let sceneIdentifier):
+                return state.mountFromInitialTrait(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            case .keyedMount(let configuration, let sceneIdentifier):
+                return state.mountFromReader(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
             case .appear:
                 return state.appear()
             case .disappear:
@@ -1179,7 +1239,15 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             if case .initialMount(let sceneIdentifier) = intent {
                 attachment = .attached(sceneIdentifier)
                 isAppeared = true
+            } else if case .keyedInitialMount(_, let sceneIdentifier) = intent {
+                attachment = .attached(sceneIdentifier)
+                isAppeared = true
             } else if case .mount(let sceneIdentifier) = intent {
+                attachment = .attached(sceneIdentifier)
+                isAppeared = state.appearanceForReaderMount
+                allowsRemount = true
+                containsReaderMount = true
+            } else if case .keyedMount(_, let sceneIdentifier) = intent {
                 attachment = .attached(sceneIdentifier)
                 isAppeared = state.appearanceForReaderMount
                 allowsRemount = true
@@ -1199,7 +1267,13 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             if case .initialMount = intent, !state.acceptsInitialTraitMount {
                 return false
             }
+            if case .keyedInitialMount = intent, !state.acceptsInitialTraitMount {
+                return false
+            }
             if case .mount = intent, !state.acceptsReaderMount {
+                return false
+            }
+            if case .keyedMount = intent, !state.acceptsReaderMount {
                 return false
             }
             guard let incomingConfiguration = intent.configuration else {
@@ -1697,6 +1771,13 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
     /// Custom attributes to attach to the View.
     let attributes: [AttributeKey: AttributeValue]
 
+    /// Navigation occurrence metadata used only by the internal experimental
+    /// integration. Public tracking keeps this unset and follows the existing
+    /// lifecycle path.
+    #if os(iOS) || os(visionOS)
+    let configuration: RUMViewTrackingState.Configuration?
+    #endif
+
     /// The Content View identifier.
     /// The id will be unique per modified view.
     let identity: String = UUID().uuidString
@@ -1709,7 +1790,8 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
                     instrumentation: instrumentation,
                     name: name,
                     path: path,
-                    attributes: attributes
+                    attributes: attributes,
+                    configuration: configuration
                 )
             )
         } else {
@@ -1743,6 +1825,7 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
     let name: String
     let path: String
     let attributes: [AttributeKey: AttributeValue]
+    let configuration: RUMViewTrackingState.Configuration?
 
     func body(content: Content) -> some View {
         if #available(iOS 17.0, visionOS 1.0, *) {
@@ -1752,6 +1835,7 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
                     name: name,
                     path: path,
                     attributes: attributes,
+                    configuration: configuration,
                     startsOnInitialMount: startsOnInitialMount
                 )
             )
@@ -1761,7 +1845,8 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
                     instrumentation: instrumentation,
                     name: name,
                     path: path,
-                    attributes: attributes
+                    attributes: attributes,
+                    configuration: configuration
                 )
             )
         }
@@ -1783,6 +1868,7 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let name: String
     let path: String
     let attributes: [AttributeKey: AttributeValue]
+    let configuration: RUMViewTrackingState.Configuration?
     let startsOnInitialMount: Bool
 
     @Environment(\.rumSceneIdentifier)
@@ -1805,6 +1891,9 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     onMount: startsOnInitialMount ? { sceneIdentifier in
                         mount(in: sceneIdentifier)
                     } : nil,
+                    onReconcile: configuration == nil ? nil : { attachment in
+                        update(attachment: attachment)
+                    },
                     onChange: { attachment in
                         update(attachment: attachment)
                     }
@@ -1845,6 +1934,28 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 
     private func mount(in sceneIdentifier: RUMSceneIdentifier) {
+        if let configuration {
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .keyedMount(
+                        configuration: configuration,
+                        sceneIdentifier: sceneIdentifier
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(
+                trackingState.mountFromReader(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            )
+            return
+        }
         #if os(iOS)
         if let transitionArbiter {
             transitionArbiter.process(.mount(sceneIdentifier), state: trackingState, send: apply)
@@ -1855,6 +1966,28 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 
     private func initialMount(in sceneIdentifier: RUMSceneIdentifier) {
+        if let configuration {
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .keyedInitialMount(
+                        configuration: configuration,
+                        sceneIdentifier: sceneIdentifier
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(
+                trackingState.mountFromInitialTrait(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            )
+            return
+        }
         #if os(iOS)
         if let transitionArbiter {
             transitionArbiter.process(
@@ -1869,6 +2002,24 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 
     private func update(attachment: RUMViewTrackingState.Attachment) {
+        if let configuration {
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .reconcile(
+                        configuration: configuration,
+                        attachment: attachment,
+                        isAppeared: nil
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(trackingState.update(configuration: configuration, attachment: attachment))
+            return
+        }
         #if os(iOS)
         if let transitionArbiter {
             transitionArbiter.process(.update(attachment), state: trackingState, send: apply)
@@ -1879,6 +2030,24 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 
     private func appear() {
+        if let configuration {
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .reconcile(
+                        configuration: configuration,
+                        attachment: nil,
+                        isAppeared: true
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(trackingState.appear(configuration: configuration))
+            return
+        }
         #if os(iOS)
         if let transitionArbiter {
             transitionArbiter.process(.appear, state: trackingState, send: apply)
@@ -1889,6 +2058,24 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     }
 
     private func disappear() {
+        if let configuration {
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .reconcile(
+                        configuration: configuration,
+                        attachment: nil,
+                        isAppeared: false
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(trackingState.disappear(configuration: configuration))
+            return
+        }
         #if os(iOS)
         if let transitionArbiter {
             transitionArbiter.process(.disappear, state: trackingState, send: apply)
@@ -1928,22 +2115,45 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let name: String
     let path: String
     let attributes: [AttributeKey: AttributeValue]
+    let configuration: RUMViewTrackingState.Configuration?
 
     @State private var trackingState = RUMViewTrackingState()
 
     func body(content: Content) -> some View {
         content
             .background(
-                RUMSceneIdentifierReader(applicationSupportsMultipleScenes: true) { attachment in
-                    apply(trackingState.update(attachment: attachment))
-                }
+                RUMSceneIdentifierReader(
+                    applicationSupportsMultipleScenes: true,
+                    onReconcile: configuration == nil ? nil : { attachment in
+                        update(attachment: attachment)
+                    },
+                    onChange: { attachment in
+                        update(attachment: attachment)
+                    }
+                )
             )
             .onAppear {
-                apply(trackingState.appear())
+                if let configuration {
+                    apply(trackingState.appear(configuration: configuration))
+                } else {
+                    apply(trackingState.appear())
+                }
             }
             .onDisappear {
-                apply(trackingState.disappear())
+                if let configuration {
+                    apply(trackingState.disappear(configuration: configuration))
+                } else {
+                    apply(trackingState.disappear())
+                }
             }
+    }
+
+    private func update(attachment: RUMViewTrackingState.Attachment) {
+        if let configuration {
+            apply(trackingState.update(configuration: configuration, attachment: attachment))
+        } else {
+            apply(trackingState.update(attachment: attachment))
+        }
     }
 
     private func apply(_ transitions: [RUMViewTrackingState.Transition]) {
@@ -1973,6 +2183,17 @@ public extension SwiftUI.View {
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
         let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        #if os(iOS) || os(visionOS)
+        return modifier(
+            RUMViewModifier(
+                instrumentation: instrumentation,
+                name: name,
+                path: path,
+                attributes: attributes,
+                configuration: nil
+            )
+        )
+        #else
         return modifier(
             RUMViewModifier(
                 instrumentation: instrumentation,
@@ -1981,7 +2202,39 @@ public extension SwiftUI.View {
                 attributes: attributes
             )
         )
+        #endif
     }
 }
+
+#if DEBUG && (os(iOS) || os(visionOS))
+internal extension SwiftUI.View {
+    /// Debug-only seam for validating navigation occurrence identity without
+    /// changing the public API or SwiftUI identity of customer content.
+    func trackRUMView(
+        name: String,
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> some View {
+        let path = "\(name)/\(typeDescription.hashValue)"
+        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        let configuration = RUMViewTrackingState.Configuration(
+            occurrenceKey: occurrenceKey,
+            bindingGeneration: bindingGeneration,
+            descriptor: .init(name: name, path: path, attributes: attributes)
+        )
+        return modifier(
+            RUMViewModifier(
+                instrumentation: instrumentation,
+                name: name,
+                path: path,
+                attributes: attributes,
+                configuration: configuration
+            )
+        )
+    }
+}
+#endif
 
 #endif
