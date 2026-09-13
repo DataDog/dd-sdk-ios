@@ -63,8 +63,10 @@ boundary, in this order:
 | 46 | `Add exact scene registry to multi-scene probe` | Main-actor logical/native scene registry, weak window ownership, lifecycle/geometry/route snapshots, disconnect fencing, and schema-version compatibility |
 | 47 | `Drive probe navigation through observed signals` | Signal-driven Home → Detail → Home execution, exact scene/path/destination/RUM-occurrence waits, one terminal verdict, deferred lifecycle-fact reduction, and focused driver/oracle tests |
 | 48 | `Drive deterministic SwiftUI navigation scenarios` | Signal-driven stack abort and same-/different-type replacement, exact path/destination acknowledgements, decisive action/Resource expectations, and focused driver tests |
+| 49 | `Document deterministic stack scenario evidence` | `EXP-110` local/backend evidence, strengthened acceptance timelines, and refreshed handoff state |
+| 50 | `Drive deterministic SwiftUI split selection` | Root-owned split selection commands, observed selection/destination waits, exact per-occurrence action/Resource checks, and asynchronous oracle ordering fixes |
 
-Rows 1-48 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-50 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -74,7 +76,8 @@ Rows 1-48 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
 `4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
-Row 47 is `34ba7eabf`, and row 48 is `4a1311dd4`.
+Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, and
+row 50 is `96a6208ff`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -89,7 +92,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-twenty-one exact-path commits in rows 28-48 use that policy. This is local
+twenty-three exact-path commits in rows 28-50 use that policy. This is local
 checkpoint history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -214,6 +217,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-108 | `scene-registry-live-20260913-1647` | `de29d1e3-0ff6-44bb-a3e6-14c17047429a` | iPadOS 27 | Exact probe scene-registry phase. Seven new tests cover logical/native identity, alias rejection, disconnect/reconnect generations, stale-handle rejection, weak windows, scene-local route/presentation/future-context state, and peer isolation; the full probe plan passes 31/31. After a clean uninstall, schema-v2 JSONL emitted scene A ready as native `E32B88D1…`, generation 0, 955×1253 regular/regular, then foreground activation and Home → Detail mutation. Local mapper UUIDs Home `91826d58…` and Detail `3d91c699…` match 18 backend events, including all six actions and six Resources. The initial Home mapper snapshot preceded native resolution and is joined later through its stable logical scene; this harness seam is not a shipping SDK fix. Xcode install/run recovered, but its required `device-interaction` skill is still unavailable, so no Home-return or final live oracle claim is added. |
 | EXP-109 | `observable-home-return-20260913-1736-c`; `observable-home-return-20260913-1739-d`; `observable-home-return-20260913-1741-e` | `272c5006-bf32-4ee9-9adb-3b75f9a39639`; `25cc4383-8f80-4ad8-9c44-0ef65771896b`; `11dba044-6d97-4095-a607-25ee742aa804` | iPadOS 27 | Signal-driven Home → Detail → Home acceptance. After a clean uninstall, all three runs produced exactly one local `PASS` with 7/7 expectations and six acknowledged steps. The view UUID chains were `30ff5793…` → `4ca6ef28…` → `03f41a11…`, `bc6d76ab…` → `d3d7648a…` → `6352a4d2…`, and `f5cf4344…` → `51c3c342…` → `d5edb3a6…`; each post-return action and Resource belonged to Home₂. Backend intake independently contains launch plus one Home₁, Detail, and Home₂ per run, the exact post-return owners, and no errors. Two harness-only failures are retained: root `onAppear` did not repeat because SwiftUI retained Home even while RUM correctly created Home₂, and one repeat delivered Home₁'s stop mapper snapshot after Detail's start during animation. The driver now waits for the new RUM occurrence, and the oracle requires eventual stop facts without treating callback order as navigation order. The probe plan passes 35/35. This validates deterministic occurrence/attribution behavior on the experimental SDK, not automatic zero-code SwiftUI support or genuine native gestures. |
 | EXP-110 | `observable-stack-abort-20260913-1800-a`; `observable-stack-same-type-20260913-1803-a`; `observable-stack-different-type-20260913-1806-a`; strengthened reruns `observable-stack-abort-20260913-1810-b`, `observable-stack-same-type-20260913-1812-b`, `observable-stack-different-type-20260913-1814-b` | `0550e989-8427-494f-b04a-505255a8acce`; `72dc8338-b5eb-470b-8d39-ecfa24f455ff`; `e7a99a66-a9d4-45e0-9719-e152de01b1a3`; `c8f6fb75-62cb-4f43-9515-988ae36d1586`; `5dea4da1-8949-4760-a89b-41c2758aebb0`; `8b913d29-e0f5-4449-880f-7e7c823e3b91` | iPadOS 27 | Signal-driven stack abort and replacement acceptance. The first clean trio proved the driver and view chains, then the oracle was strengthened to require a decisive action and Resource on the final view. The clean reruns emitted one local `PASS` each: abort 5/5 with only Home `fb10de5b…`; same-type replacement 6/6 with Home `22e06720…`, Detail₁ `40d87f4b…`, and distinct same-named Detail₂ `f75ca7dc…`; different-type replacement 6/6 with Home `47ac4967…`, Detail `b4cb7536…`, and Alternate `9a5ca46d…`. Backend intake independently reports those exact view sets, the required final action/Resource owners, and no error bucket. All 37 probe tests and repository lint pass. This validates deterministic experimental occurrence/attribution behavior, not automatic zero-code discovery or native gestures. |
+| EXP-111 | `observable-split-selection-20260913-1831-a`; corrected `observable-split-selection-20260913-1840-b`; `observable-split-return-20260913-1843-a`; corrected `observable-split-return-20260913-1844-b`; automatic baseline `observable-split-automatic-20260913-1846-a` | `cc00fae2-3911-4846-b8b8-68f0c06b9c1f`; `ab78101b-8528-4e0c-9505-1d0bc926ba91`; `84a12a1a-b251-41e0-8f9a-53404427b628`; `9f5a87b0-75b0-4da3-9902-0ce3dc059c57`; `ba04a828-38f8-4135-8e1d-4c25ca875fb8` | iPadOS 27 | Signal-driven split acceptance and automatic failure baseline. The corrected route-owned runs pass 10/10 and 13/13: Detail₁ → Detail₂ → Placeholder and Detail₁ → Detail₂₁ → Placeholder → fresh Detail₂₂ each have one distinct UUID plus an exact action/Resource pair. Backend intake agrees and reports no errors. Automatic tracking fails 0/9: Detail₁ work uses `ApplicationLaunch`, while Detail₂ and Placeholder share one internal `NavigationStackHostingController` UUID. The two earlier local failures are retained as harness lessons: Resource completion is asynchronous ownership evidence rather than a navigation-order clock, and an unordered completion check must continue past an earlier same-named occurrence. All 40 probe tests and repository lint pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -2597,6 +2601,58 @@ do not change the product verdict: the passing route-owned debug input is the
 prototype for the reviewed container-level semantic integration, while
 transparent automatic SwiftUI discovery remains insufficient.
 
+`96a6208ff` moves split-selection ownership to the registered scene root and
+drives each mutation only after its prior destination is observable. The exact
+scene executor now waits for the corresponding selection mutation, and repeated
+destination waits derive occurrence order when the materialization signal has no
+explicit counter. Every committed split destination requires its own view plus a
+`selection-committed` action and Resource.
+
+`EXP-111` preserves two probe-oracle corrections instead of hiding their failed
+runs:
+
+- `observable-split-selection-20260913-1831-a`, session
+  `cc00fae2-3911-4846-b8b8-68f0c06b9c1f`, created exact Detail₁
+  `5bc8e777-32e2-47ed-b551-4cdbdd5a5fc9`, Detail₂
+  `8c48507a-0d6a-4c86-ac84-89eeb36f5f00`, and Placeholder
+  `e3a30472-39e0-4aa1-98e8-378f41afc310` occurrences. Its local oracle failed
+  after 6 matches because Detail₂'s asynchronous Resource completed after the
+  Placeholder view started. The SDK ownership was correct; Resource completion
+  is now required without treating its callback time as navigation order.
+- The clean corrected run `observable-split-selection-20260913-1840-b`, session
+  `ab78101b-8528-4e0c-9505-1d0bc926ba91`, passed 10/10. Backend contains launch
+  plus Detail₁ `68d160a9-cf1e-426a-beae-349b550de8c2`, Detail₂
+  `78f47d47-47ca-4f52-843d-8e2849012551`, and Placeholder
+  `ac4b1b97-aec7-4065-b322-ee61bce1683e`. Each semantic UUID owns exactly one
+  action and one Resource; no RUM error exists.
+- `observable-split-return-20260913-1843-a`, session
+  `84a12a1a-b251-41e0-8f9a-53404427b628`, matched all 12 ordered facts, including
+  fresh returned Detail₂ `7a395323-2cb2-4770-baf0-1dc192ddf6e0`, then falsely
+  failed its unordered completion condition on the earlier same-named Detail₁
+  action. Completion evaluation now keeps searching for a correct later
+  occurrence and retains the first wrong-owner diagnostic only if none exists.
+- The clean corrected retained-return run
+  `observable-split-return-20260913-1844-b`, session
+  `9f5a87b0-75b0-4da3-9902-0ce3dc059c57`, passed 13/13. Backend contains launch
+  plus Detail₁ `60446d50-a143-402c-ac51-0d9826d4d25a`, first Detail₂
+  `772f3280-9d42-4050-93d4-beaa2a9cd9c9`, Placeholder
+  `e9b5a519-e3c2-48b4-8587-f9bbb9373132`, and returned Detail₂
+  `bc2d8fa9-e758-4f57-8c25-fdd0b34781c2`. All four action/Resource pairs use
+  their exact occurrence and no error exists.
+- The clean automatic control `observable-split-automatic-20260913-1846-a`,
+  session `ba04a828-38f8-4135-8e1d-4c25ca875fb8`, drove the same six steps and
+  failed 0/9 at the first required semantic view. Detail₁'s marker pair used
+  ApplicationLaunch `e486bf8f-9f02-49fa-8e35-6b5637ecb6fb`; Detail₂ and
+  Placeholder both used internal hosting view
+  `27156b00-b1fc-44e2-a08a-3ebb41e83048`. Backend also contains transient
+  fallback/navigation-host views, but no semantic Detail₁, Detail₂, or Placeholder
+  view. This is the controlled zero-code gap, not a crash; no RUM error exists.
+
+The complete probe plan passes 40/40, including focused regressions for both
+oracle corrections, and repository lint reports zero violations. These runs
+upgrade the existing split prototype evidence to deterministic local/backend
+acceptance while leaving the reviewed public semantic integration unimplemented.
+
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
@@ -2642,6 +2698,13 @@ ownership is safe in the exercised fullscreen topology.
   association establish where RUM attributed the event.
 - Do not treat a mapper callback as persistence or upload proof. It observes an
   event before storage/filtering; retain an exact backend query for support claims.
+- Do not serialize navigation on Resource completion to make a semantic timeline
+  look ordered. Resource mapper callbacks describe completed work and may arrive
+  after the next view starts; require their exact frozen owner as an eventual fact.
+- Do not fail an unordered completion condition on the first earlier event with
+  the same name. Repeated destinations intentionally repeat marker names; keep
+  searching for the requested occurrence, then report the earliest ownership
+  violation only if no correct event exists.
 - Do not require a first RUM view snapshot with `documentVersion == 0`. The live
   structured run first observed Home at version 1, so semantic start is derived
   from the first observed UUID and stop from an active-to-false transition.

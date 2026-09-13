@@ -111,28 +111,32 @@ Current execution order:
    same-/different-type replacement through exact observed signals, with decisive
    final action/Resource checks. Clean reruns passed 5/5, 6/6, and 6/6 locally
    and in backend intake; the probe plan passes 37/37.
-3. Extend the driver across split selection, UIKit cancel/finish, and exact scene
+3. Completed in `96a6208ff` and `EXP-111`: drive split selection and retained
+   return through exact scene/selection/destination signals. Route-owned runs pass
+   10/10 and 13/13 locally and in backend intake; the automatic control fails 0/9
+   with launch/internal-container ownership; the probe plan passes 40/40.
+4. Extend the driver across UIKit cancel/finish and exact scene
    open/activate/close steps.
    Keep native gesture proof in the real-device/human queue.
-4. Turn the debug per-window occurrence source into the approved optional iOS 27
+5. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
    duplicates only in its authoritative container. No public API lands without
    RFC/API review.
-5. Design the required scene-aware manual view start/stop overloads and Objective-C
+6. Design the required scene-aware manual view start/stop overloads and Objective-C
    companion. The same key must coexist independently in A and B while existing
    APIs preserve inferred/last-interacted compatibility.
-6. Suppress structural UIKit Primary/sidebar/container views so each scene has one
+7. Suppress structural UIKit Primary/sidebar/container views so each scene has one
    current destination. Retain the passing fresh return-occurrence and transition
    cancellation behavior.
-7. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+8. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-8. Preserve the passing retained split return from `EXP-105`, then validate
+9. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-9. Validate simultaneous visible A/B transitions, then genuine disconnect,
+10. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-10. Complete Operation public targeting and its live backend matrix.
-11. Close the bounded causal/downstream rows and live normal-app compatibility.
+11. Complete Operation public targeting and its live backend matrix.
+12. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -179,18 +183,25 @@ experiment; it does not itself change the SDK support verdict.
    abort and same-/different-type replacement. The decisive final action and
    Resource are part of each semantic timeline. The complete probe plan passes
    37/37; clean iPadOS 27 runs pass locally and in backend intake without errors.
-   Remaining phase-4 work is split selection, deterministic UIKit transitions,
-   and exact scene open/activate/close execution.
-6. Add one reproducible run command that preflights capabilities, records source
+6. Completed in `96a6208ff` and `EXP-111`: root-owned split selection now executes
+   through the exact scene and waits for observed selection and destination
+   signals. Route-owned replacement and retained return pass 10/10 and 13/13 with
+   exact per-occurrence action/Resource ownership; the automatic baseline fails
+   0/9 with internal container views. Resource completion is an eventual ownership
+   fact, not a navigation-order clock, and completion conditions skip earlier
+   same-named occurrences. The complete probe plan passes 40/40.
+7. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The stack harness acceptance loop is complete through `EXP-110`: three clean
+The deterministic stack and split harness loop is complete through `EXP-111`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
-clean abort and replacement reruns passed 5/5, 6/6, and 6/6. The deliberately
-wrong-view fixture continues to fail locally with an actionable reason.
+clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
+and retained return pass 10/10 and 13/13, while the identically driven automatic
+split baseline fails 0/9 for missing semantic views. The deliberately wrong-view
+fixture continues to fail locally with an actionable reason.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions

@@ -48,10 +48,10 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
-| `swiftui.split.automatic-baseline` | `EXP-069` | Existing deterministic automation |
-| `swiftui.split.same-type-selection` | `EXP-102` | Existing deterministic automation |
+| `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
+| `swiftui.split.same-type-selection` | `EXP-102`, `EXP-111` | Signal-driven PASS |
 | `swiftui.split.same-type-selection-two-scenes` | `EXP-103` | Existing deterministic automation; simultaneous topology remains unproven |
-| `swiftui.split.retained-return` | `EXP-105` | Existing deterministic automation |
+| `swiftui.split.retained-return` | `EXP-105`, `EXP-111` | Signal-driven PASS |
 | `swiftui.split.empty-selection` | `EXP-087` | Existing deterministic control |
 | `uikit.split.replacement`, `uikit.split.subclass` | `EXP-080`, `EXP-072` | Existing deterministic automation |
 | `uikit.split.pop-automatic` | `EXP-079` | Existing deterministic automation |
@@ -72,17 +72,20 @@ conditions, required capabilities, and the expected semantic timeline. The app
 now records versioned JSONL probe signals and mapper-observed RUM snapshots. A
 pure reducer derives first-observed starts and active-to-inactive stops, and the
 semantic oracle returns only `PASS`, `FAIL`, `SKIPPED`, or `INCONCLUSIVE`. Its
-five fixtures cover correct Home return, wrong-view attribution, a missing event,
-a forbidden view, and an ignored native gesture. An exact main-actor scene
+fixtures cover correct Home return, wrong-view attribution, asynchronous
+view-stop/Resource observations, repeated-name completion, a missing event, a
+forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 37/37. The stack
-return, abort, same-type replacement, and different-type replacement scenarios
-now drive their exact scene, wait for observable path, destination, and
-RUM-occurrence signals, acknowledge every step, and emit exactly one final
-result. Clean iPadOS 27 runs pass locally and in backend intake (`EXP-109`,
-`EXP-110`). Other scenarios remain at the execution level shown in the table; a
-modeled timeline or partial live prefix is not itself a local PASS.
+future Execution Context seam. The generated test plan passes 40/40. The stack
+return, abort, replacement, and split-selection scenarios now drive their exact
+scene, wait for observable path/selection, destination, and RUM-occurrence
+signals, acknowledge every step, and emit exactly one final result. Clean iPadOS
+27 semantic runs pass locally and in backend intake (`EXP-109` through
+`EXP-111`). The automatic split control executes the same steps but fails because
+it emits internal container views instead of semantic selections. Other scenarios
+remain at the execution level shown in the table; a modeled timeline or partial
+live prefix is not itself a local PASS.
 
 Probe call-site context and RUM ownership are intentionally separate. Source
 labels say where the harness invoked work; only mapper-observed RUM view UUIDs and
@@ -95,15 +98,20 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 
 `swiftui.stack.return`, `swiftui.stack.abort`,
 `swiftui.stack.same-type-replacement`, and
-`swiftui.stack.different-type-replacement` use the signal-driven execution loop.
+`swiftui.stack.different-type-replacement`, plus
+`swiftui.split.automatic-baseline`, `swiftui.split.same-type-selection`, and
+`swiftui.split.retained-return`, use the signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
 occurrences before advancing. The abort timeline forbids a speculative Detail;
 replacement timelines require the decisive action and Resource on the new
 occurrence. View-stop mapper snapshots may arrive after the next view starts
-during a SwiftUI animation, so stops are required eventual lifecycle facts rather
-than navigation-order clocks. Ordered view starts and action/Resource ownership
-remain strict.
+during a SwiftUI animation, and Resource mapper callbacks occur when work
+completes. Both are required eventual facts rather than navigation-order clocks;
+Resource ownership must still match the view captured at start. Ordered view
+starts and actions remain strict. Completion conditions scan past earlier
+same-named occurrences so a returned destination can satisfy an
+occurrence-specific condition.
 
 Run each acceptance attempt after uninstalling the probe, with a unique run ID
 and `--probe-run-mode clean`, then join its JSONL and backend query by that ID.
