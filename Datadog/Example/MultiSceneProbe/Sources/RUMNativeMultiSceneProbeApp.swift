@@ -29,6 +29,11 @@ struct RUMNativeMultiSceneProbeApp: App {
 }
 
 enum ProbeRuntime {
+    enum UIKitSplitInteractivePopOutcome: String {
+        case cancel
+        case finish
+    }
+
     enum Attribute {
         static let runID = "probe.run_id"
         static let host = "probe.host"
@@ -67,6 +72,11 @@ enum ProbeRuntime {
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-subclass"
     static let usesUIKitSplitNavigationLayout =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-navigation"
+    static let automaticallyPopsUIKitSplitNavigation =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP"] != "0"
+    static let uiKitSplitInteractivePopOutcome = ProcessInfo.processInfo
+        .environment["DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP"]
+        .flatMap(UIKitSplitInteractivePopOutcome.init(rawValue:))
     static let swiftUIViewTrackingMode: String = {
         switch ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"] {
         case "manual":
@@ -153,6 +163,9 @@ enum ProbeRuntime {
                 + "automatic_replace_detail_instance=\(automaticallyReplacesDetailInstance) "
                 + "force_route_identity=\(forcesNavigationRouteIdentity) "
                 + "swiftui_layout=\(layoutDescription) "
+                + "uikit_split_automatic_pop=\(automaticallyPopsUIKitSplitNavigation) "
+                + "uikit_split_interactive_pop="
+                + "\(uiKitSplitInteractivePopOutcome?.rawValue ?? "none") "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
         )

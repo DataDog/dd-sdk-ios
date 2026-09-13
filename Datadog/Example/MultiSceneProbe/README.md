@@ -32,6 +32,8 @@ DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL=0
 DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL_INSTANCE=0
 DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=0
 DD_MULTI_SCENE_SWIFTUI_LAYOUT=stack
+DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=1
+DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=none
 DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT=none
 ```
 
@@ -108,6 +110,16 @@ Secondary 1 as its stable root, pushes a fresh same-class Secondary 2, and pops
 back to the same Secondary 1 controller. The required occurrence order is
 `Primary → Secondary₁ → Secondary₂ → Secondary₁`, with a fresh UUID for the
 returned Secondary 1 and no Primary occurrence during either push or pop.
+Set `DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=0` to leave Secondary 2 visible
+after the automatic push. This probe-only gate permits an interactive edge-pop
+gesture to be cancelled or completed without racing the scheduled pop. A
+cancelled gesture must retain the original Secondary 2 RUM UUID; a completed
+gesture must start a fresh Secondary 1 occurrence and must not expose Primary.
+When a straight simulator gesture cannot arbitrate against the split divider,
+set `DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=cancel` or `finish`. The probe
+then drives a real `UIPercentDrivenInteractiveTransition` through 35 percent and
+resolves it with the requested outcome. This deterministic public-UIKit control
+exists only to validate lifecycle and RUM semantics; it is not SDK behavior.
 The Home screen also exposes a tracked SwiftUI sheet and a manual current-view
 marker. Together they validate `Home₁ → Sheet → Home₂` occurrence identity and
 post-dismiss attribution without relying on platform-object replacement.

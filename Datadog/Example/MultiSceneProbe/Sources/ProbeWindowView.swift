@@ -1085,7 +1085,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         coordinator.disconnect()
     }
 
-    final class Coordinator: NSObject, ProbeUIKitSplitChildLifecycleDelegate {
+    final class Coordinator: NSObject, ProbeUIKitSplitChildLifecycleDelegate, UINavigationControllerDelegate {
         private let window: ProbeWindow
         private let sceneSessionID: String
         private weak var splitViewController: UISplitViewController?
@@ -1095,6 +1095,9 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         private var installNavigationWorkItem: DispatchWorkItem?
         private var pushWorkItem: DispatchWorkItem?
         private var popWorkItem: DispatchWorkItem?
+        private var interactiveResolutionWorkItem: DispatchWorkItem?
+        private var interactivePopTransition: UIPercentDrivenInteractiveTransition?
+        private let interactivePopAnimator = ProbeUIKitSplitPopAnimator()
         private var didInstallNavigation = false
         private var didPushSecondaryTwo = false
         private var didPopSecondaryTwo = false
@@ -1148,6 +1151,9 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             installNavigationWorkItem?.cancel()
             pushWorkItem?.cancel()
             popWorkItem?.cancel()
+            interactiveResolutionWorkItem?.cancel()
+            interactivePopTransition?.cancel()
+            navigationController?.delegate = nil
             ProbeRuntime.record(
                 "uikit split navigation representable dismantled source=\(window.label) "
                     + "native=\(sceneSessionID)"
@@ -1201,6 +1207,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
                 let navigationController = UINavigationController(
                     rootViewController: secondaryOne
                 )
+                navigationController.delegate = self
                 navigationController.view.accessibilityIdentifier =
                     "probe.native.\(self.window.label).uikit-split-navigation-secondary"
                 self.navigationController = navigationController
@@ -1256,6 +1263,18 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         }
 
         private func schedulePop(after secondaryTwo: ProbeUIKitSplitSecondaryViewController) {
+            if let outcome = ProbeRuntime.uiKitSplitInteractivePopOutcome {
+                scheduleInteractivePop(after: secondaryTwo, outcome: outcome)
+                return
+            }
+            guard ProbeRuntime.automaticallyPopsUIKitSplitNavigation else {
+                ProbeRuntime.record(
+                    "uikit split navigation automatic pop skipped source=\(window.label) "
+                        + "native=\(sceneSessionID) "
+                        + "top=\(ObjectIdentifier(secondaryTwo))"
+                )
+                return
+            }
             guard !didPopSecondaryTwo else {
                 return
             }
@@ -1284,6 +1303,152 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             popWorkItem = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
         }
+
+        private func scheduleInteractivePop(
+            after secondaryTwo: ProbeUIKitSplitSecondaryViewController,
+            outcome: ProbeRuntime.UIKitSplitInteractivePopOutcome
+        ) {
+            guard !didPopSecondaryTwo else {
+                return
+            }
+            didPopSecondaryTwo = true
+            let workItem = DispatchWorkItem { [weak self, weak secondaryTwo] in
+                guard
+                    let self,
+                    let navigationController = self.navigationController,
+                    let secondaryOne = self.secondaryOne,
+                    let secondaryTwo,
+                    navigationController.topViewController === secondaryTwo
+                else {
+                    return
+                }
+
+                let transition = UIPercentDrivenInteractiveTransition()
+                transition.completionCurve = .easeInOut
+                transition.completionSpeed = 0.75
+                self.interactivePopTransition = transition
+                ProbeRuntime.record(
+                    "uikit split navigation interactive pop started source=\(self.window.label) "
+                        + "native=\(self.sceneSessionID) outcome=\(outcome.rawValue) "
+                        + "navigation=\(ObjectIdentifier(navigationController)) "
+                        + "from=\(ObjectIdentifier(secondaryTwo)) "
+                        + "returning=\(ObjectIdentifier(secondaryOne))"
+                )
+
+                guard navigationController.popViewController(animated: true) === secondaryTwo else {
+                    self.interactivePopTransition = nil
+                    ProbeRuntime.record(
+                        "uikit split navigation interactive pop rejected source=\(self.window.label) "
+                            + "native=\(self.sceneSessionID)"
+                    )
+                    return
+                }
+
+                _ = navigationController.transitionCoordinator?.animate(
+                    alongsideTransition: nil,
+                    completion: { [weak self] context in
+                        guard let self else {
+                            return
+                        }
+                        let top = navigationController.topViewController.map {
+                            String(describing: ObjectIdentifier($0))
+                        } ?? "nil"
+                        ProbeRuntime.record(
+                            "uikit split navigation interactive pop completed source=\(self.window.label) "
+                                + "native=\(self.sceneSessionID) "
+                                + "requested=\(outcome.rawValue) "
+                                + "cancelled=\(context.isCancelled) top=\(top)"
+                        )
+                        self.interactivePopTransition = nil
+                    }
+                )
+
+                DispatchQueue.main.async { [weak self, weak transition] in
+                    guard let self, let transition else {
+                        return
+                    }
+                    transition.update(0.35)
+                    let resolution = DispatchWorkItem { [weak transition] in
+                        guard let transition else {
+                            return
+                        }
+                        switch outcome {
+                        case .cancel:
+                            transition.cancel()
+                        case .finish:
+                            transition.finish()
+                        }
+                    }
+                    self.interactiveResolutionWorkItem = resolution
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: resolution)
+                }
+            }
+            popWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
+        }
+
+        func navigationController(
+            _ navigationController: UINavigationController,
+            animationControllerFor operation: UINavigationController.Operation,
+            from fromViewController: UIViewController,
+            to toViewController: UIViewController
+        ) -> UIViewControllerAnimatedTransitioning? {
+            guard operation == .pop, interactivePopTransition != nil else {
+                return nil
+            }
+            return interactivePopAnimator
+        }
+
+        func navigationController(
+            _ navigationController: UINavigationController,
+            interactionControllerFor animationController: UIViewControllerAnimatedTransitioning
+        ) -> UIViewControllerInteractiveTransitioning? {
+            interactivePopTransition
+        }
+    }
+}
+
+private final class ProbeUIKitSplitPopAnimator: NSObject, UIViewControllerAnimatedTransitioning {
+    func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
+        0.6
+    }
+
+    func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
+        guard
+            let fromViewController = transitionContext.viewController(forKey: .from),
+            let toViewController = transitionContext.viewController(forKey: .to),
+            let fromView = transitionContext.view(forKey: .from),
+            let toView = transitionContext.view(forKey: .to)
+        else {
+            transitionContext.completeTransition(false)
+            return
+        }
+
+        let container = transitionContext.containerView
+        let finalFrame = transitionContext.finalFrame(for: toViewController)
+        let width = max(finalFrame.width, fromViewController.view.bounds.width)
+        toView.frame = finalFrame
+        toView.transform = CGAffineTransform(translationX: -0.25 * width, y: 0)
+        container.insertSubview(toView, belowSubview: fromView)
+
+        UIView.animate(
+            withDuration: transitionDuration(using: transitionContext),
+            delay: 0,
+            options: [.curveLinear, .allowUserInteraction],
+            animations: {
+                fromView.transform = CGAffineTransform(translationX: width, y: 0)
+                toView.transform = .identity
+            },
+            completion: { _ in
+                let didComplete = !transitionContext.transitionWasCancelled
+                fromView.transform = .identity
+                toView.transform = .identity
+                if !didComplete {
+                    toView.removeFromSuperview()
+                }
+                transitionContext.completeTransition(didComplete)
+            }
+        )
     }
 }
 
