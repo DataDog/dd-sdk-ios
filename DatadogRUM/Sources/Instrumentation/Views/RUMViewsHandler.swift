@@ -8,6 +8,28 @@ import Foundation
 import UIKit
 import DatadogInternal
 
+#if os(iOS)
+/// Internal entry point for manual views that have an explicit scene owner.
+///
+/// Existing source-less monitor APIs deliberately bypass this contract to retain
+/// their process-representative compatibility behavior.
+@MainActor
+internal protocol RUMSceneTargetedManualViewHandling: AnyObject {
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    )
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    )
+}
+#endif
+
 // MARK: - RUMViewsHandler
 internal final class RUMViewsHandler {
     /// UIKit location of a tracked controller inside a split-view hierarchy.
@@ -302,6 +324,25 @@ internal final class RUMViewsHandler {
         var stack = stacks[stackIndex].views
         let isActive = stacks[stackIndex].isActive
 
+        if let insertionIndex = insertionIndexBelowManualAuthority(
+            for: view,
+            in: stack
+        ) {
+            if insertionIndex > stack.startIndex,
+               stack[stack.index(before: insertionIndex)].identity == view.identity {
+                return
+            }
+
+            stack.removeAll { candidate in
+                candidate.instrumentationType != .manual
+                    && candidate.identity == view.identity
+            }
+            let updatedInsertionIndex = firstIndexOfManualSuffix(in: stack) ?? stack.endIndex
+            stack.insert(view, at: updatedInsertionIndex)
+            stacks[stackIndex].views = stack
+            return
+        }
+
         // Ignore the view if it's already visible
         if view.identity == stack.last?.identity {
             return
@@ -323,10 +364,36 @@ internal final class RUMViewsHandler {
         stacks[stackIndex].views = stack
     }
 
+    /// Returns where a lower-priority platform view should be staged while an
+    /// explicitly targeted manual view remains authoritative in this scene.
+    private func insertionIndexBelowManualAuthority(
+        for view: View,
+        in stack: [View]
+    ) -> Int? {
+        guard view.instrumentationType.priority < InstrumentationType.manual.priority else {
+            return nil
+        }
+        return firstIndexOfManualSuffix(in: stack)
+    }
+
+    private func firstIndexOfManualSuffix(in stack: [View]) -> Int? {
+        guard stack.last?.instrumentationType == .manual else {
+            return nil
+        }
+
+        var index = stack.endIndex
+        while index > stack.startIndex,
+              stack[stack.index(before: index)].instrumentationType == .manual {
+            index = stack.index(before: index)
+        }
+        return index
+    }
+
     private func remove(
         identity: ViewIdentifier,
         sceneIdentifier: RUMSceneIdentifier? = nil,
-        time: Date? = nil
+        time: Date? = nil,
+        stopAttributes: [AttributeKey: AttributeValue]? = nil
     ) {
         #if os(iOS)
         discardPendingUIKitSplitViewRemoval(identity: identity, sceneIdentifier: sceneIdentifier)
@@ -358,7 +425,7 @@ internal final class RUMViewsHandler {
         // Stop and remove the visible view from the stack
         let view = stack.removeLast()
         if isActive {
-            stop(view: view, time: time)
+            stop(view: view, time: time, attributes: stopAttributes)
         }
 
         // Restart the previous view if any.
@@ -437,14 +504,18 @@ internal final class RUMViewsHandler {
         )
     }
 
-    private func stop(view: View, time: Date? = nil) {
+    private func stop(
+        view: View,
+        time: Date? = nil,
+        attributes: [AttributeKey: AttributeValue]? = nil
+    ) {
         guard !view.isUntrackedModal else {
             return
         }
 
         var command = RUMStopViewCommand(
                 time: time ?? dateProvider.now,
-                attributes: view.attributes,
+                attributes: attributes ?? view.attributes,
                 identity: view.identity
         )
         command.target = target(for: view)
@@ -1040,3 +1111,38 @@ extension RUMViewsHandler: SwiftUIViewHandler {
         )
     }
 }
+
+#if os(iOS)
+extension RUMViewsHandler: RUMSceneTargetedManualViewHandling {
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        add(
+            view: .init(
+                identity: ViewIdentifier(key),
+                name: name ?? key,
+                path: key,
+                isUntrackedModal: false,
+                attributes: attributes,
+                instrumentationType: .manual,
+                sceneIdentifier: sceneIdentifier
+            )
+        )
+    }
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        remove(
+            identity: ViewIdentifier(key),
+            sceneIdentifier: sceneIdentifier,
+            stopAttributes: attributes
+        )
+    }
+}
+#endif

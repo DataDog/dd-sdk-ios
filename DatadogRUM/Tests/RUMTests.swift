@@ -168,6 +168,53 @@ class RUMTests: XCTestCase {
         XCTAssertNil(rum.instrumentation.appHangs)
         XCTAssertNil(rum.instrumentation.memoryWarningMonitor)
     }
+
+    #if os(iOS)
+    @MainActor
+    func testWhenEnabled_thenSceneTargetedManualViewUsesInstrumentationStack() throws {
+        let core = SingleFeatureCoreMock<RUMFeature>()
+        core.featureScopeOverride = FeatureScopeMock()
+        RUM.enable(with: config, in: core)
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        rum.instrumentation.viewsHandler.notify_onAppear(
+            identity: "home",
+            name: "Home",
+            path: "/home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        let home1 = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+
+        monitor.startView(
+            key: "compose",
+            name: "Compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        let compose = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(compose.viewName, "Compose")
+        XCTAssertNotEqual(compose.viewID, home1.viewID)
+
+        rum.instrumentation.viewsHandler.notify_onAppear(
+            identity: "home",
+            name: "Home",
+            path: "/home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(scene))?.viewID, compose.viewID)
+
+        monitor.stopView(key: "compose", attributes: [:], sceneIdentifier: scene)
+
+        let home2 = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(home2.viewName, "Home")
+        XCTAssertNotEqual(home2.viewID, home1.viewID)
+        XCTAssertNotEqual(home2.viewID, compose.viewID)
+    }
+    #endif
     #endif
 
     func testWhenEnabledWithInvalidLongTasksThreshold() throws {

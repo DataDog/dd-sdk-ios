@@ -156,6 +156,12 @@ internal class Monitor: RUMCommandSubscriber {
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
+    #if os(iOS)
+    /// Per-scene navigation owner for future explicitly targeted manual views.
+    /// Kept weak so the monitor cannot extend instrumentation lifetime.
+    private weak var sceneTargetedManualViewHandler: (any RUMSceneTargetedManualViewHandling)?
+    #endif
+
     init(
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider
@@ -167,6 +173,14 @@ internal class Monitor: RUMCommandSubscriber {
         self.rumUUIDGenerator = dependencies.rumUUIDGenerator
         self.telemetry = dependencies.telemetry
     }
+
+    #if os(iOS)
+    func bind(
+        sceneTargetedManualViewHandler: any RUMSceneTargetedManualViewHandling
+    ) {
+        self.sceneTargetedManualViewHandler = sceneTargetedManualViewHandler
+    }
+    #endif
 
     func process(command: RUMCommand) {
         guard command.target != .none else {
@@ -922,6 +936,36 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 }
+
+#if os(iOS)
+extension Monitor: RUMSceneTargetedManualViewHandling {
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        sceneTargetedManualViewHandler?.startView(
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        sceneTargetedManualViewHandler?.stopView(
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+}
+#endif
 
 /// An internal interface of RUM monitor.
 extension Monitor {
