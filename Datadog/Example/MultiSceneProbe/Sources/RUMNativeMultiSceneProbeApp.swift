@@ -49,6 +49,9 @@ enum ProbeRuntime {
         static let phase = "probe.phase"
         static let uptime = "probe.uptime"
         static let readerControlGeneration = "probe.reader_control_generation"
+        static let viewScene = "probe.view.scene"
+        static let viewSceneSessionID = "probe.view.scene_session_id"
+        static let viewScreen = "probe.view.screen"
     }
 
     static let serviceName = "ios-sdk-native-multi-scene-probe"
@@ -58,6 +61,10 @@ enum ProbeRuntime {
 
     private static let scenario = resolution.scenario
     private static let options = scenario?.runtimeOptions ?? ProbeRuntimeOptions()
+    static let eventRecorder = ProbeEventRecorder(
+        runID: runID,
+        scenarioID: scenario?.identifier ?? "invalid"
+    )
 
     static let automaticallyNavigates = options.automaticallyNavigates
     static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow
@@ -156,7 +163,17 @@ enum ProbeRuntime {
                     record(actionEvent: event)
                     return event
                 },
+                errorEventMapper: { event in
+                    record(errorEvent: event)
+                    return event
+                },
                 onSessionStart: { sessionID, isDiscarded in
+                    eventRecorder.record(
+                        ProbeRUMEventAdapter.sessionStarted(
+                            sessionID: sessionID,
+                            isDiscarded: isDiscarded
+                        )
+                    )
                     record("session id=\(sessionID) discarded=\(isDiscarded)")
                 },
                 telemetrySampleRate: 100
@@ -249,7 +266,32 @@ enum ProbeRuntime {
         logger.notice("\(line, privacy: .public)")
     }
 
+    static func recordDestination(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String,
+        isCommitted: Bool,
+        occurrence: Int? = nil
+    ) {
+        eventRecorder.record(
+            ProbeSignal(
+                kind: isCommitted
+                    ? .destinationMaterialized
+                    : .destinationAppearanceObserved,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID == "unresolved"
+                        ? nil
+                        : sceneSessionID,
+                    screen: screen,
+                    occurrence: occurrence
+                )
+            )
+        )
+    }
+
     private static func record(viewEvent event: RUMViewEvent) {
+        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event))
         record(
             "payload type=view session=\(event.session.id) view=\(event.view.id) "
                 + "name=\(event.view.name ?? "nil") "
@@ -258,6 +300,7 @@ enum ProbeRuntime {
     }
 
     private static func record(actionEvent event: RUMActionEvent) {
+        eventRecorder.record(ProbeRUMEventAdapter.action(event))
         record(
             "payload type=action session=\(event.session.id) view=\(event.view.id) "
                 + "action=\(event.action.id) name=\(event.view.name ?? "nil") "
@@ -266,6 +309,7 @@ enum ProbeRuntime {
     }
 
     private static func record(resourceEvent event: RUMResourceEvent) {
+        eventRecorder.record(ProbeRUMEventAdapter.resource(event))
         let actionID: String
         switch event.action?.id {
         case .string(let value):
@@ -279,6 +323,15 @@ enum ProbeRuntime {
             "payload type=resource session=\(event.session.id) view=\(event.view.id) "
                 + "action=\(actionID) resource=\(event.resource.id) "
                 + "name=\(event.view.name ?? "nil") url=\(event.resource.url)"
+        )
+    }
+
+    private static func record(errorEvent event: RUMErrorEvent) {
+        eventRecorder.record(ProbeRUMEventAdapter.error(event))
+        record(
+            "payload type=error session=\(event.session.id) view=\(event.view.id) "
+                + "error=\(event.error.id ?? "nil") name=\(event.view.name ?? "nil") "
+                + "type=\(event.error.type ?? "nil") crash=\(event.error.isCrash ?? false)"
         )
     }
 

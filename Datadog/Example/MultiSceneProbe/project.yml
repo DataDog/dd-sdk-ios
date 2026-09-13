@@ -45,7 +45,12 @@ targets:
     deploymentTarget: "27.0"
     sources:
       - path: Tests
+        excludes:
+          - Fixtures/**
       - path: Sources/Harness
+      - path: Tests/Fixtures
+        type: group
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.datadoghq.rum-native-multi-scene-probe.tests

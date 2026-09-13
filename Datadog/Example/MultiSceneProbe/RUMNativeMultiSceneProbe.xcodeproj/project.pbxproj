@@ -7,37 +7,63 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		051A3319FAD022CC5035148E /* ProbeSemanticTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */; };
 		076A381651E81D748B1220CA /* ProbeScenarioCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */; };
 		0D516852A5B5DA83F90F3FAA /* ProbeScenarioRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */; };
 		0F0F73340064B9984FB794B3 /* ProbeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2650C73317A64214B77300AA /* ProbeStep.swift */; };
+		15F3958E3D257745B782A89A /* forbidden-view-start.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 98D75AA30A615CC0F681F85E /* forbidden-view-start.jsonl */; };
 		2B5981885706E364F5011A3D /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = B687B5705E5D4BD0978C21DF /* DatadogCore */; };
+		31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */; };
+		3447F361E1070B801CBD3DA9 /* ProbeSemanticOracleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */; };
+		474753A8459F5DC4D3FE60D8 /* ProbeSemanticTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */; };
 		4A0A157743236432537BD024 /* ProbeScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */; };
+		4B9EC25FEE9BBBDA64DAAA9D /* ProbeEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */; };
+		4C6233CDE06ED0C9F4164F91 /* ProbeRUMEventAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56E470051637B2BBA3F5197 /* ProbeRUMEventAdapter.swift */; };
 		4EA1FAF4E556656C324873BB /* ProbeScenarioRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */; };
+		532D9664259419CF0C9B0B36 /* ProbeSemanticOracle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D96B297381A0382471A27B /* ProbeSemanticOracle.swift */; };
+		5F048A36A049F99C80DCD55A /* ProbeSemanticOracle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D96B297381A0382471A27B /* ProbeSemanticOracle.swift */; };
 		69702433B9BF742BDCBE5D93 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 862E13E4F94AF015BBE28727 /* DatadogRUM */; };
+		713DBF2CBCC5C4A4DE6E3875 /* ProbeSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */; };
 		7B876752D5CB75F133A06D46 /* ProbeScenarioCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */; };
+		7C42ECF72D3AC02D3B0B6360 /* ProbeSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */; };
 		90752CECE73F620060EEEC07 /* ProbeExpectation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */; };
+		96B94BA75FE19EADE6D8AD4C /* exp-092-wrong-view.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 750CAEA78BE5151953F9B6E5 /* exp-092-wrong-view.jsonl */; };
+		B0B6B776EAB0556EBA6975D0 /* ignored-native-gesture.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = BF4E2E59A851EE7F710B0C94 /* ignored-native-gesture.jsonl */; };
 		C6F68B81972458BCE62765AE /* RUMNativeMultiSceneProbeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */; };
+		C82948545DD225AA149757F8 /* exp-098-pass.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 341303B1C383D8BAAAB80BC9 /* exp-098-pass.jsonl */; };
 		D27D9589D5DEAA27162AB7B2 /* ProbeScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */; };
 		DEC28959E5D32D8307EB096E /* ProbeWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */; };
 		F0653AB971C90BD3CA791B4F /* ProbeScenarioRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */; };
+		F70BEA7173CC0EA2175910A9 /* missing-expected-event.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 87CBC080555B8D5FC2156FF4 /* missing-expected-event.jsonl */; };
 		FEB852255135F2BEEAED1164 /* ProbeExpectation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */; };
 		FED0604E6D6F348735C12F87 /* ProbeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2650C73317A64214B77300AA /* ProbeStep.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracleTests.swift; sourceTree = "<group>"; };
 		2650C73317A64214B77300AA /* ProbeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeStep.swift; sourceTree = "<group>"; };
+		341303B1C383D8BAAAB80BC9 /* exp-098-pass.jsonl */ = {isa = PBXFileReference; path = "exp-098-pass.jsonl"; sourceTree = "<group>"; };
 		3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioCatalog.swift; sourceTree = "<group>"; };
 		410FD6B2EE19433933438E6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSignal.swift; sourceTree = "<group>"; };
+		51D96B297381A0382471A27B /* ProbeSemanticOracle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracle.swift; sourceTree = "<group>"; };
+		750CAEA78BE5151953F9B6E5 /* exp-092-wrong-view.jsonl */ = {isa = PBXFileReference; path = "exp-092-wrong-view.jsonl"; sourceTree = "<group>"; };
 		8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioRunner.swift; sourceTree = "<group>"; };
+		87CBC080555B8D5FC2156FF4 /* missing-expected-event.jsonl */ = {isa = PBXFileReference; path = "missing-expected-event.jsonl"; sourceTree = "<group>"; };
 		8B96630475BEA11CBB1F7E7B /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "dd-sdk-ios"; path = ../../..; sourceTree = SOURCE_ROOT; };
+		98D75AA30A615CC0F681F85E /* forbidden-view-start.jsonl */ = {isa = PBXFileReference; path = "forbidden-view-start.jsonl"; sourceTree = "<group>"; };
 		9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeWindowView.swift; sourceTree = "<group>"; };
 		9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeExpectation.swift; sourceTree = "<group>"; };
 		A25A69F4B400932E134CAE6D /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
+		A56E470051637B2BBA3F5197 /* ProbeRUMEventAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeRUMEventAdapter.swift; sourceTree = "<group>"; };
 		B5DF64E166771C0BC42C259F /* RUMNativeMultiSceneProbeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RUMNativeMultiSceneProbeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BF4E2E59A851EE7F710B0C94 /* ignored-native-gesture.jsonl */ = {isa = PBXFileReference; path = "ignored-native-gesture.jsonl"; sourceTree = "<group>"; };
 		C8C347315337A830830F39F1 /* RUMNativeMultiSceneProbe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RUMNativeMultiSceneProbe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenario.swift; sourceTree = "<group>"; };
 		E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioRunnerTests.swift; sourceTree = "<group>"; };
+		E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeEventRecorder.swift; sourceTree = "<group>"; };
 		EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMNativeMultiSceneProbeApp.swift; sourceTree = "<group>"; };
+		F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticTimeline.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,9 +88,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		20F0ADC3147142593EC178FD /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				750CAEA78BE5151953F9B6E5 /* exp-092-wrong-view.jsonl */,
+				341303B1C383D8BAAAB80BC9 /* exp-098-pass.jsonl */,
+				98D75AA30A615CC0F681F85E /* forbidden-view-start.jsonl */,
+				BF4E2E59A851EE7F710B0C94 /* ignored-native-gesture.jsonl */,
+				87CBC080555B8D5FC2156FF4 /* missing-expected-event.jsonl */,
+			);
+			name = Fixtures;
+			path = Tests/Fixtures;
+			sourceTree = "<group>";
+		};
 		22E3DFDB95449D2E8A719F03 = {
 			isa = PBXGroup;
 			children = (
+				20F0ADC3147142593EC178FD /* Fixtures */,
 				3DF4389894DEA008C1596FB1 /* Packages */,
 				371ABB6011FEF069AB067739 /* Sources */,
 				403FC2A18CF3CA92918E146D /* Tests */,
@@ -77,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				410FD6B2EE19433933438E6C /* Info.plist */,
+				A56E470051637B2BBA3F5197 /* ProbeRUMEventAdapter.swift */,
 				9C53D7C5E71F6D0C1BD39750 /* ProbeWindowView.swift */,
 				EBA6923E54E0BAA67B847D56 /* RUMNativeMultiSceneProbeApp.swift */,
 				B239EE95AC9926A8A9C68EBC /* Harness */,
@@ -96,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */,
+				25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -112,10 +154,14 @@
 		B239EE95AC9926A8A9C68EBC /* Harness */ = {
 			isa = PBXGroup;
 			children = (
+				E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */,
 				9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */,
 				DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */,
 				3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */,
 				8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */,
+				51D96B297381A0382471A27B /* ProbeSemanticOracle.swift */,
+				F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */,
+				49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */,
 				2650C73317A64214B77300AA /* ProbeStep.swift */,
 			);
 			path = Harness;
@@ -149,6 +195,7 @@
 			buildConfigurationList = 6DDA4E13269EF4E9B0315C77 /* Build configuration list for PBXNativeTarget "RUMNativeMultiSceneProbeTests" */;
 			buildPhases = (
 				630A4EE6A8E08DB47C1739C5 /* Sources */,
+				77CF62D05D2CDA4DBE00F636 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -195,15 +242,35 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		77CF62D05D2CDA4DBE00F636 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96B94BA75FE19EADE6D8AD4C /* exp-092-wrong-view.jsonl in Resources */,
+				C82948545DD225AA149757F8 /* exp-098-pass.jsonl in Resources */,
+				15F3958E3D257745B782A89A /* forbidden-view-start.jsonl in Resources */,
+				B0B6B776EAB0556EBA6975D0 /* ignored-native-gesture.jsonl in Resources */,
+				F70BEA7173CC0EA2175910A9 /* missing-expected-event.jsonl in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		32A827C45427C91962C3D7D9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */,
 				90752CECE73F620060EEEC07 /* ProbeExpectation.swift in Sources */,
+				4C6233CDE06ED0C9F4164F91 /* ProbeRUMEventAdapter.swift in Sources */,
 				D27D9589D5DEAA27162AB7B2 /* ProbeScenario.swift in Sources */,
 				7B876752D5CB75F133A06D46 /* ProbeScenarioCatalog.swift in Sources */,
 				F0653AB971C90BD3CA791B4F /* ProbeScenarioRunner.swift in Sources */,
+				5F048A36A049F99C80DCD55A /* ProbeSemanticOracle.swift in Sources */,
+				474753A8459F5DC4D3FE60D8 /* ProbeSemanticTimeline.swift in Sources */,
+				713DBF2CBCC5C4A4DE6E3875 /* ProbeSignal.swift in Sources */,
 				FED0604E6D6F348735C12F87 /* ProbeStep.swift in Sources */,
 				DEC28959E5D32D8307EB096E /* ProbeWindowView.swift in Sources */,
 				C6F68B81972458BCE62765AE /* RUMNativeMultiSceneProbeApp.swift in Sources */,
@@ -214,11 +281,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B9EC25FEE9BBBDA64DAAA9D /* ProbeEventRecorder.swift in Sources */,
 				FEB852255135F2BEEAED1164 /* ProbeExpectation.swift in Sources */,
 				4A0A157743236432537BD024 /* ProbeScenario.swift in Sources */,
 				076A381651E81D748B1220CA /* ProbeScenarioCatalog.swift in Sources */,
 				0D516852A5B5DA83F90F3FAA /* ProbeScenarioRunner.swift in Sources */,
 				4EA1FAF4E556656C324873BB /* ProbeScenarioRunnerTests.swift in Sources */,
+				532D9664259419CF0C9B0B36 /* ProbeSemanticOracle.swift in Sources */,
+				3447F361E1070B801CBD3DA9 /* ProbeSemanticOracleTests.swift in Sources */,
+				051A3319FAD022CC5035148E /* ProbeSemanticTimeline.swift in Sources */,
+				7C42ECF72D3AC02D3B0B6360 /* ProbeSignal.swift in Sources */,
 				0F0F73340064B9984FB794B3 /* ProbeStep.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

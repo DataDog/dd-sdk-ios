@@ -144,6 +144,9 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
             ProbeRuntime.Attribute.sourceScene: window.label,
             ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
             ProbeRuntime.Attribute.screen: screen,
+            ProbeRuntime.Attribute.viewScene: window.label,
+            ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.viewScreen: screen,
             ProbeRuntime.Attribute.readerControlGeneration: readerControlGeneration
         ]
     }
@@ -231,6 +234,20 @@ struct ProbeWindowRoot: View {
                 }
                 sceneSessionID = identifier
                 advanceRUMViewBindingGeneration(for: path)
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .sceneReady,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: identifier,
+                            screen: currentNavigationScreen
+                        ),
+                        scenePhase: "ready",
+                        activationState: activationStateDescription(
+                            resolvedWindow.windowScene?.activationState
+                        )
+                    )
+                )
                 ProbeRuntime.record(
                     "scene resolved source=\(window.label) native=\(identifier)"
                 )
@@ -348,12 +365,34 @@ struct ProbeWindowRoot: View {
                 return
             }
             ProbeRuntime.record("navigation abort requested source=\(window.label) destination=detail")
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "home"
+                    ),
+                    interval: "aborted-navigation"
+                )
+            )
             navigationPath.wrappedValue = [.detail(1)]
             navigationPath.wrappedValue = []
             try? await Task.sleep(for: .milliseconds(250))
             guard !Task.isCancelled else {
                 return
             }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "home"
+                    ),
+                    interval: "aborted-navigation"
+                )
+            )
             ProbeRuntime.emitLifecycleMarker(
                 window: window,
                 sceneSessionID: sceneSessionID,
@@ -598,6 +637,21 @@ struct ProbeWindowRoot: View {
                 path = newPath
                 navigationMutation += 1
                 advanceRUMViewBindingGeneration(for: newPath)
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .navigationPathMutation,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: sceneSessionID,
+                            screen: currentNavigationScreen
+                        ),
+                        previousNavigationPath: navigationPathDescription(
+                            for: previousPath
+                        ),
+                        navigationPath: navigationPathDescription(for: newPath),
+                        mutation: navigationMutation
+                    )
+                )
                 ProbeRuntime.record(
                     "navigation path mutated source=\(window.label) "
                         + "screen=\(currentNavigationScreen) mutation=\(navigationMutation)"
@@ -621,6 +675,14 @@ struct ProbeWindowRoot: View {
                     )
                 }
                 #endif
+                if newPath.count < previousPath.count {
+                    ProbeRuntime.recordDestination(
+                        window: window,
+                        sceneSessionID: sceneSessionID,
+                        screen: currentNavigationScreen,
+                        isCommitted: true
+                    )
+                }
             }
         )
     }
@@ -674,6 +736,36 @@ struct ProbeWindowRoot: View {
             return .alternate
         case nil:
             return .home
+        }
+    }
+
+    private func navigationPathDescription(for path: [ProbeRoute]) -> [String] {
+        ["home"] + path.map { route in
+            switch route {
+            case .detail(let instance):
+                return "detail-\(instance)"
+            case .alternate:
+                return "alternate"
+            }
+        }
+    }
+
+    private func activationStateDescription(
+        _ activationState: UIScene.ActivationState?
+    ) -> String? {
+        switch activationState {
+        case .unattached:
+            return "unattached"
+        case .foregroundActive:
+            return "foreground-active"
+        case .foregroundInactive:
+            return "foreground-inactive"
+        case .background:
+            return "background"
+        case nil:
+            return nil
+        @unknown default:
+            return "unknown"
         }
     }
 }
@@ -862,6 +954,19 @@ private struct ProbeSplitLayout: View {
         let previous = selection?.screen ?? "none"
         rumViewBindingGeneration &+= 1
         selection = newSelection
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: newSelection.screen
+                ),
+                previousNavigationPath: [previous],
+                navigationPath: [newSelection.screen],
+                mutation: rumViewBindingGeneration
+            )
+        )
         ProbeRuntime.record(
             "split selection committed source=\(window.label) "
                 + "from=\(previous) to=\(newSelection.screen) "
@@ -905,6 +1010,12 @@ private struct ProbeSplitLayout: View {
         ProbeRuntime.record(
             "split selection materialized source=\(window.label) "
                 + "screen=\(newSelection.screen)"
+        )
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: newSelection.screen,
+            isCommitted: true
         )
         ProbeRuntime.emitLifecycleMarker(
             window: window,
@@ -1554,6 +1665,20 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
                 transition.completionCurve = .easeInOut
                 transition.completionSpeed = 0.75
                 self.interactivePopTransition = transition
+                let transitionID = "uikit-pop-\(UUID().uuidString.lowercased())"
+                let interval = outcome == .cancel ? "cancelled-pop" : "finished-pop"
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .intervalBegan,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: self.window.label,
+                            nativeSceneID: self.sceneSessionID,
+                            screen: "secondary-2"
+                        ),
+                        interval: interval,
+                        transitionID: transitionID
+                    )
+                )
                 ProbeRuntime.record(
                     "uikit split navigation interactive pop started source=\(self.window.label) "
                         + "native=\(self.sceneSessionID) outcome=\(outcome.rawValue) "
@@ -1564,6 +1689,19 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
 
                 guard navigationController.popViewController(animated: true) === secondaryTwo else {
                     self.interactivePopTransition = nil
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: self.window.label,
+                                nativeSceneID: self.sceneSessionID,
+                                screen: "secondary-2"
+                            ),
+                            transitionID: transitionID,
+                            result: .fail,
+                            reason: "deterministic UIKit pop was rejected"
+                        )
+                    )
                     ProbeRuntime.record(
                         "uikit split navigation interactive pop rejected source=\(self.window.label) "
                             + "native=\(self.sceneSessionID)"
@@ -1571,7 +1709,39 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
                     return
                 }
 
-                _ = navigationController.transitionCoordinator?.animate(
+                guard let coordinator = navigationController.transitionCoordinator else {
+                    self.interactivePopTransition = nil
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: self.window.label,
+                                nativeSceneID: self.sceneSessionID,
+                                screen: "secondary-2"
+                            ),
+                            transitionID: transitionID,
+                            result: .fail,
+                            reason: "deterministic UIKit pop had no transition coordinator"
+                        )
+                    )
+                    return
+                }
+
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .transitionBegan,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: self.window.label,
+                            nativeSceneID: self.sceneSessionID,
+                            screen: "secondary-2"
+                        ),
+                        interval: interval,
+                        transitionID: transitionID,
+                        interactive: true
+                    )
+                )
+
+                _ = coordinator.animate(
                     alongsideTransition: nil,
                     completion: { [weak self] context in
                         guard let self else {
@@ -1580,6 +1750,38 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
                         let top = navigationController.topViewController.map {
                             String(describing: ObjectIdentifier($0))
                         } ?? "nil"
+                        let observedOutcome: ProbeTransitionOutcome = context.isCancelled
+                            ? .cancel
+                            : .finish
+                        let resolvedScreen = context.isCancelled
+                            ? "secondary-2"
+                            : "secondary-1"
+                        ProbeRuntime.eventRecorder.record(
+                            ProbeSignal(
+                                kind: .transitionResolved,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: self.window.label,
+                                    nativeSceneID: self.sceneSessionID,
+                                    screen: resolvedScreen
+                                ),
+                                interval: interval,
+                                transitionID: transitionID,
+                                interactive: true,
+                                outcome: observedOutcome
+                            )
+                        )
+                        ProbeRuntime.eventRecorder.record(
+                            ProbeSignal(
+                                kind: .intervalEnded,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: self.window.label,
+                                    nativeSceneID: self.sceneSessionID,
+                                    screen: resolvedScreen
+                                ),
+                                interval: interval,
+                                transitionID: transitionID
+                            )
+                        )
                         ProbeRuntime.record(
                             "uikit split navigation interactive pop completed source=\(self.window.label) "
                                 + "native=\(self.sceneSessionID) "
@@ -1804,6 +2006,13 @@ private class ProbeUIKitSplitChildViewController: UIViewController {
         super.viewDidAppear(animated)
         appearanceCount += 1
         recordLifecycle("viewDidAppear appearance=\(appearanceCount)")
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: screen,
+            isCommitted: false,
+            occurrence: appearanceCount
+        )
         lifecycleDelegate?.splitChildDidAppear(self)
     }
 
@@ -1988,6 +2197,15 @@ private struct ProbeHomeView: View {
                 )
                 emit(phase: "navigation-appearance-\(appearanceCount)")
             }
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "home",
+                isCommitted: false,
+                occurrence: ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
+                    ? appearanceCount
+                    : nil
+            )
             guard !didAppear else {
                 return
             }
@@ -2051,6 +2269,12 @@ private struct ProbeSheetView: View {
                 return
             }
             didAppear = true
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "sheet",
+                isCommitted: true
+            )
             emit(phase: "on-appear")
         }
         .task {
@@ -2118,6 +2342,12 @@ private struct ProbeDetailView: View {
             )
         )
         .onChange(of: instance, initial: true) { _, instance in
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "detail-\(instance)",
+                isCommitted: true
+            )
             guard ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking else {
                 return
             }
@@ -2192,6 +2422,12 @@ private struct ProbeAlternateView: View {
                 return
             }
             didAppear = true
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "alternate",
+                isCommitted: true
+            )
             emit(phase: "on-appear")
         }
         .task {
