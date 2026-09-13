@@ -380,6 +380,7 @@ internal final class RUMViewTrackingState {
     private(set) var configuration: Configuration?
     private(set) var lifecycleGeneration: UInt64 = 0
     private(set) var revision: UInt64 = 0
+    private(set) var lastProvenSceneIdentifier: RUMSceneIdentifier?
     private var activeOccurrence: ActiveOccurrence?
     private var lastStartedBindingGeneration: UInt64?
     private var requiresRemount = false
@@ -641,6 +642,12 @@ internal final class RUMViewTrackingState {
                 self.attachment = attachment
                 didMutate = true
             }
+            if
+                case .attached(let sceneIdentifier?) = attachment,
+                lastProvenSceneIdentifier != sceneIdentifier {
+                lastProvenSceneIdentifier = sceneIdentifier
+                didMutate = true
+            }
         }
         if let isAppeared {
             if self.isAppeared != isAppeared {
@@ -713,6 +720,22 @@ internal final class RUMViewTrackingState {
         return activeOccurrence?.sceneIdentifier
     }
 
+    /// Scene proof available to a navigation-owned reveal. A hidden retained
+    /// route is routinely detached from its window before the path binding is
+    /// committed, so it may use its last concrete scene. An attached reader
+    /// with no scene is ambiguous and must stay unresolved in a multi-window
+    /// application.
+    var retainedRouteSceneIdentifier: RUMSceneIdentifier? {
+        switch attachment {
+        case .attached(let sceneIdentifier?):
+            return sceneIdentifier
+        case .attached(nil):
+            return nil
+        case .detached:
+            return lastProvenSceneIdentifier
+        }
+    }
+
     var activeLifecycleGeneration: UInt64? {
         activeOccurrence?.lifecycleGeneration
     }
@@ -765,9 +788,9 @@ internal final class RUMViewTrackingState {
         if let activeOccurrence {
             committedSceneIdentifier = activeOccurrence.sceneIdentifier
         } else if case .attached(let attachedSceneIdentifier) = attachment {
-            committedSceneIdentifier = attachedSceneIdentifier
+            committedSceneIdentifier = attachedSceneIdentifier ?? lastProvenSceneIdentifier
         } else {
-            committedSceneIdentifier = nil
+            committedSceneIdentifier = lastProvenSceneIdentifier
         }
         guard
             committedSceneIdentifier == sceneIdentifier
@@ -780,6 +803,7 @@ internal final class RUMViewTrackingState {
         attachment = .detached
         isAppeared = false
         activeOccurrence = nil
+        lastProvenSceneIdentifier = nil
         requiresRemount = true
         finishMutation(true)
         return true
@@ -866,6 +890,136 @@ internal final class RUMViewTrackingState {
         }
     }
 }
+
+#if os(iOS) || os(visionOS)
+/// Experimental navigation-owned signal used to reveal an already materialized
+/// route before SwiftUI replays the retained content's outer lifecycle callbacks.
+/// It deliberately does not retain or replay a latest route selection: a path
+/// write cannot make a never-mounted destination into a RUM view.
+@MainActor
+internal final class RUMSwiftUINavigationOccurrenceSource {
+    private final class WeakRegistration {
+        weak var registration: RUMSwiftUINavigationOccurrenceRegistration?
+        let callbackEpoch: UInt64
+
+        init(
+            registration: RUMSwiftUINavigationOccurrenceRegistration,
+            callbackEpoch: UInt64
+        ) {
+            self.registration = registration
+            self.callbackEpoch = callbackEpoch
+        }
+    }
+
+    private var registrations: [WeakRegistration] = []
+
+    fileprivate func register(
+        _ registration: RUMSwiftUINavigationOccurrenceRegistration,
+        callbackEpoch: UInt64
+    ) {
+        registrations.removeAll {
+            $0.registration == nil || $0.registration === registration
+        }
+        registrations.append(
+            WeakRegistration(
+                registration: registration,
+                callbackEpoch: callbackEpoch
+            )
+        )
+    }
+
+    /// Reveals a route retained below the current navigation destination. Only
+    /// a registration which previously started, disappeared, and retains a
+    /// proven scene can accept this committed path contraction.
+    @discardableResult
+    func revealRetainedRoute(
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64
+    ) -> Bool {
+        registrations.removeAll { $0.registration == nil }
+        var didRevealRoute = false
+        for entry in registrations {
+            guard let registration = entry.registration else {
+                continue
+            }
+            didRevealRoute = registration.revealRetainedRoute(
+                from: self,
+                occurrenceKey: occurrenceKey,
+                bindingGeneration: bindingGeneration,
+                expectedCallbackEpoch: entry.callbackEpoch
+            ) || didRevealRoute
+        }
+        return didRevealRoute
+    }
+}
+
+/// Stable state retained by one keyed modifier while its hidden scene reader
+/// callbacks are rebound to newer SwiftUI values.
+@MainActor
+internal final class RUMSwiftUINavigationOccurrenceRegistration {
+    typealias Process = (
+        RUMViewTrackingState.Configuration,
+        RUMSceneIdentifier
+    ) -> Void
+
+    private weak var source: RUMSwiftUINavigationOccurrenceSource?
+    private weak var state: RUMViewTrackingState?
+    private var configuration: RUMViewTrackingState.Configuration?
+    private var attachment: RUMViewTrackingState.Attachment = .detached
+    private var process: Process?
+    private(set) var callbackEpoch: UInt64 = 0
+
+    func rebind(
+        to source: RUMSwiftUINavigationOccurrenceSource,
+        state: RUMViewTrackingState,
+        configuration: RUMViewTrackingState.Configuration,
+        attachment: RUMViewTrackingState.Attachment,
+        process: @escaping Process
+    ) {
+        callbackEpoch &+= 1
+        self.source = source
+        self.state = state
+        self.configuration = configuration
+        self.attachment = attachment
+        self.process = process
+        source.register(self, callbackEpoch: callbackEpoch)
+    }
+
+    fileprivate func revealRetainedRoute(
+        from source: RUMSwiftUINavigationOccurrenceSource,
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64,
+        expectedCallbackEpoch: UInt64
+    ) -> Bool {
+        guard
+            self.source === source,
+            callbackEpoch == expectedCallbackEpoch,
+            let state,
+            let configuration,
+            configuration.occurrenceKey == occurrenceKey,
+            bindingGeneration > configuration.bindingGeneration,
+            bindingGeneration > (state.configuration?.bindingGeneration ?? 0),
+            state.lifecycleGeneration > 0,
+            !state.isAppeared,
+            state.activeLifecycleGeneration == nil,
+            !state.needsReaderRemount,
+            state.attachment == attachment,
+            let sceneIdentifier = state.retainedRouteSceneIdentifier,
+            let process
+        else {
+            return false
+        }
+
+        let nextConfiguration = RUMViewTrackingState.Configuration(
+            occurrenceKey: occurrenceKey,
+            bindingGeneration: bindingGeneration,
+            descriptor: configuration.descriptor
+        )
+        process(nextConfiguration, sceneIdentifier)
+        return true
+    }
+}
+#endif
 
 /// Applies reconciled SwiftUI lifecycle transitions to the scene-aware view
 /// handler. Keyed occurrences own an immutable descriptor snapshot; legacy
@@ -1776,6 +1930,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
     /// lifecycle path.
     #if os(iOS) || os(visionOS)
     let configuration: RUMViewTrackingState.Configuration?
+    let navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
     #endif
 
     /// The Content View identifier.
@@ -1791,7 +1946,8 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
                     name: name,
                     path: path,
                     attributes: attributes,
-                    configuration: configuration
+                    configuration: configuration,
+                    navigationOccurrenceSource: navigationOccurrenceSource
                 )
             )
         } else {
@@ -1826,6 +1982,7 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
     let path: String
     let attributes: [AttributeKey: AttributeValue]
     let configuration: RUMViewTrackingState.Configuration?
+    let navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
 
     func body(content: Content) -> some View {
         if #available(iOS 17.0, visionOS 1.0, *) {
@@ -1836,6 +1993,7 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
                     path: path,
                     attributes: attributes,
                     configuration: configuration,
+                    navigationOccurrenceSource: navigationOccurrenceSource,
                     startsOnInitialMount: startsOnInitialMount
                 )
             )
@@ -1846,7 +2004,8 @@ private struct RUMMultiSceneViewModifier: SwiftUI.ViewModifier {
                     name: name,
                     path: path,
                     attributes: attributes,
-                    configuration: configuration
+                    configuration: configuration,
+                    navigationOccurrenceSource: navigationOccurrenceSource
                 )
             )
         }
@@ -1869,12 +2028,15 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let path: String
     let attributes: [AttributeKey: AttributeValue]
     let configuration: RUMViewTrackingState.Configuration?
+    let navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
     let startsOnInitialMount: Bool
 
     @Environment(\.rumSceneIdentifier)
     private var sceneIdentifier
     @State private var trackingState = RUMViewTrackingState()
     @State private var didReceiveInitialSceneIdentifier = false
+    @State private var navigationOccurrenceRegistration =
+        RUMSwiftUINavigationOccurrenceRegistration()
 
     func body(content: Content) -> some View {
         content
@@ -1893,9 +2055,11 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     } : nil,
                     onReconcile: configuration == nil ? nil : { attachment in
                         update(attachment: attachment)
+                        rebindNavigationOccurrenceSource(attachment: attachment)
                     },
                     onChange: { attachment in
                         update(attachment: attachment)
+                        rebindNavigationOccurrenceSource(attachment: attachment)
                     }
                 )
             )
@@ -2085,6 +2249,43 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
         apply(trackingState.disappear())
     }
 
+    private func rebindNavigationOccurrenceSource(
+        attachment: RUMViewTrackingState.Attachment
+    ) {
+        guard let configuration, let navigationOccurrenceSource else {
+            return
+        }
+        let trackingState = trackingState
+        navigationOccurrenceRegistration.rebind(
+            to: navigationOccurrenceSource,
+            state: trackingState,
+            configuration: configuration,
+            attachment: attachment
+        ) { configuration, sceneIdentifier in
+            #if os(iOS)
+            if let transitionArbiter {
+                transitionArbiter.process(
+                    .reconcile(
+                        configuration: configuration,
+                        attachment: .attached(sceneIdentifier),
+                        isAppeared: true
+                    ),
+                    state: trackingState,
+                    send: apply
+                )
+                return
+            }
+            #endif
+            apply(
+                trackingState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+    }
+
     #if os(iOS)
     private var transitionArbiter: RUMSwiftUIInteractiveTransitionArbiter? {
         guard startsOnInitialMount else {
@@ -2116,8 +2317,11 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     let path: String
     let attributes: [AttributeKey: AttributeValue]
     let configuration: RUMViewTrackingState.Configuration?
+    let navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
 
     @State private var trackingState = RUMViewTrackingState()
+    @State private var navigationOccurrenceRegistration =
+        RUMSwiftUINavigationOccurrenceRegistration()
 
     func body(content: Content) -> some View {
         content
@@ -2126,9 +2330,11 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     applicationSupportsMultipleScenes: true,
                     onReconcile: configuration == nil ? nil : { attachment in
                         update(attachment: attachment)
+                        rebindNavigationOccurrenceSource(attachment: attachment)
                     },
                     onChange: { attachment in
                         update(attachment: attachment)
+                        rebindNavigationOccurrenceSource(attachment: attachment)
                     }
                 )
             )
@@ -2153,6 +2359,29 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             apply(trackingState.update(configuration: configuration, attachment: attachment))
         } else {
             apply(trackingState.update(attachment: attachment))
+        }
+    }
+
+    private func rebindNavigationOccurrenceSource(
+        attachment: RUMViewTrackingState.Attachment
+    ) {
+        guard let configuration, let navigationOccurrenceSource else {
+            return
+        }
+        let trackingState = trackingState
+        navigationOccurrenceRegistration.rebind(
+            to: navigationOccurrenceSource,
+            state: trackingState,
+            configuration: configuration,
+            attachment: attachment
+        ) { configuration, sceneIdentifier in
+            apply(
+                trackingState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
         }
     }
 
@@ -2190,7 +2419,8 @@ public extension SwiftUI.View {
                 name: name,
                 path: path,
                 attributes: attributes,
-                configuration: nil
+                configuration: nil,
+                navigationOccurrenceSource: nil
             )
         )
         #else
@@ -2206,7 +2436,7 @@ public extension SwiftUI.View {
     }
 }
 
-#if DEBUG && (os(iOS) || os(visionOS))
+#if DEBUG && os(iOS)
 internal extension SwiftUI.View {
     /// Debug-only seam for validating navigation occurrence identity without
     /// changing the public API or SwiftUI identity of customer content.
@@ -2214,6 +2444,7 @@ internal extension SwiftUI.View {
         name: String,
         occurrenceKey: RUMViewOccurrenceKey,
         bindingGeneration: UInt64,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource? = nil,
         attributes: [AttributeKey: AttributeValue] = [:],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> some View {
@@ -2230,7 +2461,8 @@ internal extension SwiftUI.View {
                 name: name,
                 path: path,
                 attributes: attributes,
-                configuration: configuration
+                configuration: configuration,
+                navigationOccurrenceSource: navigationOccurrenceSource
             )
         )
     }

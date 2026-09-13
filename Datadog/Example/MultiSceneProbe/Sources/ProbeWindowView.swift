@@ -12,6 +12,12 @@ import UIKit
 import DatadogRUM
 #endif
 
+#if DEBUG
+private typealias ProbeNavigationOccurrenceSource = RUMSwiftUINavigationOccurrenceSource
+#else
+private final class ProbeNavigationOccurrenceSource {}
+#endif
+
 struct ProbeWindow: Codable, Hashable {
     static let windowGroupID = "rum-probe"
 
@@ -59,6 +65,7 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     let readerControlGeneration: Int
     let navigationOccurrence: ProbeNavigationOccurrence?
     let bindingGeneration: UInt64
+    let navigationOccurrenceSource: ProbeNavigationOccurrenceSource?
     @ViewBuilder let content: Content
 
     init(
@@ -70,6 +77,7 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
         readerControlGeneration: Int,
         navigationOccurrence: ProbeNavigationOccurrence? = nil,
         bindingGeneration: UInt64 = 0,
+        navigationOccurrenceSource: ProbeNavigationOccurrenceSource? = nil,
         @ViewBuilder content: () -> Content
     ) {
         self.window = window
@@ -80,6 +88,7 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
         self.readerControlGeneration = readerControlGeneration
         self.navigationOccurrence = navigationOccurrence
         self.bindingGeneration = bindingGeneration
+        self.navigationOccurrenceSource = navigationOccurrenceSource
         self.content = content()
     }
 
@@ -92,6 +101,7 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
                     name: name,
                     occurrenceKey: RUMViewOccurrenceKey(navigationOccurrence),
                     bindingGeneration: bindingGeneration,
+                    navigationOccurrenceSource: navigationOccurrenceSource,
                     attributes: trackingAttributes
                 )
             } else {
@@ -157,6 +167,7 @@ struct ProbeWindowRoot: View {
     @State private var rumViewBindingGeneration: UInt64 = 0
     @State private var homeBindingGeneration: UInt64 = 0
     @State private var destinationBindingGeneration: UInt64 = 0
+    @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var sceneSessionID = "unresolved"
     @State private var sceneWindow: UIWindow?
     @State private var readerControlGeneration = 0
@@ -470,7 +481,8 @@ struct ProbeWindowRoot: View {
                 trackingBoundary: .navigationRoute,
                 readerControlGeneration: readerControlGeneration,
                 navigationOccurrence: .home,
-                bindingGeneration: homeBindingGeneration
+                bindingGeneration: homeBindingGeneration,
+                navigationOccurrenceSource: navigationOccurrenceSource
             ) {
                 ProbeHomeView(
                     window: window,
@@ -492,7 +504,8 @@ struct ProbeWindowRoot: View {
                         trackingBoundary: .navigationRoute,
                         readerControlGeneration: readerControlGeneration,
                         navigationOccurrence: .detail(instance),
-                        bindingGeneration: destinationBindingGeneration
+                        bindingGeneration: destinationBindingGeneration,
+                        navigationOccurrenceSource: navigationOccurrenceSource
                     ) {
                         ProbeDetailView(
                             window: window,
@@ -519,7 +532,8 @@ struct ProbeWindowRoot: View {
                         trackingBoundary: .navigationRoute,
                         readerControlGeneration: readerControlGeneration,
                         navigationOccurrence: .alternate,
-                        bindingGeneration: destinationBindingGeneration
+                        bindingGeneration: destinationBindingGeneration,
+                        navigationOccurrenceSource: navigationOccurrenceSource
                     ) {
                         ProbeAlternateView(
                             window: window,
@@ -578,6 +592,7 @@ struct ProbeWindowRoot: View {
                 guard newPath != path else {
                     return
                 }
+                let previousPath = path
                 path = newPath
                 navigationMutation += 1
                 advanceRUMViewBindingGeneration(for: newPath)
@@ -585,6 +600,25 @@ struct ProbeWindowRoot: View {
                     "navigation path mutated source=\(window.label) "
                         + "screen=\(currentNavigationScreen) mutation=\(navigationMutation)"
                 )
+                #if DEBUG
+                if
+                    ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking,
+                    newPath.count < previousPath.count
+                {
+                    let didReveal = navigationOccurrenceSource.revealRetainedRoute(
+                        occurrenceKey: RUMViewOccurrenceKey(
+                            navigationOccurrence(for: newPath)
+                        ),
+                        bindingGeneration: bindingGeneration(for: newPath)
+                    )
+                    ProbeRuntime.record(
+                        "navigation occurrence source source=\(window.label) "
+                            + "screen=\(currentNavigationScreen) "
+                            + "generation=\(bindingGeneration(for: newPath)) "
+                            + "delivered=\(didReveal)"
+                    )
+                }
+                #endif
             }
         )
     }
@@ -623,6 +657,21 @@ struct ProbeWindowRoot: View {
             homeBindingGeneration = rumViewBindingGeneration
         } else {
             destinationBindingGeneration = rumViewBindingGeneration
+        }
+    }
+
+    private func bindingGeneration(for path: [ProbeRoute]) -> UInt64 {
+        path.isEmpty ? homeBindingGeneration : destinationBindingGeneration
+    }
+
+    private func navigationOccurrence(for path: [ProbeRoute]) -> ProbeNavigationOccurrence {
+        switch path.last {
+        case .detail(let instance):
+            return .detail(instance)
+        case .alternate:
+            return .alternate
+        case nil:
+            return .home
         }
     }
 }
