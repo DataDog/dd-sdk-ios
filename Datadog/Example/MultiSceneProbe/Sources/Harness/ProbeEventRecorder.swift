@@ -13,6 +13,7 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
     private let runID: String
     private let scenarioID: String
     private let sink: Sink
+    private let terminalSink: Sink
     private let clock: Clock
     private let lock = NSRecursiveLock()
     private var nextSequence: UInt64 = 1
@@ -26,6 +27,7 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
         runID: String,
         scenarioID: String,
         sink: @escaping Sink = { print("🔬 [RUM Native Multi-Scene JSONL] \($0)") },
+        terminalSink: @escaping Sink = { _ in },
         clock: @escaping Clock = {
             Int64((Date().timeIntervalSince1970 * 1_000).rounded())
         }
@@ -33,6 +35,7 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
         self.runID = runID
         self.scenarioID = scenarioID
         self.sink = sink
+        self.terminalSink = terminalSink
         self.clock = clock
     }
 
@@ -83,7 +86,9 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
             return false
         }
         terminalResult = result
-        sink(encode(result))
+        let encodedResult = encode(result)
+        sink(encodedResult)
+        terminalSink(encodedResult)
         return true
     }
 

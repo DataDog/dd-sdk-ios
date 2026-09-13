@@ -64,7 +64,10 @@ enum ProbeRuntime {
     private static let options = scenario?.runtimeOptions ?? ProbeRuntimeOptions()
     static let eventRecorder = ProbeEventRecorder(
         runID: runID,
-        scenarioID: scenario?.identifier ?? "invalid"
+        scenarioID: scenario?.identifier ?? "invalid",
+        terminalSink: { result in
+            logger.notice("semantic-result \(result, privacy: .public)")
+        }
     )
     @MainActor static let sceneRegistry = ProbeSceneRegistry()
     static let usesObservableScenarioDriver = scenario.map {
@@ -78,6 +81,7 @@ enum ProbeRuntime {
             "swiftui.split.retained-return",
             "uikit.split.pop-cancel",
             "uikit.split.pop-finish",
+            "windows.activation-sequence",
             "windows.close-with-resource"
         ].contains($0.identifier)
     } ?? false

@@ -39,6 +39,7 @@ internal final class ProbeScenarioDriver {
     private enum StepOutcome {
         case acknowledged(ProbeSignal)
         case failed(String)
+        case inconclusive(String)
     }
 
     private final class Registration {
@@ -59,6 +60,7 @@ internal final class ProbeScenarioDriver {
         case sceneReady(scene: String)
         case path(scene: String, value: String)
         case splitSelection(scene: String, value: String)
+        case activation(scene: String, value: ProbeSceneActivationState)
         case transitionBegan(scene: String)
         case transitionProgress(scene: String, value: Double)
         case transitionResolutionRequested(scene: String, outcome: ProbeTransitionOutcome)
@@ -83,6 +85,10 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == [value]
+            case .activation(let scene, let value):
+                return signal.kind == .sceneLifecycle
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.activationState == value.rawValue
             case .transitionBegan(let scene):
                 return signal.kind == .transitionBegan
                     && signal.semanticContext?.logicalSceneID == scene
@@ -133,6 +139,13 @@ internal final class ProbeScenarioDriver {
             if value == "scene:disconnected" {
                 return signal.kind == .sceneLifecycle
                     && signal.scenePhase == ProbeSceneReadiness.disconnected.rawValue
+            }
+            if value.hasPrefix("scene-state:") {
+                let activationState = String(
+                    value.dropFirst("scene-state:".count)
+                )
+                return signal.kind == .sceneLifecycle
+                    && signal.activationState == activationState
             }
             if value == "reader:remounted" {
                 return signal.kind == .rumAction
@@ -289,6 +302,19 @@ internal final class ProbeScenarioDriver {
                 commandSequence: started.sequence
             )
             guard case .acknowledged(let observation) = outcome else {
+                if case .inconclusive(let reason) = outcome {
+                    finish(
+                        state: .inconclusive,
+                        matchedExpectationCount: 0,
+                        issue: ProbeSemanticIssue(
+                            expectationIndex: nil,
+                            expectation: nil,
+                            signalSequence: started.sequence,
+                            reason: "step \(index) \(step.kind.rawValue) was inconclusive: \(reason)"
+                        )
+                    )
+                    return
+                }
                 let reason: String
                 if case .failed(let failureReason) = outcome {
                     reason = failureReason
@@ -380,6 +406,25 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .activateWindow:
+            guard let scene = step.scene else {
+                return .failed("scene is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .activation(scene: scene, value: .foregroundActive),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("timed out waiting for foreground activation in \(scene)")
+            }
+            return .acknowledged(signal)
+
         case .waitForSceneReady:
             guard let scene = step.scene else {
                 return .failed("scene is missing")
@@ -397,6 +442,34 @@ internal final class ProbeScenarioDriver {
             guard let signal = step.signal else {
                 return .failed("signal requirement is missing")
             }
+
+            if signal.hasPrefix("scene-state:") {
+                guard
+                    let scene = step.scene,
+                    let activationState = ProbeSceneActivationState(
+                        rawValue: String(signal.dropFirst("scene-state:".count))
+                    )
+                else {
+                    return .failed("scene state requirement is invalid")
+                }
+                if let currentStateSignal = latestLifecycleSignal(
+                    scene: scene,
+                    activationState: activationState
+                ) {
+                    return .acknowledged(currentStateSignal)
+                }
+                guard let observation = await wait(
+                    for: .activation(scene: scene, value: activationState),
+                    after: observationCursor,
+                    timeoutNanoseconds: stepTimeoutNanoseconds
+                ) else {
+                    return .inconclusive(
+                        "timed out waiting for \(signal) in \(scene)"
+                    )
+                }
+                return .acknowledged(observation)
+            }
+
             guard let observation = await wait(
                 for: .encoded(scene: step.scene, value: signal),
                 after: observationCursor,
@@ -678,6 +751,19 @@ internal final class ProbeScenarioDriver {
             group.cancelAll()
             return first
         }
+    }
+
+    private func latestLifecycleSignal(
+        scene: String,
+        activationState: ProbeSceneActivationState
+    ) -> ProbeSignal? {
+        let latest = recorder.snapshot().last {
+            $0.kind == .sceneLifecycle
+                && $0.semanticContext?.logicalSceneID == scene
+        }
+        return latest?.activationState == activationState.rawValue
+            ? latest
+            : nil
     }
 
     private func finish(_ result: ProbeSemanticResult) {

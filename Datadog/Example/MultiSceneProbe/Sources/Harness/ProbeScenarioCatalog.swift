@@ -36,6 +36,7 @@ enum ProbeScenarioCatalog {
         uikitSplitNativePopFinish,
         uikitSplitConcurrentScenes,
         windowsParallelNavigation,
+        windowsActivationSequence,
         windowsCloseWithResource,
         actionsExactSourceHandoff,
         retainedReaderReconnect,
@@ -655,6 +656,143 @@ enum ProbeScenarioCatalog {
                 screen: "home",
                 occurrence: 1,
                 name: "after-peer-close"
+            )
+        ]
+    )
+
+    private static let windowsActivationSequence = ProbeScenario(
+        identifier: "windows.activation-sequence",
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.activateWindow, scene: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "scene-state:background"
+            ),
+            ProbeStep(.emitMarker, scene: "scene-B", value: "after-initial-activate-B"),
+            ProbeStep(.activateWindow, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "scene-state:background"
+            ),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "after-activate-A"),
+            ProbeStep(.activateWindow, scene: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "scene-state:background"
+            ),
+            ProbeStep(.emitMarker, scene: "scene-B", value: "after-reactivate-B"),
+            ProbeStep(.activateWindow, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "scene-state:background"
+            ),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "after-reactivate-A"),
+            ProbeStep(.closeWindow, scene: "scene-B"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "after-activated-peer-close")
+        ],
+        completionConditions: [
+            ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-activated-peer-close"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-activated-peer-close"
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "after-initial-activate-B"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "after-initial-activate-B"
+            ),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                name: "after-activate-A"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                name: "after-activate-A"
+            ),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 2),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 2,
+                name: "after-reactivate-B"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 2,
+                name: "after-reactivate-B"
+            ),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 3),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-reactivate-A"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-reactivate-A"
+            ),
+            ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-activated-peer-close"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                name: "after-activated-peer-close"
             )
         ]
     )

@@ -925,6 +925,46 @@ struct ProbeWindowRoot: View {
                 )
             case .closeWindow:
                 closeCurrentWindow()
+            case .activateWindow:
+                guard
+                    let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+                    let windowScene = resolvedWindow.windowScene,
+                    windowScene.session.persistentIdentifier == handle.nativeSceneID
+                else {
+                    return .rejected(
+                        reason: "no exact live window for \(logicalSceneID)"
+                    )
+                }
+                ProbeRuntime.record(
+                    "scene activation requested source=\(logicalSceneID) "
+                        + "native=\(handle.nativeSceneID)"
+                )
+                UIApplication.shared.requestSceneSessionActivation(
+                    windowScene.session,
+                    userActivity: nil,
+                    options: nil
+                ) { _ in
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: logicalSceneID,
+                                nativeSceneID: handle.nativeSceneID
+                            ),
+                            result: .fail,
+                            reason: "scene activation request failed"
+                        )
+                    )
+                }
+                if
+                    windowScene.activationState == .foregroundActive,
+                    let snapshot = ProbeRuntime.sceneRegistry.updatePresentation(
+                        from: resolvedWindow,
+                        for: handle
+                    )
+                {
+                    ProbeRuntime.recordSceneSnapshot(snapshot, kind: .sceneLifecycle)
+                }
             case .setSwiftUIPath, .replaceSwiftUIDestination:
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI path is missing")
@@ -2964,7 +3004,17 @@ private final class SceneSessionReaderView: UIView {
             return
         }
         lastResolution = resolution
-        resolve?(window)
+        DispatchQueue.main.async { [weak self, weak window] in
+            guard
+                let self,
+                let window,
+                self.window === window,
+                window.windowScene?.session.persistentIdentifier == identifier
+            else {
+                return
+            }
+            self.resolve?(window)
+        }
     }
 }
 

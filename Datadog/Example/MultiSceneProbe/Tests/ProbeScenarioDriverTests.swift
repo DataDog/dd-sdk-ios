@@ -11,10 +11,12 @@ import XCTest
 final class ProbeScenarioDriverTests: XCTestCase {
     func testDrivesHomeDetailHomeFromObservedSignalsAndEmitsOnePass() async throws {
         let lines = DriverLockedLines()
+        let terminalLines = DriverLockedLines()
         let recorder = ProbeEventRecorder(
             runID: "driver-pass",
             scenarioID: "swiftui.stack.return",
             sink: { lines.append($0) },
+            terminalSink: { terminalLines.append($0) },
             clock: { 42 }
         )
         let registry = ProbeSceneRegistry()
@@ -155,6 +157,9 @@ final class ProbeScenarioDriverTests: XCTestCase {
             lines.snapshot().filter { $0.contains(#""type":"semantic-result""#) }.count,
             1
         )
+        XCTAssertEqual(terminalLines.snapshot(), lines.snapshot().filter {
+            $0.contains(#""type":"semantic-result""#)
+        })
         XCTAssertFalse(recorder.recordTerminalResult(result))
     }
 
@@ -585,7 +590,7 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
-    func testOpensAndClosesExactPeerBeforeContinuingOnSourceScene() async throws {
+    func testOpensActivatesAndClosesExactPeerBeforeContinuingOnSourceScene() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-scene-lifecycle",
             scenarioID: "driver-scene-lifecycle",
@@ -623,6 +628,8 @@ final class ProbeScenarioDriverTests: XCTestCase {
             steps: [
                 ProbeStep(.waitForSceneReady, scene: "scene-A"),
                 ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+                ProbeStep(.activateWindow, scene: "scene-A"),
+                ProbeStep(.activateWindow, scene: "scene-B"),
                 ProbeStep(
                     .emitMarker,
                     scene: "scene-B",
@@ -675,6 +682,18 @@ final class ProbeScenarioDriverTests: XCTestCase {
                 executorB.configure(handle: handleB) { step in
                     commandsB.append(step.kind)
                     switch step.kind {
+                    case .activateWindow:
+                        recorder.record(
+                            ProbeSignal(
+                                kind: .sceneLifecycle,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: "scene-B",
+                                    nativeSceneID: "native-B",
+                                    screen: "home"
+                                ),
+                                activationState: ProbeSceneActivationState.foregroundActive.rawValue
+                            )
+                        )
                     case .emitMarker:
                         recorder.record(
                             ProbeSignal(
@@ -721,6 +740,18 @@ final class ProbeScenarioDriverTests: XCTestCase {
                         scenePhase: ProbeSceneReadiness.ready.rawValue
                     )
                 )
+            case .activateWindow:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .sceneLifecycle,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: "scene-A",
+                            nativeSceneID: "native-A",
+                            screen: "home"
+                        ),
+                        activationState: ProbeSceneActivationState.foregroundActive.rawValue
+                    )
+                )
             case .emitMarker:
                 recorder.record(
                     ProbeSignal(
@@ -751,14 +782,14 @@ final class ProbeScenarioDriverTests: XCTestCase {
             .pass,
             result.issues.map(\.reason).joined(separator: "\n")
         )
-        XCTAssertEqual(commandsA, [.openWindow, .emitMarker])
-        XCTAssertEqual(commandsB, [.emitMarker, .closeWindow])
+        XCTAssertEqual(commandsA, [.openWindow, .activateWindow, .emitMarker])
+        XCTAssertEqual(commandsB, [.activateWindow, .emitMarker, .closeWindow])
         XCTAssertEqual(registry.handle(logicalSceneID: "scene-A"), handleA)
         XCTAssertNil(registry.handle(logicalSceneID: "scene-B"))
         XCTAssertNotNil(registeredHandleB)
         XCTAssertEqual(
             recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
-            5
+            7
         )
     }
 
@@ -828,6 +859,129 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
         XCTAssertEqual(
             lines.snapshot().filter { $0.contains(#""type":"semantic-result""#) }.count,
+            1
+        )
+    }
+
+    func testObservedCurrentSceneStateAcknowledgesRegardlessOfSignalOrder() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-scene-state",
+            scenarioID: "driver-scene-state",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                semanticContext: semanticContext(screen: "home"),
+                scenePhase: ProbeSceneReadiness.ready.rawValue
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneLifecycle,
+                semanticContext: semanticContext(screen: "home"),
+                activationState: ProbeSceneActivationState.background.rawValue
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneLifecycle,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: "scene-B",
+                    nativeSceneID: "native-B",
+                    screen: "home"
+                ),
+                activationState: ProbeSceneActivationState.foregroundActive.rawValue
+            )
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-scene-state",
+                trackingMode: .manual,
+                layout: .stack,
+                initialWindows: ["scene-A", "scene-B"],
+                steps: [
+                    ProbeStep(.waitForSceneReady, scene: "scene-A"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-B",
+                        signal: "scene-state:foreground-active"
+                    ),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "scene-state:background"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            3
+        )
+    }
+
+    func testUnavailableSceneStateIsInconclusive() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-scene-state-timeout",
+            scenarioID: "driver-scene-state-timeout",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                semanticContext: semanticContext(screen: "home"),
+                scenePhase: ProbeSceneReadiness.ready.rawValue
+            )
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-scene-state-timeout",
+                trackingMode: .manual,
+                layout: .stack,
+                steps: [
+                    ProbeStep(.waitForSceneReady, scene: "scene-A"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "scene-state:background"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 5_000_000,
+            terminalTimeoutNanoseconds: 5_000_000
+        )
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .inconclusive)
+        XCTAssertTrue(
+            result.issues[0].reason.contains("scene-state:background"),
+            result.issues[0].reason
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
             1
         )
     }

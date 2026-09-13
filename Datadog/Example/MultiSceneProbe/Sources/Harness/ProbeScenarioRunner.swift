@@ -523,6 +523,30 @@ enum ProbeScenarioRunner {
                         "scenario \(scenario.identifier) \(step.kind.rawValue) uses undeclared scene \(scene)"
                     )
                 }
+            case .waitForSignal where step.signal?.hasPrefix("scene-state:") == true:
+                guard let scene = normalized(step.scene) else {
+                    errors.append(
+                        "scenario \(scenario.identifier) scene-state wait requires a scene"
+                    )
+                    continue
+                }
+                if !scenario.initialWindows.contains(scene) {
+                    errors.append(
+                        "scenario \(scenario.identifier) scene-state wait uses undeclared scene \(scene)"
+                    )
+                }
+                let rawState = step.signal.map {
+                    String($0.dropFirst("scene-state:".count))
+                }
+                if rawState.flatMap(ProbeSceneActivationState.init(rawValue:)) == nil {
+                    let allowed = ProbeSceneActivationState.allCases
+                        .map(\.rawValue)
+                        .sorted()
+                        .joined(separator: ",")
+                    errors.append(
+                        "scenario \(scenario.identifier) has invalid scene state; expected one of \(allowed)"
+                    )
+                }
             default:
                 break
             }

@@ -6,7 +6,7 @@
 
 import UIKit
 
-internal enum ProbeSceneActivationState: String, Equatable {
+internal enum ProbeSceneActivationState: String, Equatable, CaseIterable {
     case unknown
     case unattached
     case foregroundActive = "foreground-active"

@@ -158,18 +158,19 @@ final class ProbeSceneRegistryTests: XCTestCase {
 
     func testRegistryDoesNotRetainWindows() throws {
         let registry = ProbeSceneRegistry()
-        var window: UIWindow? = UIWindow()
-        weak var weakWindow = window
-        let handle = try registeredHandle(
-            registry.register(
-                logicalSceneID: "scene-A",
-                nativeSceneID: "native-A",
-                window: try XCTUnwrap(window),
-                currentRoute: ["home"]
+        weak var weakWindow: UIWindow?
+        let handle = try autoreleasepool {
+            let window = UIWindow()
+            weakWindow = window
+            return try registeredHandle(
+                registry.register(
+                    logicalSceneID: "scene-A",
+                    nativeSceneID: "native-A",
+                    window: window,
+                    currentRoute: ["home"]
+                )
             )
-        )
-
-        window = nil
+        }
 
         XCTAssertNil(weakWindow)
         XCTAssertNil(registry.window(for: handle))
