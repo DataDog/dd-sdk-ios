@@ -35,6 +35,8 @@ private enum ProbeNavigationOccurrence: Hashable {
     case home
     case detail(Int)
     case alternate
+    case splitDetail(Int)
+    case splitPlaceholder
 }
 
 private enum ProbeSplitSelection: Hashable {
@@ -698,6 +700,8 @@ private struct ProbeSplitLayout: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selection: ProbeSplitSelection?
     @State private var materializedSelection: ProbeSplitSelection?
+    @State private var rumViewBindingGeneration: UInt64 = 1
+    @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var didScheduleDetailTwo = false
     @State private var didSchedulePlaceholder = false
     @State private var didRecordLayout = false
@@ -791,7 +795,10 @@ private struct ProbeSplitLayout: View {
                 screen: "detail-\(instance)",
                 name: "ProbeSplitDetailView",
                 trackingBoundary: .navigationRoute,
-                readerControlGeneration: readerControlGeneration
+                readerControlGeneration: readerControlGeneration,
+                navigationOccurrence: .splitDetail(instance),
+                bindingGeneration: rumViewBindingGeneration,
+                navigationOccurrenceSource: navigationOccurrenceSource
             ) {
                 ProbeSplitDetailView(
                     window: window,
@@ -804,6 +811,7 @@ private struct ProbeSplitLayout: View {
                 ProbeRouteIdentityModifier(
                     identity: ProbeSplitSelection.detail(instance),
                     isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
+                        && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
                 )
             )
         case .placeholder:
@@ -813,7 +821,10 @@ private struct ProbeSplitLayout: View {
                 screen: "placeholder",
                 name: "ProbeSplitPlaceholderView",
                 trackingBoundary: .navigationRoute,
-                readerControlGeneration: readerControlGeneration
+                readerControlGeneration: readerControlGeneration,
+                navigationOccurrence: .splitPlaceholder,
+                bindingGeneration: rumViewBindingGeneration,
+                navigationOccurrenceSource: navigationOccurrenceSource
             ) {
                 ProbeSplitPlaceholderView(
                     window: window,
@@ -825,6 +836,7 @@ private struct ProbeSplitLayout: View {
                 ProbeRouteIdentityModifier(
                     identity: ProbeSplitSelection.placeholder,
                     isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
+                        && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
                 )
             )
         case nil:
@@ -838,11 +850,41 @@ private struct ProbeSplitLayout: View {
             return
         }
         let previous = selection?.screen ?? "none"
+        rumViewBindingGeneration &+= 1
         selection = newSelection
         ProbeRuntime.record(
             "split selection committed source=\(window.label) "
-                + "from=\(previous) to=\(newSelection.screen)"
+                + "from=\(previous) to=\(newSelection.screen) "
+                + "generation=\(rumViewBindingGeneration)"
         )
+        #if DEBUG
+        guard ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking else {
+            return
+        }
+        let didReveal = navigationOccurrenceSource.revealRetainedRoute(
+            occurrenceKey: RUMViewOccurrenceKey(
+                navigationOccurrence(for: newSelection)
+            ),
+            bindingGeneration: rumViewBindingGeneration
+        )
+        ProbeRuntime.record(
+            "split occurrence source source=\(window.label) "
+                + "screen=\(newSelection.screen) "
+                + "generation=\(rumViewBindingGeneration) "
+                + "delivered=\(didReveal)"
+        )
+        #endif
+    }
+
+    private func navigationOccurrence(
+        for selection: ProbeSplitSelection
+    ) -> ProbeNavigationOccurrence {
+        switch selection {
+        case .detail(let instance):
+            return .splitDetail(instance)
+        case .placeholder:
+            return .splitPlaceholder
+        }
     }
 
     private func materialized(_ newSelection: ProbeSplitSelection) {

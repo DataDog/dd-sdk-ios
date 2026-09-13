@@ -53,11 +53,11 @@ earlier screen values; the RUM view UUID is the occurrence identity. It is not
 proposed public API and does not cover the sheet path. It exists to validate
 ordering, occurrence, and cancellation semantics before RFC/API review.
 Set it to `navigation-occurrence` for the Debug-only keyed integration probe.
-This stack-only mode supplies the SDK with an opaque route occurrence plus the
-bound-path mutation generation while leaving the tracked customer content's
-SwiftUI identity unchanged. It records a stable `@State` witness for Home across
-pop cancellation/completion and for the retained Detail value across
-Detail 1 -> Detail 2 replacement. In this mode
+This route-owned mode supplies the SDK with an opaque occurrence plus the bound
+navigation mutation generation while leaving the tracked customer content's
+SwiftUI identity unchanged. It records stable witnesses for Home across pop
+cancellation/completion, for retained stack Detail values, and for retained split
+Detail selection across Detail 1 -> Detail 2 replacement. In this mode
 `DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=1` is intentionally ignored, so a passing
 run cannot be explained by the old full-content `.id(route)` control.
 `automatic` remains the default failing baseline.
@@ -100,11 +100,14 @@ a different-type Placeholder. Each materialized selection emits an immediate
 `selection-committed` action/resource marker. A co-located UIKit witness records
 whether SwiftUI retained the Detail platform object; it is evidence about the
 content boundary, not direct access to the SDK's private tracking representable.
-With `navigation-path` tracking and route identity disabled, the required RUM
-occurrences are `Detail₁ → Detail₂ → Placeholder`, each with a distinct UUID and
-without an intervening Sidebar or Home. Enabling
+With `navigation-path` tracking and route identity disabled, the same-type
+Detail 1 -> Detail 2 change is the retained-reader failing baseline. Enabling
 `DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=1` applies the same probe-only `.id(route)`
-control to these split destinations. The sequence is skipped in compact width.
+control, but also resets customer content lifetime. With
+`navigation-occurrence`, the required RUM chain is
+`Detail₁ → Detail₂ → Placeholder`, each with a distinct UUID and without an
+intervening Sidebar or Home, while the Detail witness remains unchanged. The
+sequence is skipped in compact width.
 Set `DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=none` and
 `DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=0` for the empty-detail control. It must
 not manufacture a Detail occurrence before the customer selects one.
@@ -142,7 +145,8 @@ dispatches the target action. The callback emits one synchronous manual action
 and resource, followed by another pair after the UI-event scope ends. In a
 two-window run where another scene remains the process representative, the
 synchronous pair must use the tapped scene's exact current view; the delayed
-pair must preserve the compatible process-representative fallback. No automatic
+pair must use the newly last-interacted tapped view after the exact action updates
+the process representative. No automatic
 tap action should be emitted for the filtered control.
 For any split layout, `DD_MULTI_SCENE_AUTORUN_OPEN_SECOND_WINDOW=1` opens scene B
 from scene A one second after scene resolution. Both scenes then run their own
