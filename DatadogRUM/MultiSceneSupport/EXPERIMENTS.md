@@ -54,15 +54,16 @@ boundary, in this order:
 | 37 | `Reveal retained SwiftUI navigation occurrences` | A weak per-window route source starts a fresh retained occurrence before outer lifecycle work and uses the interactive-transition gate |
 | 38 | `Add keyed SwiftUI split navigation probe` | Split selection supplies RUM-only occurrence keys and generations without replacing customer content identity |
 | 39 | `Document split navigation runtime evidence` | `EXP-102`/`EXP-103`, updated assessment and plan, simulator-system-crash boundary, and the real-device/human rerun queue |
+| 40 | `Preserve revealed SwiftUI view occurrences across remount` | Source-started retained routes transfer their published identity to replacement SwiftUI tracking state; split-return probe and focused regressions |
 
-Rows 1-39 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-40 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
 `adaec8bdb`, row 26 is `e124ae72c`, and row 27 is `8cb8661af`. Rows 28-37 are
 `85da8fa9c`, `c657f15fd`, `149e58655`, `917bc36b3`, `798a2228a`, `79aefb836`,
 `119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
-`96222a6b1`; row 39 is this documentation checkpoint.
+`96222a6b1`; row 39 is `e2bac40da`, and row 40 is `60da5316b`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -77,7 +78,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-twelve exact-path commits in rows 28-39 use that policy. This is local checkpoint
+thirteen exact-path commits in rows 28-40 use that policy. This is local checkpoint
 history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -195,6 +196,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-101 | `post-checkpoint-attribution-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Commits `85da8fa9c` through `08126fedd` close exact-view representative updates, Resource completion ownership, manual error/view/mutation routing, internal view-command handoff, and native/OpenTelemetry span-start parity. The final RUM plan passes 1,147/1,147; the Trace plan passes 151/151, including 4/4 focused OpenTelemetry handoff tests. Focused changed-file lint has zero violations and the final probe build succeeds. These are compatibility and ownership proofs, not substitutes for the still-pending simultaneous-window runtime discriminators. |
 | EXP-102 | `split-occurrence-source-20260913-1345` | `d7c4fb96-161a-4dd9-b376-628b1172238e` | iPadOS 27 | Regular-width single-scene split occurrence pass without customer `.id`. One retained Detail witness moved from Detail 1 to Detail 2 while the keyed generation advanced 1 → 2 → 3. Backend emitted exactly launch → Detail₁ `cafa2f12…` → Detail₂ `70a9f413…` → Placeholder `fa8ce9d7…`, with three exact action/Resource marker pairs and zero errors/crashes. The retained-route source returned false as expected because Detail₁ → Detail₂ was an active in-place keyed replacement, not a reveal of an inactive retained route. |
 | EXP-103 | `split-occurrence-two-window-20260913-1400` | `a354f09b-557c-43a7-815c-95379ea3504d` | iPadOS 27 | Both native scenes reached regular width and independently retained their Detail witness while advancing generation 1 → 2 → 3. Backend emitted seven views: launch plus distinct A and B Detail₁, Detail₂, and Placeholder UUIDs; all six action/Resource pairs used their exact scene occurrence and no RUM error appeared. Both upload batches completed before final hierarchy capture triggered the known simulator `backboardd` Metal crash. The probe app produced no crash report; this is a concurrent telemetry pass plus a simulator-stability limitation, not an SDK crash-safety failure. |
+| EXP-104 | `split-occurrence-retained-return-20260913-1408` | `0540b52f-b398-4886-b956-421cffa64df0` | iPadOS 27 | Retained split-return failure baseline. Detail₁ `2be7a2d9…` → Detail₂ `532c2db1…` → Placeholder `6334cd0c…` was correct. Returning to Detail₂ made the old subtree stop source-created UUID `ee1fd0c4…` after about 6.6 ms; the replacement reader then started `03545f03…`, which owned the marker pair. Backend therefore contained a ghost fifth semantic view. This is a conclusive SDK/prototype failure, not a simulator-input limitation. |
+| EXP-105 | `split-occurrence-retained-return-fix-20260913-1421` | `d4f3597e-2254-4b68-897a-5530299083cb` | iPadOS 27 | Fixed retained split return. The source-created returned Detail₂ UUID `761fe74b…` remained active while SwiftUI replaced the platform reader, and the replacement state adopted that identity without another start. Backend contains launch plus exactly Detail₁ `507ff93f…` → Detail₂ `3d921845…` → Placeholder `06dd0b13…` → Detail₂(returned) `761fe74b…`; all four action/Resource pairs use their exact occurrence, uploads returned 202, and no RUM error or app/SDK crash appeared. |
 
 ## Real-device and human-driven rerun queue
 
@@ -2339,7 +2342,37 @@ Metal simulator device. There is no probe-app crash report. This does not weaken
 the completed RUM telemetry result, but it does leave stable simultaneous-window
 presentation for physical-device validation.
 
-Focused legacy and keyed state-machine coverage is now 34/34 and includes mount
+`EXP-104` extended the regular-width sequence to
+Detail₁ → Detail₂ → Placeholder → Detail₂(returned). This time SwiftUI replaced
+the platform reader when returning from Placeholder. The navigation source
+synchronously started returned UUID `ee1fd0c4-c0b9-44d7-9a44-dc45a8557e1b`, but
+the outgoing state stopped it roughly 6.6 ms later; the replacement reader then
+started `03545f03-2d40-45e0-aff1-c7588891d832`. Only the second UUID owned the
+marker action and Resource. Backend session
+`0540b52f-b398-4886-b956-421cffa64df0` confirms five semantic views plus launch,
+so this is a conclusive remount handoff failure rather than a simulator gesture or
+topology limitation.
+
+`60da5316b` lets a source-created occurrence remain canonical while SwiftUI
+decides whether to reuse or rebuild the subtree. A replacement tracking state may
+adopt that already-published UUID without a second start and then owns its later
+lifecycle and stop. Only the newest eligible registration may reveal a route, and
+superseding a pending handoff settles the earlier state so disappearance cannot
+remain suppressed.
+
+`EXP-105` validates the fix locally, in emitted payloads, and through intake.
+Returned Detail₂ UUID `761fe74b-8450-422e-a7ff-51f56f8477bd` stayed active across
+replacement witness `0x10b0e6840`; no inactive event or second UUID intervened.
+Its materialization marker, action, and Resource all used that same view. Backend
+session `d4f3597e-2254-4b68-897a-5530299083cb` contains five views total—launch
+plus the four committed semantic occurrences—four actions, four Resources, two
+long tasks, one session, one vital, and no error or crash. The focused
+navigation-source/state set passes 52/52, including 17/17 source cases, the full
+RUM plan passes 1,151/1,151, changed Swift files lint with zero violations, and
+the native probe rebuild succeeds in
+`BuildProject-Log-20260913-143157.txt`.
+
+Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
 disconnect/remount fencing. Arbiter coverage is 38/38, and

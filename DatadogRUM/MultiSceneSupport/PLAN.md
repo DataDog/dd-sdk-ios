@@ -102,21 +102,58 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-1. Convert the debug per-window keyed-occurrence source into a reviewable iOS 27
+1. Convert MultiSceneProbe into a named, self-validating runner. Land the harness
+   separately from production SDK changes; local semantic PASS is required before
+   backend confirmation.
+2. Convert the debug per-window keyed-occurrence source into a reviewable iOS 27
    SwiftUI integration contract; no public API lands without RFC review.
-2. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+3. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-3. Preserve the passing same-type `NavigationSplitView` occurrence source from
-   `EXP-102`/`EXP-103`, then validate returning to a previously selected retained
-   detail and adaptive collapse/expand without customer `.id` or state reset.
-4. Validate simultaneous visible A/B transitions, then genuine disconnect,
+4. Preserve the passing retained split return from `EXP-105`, then validate
+   adaptive collapse/expand without customer `.id` or state reset.
+5. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-5. Complete Operation public targeting and its live backend matrix.
-6. Close the bounded causal/downstream rows and live normal-app compatibility.
+6. Complete Operation public targeting and its live backend matrix.
+7. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
 real-device/human queue instead of repeated on the current simulator.
+
+### Deterministic probe harness workstream
+
+This workstream improves the reliability and handoff cost of every remaining
+experiment; it does not itself change the SDK support verdict.
+
+1. Add a validated scenario catalog under `MultiSceneProbe/Sources/Harness`.
+   Important existing configurations become stable scenario identifiers, command-
+   line selection replaces Boolean combinations, and a temporary environment
+   adapter accepts only known non-contradictory configurations. Emit the resolved
+   manifest before Datadog starts.
+2. Record versioned JSONL signals and evaluate them with a pure semantic oracle.
+   The only results are `PASS`, `FAIL`, `SKIPPED`, and `INCONCLUSIVE`; ordered and
+   negative expectations must distinguish wrong attribution, missing events,
+   cancelled transitions, ignored gestures, and unsupported capabilities. Add a
+   probe unit-test target through `project.yml`, including fixtures for `EXP-092`,
+   `EXP-098`, ignored gesture, missing event, and forbidden event.
+3. Add one main-actor scene registry with stable logical labels, native session
+   identifiers, weak windows, activation, geometry, route, readiness, and
+   disconnection generation. All open, activate, close, and wait steps address an
+   exact scene; never select an unordered `UIApplication.openSessions` member.
+4. Drive SwiftUI path/split changes and UIKit deterministic transitions through
+   observable `ProbeStep` acknowledgements. Keep deterministic state-machine proof
+   separate from genuine native gesture proof. A drag without transition/path
+   recognition is `INCONCLUSIVE`.
+5. Add one reproducible run command that preflights capabilities, records source
+   revision and binary identity, performs explicit clean/restoration setup, waits
+   for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
+   semantic result, visual artifacts, and the run-ID backend query. Unsupported
+   resize/topology is `SKIPPED`; credentials never enter artifacts.
+
+The first harness acceptance loop is a clean one-window Home → Detail → Home run
+repeated three times with the same semantic result, plus a deliberately wrong
+view UUID that fails locally with an actionable reason. Hardware-only rows remain
+prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
 
@@ -335,11 +372,12 @@ return ordering and detached reader. `EXP-098`/`EXP-099` pass the debug per-wind
 occurrence source through runtime and backend: Home₂ starts before immediate
 post-pop work without replacing customer state. `EXP-100` leaves recognized native
 gesture validation open because both synthetic drags were ignored. `EXP-102` and
-`EXP-103` then extend the same occurrence input to `NavigationSplitView`: one and
+  `EXP-103` then extend the same occurrence input to `NavigationSplitView`: one and
 two windows each keep a retained Detail witness while Detail₁, Detail₂, and
-Placeholder receive distinct exact RUM occurrences without customer `.id`. The
-next split row is returning to a previously selected retained detail, followed by
-adaptive collapse/expand on capable hardware. The broader next step remains a
+  Placeholder receive distinct exact RUM occurrences without customer `.id`.
+  `EXP-104` catches the returned-route remount duplicate, and `EXP-105` fixes it by
+  transferring the source-published occurrence to the replacement tracking state.
+  Adaptive collapse/expand on capable hardware remains next. The broader next step remains a
 reviewable iOS 27 integration design, not another lifecycle-discovery hook;
 genuine OS reconnect/restoration remains a separate lifecycle gate.
 
@@ -401,14 +439,15 @@ attachment deduplication, disconnect rearming, and success/cancellation behavior
 are focused-test covered. `EXP-066` provides a synthetic reconnect pass;
 `EXP-090`/`EXP-091` pass same-type replacement and abort without customer-content
 identity changes; `EXP-098`/`EXP-099` pass retained Home return and immediate work.
-`EXP-102`/`EXP-103` pass same-type split replacement in one and two windows.
-Returning to a retained split selection, genuine OS reconnect/restoration, and a
-recognized native interactive gesture remain open. Shipping acceptance still
+`EXP-102`/`EXP-103` pass same-type split replacement in one and two windows;
+`EXP-105` passes return to a retained split selection across a SwiftUI reader
+remount. Genuine OS reconnect/restoration, adaptive navigation, and a recognized
+native interactive gesture remain open. Shipping acceptance still
 requires the same behavior through a reviewed iOS 27 integration, plus
 simultaneous-visible A/B and adaptive split validation.
 
-The internal state and arbiter checkpoints pass 34/34 and 38/38, with two targeted
-handler tests. The later retained-route source passes 13/13 focused cases. This
+The internal state and arbiter checkpoints pass 35/35 and 38/38, with two targeted
+handler tests. The retained-route source passes 17/17 focused cases. This
 includes keyed A/B
 cancellation-versus-commit isolation, exact publisher scene targets, silent
 disconnect invalidation, N-to-N+1 remount fencing, peer-scene preservation,
@@ -566,8 +605,8 @@ The assessment can change to supported only when:
   destination before lifecycle work is attributed, in both native `WindowGroup`
   and UIKit-hosted applications;
 - stack, modal, split/adaptive, and restored navigation plus tap and scroll actions
-  are attributed to their originating windows; same-type split replacement now
-  passes experimentally, while retained split return and adaptive hardware remain
+  are attributed to their originating windows; same-type split replacement and
+  retained split return now pass experimentally, while adaptive hardware remains
   open;
 - the iOS 27 explicit early-mount result survives the remaining aborted,
   split, restoration, stable visible-peer close, and preloaded-container stress;
