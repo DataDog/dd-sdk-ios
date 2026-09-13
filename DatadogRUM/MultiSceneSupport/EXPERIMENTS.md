@@ -73,8 +73,9 @@ boundary, in this order:
 | 56 | `Document exact scene lifecycle evidence` | `EXP-113` local/backend evidence, open/close lifecycle verdict, simulator-topology boundary, and refreshed resume state |
 | 57 | `Drive observable scene activation transitions` | Exact registered-scene activation, latched lifecycle-state conditions, durable terminal-result logging, explicit inconclusive classification, and focused driver coverage |
 | 58 | `Suppress automatic SwiftUI views in explicit subtrees` | iOS 27 multi-scene authority registry, subtree-scoped automatic-view suppression, focused coexistence regressions, and a probe configuration that enables automatic and explicit tracking together |
+| 59 | `Centralize probe SwiftUI navigation tracking` | Probe-only once-per-container `NavigationStack` wrapper, one bound path, centralized route metadata resolver, and route-owned root/destination tracking placement |
 
-Rows 1-58 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-59 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -87,7 +88,8 @@ Rows 1-58 are committed. Row 16 is commit `e56262485`; row 17 is commit
 Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
 is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
-`a97e943df`, row 57 is `4d1783198`, and row 58 is `85d03e5ee`.
+`a97e943df`, row 57 is `4d1783198`, row 58 is `85d03e5ee`, and row 59 is
+`b5f74467d`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -236,6 +238,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-113 | Interrupted `observable-window-close-20260913-2016-a`; final `observable-window-close-20260913-2020-b` | `6a37d312-8ca1-41fc-87e4-b42d5142fb64`; `be396759-0393-42e1-b08e-acb2a5cb0c7c` | iPadOS 27 | Exact scene-lifecycle driver acceptance. `open-window` dispatches through exact source A and waits for exact target B readiness; `close-window` dispatches through exact B and waits for B disconnect. The first launch session expired after B became ready and before a terminal result, so it is retained as inconclusive. The clean retry acknowledged all five steps and passed 9/9. B `before-close` action/Resource use B Home `22dce95f…`; after B disconnect generation 1, A `after-peer-close` action/Resource use unchanged A Home `f7f72acf…`. Backend intake confirms both pairs, two independent Home view IDs, and no error bucket. The fullscreen simulator did not prove both windows visible concurrently. Probe tests pass 43/43 and repository lint remains clean. |
 | EXP-114 | Completed compatibility control `observable-window-activation-20260913-2039-a`; expired lifecycle-gated prefix `observable-window-activation-20260913-2056-b`; compositor-interrupted prefix `observable-window-activation-20260913-2059-c` | `d2d11fda-28ce-4fce-bf46-cd858ce49adb`; no terminal session claim; locally observed `fe55cea1-4c9f-4a72-97e0-398c4302ed71`, zero backend events | iPadOS 27 | Exact activation-harness boundary. The first scenario version acknowledged ten exact-scene commands, but its source-labelled markers were plain public RUM calls with no SDK provenance. Backend therefore correctly kept A-labelled source-less work on last-interacted B until B closed; this is compatibility evidence, not an activation attribution failure. The corrected scenario dispatches activation only through the target registered `UIWindowScene`, waits for its foreground-active state, and requires the peer's latest non-superseded state to become background before asserting a fresh occurrence or marker ownership. The simulator kept both scenes foreground-active. One retry lost its Xcode launch/stdout session before a verdict; another ended when simulator `backboardd`, not the probe, aborted in CoreAnimation/Metal before the 10-second harness timeout. The latter produced no terminal OSLog or backend event. Probe tests pass 45/45 and repository lint is clean. Exact activation remains inconclusive pending capable hardware. |
 | EXP-115 | `semantic-authority-coexistence-20260913-2146-a` | `fae57f5a-ba01-4d42-9e32-2774090b1585` | iPadOS 27 | Target-scoped SwiftUI authority pass. Navigation-occurrence mode enabled `DefaultSwiftUIRUMViewsPredicate` at the same time as explicit route-owned tracking. An active explicit hidden reader suppressed automatic discovery only for a containing controller hierarchy; unrelated sibling controllers remain eligible and UIKit predicate acceptance remains authoritative. The signal-driven scenario passed 7/7 and both mapper output and backend intake contained exactly `ApplicationLaunch → Home H1 → Detail D1 → Home H2`, with distinct Home UUIDs and no hosting-controller duplicate. Intake totals were four views, nine actions, nine Resources, three long tasks, one session, and one vital. The RUM suite passes 1,157/1,157, the probe 45/45, and lint is clean. This closes the internal coexistence/dedup mechanics, not the reviewed once-per-container path/router API or automatic-only semantic-navigation gap. |
+| EXP-116 | Return `container-navigation-prototype-20260913-2210-a`; abort `container-navigation-abort-clean-20260913-2247-a`; replacement `container-navigation-same-type-clean-20260913-2254-a` | `9d1653fc-80e8-4794-9a29-50a60246d2ca`; `8b89254e-ba81-4595-86a6-5fa399d480c5`; `0436c9b2-08fc-4c92-a311-7336eafaad4a` | iPadOS 27 | Once-per-container SwiftUI integration-shape pass. A probe-only wrapper consumes one bound `NavigationStack` path and centralized route-to-RUM resolver, owns root/destination materialization, and injects the existing route-owned tracking boundary without putting metadata into Home/Detail view types. Clean return passed 7/7 with launch plus Home H1 `a2dc84f9…`, Detail D1 `2a20ec3c…`, and fresh Home H2 `c82a59c9…`; abort passed 5/5 with only Home `b0166eb3…` and no Detail; same-type replacement passed 6/6 with same-named Detail₁ `f5311b38…` and Detail₂ `d8375a2b…` plus final action/Resource on Detail₂. Backend view sets and ownership agree, with no automatic/hosting duplicate. A delayed source-less callback scheduled by removed Detail₁ used the then-current Detail₂, preserving the approved fallback. Probe tests pass 45/45 and repository lint has zero violations. Commit `b5f74467d` is probe-only; no public API was added. |
+| EXP-117 | Contaminated abort `container-navigation-abort-20260913-2225-a`; contaminated replacement `container-navigation-same-type-20260913-2232-a` | `18cb3927-8afb-4f39-92bf-75b3391de050`; `1f6964c8-0200-44b9-a775-ffd91e4a0bc9` | iPadOS 27 | Clean-run isolation failure in the harness workflow, not an SDK-semantic failure. Both back-to-back Xcode launches passed their local oracle, but the test bundle had not been uninstalled. Their newly created Home/Detail view documents retained `container-navigation-prototype-20260913-2210-a` as `context.probe.run_id`, while later actions and Resources carried the new run ID. A new-run aggregate therefore showed only ApplicationLaunch until direct view-ID inspection exposed the mixed metadata. Explicit host-side uninstall followed by the `EXP-116` reruns removed the contamination. `--probe-run-mode clean` is only manifest input inside the app; Phase 5's host runner must perform teardown and verify every semantic view's run ID before accepting backend evidence. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -2991,6 +2995,100 @@ does not yet let a customer install one resolver on a `NavigationStack`, and doe
 not yet prove automatic tracking in a separate live container or scene while an
 explicit exception is active. Those are the next integration/runtime rows.
 
+### 2026-09-13 — EXP-116: once-per-container SwiftUI prototype
+
+The next probe slice removes RUM configuration from `ProbeHomeView`,
+`ProbeDetailView`, and `ProbeAlternateView`. `ProbeRUMNavigationStack` is called
+once for the navigation container with:
+
+- the application's existing bound `[ProbeRoute]` path;
+- one root RUM descriptor;
+- one centralized `ProbeRoute`-to-RUM resolver; and
+- ordinary root and destination content builders.
+
+The wrapper owns `NavigationStack` materialization and installs
+`ProbeRUMTrackedScreen` at the root and inside the typed destination builder.
+That placement is material: `EXP-047` through `EXP-049` already showed that a
+background sibling, outer wrapper, or stable first child sees the path too late
+and can replay retained lifecycle. The new call site centralizes customer
+configuration without moving the SDK boundary away from the route that actually
+materializes. The internal generation/source parameters are probe mechanics and
+are not a proposed public surface.
+
+The initial clean return run
+`container-navigation-prototype-20260913-2210-a`, session
+`9d1653fc-80e8-4794-9a29-50a60246d2ca`, passed 7/7 with no issues. Mapper and
+backend both contained exactly:
+
+```text
+ApplicationLaunch  9e98b95f-d2f5-43af-b815-3f0efe227809
+ProbeHomeView H1    a2dc84f9-b773-4612-916d-612a5fa9db50
+ProbeDetailView D1  2a20ec3c-3fc9-4216-9f65-4c1feaa79770
+ProbeHomeView H2    c82a59c9-fc78-45bc-be32-dddf34a3d5cd
+```
+
+H1 and H2 are distinct occurrences. There was no hosting-controller or other
+automatic duplicate. Backend totals were nine actions, nine Resources, four
+views, two long tasks, one session, and one vital.
+
+After an explicit host-side uninstall, abort run
+`container-navigation-abort-clean-20260913-2247-a`, session
+`8b89254e-ba81-4595-86a6-5fa399d480c5`, passed 5/5. It emitted only
+ApplicationLaunch `a3d3fcf2-8a60-4c02-9a8f-5f1317726b6d` and Home
+`b0166eb3-749c-40dc-b921-143fe73c0f9e`. `detail-1` appeared only in the
+transient path-mutation signal; no Detail RUM UUID was created. Backend totals
+were five actions, five Resources, two views, one long task, one session, and one
+vital.
+
+After another explicit uninstall, same-type replacement run
+`container-navigation-same-type-clean-20260913-2254-a`, session
+`0436c9b2-08fc-4c92-a311-7336eafaad4a`, passed 6/6. Its exact views were launch
+`f5cefee8-7e39-44eb-8fd7-4b28b4726be8`, Home
+`5598f7fa-e93c-4ba4-bbb5-9b613aa9133b`, Detail₁
+`f5311b38-1167-4f33-967a-9f541347e169`, and Detail₂
+`d8375a2b-26a6-4f57-937c-0ffb7f31a7e2`. Both Detail occurrences intentionally
+shared the same RUM name and URL. The decisive `binding-update-2` action and
+Resource used Detail₂. Backend totals were nine actions, nine Resources, four
+views, three long tasks, one session, and one vital.
+
+One delayed callback scheduled by removed Detail₁ fired after Detail₂ became
+current. Its probe source label remained `detail-1`, while RUM correctly used
+current Detail₂ because the public call had no trustworthy SDK source. This is
+the approved last-interacted compatibility fallback, not a failed exact-source
+handoff. The terminal oracle does not flag it.
+
+The probe build-for-testing succeeds, all 45 tests pass, and repository lint
+reports zero violations across 713 source and 699 test files. Commit
+`b5f74467d` contains only the probe source refactor. This proves that the approved
+once-per-container semantics are implementable with a builder-owning boundary;
+it does not approve a public wrapper/modifier signature or make transparent
+automatic navigation semantic.
+
+### 2026-09-13 — EXP-117: non-isolated clean-mode launches
+
+Two intermediate runs deliberately remain in the record because they exposed a
+handoff-breaking experiment flaw. Abort run
+`container-navigation-abort-20260913-2225-a` and same-type replacement run
+`container-navigation-same-type-20260913-2232-a` passed their local oracles, but
+they were started through back-to-back Xcode install/run calls without first
+uninstalling the test bundle.
+
+The new run IDs appeared on their later action and Resource events, but direct
+backend inspection of semantic view UUIDs showed
+`context.probe.run_id=container-navigation-prototype-20260913-2210-a`. Querying
+the new run IDs therefore returned only their ApplicationLaunch view and could
+have produced a false missing-view conclusion. Local sessions were
+`18cb3927-8afb-4f39-92bf-75b3391de050` and
+`1f6964c8-0200-44b9-a775-ffd91e4a0bc9`.
+
+`--probe-run-mode clean` describes the requested experiment mode after the app
+has launched; an app cannot uninstall itself before launch. It is not evidence
+that host state was cleared. Explicit simulator uninstall followed by the two
+clean `EXP-116` reruns produced correctly keyed semantic views immediately.
+Until Phase 5 supplies a host runner, every clean acceptance run must uninstall
+first and verify that each semantic backend view carries the exact requested run
+ID. The contaminated runs support only their local state-machine result.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3071,6 +3169,11 @@ explicit exception is active. Those are the next integration/runtime rows.
 - Do not query this probe with `@probe.run_id`; use
   `@context.probe.run_id` or fall back to `service:ios-sdk-multi-scene-probe`
   followed by an exact session-ID query.
+- Do not treat `--probe-run-mode clean` as an uninstall or chain acceptance runs
+  through Xcode install/run without host teardown. `EXP-117` produced locally
+  correct views whose persisted global probe attribute still named the preceding
+  run. Explicitly uninstall first, then verify every backend semantic view has
+  the requested `@context.probe.run_id`.
 - Do not classify the first two-window attempt as an SDK crash: the termination
   reason was a simulator `backboardd` respawn and SpringBoard also restarted.
 - Do not keep retrying the same iOS 27 half-and-half window arrangement through
@@ -3104,10 +3207,13 @@ explicit exception is active. Those are the next integration/runtime rows.
   later start with the same platform lifecycle identity. Keep the `EXP-061`
   pending-Resource regression: Home₁ must remain immutable while Home₂ owns
   new scene work.
-- Do not place a semantic tracker as a background sibling, whole-stack wrapper,
-  or stable first child and call it a scene-root solution. `EXP-047` through
-  `EXP-049` show that all three remain too late for B's initial Home lifecycle;
-  the whole-stack wrapper also replays retained screen lifecycle.
+- Do not place one semantic tracker as a background sibling, on the whole-stack
+  result, or on a stable first child and call it a scene-root solution.
+  `EXP-047` through `EXP-049` show that all three remain too late for B's initial
+  Home lifecycle; the single whole-stack tracker also replays retained screen
+  lifecycle. `EXP-116` is different: its container wrapper owns the root and
+  destination builders and injects a separate route-owned boundary at each
+  materialized occurrence.
 - Do not apply `.id` only to the hidden SDK reader to advance a retained route.
   `EXP-093` kept Home's immediate return marker on Detail. The missing input was
   the committed route contraction, not platform-reader identity.

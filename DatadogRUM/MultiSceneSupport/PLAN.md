@@ -130,17 +130,19 @@ Current execution order:
    passes 45/45. Stable simultaneous-visible activation and peer continuity now
    require iPhone Duo or a physical multi-window iPad; do not keep retrying the
    compositor-crashing loop on this simulator.
-6. In progress in `85d03e5ee` and `EXP-115`: turn the debug per-window occurrence
-   source into the approved optional iOS 27 navigation-container integration.
-   Target-scoped coexistence is implemented and backend-proven: automatic
-   tracking stays enabled, an active attached explicit subtree suppresses only
-   its containing automatic candidate, and UIKit remains unaffected. Next,
-   consume the application's path/router once at the container through one
-   centralized RUM resolver and prove automatic tracking in a separate live
-   container/scene. No public API lands without RFC/API review.
-7. Design the required scene-aware manual view start/stop overloads and Objective-C
-   companion. The same key must coexist independently in A and B while existing
-   APIs preserve inferred/last-interacted compatibility.
+6. Prototype completed in `85d03e5ee`, `b5f74467d`, and `EXP-115`/`EXP-116`:
+   automatic tracking stays enabled, an active attached explicit subtree
+   suppresses only its containing automatic candidate, and a probe-only
+   `NavigationStack` wrapper consumes one bound application path plus one
+   centralized RUM resolver. It owns root/destination materialization so the
+   existing early route boundary still handles return, abort, and same-type
+   replacement correctly. Next, write the RFC/API proposal and prove automatic
+   tracking in a separate live container/scene. No public API lands without
+   normal review.
+7. Exercise one exceptional manual view over an otherwise automatic hierarchy,
+   then design the required scene-aware manual view start/stop overloads and
+   Objective-C companion. The same key must coexist independently in A and B
+   while existing APIs preserve inferred/last-interacted compatibility.
 8. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
 9. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
@@ -156,7 +158,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-115`. It still
+decision record after `EXP-117`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -250,14 +252,17 @@ experiment; it does not itself change the SDK support verdict.
    7/7 locally and produces exactly launch plus H1/D1/H2 in backend intake, with
    no hosting-controller duplicate. The RUM plan passes 1,157/1,157 and the probe
    remains 45/45. This proves internal coexistence, not the reviewed container API.
-11. Add one reproducible run command that preflights capabilities, records source
-   revision and binary identity, performs explicit clean/restoration setup, waits
-   for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
-   semantic result, visual artifacts, and the run-ID backend query. Unsupported
+11. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+   command that preflights capabilities, records source revision and binary
+   identity, performs explicit host-side uninstall for clean mode or preserves
+   state for restoration mode, waits for readiness, and bundles scrubbed manifest,
+   capabilities, console, JSONL, semantic result, visual artifacts, and the run-ID
+   backend query. The in-app `--probe-run-mode clean` value is not teardown.
+   Reject a run if semantic view documents retain another run ID. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, and exact scene lifecycle
-harness loop is complete through `EXP-115`: three clean
+harness loop is complete through `EXP-117`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -267,6 +272,10 @@ passes 9/9. Exact activation is prepared and fail-closed but still lacks a
 qualifying hardware run. The automatic-plus-explicit coexistence run passes 7/7
 with no duplicate view locally or in backend intake. The deliberately wrong-view fixture
 continues to fail locally with an actionable reason.
+The probe-only once-per-container wrapper also passes return, abort, and
+same-type replacement with isolated backend evidence. Two non-uninstalled
+back-to-back launches remain local-only and document the host-runner isolation
+requirement rather than SDK semantics.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -559,6 +568,17 @@ and availability require API review. Existing `.trackRUMView` remains valid for
 individual exceptions; an explicit/manual target is authoritative only in its
 container and cannot produce a duplicate automatic view.
 
+`EXP-116` validates the implementable probe shape. A wrapper owns the
+`NavigationStack` root and typed destination builder, takes one path binding plus
+one resolver, and injects the existing early route-owned tracker only where the
+root or a committed destination materializes. Customer Home/Detail view types no
+longer contain RUM metadata. Return creates H₂, same-turn push/revert creates no
+Detail, and an in-place same-type replacement creates a fresh same-named Detail₂
+without resetting customer content identity. This does not require the final
+public API to be a wrapper, but it does require equivalent access to the
+materialized destination boundary; the passive root/background approaches in
+`EXP-047` through `EXP-049` remain known-too-late.
+
 The first authority mechanism is implemented internally in `85d03e5ee`. A weak
 registry associates each explicit modifier's hidden observer with its lifecycle
 state. Automatic SwiftUI controller discovery is skipped only when an appeared,
@@ -598,9 +618,10 @@ reader-mount/disappear ordering, stale A-observer isolation from B's coordinator
 ordinary detach, explicit unresolved attachment rejection, stale/duplicate source
 generation, and same-key A/B source isolation. Mixing with the existing automatic
 tracker is now internally and backend validated for one active subtree in
-`EXP-115`; the supported entry point and broader container matrix remain behind
-reviewed integration. Do not convert the passing debug path into a
-customer-support claim.
+`EXP-115`; `EXP-116` adds one centralized path/resolver call site with exact
+return, abort, and same-type replacement evidence. The supported entry point and
+broader container matrix remain behind reviewed integration. Do not convert the
+passing debug path into a customer-support claim.
 
 This phase is implemented experimentally and has the strongest unit, simulator,
 and backend evidence. It remains the primary workstream independent of the

@@ -34,6 +34,13 @@ rejected before Datadog starts. The complete resolved manifest is always the
 first `RUM Native Multi-Scene JSONL` record. A rejected launch renders a
 configuration-error screen and produces no RUM session.
 
+The in-app `--probe-run-mode clean` value does not uninstall the bundle or clear
+host state before launch. For an acceptance run, explicitly uninstall the probe
+from the destination first. Back-to-back Xcode install/run calls can leave new
+view documents carrying the preceding run's global `context.probe.run_id` even
+when later actions and Resources use the new ID (`EXP-117`). Treat such a run as
+local-only evidence and rerun it after uninstalling.
+
 The catalog currently preserves these experiment families:
 
 | Scenario | Evidence preserved | Execution level |
@@ -42,9 +49,9 @@ The catalog currently preserves these experiment families:
 | `swiftui.automatic.single-window` | `EXP-027` | Existing deterministic automation |
 | `swiftui.automatic.two-window` | `EXP-028` | Existing deterministic automation |
 | `swiftui.stack.occurrence-push` | `EXP-090` setup | Existing deterministic automation |
-| `swiftui.stack.return` | `EXP-098`, `EXP-099`, `EXP-109`, `EXP-115` | Signal-driven PASS, including automatic-plus-explicit coexistence |
-| `swiftui.stack.abort` | `EXP-091`, `EXP-110` | Signal-driven PASS |
-| `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110` | Signal-driven PASS |
+| `swiftui.stack.return` | `EXP-098`, `EXP-099`, `EXP-109`, `EXP-115`, `EXP-116` | Signal-driven PASS, including automatic-plus-explicit coexistence and the once-per-container wrapper |
+| `swiftui.stack.abort` | `EXP-091`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
+| `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
@@ -87,7 +94,12 @@ emit exactly one final result. The terminal JSON result is also written through
 OSLog so it survives an expired Xcode console session. Clean iPadOS 27 semantic
 runs pass locally and in backend intake (`EXP-109` through `EXP-113`); `EXP-115`
 also passes with automatic and explicit SwiftUI tracking enabled together and no
-duplicate view. The
+duplicate view. `EXP-116` passes return, abort, and same-type replacement after
+moving the path and route metadata to one probe-container call site. The wrapper
+still owns the root and typed destination builders so it can install the early
+tracking boundary at each materialized route; a passive root-only modifier is
+known to be too late. This is an API-shape prototype, not a shipped integration.
+The
 activation row remains explicitly inconclusive on the current simulator
 (`EXP-114`). The automatic SwiftUI split control
 executes the same selection steps but fails because it emits internal container
