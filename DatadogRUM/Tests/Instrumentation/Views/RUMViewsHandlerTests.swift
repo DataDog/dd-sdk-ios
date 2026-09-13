@@ -1201,6 +1201,47 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     @MainActor
+    func testGivenTargetedManualView_whenGenericAutomaticFallbackAppears_itRevealsRetainedDestination() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let home = createMockViewInWindow()
+        let fallback = createMockViewInWindow()
+        let nameExtractor = SwiftUIViewNameExtractorMock()
+        nameExtractor.resultByViewController = [
+            home: "Home",
+            fallback: "AutoTracked_HostingController_Fallback",
+        ]
+        let predicate = SwiftUIRUMViewsPredicateMock()
+        predicate.resultByViewName = [
+            "Home": .init(name: "Home"),
+            "AutoTracked_HostingController_Fallback": .init(name: "Automatic Fallback"),
+        ]
+        let handler = createHandler(
+            swiftUIPredicate: predicate,
+            swiftUIViewNameExtractor: nameExtractor,
+            sceneIdentifierProvider: { _ in scene }
+        )
+
+        handler.notify_viewDidAppear(viewController: home, animated: false)
+        handler.startView(key: "compose", name: "Compose", attributes: [:], sceneIdentifier: scene)
+        handler.notify_viewDidAppear(viewController: fallback, animated: false)
+        handler.notify_viewDidDisappear(viewController: home, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        handler.stopView(key: "compose", attributes: [:], sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let manualStop = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
+        let homeRestart = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
+        XCTAssertEqual(manualStop.identity, ViewIdentifier("compose"))
+        XCTAssertEqual(homeRestart.identity, ViewIdentifier(home))
+        XCTAssertEqual(homeRestart.name, "Home")
+        XCTAssertFalse(commandSubscriber.receivedCommands.contains { command in
+            (command as? RUMStartViewCommand)?.name == "Automatic Fallback"
+        })
+    }
+
+    @MainActor
     func testGivenNestedTargetedManualViews_whenAutomaticDestinationAppears_itKeepsEntireManualSuffixAuthoritative() throws {
         let scene = RUMSceneIdentifier(rawValue: "scene-A")
         let home = createMockViewInWindow()

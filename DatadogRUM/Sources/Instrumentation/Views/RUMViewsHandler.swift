@@ -84,6 +84,30 @@ internal final class RUMViewsHandler {
 
         /// Scene that owns this view. `nil` preserves the legacy process-wide stack.
         let sceneIdentifier: RUMSceneIdentifier?
+
+        /// Whether automatic SwiftUI discovery fell back to a generic hosting
+        /// controller rather than identifying a semantic destination.
+        let isGenericSwiftUIFallback: Bool
+
+        init(
+            identity: ViewIdentifier,
+            name: String,
+            path: String,
+            isUntrackedModal: Bool,
+            attributes: [AttributeKey: AttributeValue],
+            instrumentationType: InstrumentationType,
+            sceneIdentifier: RUMSceneIdentifier?,
+            isGenericSwiftUIFallback: Bool = false
+        ) {
+            self.identity = identity
+            self.name = name
+            self.path = path
+            self.isUntrackedModal = isUntrackedModal
+            self.attributes = attributes
+            self.instrumentationType = instrumentationType
+            self.sceneIdentifier = sceneIdentifier
+            self.isGenericSwiftUIFallback = isGenericSwiftUIFallback
+        }
     }
 
     /// One navigation stack per scene. A `nil` scene is the legacy stack used
@@ -92,6 +116,10 @@ internal final class RUMViewsHandler {
         let sceneIdentifier: RUMSceneIdentifier?
         var views: [View]
         var isActive: Bool
+        /// View that was current when the first targeted manual view took
+        /// authority. Its platform disappearance is ignored while it remains
+        /// the immediate destination to reveal below the manual suffix.
+        var retainedViewIdentityDuringManualAuthority: ViewIdentifier?
     }
 
     /// The current date provider.
@@ -317,7 +345,14 @@ internal final class RUMViewsHandler {
             #else
             let isActive = isApplicationActive
             #endif
-            stacks.append(ViewStack(sceneIdentifier: view.sceneIdentifier, views: [], isActive: isActive))
+            stacks.append(
+                ViewStack(
+                    sceneIdentifier: view.sceneIdentifier,
+                    views: [],
+                    isActive: isActive,
+                    retainedViewIdentityDuringManualAuthority: nil
+                )
+            )
             stackIndex = stacks.endIndex - 1
         }
 
@@ -328,6 +363,12 @@ internal final class RUMViewsHandler {
             for: view,
             in: stack
         ) {
+            // Generic SwiftUI hosting fallbacks are structural artifacts, not
+            // trustworthy navigation destinations. Do not let one displace the
+            // retained destination when manual authority ends.
+            if view.isGenericSwiftUIFallback {
+                return
+            }
             if insertionIndex > stack.startIndex,
                stack[stack.index(before: insertionIndex)].identity == view.identity {
                 return
@@ -346,6 +387,11 @@ internal final class RUMViewsHandler {
         // Ignore the view if it's already visible
         if view.identity == stack.last?.identity {
             return
+        }
+
+        if view.instrumentationType == .manual,
+           !stack.contains(where: { $0.instrumentationType == .manual }) {
+            stacks[stackIndex].retainedViewIdentityDuringManualAuthority = stack.last?.identity
         }
 
         // Stop the last appearing view of the stack
@@ -407,6 +453,14 @@ internal final class RUMViewsHandler {
 
         var stack = stacks[stackIndex].views
         let isActive = stacks[stackIndex].isActive
+
+        if let manualSuffixIndex = firstIndexOfManualSuffix(in: stack),
+           manualSuffixIndex > stack.startIndex,
+           stacks[stackIndex].retainedViewIdentityDuringManualAuthority == identity,
+           stack[stack.index(before: manualSuffixIndex)].identity == identity {
+            return
+        }
+
         guard identity == stack.last?.identity else {
             // Remove any disappearing view from the stack if
             // it's not visible.
@@ -414,6 +468,9 @@ internal final class RUMViewsHandler {
             if stack.isEmpty {
                 stacks.remove(at: stackIndex)
             } else {
+                if !stack.contains(where: { $0.instrumentationType == .manual }) {
+                    stacks[stackIndex].retainedViewIdentityDuringManualAuthority = nil
+                }
                 stacks[stackIndex].views = stack
             }
             #if os(iOS)
@@ -426,6 +483,10 @@ internal final class RUMViewsHandler {
         let view = stack.removeLast()
         if isActive {
             stop(view: view, time: time, attributes: stopAttributes)
+        }
+
+        if !stack.contains(where: { $0.instrumentationType == .manual }) {
+            stacks[stackIndex].retainedViewIdentityDuringManualAuthority = nil
         }
 
         // Restart the previous view if any.
@@ -980,7 +1041,8 @@ extension RUMViewsHandler: UIViewControllerHandler {
                         isUntrackedModal: view.isUntrackedModal,
                         attributes: view.attributes,
                         instrumentationType: view.instrumentationType,
-                        sceneIdentifier: currentSceneIdentifier
+                        sceneIdentifier: currentSceneIdentifier,
+                        isGenericSwiftUIFallback: view.isGenericSwiftUIFallback
                     )
                 )
             }
@@ -1016,7 +1078,9 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
                     instrumentationType: .swiftuiAutomatic,
-                    sceneIdentifier: sceneIdentifierProvider(viewController)
+                    sceneIdentifier: sceneIdentifierProvider(viewController),
+                    isGenericSwiftUIFallback: SwiftUIReflectionBasedViewNameExtractor
+                        .isGenericFallbackViewName(rumViewName)
                 )
             )
         }
