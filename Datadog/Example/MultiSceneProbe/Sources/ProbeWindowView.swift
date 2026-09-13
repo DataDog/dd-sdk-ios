@@ -1317,6 +1317,12 @@ struct ProbeWindowRoot: View {
         }
 
         if isActive {
+            #if DEBUG
+            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+                recordSceneTargetedManualViewFailure(operation: "start")
+                return
+            }
+            #endif
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
                     kind: .intervalBegan,
@@ -1330,6 +1336,23 @@ struct ProbeWindowRoot: View {
             )
             isKeyedManualViewActive = true
             updateSceneRoute()
+            #if DEBUG
+            monitor.startView(
+                key: "probe-keyed-manual-view",
+                name: "ProbeKeyedManualView",
+                attributes: [
+                    ProbeRuntime.Attribute.runID: window.runID,
+                    ProbeRuntime.Attribute.host: "native-swiftui-scene-targeted-manual",
+                    ProbeRuntime.Attribute.sourceScene: window.label,
+                    ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                    ProbeRuntime.Attribute.screen: "compose",
+                    ProbeRuntime.Attribute.viewScene: window.label,
+                    ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+                    ProbeRuntime.Attribute.viewScreen: "compose"
+                ],
+                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            )
+            #else
             RUMMonitor.shared().startView(
                 key: "probe-keyed-manual-view",
                 name: "ProbeKeyedManualView",
@@ -1344,6 +1367,7 @@ struct ProbeWindowRoot: View {
                     ProbeRuntime.Attribute.viewScreen: "compose"
                 ]
             )
+            #endif
             ProbeRuntime.record(
                 "keyed manual view started source=\(window.label) "
                     + "native=\(sceneSessionID) screen=compose"
@@ -1362,7 +1386,24 @@ struct ProbeWindowRoot: View {
                 interval: "keyed-manual-authority"
             )
         )
+        #if DEBUG
+        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+            recordSceneTargetedManualViewFailure(operation: "stop")
+            return
+        }
+        monitor.stopView(
+            key: "probe-keyed-manual-view",
+            attributes: [
+                ProbeRuntime.Attribute.runID: window.runID,
+                ProbeRuntime.Attribute.sourceScene: window.label,
+                ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                ProbeRuntime.Attribute.screen: "compose"
+            ],
+            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+        )
+        #else
         RUMMonitor.shared().stopView(key: "probe-keyed-manual-view")
+        #endif
         isKeyedManualViewActive = false
         updateSceneRoute()
         ProbeRuntime.record(
@@ -1387,6 +1428,26 @@ struct ProbeWindowRoot: View {
                 phase: "keyed-manual-stopped-settled"
             )
         }
+    }
+
+    private func recordSceneTargetedManualViewFailure(operation: String) {
+        let reason = "scene-targeted manual view \(operation) is unavailable"
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentSceneScreen
+                ),
+                result: .fail,
+                reason: reason
+            )
+        )
+        ProbeRuntime.record(
+            "keyed manual view failed source=\(window.label) "
+                + "native=\(sceneSessionID) reason=\(reason)"
+        )
     }
 
     private func updateSceneRoute() {
