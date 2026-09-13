@@ -102,9 +102,10 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-1. Convert MultiSceneProbe into a named, self-validating runner. Land the harness
-   separately from production SDK changes; local semantic PASS is required before
-   backend confirmation.
+1. Continue the MultiSceneProbe self-validating runner after the completed named-
+   scenario phase (`EXP-106`). Add structured signals and the pure semantic oracle;
+   local semantic PASS is required before backend confirmation. Keep harness and
+   production SDK commits separate.
 2. Convert the debug per-window keyed-occurrence source into a reviewable iOS 27
    SwiftUI integration contract; no public API lands without RFC review.
 3. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
@@ -125,11 +126,11 @@ real-device/human queue instead of repeated on the current simulator.
 This workstream improves the reliability and handoff cost of every remaining
 experiment; it does not itself change the SDK support verdict.
 
-1. Add a validated scenario catalog under `MultiSceneProbe/Sources/Harness`.
-   Important existing configurations become stable scenario identifiers, command-
-   line selection replaces Boolean combinations, and a temporary environment
-   adapter accepts only known non-contradictory configurations. Emit the resolved
-   manifest before Datadog starts.
+1. Completed in `6bee92ee7` and `EXP-106`: a validated 35-scenario catalog lives
+   under `MultiSceneProbe/Sources/Harness`. Command-line selection is primary, the
+   temporary environment adapter accepts only exact non-contradictory profiles,
+   and the complete manifest is emitted before Datadog starts. Invalid launches
+   fail closed. The generated hostless target currently passes 15/15 tests.
 2. Record versioned JSONL signals and evaluate them with a pure semantic oracle.
    The only results are `PASS`, `FAIL`, `SKIPPED`, and `INCONCLUSIVE`; ordered and
    negative expectations must distinguish wrong attribution, missing events,

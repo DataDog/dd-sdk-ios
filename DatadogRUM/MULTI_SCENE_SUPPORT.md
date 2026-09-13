@@ -200,13 +200,12 @@ customer workflow, and required tests live only in
 
 ### Checkpoint
 
-The branch is `valpertui/multiple-windows-scenes`; the latest implementation
+The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `60da5316b` (`Preserve revealed SwiftUI view occurrences across
-remount`). It follows the retained-route, exact-view routing, and split probe
-checkpoints through `96222a6b1`. All
-are unsigned local development commits and must not be pushed. The chronological
-checkpoint table in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is
-authoritative.
+remount`); the latest branch checkpoint is the harness-only `6bee92ee7`
+(`Introduce named multi-scene probe scenarios`). All are unsigned local
+development commits and must not be pushed. The chronological checkpoint table
+in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
 `EXP-090` through `EXP-105` are the latest SwiftUI occurrence loop: same-type
 replacement preserves customer state, coalesced abort creates no view, retained
@@ -221,15 +220,17 @@ experimental branch, not a release-ready support claim.
 
 ### Exact next work
 
-The probe is now being converted into a deterministic, self-validating runner so
+The probe is being converted into a deterministic, self-validating runner so
 the remaining automatic SwiftUI P0 work produces local semantic verdicts before
 backend confirmation. This is an evidence-quality workstream, not a substitute
 for the shipping integration:
 
-1. Add a validated named-scenario catalog and a structured signal/oracle layer.
-   Preserve all important existing experiments through a compatibility adapter;
-   invalid combinations must fail before Datadog starts. An ignored gesture is
-   `INCONCLUSIVE`, and unsupported topology is `SKIPPED`.
+1. Add versioned JSONL signals and a pure semantic oracle to the completed named
+   scenario catalog. Phase 1 now resolves 35 stable scenarios, accepts only exact
+   legacy profiles, emits the complete manifest first, and rejects invalid input
+   before Datadog starts (`EXP-106`). The next slice must evaluate ordered and
+   negative expectations with exactly `PASS`, `FAIL`, `SKIPPED`, and
+   `INCONCLUSIVE` results.
 2. Turn the `EXP-098`/`EXP-099` debug keyed-occurrence source into the smallest
    reviewable iOS 27 integration contract. Preserve customer SwiftUI identity and
    state, keep one source per window root, install tracking at the root and every
@@ -282,6 +283,10 @@ for the shipping integration:
 - Profiling uses the same typed Operation identity and distinguishes omitted from
   empty keys.
 - Session Replay is required only to coexist without an SDK crash.
+- The standalone probe now resolves 35 named scenarios from command-line input,
+  preserves exact known legacy environment profiles, and fails closed before SDK
+  initialization. This improves evidence quality but does not change the RUM
+  support verdict.
 
 The trait-backed SwiftUI result is a semantic-attribution guarantee, not a
 callback-order guarantee. `EXP-015` showed that synchronous actions and resources
@@ -313,6 +318,10 @@ As of 2026-09-13:
 - `DatadogLogs`: 95/95 passed.
 - `DatadogTrace`: 151/151 passed, including 4/4 focused OpenTelemetry handoff
   tests.
+- MultiSceneProbe scenario runner: 15/15 hostless tests passed, build-for-testing
+  succeeded, a valid named launch emitted its full manifest before creating RUM
+  session `6f556658-1444-4ddf-8d9f-82ce0d5dea91`, and an invalid named launch
+  emitted no SDK initialization or RUM payload (`EXP-106`).
 - `EXP-102`/`EXP-103`: backend intake contains the exact single- and two-window
   split occurrence chains, with 3/3 and 6/6 action/Resource marker pairs and zero
   RUM errors. The later `EXP-103` simulator `backboardd` crash occurred after both

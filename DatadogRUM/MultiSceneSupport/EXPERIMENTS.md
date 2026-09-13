@@ -55,15 +55,18 @@ boundary, in this order:
 | 38 | `Add keyed SwiftUI split navigation probe` | Split selection supplies RUM-only occurrence keys and generations without replacing customer content identity |
 | 39 | `Document split navigation runtime evidence` | `EXP-102`/`EXP-103`, updated assessment and plan, simulator-system-crash boundary, and the real-device/human rerun queue |
 | 40 | `Preserve revealed SwiftUI view occurrences across remount` | Source-started retained routes transfer their published identity to replacement SwiftUI tracking state; split-return probe and focused regressions |
+| 41 | `Document retained split return and harness plan` | `EXP-104`/`EXP-105`, updated support verdict, deterministic harness workstream, and exact resume state |
+| 42 | `Introduce named multi-scene probe scenarios` | Validated 35-scenario catalog, strict legacy adapter, manifest-first fail-closed startup, generated hostless tests, and probe documentation |
 
-Rows 1-40 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-42 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
 `adaec8bdb`, row 26 is `e124ae72c`, and row 27 is `8cb8661af`. Rows 28-37 are
 `85da8fa9c`, `c657f15fd`, `149e58655`, `917bc36b3`, `798a2228a`, `79aefb836`,
 `119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
-`96222a6b1`; row 39 is `e2bac40da`, and row 40 is `60da5316b`.
+`96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
+`4010931b0`, and row 42 is `6bee92ee7`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -78,7 +81,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-thirteen exact-path commits in rows 28-40 use that policy. This is local checkpoint
+fifteen exact-path commits in rows 28-42 use that policy. This is local checkpoint
 history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -198,6 +201,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-103 | `split-occurrence-two-window-20260913-1400` | `a354f09b-557c-43a7-815c-95379ea3504d` | iPadOS 27 | Both native scenes reached regular width and independently retained their Detail witness while advancing generation 1 → 2 → 3. Backend emitted seven views: launch plus distinct A and B Detail₁, Detail₂, and Placeholder UUIDs; all six action/Resource pairs used their exact scene occurrence and no RUM error appeared. Both upload batches completed before final hierarchy capture triggered the known simulator `backboardd` Metal crash. The probe app produced no crash report; this is a concurrent telemetry pass plus a simulator-stability limitation, not an SDK crash-safety failure. |
 | EXP-104 | `split-occurrence-retained-return-20260913-1408` | `0540b52f-b398-4886-b956-421cffa64df0` | iPadOS 27 | Retained split-return failure baseline. Detail₁ `2be7a2d9…` → Detail₂ `532c2db1…` → Placeholder `6334cd0c…` was correct. Returning to Detail₂ made the old subtree stop source-created UUID `ee1fd0c4…` after about 6.6 ms; the replacement reader then started `03545f03…`, which owned the marker pair. Backend therefore contained a ghost fifth semantic view. This is a conclusive SDK/prototype failure, not a simulator-input limitation. |
 | EXP-105 | `split-occurrence-retained-return-fix-20260913-1421` | `d4f3597e-2254-4b68-897a-5530299083cb` | iPadOS 27 | Fixed retained split return. The source-created returned Detail₂ UUID `761fe74b…` remained active while SwiftUI replaced the platform reader, and the replacement state adopted that identity without another start. Backend contains launch plus exactly Detail₁ `507ff93f…` → Detail₂ `3d921845…` → Placeholder `06dd0b13…` → Detail₂(returned) `761fe74b…`; all four action/Resource pairs use their exact occurrence, uploads returned 202, and no RUM error or app/SDK crash appeared. |
+| EXP-106 | `harness-phase1-valid-20260913`; `harness-phase1-invalid-20260913` | `6f556658-1444-4ddf-8d9f-82ce0d5dea91`; none | iPadOS 27 | Named-scenario harness startup proof. The valid `regression.single-scene` launch emitted its complete resolved manifest as the first structured record, then initialized Datadog and produced the expected Home/Detail payload. The unknown-scenario launch emitted only a manifest plus rejection: no Datadog initialization, session, or RUM payload. The catalog contains 35 stable scenarios; strict resolver/catalog tests pass 15/15 and probe build-for-testing succeeds. This validates harness configuration, not a new SDK support surface. |
 
 ## Real-device and human-driven rerun queue
 
@@ -2371,6 +2375,26 @@ navigation-source/state set passes 52/52, including 17/17 source cases, the full
 RUM plan passes 1,151/1,151, changed Swift files lint with zero violations, and
 the native probe rebuild succeeds in
 `BuildProject-Log-20260913-143157.txt`.
+
+`6bee92ee7` completes the named-scenario phase of the deterministic harness.
+`ProbeScenarioRunner` accepts `--probe-scenario`, `--probe-run-id`, and
+`--probe-run-mode`, generates a run ID only when one is not supplied, rejects
+unknown probe arguments/environment keys and contradictory legacy combinations,
+and maps exact supported legacy profiles to the catalog. The generated hostless
+test target compiles the Foundation-only harness sources directly; all 15 catalog
+and resolution tests pass. Build-for-testing succeeded in
+`BuildProject-Log-20260913-150315.txt`.
+
+`EXP-106` checked the process boundary in the iPadOS 27 simulator. Valid run
+`harness-phase1-valid-20260913` emitted the complete `regression.single-scene`
+manifest before Datadog initialization, then started RUM session
+`6f556658-1444-4ddf-8d9f-82ce0d5dea91` and produced distinct Home and Detail
+payloads. Invalid run `harness-phase1-invalid-20260913` selected an unknown
+scenario. Its captured output contained exactly the structured rejection manifest
+and one human-readable rejection; it contained no Datadog SDK log, session, or
+RUM payload. The catalog models signal waits and semantic expectations, but the
+observable driver and oracle are not implemented yet, so this experiment does not
+claim that modeled timelines already execute or pass locally.
 
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
