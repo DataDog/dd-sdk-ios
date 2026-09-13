@@ -778,7 +778,7 @@ struct ProbeWindowRoot: View {
                     semanticContext: ProbeSemanticContext(
                         logicalSceneID: window.label,
                         nativeSceneID: sceneSessionID,
-                        screen: currentSceneScreen
+                        screen: "sheet"
                     ),
                     interval: "manual-sheet-active"
                 )
@@ -1207,19 +1207,10 @@ struct ProbeWindowRoot: View {
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
                 }
-                let currentScreen: String
-                switch pathBinding.wrappedValue.last {
-                case .detail(let instance):
-                    currentScreen = "detail-\(instance)"
-                case .alternate:
-                    currentScreen = "alternate"
-                case nil:
-                    currentScreen = "home"
-                }
                 ProbeRuntime.emitLifecycleMarker(
                     window: window,
                     sceneSessionID: handle.nativeSceneID,
-                    screen: currentScreen,
+                    screen: currentSceneScreen,
                     phase: marker
                 )
             default:
