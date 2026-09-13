@@ -337,10 +337,13 @@ internal enum ProbeSemanticOracle {
                 case .match:
                     didMatch = true
                     matched += 1
-                    if expectation.kind == .viewStopped {
+                    if isDeferredObservation(expectation.kind) {
                         // View-stop mapper callbacks can arrive after the next
-                        // view has started while a navigation animation overlaps.
-                        // Require the stop, but do not consume intervening events.
+                        // view starts while a navigation animation overlaps.
+                        // Resource mapper callbacks are emitted on completion,
+                        // which can likewise follow a later navigation event.
+                        // Require exact ownership without using either callback
+                        // as the navigation-order clock.
                         matchedDeferredEventIndexes.insert(eventIndex)
                     } else {
                         cursor = eventIndex + 1
@@ -387,6 +390,7 @@ internal enum ProbeSemanticOracle {
             }
 
             var found = false
+            var firstViolation: ProbeSemanticIssue?
             for event in timeline.events {
                 switch candidate(
                     event,
@@ -399,19 +403,22 @@ internal enum ProbeSemanticOracle {
                     found = true
                     matched += 1
                 case .violation(let reason):
-                    return (
-                        matched,
-                        ProbeSemanticIssue(
+                    if firstViolation == nil {
+                        firstViolation = ProbeSemanticIssue(
                             expectationIndex: index,
                             expectation: expectation,
                             signalSequence: event.signal.sequence,
                             reason: reason
                         )
-                    )
+                    }
+                    continue
                 }
                 break
             }
             if !found {
+                if let firstViolation {
+                    return (matched, firstViolation)
+                }
                 return (
                     matched,
                     missingIssue(expectation, index: index, after: 0)
@@ -595,6 +602,12 @@ internal enum ProbeSemanticOracle {
 
     private static func isNegative(_ expectation: ProbeExpectation) -> Bool {
         expectation.kind == .noViewStarted || expectation.kind == .noEvent
+    }
+
+    private static func isDeferredObservation(
+        _ kind: ProbeExpectationKind
+    ) -> Bool {
+        kind == .viewStopped || kind == .resource
     }
 
     private static func isRUMEvent(_ kind: ProbeExpectationKind) -> Bool {

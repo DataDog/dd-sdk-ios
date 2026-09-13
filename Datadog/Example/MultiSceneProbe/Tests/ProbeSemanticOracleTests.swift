@@ -113,6 +113,144 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
     }
 
+    func testResourceCompletionMayBeObservedAfterNextViewStarts() {
+        let recorder = ProbeEventRecorder(
+            runID: "overlapping-resource",
+            scenarioID: "overlapping-resource",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "detail-1", screen: "detail-1", active: true))
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "detail-1-action",
+                name: "selection-committed",
+                viewID: "detail-1",
+                screen: "detail-1",
+                occurrence: 1
+            )
+        )
+        recorder.record(viewSignal(id: "detail-2", screen: "detail-2", active: true))
+        recorder.record(
+            workSignal(
+                kind: .rumResource,
+                id: "detail-1-resource",
+                name: "selection-committed",
+                viewID: "detail-1",
+                screen: "detail-1",
+                occurrence: 1
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "overlapping-resource",
+            trackingMode: .navigationOccurrence,
+            layout: .splitSelection,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 1
+                ),
+                ProbeExpectation(
+                    .action,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 1,
+                    name: "selection-committed"
+                ),
+                ProbeExpectation(
+                    .resource,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 1,
+                    name: "selection-committed"
+                ),
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "detail-2",
+                    occurrence: 1
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testCompletionConditionFindsLaterSameNamedOccurrence() {
+        let recorder = ProbeEventRecorder(
+            runID: "repeated-completion",
+            scenarioID: "repeated-completion",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "detail-2-1", screen: "detail-2", active: true))
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "detail-2-1-action",
+                name: "selection-committed",
+                viewID: "detail-2-1",
+                screen: "detail-2",
+                occurrence: 1
+            )
+        )
+        recorder.record(viewSignal(id: "placeholder", screen: "placeholder", active: true))
+        recorder.record(viewSignal(id: "detail-2-2", screen: "detail-2", active: true))
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "detail-2-2-action",
+                name: "selection-committed",
+                viewID: "detail-2-2",
+                screen: "detail-2",
+                occurrence: 2
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "repeated-completion",
+            trackingMode: .navigationOccurrence,
+            layout: .splitSelection,
+            steps: [],
+            completionConditions: [
+                ProbeExpectation(
+                    .action,
+                    scene: "scene-A",
+                    screen: "detail-2",
+                    occurrence: 2,
+                    name: "selection-committed"
+                )
+            ],
+            expectedSemanticTimeline: []
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
     func testExplicitlyForbiddenViewFailsWithSignalSequence() throws {
         let result = ProbeSemanticOracle.evaluate(
             scenario: try scenario(named: "swiftui.stack.abort"),
@@ -257,6 +395,32 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 viewActive: active,
                 viewDocumentVersion: active ? 1 : 2
             )
+        )
+    }
+
+    private func workSignal(
+        kind: ProbeSignalKind,
+        id: String,
+        name: String,
+        viewID: String,
+        screen: String,
+        occurrence: Int
+    ) -> ProbeSignal {
+        ProbeSignal(
+            kind: kind,
+            evidenceSource: .rumMapper,
+            semanticContext: ProbeSemanticContext(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                screen: screen,
+                occurrence: occurrence
+            ),
+            rumContext: ProbeRUMContext(
+                sessionID: "session",
+                viewID: viewID
+            ),
+            eventID: id,
+            name: name
         )
     }
 }

@@ -58,6 +58,7 @@ internal final class ProbeScenarioDriver {
         case any
         case sceneReady(scene: String)
         case path(scene: String, value: String)
+        case splitSelection(scene: String, value: String)
         case encoded(scene: String?, value: String)
 
         func matches(
@@ -75,6 +76,10 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == Self.path(for: value)
+            case .splitSelection(let scene, let value):
+                return signal.kind == .navigationPathMutation
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.navigationPath == [value]
             case .encoded(let scene, let value):
                 return Self.matches(
                     encoded: value,
@@ -165,17 +170,26 @@ internal final class ProbeScenarioDriver {
                 guard let screen = components.first.map(String.init) else {
                     return false
                 }
-                let occurrence = components.count == 2
+                let requestedOccurrence = components.count == 2
                     ? Int(components[1])
                     : nil
                 let isDestinationSignal =
                     signal.kind == .destinationMaterialized
                     || signal.kind == .destinationAppearanceObserved
+                let observedOccurrence = signal.semanticContext?.occurrence
+                    ?? recordedSignals.filter {
+                        ($0.kind == .destinationMaterialized
+                            || $0.kind == .destinationAppearanceObserved)
+                            && $0.semanticContext?.logicalSceneID
+                                == signal.semanticContext?.logicalSceneID
+                            && $0.semanticContext?.screen == screen
+                            && $0.sequence <= signal.sequence
+                    }.count
                 return isDestinationSignal
                     && signal.semanticContext?.screen == screen
                     && (
-                        occurrence == nil
-                            || signal.semanticContext?.occurrence == occurrence
+                        requestedOccurrence == nil
+                            || observedOccurrence == requestedOccurrence
                     )
             }
             return false
@@ -372,6 +386,30 @@ internal final class ProbeScenarioDriver {
             ) else {
                 return .failed(
                     "timed out waiting for reverted Home path in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .setSplitSelection:
+            guard
+                let scene = step.scene,
+                let value = step.value
+            else {
+                return .failed("scene or split selection is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .splitSelection(scene: scene, value: value),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for split selection \(value) in \(scene)"
                 )
             }
             return .acknowledged(signal)

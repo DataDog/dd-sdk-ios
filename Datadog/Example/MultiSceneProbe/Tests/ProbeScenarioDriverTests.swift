@@ -420,6 +420,141 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesSplitSelectionFromObservedMaterialization() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-split",
+            scenarioID: "swiftui.split.same-type-selection",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["detail-1"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+        recorder.record(
+            viewSignal(
+                id: "split-detail-1",
+                screen: "detail-1",
+                active: true,
+                documentVersion: 1
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                semanticContext: semanticContext(screen: "detail-1"),
+                scenePhase: ProbeSceneReadiness.ready.rawValue
+            )
+        )
+        recordSplitMaterialization(
+            recorder: recorder,
+            screen: "detail-1",
+            viewID: "split-detail-1",
+            occurrence: 1
+        )
+
+        var requestedSelections: [String] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            switch (step.kind, step.value) {
+            case (.setSplitSelection, "detail-2"):
+                requestedSelections.append("detail-2")
+                recorder.record(
+                    self.pathSignal(
+                        previous: ["detail-1"],
+                        current: ["detail-2"]
+                    )
+                )
+                recorder.record(
+                    self.viewSignal(
+                        id: "split-detail-1",
+                        screen: "detail-1",
+                        active: false,
+                        documentVersion: 2
+                    )
+                )
+                recorder.record(
+                    self.viewSignal(
+                        id: "split-detail-2",
+                        screen: "detail-2",
+                        active: true,
+                        documentVersion: 1
+                    )
+                )
+                self.recordSplitMaterialization(
+                    recorder: recorder,
+                    screen: "detail-2",
+                    viewID: "split-detail-2",
+                    occurrence: 1
+                )
+            case (.setSplitSelection, "placeholder"):
+                requestedSelections.append("placeholder")
+                recorder.record(
+                    self.pathSignal(
+                        previous: ["detail-2"],
+                        current: ["placeholder"]
+                    )
+                )
+                recorder.record(
+                    self.viewSignal(
+                        id: "split-detail-2",
+                        screen: "detail-2",
+                        active: false,
+                        documentVersion: 2
+                    )
+                )
+                recorder.record(
+                    self.viewSignal(
+                        id: "split-placeholder",
+                        screen: "placeholder",
+                        active: true,
+                        documentVersion: 1
+                    )
+                )
+                self.recordSplitMaterialization(
+                    recorder: recorder,
+                    screen: "placeholder",
+                    viewID: "split-placeholder",
+                    occurrence: 1
+                )
+            default:
+                return .rejected(reason: "unsupported step")
+            }
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: try scenario(named: "swiftui.split.same-type-selection"),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+        XCTAssertEqual(result.matchedExpectationCount, 10)
+        XCTAssertEqual(requestedSelections, ["detail-2", "placeholder"])
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            6
+        )
+    }
+
     func testMissingCommandAcknowledgementFailsInsteadOfSleepingThrough() async throws {
         let lines = DriverLockedLines()
         let recorder = ProbeEventRecorder(
@@ -634,6 +769,40 @@ final class ProbeScenarioDriverTests: XCTestCase {
             ),
             eventID: id,
             name: name
+        )
+    }
+
+    private func recordSplitMaterialization(
+        recorder: ProbeEventRecorder,
+        screen: String,
+        viewID: String,
+        occurrence: Int
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .destinationMaterialized,
+                semanticContext: semanticContext(screen: screen)
+            )
+        )
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "\(viewID)-action",
+                name: "selection-committed",
+                viewID: viewID,
+                screen: screen,
+                occurrence: occurrence
+            )
+        )
+        recorder.record(
+            workSignal(
+                kind: .rumResource,
+                id: "\(viewID)-resource",
+                name: "selection-committed",
+                viewID: viewID,
+                screen: screen,
+                occurrence: occurrence
+            )
         )
     }
 }

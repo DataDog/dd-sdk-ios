@@ -175,6 +175,10 @@ struct ProbeWindowRoot: View {
     @State private var homeBindingGeneration: UInt64 = 0
     @State private var destinationBindingGeneration: UInt64 = 0
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
+    @State private var splitSelection: ProbeSplitSelection? =
+        ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
+    @State private var splitRUMViewBindingGeneration: UInt64 = 1
+    @State private var splitNavigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var scenarioStepExecutor = ProbeSceneStepExecutor()
     @State private var sceneSessionID = "unresolved"
     @State private var sceneHandle: ProbeSceneHandle?
@@ -422,7 +426,7 @@ struct ProbeWindowRoot: View {
             )
 
             readerControlGeneration += 1
-            advanceRUMViewBindingGeneration(for: path)
+            advanceCurrentRUMViewBindingGeneration()
             await Task.yield()
             registerScene(resolvedWindow)
             try? await Task.sleep(for: .milliseconds(300))
@@ -431,12 +435,12 @@ struct ProbeWindowRoot: View {
             }
             ProbeRuntime.record(
                 "reader-control post-update source=\(window.label) native=\(sceneSessionID) "
-                    + "screen=\(currentNavigationScreen) generation=\(readerControlGeneration)"
+                + "screen=\(currentSceneScreen) generation=\(readerControlGeneration)"
             )
             ProbeRuntime.emitLifecycleMarker(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                screen: currentNavigationScreen,
+                screen: currentSceneScreen,
                 phase: "post-retained-reader-remount"
             )
         }
@@ -483,7 +487,11 @@ struct ProbeWindowRoot: View {
             ProbeSplitLayout(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                readerControlGeneration: readerControlGeneration
+                readerControlGeneration: readerControlGeneration,
+                selection: $splitSelection,
+                rumViewBindingGeneration: splitRUMViewBindingGeneration,
+                navigationOccurrenceSource: splitNavigationOccurrenceSource,
+                commitSelection: commitSplitSelection
             )
         }
     }
@@ -675,6 +683,20 @@ struct ProbeWindowRoot: View {
         }
     }
 
+    private var currentSceneScreen: String {
+        if ProbeRuntime.usesSplitSelectionLayout {
+            return splitSelection?.screen ?? "split-empty"
+        }
+        return currentNavigationScreen
+    }
+
+    private var currentSceneRoute: [String] {
+        if ProbeRuntime.usesSplitSelectionLayout {
+            return splitSelection.map { [$0.screen] } ?? []
+        }
+        return navigationPathDescription(for: path)
+    }
+
     private func openPeer() {
         let peer = ProbeWindow(
             runID: window.runID,
@@ -698,6 +720,14 @@ struct ProbeWindowRoot: View {
             homeBindingGeneration = rumViewBindingGeneration
         } else {
             destinationBindingGeneration = rumViewBindingGeneration
+        }
+    }
+
+    private func advanceCurrentRUMViewBindingGeneration() {
+        if ProbeRuntime.usesSplitSelectionLayout {
+            splitRUMViewBindingGeneration &+= 1
+        } else {
+            advanceRUMViewBindingGeneration(for: path)
         }
     }
 
@@ -727,6 +757,62 @@ struct ProbeWindowRoot: View {
         }
     }
 
+    private func commitSplitSelection(_ newSelection: ProbeSplitSelection) {
+        guard splitSelection != newSelection else {
+            return
+        }
+        let previous = splitSelection?.screen ?? "none"
+        splitRUMViewBindingGeneration &+= 1
+        splitSelection = newSelection
+        updateSceneRoute()
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: newSelection.screen
+                ),
+                previousNavigationPath: [previous],
+                navigationPath: [newSelection.screen],
+                mutation: splitRUMViewBindingGeneration
+            )
+        )
+        ProbeRuntime.record(
+            "split selection committed source=\(window.label) "
+                + "from=\(previous) to=\(newSelection.screen) "
+                + "generation=\(splitRUMViewBindingGeneration)"
+        )
+        #if DEBUG
+        guard ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking else {
+            return
+        }
+        let didReveal = splitNavigationOccurrenceSource.revealRetainedRoute(
+            occurrenceKey: RUMViewOccurrenceKey(
+                navigationOccurrence(for: newSelection)
+            ),
+            bindingGeneration: splitRUMViewBindingGeneration
+        )
+        ProbeRuntime.record(
+            "split occurrence source source=\(window.label) "
+                + "screen=\(newSelection.screen) "
+                + "generation=\(splitRUMViewBindingGeneration) "
+                + "delivered=\(didReveal)"
+        )
+        #endif
+    }
+
+    private func navigationOccurrence(
+        for selection: ProbeSplitSelection
+    ) -> ProbeNavigationOccurrence {
+        switch selection {
+        case .detail(let instance):
+            return .splitDetail(instance)
+        case .placeholder:
+            return .splitPlaceholder
+        }
+    }
+
     private func registerScene(_ resolvedWindow: UIWindow) {
         guard let windowScene = resolvedWindow.windowScene else {
             return
@@ -739,7 +825,7 @@ struct ProbeWindowRoot: View {
             logicalSceneID: window.label,
             nativeSceneID: identifier,
             window: resolvedWindow,
-            currentRoute: navigationPathDescription(for: path)
+            currentRoute: currentSceneRoute
         )
 
         guard case .registered(let handle) = result else {
@@ -750,7 +836,7 @@ struct ProbeWindowRoot: View {
                         semanticContext: ProbeSemanticContext(
                             logicalSceneID: window.label,
                             nativeSceneID: identifier,
-                            screen: currentNavigationScreen
+                            screen: currentSceneScreen
                         ),
                         result: .fail,
                         reason: "scene registry rejected: \(reason)"
@@ -771,7 +857,7 @@ struct ProbeWindowRoot: View {
         sceneHandle = handle
         if sceneSessionID != identifier {
             sceneSessionID = identifier
-            advanceRUMViewBindingGeneration(for: path)
+            advanceCurrentRUMViewBindingGeneration()
         }
 
         guard let snapshot = ProbeRuntime.sceneRegistry.markReady(handle) else {
@@ -829,6 +915,22 @@ struct ProbeWindowRoot: View {
                     )
                 }
                 pushAndRevertDetail()
+            case .setSplitSelection:
+                guard let value = step.value else {
+                    return .rejected(reason: "split selection is missing")
+                }
+                let selection: ProbeSplitSelection
+                switch value {
+                case "detail-1":
+                    selection = .detail(1)
+                case "detail-2":
+                    selection = .detail(2)
+                case "placeholder":
+                    selection = .placeholder
+                default:
+                    return .rejected(reason: "unsupported split selection \(value)")
+                }
+                commitSplitSelection(selection)
             case .emitMarker:
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
@@ -928,7 +1030,7 @@ struct ProbeWindowRoot: View {
             return
         }
         _ = ProbeRuntime.sceneRegistry.updateRoute(
-            navigationPathDescription(for: path),
+            currentSceneRoute,
             for: handle
         )
     }
@@ -952,29 +1054,17 @@ private struct ProbeSplitLayout: View {
     let window: ProbeWindow
     let sceneSessionID: String
     let readerControlGeneration: Int
+    @Binding var selection: ProbeSplitSelection?
+    let rumViewBindingGeneration: UInt64
+    let navigationOccurrenceSource: ProbeNavigationOccurrenceSource
+    let commitSelection: (ProbeSplitSelection) -> Void
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @State private var selection: ProbeSplitSelection?
     @State private var materializedSelection: ProbeSplitSelection?
-    @State private var rumViewBindingGeneration: UInt64 = 1
-    @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var didScheduleDetailTwo = false
     @State private var didSchedulePlaceholder = false
     @State private var didScheduleReturnedDetail = false
     @State private var didRecordLayout = false
-
-    init(
-        window: ProbeWindow,
-        sceneSessionID: String,
-        readerControlGeneration: Int
-    ) {
-        self.window = window
-        self.sceneSessionID = sceneSessionID
-        self.readerControlGeneration = readerControlGeneration
-        _selection = State(
-            initialValue: ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
-        )
-    }
 
     var body: some View {
         NavigationSplitView {
@@ -1008,7 +1098,10 @@ private struct ProbeSplitLayout: View {
             )
         }
         .task(id: materializedSelection) {
-            guard ProbeRuntime.automaticallyAdvancesSplitSelection else {
+            guard
+                ProbeRuntime.automaticallyAdvancesSplitSelection,
+                !ProbeRuntime.usesObservableScenarioDriver
+            else {
                 return
             }
             guard horizontalSizeClass == .regular else {
@@ -1112,58 +1205,7 @@ private struct ProbeSplitLayout: View {
     }
 
     private func commit(_ newSelection: ProbeSplitSelection) {
-        guard selection != newSelection else {
-            return
-        }
-        let previous = selection?.screen ?? "none"
-        rumViewBindingGeneration &+= 1
-        selection = newSelection
-        ProbeRuntime.eventRecorder.record(
-            ProbeSignal(
-                kind: .navigationPathMutation,
-                semanticContext: ProbeSemanticContext(
-                    logicalSceneID: window.label,
-                    nativeSceneID: sceneSessionID,
-                    screen: newSelection.screen
-                ),
-                previousNavigationPath: [previous],
-                navigationPath: [newSelection.screen],
-                mutation: rumViewBindingGeneration
-            )
-        )
-        ProbeRuntime.record(
-            "split selection committed source=\(window.label) "
-                + "from=\(previous) to=\(newSelection.screen) "
-                + "generation=\(rumViewBindingGeneration)"
-        )
-        #if DEBUG
-        guard ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking else {
-            return
-        }
-        let didReveal = navigationOccurrenceSource.revealRetainedRoute(
-            occurrenceKey: RUMViewOccurrenceKey(
-                navigationOccurrence(for: newSelection)
-            ),
-            bindingGeneration: rumViewBindingGeneration
-        )
-        ProbeRuntime.record(
-            "split occurrence source source=\(window.label) "
-                + "screen=\(newSelection.screen) "
-                + "generation=\(rumViewBindingGeneration) "
-                + "delivered=\(didReveal)"
-        )
-        #endif
-    }
-
-    private func navigationOccurrence(
-        for selection: ProbeSplitSelection
-    ) -> ProbeNavigationOccurrence {
-        switch selection {
-        case .detail(let instance):
-            return .splitDetail(instance)
-        case .placeholder:
-            return .splitPlaceholder
-        }
+        commitSelection(newSelection)
     }
 
     private func materialized(_ newSelection: ProbeSplitSelection) {

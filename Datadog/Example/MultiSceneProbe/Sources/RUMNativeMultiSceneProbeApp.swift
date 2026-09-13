@@ -71,7 +71,10 @@ enum ProbeRuntime {
             "swiftui.stack.return",
             "swiftui.stack.abort",
             "swiftui.stack.same-type-replacement",
-            "swiftui.stack.different-type-replacement"
+            "swiftui.stack.different-type-replacement",
+            "swiftui.split.automatic-baseline",
+            "swiftui.split.same-type-selection",
+            "swiftui.split.retained-return"
         ].contains($0.identifier)
     } ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {

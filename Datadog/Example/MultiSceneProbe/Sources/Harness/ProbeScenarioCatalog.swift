@@ -812,28 +812,57 @@ enum ProbeScenarioCatalog {
     private static func splitSelectionSteps(returnsToDetail: Bool) -> [ProbeStep] {
         var steps = [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:detail-1"),
             ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-2"),
-            ProbeStep(.setSplitSelection, scene: "scene-A", value: "placeholder")
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:detail-2"),
+            ProbeStep(.setSplitSelection, scene: "scene-A", value: "placeholder"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:placeholder")
         ]
         if returnsToDetail {
             steps.append(ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-2"))
+            steps.append(
+                ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:detail-2#2")
+            )
         }
         return steps
     }
 
     private static func splitTimeline(returnsToDetail: Bool) -> [ProbeExpectation] {
-        var timeline = [
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "placeholder", occurrence: 1)
-        ]
+        var timeline = splitOccurrenceExpectations(screen: "detail-1", occurrence: 1)
+            + splitOccurrenceExpectations(screen: "detail-2", occurrence: 1)
+            + splitOccurrenceExpectations(screen: "placeholder", occurrence: 1)
         if returnsToDetail {
-            timeline.append(
-                ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 2)
-            )
+            timeline += splitOccurrenceExpectations(screen: "detail-2", occurrence: 2)
         }
         return timeline
+    }
+
+    private static func splitOccurrenceExpectations(
+        screen: String,
+        occurrence: Int
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: "selection-committed"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: "selection-committed"
+            )
+        ]
     }
 
     private static func parallelSplitSelectionSteps() -> [ProbeStep] {
