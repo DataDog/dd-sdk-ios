@@ -555,6 +555,36 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesUIKitInteractiveCancellationFromObservedSignals() async throws {
+        let result = try await driveUIKitInteractiveTransition(outcome: .cancel)
+
+        XCTAssertEqual(
+            result.semanticResult.state,
+            .pass,
+            result.semanticResult.issues.map(\.reason).joined(separator: "\n")
+        )
+        XCTAssertEqual(result.semanticResult.matchedExpectationCount, 11)
+        XCTAssertEqual(
+            result.recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            6
+        )
+    }
+
+    func testDrivesUIKitInteractiveCompletionFromObservedSignals() async throws {
+        let result = try await driveUIKitInteractiveTransition(outcome: .finish)
+
+        XCTAssertEqual(
+            result.semanticResult.state,
+            .pass,
+            result.semanticResult.issues.map(\.reason).joined(separator: "\n")
+        )
+        XCTAssertEqual(result.semanticResult.matchedExpectationCount, 13)
+        XCTAssertEqual(
+            result.recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            6
+        )
+    }
+
     func testMissingCommandAcknowledgementFailsInsteadOfSleepingThrough() async throws {
         let lines = DriverLockedLines()
         let recorder = ProbeEventRecorder(
@@ -687,6 +717,240 @@ final class ProbeScenarioDriverTests: XCTestCase {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
             "missing catalog scenario \(identifier)"
+        )
+    }
+
+    private func driveUIKitInteractiveTransition(
+        outcome: ProbeTransitionOutcome
+    ) async throws -> (
+        semanticResult: ProbeSemanticResult,
+        recorder: ProbeEventRecorder
+    ) {
+        let scenarioID = "uikit.split.pop-\(outcome.rawValue)"
+        let recorder = ProbeEventRecorder(
+            runID: "driver-uikit-\(outcome.rawValue)",
+            scenarioID: scenarioID,
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["secondary-2"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        recorder.record(
+            ProbeSignal(
+                kind: .sceneReady,
+                semanticContext: semanticContext(screen: "secondary-2"),
+                scenePhase: ProbeSceneReadiness.ready.rawValue
+            )
+        )
+        recordUIKitOccurrence(
+            recorder: recorder,
+            screen: "secondary-1",
+            occurrence: 1,
+            viewID: "secondary-1-first",
+            marker: "post-materialization"
+        )
+        recordUIKitOccurrence(
+            recorder: recorder,
+            screen: "secondary-2",
+            occurrence: 1,
+            viewID: "secondary-2",
+            marker: "post-materialization"
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .destinationAppearanceObserved,
+                semanticContext: semanticContext(
+                    screen: "secondary-2",
+                    occurrence: 1
+                )
+            )
+        )
+
+        let transitionID = "transition-\(outcome.rawValue)"
+        let interval = outcome == .cancel ? "cancelled-pop" : "finished-pop"
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            switch step.kind {
+            case .beginUIKitInteractiveTransition:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .intervalBegan,
+                        semanticContext: self.semanticContext(screen: "secondary-2"),
+                        interval: interval,
+                        transitionID: transitionID
+                    )
+                )
+                recorder.record(
+                    ProbeSignal(
+                        kind: .transitionBegan,
+                        semanticContext: self.semanticContext(screen: "secondary-2"),
+                        interval: interval,
+                        transitionID: transitionID,
+                        interactive: true,
+                        outcome: outcome
+                    )
+                )
+            case .updateUIKitInteractiveTransition:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .transitionProgress,
+                        semanticContext: self.semanticContext(screen: "secondary-2"),
+                        interval: interval,
+                        transitionID: transitionID,
+                        interactive: true,
+                        transitionProgress: step.percentage
+                    )
+                )
+            case .resolveUIKitInteractiveTransition:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .transitionResolutionRequested,
+                        semanticContext: self.semanticContext(screen: "secondary-2"),
+                        interval: interval,
+                        transitionID: transitionID,
+                        interactive: true,
+                        outcome: outcome
+                    )
+                )
+                if outcome == .finish {
+                    recorder.record(
+                        self.viewSignal(
+                            id: "secondary-2",
+                            screen: "secondary-2",
+                            active: false,
+                            documentVersion: 2
+                        )
+                    )
+                    self.recordUIKitOccurrence(
+                        recorder: recorder,
+                        screen: "secondary-1",
+                        occurrence: 2,
+                        viewID: "secondary-1-returned",
+                        marker: "post-return-materialization"
+                    )
+                }
+                let resolvedScreen = outcome == .cancel
+                    ? "secondary-2"
+                    : "secondary-1"
+                recorder.record(
+                    ProbeSignal(
+                        kind: .transitionResolved,
+                        semanticContext: self.semanticContext(screen: resolvedScreen),
+                        interval: interval,
+                        transitionID: transitionID,
+                        interactive: true,
+                        outcome: outcome
+                    )
+                )
+                recorder.record(
+                    ProbeSignal(
+                        kind: .intervalEnded,
+                        semanticContext: self.semanticContext(screen: resolvedScreen),
+                        interval: interval,
+                        transitionID: transitionID
+                    )
+                )
+                self.recordUIKitWork(
+                    recorder: recorder,
+                    screen: resolvedScreen,
+                    occurrence: outcome == .cancel ? 1 : 2,
+                    viewID: outcome == .cancel
+                        ? "secondary-2"
+                        : "secondary-1-returned",
+                    marker: "post-\(outcome.rawValue)-resolution"
+                )
+            default:
+                return .rejected(reason: "unsupported step")
+            }
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: try scenario(named: scenarioID),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+
+        return (
+            semanticResult: try XCTUnwrap(completedResult),
+            recorder: recorder
+        )
+    }
+
+    private func recordUIKitOccurrence(
+        recorder: ProbeEventRecorder,
+        screen: String,
+        occurrence: Int,
+        viewID: String,
+        marker: String
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .rumViewSnapshot,
+                evidenceSource: .rumMapper,
+                semanticContext: semanticContext(
+                    screen: screen,
+                    occurrence: occurrence
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: viewID,
+                    viewName: screen,
+                    viewActive: true,
+                    viewDocumentVersion: 1
+                )
+            )
+        )
+        recordUIKitWork(
+            recorder: recorder,
+            screen: screen,
+            occurrence: occurrence,
+            viewID: viewID,
+            marker: marker
+        )
+    }
+
+    private func recordUIKitWork(
+        recorder: ProbeEventRecorder,
+        screen: String,
+        occurrence: Int,
+        viewID: String,
+        marker: String
+    ) {
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "\(screen)-\(occurrence)-\(marker)-action",
+                name: marker,
+                viewID: viewID,
+                screen: screen,
+                occurrence: occurrence
+            )
+        )
+        recorder.record(
+            workSignal(
+                kind: .rumResource,
+                id: "\(screen)-\(occurrence)-\(marker)-resource",
+                name: marker,
+                viewID: viewID,
+                screen: screen,
+                occurrence: occurrence
+            )
         )
     }
 

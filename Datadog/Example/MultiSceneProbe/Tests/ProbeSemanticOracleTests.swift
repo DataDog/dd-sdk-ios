@@ -335,7 +335,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
 
         XCTAssertEqual(recorded.map(\.sequence), [1, 2])
-        XCTAssertEqual(recorded.map(\.schemaVersion), [3, 3])
+        XCTAssertEqual(recorded.map(\.schemaVersion), [4, 4])
         XCTAssertEqual(recorded.map(\.timestampMilliseconds), [42, 42])
         XCTAssertEqual(recorded.map(\.runID), ["recorder-run", "recorder-run"])
         XCTAssertEqual(

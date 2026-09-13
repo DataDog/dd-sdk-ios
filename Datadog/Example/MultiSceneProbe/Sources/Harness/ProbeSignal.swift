@@ -23,6 +23,8 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
     case intervalEnded = "interval-ended"
     case gestureAttempted = "gesture-attempted"
     case transitionBegan = "transition-began"
+    case transitionProgress = "transition-progress"
+    case transitionResolutionRequested = "transition-resolution-requested"
     case transitionResolved = "transition-resolved"
     case stepStarted = "step-started"
     case stepAcknowledged = "step-acknowledged"
@@ -191,7 +193,7 @@ internal struct ProbeGeometry: Codable, Equatable {
 }
 
 internal struct ProbeSignal: Codable, Equatable {
-    static let schemaVersion = 3
+    static let schemaVersion = 4
     static let supportedSchemaVersions = 1 ... schemaVersion
 
     let schemaVersion: Int
@@ -216,6 +218,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let interval: String?
     let transitionID: String?
     let interactive: Bool?
+    let transitionProgress: Double?
     let outcome: ProbeTransitionOutcome?
     let stepIndex: Int?
     let stepKind: ProbeStepKind?
@@ -254,6 +257,7 @@ internal struct ProbeSignal: Codable, Equatable {
         interval: String? = nil,
         transitionID: String? = nil,
         interactive: Bool? = nil,
+        transitionProgress: Double? = nil,
         outcome: ProbeTransitionOutcome? = nil,
         stepIndex: Int? = nil,
         stepKind: ProbeStepKind? = nil,
@@ -292,6 +296,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.interval = interval
         self.transitionID = transitionID
         self.interactive = interactive
+        self.transitionProgress = transitionProgress
         self.outcome = outcome
         self.stepIndex = stepIndex
         self.stepKind = stepKind
@@ -337,6 +342,7 @@ internal struct ProbeSignal: Codable, Equatable {
             interval: interval,
             transitionID: transitionID,
             interactive: interactive,
+            transitionProgress: transitionProgress,
             outcome: outcome,
             stepIndex: stepIndex,
             stepKind: stepKind,

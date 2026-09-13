@@ -418,11 +418,37 @@ enum ProbeScenarioCatalog {
         layout: .uikitSplitNavigation,
         steps: uikitInteractiveSteps(outcome: .cancel),
         completionConditions: [
-            ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
+            ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "secondary-2",
+                occurrence: 1,
+                name: "post-cancel-resolution"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "secondary-2",
+                occurrence: 1,
+                name: "post-cancel-resolution"
+            )
         ],
-        expectedSemanticTimeline: [
+        expectedSemanticTimeline:
+            [
             ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
+            ]
+            + uikitOccurrenceExpectations(
+                screen: "secondary-1",
+                occurrence: 1,
+                marker: "post-materialization"
+            )
+            + uikitOccurrenceExpectations(
+                screen: "secondary-2",
+                occurrence: 1,
+                marker: "post-materialization"
+            )
+            + [
             ProbeExpectation(
                 .noViewStarted,
                 scene: "scene-A",
@@ -443,7 +469,21 @@ enum ProbeScenarioCatalog {
         layout: .uikitSplitNavigation,
         steps: uikitInteractiveSteps(outcome: .finish),
         completionConditions: [
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "secondary-1",
+                occurrence: 2,
+                name: "post-finish-resolution"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "secondary-1",
+                occurrence: 2,
+                name: "post-finish-resolution"
+            )
         ],
         expectedSemanticTimeline: uikitPopTimeline(),
         runtimeOptions: runtime {
@@ -888,17 +928,66 @@ enum ProbeScenarioCatalog {
     private static func uikitSplitTimeline() -> [ProbeExpectation] {
         [
             ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1)
         ]
+        + uikitOccurrenceExpectations(
+            screen: "secondary-1",
+            occurrence: 1,
+            marker: "post-materialization"
+        )
+        + uikitOccurrenceExpectations(
+            screen: "secondary-2",
+            occurrence: 1,
+            marker: "post-materialization"
+        )
     }
 
     private static func uikitPopTimeline() -> [ProbeExpectation] {
         [
             ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "primary"),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+        ]
+        + uikitOccurrenceExpectations(
+            screen: "secondary-1",
+            occurrence: 1,
+            marker: "post-materialization"
+        )
+        + uikitOccurrenceExpectations(
+            screen: "secondary-2",
+            occurrence: 1,
+            marker: "post-materialization"
+        )
+        + uikitOccurrenceExpectations(
+            screen: "secondary-1",
+            occurrence: 2,
+            marker: "post-return-materialization"
+        )
+    }
+
+    private static func uikitOccurrenceExpectations(
+        screen: String,
+        occurrence: Int,
+        marker: String
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: marker
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: marker
+            )
         ]
     }
 
@@ -906,7 +995,11 @@ enum ProbeScenarioCatalog {
         [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-navigation:secondary-2"),
-            ProbeStep(.beginUIKitInteractiveTransition, scene: "scene-A"),
+            ProbeStep(
+                .beginUIKitInteractiveTransition,
+                scene: "scene-A",
+                outcome: outcome
+            ),
             ProbeStep(.updateUIKitInteractiveTransition, scene: "scene-A", percentage: 0.35),
             ProbeStep(.resolveUIKitInteractiveTransition, scene: "scene-A", outcome: outcome),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "transition:\(outcome.rawValue)")

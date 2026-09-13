@@ -6,6 +6,7 @@
 
 import OSLog
 import SwiftUI
+import UIKit
 import DatadogCore
 import DatadogRUM
 
@@ -74,7 +75,9 @@ enum ProbeRuntime {
             "swiftui.stack.different-type-replacement",
             "swiftui.split.automatic-baseline",
             "swiftui.split.same-type-selection",
-            "swiftui.split.retained-return"
+            "swiftui.split.retained-return",
+            "uikit.split.pop-cancel",
+            "uikit.split.pop-finish"
         ].contains($0.identifier)
     } ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
@@ -162,7 +165,7 @@ enum ProbeRuntime {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: applicationID,
-                uiKitViewsPredicate: DefaultUIKitRUMViewsPredicate(),
+                uiKitViewsPredicate: ProbeUIKitViewsPredicate(),
                 uiKitActionsPredicate: exercisesUIEventContextHandoff
                     ? ProbeUIKitActionsPredicate()
                     : nil,
@@ -418,6 +421,27 @@ private struct ProbeConfigurationFailureView: View {
             .padding()
         }
         .accessibilityIdentifier("probe.configuration-rejected")
+    }
+}
+
+private struct ProbeUIKitViewsPredicate: UIKitRUMViewsPredicate {
+    private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+
+    func rumView(for viewController: UIViewController) -> RUMView? {
+        guard let child = viewController as? ProbeUIKitSplitChildViewController else {
+            return defaultPredicate.rumView(for: viewController)
+        }
+
+        var view = RUMView(
+            name: child.semanticRUMScreen,
+            attributes: [
+                ProbeRuntime.Attribute.viewScene: child.window.label,
+                ProbeRuntime.Attribute.viewSceneSessionID: child.sceneSessionID,
+                ProbeRuntime.Attribute.viewScreen: child.semanticRUMScreen
+            ]
+        )
+        view.path = child.semanticRUMScreen
+        return view
     }
 }
 

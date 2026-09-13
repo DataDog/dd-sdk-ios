@@ -59,6 +59,9 @@ internal final class ProbeScenarioDriver {
         case sceneReady(scene: String)
         case path(scene: String, value: String)
         case splitSelection(scene: String, value: String)
+        case transitionBegan(scene: String)
+        case transitionProgress(scene: String, value: Double)
+        case transitionResolutionRequested(scene: String, outcome: ProbeTransitionOutcome)
         case encoded(scene: String?, value: String)
 
         func matches(
@@ -80,6 +83,18 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == [value]
+            case .transitionBegan(let scene):
+                return signal.kind == .transitionBegan
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.interactive == true
+            case .transitionProgress(let scene, let value):
+                return signal.kind == .transitionProgress
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.transitionProgress == value
+            case .transitionResolutionRequested(let scene, let outcome):
+                return signal.kind == .transitionResolutionRequested
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.outcome == outcome
             case .encoded(let scene, let value):
                 return Self.matches(
                     encoded: value,
@@ -410,6 +425,76 @@ internal final class ProbeScenarioDriver {
             ) else {
                 return .failed(
                     "timed out waiting for split selection \(value) in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .beginUIKitInteractiveTransition:
+            guard let scene = step.scene else {
+                return .failed("scene is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .transitionBegan(scene: scene),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("timed out waiting for UIKit transition begin in \(scene)")
+            }
+            return .acknowledged(signal)
+
+        case .updateUIKitInteractiveTransition:
+            guard
+                let scene = step.scene,
+                let percentage = step.percentage
+            else {
+                return .failed("scene or transition percentage is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .transitionProgress(scene: scene, value: percentage),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for UIKit transition progress \(percentage) in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .resolveUIKitInteractiveTransition:
+            guard
+                let scene = step.scene,
+                let outcome = step.outcome
+            else {
+                return .failed("scene or transition outcome is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .transitionResolutionRequested(
+                    scene: scene,
+                    outcome: outcome
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for UIKit transition resolution request in \(scene)"
                 )
             }
             return .acknowledged(signal)

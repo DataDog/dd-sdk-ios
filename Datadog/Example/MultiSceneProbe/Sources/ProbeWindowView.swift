@@ -180,6 +180,7 @@ struct ProbeWindowRoot: View {
     @State private var splitRUMViewBindingGeneration: UInt64 = 1
     @State private var splitNavigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var scenarioStepExecutor = ProbeSceneStepExecutor()
+    @State private var uiKitNavigationStepExecutor = ProbeUIKitNavigationStepExecutor()
     @State private var sceneSessionID = "unresolved"
     @State private var sceneHandle: ProbeSceneHandle?
     @State private var readerControlGeneration = 0
@@ -468,7 +469,8 @@ struct ProbeWindowRoot: View {
         } else if ProbeRuntime.usesUIKitSplitNavigationLayout {
             ProbeUIKitSplitNavigationControllerRepresentable(
                 window: window,
-                sceneSessionID: sceneSessionID
+                sceneSessionID: sceneSessionID,
+                stepExecutor: uiKitNavigationStepExecutor
             )
         } else {
             ProbeUIKitSplitControllerRepresentable(
@@ -931,6 +933,10 @@ struct ProbeWindowRoot: View {
                     return .rejected(reason: "unsupported split selection \(value)")
                 }
                 commitSplitSelection(selection)
+            case .beginUIKitInteractiveTransition,
+                 .updateUIKitInteractiveTransition,
+                 .resolveUIKitInteractiveTransition:
+                return uiKitNavigationStepExecutor.execute(step)
             case .emitMarker:
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
@@ -1368,7 +1374,7 @@ private struct ProbeSplitPlaceholderTrackingWitness: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {}
 }
 
-private protocol ProbeUIKitSplitChildLifecycleDelegate: AnyObject {
+internal protocol ProbeUIKitSplitChildLifecycleDelegate: AnyObject {
     func splitChildDidAppear(_ child: ProbeUIKitSplitChildViewController)
 }
 
@@ -1575,12 +1581,46 @@ private struct ProbeUIKitSplitControllerRepresentable: UIViewControllerRepresent
     }
 }
 
+@MainActor
+private final class ProbeUIKitNavigationStepExecutor {
+    private var ownerID: ObjectIdentifier?
+    private var executeStep: ((ProbeStep) -> ProbeStepExecutionResult)?
+
+    func configure(
+        owner: AnyObject,
+        execute: @escaping (ProbeStep) -> ProbeStepExecutionResult
+    ) {
+        ownerID = ObjectIdentifier(owner)
+        executeStep = execute
+    }
+
+    func disconnect(owner: AnyObject) {
+        guard ownerID == ObjectIdentifier(owner) else {
+            return
+        }
+        ownerID = nil
+        executeStep = nil
+    }
+
+    func execute(_ step: ProbeStep) -> ProbeStepExecutionResult {
+        guard let executeStep else {
+            return .rejected(reason: "UIKit navigation executor is not configured")
+        }
+        return executeStep(step)
+    }
+}
+
 private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControllerRepresentable {
     let window: ProbeWindow
     let sceneSessionID: String
+    let stepExecutor: ProbeUIKitNavigationStepExecutor
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(window: window, sceneSessionID: sceneSessionID)
+        Coordinator(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            stepExecutor: stepExecutor
+        )
     }
 
     func makeUIViewController(context: Context) -> UISplitViewController {
@@ -1632,6 +1672,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
     final class Coordinator: NSObject, ProbeUIKitSplitChildLifecycleDelegate, UINavigationControllerDelegate {
         private let window: ProbeWindow
         private let sceneSessionID: String
+        private weak var stepExecutor: ProbeUIKitNavigationStepExecutor?
         private weak var splitViewController: UISplitViewController?
         private weak var primary: ProbeUIKitSplitPrimaryViewController?
         private weak var navigationController: UINavigationController?
@@ -1641,14 +1682,22 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         private var popWorkItem: DispatchWorkItem?
         private var interactiveResolutionWorkItem: DispatchWorkItem?
         private var interactivePopTransition: UIPercentDrivenInteractiveTransition?
+        private var interactiveTransitionID: String?
+        private var interactiveInterval: String?
+        private var interactiveRequestedOutcome: ProbeTransitionOutcome?
         private let interactivePopAnimator = ProbeUIKitSplitPopAnimator()
         private var didInstallNavigation = false
         private var didPushSecondaryTwo = false
         private var didPopSecondaryTwo = false
 
-        init(window: ProbeWindow, sceneSessionID: String) {
+        init(
+            window: ProbeWindow,
+            sceneSessionID: String,
+            stepExecutor: ProbeUIKitNavigationStepExecutor
+        ) {
             self.window = window
             self.sceneSessionID = sceneSessionID
+            self.stepExecutor = stepExecutor
         }
 
         func connect(
@@ -1657,6 +1706,11 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         ) {
             self.splitViewController = splitViewController
             self.primary = primary
+            stepExecutor?.configure(owner: self) { [weak self] step in
+                self?.execute(step) ?? .rejected(
+                    reason: "UIKit navigation coordinator disappeared"
+                )
+            }
         }
 
         func splitChildDidAppear(_ child: ProbeUIKitSplitChildViewController) {
@@ -1669,7 +1723,9 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             )
 
             if child is ProbeUIKitSplitPrimaryViewController {
-                emitMarker(afterMaterializing: child, phase: "post-materialization")
+                if !ProbeRuntime.usesObservableScenarioDriver {
+                    emitMarker(afterMaterializing: child, phase: "post-materialization")
+                }
                 scheduleNavigationInstallation(after: child)
             } else if
                 let secondary = child as? ProbeUIKitSplitSecondaryViewController,
@@ -1698,6 +1754,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             interactiveResolutionWorkItem?.cancel()
             interactivePopTransition?.cancel()
             navigationController?.delegate = nil
+            stepExecutor?.disconnect(owner: self)
             ProbeRuntime.record(
                 "uikit split navigation representable dismantled source=\(window.label) "
                     + "native=\(sceneSessionID)"
@@ -1807,6 +1864,13 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         }
 
         private func schedulePop(after secondaryTwo: ProbeUIKitSplitSecondaryViewController) {
+            if ProbeRuntime.usesObservableScenarioDriver {
+                ProbeRuntime.record(
+                    "uikit split navigation awaiting driven pop source=\(window.label) "
+                        + "native=\(sceneSessionID) top=\(ObjectIdentifier(secondaryTwo))"
+                )
+                return
+            }
             if let outcome = ProbeRuntime.uiKitSplitInteractivePopOutcome {
                 scheduleInteractivePop(after: secondaryTwo, outcome: outcome)
                 return
@@ -1852,167 +1916,32 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             after secondaryTwo: ProbeUIKitSplitSecondaryViewController,
             outcome: ProbeRuntime.UIKitSplitInteractivePopOutcome
         ) {
-            guard !didPopSecondaryTwo else {
-                return
-            }
-            didPopSecondaryTwo = true
             let workItem = DispatchWorkItem { [weak self, weak secondaryTwo] in
                 guard
                     let self,
-                    let navigationController = self.navigationController,
-                    let secondaryOne = self.secondaryOne,
                     let secondaryTwo,
-                    navigationController.topViewController === secondaryTwo
+                    self.navigationController?.topViewController === secondaryTwo
                 else {
                     return
                 }
-
-                let transition = UIPercentDrivenInteractiveTransition()
-                transition.completionCurve = .easeInOut
-                transition.completionSpeed = 0.75
-                self.interactivePopTransition = transition
-                let transitionID = "uikit-pop-\(UUID().uuidString.lowercased())"
-                let interval = outcome == .cancel ? "cancelled-pop" : "finished-pop"
-                ProbeRuntime.eventRecorder.record(
-                    ProbeSignal(
-                        kind: .intervalBegan,
-                        semanticContext: ProbeSemanticContext(
-                            logicalSceneID: self.window.label,
-                            nativeSceneID: self.sceneSessionID,
-                            screen: "secondary-2"
-                        ),
-                        interval: interval,
-                        transitionID: transitionID
-                    )
-                )
-                ProbeRuntime.record(
-                    "uikit split navigation interactive pop started source=\(self.window.label) "
-                        + "native=\(self.sceneSessionID) outcome=\(outcome.rawValue) "
-                        + "navigation=\(ObjectIdentifier(navigationController)) "
-                        + "from=\(ObjectIdentifier(secondaryTwo)) "
-                        + "returning=\(ObjectIdentifier(secondaryOne))"
-                )
-
-                guard navigationController.popViewController(animated: true) === secondaryTwo else {
-                    self.interactivePopTransition = nil
-                    ProbeRuntime.eventRecorder.record(
-                        ProbeSignal(
-                            kind: .assertion,
-                            semanticContext: ProbeSemanticContext(
-                                logicalSceneID: self.window.label,
-                                nativeSceneID: self.sceneSessionID,
-                                screen: "secondary-2"
-                            ),
-                            transitionID: transitionID,
-                            result: .fail,
-                            reason: "deterministic UIKit pop was rejected"
-                        )
-                    )
-                    ProbeRuntime.record(
-                        "uikit split navigation interactive pop rejected source=\(self.window.label) "
-                            + "native=\(self.sceneSessionID)"
-                    )
+                let semanticOutcome: ProbeTransitionOutcome = outcome == .cancel
+                    ? .cancel
+                    : .finish
+                guard case .accepted = self.beginInteractivePop(outcome: semanticOutcome) else {
                     return
                 }
-
-                guard let coordinator = navigationController.transitionCoordinator else {
-                    self.interactivePopTransition = nil
-                    ProbeRuntime.eventRecorder.record(
-                        ProbeSignal(
-                            kind: .assertion,
-                            semanticContext: ProbeSemanticContext(
-                                logicalSceneID: self.window.label,
-                                nativeSceneID: self.sceneSessionID,
-                                screen: "secondary-2"
-                            ),
-                            transitionID: transitionID,
-                            result: .fail,
-                            reason: "deterministic UIKit pop had no transition coordinator"
-                        )
-                    )
-                    return
-                }
-
-                ProbeRuntime.eventRecorder.record(
-                    ProbeSignal(
-                        kind: .transitionBegan,
-                        semanticContext: ProbeSemanticContext(
-                            logicalSceneID: self.window.label,
-                            nativeSceneID: self.sceneSessionID,
-                            screen: "secondary-2"
-                        ),
-                        interval: interval,
-                        transitionID: transitionID,
-                        interactive: true
-                    )
-                )
-
-                _ = coordinator.animate(
-                    alongsideTransition: nil,
-                    completion: { [weak self] context in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    guard case .accepted = self.updateInteractivePop(percentage: 0.35) else {
+                        return
+                    }
+                    let resolution = DispatchWorkItem { [weak self] in
                         guard let self else {
                             return
                         }
-                        let top = navigationController.topViewController.map {
-                            String(describing: ObjectIdentifier($0))
-                        } ?? "nil"
-                        let observedOutcome: ProbeTransitionOutcome = context.isCancelled
-                            ? .cancel
-                            : .finish
-                        let resolvedScreen = context.isCancelled
-                            ? "secondary-2"
-                            : "secondary-1"
-                        ProbeRuntime.eventRecorder.record(
-                            ProbeSignal(
-                                kind: .transitionResolved,
-                                semanticContext: ProbeSemanticContext(
-                                    logicalSceneID: self.window.label,
-                                    nativeSceneID: self.sceneSessionID,
-                                    screen: resolvedScreen
-                                ),
-                                interval: interval,
-                                transitionID: transitionID,
-                                interactive: true,
-                                outcome: observedOutcome
-                            )
-                        )
-                        ProbeRuntime.eventRecorder.record(
-                            ProbeSignal(
-                                kind: .intervalEnded,
-                                semanticContext: ProbeSemanticContext(
-                                    logicalSceneID: self.window.label,
-                                    nativeSceneID: self.sceneSessionID,
-                                    screen: resolvedScreen
-                                ),
-                                interval: interval,
-                                transitionID: transitionID
-                            )
-                        )
-                        ProbeRuntime.record(
-                            "uikit split navigation interactive pop completed source=\(self.window.label) "
-                                + "native=\(self.sceneSessionID) "
-                                + "requested=\(outcome.rawValue) "
-                                + "cancelled=\(context.isCancelled) top=\(top)"
-                        )
-                        self.interactivePopTransition = nil
-                    }
-                )
-
-                DispatchQueue.main.async { [weak self, weak transition] in
-                    guard let self, let transition else {
-                        return
-                    }
-                    transition.update(0.35)
-                    let resolution = DispatchWorkItem { [weak transition] in
-                        guard let transition else {
-                            return
-                        }
-                        switch outcome {
-                        case .cancel:
-                            transition.cancel()
-                        case .finish:
-                            transition.finish()
-                        }
+                        _ = self.resolveInteractivePop(outcome: semanticOutcome)
                     }
                     self.interactiveResolutionWorkItem = resolution
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: resolution)
@@ -2020,6 +1949,265 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             }
             popWorkItem = workItem
             DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
+        }
+
+        private func execute(_ step: ProbeStep) -> ProbeStepExecutionResult {
+            switch step.kind {
+            case .beginUIKitInteractiveTransition:
+                guard let outcome = step.outcome else {
+                    return .rejected(reason: "UIKit transition outcome is missing")
+                }
+                return beginInteractivePop(outcome: outcome)
+            case .updateUIKitInteractiveTransition:
+                guard let percentage = step.percentage else {
+                    return .rejected(reason: "UIKit transition percentage is missing")
+                }
+                return updateInteractivePop(percentage: percentage)
+            case .resolveUIKitInteractiveTransition:
+                guard let outcome = step.outcome else {
+                    return .rejected(reason: "UIKit transition outcome is missing")
+                }
+                return resolveInteractivePop(outcome: outcome)
+            default:
+                return .rejected(reason: "unsupported UIKit navigation step \(step.kind.rawValue)")
+            }
+        }
+
+        private func beginInteractivePop(
+            outcome: ProbeTransitionOutcome
+        ) -> ProbeStepExecutionResult {
+            guard !didPopSecondaryTwo, interactivePopTransition == nil else {
+                return .rejected(reason: "UIKit transition is already active or resolved")
+            }
+            guard
+                let navigationController,
+                let secondaryOne,
+                let secondaryTwo = navigationController.topViewController
+                    as? ProbeUIKitSplitSecondaryViewController,
+                secondaryTwo.instance == 2
+            else {
+                return .rejected(reason: "UIKit secondary-2 is not ready to pop")
+            }
+
+            let transition = UIPercentDrivenInteractiveTransition()
+            transition.completionCurve = .easeInOut
+            transition.completionSpeed = 0.75
+            let transitionID = "uikit-pop-\(UUID().uuidString.lowercased())"
+            let interval = outcome == .cancel ? "cancelled-pop" : "finished-pop"
+            interactivePopTransition = transition
+            interactiveTransitionID = transitionID
+            interactiveInterval = interval
+            interactiveRequestedOutcome = outcome
+            didPopSecondaryTwo = true
+
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: transitionContext(screen: "secondary-2"),
+                    interval: interval,
+                    transitionID: transitionID
+                )
+            )
+            ProbeRuntime.record(
+                "uikit split navigation interactive pop started source=\(window.label) "
+                    + "native=\(sceneSessionID) outcome=\(outcome.rawValue) "
+                    + "navigation=\(ObjectIdentifier(navigationController)) "
+                    + "from=\(ObjectIdentifier(secondaryTwo)) "
+                    + "returning=\(ObjectIdentifier(secondaryOne))"
+            )
+
+            guard navigationController.popViewController(animated: true) === secondaryTwo else {
+                clearInteractivePopState()
+                didPopSecondaryTwo = false
+                recordTransitionFailure(
+                    reason: "deterministic UIKit pop was rejected",
+                    transitionID: transitionID
+                )
+                return .rejected(reason: "deterministic UIKit pop was rejected")
+            }
+
+            guard let coordinator = navigationController.transitionCoordinator else {
+                transition.cancel()
+                clearInteractivePopState()
+                recordTransitionFailure(
+                    reason: "deterministic UIKit pop had no transition coordinator",
+                    transitionID: transitionID
+                )
+                return .rejected(reason: "deterministic UIKit pop had no transition coordinator")
+            }
+
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .transitionBegan,
+                    semanticContext: transitionContext(screen: "secondary-2"),
+                    interval: interval,
+                    transitionID: transitionID,
+                    interactive: true,
+                    outcome: outcome
+                )
+            )
+
+            _ = coordinator.animate(
+                alongsideTransition: nil,
+                completion: { [weak self, weak navigationController] context in
+                    guard let self, let navigationController else {
+                        return
+                    }
+                    self.completeInteractivePop(
+                        context: context,
+                        navigationController: navigationController,
+                        requestedOutcome: outcome,
+                        transitionID: transitionID,
+                        interval: interval
+                    )
+                }
+            )
+            return .accepted
+        }
+
+        private func updateInteractivePop(
+            percentage: Double
+        ) -> ProbeStepExecutionResult {
+            guard (0...1).contains(percentage) else {
+                return .rejected(reason: "UIKit transition percentage is outside 0...1")
+            }
+            guard
+                let transition = interactivePopTransition,
+                let transitionID = interactiveTransitionID,
+                let interval = interactiveInterval
+            else {
+                return .rejected(reason: "no active UIKit transition to update")
+            }
+            transition.update(percentage)
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .transitionProgress,
+                    semanticContext: transitionContext(screen: "secondary-2"),
+                    interval: interval,
+                    transitionID: transitionID,
+                    interactive: true,
+                    transitionProgress: percentage
+                )
+            )
+            return .accepted
+        }
+
+        private func resolveInteractivePop(
+            outcome: ProbeTransitionOutcome
+        ) -> ProbeStepExecutionResult {
+            guard
+                let transition = interactivePopTransition,
+                let transitionID = interactiveTransitionID,
+                let interval = interactiveInterval,
+                interactiveRequestedOutcome == outcome
+            else {
+                return .rejected(reason: "no matching UIKit transition to resolve")
+            }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .transitionResolutionRequested,
+                    semanticContext: transitionContext(screen: "secondary-2"),
+                    interval: interval,
+                    transitionID: transitionID,
+                    interactive: true,
+                    outcome: outcome
+                )
+            )
+            switch outcome {
+            case .cancel:
+                transition.cancel()
+            case .finish:
+                transition.finish()
+            }
+            return .accepted
+        }
+
+        private func completeInteractivePop(
+            context: UIViewControllerTransitionCoordinatorContext,
+            navigationController: UINavigationController,
+            requestedOutcome: ProbeTransitionOutcome,
+            transitionID: String,
+            interval: String
+        ) {
+            let observedOutcome: ProbeTransitionOutcome = context.isCancelled
+                ? .cancel
+                : .finish
+            let resolvedScreen = context.isCancelled
+                ? "secondary-2"
+                : "secondary-1"
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .transitionResolved,
+                    semanticContext: transitionContext(screen: resolvedScreen),
+                    interval: interval,
+                    transitionID: transitionID,
+                    interactive: true,
+                    outcome: observedOutcome
+                )
+            )
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: transitionContext(screen: resolvedScreen),
+                    interval: interval,
+                    transitionID: transitionID
+                )
+            )
+            if observedOutcome != requestedOutcome {
+                recordTransitionFailure(
+                    reason: "UIKit transition resolved \(observedOutcome.rawValue), requested \(requestedOutcome.rawValue)",
+                    transitionID: transitionID
+                )
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: resolvedScreen,
+                phase: "post-\(observedOutcome.rawValue)-resolution"
+            )
+            let top = navigationController.topViewController.map {
+                String(describing: ObjectIdentifier($0))
+            } ?? "nil"
+            ProbeRuntime.record(
+                "uikit split navigation interactive pop completed source=\(window.label) "
+                    + "native=\(sceneSessionID) requested=\(requestedOutcome.rawValue) "
+                    + "observed=\(observedOutcome.rawValue) top=\(top)"
+            )
+            clearInteractivePopState()
+        }
+
+        private func transitionContext(screen: String) -> ProbeSemanticContext {
+            ProbeSemanticContext(
+                logicalSceneID: window.label,
+                nativeSceneID: sceneSessionID,
+                screen: screen
+            )
+        }
+
+        private func recordTransitionFailure(
+            reason: String,
+            transitionID: String
+        ) {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: transitionContext(screen: "secondary-2"),
+                    transitionID: transitionID,
+                    result: .fail,
+                    reason: reason
+                )
+            )
+            ProbeRuntime.record(
+                "uikit split navigation interactive pop failed source=\(window.label) "
+                    + "native=\(sceneSessionID) reason=\(reason)"
+            )
+        }
+
+        private func clearInteractivePopState() {
+            interactivePopTransition = nil
+            interactiveTransitionID = nil
+            interactiveInterval = nil
+            interactiveRequestedOutcome = nil
         }
 
         func navigationController(
@@ -2087,13 +2275,20 @@ private final class ProbeUIKitSplitPopAnimator: NSObject, UIViewControllerAnimat
     }
 }
 
-private class ProbeUIKitSplitChildViewController: UIViewController {
+internal class ProbeUIKitSplitChildViewController: UIViewController {
     let window: ProbeWindow
     let sceneSessionID: String
     let screen: String
     weak var lifecycleDelegate: ProbeUIKitSplitChildLifecycleDelegate?
 
     private(set) var appearanceCount = 0
+
+    var semanticRUMScreen: String {
+        for prefix in ["uikit-navigation-", "uikit-"] where screen.hasPrefix(prefix) {
+            return String(screen.dropFirst(prefix.count))
+        }
+        return screen
+    }
 
     init(window: ProbeWindow, sceneSessionID: String, screen: String) {
         self.window = window
@@ -2215,7 +2410,7 @@ private class ProbeUIKitSplitChildViewController: UIViewController {
         ProbeRuntime.recordDestination(
             window: window,
             sceneSessionID: sceneSessionID,
-            screen: screen,
+            screen: semanticRUMScreen,
             isCommitted: false,
             occurrence: appearanceCount
         )
