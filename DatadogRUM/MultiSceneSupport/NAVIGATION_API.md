@@ -48,10 +48,12 @@ The internal command model already accepts a scene target, and focused tests
 prove that the same `ViewIdentifier` can coexist in scene A and scene B and that
 stopping A leaves B active. A public bridge therefore needs to capture
 `scene.session.persistentIdentifier` synchronously and route the existing
-start/stop intent. It does not need a second scene registry or a wire change, but
-`EXP-120` proves it cannot send the existing direct command unchanged: that path
-bypasses the platform-view stack and has no authority over later automatic
-appearances.
+start/stop intent. It does not need a second scene registry or a wire change.
+`EXP-120` proves it cannot send the existing direct command unchanged because
+that path bypasses the platform-view stack and has no authority over later
+automatic appearances. Commits `ddfc38008` and `94075aa47` implement and harden
+the internal stack route; `EXP-122` validates it locally and in backend intake.
+Only the reviewed public Swift/Objective-C bridge remains absent.
 
 `UIWindowScene` is main-actor isolated in the Xcode 27 SDK. The proposed factories
 and overloads must capture only the stable identifier on the main actor. The RUM
@@ -158,9 +160,9 @@ from which to restart the underlying occurrence. More importantly, an automatic
 appearance after the direct start can immediately preempt the manual view. The
 new overload cannot be declared complete by routing `.scene` alone.
 
-Implementation must either integrate targeted manual entries with the same
-per-scene view stack or provide an equivalent, tested reveal mechanism. Required
-result:
+The internal implementation now integrates targeted manual entries with the same
+per-scene view stack and provides a tested reveal mechanism. The still-unreviewed
+public overload must route through that capability. Required result:
 
 ```text
 automatic Home H1
@@ -176,14 +178,25 @@ none of the decisive action/Resource pairs; the fallback owned active and
 immediate-stop work, while only settled work used fresh H2. Mapper evidence and
 backend intake agree, so direct commands are conclusively not coexistence-safe.
 
-The smallest internal design is a weak scene-targeted manual-view capability on
-`Monitor`, bound to `RUMViewsHandler` when instrumentation is published. Targeted
-start and stop use the handler's per-scene stack. While a manual suffix is active,
-later automatic appearances are staged immediately below it without emitting RUM
-commands; removing the exact scene/key manual entry applies stop-call attributes
-and reveals the newest valid underlying entry as a fresh occurrence. Nested
-manuals must keep the entire manual suffix authoritative. Existing source-less
-methods remain on their inferred direct-command path.
+The smallest internal design is implemented as a weak scene-targeted manual-view
+capability on `Monitor`, bound to `RUMViewsHandler` when instrumentation is
+published. Targeted start and stop use the handler's per-scene stack. While a
+manual suffix is active, later trustworthy automatic appearances are staged
+immediately below it without emitting RUM commands; removing the exact scene/key
+manual entry applies stop-call attributes and reveals the newest valid underlying
+entry as a fresh occurrence. Nested manuals keep the entire manual suffix
+authoritative. Existing source-less methods remain on their inferred
+direct-command path.
+
+`EXP-121` validates the authority portion: M1 owns its active action/Resource,
+but the first implementation staged and revealed a generic hosting fallback
+before H2. Commit `94075aa47` retains the last semantic destination across that
+structural churn and rejects known generic SwiftUI hosting/navigation-stack
+fallbacks while manual authority is active. It does not reject a newly
+trustworthy semantic destination, which can still replace the retained candidate
+below M1. The clean `EXP-122` run passes 16/16 with exactly H1 → M1 → fresh H2;
+M1 owns active work and the same H2 owns immediate plus settled post-stop work.
+Backend intake confirms all owners and reports no error or crash.
 
 `EXP-119` also shows a
 narrower existing modifier boundary: an exceptional explicit Sheet S1 correctly

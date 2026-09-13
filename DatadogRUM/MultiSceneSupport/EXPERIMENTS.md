@@ -81,8 +81,11 @@ boundary, in this order:
 | 64 | `Report the active SwiftUI presentation screen` | Correct source labeling for driver markers and the explicit presentation interval while a sheet is active |
 | 65 | `Document multi-scene navigation API direction` | Approved navigation-occurrence, one-destination-per-scene, container-level SwiftUI, scene-aware manual-view, Execution Context, and coexistence contracts |
 | 66 | `Probe keyed manual view coexistence` | Direct keyed manual-over-automatic discriminator, exact authority interval, H1/M1/H2 owner relations, adversarial oracle fixtures, and catalog-owned observable-driver selection |
+| 67 | `Route scene-targeted manual views through navigation stacks` | Internal exact-scene manual-view capability, per-scene stack authority, automatic-destination staging, nested manual suffixes, stop attributes, and compatibility regressions |
+| 68 | `Retain semantic destination across manual view authority` | Retained underlying destination plus generic automatic-fallback rejection while an exact-scene manual view is authoritative |
+| 69 | `Exercise scene-targeted manual view routing` | Probe-only switch from legacy direct keyed commands to the internal exact-scene handler path used by `EXP-121` and `EXP-122` |
 
-Rows 1-60 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-69 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -99,7 +102,7 @@ is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `b5f74467d`.
 Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
 is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
-`dc863758f`.
+`dc863758f`. Rows 67-69 are `ddfc38008`, `94075aa47`, and `0394ad6cc`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -253,6 +256,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-118 | `semantic-auto-coexistence-20260913-2256-a`; `semantic-auto-coexistence-20260913-2259-b` | `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`; `43e42ece-f77d-4215-8c6c-22c5ce101136` | iPadOS 27 simulator | Prepared automatic/semantic scene-coexistence discriminator; simulator-inconclusive after two explicitly uninstalled runs because `backboardd` aborted in Metal/CoreAnimation before the terminal oracle. Both runs kept scene A's explicit marker on A/Home H1 and created scene-B automatic fallback plus navigation-host views after B opened, proving A's authority did not suppress B globally. Attempt 1 mapped B's delayed source-less marker to B's non-launch automatic host, but the decisive driver marker never ran. Earlier B source-less lifecycle work used representative A before discovery settled, which is the approved compatibility fallback rather than exact provenance. No probe/SDK crash or terminal PASS/FAIL occurred; rerun the named scenario on physical hardware. Probe tests pass 49/49 and lint reports zero violations. |
 | EXP-119 | Invalid-source run `automatic-manual-sheet-20260913-2332-a`; corrected run `automatic-manual-sheet-20260913-2338-b` | `b2f50cf0-1394-4b1b-9da9-09d752a22bbf`; `f483b9eb-3ea8-4cfc-a884-c0b547effb5a` | iPadOS 27 simulator | Exceptional explicit SwiftUI Sheet over automatic Home. The first run exposed a probe-only source label defect, fixed in `336bdd504`. The corrected run then failed conclusively after 6 matches: Home-source work in immediate `onDismiss` still belonged to Sheet S1 because automatic Home H2 had not started; settled work used H2. Local mapper and backend intake otherwise agree on launch, an 18 ms automatic fallback, automatic H1 `60a6d680…`, explicit S1 `fad831da…`, and fresh automatic H2 `c36d0109…`; sheet work owns S1, pre-sheet work owns H1, no duplicate automatic Sheet appears, and no error/crash occurred. Probe build-for-testing and 56/56 tests pass. This proves coexistence/dedup and exposes a real return-boundary attribution gap. |
 | EXP-120 | Invalid harness `automatic-keyed-manual-20260914-0005-a`; partial `automatic-keyed-manual-20260914-0010-b`; conclusive `automatic-keyed-manual-20260914-0015-c`; hardened baseline `automatic-keyed-manual-20260914-0030-d` | `54005e3d-daf7-460e-8c38-2cf4e7505e4f`; `26990bc0-7785-4eda-b0f7-f3971516f5a3`; `9382bf4d-5985-4047-898c-deb8103af68b`; `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0` | iPadOS 27 simulator | Existing direct keyed manual API over automatic Home fails authoritative coexistence. Attempt A never started because the scenario was omitted from a second driver allowlist; the catalog now owns that selection. Attempt B proved Compose was already stopped before a now-removed wait. Attempts C/D conclusively show H1 → M1 → automatic fallback → fresh H2: M1 lasts only 31–48 ms, active and immediate-stop action/Resource pairs use the fallback, and only settled work uses H2. Final D has six views, ten actions, ten Resources, zero errors/crashes. Its initial H1-stop failure was an oracle matcher defect caused by a deferred exact stop arriving after an unrelated M1 stop; the corrected matcher scans onward and keeps the real manual-authority failure. Commit `dc863758f`; probe 65/65, build-for-testing and repository lint pass. |
+| EXP-121 | `scene-targeted-manual-20260914-0120-a` | `f32f25c8-7403-4513-89fa-75d9e3a3952d` | iPadOS 27 simulator | First internal scene-targeted manual-stack run after `ddfc38008`. Compose M1 remained authoritative and owned its active action/Resource, closing the `EXP-120` preemption. The run still failed because automatic discovery staged a generic hosting fallback beneath M1; exact stop revealed that fallback for the immediate pair before fresh H2 owned the settled pair. Mapper and backend agree on six views and 30 events with zero errors/crashes. This isolated fallback selection from manual authority rather than reopening the direct-command diagnosis. |
+| EXP-122 | `scene-targeted-manual-20260914-0135-b` | `7194cd61-23d0-4727-877a-79fbc985fc32` | iPadOS 27 simulator | Clean exact-scene manual-view acceptance after `94075aa47`. The oracle passes 16/16. Mapper and backend contain only launch, the expected startup-only fallback, Home H1, authoritative Compose M1, and fresh Home H2; no generic fallback appears during or after manual authority. Pre-manual work uses H1, active Compose work uses M1, and both immediate and settled post-stop pairs use the same H2, distinct from H1. Exact-run intake has 28 events: five views, ten actions, ten Resources, one long task, one vital, zero errors, and zero crashes. Host uninstall and ENOENT container lookup prove clean isolation; all five view documents carry the requested run ID. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3314,6 +3319,85 @@ Final-run artifacts include
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Keyed Manual Acceptance Baseline-00_30_23_041-logs.txt`
 plus its matching hierarchy and screenshot.
 
+### 2026-09-14 — EXP-121: first scene-targeted manual-stack run
+
+Commits `ddfc38008` and the probe switch later checkpointed as `0394ad6cc`
+replace only the experimental call site with an internal exact-scene capability.
+`Monitor` forwards that capability to the bound `RUMViewsHandler`; existing
+source-less public start/stop methods remain on their process-inferred path. The
+handler inserts the keyed manual occurrence into the target scene's navigation
+stack, keeps a complete nested manual suffix authoritative, stages trustworthy
+automatic candidates beneath it, applies stop-call attributes, and resolves the
+same key independently in two scene stacks.
+
+The clean run `scene-targeted-manual-20260914-0120-a`, RUM session
+`f32f25c8-7403-4513-89fa-75d9e3a3952d`, proves the main `EXP-120` defect fixed:
+Compose M1 stays current and owns `keyed-manual-active` action/Resource work.
+The 10-match terminal `FAIL` isolates a narrower reveal problem. Automatic
+discovery staged a generic hosting fallback beneath M1; exact stop revealed it
+for the immediate pair, then a real automatic Home H2 replaced it and owned the
+settled pair.
+
+The exact mapper chain was:
+
+1. ApplicationLaunch `1a14eaf1-76fc-4b0f-9b7c-63571d0201c4`.
+2. Startup fallback `04f5acba-eb60-4395-8b29-2f77c4a0febb`.
+3. Home H1 `01a48950-4e01-45cb-aba0-3f5c6a682a43`.
+4. Compose M1 `b27bf081-2b16-42eb-9580-e85b1560509b`.
+5. Revealed generic fallback `14bcb8b2-ae00-4e5e-b485-f0e32c6564ca`.
+6. Fresh Home H2 `2c07f716-17dc-42fa-99a6-5f0e3788d539`.
+
+Backend intake independently returns 30 exact-session documents: six views, ten
+actions, ten Resources, two long tasks, one vital, and one session, with zero
+errors and zero crashes. Owners match the mapper. This run must not be reported
+as manual-authority failure: authority is fixed; the remaining bug is treating a
+generic hosting fallback as a trustworthy destination to reveal.
+
+Artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-121 Scene Targeted Manual Observation 0128-01_25_20_394`
+for logs, hierarchy, screenshot, and thumbnail.
+
+### 2026-09-14 — EXP-122: scene-targeted manual-view acceptance
+
+Commit `94075aa47` retains the destination that was current when the first
+targeted manual view takes authority. While that manual suffix remains current,
+the platform disappearance of that immediate retained destination is ignored,
+and generic SwiftUI hosting/navigation-stack fallback names are not staged as
+semantic candidates. A legitimate automatic or semantic destination can still
+replace the retained candidate beneath M1. Scene disconnect still invalidates
+the complete stack rather than resurrecting it.
+
+The explicitly uninstalled successor
+`scene-targeted-manual-20260914-0135-b`, RUM session
+`7194cd61-23d0-4727-877a-79fbc985fc32`, passes all 16 oracle expectations with
+no issue. `simctl get_app_container` returned ENOENT after uninstall and before
+launch. The exact mapper chain is:
+
+1. ApplicationLaunch `f8fb4f51-29b5-4314-bb49-3e0546df698f`.
+2. Expected startup-only fallback `60f48461-cd10-49a9-bac4-10b6b409cc69`.
+3. Home H1 `9c814d8c-8403-483a-9fea-dde17983f002`.
+4. Authoritative Compose M1 `553f922a-ce38-462e-8469-24322a0ab10d`.
+5. Fresh Home H2 `dd04c9da-d1e8-46c0-b093-93a7c582a7f8`.
+
+No generic fallback occurrence appears during or after manual authority.
+Pre-manual action/Resource work uses H1, active work uses M1, and both immediate
+and settled post-stop pairs use the same H2; H2 differs from H1. Backend intake
+matches all owners and contains 28 exact-run documents: one session, five views,
+ten actions, ten Resources, one long task, and one vital. The session reports
+zero errors and zero crashes, and every view document carries the requested run
+ID, ruling out `EXP-117` contamination.
+
+Focused manual-authority tests pass 8/8. The complete RUM run passed 1,164/1,165;
+its only failure was the unrelated timing-sensitive
+`TimeseriesSessionCollectorTests.testWhenBackgrounded_pauseAlwaysStopsSampling`,
+which passed immediately in isolation. A clean complete rerun then passed
+1,165/1,165. The probe builds for testing and passes 65/65; repository lint
+reports zero violations across 713 source and 699 test files, and
+`git diff --check` passes.
+
+Runtime artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-122 Scene Targeted Manual Acceptance 0135-01_36_26_535`.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3403,6 +3487,11 @@ plus its matching hierarchy and screenshot.
 - Do not implement scene-aware manual views by adding only a scene target to the
   existing direct keyed commands. `EXP-120` proves those commands bypass the
   handler stack and provide no authority over later automatic appearances.
+- Do not treat any automatic candidate staged under a targeted manual occurrence
+  as a destination worth revealing. `EXP-121` proves that generic hosting
+  fallbacks are structural churn. Retain the last semantic destination, reject
+  known generic fallbacks during manual authority, and still allow a newly
+  trustworthy semantic destination to replace the retained candidate.
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.

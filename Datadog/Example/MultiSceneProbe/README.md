@@ -55,7 +55,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
-| `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120` | Signal-driven FAIL: automatic fallback preempts direct keyed Compose and owns its active/immediate work; settled work uses fresh Home H2 |
+| `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120`–`EXP-122` | Legacy direct-command baseline FAIL; internal exact-scene successor PASS 16/16 with authoritative Compose and fresh Home H2 |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -110,10 +110,16 @@ H2 attribution as closing that boundary.
 `EXP-120` starts and stops a direct keyed Compose view over automatic Home. Its
 step-bounded authority interval and exact owner relations catch automatic
 preemption even when Compose starts and stops before the driver can wait for it.
-The scenario fails because an automatic fallback displaces Compose within 31–48
-ms and owns active/immediate action/Resource pairs; only settled work belongs to
-fresh Home H2. Do not add a Compose-view wait as a barrier or treat deferred
-mapper stop ordering as navigation order.
+The legacy direct-command baseline fails because an automatic fallback displaces
+Compose within 31–48 ms and owns active/immediate action/Resource pairs; only
+settled work belongs to fresh Home H2. `EXP-121` switches the probe to the
+internal exact-scene stack route and proves Compose authority, while exposing a
+generic fallback revealed at stop. `EXP-122` hardens that path and passes 16/16:
+no intervening generic fallback, active work on Compose M1, and immediate plus
+settled return work on the same fresh Home H2. Do not add a Compose-view wait as
+a barrier or treat deferred mapper stop ordering as navigation order. This probe
+uses an internal capability; customer-facing scene overloads still require API
+review.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes

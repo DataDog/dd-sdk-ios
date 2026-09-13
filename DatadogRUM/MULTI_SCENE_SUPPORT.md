@@ -108,6 +108,17 @@ evidence and backend intake agree. Scene-aware manual APIs therefore need an
 internal per-scene authority/stack integration, not just a scene target on the
 existing direct commands.
 
+That internal integration is now implemented and runtime-validated. The first
+exact-scene run kept Compose authoritative but revealed a staged generic hosting
+fallback before Home H2 (`EXP-121`). The hardened path retains the last semantic
+destination during manual authority and ignores known generic SwiftUI hosting
+fallbacks without suppressing a later trustworthy destination. Its clean
+successor passes 16/16 with H1 → M1 → fresh H2: active work belongs to M1 and
+both immediate and settled post-stop work belong to the same H2 (`EXP-122`).
+Backend intake agrees and reports zero errors/crashes. Existing source-less APIs
+remain unchanged; public scene-aware Swift and Objective-C overloads still need
+normal API review.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -157,15 +168,15 @@ exact runs and rejected paths live in
 | Surface | Current branch status | Remaining release condition |
 | --- | --- | --- |
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
-| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-120` proves the existing direct keyed manual API cannot provide authoritative exceptional-view coexistence | Integrate a scene-targeted manual entry with the per-scene view stack and authority rules, then convert the proven wrapper/builder boundary and manual overloads into API-reviewed integrations; cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
-| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, while `EXP-120` shows automatic discovery wrongly preempts a direct keyed manual view | Add per-scene manual authority without disabling automatic tracking elsewhere; validate automatic behavior in a separate live container/scene and ordinary automatic-only applications, then take the proven semantic-container shape through API review |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. In `EXP-120`, work intended for active manual Compose was attributed to an automatic fallback because direct manual views have no authority integration | Make active scene-targeted manual views authoritative, then repeat exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
+| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination | Convert the proven wrapper/builder boundary and manual overloads into API-reviewed integrations; resolve the explicit Sheet return boundary; cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
+| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, and `EXP-122` proves automatic discovery no longer preempts an exact-scene manual exception | Validate automatic behavior in a separate live container/scene and ordinary automatic-only applications, then take the proven semantic-container shape through API review |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2 | Repeat exact precedence with simultaneously visible A/B and a different representative; resolve immediate explicit-Sheet dismissal ownership; finish UIKit deceleration and targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | DatadogRUM 1,157/1,157, DatadogTrace 151/151, repository lint, and both probes build | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | The current targeted manual-authority set passes 8/8 and the clean full DatadogRUM rerun passes 1,165/1,165. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 65/65 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -253,9 +264,11 @@ customer workflow, and required tests live only in
 ### Checkpoint
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
-checkpoint is `85d03e5ee` (`Suppress automatic SwiftUI views in explicit subtrees`).
-The latest probe checkpoint is `dc863758f` (`Probe keyed manual view
-coexistence`). The public-navigation proposal checkpoint is `685054dbe`
+checkpoint is `94075aa47` (`Retain semantic destination across manual view
+authority`), following `ddfc38008` (`Route scene-targeted manual views through
+navigation stacks`). The latest probe checkpoint is `0394ad6cc` (`Exercise
+scene-targeted manual view routing`). The public-navigation proposal checkpoint
+is `685054dbe`
 (`Document multi-scene navigation API direction`), following the exceptional
 Sheet checkpoints `a86c41e96` and `336bdd504`.
 All are unsigned local development commits and must not be pushed. The
@@ -285,29 +298,30 @@ queued for physical multi-window hardware. `EXP-119` proves exceptional explicit
 Sheet dedup and eventual automatic Home restoration, while conclusively exposing
 incorrect immediate `onDismiss` ownership. `EXP-120` then proves that direct
 keyed manual start/stop is also not authoritative: automatic discovery displaces
-M1 during its authority interval and takes its action/Resource work. The complete
-chronology and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
+M1 during its authority interval and takes its action/Resource work. `EXP-121`
+proves the first internal stack route fixes that preemption but still reveals a
+generic fallback. `EXP-122` closes the narrower defect: the clean 16/16 run and
+backend intake contain H1 → authoritative M1 → fresh H2, with no intervening
+fallback and exact active/immediate/settled ownership. The complete chronology
+and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-120`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-122`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Add an internal scene-targeted manual entry to `RUMViewsHandler` (or an
-   equivalent per-scene authority coordinator) before exposing public API. While
-   M1 is active, automatic candidates in that scene must not preempt it; retain
-   the underlying candidate and, on exact scene/key stop, reveal a fresh H2
-   synchronously. Preserve automatic tracking in other scenes and existing
-   source-less behavior. Add focused unit tests, then rerun `EXP-120` unchanged.
-2. Resolve the separate `EXP-119` presentation-return boundary through the
+1. Resolve the separate `EXP-119` presentation-return boundary through the
    reviewed container/router presentation signal or the same proven manual-stack
    reveal. Do not weaken either failing oracle and do not start speculative views.
-3. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
+2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
    hardware. The simulator prefix already proves B automatic discovery remains
    eligible; require the final B marker and backend owner before closing it.
-4. After the internal result passes, take the scene-aware Swift/Objective-C
+3. Take the scene-aware Swift/Objective-C
    overloads through API review. The same key must coexist independently in A
    and B; existing overloads keep inferred/last-interacted behavior.
+4. Add a two-scene same-key targeted-manual runtime discriminator and run it on
+   capable hardware: stop A and B in reverse order, prove each closes only its
+   own occurrence, and keep automatic tracking active in both scenes.
 5. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
    iPad. Require the activated scene to become foreground-active and the peer to
    become background before asserting fresh view occurrences or marker ownership.
@@ -392,15 +406,16 @@ owns the finished phases and full release matrix. Continue in this order:
 
 ### Validation snapshot
 
-As of 2026-09-13:
+As of 2026-09-14:
 
-- Complete suites pass: RUM 1,157/1,157, Internal 477/477, Logs 95/95,
+- The current RUM plan passes 1,165/1,165. Earlier complete suites pass:
+  Internal 477/477, Logs 95/95,
   Trace 151/151, WebView 31/31, and Profiling 233/233.
 - Focused retained-route, occurrence-isolation, transition-arbiter, Operations,
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 45/45. Clean runs prove
+  oracle, scene registry, and observable driver pass 65/65. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -435,6 +450,11 @@ As of 2026-09-13:
   65/65 tests. Clean simulator/backend runs prove M1 is displaced by an automatic
   fallback during its authority interval and that Compose work follows that
   fallback; fresh H2 eventually receives only settled work (`EXP-120`).
+- The internal exact-scene manual path routes through the target scene's handler
+  stack. `EXP-121` proves M1 authority and isolates a generic-fallback reveal;
+  `EXP-122` rejects that structural candidate and passes 16/16 with exact
+  H1/M1/fresh-H2 mapper and backend ownership. Existing source-less APIs are
+  unchanged, and no public API has been added.
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
