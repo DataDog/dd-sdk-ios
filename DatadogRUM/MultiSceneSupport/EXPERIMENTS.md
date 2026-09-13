@@ -72,8 +72,9 @@ boundary, in this order:
 | 55 | `Coordinate probe scene lifecycle explicitly` | Exact source-to-target window open, exact target close, readiness/disconnect acknowledgements, peer-continuity expectations, and focused driver coverage |
 | 56 | `Document exact scene lifecycle evidence` | `EXP-113` local/backend evidence, open/close lifecycle verdict, simulator-topology boundary, and refreshed resume state |
 | 57 | `Drive observable scene activation transitions` | Exact registered-scene activation, latched lifecycle-state conditions, durable terminal-result logging, explicit inconclusive classification, and focused driver coverage |
+| 58 | `Suppress automatic SwiftUI views in explicit subtrees` | iOS 27 multi-scene authority registry, subtree-scoped automatic-view suppression, focused coexistence regressions, and a probe configuration that enables automatic and explicit tracking together |
 
-Rows 1-57 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-58 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -86,7 +87,7 @@ Rows 1-57 are committed. Row 16 is commit `e56262485`; row 17 is commit
 Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
 is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
-`a97e943df`, and row 57 is `4d1783198`.
+`a97e943df`, row 57 is `4d1783198`, and row 58 is `85d03e5ee`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -105,8 +106,12 @@ exact-path commits from row 28 onward use that policy. This is local checkpoint
 history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
-each checkpoint commit must use an exact path list. Do not use a broad `git commit`
-or alter that file's staged/working-tree state.
+an exact `git add` is not enough: an ordinary `git commit` still commits every
+pre-staged path. Use `git commit --only -- <exact paths>` or otherwise isolate the
+index, and never alter that file's staged/working-tree state. The first row-58
+commit accidentally included its pre-staged empty blob; it was immediately
+amended out, and the exact prior `AM` state was restored. Commit `171110739` is
+therefore superseded and is not part of branch history.
 
 ## Consolidated experiment ledger
 
@@ -230,6 +235,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-112 | Baseline `observable-uikit-cancel-20260913-1911-a`; first corrected `observable-uikit-cancel-20260913-1916-b`, `observable-uikit-finish-20260913-1917-a`; final `observable-uikit-cancel-20260913-1923-c`, `observable-uikit-finish-20260913-1925-b` | `dbf47e00-d912-4ef8-862b-abe462931710`; `edc0ba78-6225-4271-9b7d-97dcb34baa2a`; `7ec940ff-5960-45b9-83c6-01b24a04e1cc`; `df3e4faf-727a-4e5b-ae73-c7bac5984658`; `7f1dcd04-7b71-4285-a39a-89cfb81d6cd4` | iPadOS 27 | Signal-driven UIKit cancellation/completion acceptance plus a shipping structural-view fix. The baseline drove a real 35% `UIPercentDrivenInteractiveTransition` correctly but failed immediately because Primary became a RUM view. The iOS 27 declared-multi-scene handler now ignores regular-width structural Primary/supplementary columns and retains same-column pending reconciliation. Final cancellation passes 11/11, keeps S2 `24edf931…`, and attributes three action/Resource pairs to it; completion passes 13/13 and emits S1 `983bb960…` → S2 `b99009d3…` → fresh returned S1 `38058b25…`, with exact 1/1, 1/1, and 2/2 action/Resource ownership. Backend intake has no Primary and no errors. The native SwiftUI host still emits a short fallback before S1, but it owns no probe work. Probe tests pass 42/42, the full RUM plan passes 1,153/1,153, and repository lint reports zero violations. |
 | EXP-113 | Interrupted `observable-window-close-20260913-2016-a`; final `observable-window-close-20260913-2020-b` | `6a37d312-8ca1-41fc-87e4-b42d5142fb64`; `be396759-0393-42e1-b08e-acb2a5cb0c7c` | iPadOS 27 | Exact scene-lifecycle driver acceptance. `open-window` dispatches through exact source A and waits for exact target B readiness; `close-window` dispatches through exact B and waits for B disconnect. The first launch session expired after B became ready and before a terminal result, so it is retained as inconclusive. The clean retry acknowledged all five steps and passed 9/9. B `before-close` action/Resource use B Home `22dce95f…`; after B disconnect generation 1, A `after-peer-close` action/Resource use unchanged A Home `f7f72acf…`. Backend intake confirms both pairs, two independent Home view IDs, and no error bucket. The fullscreen simulator did not prove both windows visible concurrently. Probe tests pass 43/43 and repository lint remains clean. |
 | EXP-114 | Completed compatibility control `observable-window-activation-20260913-2039-a`; expired lifecycle-gated prefix `observable-window-activation-20260913-2056-b`; compositor-interrupted prefix `observable-window-activation-20260913-2059-c` | `d2d11fda-28ce-4fce-bf46-cd858ce49adb`; no terminal session claim; locally observed `fe55cea1-4c9f-4a72-97e0-398c4302ed71`, zero backend events | iPadOS 27 | Exact activation-harness boundary. The first scenario version acknowledged ten exact-scene commands, but its source-labelled markers were plain public RUM calls with no SDK provenance. Backend therefore correctly kept A-labelled source-less work on last-interacted B until B closed; this is compatibility evidence, not an activation attribution failure. The corrected scenario dispatches activation only through the target registered `UIWindowScene`, waits for its foreground-active state, and requires the peer's latest non-superseded state to become background before asserting a fresh occurrence or marker ownership. The simulator kept both scenes foreground-active. One retry lost its Xcode launch/stdout session before a verdict; another ended when simulator `backboardd`, not the probe, aborted in CoreAnimation/Metal before the 10-second harness timeout. The latter produced no terminal OSLog or backend event. Probe tests pass 45/45 and repository lint is clean. Exact activation remains inconclusive pending capable hardware. |
+| EXP-115 | `semantic-authority-coexistence-20260913-2146-a` | `fae57f5a-ba01-4d42-9e32-2774090b1585` | iPadOS 27 | Target-scoped SwiftUI authority pass. Navigation-occurrence mode enabled `DefaultSwiftUIRUMViewsPredicate` at the same time as explicit route-owned tracking. An active explicit hidden reader suppressed automatic discovery only for a containing controller hierarchy; unrelated sibling controllers remain eligible and UIKit predicate acceptance remains authoritative. The signal-driven scenario passed 7/7 and both mapper output and backend intake contained exactly `ApplicationLaunch → Home H1 → Detail D1 → Home H2`, with distinct Home UUIDs and no hosting-controller duplicate. Intake totals were four views, nine actions, nine Resources, three long tasks, one session, and one vital. The RUM suite passes 1,157/1,157, the probe 45/45, and lint is clean. This closes the internal coexistence/dedup mechanics, not the reviewed once-per-container path/router API or automatic-only semantic-navigation gap. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -2924,6 +2930,67 @@ slice. No production SDK source changed. Do not repeat the rapid A/B activation
 loop on this simulator; the prepared scenario belongs on iPhone Duo or a physical
 multi-window iPad.
 
+### 2026-09-13 — EXP-115: explicit SwiftUI authority with automatic tracking
+
+The first implementation slice for the approved SwiftUI coexistence contract is
+internal and iOS 27 multi-scene-only. `RUMSwiftUIViewAuthorityRegistry` records
+weak pairs of the explicit modifier's hidden scene observer and tracking state.
+When automatic controller discovery fires, it suppresses the automatic SwiftUI
+candidate only if an explicit state is currently appeared, its observer is still
+attached to a window, and that observer is a descendant of the candidate
+controller's view. A separate sibling controller is not suppressed. UIKit
+predicate acceptance is evaluated first and is unchanged. The registry is not
+created for single-scene applications, iOS 15-26, or configurations without
+automatic SwiftUI tracking.
+
+This containment rule intentionally suppresses a structural hosting ancestor
+that would describe the same explicit subtree. It does not claim that one
+hosting controller containing several independent customer navigation containers
+can itself represent all of them: the reviewed container integration still needs
+an explicit authority boundary for that case. The registry is a runtime
+deduplication mechanism, not the public path/router API.
+
+The clean run `semantic-authority-coexistence-20260913-2146-a` used the existing
+signal-driven `swiftui.stack.return` scenario while enabling
+`DefaultSwiftUIRUMViewsPredicate` and the explicit route-owned occurrence path at
+the same time. It emitted one terminal 7/7 `PASS` with no issues. Mapper output
+contained this unique view-occurrence sequence:
+
+```text
+ApplicationLaunch  db302964-bab6-49d5-84bd-548887705d85
+ProbeHomeView H1    6eb25220-6d96-4233-921b-9f75e53cf360
+ProbeDetailView D1  3a3f8924-8ef0-4f81-a4fb-d8fd142f31b3
+ProbeHomeView H2    dab1c405-1013-4c48-bc6d-cb1d6c731471
+```
+
+Repeated mapper snapshots for one UUID were normal document updates after
+actions and Resources, not new starts. No extra hosting-controller name or view
+UUID appeared. H1 and H2 remained distinct even though SwiftUI reused customer
+content state.
+
+Datadog query
+`@context.probe.run_id:semantic-authority-coexistence-20260913-2146-a`
+returned session `fae57f5a-ba01-4d42-9e32-2774090b1585` and exactly four view
+buckets matching the mapper UUIDs above. Aggregate intake was nine actions, nine
+Resources, four views, three long tasks, one session, and one vital. This is
+backend evidence that coexistence did not create a duplicate automatic view in
+the exercised container.
+
+Focused tests cover active containment, detached/never-appeared state, an
+unrelated sibling controller, handler suppression, and UIKit precedence. The
+complete RUM plan passes 1,157/1,157 on a clean rerun; an immediately preceding
+run had one unrelated timeseries sampling timing failure that passed both in
+isolation and in the clean full rerun. The native probe passes 45/45 and repository
+lint reports zero violations across 713 source and 699 test files. Commit
+`85d03e5ee` contains the six source/test/probe files. The probe project file and
+local xcconfig remain excluded.
+
+This closes only target-scoped coexistence for an already explicit semantic
+boundary. It does not make transparent automatic SwiftUI navigation semantic,
+does not yet let a customer install one resolver on a `NavigationStack`, and does
+not yet prove automatic tracking in a separate live container or scene while an
+explicit exception is active. Those are the next integration/runtime rows.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -2938,6 +3005,10 @@ multi-window iPad.
   telemetry and does not solve shared instrumentation or downstream context.
 - Do not expose or copy values from `Datadog.local.xcconfig` into source, logs, or
   this document.
+- Do not rely on an exact `git add` path list to isolate a checkpoint while the
+  local xcconfig is pre-staged. Ordinary `git commit` includes every staged path.
+  Use `git commit --only -- <exact paths>` or an isolated index, then verify both
+  the commit tree and the xcconfig's original `AM` state.
 - Do not consider callback counts, compilation, or crash safety proof of correct
   semantic attribution.
 - Do not treat `probe.source_scene` or `probe.screen` as RUM ownership. Those
@@ -2960,12 +3031,12 @@ multi-window iPad.
   structured run first observed Home at version 1, so semantic start is derived
   from the first observed UUID and stop from an active-to-false transition.
 - Do not claim visual UI state because console logs say a destination materialized.
-  The requested `device-interaction` skill remains unavailable for synthesized
-  native gestures or visual UI input. That does not block exact programmatic
-  driving: `EXP-109` uses acknowledged registry/path/destination/RUM-occurrence
-  signals. Use hierarchy/screenshot or human observation for claims that are
-  specifically visual, and recognized coordinator/path evidence for native
-  gesture claims.
+  The Xcode device-interaction guidance is now available, but the completed
+  `EXP-115` session had already expired before its opaque interaction key could be
+  handed to the observer. That did not block its auto-driven semantic run or
+  read-only OSLog verification. Use a live key plus hierarchy/screenshot or human
+  observation for specifically visual claims, and recognized coordinator/path
+  evidence for native gesture claims.
 - Do not treat the probe scene registry as a shipping SDK fix or serialize its
   future Execution Context seam. It makes exact experiment addressing and joins
   deterministic; production RUM scopes must still preserve their own scene
@@ -3016,6 +3087,11 @@ multi-window iPad.
   view-before-callback guarantee. The trait supplies early scene identity and the
   initial callback materially narrows the gap, but two iOS 27 runs still emitted
   the RUM view after customer outer `.onAppear` and immediate `.task`.
+- Do not disable automatic SwiftUI tracking for the entire scene or application
+  merely because one semantic/manual boundary is active. `EXP-115` proves the
+  viable boundary is an active, attached explicit subtree; unrelated controllers
+  must remain eligible, and an inactive or detached reader must not suppress
+  automatic discovery.
 - Do not retry moving the unchanged `.trackRUMView` modifier inside or outside
   the screen hierarchy as the early-attribution fix. `EXP-030` and `EXP-031`
   preserve both placements; Detail early work still used Home, and the outer

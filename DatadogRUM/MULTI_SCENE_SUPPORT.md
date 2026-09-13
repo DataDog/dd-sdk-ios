@@ -73,6 +73,16 @@ speculative occurrence, and the debug route source preserves customer SwiftUI
 state across same-type replacements and retained returns (`EXP-030` through
 `EXP-105`). This is integration evidence, not a reviewed public API.
 
+The first coexistence slice is now implemented internally. In iOS 27 declared
+multi-scene applications, an active explicit SwiftUI boundary suppresses
+automatic controller discovery only for its containing hierarchy. Automatic
+tracking remains enabled elsewhere, detached or inactive explicit readers do not
+suppress it, and UIKit predicate acceptance is unchanged. A clean signal-driven
+Home → Detail → Home run with both trackers enabled produced exactly launch plus
+H1/D1/H2 locally and in backend intake, with no automatic duplicate (`EXP-115`).
+The customer-facing once-per-container path/router integration and centralized
+resolver remain unimplemented and require API review.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -117,14 +127,14 @@ exact runs and rejected paths live in
 | --- | --- | --- |
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
 | Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers | Turn the debug occurrence input/source into the reviewed container-level path/router integration, prove a recognized native interactive gesture, then cover adaptive navigation, stable simultaneous visibility, genuine reconnect, and concurrent restoration |
-| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views | Preserve automatic tracking as the zero-code default and its scene isolation, make the optional semantic integration authoritative without duplicates in its target, and validate automatic-only compatibility outside it |
+| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115` proves that automatic discovery can stay enabled while an active explicit subtree is authoritative, without a duplicate view | Turn the debug route source into the reviewed once-per-container path/router integration and validate automatic behavior in a separate live container/scene plus ordinary automatic-only applications |
 | Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback | Repeat exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | DatadogRUM 1,153/1,153, DatadogTrace 151/151, repository lint, and both probes build | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | DatadogRUM 1,157/1,157, DatadogTrace 151/151, repository lint, and both probes build | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -212,7 +222,7 @@ customer workflow, and required tests live only in
 ### Checkpoint
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
-checkpoint is `f4c8669c0` (`Treat regular split primaries as structural`). The
+checkpoint is `85d03e5ee` (`Suppress automatic SwiftUI views in explicit subtrees`). The
 latest harness checkpoint is `4d1783198` (`Drive observable scene activation
 transitions`), following lifecycle checkpoint `45e5999e4` and documentation
 checkpoint `a97e943df`.
@@ -228,19 +238,23 @@ open/close results signal-driven, locally self-validating, and backend-confirmed
 terminal-result logging, and explicit `INCONCLUSIVE` classification when the
 topology does not transition. The current simulator did not produce a qualifying
 activation sequence and crashed its own compositor during one retry. Native
-gesture, adaptive topology, and genuine lifecycle rows remain separate. The complete
+gesture, adaptive topology, and genuine lifecycle rows remain separate.
+`EXP-115` then enables automatic and explicit SwiftUI tracking together and
+proves target-scoped authority with an exact backend H1/D1/H2 sequence and no
+duplicate automatic view. The complete
 chronology and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-114`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-115`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Turn the existing debug occurrence source into an internal prototype of the
-   optional container-level SwiftUI semantic integration, including centralized
-   route resolution and target-scoped deduplication with automatic tracking.
-   Use that evidence to write the RFC/API proposal without landing an unreviewed
-   public API.
+1. Complete the internal prototype of the optional container-level SwiftUI
+   semantic integration. Target-scoped deduplication with automatic tracking is
+   implemented and backend-proven in `EXP-115`; now consume one customer-owned
+   path/router through one centralized route-to-RUM resolver at the navigation
+   container. Use that evidence to write the RFC/API proposal without landing an
+   unreviewed public API.
 2. Prepare the scene-aware manual view start/stop API and Objective-C companion.
    The same manual key must coexist in A and B, and stopping A must not stop B.
 3. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
@@ -285,6 +299,11 @@ owns the finished phases and full release matrix. Continue in this order:
   retained split Detail occurrences in two windows. A source-started returned
   split occurrence can also transfer to a replacement SwiftUI tracking state
   without a duplicate start. This is integration evidence, not a shipped API.
+- On the iOS 27 declared multi-scene path, active explicit SwiftUI boundaries are
+  registered weakly and suppress automatic controller discovery only for a
+  containing hierarchy. Inactive, detached, and unrelated sibling boundaries do
+  not suppress discovery, and UIKit tracking keeps precedence. `EXP-115` proves
+  exact H1/D1/H2 occurrence output with both SwiftUI tracking modes enabled.
 - Operations resolve every step independently. Trustworthy new context replaces
   the last-proven snapshot; the snapshot and then process representative are
   fallbacks. Identity is the exact application-wide `(name, operationKey)` tuple.
@@ -318,7 +337,7 @@ owns the finished phases and full release matrix. Continue in this order:
 
 As of 2026-09-13:
 
-- Complete suites pass: RUM 1,153/1,153, Internal 477/477, Logs 95/95,
+- Complete suites pass: RUM 1,157/1,157, Internal 477/477, Logs 95/95,
   Trace 151/151, WebView 31/31, and Profiling 233/233.
 - Focused retained-route, occurrence-isolation, transition-arbiter, Operations,
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
@@ -343,6 +362,10 @@ As of 2026-09-13:
   a false timeout. The completed source-less control reached backend intake; the
   lifecycle-gated retries remained inconclusive, including one interrupted by a
   simulator `backboardd` SIGABRT rather than an app/SDK crash (`EXP-114`).
+- With automatic SwiftUI discovery and explicit route-owned tracking enabled
+  together, `swiftui.stack.return` passes 7/7. Mapper and backend intake contain
+  exactly ApplicationLaunch, Home H1, Detail D1, and Home H2; H1/H2 are distinct
+  and no hosting-controller duplicate exists (`EXP-115`).
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
@@ -365,11 +388,11 @@ recorded for that interrupted run. Do not repeat that activation loop on this
 simulator.
 The current iPad simulator also rejects `devicectl appResize` because it lacks
 Resizable App Management; adaptive width proof needs a capable destination.
-The current Xcode device-interaction request returns `Skill not found`, so native
-gesture synthesis and visual interaction claims remain unavailable. This no
-longer blocks structured programmatic navigation: the signal-driven driver uses
-exact scene controls and observable acknowledgements. It does not turn those
-programmatic runs into native-gesture evidence.
+Xcode device-interaction guidance is now available, but the auto-driven
+`EXP-115` launch session had expired before its opaque interaction key could be
+reused for visual inspection. Read-only OSLog and backend verification remained
+available. Native gesture and visual claims still require a live interaction key
+or human/device evidence; programmatic runs do not become native-gesture proof.
 Ignored native edge drags, fullscreen-only peer-window layouts, partial scene
 restoration, and unsupported resize are tracked in the dedicated
 [real-device and human-driven rerun queue](MultiSceneSupport/EXPERIMENTS.md#real-device-and-human-driven-rerun-queue).
@@ -379,7 +402,9 @@ unverified simulator touches.
 Do not stage, commit, revert, or expose
 `Datadog/Datadog.xcodeproj/project.pbxproj` or
 `xcconfigs/Datadog.local.xcconfig`. Both predate this work and the latter contains
-local credentials. Use exact path lists for every commit.
+local credentials. An exact `git add` is insufficient while the xcconfig is
+pre-staged; use `git commit --only -- <exact paths>` or an isolated index, then
+verify the commit tree and restore/preserve its exact `AM` state.
 
 Rejected experiments and do-not-repeat guidance are authoritative in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md#attempts-not-to-repeat).
@@ -390,8 +415,9 @@ Product behavior is settled for this project. API review still needs to choose:
 
 - the concrete container-level SwiftUI modifier, path abstraction, root
   descriptor, route-resolver shape, and iOS 27 availability surface;
-- the authority/deduplication boundary between that semantic integration,
-  automatic discovery, and exceptional manual views;
+- the concrete representation of the approved target-scoped authority boundary
+  between the semantic integration, automatic discovery, and exceptional manual
+  views;
 - the Swift and Objective-C signatures and naming for scene-aware manual view
   start/stop; and
 - the shared view-target abstraction used by Operations, including how UIKit

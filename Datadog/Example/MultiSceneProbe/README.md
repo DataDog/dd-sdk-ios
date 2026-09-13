@@ -42,7 +42,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.automatic.single-window` | `EXP-027` | Existing deterministic automation |
 | `swiftui.automatic.two-window` | `EXP-028` | Existing deterministic automation |
 | `swiftui.stack.occurrence-push` | `EXP-090` setup | Existing deterministic automation |
-| `swiftui.stack.return` | `EXP-098`, `EXP-099`, `EXP-109` | Signal-driven PASS |
+| `swiftui.stack.return` | `EXP-098`, `EXP-099`, `EXP-109`, `EXP-115` | Signal-driven PASS, including automatic-plus-explicit coexistence |
 | `swiftui.stack.abort` | `EXP-091`, `EXP-110` | Signal-driven PASS |
 | `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110` | Signal-driven PASS |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
@@ -85,7 +85,9 @@ observable readiness, lifecycle state, path/selection,
 destination, transition, and RUM-occurrence signals, acknowledge every step, and
 emit exactly one final result. The terminal JSON result is also written through
 OSLog so it survives an expired Xcode console session. Clean iPadOS 27 semantic
-runs pass locally and in backend intake (`EXP-109` through `EXP-113`); the
+runs pass locally and in backend intake (`EXP-109` through `EXP-113`); `EXP-115`
+also passes with automatic and explicit SwiftUI tracking enabled together and no
+duplicate view. The
 activation row remains explicitly inconclusive on the current simulator
 (`EXP-114`). The automatic SwiftUI split control
 executes the same selection steps but fails because it emits internal container
@@ -202,7 +204,10 @@ This route-owned mode supplies the SDK with an opaque occurrence plus the bound
 navigation mutation generation while leaving the tracked customer content's
 SwiftUI identity unchanged. It records stable witnesses for Home across pop
 cancellation/completion, for retained stack Detail values, and for retained split
-Detail selection across Detail 1 -> Detail 2 replacement. In this mode
+Detail selection across Detail 1 -> Detail 2 replacement. It also leaves
+`DefaultSwiftUIRUMViewsPredicate` enabled so the probe exercises the approved
+coexistence rule: an active explicit subtree is authoritative without globally
+disabling automatic tracking or producing a duplicate automatic view. In this mode
 `DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=1` is intentionally ignored, so a passing
 run cannot be explained by the old full-content `.id(route)` control.
 `automatic` remains the default failing baseline.
