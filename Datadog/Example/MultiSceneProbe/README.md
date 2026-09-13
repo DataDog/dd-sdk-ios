@@ -34,6 +34,8 @@ DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=0
 DD_MULTI_SCENE_SWIFTUI_LAYOUT=stack
 DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=1
 DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=none
+DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=detail-1
+DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=1
 DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT=none
 ```
 
@@ -94,6 +96,9 @@ occurrences are `Detail₁ → Detail₂ → Placeholder`, each with a distinct 
 without an intervening Sidebar or Home. Enabling
 `DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=1` applies the same probe-only `.id(route)`
 control to these split destinations. The sequence is skipped in compact width.
+Set `DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=none` and
+`DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=0` for the empty-detail control. It must
+not manufacture a Detail occurrence before the customer selects one.
 Set `DD_MULTI_SCENE_SWIFTUI_LAYOUT=uikit-split` for the stock
 `UISplitViewController` mirror. It first materializes an application Primary
 controller, then installs Secondary 1, and finally replaces it with a fresh
@@ -120,6 +125,9 @@ set `DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=cancel` or `finish`. The probe
 then drives a real `UIPercentDrivenInteractiveTransition` through 35 percent and
 resolves it with the requested outcome. This deterministic public-UIKit control
 exists only to validate lifecycle and RUM semantics; it is not SDK behavior.
+For any split layout, `DD_MULTI_SCENE_AUTORUN_OPEN_SECOND_WINDOW=1` opens scene B
+from scene A one second after scene resolution. Both scenes then run their own
+split sequence, allowing pending transitions and occurrence ownership to overlap.
 The Home screen also exposes a tracked SwiftUI sheet and a manual current-view
 marker. Together they validate `Home₁ → Sheet → Home₂` occurrence identity and
 post-dismiss attribution without relying on platform-object replacement.

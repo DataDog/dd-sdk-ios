@@ -77,6 +77,15 @@ enum ProbeRuntime {
     static let uiKitSplitInteractivePopOutcome = ProcessInfo.processInfo
         .environment["DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP"]
         .flatMap(UIKitSplitInteractivePopOutcome.init(rawValue:))
+    static let startsSplitWithoutSelection =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION"] == "none"
+    static let automaticallyAdvancesSplitSelection =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE"] != "0"
+    static let usesAnySplitLayout =
+        usesSplitSelectionLayout
+        || usesUIKitSplitLayout
+        || usesUIKitSplitSubclass
+        || usesUIKitSplitNavigationLayout
     static let swiftUIViewTrackingMode: String = {
         switch ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"] {
         case "manual":
@@ -166,6 +175,8 @@ enum ProbeRuntime {
                 + "uikit_split_automatic_pop=\(automaticallyPopsUIKitSplitNavigation) "
                 + "uikit_split_interactive_pop="
                 + "\(uiKitSplitInteractivePopOutcome?.rawValue ?? "none") "
+                + "split_initial_selection=\(startsSplitWithoutSelection ? "none" : "detail-1") "
+                + "split_automatic_sequence=\(automaticallyAdvancesSplitSelection) "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
         )

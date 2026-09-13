@@ -184,6 +184,26 @@ struct ProbeWindowRoot: View {
             }
             openPeer()
         }
+        .task(id: sceneSessionID) {
+            guard
+                sceneSessionID != "unresolved",
+                ProbeRuntime.usesAnySplitLayout,
+                window.opensPeer,
+                ProbeRuntime.automaticallyOpensSecondWindow,
+                !didOpenPeer
+            else {
+                return
+            }
+            didOpenPeer = true
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else {
+                return
+            }
+            ProbeRuntime.record(
+                "split peer open scheduled source=\(window.label) native=\(sceneSessionID)"
+            )
+            openPeer()
+        }
         .task(id: didShowDetail) {
             guard
                 didShowDetail,
@@ -537,11 +557,24 @@ private struct ProbeSplitLayout: View {
     let readerControlGeneration: Int
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @State private var selection: ProbeSplitSelection? = .detail(1)
+    @State private var selection: ProbeSplitSelection?
     @State private var materializedSelection: ProbeSplitSelection?
     @State private var didScheduleDetailTwo = false
     @State private var didSchedulePlaceholder = false
     @State private var didRecordLayout = false
+
+    init(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        readerControlGeneration: Int
+    ) {
+        self.window = window
+        self.sceneSessionID = sceneSessionID
+        self.readerControlGeneration = readerControlGeneration
+        _selection = State(
+            initialValue: ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
+        )
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -575,6 +608,9 @@ private struct ProbeSplitLayout: View {
             )
         }
         .task(id: materializedSelection) {
+            guard ProbeRuntime.automaticallyAdvancesSplitSelection else {
+                return
+            }
             guard horizontalSizeClass == .regular else {
                 if materializedSelection != nil {
                     ProbeRuntime.record(
