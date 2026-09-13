@@ -6,7 +6,7 @@ the concrete public API is not. The [canonical overview](../MULTI_SCENE_SUPPORT.
 owns the support verdict, [PLAN.md](PLAN.md) owns delivery order, and
 [EXPERIMENTS.md](EXPERIMENTS.md) owns runtime evidence.
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 ## Status
 
@@ -48,7 +48,10 @@ The internal command model already accepts a scene target, and focused tests
 prove that the same `ViewIdentifier` can coexist in scene A and scene B and that
 stopping A leaves B active. A public bridge therefore needs to capture
 `scene.session.persistentIdentifier` synchronously and route the existing
-start/stop command. It does not need a second scene registry or a wire change.
+start/stop intent. It does not need a second scene registry or a wire change, but
+`EXP-120` proves it cannot send the existing direct command unchanged: that path
+bypasses the platform-view stack and has no authority over later automatic
+appearances.
 
 `UIWindowScene` is main-actor isolated in the Xcode 27 SDK. The proposed factories
 and overloads must capture only the stable identifier on the main actor. The RUM
@@ -151,8 +154,9 @@ without the scene.
 The public monitor's direct keyed commands currently bypass
 `RUMViewsHandler`'s per-scene platform-view stack. A start can replace the
 current automatic view, but a later direct stop has no retained platform entry
-from which to restart the underlying occurrence. The new overload cannot be
-declared complete by routing `.scene` alone.
+from which to restart the underlying occurrence. More importantly, an automatic
+appearance after the direct start can immediately preempt the manual view. The
+new overload cannot be declared complete by routing `.scene` alone.
 
 Implementation must either integrate targeted manual entries with the same
 per-scene view stack or provide an equivalent, tested reveal mechanism. Required
@@ -165,7 +169,23 @@ automatic Home H2
 ```
 
 H2 is a fresh occurrence. It must not reuse H1, leave the scene off-view, create
-a duplicate automatic view, or affect another scene. `EXP-119` also shows a
+a duplicate automatic view, or affect another scene. `EXP-120` exercises the
+existing direct keyed API with this exact shape. Across its valid runs, Compose
+M1 survived only 31–48 ms before an automatic fallback started. Compose received
+none of the decisive action/Resource pairs; the fallback owned active and
+immediate-stop work, while only settled work used fresh H2. Mapper evidence and
+backend intake agree, so direct commands are conclusively not coexistence-safe.
+
+The smallest internal design is a weak scene-targeted manual-view capability on
+`Monitor`, bound to `RUMViewsHandler` when instrumentation is published. Targeted
+start and stop use the handler's per-scene stack. While a manual suffix is active,
+later automatic appearances are staged immediately below it without emitting RUM
+commands; removing the exact scene/key manual entry applies stop-call attributes
+and reveals the newest valid underlying entry as a fresh occurrence. Nested
+manuals must keep the entire manual suffix authoritative. Existing source-less
+methods remain on their inferred direct-command path.
+
+`EXP-119` also shows a
 narrower existing modifier boundary: an exceptional explicit Sheet S1 correctly
 suppresses its automatic duplicate and automatic Home H2 eventually returns, but
 work in SwiftUI's immediate `onDismiss` callback still belongs to S1 because H2
@@ -272,8 +292,13 @@ Scene-aware manual views require:
 - explicit A target overriding a B process representative;
 - explicit target with no current A view that does not fall into B;
 - manual exceptional view over automatic H1 -> M1 -> fresh H2;
+- automatic appearance or replacement while M1 is active is staged beneath M1
+  and emits no intervening current view;
+- nested targeted manual entries preserve an authoritative manual suffix;
 - automatic tracking continuing in another scene and sibling container;
 - scene close while the manual view is active;
+- stop-call attributes are applied to M1's stop event;
+- the restarted H2 UUID differs from H1;
 - Swift and Objective-C forwarding parity;
 - `NOPMonitor` and third-party conformer fallback invoked exactly once; and
 - no retained `UIWindowScene`, `UIWindow`, or controller after capture.
@@ -306,6 +331,11 @@ Semantic SwiftUI navigation requires:
    reveal mechanism close `EXP-119` independently?
 6. Can the authority registry isolate sibling containers inside one hosting
    controller without unsupported SwiftUI hierarchy assumptions?
+7. Do targeted manual keys share the existing keyed namespace with semantic
+   SwiftUI occurrences, and what is the exact duplicate targeted-start behavior?
+8. How should Objective-C callers that invoke a `UIWindowScene` overload away
+   from the main thread be handled without retaining or asynchronously dereferencing
+   the scene?
 
 The Operation target proposal and its additional exact-view forms remain in
 [OPERATIONS.md](OPERATIONS.md). Both reviews should share one internal logical

@@ -6,7 +6,7 @@ The [assessment](ASSESSMENT.md) interprets this evidence; the
 [plan](PLAN.md) decides what to run next. Start at the
 [canonical overview](../MULTI_SCENE_SUPPORT.md) for the current resume point.
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 ## Checkpoint commit structure
 
@@ -79,6 +79,8 @@ boundary, in this order:
 | 62 | `Document automatic scene coexistence evidence` | `EXP-118` partial mapper evidence, simulator compositor failures, physical-device rerun routing, and refreshed plan |
 | 63 | `Probe exceptional manual SwiftUI view coexistence` | Automatic Home, one explicit Sheet exception, fresh automatic Home expectations, presentation commands, semantic-view intervals, and exact owner-relation checks |
 | 64 | `Report the active SwiftUI presentation screen` | Correct source labeling for driver markers and the explicit presentation interval while a sheet is active |
+| 65 | `Document multi-scene navigation API direction` | Approved navigation-occurrence, one-destination-per-scene, container-level SwiftUI, scene-aware manual-view, Execution Context, and coexistence contracts |
+| 66 | `Probe keyed manual view coexistence` | Direct keyed manual-over-automatic discriminator, exact authority interval, H1/M1/H2 owner relations, adversarial oracle fixtures, and catalog-owned observable-driver selection |
 
 Rows 1-60 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
@@ -96,7 +98,8 @@ is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `a97e943df`, row 57 is `4d1783198`, row 58 is `85d03e5ee`, and row 59 is
 `b5f74467d`.
 Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
-is `a86c41e96`, and row 64 is `336bdd504`.
+is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
+`dc863758f`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -249,6 +252,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-117 | Contaminated abort `container-navigation-abort-20260913-2225-a`; contaminated replacement `container-navigation-same-type-20260913-2232-a` | `18cb3927-8afb-4f39-92bf-75b3391de050`; `1f6964c8-0200-44b9-a775-ffd91e4a0bc9` | iPadOS 27 | Clean-run isolation failure in the harness workflow, not an SDK-semantic failure. Both back-to-back Xcode launches passed their local oracle, but the test bundle had not been uninstalled. Their newly created Home/Detail view documents retained `container-navigation-prototype-20260913-2210-a` as `context.probe.run_id`, while later actions and Resources carried the new run ID. A new-run aggregate therefore showed only ApplicationLaunch until direct view-ID inspection exposed the mixed metadata. Explicit host-side uninstall followed by the `EXP-116` reruns removed the contamination. `--probe-run-mode clean` is only manifest input inside the app; Phase 5's host runner must perform teardown and verify every semantic view's run ID before accepting backend evidence. |
 | EXP-118 | `semantic-auto-coexistence-20260913-2256-a`; `semantic-auto-coexistence-20260913-2259-b` | `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`; `43e42ece-f77d-4215-8c6c-22c5ce101136` | iPadOS 27 simulator | Prepared automatic/semantic scene-coexistence discriminator; simulator-inconclusive after two explicitly uninstalled runs because `backboardd` aborted in Metal/CoreAnimation before the terminal oracle. Both runs kept scene A's explicit marker on A/Home H1 and created scene-B automatic fallback plus navigation-host views after B opened, proving A's authority did not suppress B globally. Attempt 1 mapped B's delayed source-less marker to B's non-launch automatic host, but the decisive driver marker never ran. Earlier B source-less lifecycle work used representative A before discovery settled, which is the approved compatibility fallback rather than exact provenance. No probe/SDK crash or terminal PASS/FAIL occurred; rerun the named scenario on physical hardware. Probe tests pass 49/49 and lint reports zero violations. |
 | EXP-119 | Invalid-source run `automatic-manual-sheet-20260913-2332-a`; corrected run `automatic-manual-sheet-20260913-2338-b` | `b2f50cf0-1394-4b1b-9da9-09d752a22bbf`; `f483b9eb-3ea8-4cfc-a884-c0b547effb5a` | iPadOS 27 simulator | Exceptional explicit SwiftUI Sheet over automatic Home. The first run exposed a probe-only source label defect, fixed in `336bdd504`. The corrected run then failed conclusively after 6 matches: Home-source work in immediate `onDismiss` still belonged to Sheet S1 because automatic Home H2 had not started; settled work used H2. Local mapper and backend intake otherwise agree on launch, an 18 ms automatic fallback, automatic H1 `60a6d680…`, explicit S1 `fad831da…`, and fresh automatic H2 `c36d0109…`; sheet work owns S1, pre-sheet work owns H1, no duplicate automatic Sheet appears, and no error/crash occurred. Probe build-for-testing and 56/56 tests pass. This proves coexistence/dedup and exposes a real return-boundary attribution gap. |
+| EXP-120 | Invalid harness `automatic-keyed-manual-20260914-0005-a`; partial `automatic-keyed-manual-20260914-0010-b`; conclusive `automatic-keyed-manual-20260914-0015-c`; hardened baseline `automatic-keyed-manual-20260914-0030-d` | `54005e3d-daf7-460e-8c38-2cf4e7505e4f`; `26990bc0-7785-4eda-b0f7-f3971516f5a3`; `9382bf4d-5985-4047-898c-deb8103af68b`; `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0` | iPadOS 27 simulator | Existing direct keyed manual API over automatic Home fails authoritative coexistence. Attempt A never started because the scenario was omitted from a second driver allowlist; the catalog now owns that selection. Attempt B proved Compose was already stopped before a now-removed wait. Attempts C/D conclusively show H1 → M1 → automatic fallback → fresh H2: M1 lasts only 31–48 ms, active and immediate-stop action/Resource pairs use the fallback, and only settled work uses H2. Final D has six views, ten actions, ten Resources, zero errors/crashes. Its initial H1-stop failure was an oracle matcher defect caused by a deferred exact stop arriving after an unrelated M1 stop; the corrected matcher scans onward and keeps the real manual-authority failure. Commit `dc863758f`; probe 65/65, build-for-testing and repository lint pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3223,6 +3227,93 @@ same scenario on physical hardware is useful for ordering parity but does not
 replace the deterministic failure already observed. No probe, SDK, simulator, or
 Session Replay crash occurred in either run.
 
+### 2026-09-14 — EXP-120: direct keyed manual view over automatic Home
+
+The named scenario `swiftui.coexistence.automatic-keyed-manual-view` exercises
+the existing public `RUMMonitor.startView(key:name:)` and `stopView(key:)` calls
+without adding a scene-aware API. Automatic SwiftUI discovery stays enabled. The
+required semantic sequence is automatic Home H1 -> manual Compose M1 -> fresh
+automatic Home H2. The scenario requires exact pre-manual work on H1, an authority
+interval bounded by the driver steps, active Compose work on M1, exact H1 and M1
+stops, and immediate plus settled returned-Home work on a fresh H2. It forbids an
+automatic view from becoming current while manual authority is active.
+
+Commit `dc863758f` adds the scenario, keyed manual steps, exact scene/destination
+driving, a catalog-owned observable-driver set, and positive/adversarial oracle
+fixtures. Those fixtures reject a retained H1, an automatic view before the first
+M1 snapshot, wrong M1 ownership, H1 reused as H2, and disagreement between
+immediate and settled return owners.
+
+Four attempts are intentionally retained:
+
+1. `automatic-keyed-manual-20260914-0005-a`, RUM session
+   `54005e3d-daf7-460e-8c38-2cf4e7505e4f`, is invalid as SDK evidence. The new
+   scenario existed in the catalog but was absent from a separate observable-driver
+   allowlist, so no scenario step started. The duplicated allowlist was removed;
+   the catalog now owns the decision.
+2. `automatic-keyed-manual-20260914-0010-b`, RUM session
+   `26990bc0-7785-4eda-b0f7-f3971516f5a3`, is valid partial evidence. Automatic
+   H1 started, Compose M1 started, then Compose stopped about 45 ms later and an
+   automatic fallback began. The driver subsequently waited for a Compose-view
+   signal that had already occurred, so it timed out before terminal evaluation.
+   Short-lived view signals are no longer used as a driver barrier; recorded
+   markers and the oracle decide acceptance.
+3. `automatic-keyed-manual-20260914-0015-c`, RUM session
+   `9382bf4d-5985-4047-898c-deb8103af68b`, is the first conclusive run. Compose
+   stopped about 31 ms after it started. `keyed-manual-active` and
+   `keyed-manual-stopped-immediate` work used the intervening automatic fallback;
+   `keyed-manual-stopped-settled` used fresh Home H2. It produced six views, ten
+   actions, ten Resources, and no error/crash.
+4. `automatic-keyed-manual-20260914-0030-d`, RUM session
+   `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0`, is the explicitly uninstalled,
+   hardened acceptance baseline. The raw runner stopped after two matches because
+   the first version of the exact H1-stop matcher treated M1's unrelated stop as
+   a violation instead of continuing to the deferred H1 stop. H1 did stop later.
+   The matcher now scans past unrelated lifecycle facts, and a regression fixture
+   covers that ordering. Under the corrected oracle, the decisive failure is the
+   automatic fallback that starts inside the manual-authority interval and owns
+   Compose work—not the deferred mapper ordering of H1's stop.
+
+The exact final-baseline view timeline is:
+
+1. ApplicationLaunch `4d6fe9c9-db64-4c8c-a3bf-8db3a2527c8f`.
+2. Startup fallback `e1980c0c-042b-4ed0-ae34-4d84d4f12a39`.
+3. Automatic Home H1 `94196346-7199-4b1c-8c1a-5a9f13ef8989`.
+4. Manual Compose M1 `ba56c80b-a043-49a3-bbbf-ef2a286889e2`.
+5. Automatic fallback `2254427a-39d8-4a5c-828b-c8be9aa1319f`.
+6. Fresh automatic Home H2 `fe6f151d-f312-46c5-88d5-c1314a6cc6c5`.
+
+The authority interval spans recorder sequences 32–46. M1 starts at sequence 34
+and stops at 36, about 47.5 ms later; the fallback starts at 37. H1's deferred
+stop snapshot arrives at 41, the explicit manual-stop step begins at 44, H2 starts
+at 55, and the fallback stops at 64. The decisive backend owners are:
+
+- `automatic-home-before-keyed-manual` action/Resource -> H1;
+- `keyed-manual-active` action/Resource -> the automatic fallback;
+- `keyed-manual-stopped-immediate` action/Resource -> the same fallback; and
+- `keyed-manual-stopped-settled` action/Resource -> H2.
+
+Backend intake contains all six views, ten actions, ten Resources, zero RUM
+errors, and zero crashes. Compose owns no decisive action or Resource. This is a
+simulator-conclusive SDK/API behavior gap, not a gesture or topology limitation.
+The source explanation matches the runtime result: direct keyed monitor commands
+bypass `RUMViewsHandler`'s retained per-scene platform stack, while automatic
+discovery continues to mutate that stack and can replace the manual scope.
+
+The next production slice must not merely add a scene target to the same direct
+commands. A targeted manual entry must join the handler's per-scene stack, remain
+authoritative while active, stage newer automatic candidates beneath the complete
+manual suffix without emitting them, and reveal the latest valid underlying
+candidate as a fresh occurrence on exact scene/key stop. Existing source-less
+manual APIs retain their inferred/process-representative behavior. Public Swift
+and Objective-C signatures remain subject to normal API review.
+
+The final probe plan passes 65/65, the Xcode 27 build-for-testing succeeds, and
+repository lint reports zero violations across 713 source and 699 test files.
+Final-run artifacts include
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Keyed Manual Acceptance Baseline-00_30_23_041-logs.txt`
+plus its matching hierarchy and screenshot.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3301,6 +3392,17 @@ Session Replay crash occurred in either run.
   current simulator after `EXP-118`. Two clean attempts created the intended B
   automatic hosts, then crashed `backboardd` before the final assertion. Preserve
   the prepared scenario and finish it on physical multi-window hardware.
+- Do not add a driver wait for the short Compose occurrence in `EXP-120`. The
+  existing direct API can start and stop M1 before the driver observes its next
+  condition; the step-bounded authority interval, recorder facts, and semantic
+  oracle are the acceptance mechanism.
+- Do not report the raw final `EXP-120` H1-stop mismatch as an SDK lifecycle
+  failure. The mapper delivered the exact deferred H1 stop after M1's unrelated
+  stop. The matcher was fixed to scan onward; the SDK failure is the automatic
+  fallback that preempts M1 and owns Compose work.
+- Do not implement scene-aware manual views by adding only a scene target to the
+  existing direct keyed commands. `EXP-120` proves those commands bypass the
+  handler stack and provide no authority over later automatic appearances.
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.

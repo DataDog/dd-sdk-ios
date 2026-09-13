@@ -55,6 +55,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
+| `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120` | Signal-driven FAIL: automatic fallback preempts direct keyed Compose and owns its active/immediate work; settled work uses fresh Home H2 |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -87,7 +88,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 56/56. The stack
+future Execution Context seam. The generated test plan passes 65/65. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -106,6 +107,13 @@ proves automatic Home H1 -> explicit Sheet S1 -> fresh automatic Home H2 without
 an automatic Sheet duplicate, but intentionally fails while immediate
 `onDismiss` work still owns S1 before H2 starts. Do not treat the later settled
 H2 attribution as closing that boundary.
+`EXP-120` starts and stops a direct keyed Compose view over automatic Home. Its
+step-bounded authority interval and exact owner relations catch automatic
+preemption even when Compose starts and stops before the driver can wait for it.
+The scenario fails because an automatic fallback displaces Compose within 31–48
+ms and owns active/immediate action/Resource pairs; only settled work belongs to
+fresh Home H2. Do not add a Compose-view wait as a barrier or treat deferred
+mapper stop ordering as navigation order.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes

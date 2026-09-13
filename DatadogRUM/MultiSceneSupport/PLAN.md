@@ -10,7 +10,7 @@ levels live in [ASSESSMENT.md](ASSESSMENT.md); chronological run details live in
 Evidence references use the stable `EXP-*` identifiers from the experiment
 ledger; exact run and session identifiers remain in `EXPERIMENTS.md`.
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 ## Experimental application plan
 
@@ -145,23 +145,35 @@ Current execution order:
    final marker and oracle. Finish that exact row when physical hardware is
    available; meanwhile, write the RFC/API proposal and continue independent
    simulator-capable experiments. No public API lands without normal review.
-7. `EXP-119` now exercises one exceptional explicit Sheet over automatic Home.
+7. `EXP-119` exercises one exceptional explicit Sheet over automatic Home.
    Dedup and eventual H1 -> S1 -> H2 restoration work, but immediate Home work in
    `onDismiss` still owns S1. Use the review starting points in
    [NAVIGATION_API.md](NAVIGATION_API.md) to test a presentation-aware semantic
    boundary or manual-stack reveal. Do not weaken the failing expectation.
-8. Exercise direct keyed manual start/stop over an automatic current view. Then
-   take the scene-aware Swift/Objective-C overloads through API review. The same
-   key must coexist independently in A and B, explicit stop must reveal a fresh
-   underlying automatic occurrence, and existing APIs retain inferred behavior.
-9. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+8. Completed as a negative discriminator in `dc863758f` and `EXP-120`: direct
+   keyed manual start/stop over automatic H1 does not provide manual authority.
+   Automatic discovery displaced M1 within 31–48 ms, and the intended M1
+   action/Resource used the automatic fallback. Eventual H2 restoration is too
+   late. The probe plan passes 65/65 after hardening its authority interval and
+   exact-owner fixtures.
+9. Implement the smallest internal per-scene manual-authority slice before public
+   API: route targeted manual entries through `RUMViewsHandler`, stage automatic
+   appearances beneath the active manual suffix without emitting commands, apply
+   stop attributes at removal, and reveal the newest valid underlying candidate
+   as a fresh occurrence on exact scene/key stop. Add handler and monitor tests,
+   then rerun the unchanged `EXP-120` oracle. Existing source-less APIs stay on
+   their current inferred direct-command path.
+10. After the internal path passes, take scene-aware Swift/Objective-C overloads
+   through API review. The same key must coexist independently in A and B and a
+   stop must affect only its exact scene/key.
+11. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-10. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
+12. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-11. Validate simultaneous visible A/B transitions, then genuine disconnect,
+13. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-12. Complete Operation public targeting and its live backend matrix.
-13. Close the bounded causal/downstream rows and live normal-app compatibility.
+14. Complete Operation public targeting and its live backend matrix.
+15. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 This order implements the approved product priority: view occurrences and
 navigation first, then scene-aware manual views, downstream ownership,
@@ -169,7 +181,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-119`. It still
+decision record after `EXP-120`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -271,7 +283,17 @@ experiment; it does not itself change the SDK support verdict.
    prefixes created independent B automatic views and kept A exact, but the
    simulator compositor aborted before the final marker. Complete on iPhone Duo
    or a physical multi-window iPad; do not promote the partial prefix to `PASS`.
-12. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+12. Completed in `a86c41e96`, `336bdd504`, and `EXP-119`: add an exceptional
+   explicit Sheet over automatic Home, model its presentation interval, and use
+   the complete scene destination for marker source. The corrected run proves
+   dedup and eventual H1/S1/H2 restoration, while intentionally failing immediate
+   `onDismiss` ownership.
+13. Completed in `dc863758f` and `EXP-120`: exercise direct keyed manual
+   start/stop over automatic Home with a step-bounded authority interval. The
+   scenario conclusively fails because automatic fallback preempts M1. Adversarial
+   fixtures prevent retained H1, pre-M1 duplicates, wrong M1 ownership, H1 reuse,
+   or immediate/settled mismatch from passing. The probe plan passes 65/65.
+14. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -280,8 +302,8 @@ experiment; it does not itself change the SDK support verdict.
    Reject a run if semantic view documents retain another run ID. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The deterministic stack, split, UIKit-transition, and exact scene lifecycle
-harness is implemented through `EXP-118`: three clean
+The deterministic stack, split, UIKit-transition, exact scene lifecycle, and
+coexistence harness is implemented through `EXP-120`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -298,6 +320,10 @@ A authority does not suppress B discovery, while terminal B attribution remains
 hardware-inconclusive. Two non-uninstalled
 back-to-back launches remain local-only and document the host-runner isolation
 requirement rather than SDK semantics.
+The Sheet and direct-keyed-manual scenarios preserve two separate conclusive
+failures: immediate Sheet dismissal work remains on S1, and automatic discovery
+preempts direct manual M1. Their hardened owner relations bring the test plan to
+65/65; neither failing oracle should be weakened while production changes land.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -664,11 +690,29 @@ options live in [NAVIGATION_API.md](NAVIGATION_API.md).
 Routing the existing start/stop commands to `.scene` is necessary but not
 sufficient. Direct monitor calls bypass `RUMViewsHandler`'s retained platform-view
 stack, so stopping an exceptional manual view can leave no underlying automatic
-occurrence to reveal. Require automatic Home H1 -> manual M1 -> fresh automatic
-Home H2 in one scene while a peer scene remains unchanged. `EXP-119` proves the
-related modifier-based path eventually restores H2 without a duplicate, but
-immediate `onDismiss` work still owns outgoing S1. Preserve that failure until a
-presentation-aware semantic signal or stack reveal starts H2 first.
+occurrence to reveal, and a later automatic appearance can immediately replace
+the direct manual scope. `EXP-120` confirms both consequences: Compose M1 stopped
+31–48 ms after start, the automatic fallback owned its decisive work, and only a
+later H2 received settled work. Require automatic Home H1 -> manual M1 -> fresh
+automatic Home H2 in one scene while a peer scene remains unchanged.
+
+The next implementation slice is internal and does not require settling public
+signatures. Bind `Monitor` weakly to an internal scene-targeted manual-view
+capability owned by `RUMViewsHandler`. Targeted start inserts `.manual` into the
+handler's scene stack. While one or more manual entries form the active suffix,
+automatic appearances update or insert the latest underlying candidate without
+emitting commands; exact removal applies stop-call attributes and reveals that
+candidate as a fresh occurrence. Existing source-less methods must remain direct
+and inferred for compatibility. Focused tests must cover H1/M1/H2 command order,
+automatic replacement while M1 is active, nested manuals, same key in A/B,
+wrong-scene/key stop, stop attributes, lifecycle/disconnect, and a fresh restarted
+UUID. Resolve key-collision and duplicate-targeted-start behavior before turning
+this seam into public API.
+
+`EXP-119` is the related modifier-based presentation boundary: it eventually
+restores H2 without a duplicate, but immediate `onDismiss` work still owns S1.
+Preserve that separate failure until a presentation-aware semantic signal or the
+manual reveal path starts H2 first.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
