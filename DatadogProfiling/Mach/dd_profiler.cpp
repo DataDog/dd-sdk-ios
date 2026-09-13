@@ -25,6 +25,7 @@
 // The extra time avoids stopping sampling while the profile is still being processed.
 static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 90000000000LL; // 1:30 minutes
 static constexpr double DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
+static constexpr bool DD_PROFILER_RECORD_CPU_TIME = true;
 // Maximum queued aggregation batch memory before new batches are dropped.
 static constexpr uint64_t DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES = 64ULL * 1024ULL * 1024ULL;
 
@@ -155,24 +156,6 @@ static double read_profiling_sample_rate() {
     return sample_rate;
 }
 
-static bool read_profiling_record_cpu_time() {
-    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
-    CFStringRef key = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
-    CFPreferencesAppSynchronize(suiteName);
-    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
-
-    bool result = false;
-
-    if (value) {
-        if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
-            result = CFBooleanGetValue((CFBooleanRef)value);
-        }
-        CFRelease(value);
-    }
-
-    return result;
-}
-
 /**
  * Deletes the DatadogProfiling defaults from the `UserDefaults`
  * to be re-evaluated during `Profiling.enable()`.
@@ -181,11 +164,9 @@ void dd_delete_profiling_defaults() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFStringRef sampleRateKey = CFSTR(DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY);
-    CFStringRef recordCPUTimeKey = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
 
     CFPreferencesSetValue(isEnabledKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSetValue(sampleRateKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    CFPreferencesSetValue(recordCPUTimeKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
@@ -308,7 +289,10 @@ public:
             return nullptr;
         }
 
-        dd::profiler::profile* next_profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time);
+        dd::profiler::profile* next_profile = new (std::nothrow) dd::profiler::profile(
+            sampling_interval_ns,
+            DD_PROFILER_RECORD_CPU_TIME
+        );
         dd::profiler::profile* flushed_profile = nullptr;
         auto swap_profile = [this, next_profile, &flushed_profile] {
             swap_profile_at_flush_boundary(next_profile, flushed_profile);
@@ -377,9 +361,10 @@ private:
 
         if (profiler) return true;
 
-        record_cpu_time = read_profiling_record_cpu_time();
-
-        profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time);
+        profile = new (std::nothrow) dd::profiler::profile(
+            sampling_interval_ns,
+            DD_PROFILER_RECORD_CPU_TIME
+        );
         if (!profile) {
             status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return false;
@@ -388,7 +373,7 @@ private:
 
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
-        config.record_cpu_time = record_cpu_time ? 1 : 0;
+        config.record_cpu_time = DD_PROFILER_RECORD_CPU_TIME;
 
         profiler = new (std::nothrow) mach_sampling_profiler(&config, callback, this, hard_limit_bytes);
         if (!profiler) {
@@ -410,7 +395,6 @@ private:
     uint64_t hard_limit_bytes = DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES;
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
     int64_t server_time_offset_ns = 0;
-    bool record_cpu_time = false;
     bool started_at_launch = false;
 
     /**
