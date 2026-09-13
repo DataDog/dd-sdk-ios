@@ -1,0 +1,894 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
+
+enum ProbeScenarioCatalog {
+    static let defaultIdentifier = "interactive.manual"
+
+    static let all: [ProbeScenario] = [
+        interactiveManual,
+        automaticSingleWindow,
+        automaticTwoWindow,
+        swiftUIStackOccurrencePush,
+        swiftUIStackReturn,
+        swiftUIStackAbort,
+        swiftUIStackSameTypeReplacement,
+        swiftUIStackDifferentTypeReplacement,
+        swiftUIStackManualSheetReturn,
+        swiftUIStackNativePopCancel,
+        swiftUIStackNativePopFinish,
+        swiftUISplitAutomaticBaseline,
+        swiftUISplitSameTypeSelection,
+        swiftUISplitSameTypeSelectionTwoScenes,
+        swiftUISplitRetainedReturn,
+        swiftUISplitEmptySelection,
+        uikitSplitReplacement,
+        uikitSplitSubclass,
+        uikitSplitAutomaticPop,
+        uikitSplitPopCancel,
+        uikitSplitPopFinish,
+        uikitSplitNativePopControl,
+        uikitSplitNativePopCancel,
+        uikitSplitNativePopFinish,
+        uikitSplitConcurrentScenes,
+        windowsParallelNavigation,
+        windowsCloseWithResource,
+        actionsExactSourceHandoff,
+        retainedReaderReconnect,
+        retainedReaderReconnectSceneB,
+        sceneRestoration,
+        diagnosticOffscreenTab,
+        diagnosticNavigationPathSameTypeReplacement,
+        diagnosticNavigationPathSplitSelection,
+        regressionSingleScene
+    ]
+
+    private static let legacyCompatibleIdentifiers: Set<String> = [
+        interactiveManual.identifier,
+        automaticSingleWindow.identifier,
+        automaticTwoWindow.identifier,
+        swiftUIStackOccurrencePush.identifier,
+        swiftUIStackAbort.identifier,
+        swiftUIStackSameTypeReplacement.identifier,
+        swiftUIStackDifferentTypeReplacement.identifier,
+        swiftUISplitAutomaticBaseline.identifier,
+        swiftUISplitSameTypeSelection.identifier,
+        swiftUISplitSameTypeSelectionTwoScenes.identifier,
+        swiftUISplitRetainedReturn.identifier,
+        swiftUISplitEmptySelection.identifier,
+        uikitSplitReplacement.identifier,
+        uikitSplitSubclass.identifier,
+        uikitSplitAutomaticPop.identifier,
+        uikitSplitPopCancel.identifier,
+        uikitSplitPopFinish.identifier,
+        uikitSplitNativePopControl.identifier,
+        uikitSplitConcurrentScenes.identifier,
+        windowsCloseWithResource.identifier,
+        actionsExactSourceHandoff.identifier,
+        retainedReaderReconnect.identifier,
+        retainedReaderReconnectSceneB.identifier,
+        diagnosticOffscreenTab.identifier,
+        diagnosticNavigationPathSameTypeReplacement.identifier,
+        diagnosticNavigationPathSplitSelection.identifier,
+        regressionSingleScene.identifier
+    ]
+
+    static func scenario(identifier: String) -> ProbeScenario? {
+        all.first { $0.identifier == identifier }
+    }
+
+    static func scenario(
+        matching runtimeOptions: ProbeRuntimeOptions,
+        layout: ProbeLayout,
+        trackingMode: ProbeTrackingMode
+    ) -> ProbeScenario? {
+        all.first {
+            legacyCompatibleIdentifiers.contains($0.identifier)
+                && $0.runtimeOptions == runtimeOptions
+                && $0.layout == layout
+                && $0.trackingMode == trackingMode
+        }
+    }
+
+    private static let interactiveManual = ProbeScenario(
+        identifier: defaultIdentifier,
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A")
+        ],
+        completionConditions: [
+            ProbeExpectation(.sceneReady, scene: "scene-A")
+        ],
+        expectedSemanticTimeline: []
+    )
+
+    private static let automaticSingleWindow = ProbeScenario(
+        identifier: "swiftui.automatic.single-window",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: stackPushSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-1")
+        ],
+        expectedSemanticTimeline: stackPushTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+        }
+    )
+
+    private static let automaticTwoWindow = ProbeScenario(
+        identifier: "swiftui.automatic.two-window",
+        trackingMode: .automatic,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: parallelWindowSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-B", screen: "detail-1")
+        ],
+        expectedSemanticTimeline: parallelWindowTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyOpensSecondWindow = true
+        }
+    )
+
+    private static let swiftUIStackOccurrencePush = ProbeScenario(
+        identifier: "swiftui.stack.occurrence-push",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: stackPushSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-1")
+        ],
+        expectedSemanticTimeline: stackPushTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+        }
+    )
+
+    private static let swiftUIStackReturn = ProbeScenario(
+        identifier: "swiftui.stack.return",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:home#2")
+        ],
+        completionConditions: [
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 2, name: "navigation-appearance-2")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStopped, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStopped, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2),
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 2, name: "navigation-appearance-2")
+        ]
+    )
+
+    private static let swiftUIStackAbort = ProbeScenario(
+        identifier: "swiftui.stack.abort",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.pushAndRevertSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:post-aborted-navigation")
+        ],
+        completionConditions: [
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 1, name: "post-aborted-navigation")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "detail-1", interval: "aborted-navigation"),
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 1, name: "post-aborted-navigation")
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyAbortsDetail = true
+        }
+    )
+
+    private static let swiftUIStackSameTypeReplacement = ProbeScenario(
+        identifier: "swiftui.stack.same-type-replacement",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: stackReplacementSteps(destination: "detail-2"),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-2")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 1)
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyReplacesDetailInstance = true
+        }
+    )
+
+    private static let swiftUIStackDifferentTypeReplacement = ProbeScenario(
+        identifier: "swiftui.stack.different-type-replacement",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: stackReplacementSteps(destination: "alternate"),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "alternate")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "alternate", occurrence: 1)
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyReplacesDetail = true
+        }
+    )
+
+    private static let swiftUIStackManualSheetReturn = ProbeScenario(
+        identifier: "swiftui.stack.manual-sheet-return",
+        trackingMode: .manual,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:sheet"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:home#2")
+        ],
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2)
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStopped, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "sheet", occurrence: 1),
+            ProbeExpectation(.viewStopped, scene: "scene-A", screen: "sheet", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2)
+        ]
+    )
+
+    private static let swiftUIStackNativePopCancel = ProbeScenario(
+        identifier: "swiftui.stack.native-pop-cancel",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        requiredCapabilities: [.nativeSwiftUIGesture],
+        steps: nativeSwiftUIPopSteps(outcome: .cancel),
+        completionConditions: [
+            ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "home", occurrence: 2, interval: "cancelled-pop")
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+        }
+    )
+
+    private static let swiftUIStackNativePopFinish = ProbeScenario(
+        identifier: "swiftui.stack.native-pop-finish",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        requiredCapabilities: [.nativeSwiftUIGesture],
+        steps: nativeSwiftUIPopSteps(outcome: .finish),
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2)
+        ],
+        expectedSemanticTimeline: swiftUIStackReturn.expectedSemanticTimeline,
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+        }
+    )
+
+    private static let swiftUISplitAutomaticBaseline = ProbeScenario(
+        identifier: "swiftui.split.automatic-baseline",
+        trackingMode: .automatic,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth],
+        steps: splitSelectionSteps(returnsToDetail: false),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "placeholder")
+        ],
+        expectedSemanticTimeline: splitTimeline(returnsToDetail: false)
+    )
+
+    private static let swiftUISplitSameTypeSelection = ProbeScenario(
+        identifier: "swiftui.split.same-type-selection",
+        trackingMode: .navigationOccurrence,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth],
+        steps: splitSelectionSteps(returnsToDetail: false),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "placeholder")
+        ],
+        expectedSemanticTimeline: splitTimeline(returnsToDetail: false)
+    )
+
+    private static let swiftUISplitSameTypeSelectionTwoScenes = ProbeScenario(
+        identifier: "swiftui.split.same-type-selection-two-scenes",
+        trackingMode: .navigationOccurrence,
+        layout: .splitSelection,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .regularWidth],
+        steps: parallelSplitSelectionSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "placeholder"),
+            ProbeExpectation(.destinationMaterialized, scene: "scene-B", screen: "placeholder")
+        ],
+        expectedSemanticTimeline: parallelSplitTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyOpensSecondWindow = true
+        }
+    )
+
+    private static let swiftUISplitRetainedReturn = ProbeScenario(
+        identifier: "swiftui.split.retained-return",
+        trackingMode: .navigationOccurrence,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth],
+        steps: splitSelectionSteps(returnsToDetail: true),
+        completionConditions: [
+            ProbeExpectation(.action, scene: "scene-A", screen: "detail-2", occurrence: 2, name: "selection-committed")
+        ],
+        expectedSemanticTimeline: splitTimeline(returnsToDetail: true),
+        runtimeOptions: runtime {
+            $0.automaticallyReturnsSplitToDetail = true
+        }
+    )
+
+    private static let swiftUISplitEmptySelection = ProbeScenario(
+        identifier: "swiftui.split.empty-selection",
+        trackingMode: .navigationOccurrence,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:empty")
+        ],
+        completionConditions: [
+            ProbeExpectation(.sceneReady, scene: "scene-A")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "detail-1", interval: "empty-selection")
+        ],
+        runtimeOptions: runtime {
+            $0.startsSplitWithoutSelection = true
+            $0.automaticallyAdvancesSplitSelection = false
+        }
+    )
+
+    private static let uikitSplitReplacement = ProbeScenario(
+        identifier: "uikit.split.replacement",
+        trackingMode: .automatic,
+        layout: .uikitSplit,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-split:secondary-2")
+        ],
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "secondary-2")
+        ],
+        expectedSemanticTimeline: uikitSplitTimeline()
+    )
+
+    private static let uikitSplitSubclass = ProbeScenario(
+        identifier: "uikit.split.subclass",
+        trackingMode: .automatic,
+        layout: .uikitSplitSubclass,
+        steps: uikitSplitReplacement.steps,
+        completionConditions: uikitSplitReplacement.completionConditions,
+        expectedSemanticTimeline: uikitSplitReplacement.expectedSemanticTimeline
+    )
+
+    private static let uikitSplitAutomaticPop = ProbeScenario(
+        identifier: "uikit.split.pop-automatic",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-navigation:returned-secondary-1")
+        ],
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+        ],
+        expectedSemanticTimeline: uikitPopTimeline()
+    )
+
+    private static let uikitSplitPopCancel = ProbeScenario(
+        identifier: "uikit.split.pop-cancel",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        steps: uikitInteractiveSteps(outcome: .cancel),
+        completionConditions: [
+            ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "secondary-1",
+                occurrence: 2,
+                interval: "cancelled-pop"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyPopsUIKitSplitNavigation = false
+            $0.uiKitSplitInteractivePopOutcome = .cancel
+        }
+    )
+
+    private static let uikitSplitPopFinish = ProbeScenario(
+        identifier: "uikit.split.pop-finish",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        steps: uikitInteractiveSteps(outcome: .finish),
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+        ],
+        expectedSemanticTimeline: uikitPopTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyPopsUIKitSplitNavigation = false
+            $0.uiKitSplitInteractivePopOutcome = .finish
+        }
+    )
+
+    private static let uikitSplitNativePopControl = ProbeScenario(
+        identifier: "uikit.split.native-pop-control",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        requiredCapabilities: [.nativeUIKitGesture],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-navigation:secondary-2")
+        ],
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "secondary-2")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1)
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyPopsUIKitSplitNavigation = false
+        }
+    )
+
+    private static let uikitSplitNativePopCancel = ProbeScenario(
+        identifier: "uikit.split.native-pop-cancel",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        requiredCapabilities: [.nativeUIKitGesture],
+        steps: nativeUIKitPopSteps(outcome: .cancel),
+        completionConditions: [
+            ProbeExpectation(.transitionResolved, scene: "scene-A", outcome: .cancel)
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "secondary-1",
+                occurrence: 2,
+                interval: "cancelled-pop"
+            )
+        ],
+        runtimeOptions: uikitSplitNativePopControl.runtimeOptions
+    )
+
+    private static let uikitSplitNativePopFinish = ProbeScenario(
+        identifier: "uikit.split.native-pop-finish",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        requiredCapabilities: [.nativeUIKitGesture],
+        steps: nativeUIKitPopSteps(outcome: .finish),
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+        ],
+        expectedSemanticTimeline: uikitPopTimeline(),
+        runtimeOptions: uikitSplitNativePopControl.runtimeOptions
+    )
+
+    private static let uikitSplitConcurrentScenes = ProbeScenario(
+        identifier: "uikit.split.concurrent-scenes",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "uikit-navigation:returned-secondary-1"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "uikit-navigation:returned-secondary-1"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "secondary-1", occurrence: 2)
+        ],
+        expectedSemanticTimeline: [],
+        runtimeOptions: runtime {
+            $0.automaticallyOpensSecondWindow = true
+        }
+    )
+
+    private static let windowsParallelNavigation = ProbeScenario(
+        identifier: "windows.parallel-navigation",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: parallelWindowSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-1"),
+            ProbeExpectation(.destinationMaterialized, scene: "scene-B", screen: "detail-1")
+        ],
+        expectedSemanticTimeline: parallelWindowTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyOpensSecondWindow = true
+        }
+    )
+
+    private static let windowsCloseWithResource = ProbeScenario(
+        identifier: "windows.close-with-resource",
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.emitMarker, scene: "scene-B", value: "before-close"),
+            ProbeStep(.closeWindow, scene: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "scene:disconnected"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "after-peer-close")
+        ],
+        completionConditions: [
+            ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", name: "after-peer-close")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1),
+            ProbeExpectation(.resource, scene: "scene-B", screen: "home", name: "before-close"),
+            ProbeExpectation(.sceneDisconnected, scene: "scene-B"),
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", name: "after-peer-close")
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyOpensSecondWindow = true
+            $0.automaticallyClosesSceneB = true
+        }
+    )
+
+    private static let actionsExactSourceHandoff = ProbeScenario(
+        identifier: "actions.exact-source-handoff",
+        trackingMode: .automatic,
+        layout: .uikitSplit,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.activateWindow, scene: "scene-B"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "scoped-manual")
+        ],
+        completionConditions: [
+            ProbeExpectation(.resource, scene: "scene-A", name: "scoped-manual")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.action, scene: "scene-A", name: "scoped-manual"),
+            ProbeExpectation(.resource, scene: "scene-A", name: "scoped-manual")
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyOpensSecondWindow = true
+            $0.exercisesUIEventContextHandoff = true
+        }
+    )
+
+    private static let retainedReaderReconnect = ProbeScenario(
+        identifier: "swiftui.reader.synthetic-reconnect",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.disconnectRetainedReader, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "reader:remounted")
+        ],
+        completionConditions: [
+            ProbeExpectation(.action, scene: "scene-A", screen: "detail-1", name: "post-retained-reader-remount")
+        ],
+        expectedSemanticTimeline: stackPushTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.syntheticReaderDisconnectTarget = "scene-A"
+        }
+    )
+
+    private static let retainedReaderReconnectSceneB = ProbeScenario(
+        identifier: "swiftui.reader.synthetic-reconnect-scene-b",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1"),
+            ProbeStep(.disconnectRetainedReader, scene: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "reader:remounted")
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "detail-1",
+                name: "post-retained-reader-remount"
+            )
+        ],
+        expectedSemanticTimeline: parallelWindowTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyOpensSecondWindow = true
+            $0.syntheticReaderDisconnectTarget = "scene-B"
+        }
+    )
+
+    private static let sceneRestoration = ProbeScenario(
+        identifier: "windows.restoration",
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        defaultRunMode: .restoration,
+        requiredCapabilities: [.multipleScenes, .restoration],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "post-restoration"),
+            ProbeStep(.emitMarker, scene: "scene-B", value: "post-restoration")
+        ],
+        completionConditions: [
+            ProbeExpectation(.action, scene: "scene-A", name: "post-restoration"),
+            ProbeExpectation(.action, scene: "scene-B", name: "post-restoration")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1)
+        ]
+    )
+
+    private static let diagnosticOffscreenTab = ProbeScenario(
+        identifier: "diagnostic.swiftui.offscreen-tab",
+        trackingMode: .manual,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "offscreen-tab:unselected")
+        ],
+        completionConditions: [
+            ProbeExpectation(.sceneReady, scene: "scene-A")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "offscreen-tab",
+                interval: "unselected-tab"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.swiftUIStress = .tabPreload
+        }
+    )
+
+    private static let diagnosticNavigationPathSameTypeReplacement = ProbeScenario(
+        identifier: "diagnostic.swiftui.navigation-path.same-type-replacement",
+        trackingMode: .navigationPath,
+        layout: .stack,
+        steps: stackReplacementSteps(destination: "detail-2"),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-2")
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1)
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+            $0.automaticallyReplacesDetailInstance = true
+        }
+    )
+
+    private static let diagnosticNavigationPathSplitSelection = ProbeScenario(
+        identifier: "diagnostic.swiftui.navigation-path.split-selection",
+        trackingMode: .navigationPath,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth],
+        steps: splitSelectionSteps(returnsToDetail: false),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "placeholder")
+        ],
+        expectedSemanticTimeline: splitTimeline(returnsToDetail: false)
+    )
+
+    private static let regressionSingleScene = ProbeScenario(
+        identifier: "regression.single-scene",
+        trackingMode: .manual,
+        layout: .stack,
+        steps: stackPushSteps(),
+        completionConditions: [
+            ProbeExpectation(.destinationMaterialized, scene: "scene-A", screen: "detail-1")
+        ],
+        expectedSemanticTimeline: stackPushTimeline(),
+        runtimeOptions: runtime {
+            $0.automaticallyNavigates = true
+        }
+    )
+
+    private static func runtime(
+        _ configure: (inout ProbeRuntimeOptions) -> Void
+    ) -> ProbeRuntimeOptions {
+        var options = ProbeRuntimeOptions()
+        configure(&options)
+        return options
+    }
+
+    private static func stackPushSteps() -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1")
+        ]
+    }
+
+    private static func stackPushTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1)
+        ]
+    }
+
+    private static func stackReplacementSteps(destination: String) -> [ProbeStep] {
+        stackPushSteps() + [
+            ProbeStep(.replaceSwiftUIDestination, scene: "scene-A", value: destination),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:\(destination)")
+        ]
+    }
+
+    private static func nativeSwiftUIPopSteps(outcome: ProbeTransitionOutcome) -> [ProbeStep] {
+        stackPushSteps() + [
+            ProbeStep(.armNativeSwiftUIGesture, scene: "scene-A", outcome: outcome),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "transition:\(outcome.rawValue)")
+        ]
+    }
+
+    private static func nativeUIKitPopSteps(outcome: ProbeTransitionOutcome) -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-navigation:secondary-2"),
+            ProbeStep(.armNativeUIKitGesture, scene: "scene-A", outcome: outcome),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "transition:\(outcome.rawValue)")
+        ]
+    }
+
+    private static func splitSelectionSteps(returnsToDetail: Bool) -> [ProbeStep] {
+        var steps = [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-2"),
+            ProbeStep(.setSplitSelection, scene: "scene-A", value: "placeholder")
+        ]
+        if returnsToDetail {
+            steps.append(ProbeStep(.setSplitSelection, scene: "scene-A", value: "detail-2"))
+        }
+        return steps
+    }
+
+    private static func splitTimeline(returnsToDetail: Bool) -> [ProbeExpectation] {
+        var timeline = [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "placeholder", occurrence: 1)
+        ]
+        if returnsToDetail {
+            timeline.append(
+                ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 2)
+            )
+        }
+        return timeline
+    }
+
+    private static func parallelSplitSelectionSteps() -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "split:placeholder"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "split:placeholder")
+        ]
+    }
+
+    private static func parallelSplitTimeline() -> [ProbeExpectation] {
+        ["scene-A", "scene-B"].flatMap { scene in
+            [
+                ProbeExpectation(.viewStarted, scene: scene, screen: "detail-1", occurrence: 1),
+                ProbeExpectation(.viewStarted, scene: scene, screen: "detail-2", occurrence: 1),
+                ProbeExpectation(.viewStarted, scene: scene, screen: "placeholder", occurrence: 1)
+            ]
+        }
+    }
+
+    private static func uikitSplitTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1)
+        ]
+    }
+
+    private static func uikitPopTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "primary", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-2", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "secondary-1", occurrence: 2)
+        ]
+    }
+
+    private static func uikitInteractiveSteps(outcome: ProbeTransitionOutcome) -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "uikit-navigation:secondary-2"),
+            ProbeStep(.beginUIKitInteractiveTransition, scene: "scene-A"),
+            ProbeStep(.updateUIKitInteractiveTransition, scene: "scene-A", percentage: 0.35),
+            ProbeStep(.resolveUIKitInteractiveTransition, scene: "scene-A", outcome: outcome),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "transition:\(outcome.rawValue)")
+        ]
+    }
+
+    private static func parallelWindowSteps() -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.openWindow, scene: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1")
+        ]
+    }
+
+    private static func parallelWindowTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "detail-1", occurrence: 1)
+        ]
+    }
+}

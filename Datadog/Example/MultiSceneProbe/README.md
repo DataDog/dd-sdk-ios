@@ -17,8 +17,68 @@ cd Datadog/Example/MultiSceneProbe
 xcodegen generate --spec project.yml
 ```
 
-Open `RUMNativeMultiSceneProbe.xcodeproj`, select an iPadOS 27 simulator, and set
-these run environment variables:
+Open `RUMNativeMultiSceneProbe.xcodeproj`, select an iPadOS 27 simulator, and pass
+the stable scenario arguments through the scheme or launch command:
+
+```text
+--probe-scenario swiftui.stack.return
+--probe-run-id <unique-run-id>
+--probe-run-mode clean
+```
+
+`--probe-run-id` is generated when omitted, but an explicit value is recommended
+for joining console, payload, and backend evidence. Run mode is `clean` or
+`restoration`; each scenario supplies a default. Unknown arguments, unknown
+`DD_MULTI_SCENE_*` keys, invalid values, and contradictory configurations are
+rejected before Datadog starts. The complete resolved manifest is always the
+first `RUM Native Multi-Scene JSONL` record. A rejected launch renders a
+configuration-error screen and produces no RUM session.
+
+The catalog currently preserves these experiment families:
+
+| Scenario | Evidence preserved | Execution level |
+| --- | --- | --- |
+| `interactive.manual` | Interactive automatic-tracking control | Existing UI controls |
+| `swiftui.automatic.single-window` | `EXP-027` | Existing deterministic automation |
+| `swiftui.automatic.two-window` | `EXP-028` | Existing deterministic automation |
+| `swiftui.stack.occurrence-push` | `EXP-090` setup | Existing deterministic automation |
+| `swiftui.stack.return` | `EXP-098`, `EXP-099` | Observable driver pending |
+| `swiftui.stack.abort` | `EXP-091` | Existing deterministic automation |
+| `swiftui.stack.same-type-replacement` | `EXP-090` | Existing deterministic automation |
+| `swiftui.stack.different-type-replacement` | `EXP-054` | Existing deterministic automation; keyed rerun pending |
+| `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
+| `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
+| `swiftui.split.automatic-baseline` | `EXP-069` | Existing deterministic automation |
+| `swiftui.split.same-type-selection` | `EXP-102` | Existing deterministic automation |
+| `swiftui.split.same-type-selection-two-scenes` | `EXP-103` | Existing deterministic automation; simultaneous topology remains unproven |
+| `swiftui.split.retained-return` | `EXP-105` | Existing deterministic automation |
+| `swiftui.split.empty-selection` | `EXP-087` | Existing deterministic control |
+| `uikit.split.replacement`, `uikit.split.subclass` | `EXP-080`, `EXP-072` | Existing deterministic automation |
+| `uikit.split.pop-automatic` | `EXP-079` | Existing deterministic automation |
+| `uikit.split.pop-cancel`, `uikit.split.pop-finish` | `EXP-083`, `EXP-084` | Existing deterministic transition control |
+| `uikit.split.native-pop-control`, `uikit.split.native-pop-cancel`, `uikit.split.native-pop-finish` | `EXP-081`, `EXP-082` | Prepared; cancellation needs hardware or human input |
+| `uikit.split.concurrent-scenes` | `EXP-086` | Existing automation; simultaneous topology remains unproven |
+| `windows.parallel-navigation` | `EXP-033`, `EXP-059`, `EXP-103` | Existing automation; simultaneous topology remains unproven |
+| `windows.close-with-resource` | `EXP-041` | Existing close control; visible-peer proof needs hardware |
+| `actions.exact-source-handoff` | `EXP-089` | Existing filtered control; discriminator needs simultaneous topology |
+| `swiftui.reader.synthetic-reconnect`, `swiftui.reader.synthetic-reconnect-scene-b` | `EXP-066` | Existing synthetic control |
+| `windows.restoration` | `EXP-042` | Prepared; concurrent restoration needs hardware or human setup |
+| `diagnostic.swiftui.offscreen-tab` | `EXP-036` | Existing diagnostic control |
+| `diagnostic.swiftui.navigation-path.same-type-replacement`, `diagnostic.swiftui.navigation-path.split-selection` | `EXP-057`, `EXP-068` | Superseded diagnostic controls retained for reproduction |
+| `regression.single-scene` | `EXP-026`, `EXP-032` | Existing deterministic automation |
+
+The scenario manifest already models ordered steps, signal waits, completion
+conditions, required capabilities, and the expected semantic timeline. The
+current app still executes its existing automation controls while the observable
+step driver and local semantic oracle are added in subsequent harness phases.
+Do not treat a modeled timeline as a local PASS until that oracle is present.
+
+## Legacy environment adapter
+
+The environment-variable surface is temporary. It accepts only exact profiles
+that normalize to one legacy-compatible named scenario; arbitrary Boolean
+combinations no longer run. Do not mix these variables with
+`--probe-scenario`.
 
 ```text
 DD_MULTI_SCENE_RUN_ID=<unique-run-id>

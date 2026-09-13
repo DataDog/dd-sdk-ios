@@ -1,0 +1,271 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import XCTest
+
+final class ProbeScenarioRunnerTests: XCTestCase {
+    func testCatalogHasUniqueIdentifiersAndRequiredScenarios() {
+        let identifiers = ProbeScenarioCatalog.all.map(\.identifier)
+
+        XCTAssertEqual(Set(identifiers).count, identifiers.count)
+        XCTAssertTrue(
+            Set([
+                "swiftui.stack.return",
+                "swiftui.stack.abort",
+                "swiftui.stack.same-type-replacement",
+                "swiftui.split.same-type-selection",
+                "uikit.split.pop-cancel",
+                "uikit.split.pop-finish",
+                "windows.parallel-navigation",
+                "windows.close-with-resource",
+                "actions.exact-source-handoff",
+                "regression.single-scene"
+            ]).isSubset(of: Set(identifiers))
+        )
+    }
+
+    func testEveryCatalogScenarioResolvesWithItsDefaultRunMode() {
+        for scenario in ProbeScenarioCatalog.all {
+            let resolution = ProbeScenarioRunner.resolve(
+                arguments: ["probe", "--probe-scenario", scenario.identifier],
+                environment: [:]
+            )
+
+            XCTAssertTrue(
+                resolution.isValid,
+                "\(scenario.identifier): \(resolution.manifest.validationErrors)"
+            )
+            XCTAssertEqual(resolution.manifest.runMode, scenario.defaultRunMode)
+        }
+    }
+
+    func testDefaultResolutionUsesInteractiveScenarioAndGeneratedRunID() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: [:],
+            generatedRunID: { "generated-run-id" }
+        )
+
+        XCTAssertTrue(resolution.isValid)
+        XCTAssertEqual(resolution.scenario?.identifier, ProbeScenarioCatalog.defaultIdentifier)
+        XCTAssertEqual(resolution.manifest.runID, "generated-run-id")
+        XCTAssertEqual(resolution.manifest.runMode, .clean)
+        XCTAssertEqual(resolution.manifest.resolutionSource, .defaultScenario)
+    }
+
+    func testNamedScenarioResolvesCommandLineMetadata() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: [
+                "probe",
+                "--probe-scenario", "swiftui.stack.return",
+                "--probe-run-id", "named-run",
+                "--probe-run-mode", "clean"
+            ],
+            environment: [:]
+        )
+
+        XCTAssertTrue(resolution.isValid)
+        XCTAssertEqual(resolution.scenario?.identifier, "swiftui.stack.return")
+        XCTAssertEqual(resolution.manifest.runID, "named-run")
+        XCTAssertEqual(resolution.manifest.runMode, .clean)
+        XCTAssertEqual(resolution.manifest.resolutionSource, .commandLine)
+    }
+
+    func testKnownLegacyProfileMapsToNamedScenario() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: [
+                "DD_MULTI_SCENE_RUN_ID": "legacy-run",
+                "DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING": "navigation-occurrence",
+                "DD_MULTI_SCENE_SWIFTUI_LAYOUT": "split-selection",
+                "DD_MULTI_SCENE_SPLIT_RETURN_TO_DETAIL": "1"
+            ]
+        )
+
+        XCTAssertTrue(resolution.isValid)
+        XCTAssertEqual(resolution.scenario?.identifier, "swiftui.split.retained-return")
+        XCTAssertEqual(resolution.manifest.resolutionSource, .legacyEnvironment)
+    }
+
+    func testUnknownScenarioIsRejected() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe", "--probe-scenario", "does.not.exist"],
+            environment: [:]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertNil(resolution.scenario)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("unknown probe scenario")
+            }
+        )
+    }
+
+    func testUnknownProbeEnvironmentKeyIsRejected() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: ["DD_MULTI_SCENE_UNKNOWN": "1"]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("unknown multi-scene probe environment key")
+            }
+        )
+    }
+
+    func testNamedScenarioCannotMixWithLegacyConfiguration() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe", "--probe-scenario", "swiftui.stack.return"],
+            environment: ["DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL": "1"]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("cannot be mixed with legacy configuration")
+            }
+        )
+    }
+
+    func testContradictoryLegacyReplacementIsRejected() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: [
+                "DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL": "1",
+                "DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL": "1",
+                "DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL_INSTANCE": "1"
+            ]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("cannot both be enabled")
+            }
+        )
+    }
+
+    func testInvalidBooleanDoesNotSilentlyUseItsDefault() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: ["DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL": "yes"]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("expected 0 or 1")
+            }
+        )
+    }
+
+    func testDuplicateAndMissingArgumentsAreRejected() {
+        let duplicate = ProbeScenarioRunner.resolve(
+            arguments: [
+                "probe",
+                "--probe-scenario", "swiftui.stack.return",
+                "--probe-scenario", "swiftui.stack.abort"
+            ],
+            environment: [:]
+        )
+        let missing = ProbeScenarioRunner.resolve(
+            arguments: ["probe", "--probe-run-id"],
+            environment: [:]
+        )
+
+        XCTAssertFalse(duplicate.isValid)
+        XCTAssertFalse(missing.isValid)
+        XCTAssertTrue(
+            duplicate.manifest.validationErrors.contains {
+                $0.contains("provided more than once")
+            }
+        )
+        XCTAssertTrue(
+            missing.manifest.validationErrors.contains {
+                $0.contains("missing value")
+            }
+        )
+    }
+
+    func testRunIDConflictAndWhitespaceAreRejected() {
+        let conflict = ProbeScenarioRunner.resolve(
+            arguments: ["probe", "--probe-run-id", "argument-run"],
+            environment: ["DD_MULTI_SCENE_RUN_ID": "environment-run"]
+        )
+        let whitespace = ProbeScenarioRunner.resolve(
+            arguments: ["probe", "--probe-run-id", "invalid run"],
+            environment: [:]
+        )
+
+        XCTAssertFalse(conflict.isValid)
+        XCTAssertFalse(whitespace.isValid)
+        XCTAssertTrue(
+            conflict.manifest.validationErrors.contains {
+                $0.contains("conflicts")
+            }
+        )
+        XCTAssertTrue(
+            whitespace.manifest.validationErrors.contains {
+                $0.contains("contain no whitespace")
+            }
+        )
+    }
+
+    func testEmptyEnvironmentRunIDIsRejectedInsteadOfRegenerated() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: ["probe"],
+            environment: ["DD_MULTI_SCENE_RUN_ID": "   "],
+            generatedRunID: { "must-not-hide-invalid-input" }
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("DD_MULTI_SCENE_RUN_ID cannot be empty")
+            }
+        )
+    }
+
+    func testArgumentFollowedByAnotherFlagReportsMissingValue() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: [
+                "probe",
+                "--probe-scenario",
+                "--probe-run-id", "still-parsed"
+            ],
+            environment: [:]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertEqual(resolution.manifest.runID, "still-parsed")
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("missing value after --probe-scenario")
+            }
+        )
+    }
+
+    func testRestorationScenarioRejectsCleanOverride() {
+        let resolution = ProbeScenarioRunner.resolve(
+            arguments: [
+                "probe",
+                "--probe-scenario", "windows.restoration",
+                "--probe-run-mode", "clean"
+            ],
+            environment: [:]
+        )
+
+        XCTAssertFalse(resolution.isValid)
+        XCTAssertTrue(
+            resolution.manifest.validationErrors.contains {
+                $0.contains("requires restoration run mode")
+            }
+        )
+    }
+}

@@ -39,10 +39,34 @@ targets:
       - package: Datadog
         product: DatadogRUM
 
+  RUMNativeMultiSceneProbeTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: Tests
+      - path: Sources/Harness
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.datadoghq.rum-native-multi-scene-probe.tests
+        PRODUCT_NAME: RUMNativeMultiSceneProbeTests
+        SWIFT_VERSION: 5.9
+        IPHONEOS_DEPLOYMENT_TARGET: 27.0
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+
 schemes:
   RUMNativeMultiSceneProbe:
     build:
       targets:
         RUMNativeMultiSceneProbe: all
+        RUMNativeMultiSceneProbeTests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - RUMNativeMultiSceneProbeTests

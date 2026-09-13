@@ -17,7 +17,13 @@ struct RUMNativeMultiSceneProbeApp: App {
 
     var body: some Scene {
         WindowGroup(id: ProbeWindow.windowGroupID, for: ProbeWindow.self) { $window in
-            ProbeWindowRoot(window: window)
+            if ProbeRuntime.isRunnable {
+                ProbeWindowRoot(window: window)
+            } else {
+                ProbeConfigurationFailureView(
+                    errors: ProbeRuntime.resolution.manifest.validationErrors
+                )
+            }
         } defaultValue: {
             ProbeWindow(
                 runID: ProbeRuntime.runID,
@@ -46,45 +52,34 @@ enum ProbeRuntime {
     }
 
     static let serviceName = "ios-sdk-native-multi-scene-probe"
-    static let runID = ProcessInfo.processInfo.environment["DD_MULTI_SCENE_RUN_ID"]
-        ?? UUID().uuidString.lowercased()
-    static let automaticallyNavigates =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_SWIFTUI_DETAIL"] == "1"
-    static let automaticallyOpensSecondWindow =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_OPEN_SECOND_WINDOW"] == "1"
-    static let automaticallyClosesSceneB =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_CLOSE_SCENE_B"] == "1"
-    static let automaticallyAbortsDetail =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_ABORT_DETAIL"] == "1"
-    static let automaticallyReplacesDetail =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL"] == "1"
-    static let automaticallyReplacesDetailInstance =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_AUTORUN_REPLACE_DETAIL_INSTANCE"] == "1"
-    static let forcesNavigationRouteIdentity =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY"] == "1"
-    static let syntheticReaderDisconnectTarget =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT"]
-    static let usesSplitSelectionLayout =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "split-selection"
-    static let usesUIKitSplitLayout =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split"
-    static let usesUIKitSplitSubclass =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-subclass"
-    static let usesUIKitSplitNavigationLayout =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_LAYOUT"] == "uikit-split-navigation"
+    static let resolution = ProbeScenarioRunner.resolve()
+    static let runID = resolution.manifest.runID
+    static let isRunnable = resolution.isValid
+
+    private static let scenario = resolution.scenario
+    private static let options = scenario?.runtimeOptions ?? ProbeRuntimeOptions()
+
+    static let automaticallyNavigates = options.automaticallyNavigates
+    static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow
+    static let automaticallyClosesSceneB = options.automaticallyClosesSceneB
+    static let automaticallyAbortsDetail = options.automaticallyAbortsDetail
+    static let automaticallyReplacesDetail = options.automaticallyReplacesDetail
+    static let automaticallyReplacesDetailInstance = options.automaticallyReplacesDetailInstance
+    static let forcesNavigationRouteIdentity = options.forcesNavigationRouteIdentity
+    static let syntheticReaderDisconnectTarget = options.syntheticReaderDisconnectTarget
+    static let usesSplitSelectionLayout = scenario?.layout == .splitSelection
+    static let usesUIKitSplitLayout = scenario?.layout == .uikitSplit
+    static let usesUIKitSplitSubclass = scenario?.layout == .uikitSplitSubclass
+    static let usesUIKitSplitNavigationLayout = scenario?.layout == .uikitSplitNavigation
     static let automaticallyPopsUIKitSplitNavigation =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP"] != "0"
-    static let uiKitSplitInteractivePopOutcome = ProcessInfo.processInfo
-        .environment["DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP"]
-        .flatMap(UIKitSplitInteractivePopOutcome.init(rawValue:))
-    static let startsSplitWithoutSelection =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION"] == "none"
+        options.automaticallyPopsUIKitSplitNavigation
+    static let uiKitSplitInteractivePopOutcome = options.uiKitSplitInteractivePopOutcome
+        .flatMap { UIKitSplitInteractivePopOutcome(rawValue: $0.rawValue) }
+    static let startsSplitWithoutSelection = options.startsSplitWithoutSelection
     static let automaticallyAdvancesSplitSelection =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE"] != "0"
-    static let automaticallyReturnsSplitToDetail =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_RETURN_TO_DETAIL"] == "1"
-    static let exercisesUIEventContextHandoff =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_UI_EVENT_HANDOFF"] == "1"
+        options.automaticallyAdvancesSplitSelection
+    static let automaticallyReturnsSplitToDetail = options.automaticallyReturnsSplitToDetail
+    static let exercisesUIEventContextHandoff = options.exercisesUIEventContextHandoff
     static let uiEventHandoffControlAccessibilityIdentifier =
         "probe.native.uikit-ui-event-handoff"
     static let usesAnySplitLayout =
@@ -92,24 +87,12 @@ enum ProbeRuntime {
         || usesUIKitSplitLayout
         || usesUIKitSplitSubclass
         || usesUIKitSplitNavigationLayout
-    static let swiftUIViewTrackingMode: String = {
-        switch ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_VIEW_TRACKING"] {
-        case "manual":
-            return "manual"
-        case "navigation-path":
-            return "navigation-path"
-        case "navigation-occurrence":
-            return "navigation-occurrence"
-        default:
-            return "automatic"
-        }
-    }()
+    static let swiftUIViewTrackingMode = scenario?.trackingMode.rawValue ?? "invalid"
     static let usesAutomaticSwiftUIViewTracking = swiftUIViewTrackingMode == "automatic"
     static let usesNavigationPathSwiftUIViewTracking = swiftUIViewTrackingMode == "navigation-path"
     static let usesNavigationOccurrenceSwiftUIViewTracking =
         swiftUIViewTrackingMode == "navigation-occurrence"
-    static let usesTabPreloadStress =
-        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_STRESS"] == "tab-preload"
+    static let usesTabPreloadStress = options.swiftUIStress == .tabPreload
 
     private static let logger = Logger(
         subsystem: "com.datadoghq.rum-native-multi-scene-probe",
@@ -117,6 +100,16 @@ enum ProbeRuntime {
     )
 
     static func configureDatadog() {
+        ProbeScenarioRunner.emitManifest(resolution.manifest)
+
+        guard isRunnable else {
+            record(
+                "configuration rejected errors="
+                    + resolution.manifest.validationErrors.joined(separator: " | ")
+            )
+            return
+        }
+
         guard
             let clientToken = configuredValue(for: "DatadogClientToken"),
             let applicationID = configuredValue(for: "RUMApplicationID")
@@ -175,6 +168,8 @@ enum ProbeRuntime {
 
         record(
             "configured service=\(serviceName) "
+                + "scenario=\(scenario?.identifier ?? "invalid") "
+                + "run_mode=\(resolution.manifest.runMode.rawValue) "
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
                 + "swiftui_stress=\(usesTabPreloadStress ? "tab-preload" : "none") "
                 + "automatic_detail=\(automaticallyNavigates) "
@@ -198,19 +193,7 @@ enum ProbeRuntime {
     }
 
     private static var layoutDescription: String {
-        if usesSplitSelectionLayout {
-            return "split-selection"
-        }
-        if usesUIKitSplitLayout {
-            return "uikit-split"
-        }
-        if usesUIKitSplitSubclass {
-            return "uikit-split-subclass"
-        }
-        if usesUIKitSplitNavigationLayout {
-            return "uikit-split-navigation"
-        }
-        return "stack"
+        scenario?.layout.rawValue ?? "invalid"
     }
 
     static func emitLifecycleMarker(
@@ -312,6 +295,25 @@ enum ProbeRuntime {
             return nil
         }
         return trimmed
+    }
+}
+
+private struct ProbeConfigurationFailureView: View {
+    let errors: [String]
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Probe configuration rejected")
+                    .font(.title2.bold())
+                ForEach(Array(errors.enumerated()), id: \.offset) { _, error in
+                    Text(error)
+                        .font(.body.monospaced())
+                }
+            }
+            .padding()
+        }
+        .accessibilityIdentifier("probe.configuration-rejected")
     }
 }
 
