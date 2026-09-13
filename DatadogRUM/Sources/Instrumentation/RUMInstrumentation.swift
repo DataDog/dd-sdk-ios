@@ -65,6 +65,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// systems that support custom traits.
     let sceneIdentifierTraitPublisher: AnyObject?
     #endif
+    #if os(iOS)
+    /// Commits explicit SwiftUI view lifecycles only after interactive UIKit
+    /// navigation finishes, keeping cancelled gestures out of RUM history.
+    let swiftUIInteractiveTransitionArbiter: RUMSwiftUIInteractiveTransitionArbiter?
+    #endif
     #endif
 
     // MARK: - Initialization
@@ -106,6 +111,17 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
         #endif
+        #if os(iOS)
+        let swiftUIInteractiveTransitionArbiter: RUMSwiftUIInteractiveTransitionArbiter? = {
+            guard isMultiSceneApplication else {
+                return nil
+            }
+            if #available(iOS 27.0, *) {
+                return RUMSwiftUIInteractiveTransitionArbiter(notificationCenter: notificationCenter)
+            }
+            return nil
+        }()
+        #endif
         #endif
 
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
@@ -115,7 +131,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             uiKitPredicate: uiKitRUMViewsPredicate,
             swiftUIPredicate: swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
-            notificationCenter: notificationCenter
+            notificationCenter: notificationCenter,
+            isMultiSceneApplication: isMultiSceneApplication
         )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {
             do {
@@ -233,6 +250,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         #if canImport(SwiftUI)
         #if os(iOS) || os(visionOS)
         self.sceneIdentifierTraitPublisher = sceneIdentifierTraitPublisher
+        #endif
+        #if os(iOS)
+        self.swiftUIInteractiveTransitionArbiter = swiftUIInteractiveTransitionArbiter
         #endif
         #endif
 

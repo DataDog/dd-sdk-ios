@@ -150,6 +150,13 @@ class RUMInstrumentationTests: XCTestCase {
                 XCTAssertNil(instrumentation.sceneIdentifierTraitPublisher)
             }
             #endif
+            #if os(iOS)
+            if #available(iOS 27.0, *) {
+                XCTAssertNotNil(instrumentation.swiftUIInteractiveTransitionArbiter)
+            } else {
+                XCTAssertNil(instrumentation.swiftUIInteractiveTransitionArbiter)
+            }
+            #endif
         }
     }
     #endif
@@ -181,6 +188,9 @@ class RUMInstrumentationTests: XCTestCase {
         // Then
         XCTAssertFalse(instrumentation.isMultiSceneApplication)
         XCTAssertNil(instrumentation.sceneIdentifierTraitPublisher)
+        #if os(iOS)
+        XCTAssertNil(instrumentation.swiftUIInteractiveTransitionArbiter)
+        #endif
     }
 
     @available(iOS 17.0, visionOS 1.0, *)

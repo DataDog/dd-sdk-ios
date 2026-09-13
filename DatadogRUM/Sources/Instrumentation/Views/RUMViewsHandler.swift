@@ -10,6 +10,25 @@ import DatadogInternal
 
 // MARK: - RUMViewsHandler
 internal final class RUMViewsHandler {
+    /// UIKit location of a tracked controller inside a split-view hierarchy.
+    /// This is navigation metadata only and is never serialized.
+    internal struct UIKitSplitViewContext: Equatable {
+        let splitViewController: ObjectIdentifier
+        let column: Int
+    }
+
+    #if os(iOS)
+    /// A disappearing split-column view retained until UIKit either materializes
+    /// its successor or completes the lifecycle turn without one.
+    private struct PendingUIKitSplitViewRemoval {
+        let token: UInt
+        let identity: ViewIdentifier
+        let sceneIdentifier: RUMSceneIdentifier
+        let context: UIKitSplitViewContext
+        let time: Date
+    }
+    #endif
+
     /// RUM representation of a View.
     private struct View {
         /// The RUM View identity.
@@ -63,6 +82,18 @@ internal final class RUMViewsHandler {
     private let sceneIdentifierProvider: (UIViewController) -> RUMSceneIdentifier?
     /// Resolves scene lifecycle notifications. Injectable for deterministic tests.
     private let sceneIdentifierFromNotification: (Notification) -> RUMSceneIdentifier?
+
+    /// Enables iOS 27 split-column lifecycle reconciliation only for applications
+    /// that explicitly declare multi-scene support.
+    private let isMultiSceneApplication: Bool
+
+    /// Defers a possible split-column removal until UIKit has delivered the
+    /// corresponding appearance callback in the same lifecycle turn.
+    private let scheduleUIKitSplitViewReconciliation: (@escaping () -> Void) -> Void
+
+    /// Resolves UIKit containment separately from the reconciliation state
+    /// machine so both can be tested deterministically.
+    private let uiKitSplitViewContextProvider: (UIViewController) -> UIKitSplitViewContext?
     #endif
 
     /// The notification center where this handler observes app lifecycle notifications:
@@ -92,6 +123,16 @@ internal final class RUMViewsHandler {
     /// not have a tracked view stack yet. Scene notifications can precede
     /// `viewDidAppear`, especially while creating or restoring a window.
     private var sceneActivityByIdentifier: [RUMSceneIdentifier: Bool] = [:]
+
+    #if os(iOS)
+    /// Split metadata captured while each UIKit controller is attached.
+    private var uiKitSplitViewContexts: [(identity: ViewIdentifier, context: UIKitSplitViewContext)] = []
+
+    /// At most one active disappearance can be pending for a scene because each
+    /// scene has one visible RUM stack entry.
+    private var pendingUIKitSplitViewRemovals: [PendingUIKitSplitViewRemoval] = []
+    private var nextPendingUIKitSplitViewRemovalToken: UInt = 0
+    #endif
     #endif
 
     #if !os(watchOS)
@@ -108,6 +149,7 @@ internal final class RUMViewsHandler {
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
         notificationCenter: NotificationCenter,
+        isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { viewController in
             guard let identifier = viewController.viewIfLoaded?
                 .window?
@@ -123,6 +165,10 @@ internal final class RUMViewsHandler {
                 return nil
             }
             return RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
+        },
+        uiKitSplitViewContextProvider: ((UIViewController) -> UIKitSplitViewContext?)? = nil,
+        scheduleUIKitSplitViewReconciliation: @escaping (@escaping () -> Void) -> Void = { work in
+            DispatchQueue.main.async(execute: work)
         }
     ) {
         self.dateProvider = dateProvider
@@ -131,6 +177,14 @@ internal final class RUMViewsHandler {
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
         self.sceneIdentifierProvider = sceneIdentifierProvider
         self.sceneIdentifierFromNotification = sceneIdentifierFromNotification
+        self.isMultiSceneApplication = isMultiSceneApplication
+        self.scheduleUIKitSplitViewReconciliation = scheduleUIKitSplitViewReconciliation
+        #if os(iOS)
+        self.uiKitSplitViewContextProvider = uiKitSplitViewContextProvider
+            ?? Self.resolveUIKitSplitViewContext
+        #else
+        self.uiKitSplitViewContextProvider = uiKitSplitViewContextProvider ?? { _ in nil }
+        #endif
         self.notificationCenter = notificationCenter
 
         notificationCenter.addObserver(
@@ -212,7 +266,7 @@ internal final class RUMViewsHandler {
         self.subscriber = subscriber
     }
 
-    private func add(view: View) {
+    private func add(view: View, stoppingCurrentAt time: Date? = nil) {
         let stackIndex: Int
         if let existingIndex = stacks.firstIndex(where: { $0.sceneIdentifier == view.sceneIdentifier }) {
             stackIndex = existingIndex
@@ -238,7 +292,7 @@ internal final class RUMViewsHandler {
 
         // Stop the last appearing view of the stack
         if isActive, let current = stack.last {
-            stop(view: current)
+            stop(view: current, time: time)
         }
 
         if isActive && !view.isUntrackedModal {
@@ -252,7 +306,14 @@ internal final class RUMViewsHandler {
         stacks[stackIndex].views = stack
     }
 
-    private func remove(identity: ViewIdentifier, sceneIdentifier: RUMSceneIdentifier? = nil) {
+    private func remove(
+        identity: ViewIdentifier,
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        time: Date? = nil
+    ) {
+        #if os(iOS)
+        discardPendingUIKitSplitViewRemoval(identity: identity, sceneIdentifier: sceneIdentifier)
+        #endif
         guard let stackIndex = stacks.firstIndex(where: { stack in
             let matchesScene = sceneIdentifier == nil || stack.sceneIdentifier == sceneIdentifier
             return matchesScene && stack.views.contains(where: { $0.identity == identity })
@@ -271,18 +332,21 @@ internal final class RUMViewsHandler {
             } else {
                 stacks[stackIndex].views = stack
             }
+            #if os(iOS)
+            discardUIKitSplitViewContextIfUntracked(identity: identity)
+            #endif
             return
         }
 
         // Stop and remove the visible view from the stack
         let view = stack.removeLast()
         if isActive {
-            stop(view: view)
+            stop(view: view, time: time)
         }
 
         // Restart the previous view if any.
         if isActive, let current = stack.last {
-            start(view: current)
+            start(view: current, time: time)
         }
 
         if stack.isEmpty {
@@ -290,9 +354,44 @@ internal final class RUMViewsHandler {
         } else {
             stacks[stackIndex].views = stack
         }
+
+        #if os(iOS)
+        discardUIKitSplitViewContextIfUntracked(identity: identity)
+        #endif
     }
 
-    private func start(view: View) {
+    /// Replaces an existing navigation occurrence in place. Unlike `remove`,
+    /// this does not restart the view below the replaced slot before starting
+    /// the new occurrence.
+    private func replace(identity: ViewIdentifier, with view: View) {
+        guard let stackIndex = stacks.firstIndex(where: { stack in
+            stack.sceneIdentifier == view.sceneIdentifier
+                && stack.views.contains(where: { $0.identity == identity })
+        }) else {
+            return
+        }
+
+        var stack = stacks[stackIndex].views
+        guard let viewIndex = stack.firstIndex(where: { $0.identity == identity }) else {
+            return
+        }
+
+        let isActiveOccurrence = stacks[stackIndex].isActive
+            && viewIndex == stack.index(before: stack.endIndex)
+        let oldView = stack[viewIndex]
+        if isActiveOccurrence {
+            stop(view: oldView)
+        }
+
+        stack[viewIndex] = view
+        stacks[stackIndex].views = stack
+
+        if isActiveOccurrence {
+            start(view: view)
+        }
+    }
+
+    private func start(view: View, time: Date? = nil) {
         guard let subscriber = subscriber else {
             DD.logger.warn(
                 """
@@ -309,7 +408,7 @@ internal final class RUMViewsHandler {
 
         subscriber.process(
             command: RUMStartViewCommand(
-                time: dateProvider.now,
+                time: time ?? dateProvider.now,
                 identity: view.identity,
                 name: view.name,
                 path: view.path,
@@ -321,13 +420,13 @@ internal final class RUMViewsHandler {
         )
     }
 
-    private func stop(view: View) {
+    private func stop(view: View, time: Date? = nil) {
         guard !view.isUntrackedModal else {
             return
         }
 
         var command = RUMStopViewCommand(
-                time: dateProvider.now,
+                time: time ?? dateProvider.now,
                 attributes: view.attributes,
                 identity: view.identity
         )
@@ -339,12 +438,264 @@ internal final class RUMViewsHandler {
         view.sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
     }
 
-    private func suspendStack(at index: Int) {
+    #if os(iOS)
+    private func captureUIKitSplitViewContext(
+        for viewController: UIViewController,
+        identity: ViewIdentifier
+    ) {
+        guard isMultiSceneApplication else {
+            return
+        }
+
+        let context = uiKitSplitViewContextProvider(viewController)
+
+        uiKitSplitViewContexts.removeAll { $0.identity == identity }
+        if let context {
+            uiKitSplitViewContexts.append((identity: identity, context: context))
+        }
+    }
+
+    private static func resolveUIKitSplitViewContext(
+        for viewController: UIViewController
+    ) -> UIKitSplitViewContext? {
+        guard #available(iOS 27.0, *) else {
+            return nil
+        }
+        guard let splitViewController = viewController.splitViewController else {
+            return nil
+        }
+
+        let columns: [UISplitViewController.Column] = [
+            .primary,
+            .supplementary,
+            .secondary,
+            .compact,
+            .inspector,
+        ]
+        guard let column = columns.first(where: { column in
+            guard let root = splitViewController.viewController(for: column) else {
+                return false
+            }
+            return Self.belongsToSplitColumn(viewController, rootedAt: root)
+        }) else {
+            return nil
+        }
+
+        return UIKitSplitViewContext(
+            splitViewController: ObjectIdentifier(splitViewController),
+            column: column.rawValue
+        )
+    }
+
+    private static func belongsToSplitColumn(
+        _ viewController: UIViewController,
+        rootedAt root: UIViewController
+    ) -> Bool {
+        var ancestor: UIViewController? = viewController
+        while let current = ancestor {
+            if current === root {
+                return true
+            }
+            ancestor = current.parent
+        }
+
+        guard let navigationController = viewController.navigationController else {
+            return false
+        }
+        return navigationController === root || navigationController === root.navigationController
+    }
+
+    private func uiKitSplitViewContext(for identity: ViewIdentifier) -> UIKitSplitViewContext? {
+        uiKitSplitViewContexts.first(where: { $0.identity == identity })?.context
+    }
+
+    private func discardUIKitSplitViewContextIfUntracked(identity: ViewIdentifier) {
+        guard !stacks.contains(where: { stack in
+            stack.views.contains(where: { $0.identity == identity })
+        }) else {
+            return
+        }
+        uiKitSplitViewContexts.removeAll { $0.identity == identity }
+    }
+
+    /// Returns `true` when the ordinary removal must wait for a possible
+    /// materialized successor in the same split column.
+    private func deferUIKitSplitViewRemovalIfNeeded(identity: ViewIdentifier) -> Bool {
+        guard isMultiSceneApplication, #available(iOS 27.0, *) else {
+            return false
+        }
+        guard let stack = stacks.first(where: { $0.views.last?.identity == identity }),
+              let sceneIdentifier = stack.sceneIdentifier,
+              let outgoing = stack.views.last,
+              outgoing.instrumentationType == .uikit,
+              !outgoing.isUntrackedModal,
+              let outgoingContext = uiKitSplitViewContext(for: identity) else {
+            return false
+        }
+        guard stack.views.dropLast().contains(where: { candidate in
+            guard candidate.instrumentationType == .uikit,
+                  let candidateContext = uiKitSplitViewContext(for: candidate.identity) else {
+                return false
+            }
+            return candidateContext.splitViewController == outgoingContext.splitViewController
+                && candidateContext.column != outgoingContext.column
+        }) else {
+            return false
+        }
+
+        if let pending = pendingUIKitSplitViewRemovals.first(where: {
+            $0.sceneIdentifier == sceneIdentifier
+        }) {
+            return pending.identity == identity
+        }
+
+        nextPendingUIKitSplitViewRemovalToken &+= 1
+        let pending = PendingUIKitSplitViewRemoval(
+            token: nextPendingUIKitSplitViewRemovalToken,
+            identity: identity,
+            sceneIdentifier: sceneIdentifier,
+            context: outgoingContext,
+            time: dateProvider.now
+        )
+        pendingUIKitSplitViewRemovals.append(pending)
+        scheduleUIKitSplitViewReconciliation { [weak self] in
+            self?.flushPendingUIKitSplitViewRemoval(token: pending.token)
+        }
+        return true
+    }
+
+    /// Consumes an old-first UIKit callback pair without exposing a sibling
+    /// split column between the two real navigation occurrences.
+    private func consumePendingUIKitSplitViewRemoval(with view: View) -> Bool {
+        guard view.instrumentationType == .uikit,
+              let sceneIdentifier = view.sceneIdentifier,
+              let pendingIndex = pendingUIKitSplitViewRemovals.firstIndex(where: {
+                  $0.sceneIdentifier == sceneIdentifier
+              }) else {
+            return false
+        }
+
+        let pending = pendingUIKitSplitViewRemovals[pendingIndex]
+        if pending.identity == view.identity {
+            // UIKit reverted a lifecycle transition before a new path item was
+            // materialized. Keep the existing RUM occurrence active.
+            pendingUIKitSplitViewRemovals.remove(at: pendingIndex)
+            return true
+        }
+
+        guard !view.isUntrackedModal,
+              let incomingContext = uiKitSplitViewContext(for: view.identity),
+              incomingContext == pending.context else {
+            // Preserve ordinary handling for an unrelated appearance, but
+            // remove the now-covered outgoing item immediately. Leaving it
+            // pending could let another same-turn disappearance reveal it again.
+            pendingUIKitSplitViewRemovals.remove(at: pendingIndex)
+            add(view: view, stoppingCurrentAt: pending.time)
+            remove(
+                identity: pending.identity,
+                sceneIdentifier: pending.sceneIdentifier,
+                time: pending.time
+            )
+            return true
+        }
+
+        pendingUIKitSplitViewRemovals.remove(at: pendingIndex)
+        guard transitionActiveUIKitView(
+            from: pending.identity,
+            to: view,
+            stoppedAt: pending.time
+        ) else {
+            remove(
+                identity: pending.identity,
+                sceneIdentifier: pending.sceneIdentifier,
+                time: pending.time
+            )
+            return false
+        }
+        return true
+    }
+
+    private func transitionActiveUIKitView(
+        from oldIdentity: ViewIdentifier,
+        to view: View,
+        stoppedAt: Date
+    ) -> Bool {
+        guard let stackIndex = stacks.firstIndex(where: { stack in
+            stack.sceneIdentifier == view.sceneIdentifier
+                && stack.views.last?.identity == oldIdentity
+        }) else {
+            return false
+        }
+
+        var stack = stacks[stackIndex].views
+        let oldView = stack.removeLast()
+        let isActive = stacks[stackIndex].isActive
+        if isActive {
+            stop(view: oldView, time: stoppedAt)
+        }
+
+        // A pop can return the exact same platform controller that represented
+        // an earlier path item. Remove that stored item but always start the
+        // incoming one as a fresh RUM occurrence.
+        stack.removeAll { $0.identity == view.identity }
+        stack.append(view)
+        stacks[stackIndex].views = stack
+        discardUIKitSplitViewContextIfUntracked(identity: oldIdentity)
+
+        if isActive {
+            start(view: view)
+        }
+        return true
+    }
+
+    private func flushPendingUIKitSplitViewRemoval(token: UInt) {
+        guard let index = pendingUIKitSplitViewRemovals.firstIndex(where: { $0.token == token }) else {
+            return
+        }
+        let pending = pendingUIKitSplitViewRemovals.remove(at: index)
+        remove(
+            identity: pending.identity,
+            sceneIdentifier: pending.sceneIdentifier,
+            time: pending.time
+        )
+    }
+
+    private func flushPendingUIKitSplitViewRemovals(sceneIdentifier: RUMSceneIdentifier? = nil) {
+        let tokens = pendingUIKitSplitViewRemovals.compactMap { pending in
+            sceneIdentifier == nil || pending.sceneIdentifier == sceneIdentifier ? pending.token : nil
+        }
+        for token in tokens {
+            flushPendingUIKitSplitViewRemoval(token: token)
+        }
+    }
+
+    private func discardPendingUIKitSplitViewRemoval(
+        identity: ViewIdentifier,
+        sceneIdentifier: RUMSceneIdentifier?
+    ) {
+        pendingUIKitSplitViewRemovals.removeAll { pending in
+            pending.identity == identity
+                && (sceneIdentifier == nil || pending.sceneIdentifier == sceneIdentifier)
+        }
+    }
+
+    private func pendingUIKitSplitViewRemovalTime(for stack: ViewStack) -> Date? {
+        guard let sceneIdentifier = stack.sceneIdentifier,
+              let identity = stack.views.last?.identity else {
+            return nil
+        }
+        return pendingUIKitSplitViewRemovals.first(where: { pending in
+            pending.sceneIdentifier == sceneIdentifier && pending.identity == identity
+        })?.time
+    }
+    #endif
+
+    private func suspendStack(at index: Int, time: Date? = nil) {
         guard stacks[index].isActive else {
             return
         }
         if let current = stacks[index].views.last {
-            stop(view: current)
+            stop(view: current, time: time)
         }
         stacks[index].isActive = false
     }
@@ -368,13 +719,23 @@ internal final class RUMViewsHandler {
         }
         #endif
         for index in stacks.indices {
+            #if os(iOS)
+            let pendingRemovalTime = pendingUIKitSplitViewRemovalTime(for: stacks[index])
+            #else
+            let pendingRemovalTime: Date? = nil
+            #endif
             #if !os(watchOS)
             if let sceneIdentifier = stacks[index].sceneIdentifier {
                 sceneActivityByIdentifier[sceneIdentifier] = false
             }
             #endif
-            suspendStack(at: index)
+            suspendStack(at: index, time: pendingRemovalTime)
         }
+        #if os(iOS)
+        // Remove pending outgoing views only after every stack is inactive so
+        // backgrounding cannot manufacture a sibling occurrence.
+        flushPendingUIKitSplitViewRemovals()
+        #endif
 
         subscriber?.process(
             command: RUMHandleAppLifecycleEventCommand(
@@ -409,9 +770,20 @@ internal final class RUMViewsHandler {
         }
         sceneActivityByIdentifier[sceneIdentifier] = false
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
+            #if os(iOS)
+            flushPendingUIKitSplitViewRemovals(sceneIdentifier: sceneIdentifier)
+            #endif
             return
         }
-        suspendStack(at: index)
+        #if os(iOS)
+        let pendingRemovalTime = pendingUIKitSplitViewRemovalTime(for: stacks[index])
+        #else
+        let pendingRemovalTime: Date? = nil
+        #endif
+        suspendStack(at: index, time: pendingRemovalTime)
+        #if os(iOS)
+        flushPendingUIKitSplitViewRemovals(sceneIdentifier: sceneIdentifier)
+        #endif
     }
 
     @objc
@@ -433,11 +805,26 @@ internal final class RUMViewsHandler {
         }
         sceneActivityByIdentifier[sceneIdentifier] = false
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
+            #if os(iOS)
+            pendingUIKitSplitViewRemovals.removeAll { $0.sceneIdentifier == sceneIdentifier }
+            #endif
             sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
             return
         }
-        suspendStack(at: index)
+        #if os(iOS)
+        let pendingRemovalTime = pendingUIKitSplitViewRemovalTime(for: stacks[index])
+        pendingUIKitSplitViewRemovals.removeAll { $0.sceneIdentifier == sceneIdentifier }
+        #else
+        let pendingRemovalTime: Date? = nil
+        #endif
+        let disconnectedIdentities = stacks[index].views.map(\.identity)
+        suspendStack(at: index, time: pendingRemovalTime)
         stacks.remove(at: index)
+        #if os(iOS)
+        for identity in disconnectedIdentities {
+            discardUIKitSplitViewContextIfUntracked(identity: identity)
+        }
+        #endif
         sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
     }
     #endif
@@ -451,11 +838,24 @@ extension RUMViewsHandler: UIViewControllerHandler {
         if let view = stacks.lazy.flatMap(\ViewStack.views).first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
+            #if os(iOS)
+            if view.instrumentationType == .uikit {
+                captureUIKitSplitViewContext(for: viewController, identity: identity)
+            }
+            #endif
             let currentSceneIdentifier = sceneIdentifierProvider(viewController) ?? view.sceneIdentifier
             if currentSceneIdentifier == view.sceneIdentifier {
+                #if os(iOS)
+                if consumePendingUIKitSplitViewRemoval(with: view) {
+                    return
+                }
+                #endif
                 add(view: view)
             } else {
                 remove(identity: identity, sceneIdentifier: view.sceneIdentifier)
+                #if os(iOS)
+                captureUIKitSplitViewContext(for: viewController, identity: identity)
+                #endif
                 add(
                     view: .init(
                         identity: view.identity,
@@ -469,17 +869,24 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 )
             }
         } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
-            add(
-                view: .init(
-                    identity: identity,
-                    name: rumView.name,
-                    path: rumView.path ?? viewController.canonicalClassName,
-                    isUntrackedModal: rumView.isUntrackedModal,
-                    attributes: rumView.attributes,
-                    instrumentationType: .uikit,
-                    sceneIdentifier: sceneIdentifierProvider(viewController)
-                )
+            #if os(iOS)
+            captureUIKitSplitViewContext(for: viewController, identity: identity)
+            #endif
+            let view = View(
+                identity: identity,
+                name: rumView.name,
+                path: rumView.path ?? viewController.canonicalClassName,
+                isUntrackedModal: rumView.isUntrackedModal,
+                attributes: rumView.attributes,
+                instrumentationType: .uikit,
+                sceneIdentifier: sceneIdentifierProvider(viewController)
             )
+            #if os(iOS)
+            if consumePendingUIKitSplitViewRemoval(with: view) {
+                return
+            }
+            #endif
+            add(view: view)
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
@@ -500,7 +907,13 @@ extension RUMViewsHandler: UIViewControllerHandler {
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
-        remove(identity: ViewIdentifier(viewController))
+        let identity = ViewIdentifier(viewController)
+        #if os(iOS)
+        if deferUIKitSplitViewRemovalIfNeeded(identity: identity) {
+            return
+        }
+        #endif
+        remove(identity: identity)
     }
 }
 #endif
@@ -558,5 +971,27 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     /// Respond to a `SwiftUI.View.onDisappear` event from a known scene.
     func notify_onDisappear(identity: String, sceneIdentifier: RUMSceneIdentifier?) {
         remove(identity: ViewIdentifier(identity), sceneIdentifier: sceneIdentifier)
+    }
+
+    func notify_replaceOccurrence(
+        oldIdentity: String,
+        newIdentity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier?
+    ) {
+        replace(
+            identity: ViewIdentifier(oldIdentity),
+            with: .init(
+                identity: ViewIdentifier(newIdentity),
+                name: name,
+                path: path,
+                isUntrackedModal: false,
+                attributes: attributes,
+                instrumentationType: .swiftui,
+                sceneIdentifier: sceneIdentifier
+            )
+        )
     }
 }

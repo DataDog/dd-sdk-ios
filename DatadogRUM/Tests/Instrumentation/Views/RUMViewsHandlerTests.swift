@@ -14,14 +14,66 @@ class RUMViewsHandlerTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
     private let notificationCenter = NotificationCenter()
 
+    #if os(iOS)
+    private struct UIKitSplitViewFixture {
+        let splitViewController: UISplitViewController
+        let primary: UIViewController
+        let secondaryNavigationController: UINavigationController
+        let secondaryRoot: UIViewController
+    }
+
+    private func createUIKitSplitViewFixture() -> UIKitSplitViewFixture {
+        let splitViewController = UISplitViewController(style: .doubleColumn)
+        let primary = UIViewController()
+        let secondaryRoot = UIViewController()
+        let secondaryNavigationController = UINavigationController(rootViewController: secondaryRoot)
+        splitViewController.setViewController(primary, for: .primary)
+        splitViewController.setViewController(secondaryNavigationController, for: .secondary)
+        return UIKitSplitViewFixture(
+            splitViewController: splitViewController,
+            primary: primary,
+            secondaryNavigationController: secondaryNavigationController,
+            secondaryRoot: secondaryRoot
+        )
+    }
+
+    private func createUIKitSplitViewContextProvider(
+        fixture: UIKitSplitViewFixture,
+        additionalSecondaryControllers: [UIViewController] = []
+    ) -> (UIViewController) -> RUMViewsHandler.UIKitSplitViewContext? {
+        let splitViewController = ObjectIdentifier(fixture.splitViewController)
+        let secondaryControllers = [fixture.secondaryRoot] + additionalSecondaryControllers
+        return { viewController in
+            if viewController === fixture.primary {
+                return RUMViewsHandler.UIKitSplitViewContext(
+                    splitViewController: splitViewController,
+                    column: UISplitViewController.Column.primary.rawValue
+                )
+            }
+            if secondaryControllers.contains(where: { $0 === viewController }) {
+                return RUMViewsHandler.UIKitSplitViewContext(
+                    splitViewController: splitViewController,
+                    column: UISplitViewController.Column.secondary.rawValue
+                )
+            }
+            return nil
+        }
+    }
+    #endif
+
     // MARK: - Helper
     #if !os(watchOS)
     private func createHandler(
         uiKitPredicate: UIKitRUMViewsPredicate? = nil,
         swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil,
+        isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { _ in nil },
-        sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { _ in nil }
+        sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { _ in nil },
+        uiKitSplitViewContextProvider: ((UIViewController) -> RUMViewsHandler.UIKitSplitViewContext?)? = nil,
+        scheduleUIKitSplitViewReconciliation: @escaping (@escaping () -> Void) -> Void = { work in
+            DispatchQueue.main.async(execute: work)
+        }
     ) -> RUMViewsHandler {
         let handler = RUMViewsHandler(
             dateProvider: dateProvider,
@@ -29,8 +81,11 @@ class RUMViewsHandlerTests: XCTestCase {
             swiftUIPredicate: swiftUIPredicate,
             swiftUIViewNameExtractor: swiftUIViewNameExtractor,
             notificationCenter: notificationCenter,
+            isMultiSceneApplication: isMultiSceneApplication,
             sceneIdentifierProvider: sceneIdentifierProvider,
-            sceneIdentifierFromNotification: sceneIdentifierFromNotification
+            sceneIdentifierFromNotification: sceneIdentifierFromNotification,
+            uiKitSplitViewContextProvider: uiKitSplitViewContextProvider,
+            scheduleUIKitSplitViewReconciliation: scheduleUIKitSplitViewReconciliation
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -158,6 +213,513 @@ class RUMViewsHandlerTests: XCTestCase {
             (command as? RUMStopViewCommand)?.identity == ViewIdentifier(viewB)
         })
     }
+
+    #if os(iOS)
+    func testGivenMultiSceneSplitView_whenOldControllerDisappearsBeforePush_itHandoffsWithinColumn() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let detail = UIViewController()
+        let predicate = UIKitRUMViewsPredicateMock()
+        predicate.resultByViewController = [
+            fixture.primary: .init(name: "Primary"),
+            fixture.secondaryRoot: .init(name: "Home"),
+            detail: .init(name: "Detail"),
+        ]
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                additionalSecondaryControllers: [detail]
+            ),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        fixture.secondaryNavigationController.setViewControllers(
+            [fixture.secondaryRoot, detail],
+            animated: false
+        )
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        dateProvider.advance(bySeconds: 1)
+        handler.notify_viewDidAppear(viewController: detail, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Primary", "Home", "Detail"])
+        XCTAssertEqual(stops.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+        ])
+        XCTAssertEqual(stops.last?.time, .mockDecember15th2019At10AMUTC())
+        XCTAssertEqual(starts.last?.time, .mockDecember15th2019At10AMUTC() + 1)
+        XCTAssertFalse(starts.dropFirst().contains { $0.name == "Primary" })
+    }
+
+    func testGivenMultiSceneSplitView_whenPoppingToSameController_itCreatesFreshReturnedOccurrence() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let detail = UIViewController()
+        let predicate = UIKitRUMViewsPredicateMock()
+        predicate.resultByViewController = [
+            fixture.primary: .init(name: "Primary"),
+            fixture.secondaryRoot: .init(name: "Home"),
+            detail: .init(name: "Detail"),
+        ]
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                additionalSecondaryControllers: [detail]
+            ),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        fixture.secondaryNavigationController.setViewControllers(
+            [fixture.secondaryRoot, detail],
+            animated: false
+        )
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: detail, animated: false)
+
+        fixture.secondaryNavigationController.setViewControllers([fixture.secondaryRoot], animated: false)
+        handler.notify_viewDidDisappear(viewController: detail, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Primary", "Home", "Detail", "Home"])
+        XCTAssertTrue(starts[1].identity == ViewIdentifier(fixture.secondaryRoot))
+        XCTAssertTrue(starts[3].identity == ViewIdentifier(fixture.secondaryRoot))
+        XCTAssertFalse(starts.dropFirst().contains { $0.name == "Primary" })
+    }
+
+    func testGivenMultiSceneSplitView_whenReplacingColumnRoot_itDoesNotRestartPrimary() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let replacement = UIViewController()
+        let predicate = UIKitRUMViewsPredicateMock()
+        predicate.resultByViewController = [
+            fixture.primary: .init(name: "Primary"),
+            fixture.secondaryRoot: .init(name: "Secondary 1"),
+            replacement: .init(name: "Secondary 2"),
+        ]
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                additionalSecondaryControllers: [replacement]
+            ),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        fixture.splitViewController.setViewController(replacement, for: .secondary)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: replacement, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Primary", "Secondary 1", "Secondary 2"])
+        XCTAssertFalse(starts.dropFirst().contains { $0.name == "Primary" })
+    }
+
+    func testGivenMultiSceneSplitView_whenNewControllerAppearsBeforeOldDisappears_itKeepsDirectPath() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let detail = UIViewController()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(
+                fixture: fixture,
+                additionalSecondaryControllers: [detail]
+            ),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        fixture.secondaryNavigationController.setViewControllers(
+            [fixture.secondaryRoot, detail],
+            animated: false
+        )
+
+        handler.notify_viewDidAppear(viewController: detail, animated: false)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        XCTAssertTrue(scheduledReconciliations.isEmpty)
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(detail),
+        ])
+    }
+
+    func testGivenMultiSceneSplitView_whenNoSuccessorAppears_itRestartsPrimaryOnReconciliation() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(fixture: fixture),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual(scheduledReconciliations.count, 1)
+        let reconciliation = try XCTUnwrap(scheduledReconciliations.first)
+        reconciliation()
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(fixture.primary),
+        ])
+    }
+
+    func testGivenMultiSceneSplitView_whenPendingControllerReappears_itTreatsTransitionAsCancelled() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(fixture: fixture),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: true)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: true)
+        scheduledReconciliations.forEach { $0() }
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    func testGivenConcurrentMultiSceneSplitViews_whenBothNavigate_itKeepsPendingHandoffsIsolated() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let fixtureA = createUIKitSplitViewFixture()
+        let fixtureB = createUIKitSplitViewFixture()
+        let detailA = UIViewController()
+        let detailB = UIViewController()
+        let contextProviderA = createUIKitSplitViewContextProvider(
+            fixture: fixtureA,
+            additionalSecondaryControllers: [detailA]
+        )
+        let contextProviderB = createUIKitSplitViewContextProvider(
+            fixture: fixtureB,
+            additionalSecondaryControllers: [detailB]
+        )
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { viewController in
+                contextProviderA(viewController) == nil ? sceneB : sceneA
+            },
+            uiKitSplitViewContextProvider: { viewController in
+                contextProviderA(viewController) ?? contextProviderB(viewController)
+            },
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixtureA.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureA.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureB.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureB.secondaryRoot, animated: false)
+
+        handler.notify_viewDidDisappear(viewController: fixtureA.secondaryRoot, animated: false)
+        handler.notify_viewDidDisappear(viewController: fixtureB.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: detailB, animated: false)
+        handler.notify_viewDidAppear(viewController: detailA, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.identity), [
+            ViewIdentifier(fixtureA.primary),
+            ViewIdentifier(fixtureA.secondaryRoot),
+            ViewIdentifier(fixtureB.primary),
+            ViewIdentifier(fixtureB.secondaryRoot),
+            ViewIdentifier(detailB),
+            ViewIdentifier(detailA),
+        ])
+        XCTAssertEqual(starts.suffix(2).map(\.target), [.scene(sceneB), .scene(sceneA)])
+    }
+
+    func testGivenPendingMultiSceneSplitView_whenUnrelatedUIKitViewAppears_itDoesNotRevealSibling() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let unrelatedFixture = createUIKitSplitViewFixture()
+        let detail = UIViewController()
+        let contextProvider = createUIKitSplitViewContextProvider(
+            fixture: fixture,
+            additionalSecondaryControllers: [detail]
+        )
+        let unrelatedContextProvider = createUIKitSplitViewContextProvider(fixture: unrelatedFixture)
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            uiKitSplitViewContextProvider: { viewController in
+                contextProvider(viewController) ?? unrelatedContextProvider(viewController)
+            },
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 1)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+
+        dateProvider.advance(bySeconds: 2)
+        handler.notify_viewDidAppear(viewController: unrelatedFixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: detail, animated: false)
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(unrelatedFixture.primary),
+            ViewIdentifier(detail),
+        ])
+        XCTAssertEqual(starts.filter { $0.identity == ViewIdentifier(fixture.primary) }.count, 1)
+        let secondaryStop = try XCTUnwrap(
+            commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }.first(where: {
+                $0.identity == ViewIdentifier(fixture.secondaryRoot)
+            })
+        )
+        XCTAssertEqual(secondaryStop.time, .mockDecember15th2019At10AMUTC() + 1)
+    }
+
+    func testGivenPendingMultiSceneSplitView_whenSceneEntersBackground_itDoesNotRevealSibling() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? scene : nil
+            },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(fixture: fixture),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 1)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 2)
+
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "scene-A")
+        scheduledReconciliations.forEach { $0() }
+
+        let startsBeforeForeground = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(startsBeforeForeground.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+        ])
+        XCTAssertEqual(stops.last?.identity, ViewIdentifier(fixture.secondaryRoot))
+        XCTAssertEqual(stops.last?.time, .mockDecember15th2019At10AMUTC() + 1)
+
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+
+        let startsAfterForeground = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(startsAfterForeground.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(fixture.primary),
+        ])
+    }
+
+    func testGivenPendingMultiSceneSplitView_whenApplicationEntersBackground_itDoesNotRevealSibling() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? scene : nil
+            },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(fixture: fixture),
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 1)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 2)
+
+        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        scheduledReconciliations.forEach { $0() }
+
+        let startsBeforeForeground = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(startsBeforeForeground.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+        ])
+        XCTAssertEqual(stops.last?.identity, ViewIdentifier(fixture.secondaryRoot))
+        XCTAssertEqual(stops.last?.time, .mockDecember15th2019At10AMUTC() + 1)
+
+        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+
+        let startsAfterForeground = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(startsAfterForeground.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(fixture.primary),
+        ])
+    }
+
+    func testGivenPendingMultiSceneSplitView_whenSceneDisconnects_itDoesNotRestartSiblingColumn() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let fixtureA = createUIKitSplitViewFixture()
+        let fixtureB = createUIKitSplitViewFixture()
+        let contextProviderA = createUIKitSplitViewContextProvider(fixture: fixtureA)
+        let contextProviderB = createUIKitSplitViewContextProvider(fixture: fixtureB)
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { viewController in
+                contextProviderA(viewController) == nil ? sceneB : sceneA
+            },
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? sceneA : nil
+            },
+            uiKitSplitViewContextProvider: { viewController in
+                contextProviderA(viewController) ?? contextProviderB(viewController)
+            },
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixtureA.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureA.secondaryRoot, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureB.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixtureB.secondaryRoot, animated: false)
+        dateProvider.advance(bySeconds: 1)
+        handler.notify_viewDidDisappear(viewController: fixtureA.secondaryRoot, animated: false)
+
+        let commandCountBeforeDisconnect = commandSubscriber.receivedCommands.count
+        dateProvider.advance(bySeconds: 2)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-A")
+        scheduledReconciliations.forEach { $0() }
+
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.filter { $0.identity == ViewIdentifier(fixtureA.primary) }.count, 1)
+        let teardownCommands = commandSubscriber.receivedCommands.dropFirst(commandCountBeforeDisconnect)
+        XCTAssertFalse(teardownCommands.contains { command in
+            (command as? RUMStopViewCommand)?.target == .scene(sceneB)
+        })
+        let lastStop = try XCTUnwrap(
+            commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }.last
+        )
+        XCTAssertTrue(lastStop.identity == ViewIdentifier(fixtureA.secondaryRoot))
+        XCTAssertEqual(lastStop.target, .scene(sceneA))
+        XCTAssertEqual(lastStop.time, .mockDecember15th2019At10AMUTC() + 1)
+    }
+
+    func testGivenOrdinaryApplication_whenSplitControllerDisappears_itKeepsLegacyImmediateRestart() throws {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let predicate = UIKitRUMViewsPredicateMock(result: .init(name: "View"))
+        var scheduledReconciliations: [() -> Void] = []
+        let handler = createHandler(
+            uiKitPredicate: predicate,
+            isMultiSceneApplication: false,
+            sceneIdentifierProvider: { _ in scene },
+            scheduleUIKitSplitViewReconciliation: { scheduledReconciliations.append($0) }
+        )
+        handler.notify_viewDidAppear(viewController: fixture.primary, animated: false)
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+
+        XCTAssertTrue(scheduledReconciliations.isEmpty)
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.identity), [
+            ViewIdentifier(fixture.primary),
+            ViewIdentifier(fixture.secondaryRoot),
+            ViewIdentifier(fixture.primary),
+        ])
+    }
+    #endif
 
     func testGivenConcurrentScenes_whenSceneLifecycleChanges_itOnlyChangesOwningScene() throws {
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
@@ -817,6 +1379,424 @@ class RUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
         XCTAssertTrue(commandSubscriber.receivedCommands[0] is RUMStartViewCommand)
+    }
+
+    func testWhenActiveSwiftUIOccurrenceIsReplaced_itDoesNotRestartUnderlyingView() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        handler.notify_onAppear(
+            identity: "home",
+            name: "Home",
+            path: "Home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        handler.notify_onAppear(
+            identity: "detail-1",
+            name: "Detail",
+            path: "Detail",
+            attributes: ["instance": 1],
+            sceneIdentifier: scene
+        )
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "detail-1",
+            newIdentity: "detail-2",
+            name: "Detail",
+            path: "Detail",
+            attributes: ["instance": 2],
+            sceneIdentifier: scene
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
+        XCTAssertTrue(stop.identity == ViewIdentifier("detail-1"))
+        XCTAssertTrue(start.identity == ViewIdentifier("detail-2"))
+        XCTAssertEqual(start.name, "Detail")
+        XCTAssertEqual(start.attributes["instance"] as? Int, 2)
+        XCTAssertEqual(stop.target, .scene(scene))
+        XCTAssertEqual(start.target, .scene(scene))
+        XCTAssertFalse(commandSubscriber.receivedCommands.dropFirst(3).contains { command in
+            (command as? RUMStartViewCommand)?.identity == ViewIdentifier("home")
+        })
+
+        handler.notify_onDisappear(identity: "detail-2", sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 7)
+        let replacementStop = try XCTUnwrap(commandSubscriber.receivedCommands[5] as? RUMStopViewCommand)
+        let homeRestart = try XCTUnwrap(commandSubscriber.receivedCommands[6] as? RUMStartViewCommand)
+        XCTAssertTrue(replacementStop.identity == ViewIdentifier("detail-2"))
+        XCTAssertTrue(homeRestart.identity == ViewIdentifier("home"))
+    }
+
+    #if os(iOS) || os(visionOS)
+    func testWhenKeyedStatePublishesReplacement_itUsesCommittedOccurrenceDescriptor() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        var generatedIdentities = ["detail-1", "detail-2"]
+        let state = RUMViewTrackingState(
+            identity: "platform-detail",
+            occurrenceIdentityGenerator: { generatedIdentities.removeFirst() }
+        )
+        let initial = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey(1),
+            bindingGeneration: 1,
+            descriptor: .init(
+                name: "Detail 1",
+                path: "/detail/1",
+                attributes: ["instance": 1]
+            )
+        )
+        let replacement = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey(2),
+            bindingGeneration: 2,
+            descriptor: .init(
+                name: "Detail 2",
+                path: "/detail/2",
+                attributes: ["instance": 2]
+            )
+        )
+        let fallback = RUMViewTrackingState.Configuration.Descriptor(
+            name: "Stale Detail",
+            path: "/stale",
+            attributes: ["instance": -1]
+        )
+        let handler = createHandler()
+
+        RUMSwiftUIViewTransitionPublisher.publish(
+            state.mount(in: scene, configuration: initial),
+            state: state,
+            fallback: fallback,
+            to: handler
+        )
+        RUMSwiftUIViewTransitionPublisher.publish(
+            state.reconcile(
+                configuration: replacement,
+                attachment: .attached(scene),
+                isAppeared: true
+            ),
+            state: state,
+            fallback: fallback,
+            to: handler
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        let firstStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[0] as? RUMStartViewCommand
+        )
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let secondStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[2] as? RUMStartViewCommand
+        )
+        XCTAssertEqual(firstStart.name, "Detail 1")
+        XCTAssertEqual(firstStart.path, "/detail/1")
+        XCTAssertEqual(firstStart.attributes["instance"] as? Int, 1)
+        XCTAssertEqual(firstStart.target, .scene(scene))
+        XCTAssertTrue(stop.identity == ViewIdentifier("detail-1"))
+        XCTAssertEqual(stop.target, .scene(scene))
+        XCTAssertEqual(secondStart.name, "Detail 2")
+        XCTAssertEqual(secondStart.path, "/detail/2")
+        XCTAssertEqual(secondStart.attributes["instance"] as? Int, 2)
+        XCTAssertTrue(secondStart.identity == ViewIdentifier("detail-2"))
+        XCTAssertEqual(secondStart.target, .scene(scene))
+    }
+
+    #if os(iOS)
+    func testWhenSceneDisconnects_itInvalidatesStateWithoutDuplicatingHandlerStop() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let state = RUMViewTrackingState(identity: "home-A")
+        let descriptor = RUMViewTrackingState.Configuration.Descriptor(
+            name: "Home A",
+            path: "/home/A",
+            attributes: [:]
+        )
+        let handler = createHandler(
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? sceneA : nil
+            }
+        )
+        let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+            notificationCenter: notificationCenter,
+            coordinatorProvider: { _, _ in nil }
+        )
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        arbiter.register(observer: observer, for: state)
+
+        RUMSwiftUIViewTransitionPublisher.publish(
+            state.mount(in: sceneA),
+            state: state,
+            fallback: descriptor,
+            to: handler
+        )
+        handler.notify_onAppear(
+            identity: "home-B",
+            name: "Home B",
+            path: "/home/B",
+            attributes: [:],
+            sceneIdentifier: sceneB
+        )
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-A")
+        arbiter.discard(sceneIdentifier: sceneA)
+        RUMSwiftUIViewTransitionPublisher.publish(
+            state.appear(),
+            state: state,
+            fallback: descriptor,
+            to: handler
+        )
+        RUMSwiftUIViewTransitionPublisher.publish(
+            state.mount(in: sceneA),
+            state: state,
+            fallback: descriptor,
+            to: handler
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 4)
+        let firstAStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[0] as? RUMStartViewCommand
+        )
+        let bStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[1] as? RUMStartViewCommand
+        )
+        let aStop = try XCTUnwrap(
+            commandSubscriber.receivedCommands[2] as? RUMStopViewCommand
+        )
+        let secondAStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[3] as? RUMStartViewCommand
+        )
+        XCTAssertTrue(firstAStart.identity == ViewIdentifier("home-A"))
+        XCTAssertEqual(firstAStart.target, .scene(sceneA))
+        XCTAssertTrue(bStart.identity == ViewIdentifier("home-B"))
+        XCTAssertEqual(bStart.target, .scene(sceneB))
+        XCTAssertTrue(aStop.identity == ViewIdentifier("home-A"))
+        XCTAssertEqual(aStop.target, .scene(sceneA))
+        XCTAssertTrue(secondAStart.identity == ViewIdentifier("home-A"))
+        XCTAssertEqual(secondAStart.target, .scene(sceneA))
+        XCTAssertEqual(state.lifecycleGeneration, 2)
+        XCTAssertFalse(commandSubscriber.receivedCommands.contains { command in
+            (command as? RUMStopViewCommand)?.target == .scene(sceneB)
+        })
+    }
+    #endif
+    #endif
+
+    func testWhenCoveredSwiftUIOccurrenceIsReplaced_itDoesNotDisturbVisibleView() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        handler.notify_onAppear(
+            identity: "home-1",
+            name: "Home",
+            path: "Home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        handler.notify_onAppear(
+            identity: "detail",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "home-1",
+            newIdentity: "home-2",
+            name: "Home",
+            path: "Home",
+            attributes: ["instance": 2],
+            sceneIdentifier: scene
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        handler.notify_onDisappear(identity: "detail", sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
+        XCTAssertTrue(stop.identity == ViewIdentifier("detail"))
+        XCTAssertTrue(start.identity == ViewIdentifier("home-2"))
+        XCTAssertEqual(start.attributes["instance"] as? Int, 2)
+
+        handler.notify_onDisappear(identity: "home-2", sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 6)
+        let finalStop = try XCTUnwrap(commandSubscriber.receivedCommands[5] as? RUMStopViewCommand)
+        XCTAssertTrue(finalStop.identity == ViewIdentifier("home-2"))
+        XCTAssertFalse(commandSubscriber.receivedCommands.dropFirst(5).contains { command in
+            (command as? RUMStartViewCommand)?.identity == ViewIdentifier("home-1")
+        })
+    }
+
+    func testWhenSameNamedSwiftUIOccurrenceIsReplaced_itUsesFreshIdentity() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        handler.notify_onAppear(
+            identity: "detail-1",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "detail-1",
+            newIdentity: "detail-2",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        let startCommands = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(startCommands.count, 2)
+        XCTAssertEqual(startCommands.map(\.name), ["Detail", "Detail"])
+        XCTAssertTrue(startCommands[0].identity == ViewIdentifier("detail-1"))
+        XCTAssertTrue(startCommands[1].identity == ViewIdentifier("detail-2"))
+    }
+
+    func testWhenSwiftUIOccurrencesShareIdentityAcrossScenes_replacementTouchesOnlyTargetScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+        for scene in [sceneA, sceneB] {
+            handler.notify_onAppear(
+                identity: "detail-1",
+                name: "Detail",
+                path: "Detail",
+                attributes: [:],
+                sceneIdentifier: scene
+            )
+        }
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "detail-1",
+            newIdentity: "detail-2",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: sceneA
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 4)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStopViewCommand)
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStartViewCommand)
+        XCTAssertTrue(stop.identity == ViewIdentifier("detail-1"))
+        XCTAssertTrue(start.identity == ViewIdentifier("detail-2"))
+        XCTAssertEqual(stop.target, .scene(sceneA))
+        XCTAssertEqual(start.target, .scene(sceneA))
+        XCTAssertFalse(commandSubscriber.receivedCommands.dropFirst(2).contains { command in
+            command.target == .scene(sceneB)
+        })
+
+        handler.notify_onDisappear(identity: "detail-1", sceneIdentifier: sceneB)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let sceneBStop = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStopViewCommand)
+        XCTAssertTrue(sceneBStop.identity == ViewIdentifier("detail-1"))
+        XCTAssertEqual(sceneBStop.target, .scene(sceneB))
+    }
+
+    func testWhenOldSwiftUIOccurrenceIsMissing_replacementDoesNotMaterializeNewOccurrence() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        handler.notify_onAppear(
+            identity: "current",
+            name: "Current",
+            path: "Current",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "missing",
+            newIdentity: "candidate",
+            name: "Candidate",
+            path: "Candidate",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertTrue(
+            (commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)?.identity
+                == ViewIdentifier("current")
+        )
+
+        handler.notify_onDisappear(identity: "current", sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertTrue(
+            (commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)?.identity
+                == ViewIdentifier("current")
+        )
+    }
+
+    func testWhenInactiveSwiftUIOccurrenceIsReplaced_itStartsReplacementOnForeground() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler(
+            sceneIdentifierFromNotification: { notification in
+                notification.object as? String == "scene-A" ? scene : nil
+            }
+        )
+        handler.notify_onAppear(
+            identity: "home-1",
+            name: "Home",
+            path: "Home",
+            attributes: ["instance": 1],
+            sceneIdentifier: scene
+        )
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "scene-A")
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "home-1",
+            newIdentity: "home-2",
+            name: "Home",
+            path: "Home",
+            attributes: ["instance": 2],
+            sceneIdentifier: scene
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        let start = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        XCTAssertTrue(start.identity == ViewIdentifier("home-2"))
+        XCTAssertEqual(start.attributes["instance"] as? Int, 2)
+        XCTAssertEqual(start.target, .scene(scene))
+    }
+
+    func testWhenReplacementTargetsAnotherScene_itDoesNotMigrateOrMaterializeOccurrence() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+        handler.notify_onAppear(
+            identity: "detail-1",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: sceneA
+        )
+
+        handler.notify_replaceOccurrence(
+            oldIdentity: "detail-1",
+            newIdentity: "detail-2",
+            name: "Detail",
+            path: "Detail",
+            attributes: [:],
+            sceneIdentifier: sceneB
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+
+        handler.notify_onDisappear(identity: "detail-1", sceneIdentifier: sceneA)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        XCTAssertTrue(stop.identity == ViewIdentifier("detail-1"))
+        XCTAssertEqual(stop.target, .scene(sceneA))
     }
 
     // MARK: - Handling Manual SwiftUI Instrumentation `onDisappear`
