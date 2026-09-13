@@ -70,11 +70,12 @@ public struct DatadogInternalInterface {
         duration: TimeInterval,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        let longTaskCommand = RUMAddLongTaskCommand(
+        var longTaskCommand = RUMAddLongTaskCommand(
             time: time,
             attributes: attributes,
             duration: duration
         )
+        longTaskCommand.target = monitor.currentExecutionTarget
         monitor.process(command: longTaskCommand)
     }
 
@@ -90,12 +91,13 @@ public struct DatadogInternalInterface {
         value: Double,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        let performanceMetric = RUMUpdatePerformanceMetric(
+        var performanceMetric = RUMUpdatePerformanceMetric(
             metric: metric,
             value: value,
             time: time,
             attributes: attributes
         )
+        performanceMetric.target = monitor.currentExecutionTarget
         monitor.process(command: performanceMetric)
     }
 
@@ -110,11 +112,12 @@ public struct DatadogInternalInterface {
         key: AttributeKey,
         value: AttributeValue
     ) {
-        let attributeCommand = RUMAddViewAttributesCommand(
+        var attributeCommand = RUMAddViewAttributesCommand(
             time: time,
             attributes: [key: value],
             areInternalAttributes: true
         )
+        attributeCommand.target = monitor.currentExecutionTarget
         monitor.process(command: attributeCommand)
     }
 
@@ -175,15 +178,15 @@ public struct DatadogInternalInterface {
         heatmapAttributes: HeatmapAttributes?,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        monitor.process(
-            command: RUMAddUserActionCommand(
-                time: time,
-                attributes: attributes,
-                instrumentation: .manual,
-                actionType: type,
-                name: name,
-                heatmapAttributes: heatmapAttributes
-            )
+        var actionCommand = RUMAddUserActionCommand(
+            time: time,
+            attributes: attributes,
+            instrumentation: .manual,
+            actionType: type,
+            name: name,
+            heatmapAttributes: heatmapAttributes
         )
+        actionCommand.target = monitor.currentExecutionTarget
+        monitor.process(command: actionCommand)
     }
 }

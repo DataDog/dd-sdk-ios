@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// The Command Subscriber is able to process RUM Commands.
@@ -15,6 +16,26 @@ internal protocol RUMCommandSubscriber: AnyObject {
     ///
     /// - Parameter command: The RUM command to process.
     func process(command: RUMCommand)
+}
+
+internal extension RUMCommandSubscriber {
+    /// Resolves work invoked synchronously inside a trustworthy UI-event
+    /// handoff. Calls outside that bounded scope preserve the historical
+    /// process-representative behavior.
+    var currentExecutionTarget: RUMCommandTarget {
+        guard let handoff = RUMContextHandoff.current else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID
+            .flatMap(UUID.init(uuidString:))
+            .map(RUMUUID.init(rawValue:)) {
+            return .view(viewID)
+        }
+        if let sceneIdentifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        return .processRepresentative
+    }
 }
 
 /// Provides immutable RUM context snapshots for instrumentation that must hand

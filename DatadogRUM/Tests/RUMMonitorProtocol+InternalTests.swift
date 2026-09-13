@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 import TestUtilities
 @testable import DatadogRUM
@@ -31,5 +32,63 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
 
         // Then
         XCTAssertNil(monitor._internal)
+    }
+
+    func testInternalCurrentViewCommandsUseExecutionHandoffAndRepresentativeFallback() {
+        let monitor = RUMCommandSubscriberMock()
+        let interface = DatadogInternalInterface(monitor: monitor)
+        let viewID = UUID()
+        let context: RUMCoreContext = .mockWith(viewID: viewID.uuidString)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        emitCurrentViewCommands(using: interface)
+        XCTAssertEqual(monitor.receivedCommands.map(\.target), Array(repeating: .processRepresentative, count: 4))
+
+        monitor.receivedCommands = []
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: scene.rawValue) {
+            emitCurrentViewCommands(using: interface)
+        }
+        XCTAssertEqual(monitor.receivedCommands.map(\.target), Array(repeating: .scene(scene), count: 4))
+
+        monitor.receivedCommands = []
+        RUMContextHandoff.withValue(rumContext: context, sceneIdentifier: "contradictory-scene") {
+            emitCurrentViewCommands(using: interface)
+        }
+        XCTAssertEqual(
+            monitor.receivedCommands.map(\.target),
+            Array(repeating: .view(RUMUUID(rawValue: viewID)), count: 4)
+        )
+    }
+
+    func testInternalResourceMetricsRemainOwnerKeyRouted() {
+        let monitor = RUMCommandSubscriberMock()
+        let interface = DatadogInternalInterface(monitor: monitor)
+        let now = Date()
+
+        RUMContextHandoff.withValue(rumContext: .mockAny(), sceneIdentifier: "scene-A") {
+            interface.addResourceMetrics(
+                at: now,
+                resourceKey: "resource",
+                fetch: (start: now, end: now),
+                redirection: nil,
+                dns: nil,
+                connect: nil,
+                ssl: nil,
+                firstByte: nil,
+                download: nil
+            )
+        }
+
+        XCTAssertEqual(monitor.lastReceivedCommand?.target, .processRepresentative)
+    }
+}
+
+private extension RUMMonitorProtocol_InternalTests {
+    func emitCurrentViewCommands(using interface: DatadogInternalInterface) {
+        let now = Date()
+        interface.addLongTask(at: now, duration: 1)
+        interface.updatePerformanceMetric(at: now, metric: .flutterBuildTime, value: 1)
+        interface.setInternalViewAttribute(at: now, key: "internal", value: true)
+        interface.addAction(at: now, type: .custom, name: "action", heatmapAttributes: nil)
     }
 }

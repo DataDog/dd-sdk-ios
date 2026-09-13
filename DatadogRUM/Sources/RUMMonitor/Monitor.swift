@@ -719,21 +719,6 @@ extension Monitor: RUMMonitorProtocol {
         process(command: error)
     }
 
-    private var currentExecutionTarget: RUMCommandTarget {
-        guard let handoff = RUMContextHandoff.current else {
-            return .processRepresentative
-        }
-        if let viewID = handoff.rumContext?.viewID
-            .flatMap(UUID.init(uuidString:))
-            .map(RUMUUID.init(rawValue:)) {
-            return .view(viewID)
-        }
-        if let sceneIdentifier = handoff.sceneIdentifier {
-            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
-        }
-        return .processRepresentative
-    }
-
     private var currentExecutionSceneTarget: RUMCommandTarget {
         guard let handoff = RUMContextHandoff.current else {
             return .processRepresentative

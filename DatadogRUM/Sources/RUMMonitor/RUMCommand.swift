@@ -785,6 +785,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a long task is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     let duration: TimeInterval
     let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
@@ -849,6 +850,7 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
+    var target: RUMCommandTarget = .processRepresentative
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
