@@ -161,7 +161,8 @@ enum ProbeScenarioCatalog {
             ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1"),
             ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
-            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:home#2")
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#2"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "navigation-appearance-2")
         ],
         completionConditions: [
             ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 2, name: "navigation-appearance-2")

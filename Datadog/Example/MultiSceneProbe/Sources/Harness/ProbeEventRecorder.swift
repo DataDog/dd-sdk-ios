@@ -14,9 +14,13 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
     private let scenarioID: String
     private let sink: Sink
     private let clock: Clock
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
     private var nextSequence: UInt64 = 1
     private var signals: [ProbeSignal] = []
+    private var signalContinuations: [
+        UUID: AsyncStream<ProbeSignal>.Continuation
+    ] = [:]
+    private var terminalResult: ProbeSemanticResult?
 
     init(
         runID: String,
@@ -46,6 +50,7 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
         nextSequence &+= 1
         signals.append(signal)
         sink(encode(signal))
+        signalContinuations.values.forEach { $0.yield(signal) }
         return signal
     }
 
@@ -53,6 +58,39 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         return signals
+    }
+
+    func signalStream() -> AsyncStream<ProbeSignal> {
+        let identifier = UUID()
+        return AsyncStream(bufferingPolicy: .bufferingNewest(4_096)) { continuation in
+            lock.lock()
+            signals.forEach { continuation.yield($0) }
+            signalContinuations[identifier] = continuation
+            lock.unlock()
+
+            continuation.onTermination = { [weak self] _ in
+                self?.removeSignalContinuation(identifier)
+            }
+        }
+    }
+
+    @discardableResult
+    func recordTerminalResult(_ result: ProbeSemanticResult) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard terminalResult == nil else {
+            return false
+        }
+        terminalResult = result
+        sink(encode(result))
+        return true
+    }
+
+    func recordedTerminalResult() -> ProbeSemanticResult? {
+        lock.lock()
+        defer { lock.unlock() }
+        return terminalResult
     }
 
     private func encode(_ signal: ProbeSignal) -> String {
@@ -65,5 +103,25 @@ internal final class ProbeEventRecorder: @unchecked Sendable {
             return #"{"type":"signal-encoding-failed"}"#
         }
         return json
+    }
+
+    private func encode(_ result: ProbeSemanticResult) -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        guard
+            let data = try? encoder.encode(
+                ProbeSemanticResultRecord(runID: runID, result: result)
+            ),
+            let json = String(data: data, encoding: .utf8)
+        else {
+            return #"{"type":"semantic-result-encoding-failed"}"#
+        }
+        return json
+    }
+
+    private func removeSignalContinuation(_ identifier: UUID) {
+        lock.lock()
+        defer { lock.unlock() }
+        signalContinuations.removeValue(forKey: identifier)
     }
 }

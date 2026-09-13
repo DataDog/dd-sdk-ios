@@ -175,6 +175,7 @@ struct ProbeWindowRoot: View {
     @State private var homeBindingGeneration: UInt64 = 0
     @State private var destinationBindingGeneration: UInt64 = 0
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
+    @State private var scenarioStepExecutor = ProbeSceneStepExecutor()
     @State private var sceneSessionID = "unresolved"
     @State private var sceneHandle: ProbeSceneHandle?
     @State private var readerControlGeneration = 0
@@ -248,6 +249,7 @@ struct ProbeWindowRoot: View {
             else {
                 return
             }
+            ProbeRuntime.scenarioDriver?.unregister(handle: handle)
             ProbeRuntime.recordSceneSnapshot(snapshot, kind: .sceneLifecycle)
             ProbeRuntime.record(
                 "scene disconnected source=\(window.label) "
@@ -816,6 +818,68 @@ struct ProbeWindowRoot: View {
                     + "generation=\(handle.disconnectGeneration)"
             )
         }
+        registerScenarioStepExecutor(handle: handle)
+    }
+
+    private func registerScenarioStepExecutor(
+        handle: ProbeSceneHandle
+    ) {
+        guard let driver = ProbeRuntime.scenarioDriver else {
+            return
+        }
+        let logicalSceneID = window.label
+        let pathBinding = navigationPath
+        scenarioStepExecutor.configure(handle: handle) { step in
+            guard step.scene == logicalSceneID else {
+                return .rejected(
+                    reason: "step targeted \(step.scene ?? "nil"), not \(logicalSceneID)"
+                )
+            }
+            switch step.kind {
+            case .setSwiftUIPath:
+                guard let value = step.value else {
+                    return .rejected(reason: "SwiftUI path is missing")
+                }
+                switch value {
+                case "home":
+                    pathBinding.wrappedValue = []
+                case "detail-1":
+                    pathBinding.wrappedValue = [.detail(1)]
+                case "detail-2":
+                    pathBinding.wrappedValue = [.detail(2)]
+                case "alternate":
+                    pathBinding.wrappedValue = [.alternate]
+                default:
+                    return .rejected(reason: "unsupported SwiftUI path \(value)")
+                }
+            case .emitMarker:
+                guard let marker = step.value else {
+                    return .rejected(reason: "marker is missing")
+                }
+                let currentScreen: String
+                switch pathBinding.wrappedValue.last {
+                case .detail(let instance):
+                    currentScreen = "detail-\(instance)"
+                case .alternate:
+                    currentScreen = "alternate"
+                case nil:
+                    currentScreen = "home"
+                }
+                ProbeRuntime.emitLifecycleMarker(
+                    window: window,
+                    sceneSessionID: handle.nativeSceneID,
+                    screen: currentScreen,
+                    phase: marker
+                )
+            default:
+                return .rejected(
+                    reason: "unsupported scene step \(step.kind.rawValue)"
+                )
+            }
+            return .accepted
+        }
+        driver.register(handle: handle, executor: scenarioStepExecutor)
+        driver.startIfNeeded()
     }
 
     private func updateScenePresentation(kind: ProbeSignalKind) {

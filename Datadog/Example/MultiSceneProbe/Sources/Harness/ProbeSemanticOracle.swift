@@ -36,6 +36,18 @@ internal struct ProbeSemanticResult: Codable, Equatable {
     }
 }
 
+internal struct ProbeSemanticResultRecord: Codable, Equatable {
+    let type: String
+    let runID: String
+    let result: ProbeSemanticResult
+
+    init(runID: String, result: ProbeSemanticResult) {
+        self.type = "semantic-result"
+        self.runID = runID
+        self.result = result
+    }
+}
+
 internal enum ProbeSemanticOracle {
     private enum CandidateResult {
         case noMatch
@@ -292,6 +304,7 @@ internal enum ProbeSemanticOracle {
     ) -> (matched: Int, issue: ProbeSemanticIssue?) {
         var cursor = 0
         var matched = 0
+        var matchedDeferredEventIndexes: Set<Int> = []
 
         for (index, expectation) in expectations.enumerated() {
             if isNegative(expectation) {
@@ -307,9 +320,13 @@ internal enum ProbeSemanticOracle {
             }
 
             var didMatch = false
-            while cursor < timeline.events.count {
-                let event = timeline.events[cursor]
-                cursor += 1
+            var eventIndex = cursor
+            while eventIndex < timeline.events.count {
+                defer { eventIndex += 1 }
+                guard !matchedDeferredEventIndexes.contains(eventIndex) else {
+                    continue
+                }
+                let event = timeline.events[eventIndex]
                 switch candidate(
                     event,
                     for: expectation,
@@ -320,6 +337,14 @@ internal enum ProbeSemanticOracle {
                 case .match:
                     didMatch = true
                     matched += 1
+                    if expectation.kind == .viewStopped {
+                        // View-stop mapper callbacks can arrive after the next
+                        // view has started while a navigation animation overlaps.
+                        // Require the stop, but do not consume intervening events.
+                        matchedDeferredEventIndexes.insert(eventIndex)
+                    } else {
+                        cursor = eventIndex + 1
+                    }
                 case .violation(let reason):
                     return (
                         matched,

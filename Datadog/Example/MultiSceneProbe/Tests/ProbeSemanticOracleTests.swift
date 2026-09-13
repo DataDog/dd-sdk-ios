@@ -62,6 +62,57 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("navigation-appearance-2"))
     }
 
+    func testViewStopMayBeObservedAfterNextViewStarts() {
+        let recorder = ProbeEventRecorder(
+            runID: "overlapping-transition",
+            scenarioID: "overlapping-transition",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "home-1", screen: "home", active: true))
+        recorder.record(viewSignal(id: "detail-1", screen: "detail-1", active: true))
+        recorder.record(viewSignal(id: "home-1", screen: "home", active: false))
+
+        let scenario = ProbeScenario(
+            identifier: "overlapping-transition",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "home",
+                    occurrence: 1
+                ),
+                ProbeExpectation(
+                    .viewStopped,
+                    scene: "scene-A",
+                    screen: "home",
+                    occurrence: 1
+                ),
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 1
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
     func testExplicitlyForbiddenViewFailsWithSignalSequence() throws {
         let result = ProbeSemanticOracle.evaluate(
             scenario: try scenario(named: "swiftui.stack.abort"),
@@ -146,7 +197,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
 
         XCTAssertEqual(recorded.map(\.sequence), [1, 2])
-        XCTAssertEqual(recorded.map(\.schemaVersion), [2, 2])
+        XCTAssertEqual(recorded.map(\.schemaVersion), [3, 3])
         XCTAssertEqual(recorded.map(\.timestampMilliseconds), [42, 42])
         XCTAssertEqual(recorded.map(\.runID), ["recorder-run", "recorder-run"])
         XCTAssertEqual(
@@ -184,6 +235,29 @@ final class ProbeSemanticOracleTests: XCTestCase {
                     from: Data(line.utf8)
                 ).signal
             }
+    }
+
+    private func viewSignal(
+        id: String,
+        screen: String,
+        active: Bool
+    ) -> ProbeSignal {
+        ProbeSignal(
+            kind: .rumViewSnapshot,
+            evidenceSource: .rumMapper,
+            semanticContext: ProbeSemanticContext(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                screen: screen
+            ),
+            rumContext: ProbeRUMContext(
+                sessionID: "session",
+                viewID: id,
+                viewName: screen,
+                viewActive: active,
+                viewDocumentVersion: active ? 1 : 2
+            )
+        )
     }
 }
 

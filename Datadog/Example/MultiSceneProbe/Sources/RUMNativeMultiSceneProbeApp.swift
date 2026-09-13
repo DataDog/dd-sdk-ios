@@ -66,6 +66,18 @@ enum ProbeRuntime {
         scenarioID: scenario?.identifier ?? "invalid"
     )
     @MainActor static let sceneRegistry = ProbeSceneRegistry()
+    static let usesObservableScenarioDriver =
+        scenario?.identifier == "swiftui.stack.return"
+    @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
+        guard usesObservableScenarioDriver, let scenario else {
+            return nil
+        }
+        return ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: eventRecorder,
+            sceneRegistry: sceneRegistry
+        )
+    }()
 
     static let automaticallyNavigates = options.automaticallyNavigates
     static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow

@@ -24,6 +24,8 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
     case gestureAttempted = "gesture-attempted"
     case transitionBegan = "transition-began"
     case transitionResolved = "transition-resolved"
+    case stepStarted = "step-started"
+    case stepAcknowledged = "step-acknowledged"
     case destinationAppearanceObserved = "destination-appearance-observed"
     case destinationMaterialized = "destination-materialized"
     case rumSessionStarted = "rum-session-started"
@@ -189,7 +191,7 @@ internal struct ProbeGeometry: Codable, Equatable {
 }
 
 internal struct ProbeSignal: Codable, Equatable {
-    static let schemaVersion = 2
+    static let schemaVersion = 3
     static let supportedSchemaVersions = 1 ... schemaVersion
 
     let schemaVersion: Int
@@ -215,6 +217,9 @@ internal struct ProbeSignal: Codable, Equatable {
     let transitionID: String?
     let interactive: Bool?
     let outcome: ProbeTransitionOutcome?
+    let stepIndex: Int?
+    let stepKind: ProbeStepKind?
+    let acknowledgedSignalSequence: UInt64?
     let eventID: String?
     let name: String?
     let capability: ProbeCapability?
@@ -250,6 +255,9 @@ internal struct ProbeSignal: Codable, Equatable {
         transitionID: String? = nil,
         interactive: Bool? = nil,
         outcome: ProbeTransitionOutcome? = nil,
+        stepIndex: Int? = nil,
+        stepKind: ProbeStepKind? = nil,
+        acknowledgedSignalSequence: UInt64? = nil,
         eventID: String? = nil,
         name: String? = nil,
         capability: ProbeCapability? = nil,
@@ -285,6 +293,9 @@ internal struct ProbeSignal: Codable, Equatable {
         self.transitionID = transitionID
         self.interactive = interactive
         self.outcome = outcome
+        self.stepIndex = stepIndex
+        self.stepKind = stepKind
+        self.acknowledgedSignalSequence = acknowledgedSignalSequence
         self.eventID = eventID
         self.name = name
         self.capability = capability
@@ -327,6 +338,9 @@ internal struct ProbeSignal: Codable, Equatable {
             transitionID: transitionID,
             interactive: interactive,
             outcome: outcome,
+            stepIndex: stepIndex,
+            stepKind: stepKind,
+            acknowledgedSignalSequence: acknowledgedSignalSequence,
             eventID: eventID,
             name: name,
             capability: capability,
