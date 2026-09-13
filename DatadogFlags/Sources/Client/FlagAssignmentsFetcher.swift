@@ -843,9 +843,11 @@ internal enum SignedAssignmentVerifier {
 
         let authorization: String?
         let policyVersion: String?
-        guard let rulesRevision = fetched.response.value(forHTTPHeaderField: rulesRevisionHeader),
-              rulesRevision.utf8.count <= maximumRulesRevisionBytes else {
+        guard let rulesRevision = fetched.response.value(forHTTPHeaderField: rulesRevisionHeader) else {
             throw SignedAssignmentVerificationError.missingMetadata
+        }
+        guard isValidRulesRevision(rulesRevision) else {
+            throw SignedAssignmentVerificationError.invalidMetadata
         }
         switch protection {
         case .disabled:
@@ -1071,7 +1073,7 @@ internal enum SignedAssignmentVerifier {
               responseBody.count <= maximumResponseBodyBytes,
               (compactJWT?.utf8.count ?? 0) <= maximumAuthorizationBytes,
               (policyVersion?.utf8.count ?? 0) <= maximumPolicyVersionBytes,
-              rulesRevision.utf8.count <= maximumRulesRevisionBytes else {
+              isValidRulesRevision(rulesRevision) else {
             throw SignedAssignmentVerificationError.invalidMetadata
         }
         var result = Data(signatureDomain.utf8)
@@ -1111,6 +1113,24 @@ internal enum SignedAssignmentVerifier {
         result.appendBigEndian(UInt64(responseBody.count))
         result.append(contentsOf: SHA256.hash(data: responseBody))
         return result
+    }
+
+    /// The origin artifact identifier is opaque to the SDK. Limit it to the
+    /// RFC 3986 unreserved character set so all HTTP stacks preserve it exactly.
+    private static func isValidRulesRevision(_ value: String) -> Bool {
+        let bytes = value.utf8
+        guard !bytes.isEmpty, bytes.count <= maximumRulesRevisionBytes else {
+            return false
+        }
+        return bytes.allSatisfy { byte in
+            (byte >= 0x41 && byte <= 0x5A)
+                || (byte >= 0x61 && byte <= 0x7A)
+                || (byte >= 0x30 && byte <= 0x39)
+                || byte == 0x2D
+                || byte == 0x2E
+                || byte == 0x5F
+                || byte == 0x7E
+        }
     }
 
     static func persistedRequestHeaders(from request: URLRequest) -> [String: String] {

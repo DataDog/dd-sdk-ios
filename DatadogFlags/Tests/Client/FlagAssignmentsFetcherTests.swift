@@ -540,7 +540,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                         compactJWT: nil,
                         clientToken: datadogContext.clientToken,
                         policyVersion: nil,
-                        rulesRevision: "rules-production-test",
+                        rulesRevision: "v1.production-test",
                         responseStatus: 200,
                         issuedAt: verificationTime,
                         expiresAt: verificationTime + 300,
@@ -553,7 +553,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                         httpVersion: nil,
                         headerFields: [
                             SignedAssignmentVerifier.signatureVersionHeader: "2",
-                            SignedAssignmentVerifier.rulesRevisionHeader: "rules-production-test",
+                            SignedAssignmentVerifier.rulesRevisionHeader: "v1.production-test",
                             "x-datadog-feature-flags-issued-at": String(verificationTime),
                             "x-datadog-feature-flags-expires-at": String(verificationTime + 300),
                             "x-datadog-feature-flags-certificate-id": Self.vectorCertificateID,
@@ -641,6 +641,9 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             payload.replacing(responseBody: Data("tampered".utf8)),
             payload.replacing(responseHeaders: changedResponseHeaders),
             payload.replacing(certificateID: String(repeating: "0", count: 64)),
+            payload.replacing(rulesRevision: "v1.attacker"),
+            payload.replacing(rulesRevision: ""),
+            payload.replacing(rulesRevision: "v1/invalid"),
             payload.replacing(expiresAt: payload.expiresAt.addingTimeInterval(-1))
         ]
         for mutatedPayload in payloadMutations {
@@ -719,8 +722,8 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             policyVersion: nil
         )
 
-        XCTAssertEqual(input.count, 288)
-        XCTAssertEqual(Self.sha256Hex(input), "b2dcfe21420f79ac6745a0e054d159d4f3197304bafb239e51c3a7aecf54f2e4")
+        XCTAssertEqual(input.count, 323)
+        XCTAssertEqual(Self.sha256Hex(input), "df064dfc973b34f7ec86de88ed9249206c050f6bd73bf61ca69984b25c530830")
         let metadata = try SignedAssignmentVerifier.verify(
             request: request,
             fetched: fetched,
@@ -730,7 +733,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         )
         XCTAssertNil(metadata.authorizationPolicyVersion)
         XCTAssertEqual(metadata.certificateID, Self.vectorCertificateID)
-        XCTAssertEqual(metadata.rulesRevision, "")
+        XCTAssertEqual(metadata.rulesRevision, Self.vectorRulesRevision)
         XCTAssertEqual(metadata.issuedAt, 1_789_096_800)
         XCTAssertEqual(metadata.expiresAt, 1_789_097_100)
     }
@@ -747,8 +750,8 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             policyVersion: "ap_test_v2"
         )
 
-        XCTAssertEqual(input.count, 334)
-        XCTAssertEqual(Self.sha256Hex(input), "b0d8cd615160a59a69a0024fdca85213b9ca6d2a542f4490706cc3d67cde3148")
+        XCTAssertEqual(input.count, 369)
+        XCTAssertEqual(Self.sha256Hex(input), "84575ebd0ca059a619acdd4b72294a1b2013920d984df51fd1a1b151b279a39b")
         let metadata = try SignedAssignmentVerifier.verify(
             request: request,
             fetched: fetched,
@@ -758,7 +761,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         )
         XCTAssertEqual(metadata.authorizationPolicyVersion, "ap_test_v2")
         XCTAssertEqual(metadata.certificateID, Self.vectorCertificateID)
-        XCTAssertEqual(metadata.rulesRevision, "")
+        XCTAssertEqual(metadata.rulesRevision, Self.vectorRulesRevision)
 
         var tamperedBody = fetched.data
         tamperedBody[0] ^= 1
@@ -771,25 +774,33 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                 currentTime: 1_789_096_800
             )
         )
+    }
 
+    func testVerifierRejectsAlteredRulesRevision() throws {
+        let request = Self.vectorRequest(authorization: nil)
         let changedRules = try Self.vectorResponse(
             requestURL: XCTUnwrap(request.url),
-            policyVersion: "ap_test_v2",
-            signature: Self.signedAndAuthorizedSignature,
-            rulesRevision: "unverified-origin-revision"
+            policyVersion: nil,
+            signature: Self.signedOnlySignature,
+            rulesRevision: "v1.unverified-origin-revision"
         )
         XCTAssertThrowsError(
             try SignedAssignmentVerifier.verify(
                 request: request,
                 fetched: changedRules,
                 clientToken: "client-token",
-                protection: .signedAndAuthorized,
+                protection: .signed,
                 currentTime: 1_789_096_800
             )
-        )
+        ) { error in
+            guard let verificationError = error as? SignedAssignmentVerificationError,
+                  case .invalidSignature = verificationError else {
+                return XCTFail("Expected altered rules revision to invalidate the signature, got \(error)")
+            }
+        }
     }
 
-    func testVerifierRejectsMissingOrOversizedSignedHeadersBeforeTrustEvaluation() throws {
+    func testVerifierRejectsMissingOrInvalidRulesRevisionBeforeTrustEvaluation() throws {
         let request = Self.vectorRequest(authorization: nil)
         let requestURL = try XCTUnwrap(request.url)
         let missingRules = try Self.vectorResponse(
@@ -808,6 +819,37 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             )
         )
 
+        for invalidRulesRevision in [
+            "",
+            "v1/invalid",
+            String(repeating: "a", count: 257)
+        ] {
+            let response = try Self.vectorResponse(
+                requestURL: requestURL,
+                policyVersion: nil,
+                signature: Self.signedOnlySignature,
+                rulesRevision: invalidRulesRevision
+            )
+            XCTAssertThrowsError(
+                try SignedAssignmentVerifier.verify(
+                    request: request,
+                    fetched: response,
+                    clientToken: "client-token",
+                    protection: .signed,
+                    currentTime: 1_789_096_800
+                )
+            ) { error in
+                guard let verificationError = error as? SignedAssignmentVerificationError,
+                      case .invalidMetadata = verificationError else {
+                    return XCTFail("Expected invalid rules revision metadata, got \(error)")
+                }
+            }
+        }
+    }
+
+    func testVerifierRejectsOversizedCertificateBeforeTrustEvaluation() throws {
+        let request = Self.vectorRequest(authorization: nil)
+        let requestURL = try XCTUnwrap(request.url)
         let oversizedCertificate = try Self.vectorResponse(
             requestURL: requestURL,
             policyVersion: nil,
@@ -1025,7 +1067,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         requestURL: URL,
         policyVersion: String?,
         signature: String,
-        rulesRevision: String? = "",
+        rulesRevision: String? = "v1.7QfR3VxN2mK8pT5cW9yH4zLs1aBd6eUg",
         certificate: String = vectorCertificate
     ) throws -> FetchedFlagAssignments {
         var headers = [
@@ -1064,7 +1106,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             },
             clientToken: "client-token",
             policyVersion: policyVersion,
-            rulesRevision: "",
+            rulesRevision: vectorRulesRevision,
             responseStatus: 200,
             issuedAt: 1_789_096_800,
             expiresAt: 1_789_097_100,
@@ -1078,21 +1120,22 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
     private static let verificationMetadata = SignedAssignmentVerificationMetadata(
         certificateID: String(repeating: "a", count: 64),
-        rulesRevision: "",
+        rulesRevision: "v1.fixture",
         issuedAt: 1_789_096_800,
         expiresAt: 1_789_097_100,
         authorizationPolicyVersion: nil
     )
 
     private static let vectorNonce = "000102030405060708090a0b0c0d0e0f"
+    private static let vectorRulesRevision = "v1.7QfR3VxN2mK8pT5cW9yH4zLs1aBd6eUg"
     private static let vectorRequestBody = Data(#"{"data":{"attributes":{"subject":{"targeting_key":"user-1"}}}}"#.utf8)
     private static let vectorResponseBody = Data(#"{"data":{"id":"user-1"}}"#.utf8)
     private static let vectorCertificateID = "a0d868097393828703e0f9864e355a79b744df556d151249ce947157f08a0ff7"
     private static let vectorCertificate = "MIIBszCCAVqgAwIBAgIBZTAKBggqhkjOPQQDAjAzMTEwLwYDVQQDDChEYXRhZG9nIEZGRSBFZGdlIEFzc2lnbm1lbnRzIFBPQyBSb290IEsxMB4XDTI2MDkxMTAzMTgzMFoXDTI2MTIxMDAzMTgzMFowMjEwMC4GA1UEAwwnRGF0YWRvZyBGRkUgRWRnZSBBc3NpZ25tZW50cyBQT0MgTGVhZiBBMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEOAdt79MNq0/K82oozH9BifTCyu5pogz9VnCf69v6m5rIERSTO27L2SizPPI3ptfMBDa+bT/0wMdPc6GQYG4QeaNgMF4wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0OBBYEFPjCuJhWtNy/Ne+/6ZCIB8cmhFuJMB8GA1UdIwQYMBaAFHGtfswbRCOOchC6yZHakhktSdq4MAoGCCqGSM49BAMCA0cAMEQCIFvqYcK+OAaBdMRuMkSpOVscR1SMdCPt5LNdkQEZyvNCAiBq2rtg8F27nZ2mHyoAL4OT5tCMBKvYytpnRZzwMBYJTQ=="
     // Test-only scalar from the edge fixture. Runtime code never contains signing key material.
     private static let vectorPrivateKeyRaw = "6qcvKUwQlHOnjQSnt7U9S+AxMLXzd0ABH9TpRMFbNdM="
-    private static let signedOnlySignature = "MEUCIBim8DaKFvPtvhHV5yjwyPWZgZVnpz6tkiAUzAOk3bTyAiEA3OsaJ3VjUP+o6iojyD5Fv7D4+9FDNUODiDDA3XUvze4="
-    private static let signedAndAuthorizedSignature = "MEYCIQDAG5d1Edg2NhaMGfJiMTbjSmhYSsUS65ZbImV/3IeFwQIhAJjHs87OUC6Ni08YguV72YI8rAaT1ehn6da9gWLw7w+R"
+    private static let signedOnlySignature = "MEQCICc101QdcPKu/3zQKN3936v7/fT5WSRtsfQwUj/B2rFfAiAPLA0ajHwEs4s14FClfvhTGCaXbDt51ZmsKcoFTmG6ug=="
+    private static let signedAndAuthorizedSignature = "MEUCIGptxA2/TcleCTdA0C+EwE1o+jt/oTxdTHYVqJNYA5iLAiEApDejffCwRZ80YEIZIktC93b8CDz/YAq9yWgQcsZQ2Oc="
     private static let compactJWT = "eyJhbGciOiJFUzI1NiIsImtpZCI6ImN1c3RvbWVyLTIwMjYtMDkiLCJ0eXAiOiJkYXRhZG9nLWZlYXR1cmUtZmxhZ3MtYWNjZXNzK2p3dCJ9.eyJzdWIiOiJ1c2VyLTEifQ.signature"
 }
 
