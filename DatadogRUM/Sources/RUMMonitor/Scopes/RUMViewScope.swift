@@ -96,6 +96,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     var isCrashContextRepresentative = true
     /// Tells if this scope has received the "start" command.
     /// If `didReceiveStartCommand == true` and another "start" command is received for this View this scope is marked as inactive.
+    /// Restored scopes initialize this to `true` because their synthetic creation
+    /// already establishes the occurrence's start boundary.
     private var didReceiveStartCommand = false
     /// Track accessibility info for the current view
     private var accessibilityState: AccessibilityInfo? = nil
@@ -160,7 +162,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         serverTimeOffset: TimeInterval,
         interactionToNextViewMetric: INVMetricTracking?,
         viewIndexInSession: Int,
-        sceneIdentifier: RUMSceneIdentifier? = nil
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        didReceiveStartCommand: Bool = false
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -176,6 +179,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.viewIndexInSession = viewIndexInSession
+        self.didReceiveStartCommand = didReceiveStartCommand
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -306,7 +310,7 @@ extension RUMViewScope {
             }
         case let command as RUMRemoveViewAttributesCommand where isActiveView:
             command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
-        case let command as RUMStartViewCommand where identity == command.identity:
+        case let command as RUMStartViewCommand where identity == command.identity && isActiveView:
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
@@ -326,7 +330,7 @@ extension RUMViewScope {
             needsViewUpdate = true
             // View attributes are updated with the last snapshot of the global attributes
             attributes = command.globalAttributes.merging(self.attributes) { $1 }
-        case let command as RUMStopViewCommand where identity == command.identity:
+        case let command as RUMStopViewCommand where identity == command.identity && isActiveView:
             isActiveView = false
             needsViewUpdate = true
             // View attributes are updated with the last snapshot of the global attributes

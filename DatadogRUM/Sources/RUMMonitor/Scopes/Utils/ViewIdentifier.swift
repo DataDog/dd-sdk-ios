@@ -6,7 +6,8 @@
 
 import Foundation
 
-/// A unique identifier for a RUM view.
+/// Matches platform and customer lifecycle commands for a tracked view.
+/// Each materialized occurrence receives its own backend RUM view UUID.
 internal enum ViewIdentifier: Equatable {
     #if !os(watchOS)
     case viewController(ObjectIdentifier)

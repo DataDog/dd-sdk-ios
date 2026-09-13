@@ -214,7 +214,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 startTime: startTime,
                 serverTimeOffset: viewScope.serverTimeOffset,
                 hasReplay: context.hasReplay,
-                sceneIdentifier: viewScope.sceneIdentifier
+                sceneIdentifier: viewScope.sceneIdentifier,
+                didReceiveStartCommand: true
             )
             if let restoredView = viewScopes.last {
                 restoredViewsAwaitingInitialEvent.append(restoredView)
@@ -276,7 +277,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     startTime: startTime,
                     serverTimeOffset: context.serverTimeOffset,
                     hasReplay: context.hasReplay,
-                    sceneIdentifier: lastActiveView.sceneIdentifier
+                    sceneIdentifier: lastActiveView.sceneIdentifier,
+                    didReceiveStartCommand: true
                 )
                 if let restoredView = viewScopes.last {
                     restoredViewsAwaitingInitialEvent.append(restoredView)
@@ -472,7 +474,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         hasReplay: Bool?,
-        sceneIdentifier: RUMSceneIdentifier? = nil
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        didReceiveStartCommand: Bool = false
     ) {
         let scope = RUMViewScope(
             isInitialView: isInitialView,
@@ -486,7 +489,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: interactionToNextViewMetric(for: sceneIdentifier),
             viewIndexInSession: nextViewIndex,
-            sceneIdentifier: sceneIdentifier
+            sceneIdentifier: sceneIdentifier,
+            didReceiveStartCommand: didReceiveStartCommand
         )
         nextViewIndex += 1
 

@@ -644,6 +644,97 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.sessionUUID, secondSession.sessionUUID)
     }
 
+    func testGivenStoppedSessionHasPendingResource_whenNewSessionReusesViewIdentity_itKeepsOccurrencesIsolated() throws {
+        let startTime = Date()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: startTime,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: startTime),
+            applicationStateHistory: .mockAppInForeground(since: startTime)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100),
+            sdkContext: sdkContext
+        )
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let homeIdentity = ViewIdentifier("home")
+        let resourceKey = "home-1-resource"
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime.addingTimeInterval(1),
+                attributes: ["occurrence": "home-1"],
+                identity: homeIdentity,
+                name: "Home",
+                target: .scene(scene)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        let firstSession = try XCTUnwrap(scope.activeSession)
+        let firstHome = try XCTUnwrap(firstSession.activeView)
+
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: resourceKey,
+            time: startTime.addingTimeInterval(2)
+        )
+        startResource.target = .view(firstHome.viewUUID)
+        _ = scope.process(command: startResource, context: sdkContext, writer: writer)
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: startTime.addingTimeInterval(3)),
+            context: sdkContext,
+            writer: writer
+        )
+        XCTAssertNil(scope.activeSession)
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime.addingTimeInterval(4),
+                attributes: ["occurrence": "home-2"],
+                identity: homeIdentity,
+                name: "Home",
+                target: .scene(scene)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        let secondSession = try XCTUnwrap(scope.activeSession)
+        let secondHome = try XCTUnwrap(secondSession.activeView)
+
+        XCTAssertEqual(scope.sessionScopes.count, 2)
+        XCTAssertTrue(firstSession.viewScopes.contains { $0 === firstHome })
+        XCTAssertEqual(firstHome.attributes["occurrence"] as? String, "home-1")
+        XCTAssertEqual(secondHome.attributes["occurrence"] as? String, "home-2")
+        XCTAssertNotEqual(firstHome.viewUUID, secondHome.viewUUID)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(5),
+                actionType: .custom,
+                name: "home-2-action",
+                target: .scene(scene)
+            ),
+            context: sdkContext,
+            writer: writer
+        )
+        var stopResource = RUMStopResourceCommand.mockWith(
+            resourceKey: resourceKey,
+            time: startTime.addingTimeInterval(6)
+        )
+        stopResource.target = .view(firstHome.viewUUID)
+        _ = scope.process(command: stopResource, context: sdkContext, writer: writer)
+
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        XCTAssertTrue(scope.activeSession === secondSession)
+        XCTAssertEqual(
+            writer.events(ofType: RUMActionEvent.self).last?.view.id,
+            secondHome.viewUUID.toRUMDataFormat
+        )
+        XCTAssertEqual(
+            writer.events(ofType: RUMResourceEvent.self).last?.view.id,
+            firstHome.viewUUID.toRUMDataFormat
+        )
+    }
+
     // MARK: - Starting Session With Different Preconditions
 
     func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted() throws {

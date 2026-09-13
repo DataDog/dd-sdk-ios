@@ -21,6 +21,7 @@ class RUMSessionScopeTests: XCTestCase {
         identity: ViewIdentifier,
         name: String,
         sceneIdentifier: RUMSceneIdentifier,
+        attributes: [AttributeKey: AttributeValue] = [:],
         time: Date = Date()
     ) -> RUMStartViewCommand {
         RUMStartViewCommand(
@@ -29,7 +30,7 @@ class RUMSessionScopeTests: XCTestCase {
             name: name,
             path: name,
             globalAttributes: [:],
-            attributes: [:],
+            attributes: attributes,
             instrumentationType: .uikit,
             target: .scene(sceneIdentifier)
         )
@@ -184,6 +185,189 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 1)
         _ = scope.process(command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testGivenSameViewIdentity_whenNavigatingAwayAndBack_itCreatesDistinctRUMViewOccurrences() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+
+        _ = scope.process(
+            command: startViewCommand(identity: homeIdentity, name: "Home", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let firstHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        var stopHome = RUMStopViewCommand.mockWith(identity: homeIdentity)
+        stopHome.target = .scene(scene)
+        _ = scope.process(command: stopHome, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: detailIdentity, name: "Detail", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let detailViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        var stopDetail = RUMStopViewCommand.mockWith(identity: detailIdentity)
+        stopDetail.target = .scene(scene)
+        _ = scope.process(command: stopDetail, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: homeIdentity, name: "Home", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let returnedHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        XCTAssertEqual(Set([firstHomeViewID, detailViewID, returnedHomeViewID]).count, 3)
+        XCTAssertNotEqual(firstHomeViewID, returnedHomeViewID)
+    }
+
+    func testGivenFirstOccurrenceHasPendingResource_whenSameIdentityReturns_itKeepsOccurrencesIsolated() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+        let resourceKey = "home-1-resource"
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: homeIdentity,
+                name: "Home",
+                sceneIdentifier: scene,
+                attributes: ["occurrence": "home-1"]
+            ),
+            context: context,
+            writer: writer
+        )
+        let firstHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+        let firstHomeScope = try XCTUnwrap(scope.activeView)
+
+        var startResource = RUMStartResourceCommand.mockWith(resourceKey: resourceKey)
+        startResource.target = .view(firstHomeViewID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        var stopHome = RUMStopViewCommand.mockWith(identity: homeIdentity)
+        stopHome.target = .scene(scene)
+        _ = scope.process(command: stopHome, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: detailIdentity, name: "Detail", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let detailViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        let firstHomeEventCountBeforeLateStop = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count + writer.events(ofType: RUMViewUpdateEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count
+        var lateStopHome = RUMStopViewCommand.mockWith(
+            attributes: ["occurrence": "late-stop"],
+            identity: homeIdentity
+        )
+        lateStopHome.target = .scene(scene)
+        _ = scope.process(command: lateStopHome, context: context, writer: writer)
+        let firstHomeEventCountAfterLateStop = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count + writer.events(ofType: RUMViewUpdateEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count
+        XCTAssertEqual(firstHomeEventCountAfterLateStop, firstHomeEventCountBeforeLateStop)
+        XCTAssertEqual(firstHomeScope.attributes["occurrence"] as? String, "home-1")
+
+        var stopDetail = RUMStopViewCommand.mockWith(identity: detailIdentity)
+        stopDetail.target = .scene(scene)
+        _ = scope.process(command: stopDetail, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(
+                identity: homeIdentity,
+                name: "Home",
+                sceneIdentifier: scene,
+                attributes: ["occurrence": "home-2"]
+            ),
+            context: context,
+            writer: writer
+        )
+        let returnedHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+        let returnedHomeScope = try XCTUnwrap(scope.activeView)
+
+        XCTAssertTrue(scope.viewScopes.contains { $0 === firstHomeScope })
+        XCTAssertEqual(firstHomeScope.attributes["occurrence"] as? String, "home-1")
+        XCTAssertEqual(returnedHomeScope.attributes["occurrence"] as? String, "home-2")
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "post-pop",
+                target: .scene(scene)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var stopResource = RUMStopResourceCommand.mockWith(resourceKey: resourceKey)
+        stopResource.target = .view(firstHomeViewID)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        XCTAssertEqual(Set([firstHomeViewID, detailViewID, returnedHomeViewID]).count, 3)
+        XCTAssertFalse(scope.viewScopes.contains { $0 === firstHomeScope })
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+        XCTAssertTrue(scope.activeView === returnedHomeScope)
+
+        let firstHomeEvents = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }
+        XCTAssertFalse(firstHomeEvents.isEmpty)
+        XCTAssertTrue(firstHomeEvents.allSatisfy {
+            ($0.context?.contextInfo["occurrence"] as? String) == "home-1"
+        })
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, firstHomeViewID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.id, returnedHomeViewID.toRUMDataFormat)
+    }
+
+    func testGivenRestoredActiveView_whenSameIdentityStarts_itKeepsOnlyLatestOccurrenceActive() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let identity = ViewIdentifier("home")
+        let restoredSource: RUMViewScope = .mockWith(
+            parent: parent,
+            identity: identity,
+            path: "Home",
+            name: "Home",
+            sceneIdentifier: scene
+        )
+        let scope = RUMSessionScope(
+            isInitialSession: false,
+            parent: parent,
+            startTime: Date(),
+            startPrecondition: .maxDuration,
+            context: context,
+            dependencies: .mockWith(samplingRate: 100),
+            applicationState: .mockAny(),
+            resumingViewScopes: [restoredSource]
+        )
+        let restoredOccurrenceID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: identity,
+                name: "Home",
+                sceneIdentifier: scene
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let activeViews = scope.viewScopes.filter(\.isActiveView)
+        XCTAssertEqual(activeViews.count, 1)
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertEqual(activeViews.first?.identity, identity)
+        XCTAssertNotEqual(activeViews.first?.viewUUID, restoredOccurrenceID)
     }
 
     func testWhenViewsStartInDifferentScenes_itKeepsBothViewsActive() throws {
