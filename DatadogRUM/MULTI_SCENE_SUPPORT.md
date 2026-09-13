@@ -87,7 +87,8 @@ The structured probe records versioned JSONL, separates call-site source from
 mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
-signal-driven stack, split, and UIKit-transition scenarios now pass 42/42 tests.
+signal-driven stack, split, UIKit-transition, and scene-lifecycle scenarios now
+pass 43/43 tests.
 Clean iPadOS 27 runs prove
 distinct Home₁ → Detail → Home₂ occurrences, no speculative view for an aborted
 push, and fresh occurrences for same- and different-type replacements. Each run
@@ -96,7 +97,9 @@ matching backend intake. Route-owned split selection and retained return also
 pass with one exact action/Resource pair per occurrence, while the identically
 driven automatic split baseline creates internal container views and fails at its
 first semantic destination. Deterministic UIKit cancel/finish then pass 11/11 and
-13/13 with exact resolved-view work and no Primary (`EXP-108` through `EXP-112`).
+13/13 with exact resolved-view work and no Primary. Exact A-to-B open, B close,
+and continuing A work pass 9/9 without changing A's original Home UUID
+(`EXP-108` through `EXP-113`).
 Native gesture synthesis remains unavailable and is kept separate from this
 deterministic programmatic proof.
 Detailed conclusions live in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md);
@@ -111,7 +114,7 @@ exact runs and rejected paths live in
 | Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback | Repeat exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
-| Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
+| Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are now signal-driven, and A continues on its original Home occurrence after B disconnects; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Exact activation, stable simultaneous-visible peer continuity, genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
 | Normal applications | DatadogRUM 1,153/1,153, DatadogTrace 151/151, repository lint, and both probes build | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
@@ -203,27 +206,28 @@ customer workflow, and required tests live only in
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `f4c8669c0` (`Treat regular split primaries as structural`). The
-latest harness checkpoint is `df0322619` (`Drive deterministic UIKit
-transitions`), following `96a6208ff`/`b1d74b8cc` for signal-driven SwiftUI split
-selection and its evidence. All are unsigned local development commits and must
-not be pushed. The
+latest harness checkpoint is `45e5999e4` (`Coordinate probe scene lifecycle
+explicitly`), following `df0322619` and documentation checkpoint `4f1bf4d55`.
+All are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
 `EXP-090` through `EXP-105` establish the debug SwiftUI occurrence mechanics,
 including abort, replacement, retained return, state preservation, and remount.
-`EXP-106` through `EXP-112` make stack, split, and UIKit transition results
-signal-driven, locally self-validating, and backend-confirmed. Native gesture,
-adaptive topology, and genuine lifecycle rows remain separate. The complete
+`EXP-106` through `EXP-113` make stack, split, UIKit transition, and exact
+open/close results signal-driven, locally self-validating, and backend-confirmed.
+Native gesture, activation, adaptive topology, and genuine lifecycle rows remain
+separate. The complete
 chronology and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-112`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-113`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Extend exact scene execution to open, activate, close, lifecycle, and peer
-   continuity. This is the next implementation/experiment slice.
+1. Extend exact scene execution from the now-passing open/close slice to
+   activation, foreground/background lifecycle acknowledgements, and stable
+   simultaneous-visible peer continuity.
 2. Prepare RFC/API review for the optional container-level SwiftUI semantic
    integration. It must consume a customer path/router and centralized resolver,
    coexist with automatic tracking, preserve customer state, and suppress
@@ -279,8 +283,8 @@ owns the finished phases and full release matrix. Continue in this order:
   `FAIL`, `SKIPPED`, and `INCONCLUSIVE`. Its observable driver waits for exact
   scene, path/selection, destination, and RUM-occurrence signals. Home return,
   abort, same-/different-type replacement, split replacement, and retained split
-  return plus deterministic UIKit cancel/finish pass 42/42 tests and clean live
-  runs with one final verdict per run. The automatic SwiftUI split control
+  return plus deterministic UIKit cancel/finish and exact scene open/close pass
+  43/43 tests and clean live runs with one final verdict per run. The automatic SwiftUI split control
   produces the intended semantic `FAIL`.
   This improves evidence quality but does not change the RUM support verdict.
 - UIKit split scenario manifests forbid Primary as a RUM view. On iOS 27 in a
@@ -300,7 +304,7 @@ As of 2026-09-13:
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 42/42. Clean runs prove
+  oracle, scene registry, and observable driver pass 43/43. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -309,6 +313,10 @@ As of 2026-09-13:
   retains S2; completion creates a fresh returned S1. Backend intake has exact
   marker pairs, no Primary, no errors, and no work on the startup hosting fallback
   (`EXP-112`).
+- A clean exact-lifecycle run passes 9/9: A opens B through A's registered
+  executor, B emits and uploads `before-close`, B disconnects, then A emits and
+  uploads `after-peer-close` on A's unchanged Home UUID (`EXP-113`). The
+  fullscreen simulator topology does not close simultaneous-visible continuity.
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 

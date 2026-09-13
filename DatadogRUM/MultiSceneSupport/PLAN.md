@@ -121,8 +121,11 @@ Current execution order:
    path. Clean runs pass 11/11 and 13/13 locally and in backend intake; the probe
    plan passes 42/42 and the complete RUM plan passes 1,153/1,153. Keep native
    gesture proof in the real-device/human queue.
-5. Extend the exact scene driver across open, activate, close, lifecycle, and
-   visible-peer continuity. This is the next implementation/experiment slice.
+5. Partially completed in `45e5999e4` and `EXP-113`: exact A-to-B open waits for
+   B readiness, exact B close waits for B disconnect, and subsequent A work stays
+   on A's original Home occurrence. The probe plan passes 43/43. Continue this
+   slice with exact activation, foreground/background lifecycle acknowledgements,
+   and stable simultaneous-visible peer continuity.
 6. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
@@ -176,7 +179,8 @@ experiment; it does not itself change the SDK support verdict.
    generation. It rejects aliasing and stale handles, and its internal future
    Window Execution Context seam is not serialized. The probe plan passes 31/31;
    a clean iPadOS 27 run and backend session validate the Home → Detail prefix.
-   Exact open, activate, close, and wait step execution remains part of phase 4.
+   Exact activation remains part of the lifecycle-driving phase; exact open and
+   close are completed in `EXP-113`.
 4. Initial slice completed in `34ba7eabf` and `EXP-109`: drive
    `swiftui.stack.return` through observable scene, path, destination, and
    RUM-occurrence acknowledgements. The driver emits exactly one terminal result,
@@ -202,19 +206,28 @@ experiment; it does not itself change the SDK support verdict.
    begin, exact progress, resolution request, and coordinator result. Cancellation
    retains S2; completion requires fresh returned S1; both require final exact
    action/Resource ownership. The complete probe plan passes 42/42.
-8. Add one reproducible run command that preflights capabilities, records source
+8. Completed in `45e5999e4` and `EXP-113`: `open-window` requires an exact source
+   and target, dispatches only through the source executor, and acknowledges the
+   target's readiness. `close-window` dispatches through the exact target and
+   acknowledges its disconnect. The close scenario requires B's pre-close
+   Resource and A's post-close action/Resource on their first Home occurrences.
+   One clean iPadOS 27 run passes 9/9 locally and in backend intake; the complete
+   probe plan passes 43/43. Activation and simultaneous-visible topology remain
+   open.
+9. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The deterministic stack, split, and UIKit-transition harness loop is complete
-through `EXP-112`: three clean
+The deterministic stack, split, UIKit-transition, and exact open/close harness
+loop is complete through `EXP-113`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
 split baseline fails 0/9 for missing semantic views. UIKit cancel/finish pass
-11/11 and 13/13 without a Primary RUM view. The deliberately wrong-view fixture
+11/11 and 13/13 without a Primary RUM view; exact B close with continuing A work
+passes 9/9. The deliberately wrong-view fixture
 continues to fail locally with an actionable reason.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 

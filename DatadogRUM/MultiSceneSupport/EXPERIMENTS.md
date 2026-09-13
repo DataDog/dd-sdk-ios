@@ -68,8 +68,10 @@ boundary, in this order:
 | 51 | `Document signal-driven split selection evidence` | `EXP-111` local/backend evidence, automatic semantic failure control, oracle corrections, and refreshed handoff state |
 | 52 | `Treat regular split primaries as structural` | iOS 27 multi-scene suppression of regular structural Primary/supplementary UIKit split columns, retained same-column reconciliation, and compatibility regressions |
 | 53 | `Drive deterministic UIKit transitions` | Exact-scene begin/progress/resolve commands, coordinator-result signals, semantic UIKit names, resolved-view marker checks, and focused cancel/finish driver tests |
+| 54 | `Document signal-driven UIKit transition evidence` | `EXP-112` local/backend evidence, structural-view verdict, validation snapshot, and refreshed resume state |
+| 55 | `Coordinate probe scene lifecycle explicitly` | Exact source-to-target window open, exact target close, readiness/disconnect acknowledgements, peer-continuity expectations, and focused driver coverage |
 
-Rows 1-53 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-55 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -81,7 +83,7 @@ Rows 1-53 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
 Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
 is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
-`df0322619`.
+`df0322619`. Row 54 is `4f1bf4d55`, and row 55 is `45e5999e4`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -223,6 +225,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-110 | `observable-stack-abort-20260913-1800-a`; `observable-stack-same-type-20260913-1803-a`; `observable-stack-different-type-20260913-1806-a`; strengthened reruns `observable-stack-abort-20260913-1810-b`, `observable-stack-same-type-20260913-1812-b`, `observable-stack-different-type-20260913-1814-b` | `0550e989-8427-494f-b04a-505255a8acce`; `72dc8338-b5eb-470b-8d39-ecfa24f455ff`; `e7a99a66-a9d4-45e0-9719-e152de01b1a3`; `c8f6fb75-62cb-4f43-9515-988ae36d1586`; `5dea4da1-8949-4760-a89b-41c2758aebb0`; `8b913d29-e0f5-4449-880f-7e7c823e3b91` | iPadOS 27 | Signal-driven stack abort and replacement acceptance. The first clean trio proved the driver and view chains, then the oracle was strengthened to require a decisive action and Resource on the final view. The clean reruns emitted one local `PASS` each: abort 5/5 with only Home `fb10de5b…`; same-type replacement 6/6 with Home `22e06720…`, Detail₁ `40d87f4b…`, and distinct same-named Detail₂ `f75ca7dc…`; different-type replacement 6/6 with Home `47ac4967…`, Detail `b4cb7536…`, and Alternate `9a5ca46d…`. Backend intake independently reports those exact view sets, the required final action/Resource owners, and no error bucket. All 37 probe tests and repository lint pass. This validates deterministic experimental occurrence/attribution behavior, not automatic zero-code discovery or native gestures. |
 | EXP-111 | `observable-split-selection-20260913-1831-a`; corrected `observable-split-selection-20260913-1840-b`; `observable-split-return-20260913-1843-a`; corrected `observable-split-return-20260913-1844-b`; automatic baseline `observable-split-automatic-20260913-1846-a` | `cc00fae2-3911-4846-b8b8-68f0c06b9c1f`; `ab78101b-8528-4e0c-9505-1d0bc926ba91`; `84a12a1a-b251-41e0-8f9a-53404427b628`; `9f5a87b0-75b0-4da3-9902-0ce3dc059c57`; `ba04a828-38f8-4135-8e1d-4c25ca875fb8` | iPadOS 27 | Signal-driven split acceptance and automatic failure baseline. The corrected route-owned runs pass 10/10 and 13/13: Detail₁ → Detail₂ → Placeholder and Detail₁ → Detail₂₁ → Placeholder → fresh Detail₂₂ each have one distinct UUID plus an exact action/Resource pair. Backend intake agrees and reports no errors. Automatic tracking fails 0/9: Detail₁ work uses `ApplicationLaunch`, while Detail₂ and Placeholder share one internal `NavigationStackHostingController` UUID. The two earlier local failures are retained as harness lessons: Resource completion is asynchronous ownership evidence rather than a navigation-order clock, and an unordered completion check must continue past an earlier same-named occurrence. All 40 probe tests and repository lint pass. |
 | EXP-112 | Baseline `observable-uikit-cancel-20260913-1911-a`; first corrected `observable-uikit-cancel-20260913-1916-b`, `observable-uikit-finish-20260913-1917-a`; final `observable-uikit-cancel-20260913-1923-c`, `observable-uikit-finish-20260913-1925-b` | `dbf47e00-d912-4ef8-862b-abe462931710`; `edc0ba78-6225-4271-9b7d-97dcb34baa2a`; `7ec940ff-5960-45b9-83c6-01b24a04e1cc`; `df3e4faf-727a-4e5b-ae73-c7bac5984658`; `7f1dcd04-7b71-4285-a39a-89cfb81d6cd4` | iPadOS 27 | Signal-driven UIKit cancellation/completion acceptance plus a shipping structural-view fix. The baseline drove a real 35% `UIPercentDrivenInteractiveTransition` correctly but failed immediately because Primary became a RUM view. The iOS 27 declared-multi-scene handler now ignores regular-width structural Primary/supplementary columns and retains same-column pending reconciliation. Final cancellation passes 11/11, keeps S2 `24edf931…`, and attributes three action/Resource pairs to it; completion passes 13/13 and emits S1 `983bb960…` → S2 `b99009d3…` → fresh returned S1 `38058b25…`, with exact 1/1, 1/1, and 2/2 action/Resource ownership. Backend intake has no Primary and no errors. The native SwiftUI host still emits a short fallback before S1, but it owns no probe work. Probe tests pass 42/42, the full RUM plan passes 1,153/1,153, and repository lint reports zero violations. |
+| EXP-113 | Interrupted `observable-window-close-20260913-2016-a`; final `observable-window-close-20260913-2020-b` | `6a37d312-8ca1-41fc-87e4-b42d5142fb64`; `be396759-0393-42e1-b08e-acb2a5cb0c7c` | iPadOS 27 | Exact scene-lifecycle driver acceptance. `open-window` dispatches through exact source A and waits for exact target B readiness; `close-window` dispatches through exact B and waits for B disconnect. The first launch session expired after B became ready and before a terminal result, so it is retained as inconclusive. The clean retry acknowledged all five steps and passed 9/9. B `before-close` action/Resource use B Home `22dce95f…`; after B disconnect generation 1, A `after-peer-close` action/Resource use unchanged A Home `f7f72acf…`. Backend intake confirms both pairs, two independent Home view IDs, and no error bucket. The fullscreen simulator did not prove both windows visible concurrently. Probe tests pass 43/43 and repository lint remains clean. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -246,7 +249,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
-| P0 | `EXP-041`, `EXP-089` | Fullscreen switching backgrounded or reactivated A, preventing visible-peer close continuity and a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
+| P0 | `EXP-041`, `EXP-089`, `EXP-113` | Exact open/close now passes, but fullscreen switching backgrounded or reactivated A and never proved stable simultaneous visibility or a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then exact-close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
@@ -2773,6 +2776,71 @@ regular structural-Primary filtering. It does not close the application-subclass
 container, compact/adaptive transition, stable simultaneous-window topology,
 genuine human edge gesture, or live ordinary-app rows.
 
+### 2026-09-13 — EXP-113: exact scene open, close, and peer continuity
+
+The observable driver now gives `open-window` two explicit identities:
+`scene` is the already-live source executor and `value` is the requested target.
+It rejects a missing, identical, undeclared, or already-live target, invokes
+SwiftUI `openWindow(id:value:)` only through the exact source root, and waits for
+the target's existing `scene-ready` signal before acknowledging the step.
+`close-window` invokes `dismissWindow(id:value:)` through the exact target root
+and waits for that target's existing disconnected lifecycle signal. No step
+selects a member of unordered `UIApplication.openSessions`.
+
+The `windows.close-with-resource` scenario is now fully observable rather than
+timer-driven. It waits for A, asks A to open B, emits `before-close` in B, closes
+B, then emits `after-peer-close` in A. Its timeline requires the B pre-close
+Resource on B Home occurrence 1 and the A post-close action and Resource on A
+Home occurrence 1. Replacing or restarting A while B closes therefore fails the
+scenario even if the marker name is otherwise present.
+
+The first clean attempt, `observable-window-close-20260913-2016-a`, session
+`6a37d312-8ca1-41fc-87e4-b42d5142fb64`, opened B and observed distinct A/B Home
+UUIDs. Xcode's launch session expired after B's `scene-ready` and before the open
+step acknowledgement or a terminal semantic result. It is inconclusive and is
+not support evidence; it also emitted no SDK crash evidence. A new clean install
+was required rather than interpreting the partial prefix.
+
+The final clean run, `observable-window-close-20260913-2020-b`, session
+`be396759-0393-42e1-b08e-acb2a5cb0c7c`, acknowledged all five steps and emitted
+one 9/9 `PASS`. Scene A retained native scene
+`58904B41-3982-4B3E-A35A-49ED0BA83ABE` and Home view
+`f7f72acf-3541-4cfc-bf68-0d87b8ac939a`. B resolved as native scene
+`E7CF8AF3-4EA1-4CF9-A932-2A051319C09E` with independent Home view
+`22dce95f-2536-4374-9340-c1c5d386fbb4`. The exact evidence chain is:
+
+1. A's executor requested B and the driver acknowledged B's readiness.
+2. B's `before-close` action and Resource both used B Home `22dce95f…`.
+3. `dismissWindow` ran through B's executor and B emitted disconnect generation 1.
+4. A's `after-peer-close` action and Resource both used the original A Home
+   `f7f72acf…`; A did not restart as Home occurrence 2.
+
+Backend aggregation contains independent A and B Home views, four actions and
+four Resources on each, one long task on each, and no error bucket. A targeted
+raw query independently confirms the decisive B pair carries source scene B and
+view `22dce95f…`, while the decisive A pair carries source scene A and view
+`f7f72acf…`. This confirms payload persistence and backend interpretation, not
+only mapper output.
+
+Two boundaries remain explicit. Device Hub presented each window fullscreen and
+reported both scene snapshots as `foreground-inactive`; this run proves exact
+scene addressing and surviving A ownership, but not two simultaneously visible
+interactive windows. Exact activation is still unsupported by the driver. Those
+rows stay in the physical-device/human queue. This slice changes the evidence
+harness only and does not by itself expand the shipping SDK support claim.
+
+Two discarded implementation paths are preserved for handoff. The first draft
+added a separate `scene-control` signal and let `open-window` choose an implicit
+opener; review showed the existing readiness/disconnect signals already provide
+the effect acknowledgement and that implicit selection would hide the very
+source identity under test, so the draft was removed before validation. The first
+focused test also constructed B's `UIWindow` inline; the registry intentionally
+owns windows weakly, so the fixture immediately lost B. Retaining the window in
+the test fixed the fixture without weakening production ownership. The complete
+probe plan passes 43/43 and repository lint reports zero violations across 713
+source and 699 test files. Commit `45e5999e4` contains the exact-path harness
+checkpoint.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -2815,6 +2883,13 @@ genuine human edge gesture, or live ordinary-app rows.
   future Execution Context seam. It makes exact experiment addressing and joins
   deterministic; production RUM scopes must still preserve their own scene
   ownership, and backend Execution Context serialization is separate work.
+- Do not add a second scene-control acknowledgement stream or let `open-window`
+  choose an implicit live source. Existing `scene-ready` and disconnected signals
+  are the effect acknowledgements; explicit source and target identities keep the
+  command itself testable.
+- Do not make the scene registry strongly own `UIWindow` merely to stabilize a
+  test. The exact-scene test must retain its fixture window just as UIKit retains
+  a live application window; weak registry ownership is intentional.
 - Do not query this probe with `@probe.run_id`; use
   `@context.probe.run_id` or fall back to `service:ios-sdk-multi-scene-probe`
   followed by an exact session-ID query.

@@ -59,7 +59,7 @@ The catalog currently preserves these experiment families:
 | `uikit.split.native-pop-control`, `uikit.split.native-pop-cancel`, `uikit.split.native-pop-finish` | `EXP-081`, `EXP-082` | Prepared; cancellation needs hardware or human input |
 | `uikit.split.concurrent-scenes` | `EXP-086` | Existing automation; simultaneous topology remains unproven |
 | `windows.parallel-navigation` | `EXP-033`, `EXP-059`, `EXP-103` | Existing automation; simultaneous topology remains unproven |
-| `windows.close-with-resource` | `EXP-041` | Existing close control; visible-peer proof needs hardware |
+| `windows.close-with-resource` | `EXP-041`, `EXP-113` | Signal-driven PASS; simultaneous-visible peer proof needs hardware |
 | `actions.exact-source-handoff` | `EXP-089` | Existing filtered control; discriminator needs simultaneous topology |
 | `swiftui.reader.synthetic-reconnect`, `swiftui.reader.synthetic-reconnect-scene-b` | `EXP-066` | Existing synthetic control |
 | `windows.restoration` | `EXP-042` | Prepared; concurrent restoration needs hardware or human setup |
@@ -77,12 +77,13 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 42/42. The stack
+future Execution Context seam. The generated test plan passes 43/43. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
-scenarios drive their exact scene, wait for observable path/selection,
+scenarios, plus exact scene open/close, drive their exact scene and wait for
+observable readiness, path/selection,
 destination, transition, and RUM-occurrence signals, acknowledge every step, and
 emit exactly one final result. Clean iPadOS 27 semantic runs pass locally and in
-backend intake (`EXP-109` through `EXP-112`). The automatic SwiftUI split control
+backend intake (`EXP-109` through `EXP-113`). The automatic SwiftUI split control
 executes the same selection steps but fails because it emits internal container
 views instead of semantic selections. Other scenarios remain at the execution
 level shown in the table; a modeled timeline or partial live prefix is not itself
@@ -102,7 +103,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.stack.different-type-replacement`, plus
 `swiftui.split.automatic-baseline`, `swiftui.split.same-type-selection`, and
 `swiftui.split.retained-return`, plus `uikit.split.pop-cancel` and
-`uikit.split.pop-finish`, use the signal-driven execution loop.
+`uikit.split.pop-finish`, plus `windows.close-with-resource`, use the
+signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
 occurrences before advancing. The abort timeline forbids a speculative Detail;
@@ -114,6 +116,16 @@ Resource ownership must still match the view captured at start. Ordered view
 starts and actions remain strict. Completion conditions scan past earlier
 same-named occurrences so a returned destination can satisfy an
 occurrence-specific condition.
+
+An `open-window` step names its exact source in `scene` and exact target in
+`value`. The driver dispatches only through the source scene's registered
+executor, then acknowledges the command only after the target emits
+`scene-ready`. A `close-window` step dispatches through the target scene's exact
+executor and waits for that same scene's disconnect generation before continuing.
+It never selects a scene from unordered application session collections. In
+`EXP-113`, A opened B, B emitted `before-close`, B disconnected, and A then
+emitted `after-peer-close` without replacing A's original Home occurrence.
+Activation and stable simultaneous-visible topology remain separate work.
 
 The UIKit transition driver separately begins a real
 `UIPercentDrivenInteractiveTransition`, observes its accepted coordinator,
