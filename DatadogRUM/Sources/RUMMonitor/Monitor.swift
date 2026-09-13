@@ -449,47 +449,53 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - resources
 
     func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: request.url?.absoluteString ?? "unknown_url",
+            httpMethod: RUMMethod(httpMethod: request.httpMethod),
+            kind: RUMResourceType(request: request),
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: request.url?.absoluteString ?? "unknown_url",
-                httpMethod: RUMMethod(httpMethod: request.httpMethod),
-                kind: RUMResourceType(request: request),
-                spanContext: nil
-            )
+            command: command
         )
     }
 
     func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: url.absoluteString,
+            httpMethod: .get,
+            kind: nil,
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: url.absoluteString,
-                httpMethod: .get,
-                kind: nil,
-                spanContext: nil
-            )
+            command: command
         )
     }
 
     func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: urlString,
+            httpMethod: httpMethod,
+            kind: nil,
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: urlString,
-                httpMethod: httpMethod,
-                kind: nil,
-                spanContext: nil
-            )
+            command: command
         )
     }
 
@@ -575,40 +581,46 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - actions
 
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMAddUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            instrumentation: .manual,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentation: .manual,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMStartUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            instrumentation: .manual,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMStartUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentation: .manual,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMStopUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMStopUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
@@ -695,10 +707,23 @@ extension Monitor: RUMMonitorProtocol {
 
     private func processOperationStep(_ operationStep: RUMOperationStepVitalCommand) {
         var operationStep = operationStep
-        if let sceneIdentifier = RUMContextHandoff.current?.sceneIdentifier {
-            operationStep.target = .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
-        }
+        operationStep.target = currentExecutionTarget
         process(command: operationStep)
+    }
+
+    private var currentExecutionTarget: RUMCommandTarget {
+        guard let handoff = RUMContextHandoff.current else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID
+            .flatMap(UUID.init(uuidString:))
+            .map(RUMUUID.init(rawValue:)) {
+            return .view(viewID)
+        }
+        if let sceneIdentifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        return .processRepresentative
     }
 
     private func instanceSuffix(_ operationKey: String?) -> String {
