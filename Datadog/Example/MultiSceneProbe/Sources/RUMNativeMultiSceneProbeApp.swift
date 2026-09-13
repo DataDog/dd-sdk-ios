@@ -66,8 +66,14 @@ enum ProbeRuntime {
         scenarioID: scenario?.identifier ?? "invalid"
     )
     @MainActor static let sceneRegistry = ProbeSceneRegistry()
-    static let usesObservableScenarioDriver =
-        scenario?.identifier == "swiftui.stack.return"
+    static let usesObservableScenarioDriver = scenario.map {
+        [
+            "swiftui.stack.return",
+            "swiftui.stack.abort",
+            "swiftui.stack.same-type-replacement",
+            "swiftui.stack.different-type-replacement"
+        ].contains($0.identifier)
+    } ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil

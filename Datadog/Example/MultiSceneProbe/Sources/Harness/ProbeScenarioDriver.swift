@@ -330,7 +330,7 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(observation)
 
-        case .setSwiftUIPath:
+        case .setSwiftUIPath, .replaceSwiftUIDestination:
             guard
                 let scene = step.scene,
                 let value = step.value
@@ -349,6 +349,30 @@ internal final class ProbeScenarioDriver {
                 timeoutNanoseconds: stepTimeoutNanoseconds
             ) else {
                 return .failed("timed out waiting for path \(value) in \(scene)")
+            }
+            return .acknowledged(signal)
+
+        case .pushAndRevertSwiftUIPath:
+            guard
+                let scene = step.scene,
+                step.value != nil
+            else {
+                return .failed("scene or path is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .path(scene: scene, value: "home"),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for reverted Home path in \(scene)"
+                )
             }
             return .acknowledged(signal)
 

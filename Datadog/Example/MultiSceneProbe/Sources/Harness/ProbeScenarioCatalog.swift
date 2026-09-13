@@ -192,7 +192,8 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: [
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
             ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "detail-1", interval: "aborted-navigation"),
-            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 1, name: "post-aborted-navigation")
+            ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 1, name: "post-aborted-navigation"),
+            ProbeExpectation(.resource, scene: "scene-A", screen: "home", occurrence: 1, name: "post-aborted-navigation")
         ],
         runtimeOptions: runtime {
             $0.automaticallyAbortsDetail = true
@@ -210,7 +211,9 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: [
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 1)
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-2", occurrence: 1),
+            ProbeExpectation(.action, scene: "scene-A", screen: "detail-2", occurrence: 1, name: "binding-update-2"),
+            ProbeExpectation(.resource, scene: "scene-A", screen: "detail-2", occurrence: 1, name: "binding-update-2")
         ],
         runtimeOptions: runtime {
             $0.automaticallyNavigates = true
@@ -229,7 +232,9 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: [
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "detail-1", occurrence: 1),
-            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "alternate", occurrence: 1)
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "alternate", occurrence: 1),
+            ProbeExpectation(.action, scene: "scene-A", screen: "alternate", occurrence: 1, name: "on-appear"),
+            ProbeExpectation(.resource, scene: "scene-A", screen: "alternate", occurrence: 1, name: "on-appear")
         ],
         runtimeOptions: runtime {
             $0.automaticallyNavigates = true

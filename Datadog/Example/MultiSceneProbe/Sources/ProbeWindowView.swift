@@ -261,6 +261,7 @@ struct ProbeWindowRoot: View {
         .task {
             guard
                 ProbeRuntime.automaticallyNavigates,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didScheduleNavigation
             else {
                 return
@@ -313,6 +314,7 @@ struct ProbeWindowRoot: View {
             guard
                 didShowDetail,
                 ProbeRuntime.automaticallyReplacesDetail,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didScheduleDetailReplacement
             else {
                 return
@@ -328,6 +330,7 @@ struct ProbeWindowRoot: View {
             guard
                 didShowDetail,
                 ProbeRuntime.automaticallyReplacesDetailInstance,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didScheduleDetailInstanceReplacement
             else {
                 return
@@ -359,6 +362,7 @@ struct ProbeWindowRoot: View {
             guard
                 ProbeRuntime.automaticallyAbortsDetail,
                 !ProbeRuntime.automaticallyNavigates,
+                !ProbeRuntime.usesObservableScenarioDriver,
                 !didScheduleAbortedDetail
             else {
                 return
@@ -368,41 +372,7 @@ struct ProbeWindowRoot: View {
             guard !Task.isCancelled else {
                 return
             }
-            ProbeRuntime.record("navigation abort requested source=\(window.label) destination=detail")
-            ProbeRuntime.eventRecorder.record(
-                ProbeSignal(
-                    kind: .intervalBegan,
-                    semanticContext: ProbeSemanticContext(
-                        logicalSceneID: window.label,
-                        nativeSceneID: sceneSessionID,
-                        screen: "home"
-                    ),
-                    interval: "aborted-navigation"
-                )
-            )
-            navigationPath.wrappedValue = [.detail(1)]
-            navigationPath.wrappedValue = []
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled else {
-                return
-            }
-            ProbeRuntime.eventRecorder.record(
-                ProbeSignal(
-                    kind: .intervalEnded,
-                    semanticContext: ProbeSemanticContext(
-                        logicalSceneID: window.label,
-                        nativeSceneID: sceneSessionID,
-                        screen: "home"
-                    ),
-                    interval: "aborted-navigation"
-                )
-            )
-            ProbeRuntime.emitLifecycleMarker(
-                window: window,
-                sceneSessionID: sceneSessionID,
-                screen: "home",
-                phase: "post-aborted-navigation"
-            )
+            pushAndRevertDetail()
         }
         .task(id: sceneSessionID) {
             guard
@@ -836,7 +806,7 @@ struct ProbeWindowRoot: View {
                 )
             }
             switch step.kind {
-            case .setSwiftUIPath:
+            case .setSwiftUIPath, .replaceSwiftUIDestination:
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI path is missing")
                 }
@@ -852,6 +822,13 @@ struct ProbeWindowRoot: View {
                 default:
                     return .rejected(reason: "unsupported SwiftUI path \(value)")
                 }
+            case .pushAndRevertSwiftUIPath:
+                guard step.value == "detail-1" else {
+                    return .rejected(
+                        reason: "unsupported reverted SwiftUI path \(step.value ?? "nil")"
+                    )
+                }
+                pushAndRevertDetail()
             case .emitMarker:
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
@@ -898,6 +875,49 @@ struct ProbeWindowRoot: View {
             return
         }
         ProbeRuntime.recordSceneSnapshot(snapshot, kind: kind)
+    }
+
+    private func pushAndRevertDetail() {
+        ProbeRuntime.record(
+            "navigation abort requested source=\(window.label) destination=detail"
+        )
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: "home"
+                ),
+                interval: "aborted-navigation"
+            )
+        )
+        navigationPath.wrappedValue = [.detail(1)]
+        navigationPath.wrappedValue = []
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else {
+                return
+            }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "home"
+                    ),
+                    interval: "aborted-navigation"
+                )
+            )
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "home",
+                phase: "post-aborted-navigation"
+            )
+        }
     }
 
     private func updateSceneRoute() {
