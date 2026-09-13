@@ -193,7 +193,7 @@ internal struct ProbeGeometry: Codable, Equatable {
 }
 
 internal struct ProbeSignal: Codable, Equatable {
-    static let schemaVersion = 4
+    static let schemaVersion = 5
     static let supportedSchemaVersions = 1 ... schemaVersion
 
     let schemaVersion: Int

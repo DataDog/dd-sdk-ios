@@ -28,6 +28,11 @@ enum ProbeRUMViewOrigin: String, Codable, CaseIterable {
     case automatic
 }
 
+enum ProbeRUMViewOwnerRelation: String, Codable, CaseIterable {
+    case same
+    case different
+}
+
 struct ProbeExpectation: Codable, Equatable {
     let kind: ProbeExpectationKind
     let scene: String?
@@ -38,6 +43,10 @@ struct ProbeExpectation: Codable, Equatable {
     let sourceScreen: String?
     let rumViewOrigin: ProbeRUMViewOrigin?
     let ownerViewStartedAfterSceneOpen: String?
+    let ownerViewStartedAfterStep: ProbeStepKind?
+    let ownerViewStartedAfterStepValue: String?
+    let ownerViewReferenceAction: String?
+    let ownerViewRelation: ProbeRUMViewOwnerRelation?
     let interval: String?
     let outcome: ProbeTransitionOutcome?
 
@@ -51,6 +60,10 @@ struct ProbeExpectation: Codable, Equatable {
         sourceScreen: String? = nil,
         rumViewOrigin: ProbeRUMViewOrigin? = nil,
         ownerViewStartedAfterSceneOpen: String? = nil,
+        ownerViewStartedAfterStep: ProbeStepKind? = nil,
+        ownerViewStartedAfterStepValue: String? = nil,
+        ownerViewReferenceAction: String? = nil,
+        ownerViewRelation: ProbeRUMViewOwnerRelation? = nil,
         interval: String? = nil,
         outcome: ProbeTransitionOutcome? = nil
     ) {
@@ -63,6 +76,10 @@ struct ProbeExpectation: Codable, Equatable {
         self.sourceScreen = sourceScreen
         self.rumViewOrigin = rumViewOrigin
         self.ownerViewStartedAfterSceneOpen = ownerViewStartedAfterSceneOpen
+        self.ownerViewStartedAfterStep = ownerViewStartedAfterStep
+        self.ownerViewStartedAfterStepValue = ownerViewStartedAfterStepValue
+        self.ownerViewReferenceAction = ownerViewReferenceAction
+        self.ownerViewRelation = ownerViewRelation
         self.interval = interval
         self.outcome = outcome
     }

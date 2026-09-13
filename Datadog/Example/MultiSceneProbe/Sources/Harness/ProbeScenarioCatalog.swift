@@ -19,6 +19,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
         swiftUICoexistenceSemanticAAutomaticB,
+        swiftUICoexistenceAutomaticManualSheet,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
         swiftUIStackNativePopFinish,
@@ -331,9 +332,9 @@ enum ProbeScenarioCatalog {
         layout: .stack,
         steps: [
             ProbeStep(.waitForSceneReady, scene: "scene-A"),
-            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "sheet"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "sheet"),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:sheet"),
-            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:home#2")
         ],
         completionConditions: [
@@ -346,6 +347,153 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.viewStopped, scene: "scene-A", screen: "sheet", occurrence: 1),
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2)
         ]
+    )
+
+    private static let swiftUICoexistenceAutomaticManualSheet = ProbeScenario(
+        identifier: "swiftui.coexistence.automatic-manual-sheet",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "automatic-home-before-sheet"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "manual-sheet-active"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:sheet-dismissed-settled"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: "rum-view:scene-A/sheet#1"
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sheet-dismissed-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "automatic-home-before-sheet",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sheet-dismissed-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "sheet-dismissed-immediate",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .action,
+                name: "automatic-home-before-sheet",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "automatic-home-before-sheet",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                name: "manual-sheet-active",
+                sourceScene: "scene-A",
+                sourceScreen: "sheet",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                name: "manual-sheet-active",
+                sourceScene: "scene-A",
+                sourceScreen: "sheet",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sheet-dismissed-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "automatic-home-before-sheet",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sheet-dismissed-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "automatic-home-before-sheet",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sheet-dismissed-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "sheet-dismissed-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sheet-dismissed-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: "sheet-dismissed-immediate",
+                ownerViewRelation: .same
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.manualSwiftUIViewScreensByScene = ["scene-A": ["sheet"]]
+        }
     )
 
     private static let swiftUIStackNativePopCancel = ProbeScenario(

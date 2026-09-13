@@ -17,6 +17,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
+                "swiftui.coexistence.automatic-manual-sheet",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
@@ -46,6 +47,32 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.expectedSemanticTimeline.contains {
                 $0.scene == "scene-A"
                     && $0.rumViewOrigin == .semantic
+            }
+        )
+    }
+
+    func testAutomaticManualSheetTargetsOnlyTheExceptionalScreen() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.automatic-manual-sheet"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertEqual(
+            scenario.runtimeOptions.manualSwiftUIViewScreensByScene,
+            ["scene-A": ["sheet"]]
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.screen == "sheet" && $0.rumViewOrigin == .semantic
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "sheet-dismissed-settled"
+                    && $0.rumViewOrigin == .automatic
+                    && $0.ownerViewRelation == .same
             }
         )
     }
@@ -112,6 +139,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(resolution.manifest.runID, "generated-run-id")
         XCTAssertEqual(resolution.manifest.runMode, .clean)
         XCTAssertEqual(resolution.manifest.resolutionSource, .defaultScenario)
+        XCTAssertEqual(resolution.manifest.schemaVersion, 2)
     }
 
     func testNamedScenarioResolvesCommandLineMetadata() {

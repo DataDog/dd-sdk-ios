@@ -133,6 +133,12 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     }
 
     private var usesExplicitTracking: Bool {
+        if ProbeRuntime.usesManualSwiftUIViewTracking(
+            in: window.label,
+            screen: screen
+        ) {
+            return true
+        }
         if ProbeRuntime.usesAutomaticSwiftUIViewTracking {
             return false
         }
@@ -301,7 +307,10 @@ struct ProbeWindowRoot: View {
                 navigationContent
             }
         }
-        .sheet(isPresented: $isSheetPresented) {
+        .sheet(
+            isPresented: sheetPresentation,
+            onDismiss: sheetDidDismiss
+        ) {
             ProbeRUMTrackedScreen(
                 window: window,
                 sceneSessionID: sceneSessionID,
@@ -596,11 +605,11 @@ struct ProbeWindowRoot: View {
             bindingGeneration: bindingGeneration(for:),
             navigationOccurrenceSource: navigationOccurrenceSource
         ) {
-            ProbeHomeView(
+                ProbeHomeView(
                 window: window,
                 sceneSessionID: sceneSessionID,
                 openDetail: openDetail,
-                openSheet: { isSheetPresented = true },
+                openSheet: { setSheetPresented(true) },
                 closeCurrentWindow: closeCurrentWindow,
                 openPeer: openPeer
             )
@@ -736,6 +745,9 @@ struct ProbeWindowRoot: View {
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection?.screen ?? "split-empty"
         }
+        if isSheetPresented {
+            return "sheet"
+        }
         return currentNavigationScreen
     }
 
@@ -743,7 +755,96 @@ struct ProbeWindowRoot: View {
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection.map { [$0.screen] } ?? []
         }
-        return navigationPathDescription(for: path)
+        let navigationRoute = navigationPathDescription(for: path)
+        return isSheetPresented ? navigationRoute + ["sheet"] : navigationRoute
+    }
+
+    private var sheetPresentation: Binding<Bool> {
+        Binding(
+            get: { isSheetPresented },
+            set: { setSheetPresented($0) }
+        )
+    }
+
+    private func setSheetPresented(_ isPresented: Bool) {
+        guard isSheetPresented != isPresented else {
+            return
+        }
+        let previousRoute = currentSceneRoute
+        if isPresented {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentSceneScreen
+                    ),
+                    interval: "manual-sheet-active"
+                )
+            )
+        }
+        isSheetPresented = isPresented
+        navigationMutation += 1
+        updateSceneRoute()
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentSceneScreen
+                ),
+                previousNavigationPath: previousRoute,
+                navigationPath: currentSceneRoute,
+                mutation: navigationMutation
+            )
+        )
+        if !isPresented {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentSceneScreen
+                    ),
+                    interval: "manual-sheet-active"
+                )
+            )
+        }
+        ProbeRuntime.record(
+            "sheet presentation mutated source=\(window.label) "
+                + "presented=\(isPresented) mutation=\(navigationMutation)"
+        )
+    }
+
+    private func sheetDidDismiss() {
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentNavigationScreen,
+            isCommitted: true
+        )
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentNavigationScreen,
+            phase: "sheet-dismissed-immediate"
+        )
+        Task { @MainActor in
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, !isSheetPresented else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: currentNavigationScreen,
+                phase: "sheet-dismissed-settled"
+            )
+        }
     }
 
     private func openPeer() {
@@ -1060,6 +1161,20 @@ struct ProbeWindowRoot: View {
                     pathBinding.wrappedValue = [.alternate]
                 default:
                     return .rejected(reason: "unsupported SwiftUI path \(value)")
+                }
+            case .setSwiftUIPresentation:
+                guard let value = step.value else {
+                    return .rejected(reason: "SwiftUI presentation is missing")
+                }
+                switch value {
+                case "sheet":
+                    setSheetPresented(true)
+                case "home":
+                    setSheetPresented(false)
+                default:
+                    return .rejected(
+                        reason: "unsupported SwiftUI presentation \(value)"
+                    )
                 }
             case .pushAndRevertSwiftUIPath:
                 guard step.value == "detail-1" else {

@@ -163,6 +163,82 @@ final class ProbeScenarioDriverTests: XCTestCase {
         XCTAssertFalse(recorder.recordTerminalResult(result))
     }
 
+    func testDrivesSwiftUIPresentationSeparatelyFromNavigationPath() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-presentation",
+            scenarioID: "driver-presentation",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var requestedPresentations: [String] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            guard
+                step.kind == .setSwiftUIPresentation,
+                let value = step.value
+            else {
+                return .rejected(reason: "unsupported step")
+            }
+            requestedPresentations.append(value)
+            recorder.record(
+                self.pathSignal(
+                    previous: value == "sheet" ? ["home"] : ["home", "sheet"],
+                    current: value == "sheet" ? ["home", "sheet"] : ["home"]
+                )
+            )
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-presentation",
+                trackingMode: .automatic,
+                layout: .stack,
+                steps: [
+                    ProbeStep(
+                        .setSwiftUIPresentation,
+                        scene: "scene-A",
+                        value: "sheet"
+                    ),
+                    ProbeStep(
+                        .setSwiftUIPresentation,
+                        scene: "scene-A",
+                        value: "home"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(requestedPresentations, ["sheet", "home"])
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            2
+        )
+    }
+
     func testDrivesAbortedPathWithoutSpeculativeView() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-abort",

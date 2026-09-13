@@ -518,6 +518,41 @@ internal enum ProbeSemanticOracle {
                 )
             }
         }
+        if let stepKind = expectation.ownerViewStartedAfterStep {
+            guard timeline.ownerView(
+                for: signal,
+                startedAfter: stepKind,
+                value: expectation.ownerViewStartedAfterStepValue
+            ) else {
+                let value = expectation.ownerViewStartedAfterStepValue
+                    .map { " value \($0)" }
+                    ?? ""
+                return .violation(
+                    "expected \(describe(expectation)) on a RUM view started after "
+                        + "\(stepKind.rawValue)\(value)"
+                )
+            }
+        }
+        if
+            let referenceAction = expectation.ownerViewReferenceAction,
+            let expectedRelation = expectation.ownerViewRelation {
+            guard let observedRelation = timeline.ownerViewRelation(
+                for: signal,
+                toActionNamed: referenceAction
+            ) else {
+                return .violation(
+                    "expected \(describe(expectation)) to compare its RUM view with action "
+                        + referenceAction + ", but either owner was unresolved"
+                )
+            }
+            guard observedRelation == expectedRelation else {
+                return .violation(
+                    "expected \(describe(expectation)) to use a \(expectedRelation.rawValue) "
+                        + "RUM view from action \(referenceAction), observed "
+                        + observedRelation.rawValue
+                )
+            }
+        }
 
         if
             requiresViewOwnership(expectation),
@@ -653,6 +688,24 @@ internal enum ProbeSemanticOracle {
             !timeline.ownerView(for: signal, startedAfterOpening: openedScene) {
             return false
         }
+        if
+            let stepKind = expectation.ownerViewStartedAfterStep,
+            !timeline.ownerView(
+                for: signal,
+                startedAfter: stepKind,
+                value: expectation.ownerViewStartedAfterStepValue
+            ) {
+            return false
+        }
+        if
+            let referenceAction = expectation.ownerViewReferenceAction,
+            let ownerViewRelation = expectation.ownerViewRelation,
+            timeline.ownerViewRelation(
+                for: signal,
+                toActionNamed: referenceAction
+            ) != ownerViewRelation {
+            return false
+        }
         if let outcome = expectation.outcome, signal.outcome != outcome {
             return false
         }
@@ -727,6 +780,19 @@ internal enum ProbeSemanticOracle {
         }
         if let openedScene = expectation.ownerViewStartedAfterSceneOpen {
             parts.append("owner-view-after-open=\(openedScene)")
+        }
+        if let stepKind = expectation.ownerViewStartedAfterStep {
+            let value = expectation.ownerViewStartedAfterStepValue
+                .map { ":\($0)" }
+                ?? ""
+            parts.append("owner-view-after-step=\(stepKind.rawValue)\(value)")
+        }
+        if
+            let referenceAction = expectation.ownerViewReferenceAction,
+            let ownerViewRelation = expectation.ownerViewRelation {
+            parts.append(
+                "owner-view-\(ownerViewRelation.rawValue)-from-action=\(referenceAction)"
+            )
         }
         if let interval = expectation.interval {
             parts.append("interval=\(interval)")

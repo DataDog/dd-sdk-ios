@@ -335,7 +335,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
 
         XCTAssertEqual(recorded.map(\.sequence), [1, 2])
-        XCTAssertEqual(recorded.map(\.schemaVersion), [4, 4])
+        XCTAssertEqual(recorded.map(\.schemaVersion), [5, 5])
         XCTAssertEqual(recorded.map(\.timestampMilliseconds), [42, 42])
         XCTAssertEqual(recorded.map(\.runID), ["recorder-run", "recorder-run"])
         XCTAssertEqual(
@@ -547,6 +547,249 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("started after opening scene-B"))
     }
 
+    func testOwnerViewRelationDistinguishesAResumedAutomaticOccurrence() {
+        let recorder = ProbeEventRecorder(
+            runID: "automatic-resume",
+            scenarioID: "automatic-resume",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recordAutomaticView(id: "home-before", recorder: recorder)
+        recordAutomaticAction(
+            name: "before-sheet",
+            viewID: "home-before",
+            recorder: recorder
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .setSwiftUIPresentation,
+                name: "home"
+            )
+        )
+        recordAutomaticView(id: "home-after", recorder: recorder)
+        recordAutomaticAction(
+            name: "dismissed-immediate",
+            viewID: "home-after",
+            recorder: recorder
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .rumResource,
+                evidenceSource: .rumMapper,
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "home-after"
+                ),
+                name: "dismissed-settled"
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "automatic-resume",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "dismissed-immediate",
+                    ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                    ownerViewStartedAfterStepValue: "home",
+                    ownerViewReferenceAction: "before-sheet",
+                    ownerViewRelation: .different
+                ),
+                ProbeExpectation(
+                    .resource,
+                    name: "dismissed-settled",
+                    ownerViewReferenceAction: "dismissed-immediate",
+                    ownerViewRelation: .same
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testOwnerViewRelationRejectsAReusedAutomaticOccurrence() {
+        let recorder = ProbeEventRecorder(
+            runID: "automatic-not-resumed",
+            scenarioID: "automatic-not-resumed",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recordAutomaticView(id: "home", recorder: recorder)
+        recordAutomaticAction(
+            name: "before-sheet",
+            viewID: "home",
+            recorder: recorder
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .setSwiftUIPresentation,
+                name: "home"
+            )
+        )
+        recordAutomaticAction(
+            name: "after-sheet",
+            viewID: "home",
+            recorder: recorder
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "automatic-not-resumed",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "after-sheet",
+                    ownerViewReferenceAction: "before-sheet",
+                    ownerViewRelation: .different
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed same"))
+    }
+
+    func testOwnerViewStartRejectsAnOwnerPredatingTheDismissalStep() {
+        let recorder = ProbeEventRecorder(
+            runID: "automatic-predates-dismissal",
+            scenarioID: "automatic-predates-dismissal",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recordAutomaticView(id: "home", recorder: recorder)
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .setSwiftUIPresentation,
+                name: "home"
+            )
+        )
+        recordAutomaticAction(
+            name: "after-sheet",
+            viewID: "home",
+            recorder: recorder
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "automatic-predates-dismissal",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "after-sheet",
+                    ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                    ownerViewStartedAfterStepValue: "home"
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("set-swiftui-presentation value home"))
+    }
+
+    func testNoAutomaticViewAllowsAnExplicitViewInsideTheInterval() {
+        let recorder = ProbeEventRecorder(
+            runID: "manual-interval",
+            scenarioID: "manual-interval",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: true))
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: false))
+
+        let scenario = ProbeScenario(
+            identifier: "manual-interval",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [
+                ProbeExpectation(
+                    .noViewStarted,
+                    rumViewOrigin: .automatic,
+                    interval: "rum-view:scene-A/sheet#1"
+                )
+            ],
+            expectedSemanticTimeline: []
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testNoAutomaticViewRejectsADuplicateDuringExplicitViewLifetime() {
+        let recorder = ProbeEventRecorder(
+            runID: "manual-duplicate",
+            scenarioID: "manual-duplicate",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: true))
+        recordAutomaticView(id: "automatic-sheet", recorder: recorder)
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: false))
+
+        let scenario = ProbeScenario(
+            identifier: "manual-duplicate",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [
+                ProbeExpectation(
+                    .noViewStarted,
+                    rumViewOrigin: .automatic,
+                    interval: "rum-view:scene-A/sheet#1"
+                )
+            ],
+            expectedSemanticTimeline: []
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -593,6 +836,43 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 viewName: screen,
                 viewActive: active,
                 viewDocumentVersion: active ? 1 : 2
+            )
+        )
+    }
+
+    private func recordAutomaticView(
+        id: String,
+        recorder: ProbeEventRecorder
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .rumViewSnapshot,
+                evidenceSource: .rumMapper,
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: id,
+                    viewName: "NavigationStackHostingController",
+                    viewActive: true,
+                    viewDocumentVersion: 1
+                )
+            )
+        )
+    }
+
+    private func recordAutomaticAction(
+        name: String,
+        viewID: String,
+        recorder: ProbeEventRecorder
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .rumAction,
+                evidenceSource: .rumMapper,
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: viewID
+                ),
+                name: name
             )
         )
     }

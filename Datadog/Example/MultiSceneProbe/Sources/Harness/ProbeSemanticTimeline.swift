@@ -66,6 +66,8 @@ internal struct ProbeSemanticTimeline {
                     continue
                 }
 
+                var mappedOccurrence = occurrencesByViewID[viewID]
+
                 if
                     let context = signal.semanticContext,
                     let screen = context.screen {
@@ -90,6 +92,7 @@ internal struct ProbeSemanticTimeline {
                         screen: screen,
                         occurrence: occurrence
                     )
+                    mappedOccurrence = occurrenceKey
 
                     if
                         let existingViewID = viewIDsByOccurrence[occurrenceKey],
@@ -129,6 +132,9 @@ internal struct ProbeSemanticTimeline {
                 let isFirstSnapshot = observedViewIDs.insert(viewID).inserted
                 if isFirstSnapshot {
                     firstViewSnapshotByID[viewID] = signal
+                    if let mappedOccurrence {
+                        openIntervals["rum-view:\(mappedOccurrence)"] = signal.sequence
+                    }
                 }
                 let previousActive = activeByViewID[viewID] ?? nil
                 let isTerminalSnapshot = signal.rumContext?.viewActive == false
@@ -138,6 +144,17 @@ internal struct ProbeSemanticTimeline {
                 }
                 if isTerminalSnapshot && (isFirstSnapshot || previousActive != false) {
                     events.append(ProbeSemanticEvent(kind: .viewStopped, signal: signal))
+                    if
+                        let mappedOccurrence,
+                        let start = openIntervals.removeValue(
+                            forKey: "rum-view:\(mappedOccurrence)"
+                        ) {
+                        intervals["rum-view:\(mappedOccurrence)"] = ProbeSignalInterval(
+                            name: "rum-view:\(mappedOccurrence)",
+                            startSequence: start,
+                            endSequence: signal.sequence
+                        )
+                    }
                 }
                 activeByViewID[viewID] = signal.rumContext?.viewActive
             } else if let expectationKind = Self.semanticKind(for: signal) {
@@ -257,6 +274,45 @@ internal struct ProbeSemanticTimeline {
             return false
         }
         return firstSnapshot.sequence > openStep.sequence
+    }
+
+    func ownerViewRelation(
+        for signal: ProbeSignal,
+        toActionNamed actionName: String
+    ) -> ProbeRUMViewOwnerRelation? {
+        guard
+            let ownerViewID = signal.rumContext?.viewID,
+            let referenceAction = signals.last(where: {
+                $0.sequence < signal.sequence
+                    && $0.kind == .rumAction
+                    && $0.name == actionName
+            }),
+            let referenceViewID = referenceAction.rumContext?.viewID
+        else {
+            return nil
+        }
+        return ownerViewID == referenceViewID ? .same : .different
+    }
+
+    func ownerView(
+        for signal: ProbeSignal,
+        startedAfter stepKind: ProbeStepKind,
+        value stepValue: String?
+    ) -> Bool {
+        guard
+            let viewID = signal.rumContext?.viewID,
+            let firstSnapshot = firstViewSnapshotByID[viewID],
+            firstSnapshot.sequence <= signal.sequence,
+            let step = signals.last(where: {
+                $0.sequence < signal.sequence
+                    && $0.kind == .stepStarted
+                    && $0.stepKind == stepKind
+                    && (stepValue == nil || $0.name == stepValue)
+            })
+        else {
+            return false
+        }
+        return firstSnapshot.sequence > step.sequence
     }
 
     func events(in interval: String?) -> [ProbeSemanticEvent]? {

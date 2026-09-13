@@ -77,6 +77,7 @@ enum ProbeRuntime {
             "swiftui.stack.same-type-replacement",
             "swiftui.stack.different-type-replacement",
             "swiftui.coexistence.semantic-a-automatic-b",
+            "swiftui.coexistence.automatic-manual-sheet",
             "swiftui.split.automatic-baseline",
             "swiftui.split.same-type-selection",
             "swiftui.split.retained-return",
@@ -137,6 +138,13 @@ enum ProbeRuntime {
             return false
         }
         return options.semanticNavigationSceneIDs?.contains(logicalSceneID) ?? true
+    }
+
+    static func usesManualSwiftUIViewTracking(
+        in logicalSceneID: String,
+        screen: String
+    ) -> Bool {
+        options.manualSwiftUIViewScreensByScene[logicalSceneID]?.contains(screen) == true
     }
 
     private static let logger = Logger(
@@ -245,6 +253,8 @@ enum ProbeRuntime {
                 + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
                 + "semantic_navigation_scenes="
                 + "\(options.semanticNavigationSceneIDs?.joined(separator: ",") ?? "all") "
+                + "manual_swiftui_view_screens_by_scene="
+                + "\(options.manualSwiftUIViewScreensByScene) "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
         )

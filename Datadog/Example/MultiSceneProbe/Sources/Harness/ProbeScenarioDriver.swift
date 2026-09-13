@@ -60,6 +60,7 @@ internal final class ProbeScenarioDriver {
         case sceneReady(scene: String)
         case path(scene: String, value: String)
         case splitSelection(scene: String, value: String)
+        case presentation(scene: String, value: String)
         case activation(scene: String, value: ProbeSceneActivationState)
         case transitionBegan(scene: String)
         case transitionProgress(scene: String, value: Double)
@@ -85,6 +86,13 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == [value]
+            case .presentation(let scene, let value):
+                let expectedPath = value == "sheet"
+                    ? ["home", "sheet"]
+                    : ["home"]
+                return signal.kind == .navigationPathMutation
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.navigationPath == expectedPath
             case .activation(let scene, let value):
                 return signal.kind == .sceneLifecycle
                     && signal.semanticContext?.logicalSceneID == scene
@@ -498,6 +506,31 @@ internal final class ProbeScenarioDriver {
                 timeoutNanoseconds: stepTimeoutNanoseconds
             ) else {
                 return .failed("timed out waiting for path \(value) in \(scene)")
+            }
+            return .acknowledged(signal)
+
+        case .setSwiftUIPresentation:
+            guard
+                let scene = step.scene,
+                let value = step.value,
+                value == "sheet" || value == "home"
+            else {
+                return .failed("scene or SwiftUI presentation is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .presentation(scene: scene, value: value),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for presentation \(value) in \(scene)"
+                )
             }
             return .acknowledged(signal)
 

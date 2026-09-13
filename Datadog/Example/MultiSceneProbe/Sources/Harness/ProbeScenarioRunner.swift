@@ -555,6 +555,20 @@ enum ProbeScenarioRunner {
             if let occurrence = expectation.occurrence, occurrence < 1 {
                 errors.append("scenario view occurrence must be greater than zero")
             }
+            if
+                (expectation.ownerViewReferenceAction == nil)
+                    != (expectation.ownerViewRelation == nil) {
+                errors.append(
+                    "scenario owner-view relation requires both a reference action and relation"
+                )
+            }
+            if
+                expectation.ownerViewStartedAfterStep == nil,
+                expectation.ownerViewStartedAfterStepValue != nil {
+                errors.append(
+                    "scenario owner-view step value requires a step kind"
+                )
+            }
         }
         return errors
     }

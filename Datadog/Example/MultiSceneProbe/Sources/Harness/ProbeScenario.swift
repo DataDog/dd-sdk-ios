@@ -64,6 +64,7 @@ struct ProbeRuntimeOptions: Codable, Equatable {
     var exercisesUIEventContextHandoff = false
     var swiftUIStress = ProbeSwiftUIStress.none
     var semanticNavigationSceneIDs: [String]?
+    var manualSwiftUIViewScreensByScene: [String: [String]] = [:]
 }
 
 struct ProbeScenario: Codable, Equatable {
@@ -104,7 +105,7 @@ struct ProbeScenario: Codable, Equatable {
 }
 
 struct ProbeScenarioManifest: Codable, Equatable {
-    static let schemaVersion = 1
+    static let schemaVersion = 2
 
     let schemaVersion: Int
     let runID: String
