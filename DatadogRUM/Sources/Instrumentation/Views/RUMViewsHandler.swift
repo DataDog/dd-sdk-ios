@@ -88,6 +88,10 @@ internal final class RUMViewsHandler {
     /// Extracts `SwiftUI` view name from view hierarchy.
     private let swiftUIViewNameExtractor: SwiftUIViewNameExtractor?
 
+    /// Returns whether an automatically discovered SwiftUI controller belongs
+    /// to a subtree already owned by explicit semantic tracking.
+    private let isSwiftUIAutomaticViewSuppressed: (UIViewController) -> Bool
+
     /// Resolves the owning scene while the appeared view controller is still
     /// attached to its window. Injectable to keep scene routing deterministic in tests.
     private let sceneIdentifierProvider: (UIViewController) -> RUMSceneIdentifier?
@@ -159,6 +163,7 @@ internal final class RUMViewsHandler {
         uiKitPredicate: UIKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
+        isSwiftUIAutomaticViewSuppressed: @escaping (UIViewController) -> Bool = { _ in false },
         notificationCenter: NotificationCenter,
         isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { viewController in
@@ -186,6 +191,7 @@ internal final class RUMViewsHandler {
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
+        self.isSwiftUIAutomaticViewSuppressed = isSwiftUIAutomaticViewSuppressed
         self.sceneIdentifierProvider = sceneIdentifierProvider
         self.sceneIdentifierFromNotification = sceneIdentifierFromNotification
         self.isMultiSceneApplication = isMultiSceneApplication
@@ -926,11 +932,11 @@ extension RUMViewsHandler: UIViewControllerHandler {
             }
             #endif
             add(view: view)
-        } else if let swiftUIPredicate,
+        } else if !isSwiftUIAutomaticViewSuppressed(viewController),
+                  let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
                   let rumView = swiftUIPredicate.rumView(for: rumViewName) {
-            // TODO: RUM-9888 - Ignore views already tracked manually with view modifiers
             add(
                 view: .init(
                     identity: identity,

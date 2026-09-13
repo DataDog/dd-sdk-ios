@@ -69,6 +69,10 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Commits explicit SwiftUI view lifecycles only after interactive UIKit
     /// navigation finishes, keeping cancelled gestures out of RUM history.
     let swiftUIInteractiveTransitionArbiter: RUMSwiftUIInteractiveTransitionArbiter?
+
+    /// Keeps automatic SwiftUI discovery enabled outside subtrees currently
+    /// owned by an explicit view modifier.
+    let swiftUIViewAuthorityRegistry: RUMSwiftUIViewAuthorityRegistry?
     #endif
     #endif
 
@@ -121,6 +125,15 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             }
             return nil
         }()
+        let swiftUIViewAuthorityRegistry: RUMSwiftUIViewAuthorityRegistry? = {
+            guard isMultiSceneApplication, swiftUIRUMViewsPredicate != nil else {
+                return nil
+            }
+            if #available(iOS 27.0, *) {
+                return RUMSwiftUIViewAuthorityRegistry()
+            }
+            return nil
+        }()
         #endif
         #endif
 
@@ -131,6 +144,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             uiKitPredicate: uiKitRUMViewsPredicate,
             swiftUIPredicate: swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
+            isSwiftUIAutomaticViewSuppressed: { viewController in
+                #if canImport(SwiftUI) && os(iOS)
+                return swiftUIViewAuthorityRegistry?
+                    .isAutomaticViewSuppressed(for: viewController) == true
+                #else
+                return false
+                #endif
+            },
             notificationCenter: notificationCenter,
             isMultiSceneApplication: isMultiSceneApplication
         )
@@ -253,6 +274,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         #endif
         #if os(iOS)
         self.swiftUIInteractiveTransitionArbiter = swiftUIInteractiveTransitionArbiter
+        self.swiftUIViewAuthorityRegistry = swiftUIViewAuthorityRegistry
         #endif
         #endif
 

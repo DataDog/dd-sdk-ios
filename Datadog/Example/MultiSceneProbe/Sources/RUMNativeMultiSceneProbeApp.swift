@@ -175,6 +175,7 @@ enum ProbeRuntime {
                     ? ProbeUIKitActionsPredicate()
                     : nil,
                 swiftUIViewsPredicate: usesAutomaticSwiftUIViewTracking
+                    || usesNavigationOccurrenceSwiftUIViewTracking
                     ? DefaultSwiftUIRUMViewsPredicate()
                     : nil,
                 swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(

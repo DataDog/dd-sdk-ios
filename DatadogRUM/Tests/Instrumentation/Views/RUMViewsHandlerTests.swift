@@ -69,6 +69,7 @@ class RUMViewsHandlerTests: XCTestCase {
         uiKitPredicate: UIKitRUMViewsPredicate? = nil,
         swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil,
+        isSwiftUIAutomaticViewSuppressed: @escaping (UIViewController) -> Bool = { _ in false },
         isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { _ in nil },
         sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { _ in nil },
@@ -82,6 +83,7 @@ class RUMViewsHandlerTests: XCTestCase {
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIViewNameExtractor: swiftUIViewNameExtractor,
+            isSwiftUIAutomaticViewSuppressed: isSwiftUIAutomaticViewSuppressed,
             notificationCenter: notificationCenter,
             isMultiSceneApplication: isMultiSceneApplication,
             sceneIdentifierProvider: sceneIdentifierProvider,
@@ -994,6 +996,50 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
         XCTAssertEqual(command.instrumentationType, .swiftuiAutomatic)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
+    }
+
+    func testGivenExplicitSwiftUIAuthority_whenAutomaticViewDidAppear_itDoesNotStartView() {
+        let viewController = createMockViewInWindow()
+        var inspectedViewController: UIViewController?
+        let handler = createHandler(
+            swiftUIPredicate: SwiftUIRUMViewsPredicateMock(
+                result: .init(name: "Automatic")
+            ),
+            swiftUIViewNameExtractor: SwiftUIViewNameExtractorMock(
+                defaultResult: "Automatic"
+            ),
+            isSwiftUIAutomaticViewSuppressed: { candidate in
+                inspectedViewController = candidate
+                return true
+            }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewController, animated: false)
+
+        XCTAssertTrue(inspectedViewController === viewController)
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+    }
+
+    func testGivenExplicitSwiftUIAuthority_whenUIKitPredicateAcceptsView_itStillStartsUIKitView() throws {
+        let viewController = createMockViewInWindow()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: .init(name: "UIKit")),
+            swiftUIPredicate: SwiftUIRUMViewsPredicateMock(
+                result: .init(name: "Automatic")
+            ),
+            swiftUIViewNameExtractor: SwiftUIViewNameExtractorMock(
+                defaultResult: "Automatic"
+            ),
+            isSwiftUIAutomaticViewSuppressed: { _ in true }
+        )
+
+        handler.notify_viewDidAppear(viewController: viewController, animated: false)
+
+        let start = try XCTUnwrap(
+            commandSubscriber.receivedCommands.first as? RUMStartViewCommand
+        )
+        XCTAssertEqual(start.name, "UIKit")
+        XCTAssertEqual(start.instrumentationType, .uikit)
     }
 
     func testGivenSwiftUIPredicateAndNoNameExtractor_whenViewDidAppear_itDoesNotStartView() {

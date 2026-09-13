@@ -881,6 +881,61 @@ class RUMViewTrackingStateTests: XCTestCase {
 
 #if os(iOS)
 @MainActor
+class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
+    private let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+    func testActiveExplicitViewSuppressesOnlyContainingAutomaticController() {
+        let registry = RUMSwiftUIViewAuthorityRegistry()
+        let state = RUMViewTrackingState(identity: "semantic-view")
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        let root = UIViewController()
+        let targeted = UIViewController()
+        let unrelated = UIViewController()
+        root.addChild(targeted)
+        root.view.addSubview(targeted.view)
+        targeted.didMove(toParent: root)
+        root.addChild(unrelated)
+        root.view.addSubview(unrelated.view)
+        unrelated.didMove(toParent: root)
+        targeted.view.addSubview(observer)
+        let window = UIWindow()
+        window.rootViewController = root
+        window.isHidden = false
+        registry.register(observer: observer, trackingState: state)
+
+        _ = state.mount(in: scene)
+
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: targeted))
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: root))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
+
+        _ = state.disappear()
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: targeted))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: root))
+    }
+
+    func testDetachedOrNeverAppearedExplicitViewDoesNotSuppressAutomaticController() {
+        let registry = RUMSwiftUIViewAuthorityRegistry()
+        let state = RUMViewTrackingState(identity: "semantic-view")
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        let viewController = UIViewController()
+        viewController.view.addSubview(observer)
+        let window = UIWindow()
+        window.rootViewController = viewController
+        window.isHidden = false
+        registry.register(observer: observer, trackingState: state)
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: viewController))
+
+        _ = state.mount(in: scene)
+        observer.removeFromSuperview()
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: viewController))
+    }
+}
+
+@MainActor
 class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
     private let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
 

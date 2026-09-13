@@ -996,6 +996,58 @@ internal final class RUMViewTrackingState {
     }
 }
 
+#if os(iOS)
+/// Tracks active explicit SwiftUI view boundaries so automatic controller
+/// discovery can stay enabled without creating a duplicate RUM view for the
+/// same subtree. Entries are weak and scoped by actual view containment rather
+/// than by scene, leaving unrelated containers in the same window eligible for
+/// automatic tracking.
+internal final class RUMSwiftUIViewAuthorityRegistry {
+    private final class WeakEntry {
+        weak var observer: RUMSceneIdentifierReader.ObserverView?
+        weak var trackingState: RUMViewTrackingState?
+
+        init(
+            observer: RUMSceneIdentifierReader.ObserverView,
+            trackingState: RUMViewTrackingState
+        ) {
+            self.observer = observer
+            self.trackingState = trackingState
+        }
+    }
+
+    private var entries: [WeakEntry] = []
+
+    func register(
+        observer: RUMSceneIdentifierReader.ObserverView,
+        trackingState: RUMViewTrackingState
+    ) {
+        entries.removeAll { entry in
+            entry.observer == nil || entry.trackingState == nil || entry.observer === observer
+        }
+        entries.append(WeakEntry(observer: observer, trackingState: trackingState))
+    }
+
+    func isAutomaticViewSuppressed(for viewController: UIViewController) -> Bool {
+        entries.removeAll { $0.observer == nil || $0.trackingState == nil }
+        guard let candidateView = viewController.viewIfLoaded else {
+            return false
+        }
+
+        return entries.contains { entry in
+            guard
+                entry.trackingState?.isAppeared == true,
+                let observer = entry.observer,
+                observer.window != nil
+            else {
+                return false
+            }
+            return observer.isDescendant(of: candidateView)
+        }
+    }
+}
+#endif
+
 #if os(iOS) || os(visionOS)
 /// Experimental navigation-owned signal used to reveal an already materialized
 /// route before SwiftUI replays the retained content's outer lifecycle callbacks.
@@ -2289,6 +2341,10 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     private func register(observer: RUMSceneIdentifierReader.ObserverView) {
         #if os(iOS)
         transitionArbiter?.register(observer: observer, for: trackingState)
+        instrumentation?.swiftUIViewAuthorityRegistry?.register(
+            observer: observer,
+            trackingState: trackingState
+        )
         #endif
     }
 
@@ -2553,6 +2609,9 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             .background(
                 RUMSceneIdentifierReader(
                     applicationSupportsMultipleScenes: true,
+                    onCreate: { observer in
+                        register(observer: observer)
+                    },
                     onReconcile: configuration == nil ? nil : { attachment in
                         update(attachment: attachment)
                         rebindNavigationOccurrenceSource(attachment: attachment)
@@ -2577,6 +2636,15 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     apply(trackingState.disappear())
                 }
             }
+    }
+
+    private func register(observer: RUMSceneIdentifierReader.ObserverView) {
+        #if os(iOS)
+        instrumentation?.swiftUIViewAuthorityRegistry?.register(
+            observer: observer,
+            trackingState: trackingState
+        )
+        #endif
     }
 
     private func update(attachment: RUMViewTrackingState.Attachment) {
