@@ -53,6 +53,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.abort` | `EXP-091`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
+| `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -85,7 +86,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 45/45. The stack
+future Execution Context seam. The generated test plan passes 49/49. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -99,7 +100,13 @@ moving the path and route metadata to one probe-container call site. The wrapper
 still owns the root and typed destination builders so it can install the early
 tracking boundary at each materialized route; a passive root-only modifier is
 known to be too late. This is an API-shape prototype, not a shipped integration.
-The
+`EXP-118` installs that semantic boundary only in scene A while leaving scene B
+automatic. Its oracle separates source labels from mapper ownership and rejects
+an automatic owner first observed before B opened. Two clean simulator prefixes
+kept A exact and created B's independent automatic views, but simulator
+`backboardd` aborted before the decisive B marker and terminal result. Finish the
+prepared scenario on iPhone Duo or a physical multi-window iPad; it is not yet an
+acceptance pass. The
 activation row remains explicitly inconclusive on the current simulator
 (`EXP-114`). The automatic SwiftUI split control
 executes the same selection steps but fails because it emits internal container

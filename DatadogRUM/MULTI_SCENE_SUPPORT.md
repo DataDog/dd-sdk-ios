@@ -234,8 +234,9 @@ customer workflow, and required tests live only in
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `85d03e5ee` (`Suppress automatic SwiftUI views in explicit subtrees`).
-The latest probe integration checkpoint is `b5f74467d` (`Centralize probe SwiftUI
-navigation tracking`), following documentation checkpoint `77090d4f3`.
+The latest probe integration checkpoint is `265657c33` (`Prepare semantic and
+automatic scene coexistence probe`), following the container checkpoint
+`b5f74467d` and documentation checkpoint `e8c2b159b`.
 All are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
@@ -255,7 +256,11 @@ duplicate automatic view. `EXP-116` installs that route-owned boundary once at a
 probe navigation container, with one bound path and centralized resolver, and
 passes return, abort, and same-type replacement locally and in backend intake.
 `EXP-117` records why host-side uninstall remains mandatory for an isolated clean
-run. The complete
+run. `EXP-118` adds the exact separate-scene automatic/semantic discriminator.
+Two clean simulator attempts proved that A's authority does not suppress B's
+automatic controller views, but `backboardd` crashed before the decisive B marker
+and terminal oracle. That row remains explicitly simulator-inconclusive and is
+queued for physical multi-window hardware. The complete
 chronology and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
@@ -268,9 +273,11 @@ owns the finished phases and full release matrix. Continue in this order:
    at materialized root/destination builders; `EXP-047` through `EXP-049` already
    reject a passive root/background modifier as too late. Do not land an
    unreviewed public API.
-2. Prove that a separate automatic-only container or scene remains tracked while
-   the semantic container is authoritative, and exercise one exceptional manual
-   view over an otherwise automatic hierarchy.
+2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
+   hardware. The simulator prefix already proves B automatic discovery remains
+   eligible; require the final B marker and backend owner before closing it.
+   Independently exercise one exceptional manual view over an otherwise automatic
+   hierarchy.
 3. Prepare the scene-aware manual view start/stop API and Objective-C companion.
    The same manual key must coexist in A and B, and stopping A must not stop B.
 4. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window

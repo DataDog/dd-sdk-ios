@@ -130,15 +130,20 @@ Current execution order:
    passes 45/45. Stable simultaneous-visible activation and peer continuity now
    require iPhone Duo or a physical multi-window iPad; do not keep retrying the
    compositor-crashing loop on this simulator.
-6. Prototype completed in `85d03e5ee`, `b5f74467d`, and `EXP-115`/`EXP-116`:
+6. Prototype completed in `85d03e5ee`, `b5f74467d`, `265657c33`, and
+   `EXP-115`/`EXP-116`/`EXP-118`:
    automatic tracking stays enabled, an active attached explicit subtree
    suppresses only its containing automatic candidate, and a probe-only
    `NavigationStack` wrapper consumes one bound application path plus one
    centralized RUM resolver. It owns root/destination materialization so the
    existing early route boundary still handles return, abort, and same-type
-   replacement correctly. Next, write the RFC/API proposal and prove automatic
-   tracking in a separate live container/scene. No public API lands without
-   normal review.
+   replacement correctly. The scene-selective `EXP-118` discriminator leaves
+   semantic tracking only in A and requires B work to resolve to an automatic
+   view first observed after B opens. Two clean simulator prefixes created B's
+   own automatic views without disturbing A, but `backboardd` aborted before the
+   final marker and oracle. Finish that exact row when physical hardware is
+   available; meanwhile, write the RFC/API proposal and continue independent
+   simulator-capable experiments. No public API lands without normal review.
 7. Exercise one exceptional manual view over an otherwise automatic hierarchy,
    then design the required scene-aware manual view start/stop overloads and
    Objective-C companion. The same key must coexist independently in A and B
@@ -252,7 +257,15 @@ experiment; it does not itself change the SDK support verdict.
    7/7 locally and produces exactly launch plus H1/D1/H2 in backend intake, with
    no hosting-controller duplicate. The RUM plan passes 1,157/1,157 and the probe
    remains 45/45. This proves internal coexistence, not the reviewed container API.
-11. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+11. Prepared in `265657c33` and `EXP-118`: configure semantic navigation only in
+   scene A while automatic discovery remains enabled application-wide, open B
+   exactly, and require B's decisive marker to use a non-launch automatic view
+   first observed after the open command. Four source/owner and stale-view oracle
+   tests raise the probe plan to 49/49. Two explicitly uninstalled simulator
+   prefixes created independent B automatic views and kept A exact, but the
+   simulator compositor aborted before the final marker. Complete on iPhone Duo
+   or a physical multi-window iPad; do not promote the partial prefix to `PASS`.
+12. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -262,7 +275,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, and exact scene lifecycle
-harness loop is complete through `EXP-117`: three clean
+harness is implemented through `EXP-118`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -273,7 +286,10 @@ qualifying hardware run. The automatic-plus-explicit coexistence run passes 7/7
 with no duplicate view locally or in backend intake. The deliberately wrong-view fixture
 continues to fail locally with an actionable reason.
 The probe-only once-per-container wrapper also passes return, abort, and
-same-type replacement with isolated backend evidence. Two non-uninstalled
+same-type replacement with isolated backend evidence. The new scene-selective
+coexistence oracle passes its focused tests; two clean simulator prefixes prove
+A authority does not suppress B discovery, while terminal B attribution remains
+hardware-inconclusive. Two non-uninstalled
 back-to-back launches remain local-only and document the host-runner isolation
 requirement rather than SDK semantics.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.

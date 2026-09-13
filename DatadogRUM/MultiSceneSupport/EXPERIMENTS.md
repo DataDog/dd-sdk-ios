@@ -74,8 +74,9 @@ boundary, in this order:
 | 57 | `Drive observable scene activation transitions` | Exact registered-scene activation, latched lifecycle-state conditions, durable terminal-result logging, explicit inconclusive classification, and focused driver coverage |
 | 58 | `Suppress automatic SwiftUI views in explicit subtrees` | iOS 27 multi-scene authority registry, subtree-scoped automatic-view suppression, focused coexistence regressions, and a probe configuration that enables automatic and explicit tracking together |
 | 59 | `Centralize probe SwiftUI navigation tracking` | Probe-only once-per-container `NavigationStack` wrapper, one bound path, centralized route metadata resolver, and route-owned root/destination tracking placement |
+| 60 | `Prepare semantic and automatic scene coexistence probe` | Scene-selective semantic tracking, exact source-versus-owner oracle evidence, automatic-view origin checks, and rejection of owner views created before the target scene opened |
 
-Rows 1-59 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-60 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -90,6 +91,7 @@ is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
 `a97e943df`, row 57 is `4d1783198`, row 58 is `85d03e5ee`, and row 59 is
 `b5f74467d`.
+Row 60 is `265657c33`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -240,6 +242,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-115 | `semantic-authority-coexistence-20260913-2146-a` | `fae57f5a-ba01-4d42-9e32-2774090b1585` | iPadOS 27 | Target-scoped SwiftUI authority pass. Navigation-occurrence mode enabled `DefaultSwiftUIRUMViewsPredicate` at the same time as explicit route-owned tracking. An active explicit hidden reader suppressed automatic discovery only for a containing controller hierarchy; unrelated sibling controllers remain eligible and UIKit predicate acceptance remains authoritative. The signal-driven scenario passed 7/7 and both mapper output and backend intake contained exactly `ApplicationLaunch → Home H1 → Detail D1 → Home H2`, with distinct Home UUIDs and no hosting-controller duplicate. Intake totals were four views, nine actions, nine Resources, three long tasks, one session, and one vital. The RUM suite passes 1,157/1,157, the probe 45/45, and lint is clean. This closes the internal coexistence/dedup mechanics, not the reviewed once-per-container path/router API or automatic-only semantic-navigation gap. |
 | EXP-116 | Return `container-navigation-prototype-20260913-2210-a`; abort `container-navigation-abort-clean-20260913-2247-a`; replacement `container-navigation-same-type-clean-20260913-2254-a` | `9d1653fc-80e8-4794-9a29-50a60246d2ca`; `8b89254e-ba81-4595-86a6-5fa399d480c5`; `0436c9b2-08fc-4c92-a311-7336eafaad4a` | iPadOS 27 | Once-per-container SwiftUI integration-shape pass. A probe-only wrapper consumes one bound `NavigationStack` path and centralized route-to-RUM resolver, owns root/destination materialization, and injects the existing route-owned tracking boundary without putting metadata into Home/Detail view types. Clean return passed 7/7 with launch plus Home H1 `a2dc84f9…`, Detail D1 `2a20ec3c…`, and fresh Home H2 `c82a59c9…`; abort passed 5/5 with only Home `b0166eb3…` and no Detail; same-type replacement passed 6/6 with same-named Detail₁ `f5311b38…` and Detail₂ `d8375a2b…` plus final action/Resource on Detail₂. Backend view sets and ownership agree, with no automatic/hosting duplicate. A delayed source-less callback scheduled by removed Detail₁ used the then-current Detail₂, preserving the approved fallback. Probe tests pass 45/45 and repository lint has zero violations. Commit `b5f74467d` is probe-only; no public API was added. |
 | EXP-117 | Contaminated abort `container-navigation-abort-20260913-2225-a`; contaminated replacement `container-navigation-same-type-20260913-2232-a` | `18cb3927-8afb-4f39-92bf-75b3391de050`; `1f6964c8-0200-44b9-a775-ffd91e4a0bc9` | iPadOS 27 | Clean-run isolation failure in the harness workflow, not an SDK-semantic failure. Both back-to-back Xcode launches passed their local oracle, but the test bundle had not been uninstalled. Their newly created Home/Detail view documents retained `container-navigation-prototype-20260913-2210-a` as `context.probe.run_id`, while later actions and Resources carried the new run ID. A new-run aggregate therefore showed only ApplicationLaunch until direct view-ID inspection exposed the mixed metadata. Explicit host-side uninstall followed by the `EXP-116` reruns removed the contamination. `--probe-run-mode clean` is only manifest input inside the app; Phase 5's host runner must perform teardown and verify every semantic view's run ID before accepting backend evidence. |
+| EXP-118 | `semantic-auto-coexistence-20260913-2256-a`; `semantic-auto-coexistence-20260913-2259-b` | `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`; `43e42ece-f77d-4215-8c6c-22c5ce101136` | iPadOS 27 simulator | Prepared automatic/semantic scene-coexistence discriminator; simulator-inconclusive after two explicitly uninstalled runs because `backboardd` aborted in Metal/CoreAnimation before the terminal oracle. Both runs kept scene A's explicit marker on A/Home H1 and created scene-B automatic fallback plus navigation-host views after B opened, proving A's authority did not suppress B globally. Attempt 1 mapped B's delayed source-less marker to B's non-launch automatic host, but the decisive driver marker never ran. Earlier B source-less lifecycle work used representative A before discovery settled, which is the approved compatibility fallback rather than exact provenance. No probe/SDK crash or terminal PASS/FAIL occurred; rerun the named scenario on physical hardware. Probe tests pass 49/49 and lint reports zero violations. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -265,6 +268,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
 | P0 | `EXP-041`, `EXP-089`, `EXP-113` | Exact open/close now passes, but fullscreen switching backgrounded or reactivated A and never proved stable simultaneous visibility or a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then exact-close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
 | P0 | `EXP-114` | The simulator kept both exact scenes foreground-active instead of acknowledging a focus handoff, then crashed `backboardd` in CoreAnimation/Metal during a rapid retry | Run `windows.activation-sequence` on iPhone Duo or a physical multi-window iPad; let the OS complete each focus transition before continuing | For every step, record target foreground-active plus peer background before judging telemetry. Each confirmed foreground re-entry must create the scenario's fresh Home occurrence, and its immediate action/Resource pair must use that occurrence. A plain source label must never be treated as SDK provenance; source-less fallback remains last-interacted |
+| P0 | `EXP-118` | Two clean runs created B's automatic views but the simulator compositor aborted before the exact B marker and terminal oracle completed | Run `swiftui.coexistence.semantic-a-automatic-b` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require A's semantic marker on A/Home H1; a B-sourced marker on a non-launch automatic view first observed after opening B; no automatic duplicate in A; no cross-scene stop; terminal local PASS followed by exact run-ID backend confirmation |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
@@ -3089,6 +3093,66 @@ Until Phase 5 supplies a host runner, every clean acceptance run must uninstall
 first and verify that each semantic backend view carries the exact requested run
 ID. The contaminated runs support only their local state-machine result.
 
+### 2026-09-13 — EXP-118: semantic scene A with automatic scene B
+
+The named scenario `swiftui.coexistence.semantic-a-automatic-b` narrows the
+remaining coexistence claim. Navigation-occurrence tracking stays configured so
+automatic SwiftUI discovery remains enabled application-wide, but the semantic
+container boundary is installed only in logical scene A. The oracle keeps
+call-site source separate from mapper-observed ownership and requires B's final
+marker to use a non-launch automatic view whose first snapshot occurred after the
+exact open-B command. A stale automatic view from A therefore cannot produce a
+false pass. Commit `265657c33` contains only this probe/oracle slice.
+
+Two explicitly uninstalled simulator runs were inconclusive because the simulator
+system compositor aborted before the terminal marker and oracle result. They are
+retained because their partial mapper output proves both the intended scope and
+the boundary of the result:
+
+- `semantic-auto-coexistence-20260913-2256-a`, RUM session
+  `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`, emitted launch
+  `27d37f44-42a1-4b11-a453-0b17ca2f04fb`, semantic A/Home H1
+  `2d4aabad-eea5-4219-9474-21714e125c06`, B automatic fallback
+  `d7d16229-99ec-400a-9eef-8366df7fbd8c`, and then B automatic
+  `NavigationStackHostingController<AnyView>`
+  `51024e58-4124-4eb0-9c4f-530f6ca6f5ea`. The fallback stopped before the
+  navigation host became current. A's `semantic-a-before-peer` action and
+  Resource remained on A/H1. B's delayed lifecycle action used the non-launch
+  automatic host, but the driver did not reach `automatic-b-after-ready`, so the
+  decisive action/Resource pair and terminal verdict remain unproven.
+- `semantic-auto-coexistence-20260913-2259-b`, RUM session
+  `43e42ece-f77d-4215-8c6c-22c5ce101136`, emitted launch
+  `39db8093-8e01-4da8-877e-741ede177abe`, semantic A/Home H1
+  `f70ee6f2-c7b0-448f-a893-212f14c841c4`, B automatic fallback
+  `3f2705fa-30b1-4a39-bd2d-fe3527f41168`, and B automatic navigation host
+  `d3de0fc5-8383-450b-a1b5-dce7a1c01b19`. A's marker pair again remained on
+  A/H1. The simulator failed before mapped B work or the final marker.
+
+In the first run, B's earlier `navigation-appearance-1`, `on-appear`, and
+`task-immediate` source-less manual Resource work used representative A/H1 before
+B's automatic controller discovery settled. The probe's source attributes do not
+create SDK provenance, so this is the approved last-interacted compatibility
+fallback—not evidence that a source-bearing automatic tap was misrouted. The
+fallback-to-navigation-host turnover may still be undesirable automatic view
+churn, but it is not a duplicate concurrent semantic destination and needs to be
+judged separately from scene isolation.
+
+Both failures were `backboardd` `SIGABRT` crashes in
+`MTLTextureDescriptorInternal.validateWithDevice` / Core Animation rendering,
+not crashes in the probe or SDK process. The diagnostics are
+`/Users/valentin.pertuisot/Library/Logs/DiagnosticReports/backboardd-2026-09-13-225654.ips`
+and
+`/Users/valentin.pertuisot/Library/Logs/DiagnosticReports/backboardd-2026-09-13-225841.ips`.
+One first install transiently returned
+`Launch session has not been found`; its immediate retry launched. No backend
+query was used because neither run produced a terminal oracle result.
+
+The project builds for testing, all 49 probe tests pass, and repository lint
+reports zero violations across 713 source and 699 test files. The scenario is now
+prepared for one explicitly uninstalled iPhone Duo or physical multi-window iPad
+run. It must not be upgraded from `INCONCLUSIVE` until the final B marker passes
+locally and exact run-ID backend intake confirms its owner.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3163,6 +3227,10 @@ ID. The contaminated runs support only their local state-machine result.
   `EXP-114` crashed simulator `backboardd` in CoreAnimation/Metal before the
   harness timeout while the probe process stayed alive. Use capable physical
   hardware, and distinguish simulator diagnostics from app/SDK crash reports.
+- Do not repeatedly launch `swiftui.coexistence.semantic-a-automatic-b` on the
+  current simulator after `EXP-118`. Two clean attempts created the intended B
+  automatic hosts, then crashed `backboardd` before the final assertion. Preserve
+  the prepared scenario and finish it on physical multi-window hardware.
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.
