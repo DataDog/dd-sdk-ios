@@ -35,8 +35,7 @@ struct ProfilingScenario: Scenario {
         Profiling.enable(
             with: .init(
                 applicationLaunchSampleRate: .maxSampleRate,
-                continuousSampleRate: .maxSampleRate,
-                featureFlags: [.cpuTimeSamples: true]
+                continuousSampleRate: .maxSampleRate
             )
         )
     }

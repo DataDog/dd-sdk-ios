@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-09-08
+last_updated: 2026-09-13
 sdk_version: 3.17.0
 verified_against_commit: ac1c0a102
 tracked_files:
@@ -12,7 +12,7 @@ tracked_files:
 
 ## Overview
 
-Profiling captures pprof wall-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
+Profiling captures pprof wall-time and CPU-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
 
 - **Application launch profiling**: captures process startup and writes the launch profile when RUM emits the TTID app-launch vital.
 - **Continuous Profiling**: periodically records profiles for sampled-in RUM sessions and links long tasks and app hangs.
@@ -104,7 +104,7 @@ monitor.succeedOperation(
 
 Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, and a single `DatadogProfiler` message receiver.
 
-The low-level sampler lives in `DatadogProfiling/Mach`. It samples application threads with Mach APIs, aggregates stack traces into a pprof profile, and exposes the native profiler to Swift through a C interface.
+The low-level sampler lives in `DatadogProfiling/Mach`. It samples application thread stacks and CPU time with Mach APIs, aggregates them into a pprof profile, and exposes the native profiler to Swift through a C interface.
 
 `ProfilerFeature` writes UserDefaults keys consumed by the native auto-start path for app-launch profiling. The Swift side then decides when to keep the native profiler running, when to flush profiles, and whether to write or drop a profile.
 
@@ -213,5 +213,6 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 ## Additional Context
 
 - Profiling supports one SDK core instance per process. If another core calls `Profiling.enable`, the existing Profiling feature remains active and the SDK logs a warning identifying its core instance.
+- Profiles include wall-time and CPU-time sample values by default.
 - Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, such as after the app returns to foreground.
 - Profile uploads include pprof data, correlated RUM events, and profile metadata.
