@@ -96,12 +96,16 @@ enum ProbeRuntime {
             return "manual"
         case "navigation-path":
             return "navigation-path"
+        case "navigation-occurrence":
+            return "navigation-occurrence"
         default:
             return "automatic"
         }
     }()
     static let usesAutomaticSwiftUIViewTracking = swiftUIViewTrackingMode == "automatic"
     static let usesNavigationPathSwiftUIViewTracking = swiftUIViewTrackingMode == "navigation-path"
+    static let usesNavigationOccurrenceSwiftUIViewTracking =
+        swiftUIViewTrackingMode == "navigation-occurrence"
     static let usesTabPreloadStress =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SWIFTUI_STRESS"] == "tab-preload"
 

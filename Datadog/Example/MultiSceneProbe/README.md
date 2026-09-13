@@ -52,6 +52,14 @@ occurrence or serialize a counter because SwiftUI can coalesce writes and retain
 earlier screen values; the RUM view UUID is the occurrence identity. It is not
 proposed public API and does not cover the sheet path. It exists to validate
 ordering, occurrence, and cancellation semantics before RFC/API review.
+Set it to `navigation-occurrence` for the Debug-only keyed integration probe.
+This stack-only mode supplies the SDK with an opaque route occurrence plus the
+bound-path mutation generation while leaving the tracked customer content's
+SwiftUI identity unchanged. It records a stable `@State` witness for Home across
+pop cancellation/completion and for the retained Detail value across
+Detail 1 -> Detail 2 replacement. In this mode
+`DD_MULTI_SCENE_FORCE_ROUTE_IDENTITY=1` is intentionally ignored, so a passing
+run cannot be explained by the old full-content `.id(route)` control.
 `automatic` remains the default failing baseline.
 
 For acceptance, `Home → Detail → Home` must produce three RUM view UUIDs,

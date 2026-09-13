@@ -6,6 +6,11 @@
 
 import SwiftUI
 import UIKit
+#if DEBUG
+@testable import DatadogRUM
+#else
+import DatadogRUM
+#endif
 
 struct ProbeWindow: Codable, Hashable {
     static let windowGroupID = "rum-probe"
@@ -16,6 +21,12 @@ struct ProbeWindow: Codable, Hashable {
 }
 
 private enum ProbeRoute: Hashable {
+    case detail(Int)
+    case alternate
+}
+
+private enum ProbeNavigationOccurrence: Hashable {
+    case home
     case detail(Int)
     case alternate
 }
@@ -46,37 +57,93 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     let name: String
     let trackingBoundary: ProbeTrackingBoundary
     let readerControlGeneration: Int
+    let navigationOccurrence: ProbeNavigationOccurrence?
+    let bindingGeneration: UInt64
     @ViewBuilder let content: Content
+
+    init(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String,
+        name: String,
+        trackingBoundary: ProbeTrackingBoundary,
+        readerControlGeneration: Int,
+        navigationOccurrence: ProbeNavigationOccurrence? = nil,
+        bindingGeneration: UInt64 = 0,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.window = window
+        self.sceneSessionID = sceneSessionID
+        self.screen = screen
+        self.name = name
+        self.trackingBoundary = trackingBoundary
+        self.readerControlGeneration = readerControlGeneration
+        self.navigationOccurrence = navigationOccurrence
+        self.bindingGeneration = bindingGeneration
+        self.content = content()
+    }
 
     @ViewBuilder
     var body: some View {
-        if usesExplicitTracking {
+        #if DEBUG
+        if ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+            if usesExplicitTracking, let navigationOccurrence {
+                content.trackRUMView(
+                    name: name,
+                    occurrenceKey: RUMViewOccurrenceKey(navigationOccurrence),
+                    bindingGeneration: bindingGeneration,
+                    attributes: trackingAttributes
+                )
+            } else {
+                content
+            }
+        } else if usesExplicitTracking {
             content.trackRUMView(
                 name: name,
-                attributes: [
-                    ProbeRuntime.Attribute.runID: window.runID,
-                    ProbeRuntime.Attribute.host: ProbeRuntime.usesNavigationPathSwiftUIViewTracking
-                        ? "native-swiftui-navigation-path"
-                        : "native-swiftui",
-                    ProbeRuntime.Attribute.sourceScene: window.label,
-                    ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-                    ProbeRuntime.Attribute.screen: screen,
-                    ProbeRuntime.Attribute.readerControlGeneration: readerControlGeneration
-                ]
+                attributes: trackingAttributes
             )
         } else {
             content
         }
+        #else
+        if usesExplicitTracking {
+            content.trackRUMView(name: name, attributes: trackingAttributes)
+        } else {
+            content
+        }
+        #endif
     }
 
     private var usesExplicitTracking: Bool {
         if ProbeRuntime.usesAutomaticSwiftUIViewTracking {
             return false
         }
-        if ProbeRuntime.usesNavigationPathSwiftUIViewTracking {
+        if ProbeRuntime.usesNavigationPathSwiftUIViewTracking
+            || ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
             return trackingBoundary == .navigationRoute
         }
         return true
+    }
+
+    private var trackingAttributes: [String: Encodable] {
+        [
+            ProbeRuntime.Attribute.runID: window.runID,
+            ProbeRuntime.Attribute.host: trackingHost,
+            ProbeRuntime.Attribute.sourceScene: window.label,
+            ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.screen: screen,
+            ProbeRuntime.Attribute.readerControlGeneration: readerControlGeneration
+        ]
+    }
+
+    private var trackingHost: String {
+        if ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+            return "native-swiftui-navigation-occurrence"
+        }
+        if ProbeRuntime.usesNavigationPathSwiftUIViewTracking {
+            return "native-swiftui-navigation-path"
+        }
+        return "native-swiftui"
     }
 }
 
@@ -86,7 +153,10 @@ struct ProbeWindowRoot: View {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
     @State private var path: [ProbeRoute] = []
-    @State private var navigationMutation = 0
+    @State private var navigationMutation: UInt64 = 0
+    @State private var rumViewBindingGeneration: UInt64 = 0
+    @State private var homeBindingGeneration: UInt64 = 0
+    @State private var destinationBindingGeneration: UInt64 = 0
     @State private var sceneSessionID = "unresolved"
     @State private var sceneWindow: UIWindow?
     @State private var readerControlGeneration = 0
@@ -147,6 +217,7 @@ struct ProbeWindowRoot: View {
                     return
                 }
                 sceneSessionID = identifier
+                advanceRUMViewBindingGeneration(for: path)
                 ProbeRuntime.record(
                     "scene resolved source=\(window.label) native=\(identifier)"
                 )
@@ -324,6 +395,7 @@ struct ProbeWindowRoot: View {
             )
 
             readerControlGeneration += 1
+            advanceRUMViewBindingGeneration(for: path)
             await Task.yield()
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else {
@@ -396,7 +468,9 @@ struct ProbeWindowRoot: View {
                 screen: "home",
                 name: "ProbeHomeView",
                 trackingBoundary: .navigationRoute,
-                readerControlGeneration: readerControlGeneration
+                readerControlGeneration: readerControlGeneration,
+                navigationOccurrence: .home,
+                bindingGeneration: homeBindingGeneration
             ) {
                 ProbeHomeView(
                     window: window,
@@ -416,7 +490,9 @@ struct ProbeWindowRoot: View {
                         screen: "detail-\(instance)",
                         name: "ProbeDetailView",
                         trackingBoundary: .navigationRoute,
-                        readerControlGeneration: readerControlGeneration
+                        readerControlGeneration: readerControlGeneration,
+                        navigationOccurrence: .detail(instance),
+                        bindingGeneration: destinationBindingGeneration
                     ) {
                         ProbeDetailView(
                             window: window,
@@ -431,6 +507,7 @@ struct ProbeWindowRoot: View {
                         ProbeRouteIdentityModifier(
                             identity: route,
                             isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
+                                && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
                         )
                     )
                 case .alternate:
@@ -440,7 +517,9 @@ struct ProbeWindowRoot: View {
                         screen: "alternate",
                         name: "ProbeAlternateView",
                         trackingBoundary: .navigationRoute,
-                        readerControlGeneration: readerControlGeneration
+                        readerControlGeneration: readerControlGeneration,
+                        navigationOccurrence: .alternate,
+                        bindingGeneration: destinationBindingGeneration
                     ) {
                         ProbeAlternateView(
                             window: window,
@@ -451,6 +530,7 @@ struct ProbeWindowRoot: View {
                         ProbeRouteIdentityModifier(
                             identity: route,
                             isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
+                                && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
                         )
                     )
                 }
@@ -500,6 +580,7 @@ struct ProbeWindowRoot: View {
                 }
                 path = newPath
                 navigationMutation += 1
+                advanceRUMViewBindingGeneration(for: newPath)
                 ProbeRuntime.record(
                     "navigation path mutated source=\(window.label) "
                         + "screen=\(currentNavigationScreen) mutation=\(navigationMutation)"
@@ -534,6 +615,15 @@ struct ProbeWindowRoot: View {
     private func closeCurrentWindow() {
         ProbeRuntime.record("dismissWindow invoked source=\(window.label)")
         dismissWindow(id: ProbeWindow.windowGroupID, value: window)
+    }
+
+    private func advanceRUMViewBindingGeneration(for path: [ProbeRoute]) {
+        rumViewBindingGeneration &+= 1
+        if path.isEmpty {
+            homeBindingGeneration = rumViewBindingGeneration
+        } else {
+            destinationBindingGeneration = rumViewBindingGeneration
+        }
     }
 }
 
@@ -1738,6 +1828,8 @@ private struct ProbeHomeView: View {
 
     @State private var didAppear = false
     @State private var didRunTask = false
+    @State private var stateWitness = UUID()
+    @State private var appearanceCount = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -1786,6 +1878,15 @@ private struct ProbeHomeView: View {
         .navigationTitle("\(window.label): Home")
         .accessibilityIdentifier("probe.native.\(window.label).home")
         .onAppear {
+            if ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+                appearanceCount += 1
+                ProbeRuntime.record(
+                    "navigation state witness source=\(window.label) screen=home "
+                        + "token=\(stateWitness.uuidString.lowercased()) "
+                        + "appearance=\(appearanceCount)"
+                )
+                emit(phase: "navigation-appearance-\(appearanceCount)")
+            }
             guard !didAppear else {
                 return
             }
@@ -1886,6 +1987,8 @@ private struct ProbeDetailView: View {
 
     @State private var emittedAppearance = false
     @State private var didRunTask = false
+    @State private var stateWitness = UUID()
+    @State private var bindingUpdateCount = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -1913,6 +2016,18 @@ private struct ProbeDetailView: View {
                 readerControlGeneration: readerControlGeneration
             )
         )
+        .onChange(of: instance, initial: true) { _, instance in
+            guard ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking else {
+                return
+            }
+            bindingUpdateCount += 1
+            ProbeRuntime.record(
+                "navigation state witness source=\(window.label) screen=detail-\(instance) "
+                    + "token=\(stateWitness.uuidString.lowercased()) "
+                    + "binding_update=\(bindingUpdateCount)"
+            )
+            emit(phase: "binding-update-\(bindingUpdateCount)")
+        }
         .onAppear {
             guard !emittedAppearance else {
                 return
