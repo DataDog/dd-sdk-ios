@@ -913,6 +913,138 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(resourceEvents.first?.view.name, "View A")
     }
 
+    func testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: "resource-owned-by-A",
+            time: startTime.addingTimeInterval(0.01)
+        )
+        startResource.target = .view(viewAID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB,
+                time: startTime.addingTimeInterval(0.02)
+            ),
+            context: context,
+            writer: writer
+        )
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.03),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        startAction.target = .scene(sceneB)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: "resource-owned-by-A",
+                time: startTime.addingTimeInterval(0.04)
+            ),
+            context: context,
+            writer: writer
+        )
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.05),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        stopAction.target = .scene(sceneB)
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, viewAID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View B")
+        XCTAssertEqual(action.action.resource?.count, 0)
+    }
+
+    func testGivenAOwnedResourceAndBAction_whenSourceLessResourceFails_itDoesNotIncrementBAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: "resource-owned-by-A",
+            time: startTime.addingTimeInterval(0.01)
+        )
+        startResource.target = .view(viewAID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB,
+                time: startTime.addingTimeInterval(0.02)
+            ),
+            context: context,
+            writer: writer
+        )
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.03),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        startAction.target = .scene(sceneB)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: "resource-owned-by-A",
+                time: startTime.addingTimeInterval(0.04),
+                message: "resource failed"
+            ),
+            context: context,
+            writer: writer
+        )
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.05),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        stopAction.target = .scene(sceneB)
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.view.id, viewAID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View B")
+        XCTAssertEqual(action.action.error?.count, 0)
+        XCTAssertFalse(action.action.frustration?.type.contains(.errorTap) == true)
+    }
+
     func testGivenResourceOwnedByInactiveView_whenItCompletes_itDoesNotAlsoReachCurrentViewsAction() throws {
         let startTime = Date()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)

@@ -702,6 +702,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func propagate(command: RUMCommand, context: DatadogContext, writer: Writer) {
+        // Resolve once before completion can remove an inactive owning view.
+        // Resource identity must outrank the current representative so an
+        // unrelated action cannot count another scene's completion.
+        let resourceOwnerView = (command as? RUMResourceCommand).flatMap { resourceCommand in
+            viewScopes.first {
+                $0.resourceScopes[resourceCommand.resourceKey] != nil
+            }
+        }
         let hasExactTargetView: Bool
         let routedTargetView: RUMViewScope?
         if case .view(let viewID) = command.target {
@@ -743,6 +751,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 command: command,
                 to: viewScope,
                 routedTargetView: routedTargetView,
+                resourceOwnerView: resourceOwnerView,
                 hasExactSceneBranch: hasExactSceneBranch,
                 shouldMigrateLegacyBranch: shouldMigrateLegacyBranch,
                 legacySceneFallback: legacySceneFallback
@@ -759,6 +768,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         command: RUMCommand,
         to viewScope: RUMViewScope,
         routedTargetView: RUMViewScope?,
+        resourceOwnerView: RUMViewScope?,
         hasExactSceneBranch: Bool,
         shouldMigrateLegacyBranch: Bool,
         legacySceneFallback: RUMViewScope?
@@ -803,9 +813,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             if command is RUMStartViewCommand || command is RUMStopViewCommand {
                 return viewScope.sceneIdentifier == nil || viewScope === activeView
             }
-            if let resourceCommand = command as? RUMResourceCommand {
+            if command is RUMResourceCommand {
+                if command is RUMStartResourceCommand {
+                    return viewScope === activeView || viewScope === resourceOwnerView
+                }
+                if let resourceOwnerView {
+                    return viewScope === resourceOwnerView
+                }
                 return viewScope === activeView
-                    || viewScope.resourceScopes[resourceCommand.resourceKey] != nil
             }
             return viewScope === activeView
         }
