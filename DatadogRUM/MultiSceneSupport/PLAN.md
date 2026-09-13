@@ -121,11 +121,15 @@ Current execution order:
    path. Clean runs pass 11/11 and 13/13 locally and in backend intake; the probe
    plan passes 42/42 and the complete RUM plan passes 1,153/1,153. Keep native
    gesture proof in the real-device/human queue.
-5. Partially completed in `45e5999e4` and `EXP-113`: exact A-to-B open waits for
-   B readiness, exact B close waits for B disconnect, and subsequent A work stays
-   on A's original Home occurrence. The probe plan passes 43/43. Continue this
-   slice with exact activation, foreground/background lifecycle acknowledgements,
-   and stable simultaneous-visible peer continuity.
+5. Harness portion completed in `45e5999e4`, `4d1783198`, `EXP-113`, and
+   `EXP-114`: exact A-to-B open waits for B readiness, exact B close waits for B
+   disconnect, and subsequent A work stays on A's original Home occurrence.
+   Exact activation dispatch waits for target foreground state, and peer lifecycle
+   waits treat the latest non-superseded state as a condition rather than assuming
+   notification order. Missing peer background is `INCONCLUSIVE`. The probe plan
+   passes 45/45. Stable simultaneous-visible activation and peer continuity now
+   require iPhone Duo or a physical multi-window iPad; do not keep retrying the
+   compositor-crashing loop on this simulator.
 6. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
@@ -147,6 +151,15 @@ This order implements the approved product priority: view occurrences and
 navigation first, then scene-aware manual views, downstream ownership,
 compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
+
+This plan was rechecked against the original objective after `EXP-114`. It still
+covers proper per-scene view creation, SwiftUI and UIKit navigation, action
+ownership, Resources/Traces/Operations and the remaining downstream signals,
+single-scene compatibility, and Session Replay crash safety. Header injection for
+developer-rewritten requests, true multi-pane/tab modeling, and Execution Context
+serialization remain deliberately outside this project. Hardware-limited
+activation evidence is queued rather than allowed to block the next view/navigation
+implementation slice.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -179,8 +192,9 @@ experiment; it does not itself change the SDK support verdict.
    generation. It rejects aliasing and stale handles, and its internal future
    Window Execution Context seam is not serialized. The probe plan passes 31/31;
    a clean iPadOS 27 run and backend session validate the Home → Detail prefix.
-   Exact activation remains part of the lifecycle-driving phase; exact open and
-   close are completed in `EXP-113`.
+   At that checkpoint exact activation remained part of the lifecycle-driving
+   phase. Exact open/close runtime proof is completed by `EXP-113`; activation
+   driving is completed by `EXP-114`, while its hardware runtime proof stays open.
 4. Initial slice completed in `34ba7eabf` and `EXP-109`: drive
    `swiftui.stack.return` through observable scene, path, destination, and
    RUM-occurrence acknowledgements. The driver emits exactly one terminal result,
@@ -212,22 +226,34 @@ experiment; it does not itself change the SDK support verdict.
    acknowledges its disconnect. The close scenario requires B's pre-close
    Resource and A's post-close action/Resource on their first Home occurrences.
    One clean iPadOS 27 run passes 9/9 locally and in backend intake; the complete
-   probe plan passes 43/43. Activation and simultaneous-visible topology remain
-   open.
-9. Add one reproducible run command that preflights capabilities, records source
+   probe plan passed 43/43 at that checkpoint. Activation driving was completed
+   next; simultaneous-visible topology proof remained open.
+9. Completed in `4d1783198` and `EXP-114`: `activate-window` dispatches through
+   the exact registered `UIWindowScene` and waits for its foreground-active
+   lifecycle state. The activation scenario requires the peer to become background
+   before it asserts a new occurrence or marker ownership. Scene-state waits use
+   the latest exact-scene lifecycle snapshot, so a valid notification that arrives
+   before target activation is not lost; a superseded or missing state cannot
+   pass. Missing topology is `INCONCLUSIVE`, and the terminal JSON result is also
+   written to OSLog. One compatibility-control run reached backend intake and
+   showed source-less A-labelled markers correctly staying on representative B;
+   lifecycle-gated retries were simulator-inconclusive, including one interrupted
+   by a `backboardd` CoreAnimation/Metal crash. The probe plan passes 45/45.
+10. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The deterministic stack, split, UIKit-transition, and exact open/close harness
-loop is complete through `EXP-113`: three clean
+The deterministic stack, split, UIKit-transition, and exact scene lifecycle
+harness loop is complete through `EXP-114`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
 split baseline fails 0/9 for missing semantic views. UIKit cancel/finish pass
 11/11 and 13/13 without a Primary RUM view; exact B close with continuing A work
-passes 9/9. The deliberately wrong-view fixture
+passes 9/9. Exact activation is prepared and fail-closed but still lacks a
+qualifying hardware run. The deliberately wrong-view fixture
 continues to fail locally with an actionable reason.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 

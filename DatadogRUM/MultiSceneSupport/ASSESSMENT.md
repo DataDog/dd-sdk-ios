@@ -48,8 +48,8 @@ The structural UIKit split fix adds two regressions and the current complete RUM
 plan passes 1,153/1,153; Trace remains 151/151, including 4/4 focused OpenTelemetry
 handoff tests. Repository lint passes all 713 source and 699 test files. The
 structured probe recorder, mapper reducer, semantic oracle, exact main-actor
-scene registry, and observable stack/split/UIKit/lifecycle driver now pass 43/43
-tests (`EXP-108` through `EXP-113`). Three clean iPadOS 27 Home → Detail → Home runs each
+scene registry, and observable stack/split/UIKit/lifecycle driver now pass 45/45
+tests (`EXP-108` through `EXP-114`). Three clean iPadOS 27 Home → Detail → Home runs each
 emitted one 7/7 local `PASS`, distinct Home₁/Detail/Home₂ UUIDs, and post-return
 action/Resource ownership on Home₂. Backend intake independently agrees for all
 three sessions and reports no errors. Clean abort and same-/different-type
@@ -64,7 +64,15 @@ resolved-view action/Resource pairs, no Primary view, and no error in either run
 Exact scene lifecycle run `EXP-113` then passes 9/9: source A opens target B,
 B disconnects after its own marker pair, and A's post-close pair remains on A's
 unchanged Home UUID. Backend intake agrees; fullscreen simulator topology still
-cannot establish simultaneous-visible peer continuity or exact activation.
+cannot establish simultaneous-visible peer continuity. `EXP-114` adds exact
+activation dispatch and scene-state gating. Its completed control kept
+source-less A-labelled work on representative B, which is the approved
+compatibility behavior because the SDK had no trustworthy call-site source. The
+simulator kept both scenes foreground-active instead of producing the peer
+background transition required for an exact occurrence assertion. A later retry
+ended when simulator `backboardd` aborted in CoreAnimation/Metal; the probe did
+not crash and no events from that interrupted run reached backend intake. Exact
+activation semantics therefore remain device-inconclusive rather than failed.
 The native SwiftUI host still contributes a short fallback view before S1, but it
 owns no probe work. Native gesture synthesis remains unavailable, but it no
 longer blocks exact programmatic scenario driving.
@@ -535,15 +543,15 @@ against the amount of implementation completed:
 | Objective | Current evidence | Remaining release work |
 | --- | --- | --- |
 | Concurrent view creation and lifetime | UIKit and explicit SwiftUI windows coexist in one session; the iOS 27 early-mount candidate preserves exact A/B lifecycle work; route-owned controls publish semantic roots and destinations; `EXP-090` proves a RUM-only occurrence change preserves customer SwiftUI state, `EXP-098` reveals retained Home before immediate work, and `EXP-105` preserves that occurrence across a subtree remount | Automatic native `WindowGroup` still lacks the approved optional container-level semantic integration and authority/dedup rules. Finish that review plus simultaneous visibility, construction, restoration, and iPhone Duo validation |
-| UIKit and SwiftUI navigation | UIKit push/pop/modal and explicit SwiftUI stack/modal flows preserve one UUID per committed path occurrence; signal-driven stack return, abort, same-/different-type replacement, split replacement, retained split return, and UIKit cancel/finish pass locally and in backend intake. The matching automatic SwiftUI split control fails with no semantic destination views. Stock regular-width UIKit splits no longer start or restart structural Primary/supplementary views; cancellation retains S2 and completion creates fresh S1 | Extend exact scene driving from open/close to activation, prove a recognized native SwiftUI interactive cancel/finish on hardware, then cover startup/subclass containers, adaptive resize, simultaneous-visible A/B completion, restoration, and ordinary-app compatibility |
+| UIKit and SwiftUI navigation | UIKit push/pop/modal and explicit SwiftUI stack/modal flows preserve one UUID per committed path occurrence; signal-driven stack return, abort, same-/different-type replacement, split replacement, retained split return, and UIKit cancel/finish pass locally and in backend intake. The matching automatic SwiftUI split control fails with no semantic destination views. Stock regular-width UIKit splits no longer start or restart structural Primary/supplementary views; cancellation retains S2 and completion creates fresh S1 | Turn the debug route source into the reviewed optional semantic container integration, prove recognized native SwiftUI cancel/finish and exact activation on hardware, then cover startup/subclass containers, adaptive resize, simultaneous-visible A/B completion, restoration, and ordinary-app compatibility |
 | Action attribution | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions update the representative; execution-local manual action/error/view mutations and internal view work prefer exact handoff view/scene; `EXP-098` attributes immediate returned-Home work correctly and source-less work keeps last-interacted fallback | Repeat manual-handoff precedence with B representative and A visibly interactive; finish UIKit scroll/deceleration and targeted downstream runtime rows |
-| Scene lifecycle and sessions | Requested destruction/close preserves delayed ownership; exact A-to-B open and B close now wait for B readiness/disconnect, and post-close A work keeps A's original Home UUID; disconnect invalidation, retained-reader rearming, migration, and stale-observer isolation pass; explicit stop/expiry restore concurrent branches; the probe registry models exact logical/native identity without retaining windows or serializing its future Execution Context seam | Exact activation, stable simultaneous-visible peer close, genuine OS disconnect/reconnect, per-scene background/foreground, concurrent restoration, and the equivalent shipping ownership path ready for future Window Execution Context mapping; backend visualization is follow-up work |
+| Scene lifecycle and sessions | Requested destruction/close preserves delayed ownership; exact A-to-B open and B close wait for B readiness/disconnect, and post-close A work keeps A's original Home UUID; exact activation and current-state lifecycle conditions are implemented in the probe; disconnect invalidation, retained-reader rearming, migration, and stale-observer isolation pass; explicit stop/expiry restore concurrent branches; the probe registry models exact logical/native identity without retaining windows or serializing its future Execution Context seam | Prove activation plus peer background and stable simultaneous-visible peer close on capable hardware, then genuine OS disconnect/reconnect, per-scene background/foreground, concurrent restoration, and the equivalent shipping ownership path ready for future Window Execution Context mapping; backend visualization is follow-up work |
 | Resources, traces, and operations | Start provenance and Resource completion ownership are frozen; manual Resource starts, automatic URLSession completion, and native/OpenTelemetry span starts use scene handoff; Operations use application-wide typed identities and per-step resolution with focused cross-window tests | Finish bounded live causal/reverse-completion rows, exact different-representative proof, live Operation A-to-B/duplicate-start proof, and public Operation target review |
 | Errors, logs, WebView, vitals, fatal/exported context, and profiling | Scene-aware source or focused tests exist for each except profiling, whose process-level limitation is known | Targeted two-window runtime/backend evidence; profiling needs an explicit support statement, not guessed per-scene ownership |
 | Normal-app compatibility | RUM 1,153/1,153 and Trace 151/151 pass; complete Internal/Logs/WebView suites, probe builds, package build, and repository lint pass | Live single-scene behavior, custom-handler integration, and `sendEvent` overhead/recursion measurement |
 | Session Replay | Multiple UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK crash | No scene-correctness work required for this objective |
 
-The probe registry and observable-driver portions of `EXP-108` through `EXP-113`
+The probe registry and observable-driver portions of `EXP-108` through `EXP-114`
 are evidence-harness improvements. `EXP-112` separately includes the shipping
 structural UIKit split-column fix. The initial Home mapper
 snapshot can still precede native scene resolution;
@@ -572,7 +580,9 @@ replacement and retained return also pass, while the exact automatic control
 fails on launch/internal host ownership (`EXP-111`). The same driver proves UIKit
 cancellation and fresh return semantics in `EXP-112`; `EXP-113` then drives exact
 A-to-B open, exact B close, and post-close A work through readiness/disconnect
-acknowledgements. The debug source moves
+acknowledgements. `EXP-114` prepares exact activation and rejects missing peer
+lifecycle as inconclusive; its simulator runs do not close the hardware evidence
+row. The debug source moves
 toward the approved optional container-level semantic SwiftUI integration,
 which must coexist with automatic discovery and suppress duplicates only in its
 target. Real-device and
@@ -831,4 +841,4 @@ work may be attributed to the wrong concurrent scene.
 | WebView correlation | Browser events can be stitched to another scene's native container | Branch carries private source-scene metadata and queries scene-keyed view history | Pending fixed-runtime rerun | Pending | Fixed in branch; three focused tests pass |
 | Profiling | Profile-level RUM attributes are last-writer-wins across views | One mutable correlation snapshot | Pending | Pending | Confirmed by source |
 | Crash/fatal context | Any view update can overwrite one process crash context | Branch restricts updates to the representative and restores another active scene when needed | Pending | Pending | Fixed to representative policy; focused tests pass |
-| App/scene lifecycle | Per-scene transitions are invisible to baseline view ownership | Branch observes lifecycle per scene; teardown aligns handler and fresh/retained-reader state, clears last-proven scene proof, fences stale callbacks, rearms cancellation, preserves migration, and isolates observers | Requested destruction stopped only source views; `EXP-113` exact-opened B, exact-closed B, and continued A on its original Home UUID; synthetic retained-reader remount passes; real reconnect is still unrun | B's marker pair uses B Home, A's post-close pair uses unchanged A Home, and destroyed-scene views become inactive without replacing the survivor | Exact open/close passes; human/device queue owns activation, live reconnect, restoration, simultaneous-visible peer continuity, and per-scene background/foreground |
+| App/scene lifecycle | Per-scene transitions are invisible to baseline view ownership | Branch observes lifecycle per scene; teardown aligns handler and fresh/retained-reader state, clears last-proven scene proof, fences stale callbacks, rearms cancellation, preserves migration, and isolates observers. The probe dispatches activation through an exact registered scene and waits on the latest non-superseded lifecycle state | Requested destruction stopped only source views; `EXP-113` exact-opened B, exact-closed B, and continued A on its original Home UUID; `EXP-114` could not obtain the required peer-background transition before a simulator compositor crash; synthetic retained-reader remount passes; real reconnect is still unrun | B's marker pair uses B Home, A's post-close pair uses unchanged A Home, and destroyed-scene views become inactive without replacing the survivor. `EXP-114`'s completed source-less control reached backend intake but is not exact activation evidence | Exact open/close passes; human/device queue owns activation, live reconnect, restoration, simultaneous-visible peer continuity, and per-scene background/foreground |

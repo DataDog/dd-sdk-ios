@@ -70,8 +70,10 @@ boundary, in this order:
 | 53 | `Drive deterministic UIKit transitions` | Exact-scene begin/progress/resolve commands, coordinator-result signals, semantic UIKit names, resolved-view marker checks, and focused cancel/finish driver tests |
 | 54 | `Document signal-driven UIKit transition evidence` | `EXP-112` local/backend evidence, structural-view verdict, validation snapshot, and refreshed resume state |
 | 55 | `Coordinate probe scene lifecycle explicitly` | Exact source-to-target window open, exact target close, readiness/disconnect acknowledgements, peer-continuity expectations, and focused driver coverage |
+| 56 | `Document exact scene lifecycle evidence` | `EXP-113` local/backend evidence, open/close lifecycle verdict, simulator-topology boundary, and refreshed resume state |
+| 57 | `Drive observable scene activation transitions` | Exact registered-scene activation, latched lifecycle-state conditions, durable terminal-result logging, explicit inconclusive classification, and focused driver coverage |
 
-Rows 1-55 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-57 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -83,7 +85,8 @@ Rows 1-55 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
 Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
 is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
-`df0322619`. Row 54 is `4f1bf4d55`, and row 55 is `45e5999e4`.
+`df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
+`a97e943df`, and row 57 is `4d1783198`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -98,8 +101,8 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-twenty-six exact-path commits in rows 28-53 use that policy. This is local
-checkpoint history, not push-ready history.
+exact-path commits from row 28 onward use that policy. This is local checkpoint
+history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 each checkpoint commit must use an exact path list. Do not use a broad `git commit`
@@ -226,6 +229,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-111 | `observable-split-selection-20260913-1831-a`; corrected `observable-split-selection-20260913-1840-b`; `observable-split-return-20260913-1843-a`; corrected `observable-split-return-20260913-1844-b`; automatic baseline `observable-split-automatic-20260913-1846-a` | `cc00fae2-3911-4846-b8b8-68f0c06b9c1f`; `ab78101b-8528-4e0c-9505-1d0bc926ba91`; `84a12a1a-b251-41e0-8f9a-53404427b628`; `9f5a87b0-75b0-4da3-9902-0ce3dc059c57`; `ba04a828-38f8-4135-8e1d-4c25ca875fb8` | iPadOS 27 | Signal-driven split acceptance and automatic failure baseline. The corrected route-owned runs pass 10/10 and 13/13: Detail₁ → Detail₂ → Placeholder and Detail₁ → Detail₂₁ → Placeholder → fresh Detail₂₂ each have one distinct UUID plus an exact action/Resource pair. Backend intake agrees and reports no errors. Automatic tracking fails 0/9: Detail₁ work uses `ApplicationLaunch`, while Detail₂ and Placeholder share one internal `NavigationStackHostingController` UUID. The two earlier local failures are retained as harness lessons: Resource completion is asynchronous ownership evidence rather than a navigation-order clock, and an unordered completion check must continue past an earlier same-named occurrence. All 40 probe tests and repository lint pass. |
 | EXP-112 | Baseline `observable-uikit-cancel-20260913-1911-a`; first corrected `observable-uikit-cancel-20260913-1916-b`, `observable-uikit-finish-20260913-1917-a`; final `observable-uikit-cancel-20260913-1923-c`, `observable-uikit-finish-20260913-1925-b` | `dbf47e00-d912-4ef8-862b-abe462931710`; `edc0ba78-6225-4271-9b7d-97dcb34baa2a`; `7ec940ff-5960-45b9-83c6-01b24a04e1cc`; `df3e4faf-727a-4e5b-ae73-c7bac5984658`; `7f1dcd04-7b71-4285-a39a-89cfb81d6cd4` | iPadOS 27 | Signal-driven UIKit cancellation/completion acceptance plus a shipping structural-view fix. The baseline drove a real 35% `UIPercentDrivenInteractiveTransition` correctly but failed immediately because Primary became a RUM view. The iOS 27 declared-multi-scene handler now ignores regular-width structural Primary/supplementary columns and retains same-column pending reconciliation. Final cancellation passes 11/11, keeps S2 `24edf931…`, and attributes three action/Resource pairs to it; completion passes 13/13 and emits S1 `983bb960…` → S2 `b99009d3…` → fresh returned S1 `38058b25…`, with exact 1/1, 1/1, and 2/2 action/Resource ownership. Backend intake has no Primary and no errors. The native SwiftUI host still emits a short fallback before S1, but it owns no probe work. Probe tests pass 42/42, the full RUM plan passes 1,153/1,153, and repository lint reports zero violations. |
 | EXP-113 | Interrupted `observable-window-close-20260913-2016-a`; final `observable-window-close-20260913-2020-b` | `6a37d312-8ca1-41fc-87e4-b42d5142fb64`; `be396759-0393-42e1-b08e-acb2a5cb0c7c` | iPadOS 27 | Exact scene-lifecycle driver acceptance. `open-window` dispatches through exact source A and waits for exact target B readiness; `close-window` dispatches through exact B and waits for B disconnect. The first launch session expired after B became ready and before a terminal result, so it is retained as inconclusive. The clean retry acknowledged all five steps and passed 9/9. B `before-close` action/Resource use B Home `22dce95f…`; after B disconnect generation 1, A `after-peer-close` action/Resource use unchanged A Home `f7f72acf…`. Backend intake confirms both pairs, two independent Home view IDs, and no error bucket. The fullscreen simulator did not prove both windows visible concurrently. Probe tests pass 43/43 and repository lint remains clean. |
+| EXP-114 | Completed compatibility control `observable-window-activation-20260913-2039-a`; expired lifecycle-gated prefix `observable-window-activation-20260913-2056-b`; compositor-interrupted prefix `observable-window-activation-20260913-2059-c` | `d2d11fda-28ce-4fce-bf46-cd858ce49adb`; no terminal session claim; locally observed `fe55cea1-4c9f-4a72-97e0-398c4302ed71`, zero backend events | iPadOS 27 | Exact activation-harness boundary. The first scenario version acknowledged ten exact-scene commands, but its source-labelled markers were plain public RUM calls with no SDK provenance. Backend therefore correctly kept A-labelled source-less work on last-interacted B until B closed; this is compatibility evidence, not an activation attribution failure. The corrected scenario dispatches activation only through the target registered `UIWindowScene`, waits for its foreground-active state, and requires the peer's latest non-superseded state to become background before asserting a fresh occurrence or marker ownership. The simulator kept both scenes foreground-active. One retry lost its Xcode launch/stdout session before a verdict; another ended when simulator `backboardd`, not the probe, aborted in CoreAnimation/Metal before the 10-second harness timeout. The latter produced no terminal OSLog or backend event. Probe tests pass 45/45 and repository lint is clean. Exact activation remains inconclusive pending capable hardware. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -250,6 +254,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
 | P0 | `EXP-041`, `EXP-089`, `EXP-113` | Exact open/close now passes, but fullscreen switching backgrounded or reactivated A and never proved stable simultaneous visibility or a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then exact-close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
+| P0 | `EXP-114` | The simulator kept both exact scenes foreground-active instead of acknowledging a focus handoff, then crashed `backboardd` in CoreAnimation/Metal during a rapid retry | Run `windows.activation-sequence` on iPhone Duo or a physical multi-window iPad; let the OS complete each focus transition before continuing | For every step, record target foreground-active plus peer background before judging telemetry. Each confirmed foreground re-entry must create the scenario's fresh Home occurrence, and its immediate action/Resource pair must use that occurrence. A plain source label must never be treated as SDK provenance; source-less fallback remains last-interacted |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
@@ -2841,6 +2846,84 @@ probe plan passes 43/43 and repository lint reports zero violations across 713
 source and 699 test files. Commit `45e5999e4` contains the exact-path harness
 checkpoint.
 
+### 2026-09-13 — EXP-114: exact activation and simulator boundary
+
+The harness now supports exact activation without consulting unordered
+application session collections. `activate-window` resolves the requested
+logical scene through `ProbeSceneRegistry`, invokes activation for that registered
+`UIWindowScene` session, and acknowledges only after the target's latest lifecycle
+state is foreground-active. The scenario then waits for the peer's background
+state before it emits a marker or evaluates a fresh view occurrence. A scene-state
+wait is a latched current-state condition: it accepts the latest exact-scene state
+even when the background notification arrived before target activation was
+acknowledged, but cannot accept a state superseded by a later lifecycle signal.
+A missing transition produces `INCONCLUSIVE`, not `FAIL`.
+
+The first install attempt never launched because the previous Xcode
+device-interaction session had expired. It contains no runtime observation and
+must not be interpreted as an app or SDK failure.
+
+The first completed run,
+`observable-window-activation-20260913-2039-a`, session
+`d2d11fda-28ce-4fce-bf46-cd858ce49adb`, used the scenario's earlier contract.
+Scene A was native `58904B41-3982-4B3E-A35A-49ED0BA83ABE` with Home
+`4c2012c5-2596-4b88-b462-abbfbf6d396b`; scene B was native
+`AA98B535-9419-4A8A-9E6B-AEB4094DE153` with Home
+`ee3f5828-ae47-4ad8-bd0e-67a88c2f1fc1`. All ten exact commands were
+acknowledged, but the local oracle failed because A-labelled markers following an
+A activation still used B. Backend intake contains only the original A/B Home
+views plus ApplicationLaunch: A Home owns four actions and four Resources, B Home
+owns six of each, and each owns three long tasks.
+
+That result is not an SDK routing defect. `emit-marker` calls public RUM APIs
+outside any UI-event handoff. Its `scene` field is probe source metadata, not
+trustworthy SDK provenance. The approved compatibility behavior therefore keeps
+that source-less work on the last-interacted/process representative, which
+remained B until B closed. The simulator also kept both native scenes
+foreground-active, so the activation request never provided the focus transition
+needed to expect a fresh A occurrence. The earlier semantic failure is retained
+as a probe-contract correction and must not be used as a shipping support verdict.
+
+The scenario was then tightened to require target foreground-active and peer
+background before any occurrence or ownership assertion. Run
+`observable-window-activation-20260913-2056-b` reached exact B activation and
+started waiting for A background, but the Xcode launch/stdout session expired
+before the timeout and terminal result. This is an inconclusive prefix only.
+
+The clean retry, `observable-window-activation-20260913-2059-c`, locally opened
+RUM session `fe55cea1-4c9f-4a72-97e0-398c4302ed71`. A was native
+`2B3FBB41-977C-464D-9C0D-2E1340299D96` with Home
+`23c33ee8-2190-4fe9-a3af-4587955b323e`; B was native
+`4171C189-4F70-44D1-886F-04EE885AE37F` with Home
+`b73dcf08-597b-4d1a-8f99-d7d4d80873aa`. It again reached exact B
+foreground-active while A remained foreground-active. Before the harness's
+10-second state timeout, simulator `backboardd` PID 70194 received SIGABRT. The
+diagnostic `backboardd-2026-09-13-205937.ips`, incident
+`46F71CC6-9329-4D72-A069-02F83F1928F7`, identifies the faulting
+`com.apple.coreanimation.display.primary` thread and an abort from Metal texture
+validation during CoreAnimation rendering. Probe PID 71587 did not crash. There
+was no terminal semantic result because the system compositor failed first, and
+exact run-ID and session-ID backend queries returned zero events. This is a
+simulator-system interruption, not SDK crash evidence or an attribution result.
+The simulator was shut down and booted after the incident. An earlier process
+check also failed because this simulator image has no `pgrep`; that command error
+must not be mistaken for a missing probe process.
+
+Two implementation corrections are retained. `SceneSessionReader` now defers its
+registry callback to the next main-actor turn; the synchronous draft mutated
+SwiftUI state while the view was updating. A weak-window registry test now scopes
+its `XCTUnwrap` temporary in an autorelease pool; the direct unwrap extended the
+window lifetime under the current compiler/runtime and falsely suggested that the
+registry retained it. Neither correction changes production SDK ownership.
+
+Terminal semantic JSON is now mirrored through OSLog so an ordinary Xcode console
+session expiry does not discard a completed verdict. Two focused activation and
+state-condition tests raise the probe plan to 45/45. Repository lint remains clean
+across 713 source and 699 test files. Commit `4d1783198` contains only the harness
+slice. No production SDK source changed. Do not repeat the rapid A/B activation
+loop on this simulator; the prepared scenario belongs on iPhone Duo or a physical
+multi-window iPad.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -2860,6 +2943,10 @@ checkpoint.
 - Do not treat `probe.source_scene` or `probe.screen` as RUM ownership. Those
   fields describe the call site. Only mapper/backend view UUIDs and trusted scene
   association establish where RUM attributed the event.
+- Do not treat a probe source label on a plain public RUM call as trustworthy SDK
+  provenance. `EXP-114` correctly kept such source-less markers on the
+  last-interacted representative. Exercise an actual UI-event handoff or an
+  explicit target before judging exact scene attribution.
 - Do not treat a mapper callback as persistence or upload proof. It observes an
   event before storage/filtering; retain an exact backend query for support claims.
 - Do not serialize navigation on Resource completion to make a semantic timeline
@@ -2889,7 +2976,27 @@ checkpoint.
   command itself testable.
 - Do not make the scene registry strongly own `UIWindow` merely to stabilize a
   test. The exact-scene test must retain its fixture window just as UIKit retains
-  a live application window; weak registry ownership is intentional.
+  a live application window; weak registry ownership is intentional. Scope any
+  `XCTUnwrap` temporary before asserting deallocation because it can extend the
+  fixture lifetime under the current compiler/runtime.
+- Do not mutate probe SwiftUI state synchronously from `SceneSessionReader`'s
+  registration callback. Defer it to the next main-actor turn or SwiftUI reports
+  state mutation during a view update.
+- Do not call an activation request or target `foreground-active` state a focus
+  handoff while the peer is still foreground-active. The exact activation row
+  requires the peer's latest non-superseded state to become background before it
+  judges a fresh occurrence or marker ownership.
+- Do not model that peer-state requirement as "the next notification." Either
+  valid notification order can occur. Treat the latest exact-scene lifecycle
+  value as a latched condition while rejecting any value superseded by a later
+  state.
+- Do not repeat the rapid A/B activation loop on the current iOS 27 simulator.
+  `EXP-114` crashed simulator `backboardd` in CoreAnimation/Metal before the
+  harness timeout while the probe process stayed alive. Use capable physical
+  hardware, and distinguish simulator diagnostics from app/SDK crash reports.
+- Do not use `pgrep` as a process-health discriminator on this simulator image;
+  the command is absent. Use a supported process listing or the captured system
+  diagnostic before classifying the app as terminated.
 - Do not query this probe with `@probe.run_id`; use
   `@context.probe.run_id` or fall back to `service:ios-sdk-multi-scene-probe`
   followed by an exact session-ID query.

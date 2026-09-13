@@ -60,6 +60,7 @@ The catalog currently preserves these experiment families:
 | `uikit.split.concurrent-scenes` | `EXP-086` | Existing automation; simultaneous topology remains unproven |
 | `windows.parallel-navigation` | `EXP-033`, `EXP-059`, `EXP-103` | Existing automation; simultaneous topology remains unproven |
 | `windows.close-with-resource` | `EXP-041`, `EXP-113` | Signal-driven PASS; simultaneous-visible peer proof needs hardware |
+| `windows.activation-sequence` | `EXP-114` | Signal-driven and fail-closed; current simulator is INCONCLUSIVE, capable hardware required |
 | `actions.exact-source-handoff` | `EXP-089` | Existing filtered control; discriminator needs simultaneous topology |
 | `swiftui.reader.synthetic-reconnect`, `swiftui.reader.synthetic-reconnect-scene-b` | `EXP-066` | Existing synthetic control |
 | `windows.restoration` | `EXP-042` | Prepared; concurrent restoration needs hardware or human setup |
@@ -77,13 +78,16 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 43/43. The stack
+future Execution Context seam. The generated test plan passes 45/45. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
-scenarios, plus exact scene open/close, drive their exact scene and wait for
-observable readiness, path/selection,
+scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
+observable readiness, lifecycle state, path/selection,
 destination, transition, and RUM-occurrence signals, acknowledge every step, and
-emit exactly one final result. Clean iPadOS 27 semantic runs pass locally and in
-backend intake (`EXP-109` through `EXP-113`). The automatic SwiftUI split control
+emit exactly one final result. The terminal JSON result is also written through
+OSLog so it survives an expired Xcode console session. Clean iPadOS 27 semantic
+runs pass locally and in backend intake (`EXP-109` through `EXP-113`); the
+activation row remains explicitly inconclusive on the current simulator
+(`EXP-114`). The automatic SwiftUI split control
 executes the same selection steps but fails because it emits internal container
 views instead of semantic selections. Other scenarios remain at the execution
 level shown in the table; a modeled timeline or partial live prefix is not itself
@@ -103,7 +107,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.stack.different-type-replacement`, plus
 `swiftui.split.automatic-baseline`, `swiftui.split.same-type-selection`, and
 `swiftui.split.retained-return`, plus `uikit.split.pop-cancel` and
-`uikit.split.pop-finish`, plus `windows.close-with-resource`, use the
+`uikit.split.pop-finish`, plus `windows.close-with-resource` and
+`windows.activation-sequence`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
@@ -125,7 +130,16 @@ executor and waits for that same scene's disconnect generation before continuing
 It never selects a scene from unordered application session collections. In
 `EXP-113`, A opened B, B emitted `before-close`, B disconnected, and A then
 emitted `after-peer-close` without replacing A's original Home occurrence.
-Activation and stable simultaneous-visible topology remain separate work.
+An `activate-window` step dispatches only through its exact registered
+`UIWindowScene` and acknowledges that target's foreground-active state. The
+activation sequence then requires the peer's latest non-superseded lifecycle
+state to be background before emitting or judging a marker. This is a latched
+state condition, so either notification order is valid; a missing transition is
+`INCONCLUSIVE`, not an attribution failure. A source label on a plain manual RUM
+call is probe metadata and does not provide SDK provenance, so such work continues
+to follow the last-interacted representative. The current simulator kept both
+scenes active and later crashed `backboardd` during rapid activation; run this row
+on iPhone Duo or a physical multi-window iPad (`EXP-114`).
 
 The UIKit transition driver separately begins a real
 `UIPercentDrivenInteractiveTransition`, observes its accepted coordinator,
