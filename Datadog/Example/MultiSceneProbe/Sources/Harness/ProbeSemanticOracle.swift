@@ -480,6 +480,45 @@ internal enum ProbeSemanticOracle {
             return .noMatch
         }
 
+        if let expectedSourceScene = expectation.sourceScene {
+            guard signal.sourceContext?.logicalSceneID == expectedSourceScene else {
+                return .violation(
+                    "expected \(describe(expectation)) from \(expectedSourceScene), "
+                        + "observed \(signal.sourceContext?.logicalSceneID ?? "unresolved")"
+                )
+            }
+        }
+        if let expectedSourceScreen = expectation.sourceScreen {
+            guard signal.sourceContext?.screen == expectedSourceScreen else {
+                return .violation(
+                    "expected \(describe(expectation)) from screen \(expectedSourceScreen), "
+                        + "observed \(signal.sourceContext?.screen ?? "unresolved")"
+                )
+            }
+        }
+        if let expectedOrigin = expectation.rumViewOrigin {
+            guard let observedOrigin = timeline.rumViewOrigin(for: signal) else {
+                return .violation(
+                    "expected \(describe(expectation)) on a \(expectedOrigin.rawValue) RUM view, "
+                        + "but the owner view origin was unresolved"
+                )
+            }
+            guard observedOrigin == expectedOrigin else {
+                return .violation(
+                    "expected \(describe(expectation)) on a \(expectedOrigin.rawValue) RUM view, "
+                        + "observed \(observedOrigin.rawValue)"
+                )
+            }
+        }
+        if let openedScene = expectation.ownerViewStartedAfterSceneOpen {
+            guard timeline.ownerView(for: signal, startedAfterOpening: openedScene) else {
+                return .violation(
+                    "expected \(describe(expectation)) on a RUM view started after opening "
+                        + openedScene
+                )
+            }
+        }
+
         if
             requiresViewOwnership(expectation),
             let scene = expectation.scene,
@@ -594,6 +633,26 @@ internal enum ProbeSemanticOracle {
         if let name = expectation.name, signal.name != name {
             return false
         }
+        if
+            let sourceScene = expectation.sourceScene,
+            signal.sourceContext?.logicalSceneID != sourceScene {
+            return false
+        }
+        if
+            let sourceScreen = expectation.sourceScreen,
+            signal.sourceContext?.screen != sourceScreen {
+            return false
+        }
+        if
+            let rumViewOrigin = expectation.rumViewOrigin,
+            timeline.rumViewOrigin(for: signal) != rumViewOrigin {
+            return false
+        }
+        if
+            let openedScene = expectation.ownerViewStartedAfterSceneOpen,
+            !timeline.ownerView(for: signal, startedAfterOpening: openedScene) {
+            return false
+        }
         if let outcome = expectation.outcome, signal.outcome != outcome {
             return false
         }
@@ -656,6 +715,18 @@ internal enum ProbeSemanticOracle {
         }
         if let name = expectation.name {
             parts.append("name=\(name)")
+        }
+        if let sourceScene = expectation.sourceScene {
+            parts.append("source-scene=\(sourceScene)")
+        }
+        if let sourceScreen = expectation.sourceScreen {
+            parts.append("source-screen=\(sourceScreen)")
+        }
+        if let rumViewOrigin = expectation.rumViewOrigin {
+            parts.append("rum-view-origin=\(rumViewOrigin.rawValue)")
+        }
+        if let openedScene = expectation.ownerViewStartedAfterSceneOpen {
+            parts.append("owner-view-after-open=\(openedScene)")
         }
         if let interval = expectation.interval {
             parts.append("interval=\(interval)")

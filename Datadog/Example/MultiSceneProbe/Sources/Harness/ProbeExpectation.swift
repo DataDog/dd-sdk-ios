@@ -23,12 +23,21 @@ enum ProbeExpectationKind: String, Codable, CaseIterable {
     case noEvent = "no-event"
 }
 
+enum ProbeRUMViewOrigin: String, Codable, CaseIterable {
+    case semantic
+    case automatic
+}
+
 struct ProbeExpectation: Codable, Equatable {
     let kind: ProbeExpectationKind
     let scene: String?
     let screen: String?
     let occurrence: Int?
     let name: String?
+    let sourceScene: String?
+    let sourceScreen: String?
+    let rumViewOrigin: ProbeRUMViewOrigin?
+    let ownerViewStartedAfterSceneOpen: String?
     let interval: String?
     let outcome: ProbeTransitionOutcome?
 
@@ -38,6 +47,10 @@ struct ProbeExpectation: Codable, Equatable {
         screen: String? = nil,
         occurrence: Int? = nil,
         name: String? = nil,
+        sourceScene: String? = nil,
+        sourceScreen: String? = nil,
+        rumViewOrigin: ProbeRUMViewOrigin? = nil,
+        ownerViewStartedAfterSceneOpen: String? = nil,
         interval: String? = nil,
         outcome: ProbeTransitionOutcome? = nil
     ) {
@@ -46,6 +59,10 @@ struct ProbeExpectation: Codable, Equatable {
         self.screen = screen
         self.occurrence = occurrence
         self.name = name
+        self.sourceScene = sourceScene
+        self.sourceScreen = sourceScreen
+        self.rumViewOrigin = rumViewOrigin
+        self.ownerViewStartedAfterSceneOpen = ownerViewStartedAfterSceneOpen
         self.interval = interval
         self.outcome = outcome
     }

@@ -136,8 +136,11 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
         if ProbeRuntime.usesAutomaticSwiftUIViewTracking {
             return false
         }
-        if ProbeRuntime.usesNavigationPathSwiftUIViewTracking
-            || ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+        if ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+            return trackingBoundary == .navigationRoute
+                && ProbeRuntime.usesSemanticNavigationTracking(in: window.label)
+        }
+        if ProbeRuntime.usesNavigationPathSwiftUIViewTracking {
             return trackingBoundary == .navigationRoute
         }
         return true

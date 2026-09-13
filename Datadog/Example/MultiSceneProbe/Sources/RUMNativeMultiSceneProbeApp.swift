@@ -76,6 +76,7 @@ enum ProbeRuntime {
             "swiftui.stack.abort",
             "swiftui.stack.same-type-replacement",
             "swiftui.stack.different-type-replacement",
+            "swiftui.coexistence.semantic-a-automatic-b",
             "swiftui.split.automatic-baseline",
             "swiftui.split.same-type-selection",
             "swiftui.split.retained-return",
@@ -130,6 +131,13 @@ enum ProbeRuntime {
     static let usesNavigationOccurrenceSwiftUIViewTracking =
         swiftUIViewTrackingMode == "navigation-occurrence"
     static let usesTabPreloadStress = options.swiftUIStress == .tabPreload
+
+    static func usesSemanticNavigationTracking(in logicalSceneID: String) -> Bool {
+        guard usesNavigationOccurrenceSwiftUIViewTracking else {
+            return false
+        }
+        return options.semanticNavigationSceneIDs?.contains(logicalSceneID) ?? true
+    }
 
     private static let logger = Logger(
         subsystem: "com.datadoghq.rum-native-multi-scene-probe",
@@ -235,6 +243,8 @@ enum ProbeRuntime {
                 + "split_automatic_sequence=\(automaticallyAdvancesSplitSelection) "
                 + "split_return_to_detail=\(automaticallyReturnsSplitToDetail) "
                 + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
+                + "semantic_navigation_scenes="
+                + "\(options.semanticNavigationSceneIDs?.joined(separator: ",") ?? "all") "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
         )

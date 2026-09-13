@@ -33,6 +33,7 @@ internal struct ProbeSemanticTimeline {
     let events: [ProbeSemanticEvent]
     let viewIDsByOccurrence: [ProbeViewOccurrence: String]
     let occurrencesByViewID: [String: ProbeViewOccurrence]
+    let firstViewSnapshotByID: [String: ProbeSignal]
     let intervals: [String: ProbeSignalInterval]
     let diagnostics: [String]
 
@@ -47,6 +48,7 @@ internal struct ProbeSemanticTimeline {
         var events: [ProbeSemanticEvent] = []
         var viewIDsByOccurrence: [ProbeViewOccurrence: String] = [:]
         var occurrencesByViewID: [String: ProbeViewOccurrence] = [:]
+        var firstViewSnapshotByID: [String: ProbeSignal] = [:]
         var occurrenceCounts: [String: Int] = [:]
         var observedViewIDs: Set<String> = []
         var activeByViewID: [String: Bool?] = [:]
@@ -125,6 +127,9 @@ internal struct ProbeSemanticTimeline {
                 }
 
                 let isFirstSnapshot = observedViewIDs.insert(viewID).inserted
+                if isFirstSnapshot {
+                    firstViewSnapshotByID[viewID] = signal
+                }
                 let previousActive = activeByViewID[viewID] ?? nil
                 let isTerminalSnapshot = signal.rumContext?.viewActive == false
 
@@ -183,6 +188,7 @@ internal struct ProbeSemanticTimeline {
         self.events = events
         self.viewIDsByOccurrence = viewIDsByOccurrence
         self.occurrencesByViewID = occurrencesByViewID
+        self.firstViewSnapshotByID = firstViewSnapshotByID
         self.intervals = intervals
         self.diagnostics = diagnostics
     }
@@ -214,6 +220,43 @@ internal struct ProbeSemanticTimeline {
     func observedOccurrence(for signal: ProbeSignal) -> Int? {
         signal.semanticContext?.occurrence
             ?? occurrence(for: signal)?.occurrence
+    }
+
+    func rumViewOrigin(for signal: ProbeSignal) -> ProbeRUMViewOrigin? {
+        guard
+            let viewID = signal.rumContext?.viewID,
+            let firstSnapshot = firstViewSnapshotByID[viewID],
+            firstSnapshot.sequence <= signal.sequence
+        else {
+            return nil
+        }
+        if occurrencesByViewID[viewID] != nil {
+            return .semantic
+        }
+        guard firstSnapshot.rumContext?.viewName != "ApplicationLaunch" else {
+            return nil
+        }
+        return .automatic
+    }
+
+    func ownerView(
+        for signal: ProbeSignal,
+        startedAfterOpening scene: String
+    ) -> Bool {
+        guard
+            let viewID = signal.rumContext?.viewID,
+            let firstSnapshot = firstViewSnapshotByID[viewID],
+            firstSnapshot.sequence <= signal.sequence,
+            let openStep = signals.last(where: {
+                $0.sequence < signal.sequence
+                    && $0.kind == .stepStarted
+                    && $0.stepKind == .openWindow
+                    && $0.name == scene
+            })
+        else {
+            return false
+        }
+        return firstSnapshot.sequence > openStep.sequence
     }
 
     func events(in interval: String?) -> [ProbeSemanticEvent]? {

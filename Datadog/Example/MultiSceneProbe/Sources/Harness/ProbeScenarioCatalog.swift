@@ -18,6 +18,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
+        swiftUICoexistenceSemanticAAutomaticB,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
         swiftUIStackNativePopFinish,
@@ -240,6 +241,87 @@ enum ProbeScenarioCatalog {
         runtimeOptions: runtime {
             $0.automaticallyNavigates = true
             $0.automaticallyReplacesDetail = true
+        }
+    )
+
+    private static let swiftUICoexistenceSemanticAAutomaticB = ProbeScenario(
+        identifier: "swiftui.coexistence.semantic-a-automatic-b",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-a-before-peer"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "marker:task-delayed"),
+            ProbeStep(.emitMarker, scene: "scene-B", value: "automatic-b-after-ready")
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .action,
+                name: "automatic-b-after-ready",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterSceneOpen: "scene-B"
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "automatic-b-after-ready",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterSceneOpen: "scene-B"
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-a-before-peer",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-a-before-peer",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                name: "automatic-b-after-ready",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterSceneOpen: "scene-B"
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "automatic-b-after-ready",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterSceneOpen: "scene-B"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.semanticNavigationSceneIDs = ["scene-A"]
         }
     )
 

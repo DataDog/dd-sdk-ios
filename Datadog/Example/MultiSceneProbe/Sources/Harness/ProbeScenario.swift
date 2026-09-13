@@ -63,6 +63,7 @@ struct ProbeRuntimeOptions: Codable, Equatable {
     var automaticallyReturnsSplitToDetail = false
     var exercisesUIEventContextHandoff = false
     var swiftUIStress = ProbeSwiftUIStress.none
+    var semanticNavigationSceneIDs: [String]?
 }
 
 struct ProbeScenario: Codable, Equatable {

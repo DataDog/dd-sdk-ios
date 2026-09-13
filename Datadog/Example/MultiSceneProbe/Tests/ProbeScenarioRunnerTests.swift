@@ -16,6 +16,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.stack.return",
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
+                "swiftui.coexistence.semantic-a-automatic-b",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
@@ -24,6 +25,28 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "actions.exact-source-handoff",
                 "regression.single-scene"
             ]).isSubset(of: Set(identifiers))
+        )
+    }
+
+    func testSemanticAutomaticCoexistenceTargetsOnlySceneA() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.semantic-a-automatic-b"
+            )
+        )
+
+        XCTAssertEqual(scenario.runtimeOptions.semanticNavigationSceneIDs, ["scene-A"])
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.sourceScene == "scene-B"
+                    && $0.rumViewOrigin == .automatic
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.scene == "scene-A"
+                    && $0.rumViewOrigin == .semantic
+            }
         )
     }
 

@@ -348,6 +348,205 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertEqual(recorded[1].sceneDisconnectGeneration, 3)
     }
 
+    func testAutomaticViewOriginKeepsSourceAndOwnerEvidenceSeparate() {
+        let recorder = ProbeEventRecorder(
+            runID: "automatic-owner",
+            scenarioID: "automatic-owner",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .openWindow,
+                name: "scene-B"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .rumViewSnapshot,
+                evidenceSource: .rumMapper,
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "automatic-b",
+                    viewName: "NavigationStackHostingController",
+                    viewActive: true,
+                    viewDocumentVersion: 1
+                )
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .rumAction,
+                evidenceSource: .rumMapper,
+                sourceContext: ProbeSourceContext(
+                    logicalSceneID: "scene-B",
+                    nativeSceneID: "native-B",
+                    screen: "home",
+                    phase: "automatic-b-marker"
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "automatic-b"
+                ),
+                name: "automatic-b-marker"
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "automatic-owner",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "automatic-b-marker",
+                    sourceScene: "scene-B",
+                    sourceScreen: "home",
+                    rumViewOrigin: .automatic,
+                    ownerViewStartedAfterSceneOpen: "scene-B"
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testAutomaticViewOriginRejectsSemanticOwner() {
+        let recorder = ProbeEventRecorder(
+            runID: "wrong-automatic-owner",
+            scenarioID: "wrong-automatic-owner",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(viewSignal(id: "semantic-a", screen: "home", active: true))
+        recorder.record(
+            ProbeSignal(
+                kind: .rumAction,
+                evidenceSource: .rumMapper,
+                sourceContext: ProbeSourceContext(
+                    logicalSceneID: "scene-B",
+                    nativeSceneID: "native-B",
+                    screen: "home",
+                    phase: "automatic-b-marker"
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "semantic-a"
+                ),
+                name: "automatic-b-marker"
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "wrong-automatic-owner",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "automatic-b-marker",
+                    sourceScene: "scene-B",
+                    sourceScreen: "home",
+                    rumViewOrigin: .automatic
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed semantic"))
+    }
+
+    func testAutomaticViewOriginRejectsOwnerPredatingSceneOpen() {
+        let recorder = ProbeEventRecorder(
+            runID: "stale-automatic-owner",
+            scenarioID: "stale-automatic-owner",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .rumViewSnapshot,
+                evidenceSource: .rumMapper,
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "automatic-a",
+                    viewName: "NavigationStackHostingController",
+                    viewActive: true,
+                    viewDocumentVersion: 1
+                )
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .openWindow,
+                name: "scene-B"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .rumAction,
+                evidenceSource: .rumMapper,
+                sourceContext: ProbeSourceContext(
+                    logicalSceneID: "scene-B",
+                    nativeSceneID: "native-B",
+                    screen: "home",
+                    phase: "automatic-b-marker"
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: "automatic-a"
+                ),
+                name: "automatic-b-marker"
+            )
+        )
+
+        let scenario = ProbeScenario(
+            identifier: "stale-automatic-owner",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [],
+            completionConditions: [],
+            expectedSemanticTimeline: [
+                ProbeExpectation(
+                    .action,
+                    name: "automatic-b-marker",
+                    sourceScene: "scene-B",
+                    sourceScreen: "home",
+                    rumViewOrigin: .automatic,
+                    ownerViewStartedAfterSceneOpen: "scene-B"
+                )
+            ]
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after opening scene-B"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
