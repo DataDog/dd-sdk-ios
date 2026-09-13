@@ -261,6 +261,59 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(didComplete)
     }
 
+    func testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+
+        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addViewAttribute(forKey: "exact", value: "A")
+            monitor.addViewAttributes([
+                "batch": "A",
+                "remove-one": true,
+                "remove-many": true
+            ])
+            monitor.addTiming(name: "timing-A")
+            monitor.addViewLoadingTime(overwrite: false)
+            monitor.addFeatureFlagEvaluation(name: "flag-A", value: "A")
+        }
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.removeViewAttribute(forKey: "remove-one")
+            monitor.removeViewAttributes(forKeys: ["remove-many"])
+        }
+
+        monitor.addViewAttribute(forKey: "representative", value: "B")
+        monitor.addTiming(name: "timing-B")
+        monitor.addViewLoadingTime(overwrite: false)
+        monitor.addFeatureFlagEvaluation(name: "flag-B", value: "B")
+
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(viewA.attributes["exact"] as? String, "A")
+        XCTAssertEqual(viewA.attributes["batch"] as? String, "A")
+        XCTAssertNil(viewA.attributes["remove-one"])
+        XCTAssertNil(viewA.attributes["remove-many"])
+        XCTAssertNil(viewA.attributes["representative"])
+        XCTAssertEqual(viewB.attributes["representative"] as? String, "B")
+        XCTAssertNil(viewB.attributes["exact"])
+        XCTAssertNotNil(viewA.customTimings["timing-A"])
+        XCTAssertNil(viewA.customTimings["timing-B"])
+        XCTAssertNotNil(viewB.customTimings["timing-B"])
+        XCTAssertNil(viewB.customTimings["timing-A"])
+        XCTAssertNotNil(viewA.viewLoadingTime)
+        XCTAssertNotNil(viewB.viewLoadingTime)
+        XCTAssertEqual(viewA.featureFlags["flag-A"] as? String, "A")
+        XCTAssertNil(viewA.featureFlags["flag-B"])
+        XCTAssertEqual(viewB.featureFlags["flag-B"] as? String, "B")
+        XCTAssertNil(viewB.featureFlags["flag-A"])
+    }
+
     func testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

@@ -181,6 +181,7 @@ internal struct RUMAddViewAttributesCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var target: RUMCommandTarget = .processRepresentative
 
     var areInternalAttributes = false
 }
@@ -196,6 +197,7 @@ internal struct RUMRemoveViewAttributesCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var target: RUMCommandTarget = .processRepresentative
 
     var keysToRemove: [AttributeKey]
 }
@@ -478,6 +480,7 @@ internal struct RUMAddViewLoadingTime: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
     let overwrite: Bool
@@ -493,6 +496,7 @@ internal struct RUMAddViewTimingCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.
@@ -755,6 +759,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
+    var target: RUMCommandTarget = .processRepresentative
     let name: String
     let value: Encodable
     let missedEventType: SessionEndedMetric.MissedEventType? = nil

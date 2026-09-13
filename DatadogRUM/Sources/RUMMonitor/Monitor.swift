@@ -627,12 +627,14 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - feature flags
 
     func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        var command = RUMAddFeatureFlagEvaluationCommand(
+            time: dateProvider.now,
+            name: name,
+            value: value
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddFeatureFlagEvaluationCommand(
-                time: dateProvider.now,
-                name: name,
-                value: value
-            )
+            command: command
         )
     }
 
@@ -785,38 +787,46 @@ extension Monitor: RUMMonitorProtocol {
 /// Declares `Monitor` conformance to public `RUMMonitorViewProtocol`.
 extension Monitor: RUMMonitorViewProtocol {
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        var command = RUMAddViewAttributesCommand(
+            time: dateProvider.now,
+            attributes: [key: value]
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddViewAttributesCommand(
-                time: dateProvider.now,
-                attributes: [key: value]
-            )
+            command: command
         )
     }
 
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        var command = RUMAddViewAttributesCommand(
+            time: dateProvider.now,
+            attributes: attributes
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddViewAttributesCommand(
-                time: dateProvider.now,
-                attributes: attributes
-            )
+            command: command
         )
     }
 
     func removeViewAttribute(forKey key: AttributeKey) {
+        var command = RUMRemoveViewAttributesCommand(
+            time: dateProvider.now,
+            keysToRemove: [key]
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMRemoveViewAttributesCommand(
-                time: dateProvider.now,
-                keysToRemove: [key]
-            )
+            command: command
         )
     }
 
     func removeViewAttributes(forKeys keys: [AttributeKey]) {
+        var command = RUMRemoveViewAttributesCommand(
+            time: dateProvider.now,
+            keysToRemove: keys
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMRemoveViewAttributesCommand(
-                time: dateProvider.now,
-                keysToRemove: keys
-            )
+            command: command
         )
     }
 
@@ -885,24 +895,28 @@ extension Monitor: RUMMonitorViewProtocol {
     }
 
     func addTiming(name: String) {
+        var command = RUMAddViewTimingCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: [:],
+            timingName: name
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddViewTimingCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                timingName: name
-            )
+            command: command
         )
     }
 
     func addViewLoadingTime(overwrite: Bool) {
+        var command = RUMAddViewLoadingTime(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: [:],
+            overwrite: overwrite
+        )
+        command.target = currentExecutionTarget
         process(
-            command: RUMAddViewLoadingTime(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                overwrite: overwrite
-            )
+            command: command
         )
     }
 }
