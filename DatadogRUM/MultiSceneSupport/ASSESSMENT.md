@@ -47,11 +47,13 @@ remount fix and its four added regressions bring the current RUM plan to
 1,151/1,151; Trace remains 151/151, including 4/4 focused OpenTelemetry handoff
 tests. Repository lint passed all 713 source and 699 test files at the split
 checkpoint; focused lint for the retained-route source and tests has zero
-violations. The structured probe recorder, mapper reducer, and semantic oracle
-now pass 24/24 tests (`EXP-107`). A live single-scene prefix also agrees with
-backend intake for ApplicationLaunch → Home → Detail and exact marker ownership;
-the unavailable Xcode interaction driver prevented a live Home-return oracle
-verdict, so that stronger claim remains open.
+violations. The structured probe recorder, mapper reducer, semantic oracle, and
+exact main-actor scene registry now pass 31/31 tests (`EXP-108`). A clean iPadOS
+27 run emitted one exact native scene identity, readiness, activation, geometry,
+size classes, disconnect generation, and Home → Detail route. Backend intake
+agrees on the two semantic view UUIDs and all six action/Resource owners. The
+required Xcode interaction skill remains unavailable, so a live Home-return
+oracle verdict remains open.
 The prior `EXP-062` full attempt's sole unchanged timeseries timing failure passed
 in isolation and in its clean rerun.
 
@@ -510,11 +512,17 @@ against the amount of implementation completed:
 | Concurrent view creation and lifetime | UIKit and explicit SwiftUI windows coexist in one session; the iOS 27 early-mount candidate preserves exact A/B lifecycle work; route-owned controls publish semantic roots and destinations; `EXP-090` proves a RUM-only occurrence change preserves customer SwiftUI state, `EXP-098` reveals retained Home before immediate work, and `EXP-105` preserves that occurrence across a subtree remount | Automatic native `WindowGroup` still lacks the approved optional container-level semantic integration and authority/dedup rules. Finish that review plus simultaneous visibility, construction, restoration, and iPhone Duo validation |
 | UIKit and SwiftUI navigation | UIKit push/pop/modal and explicit SwiftUI stack/modal flows preserve one UUID per committed path occurrence; same-type replacement, abort, retained Home, single-/two-window same-type split selection, and retained split return pass through the debug keyed source without customer `.id`; UIKit no longer restarts Primary during split navigation; focused source cancellation/completion passes | Suppress the initial structural Primary/container RUM views so each scene has one destination, prove a recognized native SwiftUI interactive cancel/finish on hardware, then cover adaptive resize, simultaneous-visible A/B completion, restoration, and subclass compatibility |
 | Action attribution | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions update the representative; execution-local manual action/error/view mutations and internal view work prefer exact handoff view/scene; `EXP-098` attributes immediate returned-Home work correctly and source-less work keeps last-interacted fallback | Repeat manual-handoff precedence with B representative and A visibly interactive; finish UIKit scroll/deceleration and targeted downstream runtime rows |
-| Scene lifecycle and sessions | Requested destruction/close preserves delayed ownership; disconnect invalidation, retained-reader rearming, migration, and stale-observer isolation pass; retained hidden readers may use only last concrete scene proof, which disconnect clears; explicit stop/expiry restore concurrent branches | Stable visible-peer close, genuine OS disconnect/reconnect, per-scene background/foreground, concurrent restoration, and internal ownership ready for future Window Execution Context mapping; backend visualization is follow-up work |
+| Scene lifecycle and sessions | Requested destruction/close preserves delayed ownership; disconnect invalidation, retained-reader rearming, migration, and stale-observer isolation pass; retained hidden readers may use only last concrete scene proof, which disconnect clears; explicit stop/expiry restore concurrent branches; the probe registry now models exact logical/native identity and disconnect generations without retaining windows or serializing its future Execution Context seam | Stable visible-peer close, genuine OS disconnect/reconnect, per-scene background/foreground, concurrent restoration, and the equivalent shipping ownership path ready for future Window Execution Context mapping; backend visualization is follow-up work |
 | Resources, traces, and operations | Start provenance and Resource completion ownership are frozen; manual Resource starts, automatic URLSession completion, and native/OpenTelemetry span starts use scene handoff; Operations use application-wide typed identities and per-step resolution with focused cross-window tests | Finish bounded live causal/reverse-completion rows, exact different-representative proof, live Operation A-to-B/duplicate-start proof, and public Operation target review |
 | Errors, logs, WebView, vitals, fatal/exported context, and profiling | Scene-aware source or focused tests exist for each except profiling, whose process-level limitation is known | Targeted two-window runtime/backend evidence; profiling needs an explicit support statement, not guessed per-scene ownership |
 | Normal-app compatibility | RUM 1,151/1,151 and Trace 151/151 pass; complete Internal/Logs/WebView suites, probe builds, package build, repository checkpoint lint, and focused retained-route lint pass | Live single-scene behavior, custom-handler integration, and `sendEvent` overhead/recursion measurement |
 | Session Replay | Multiple UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK crash | No scene-correctness work required for this objective |
+
+The probe registry in `EXP-108` is an evidence-harness improvement, not a shipping
+SDK fix. The initial Home mapper snapshot still precedes native scene resolution;
+the stable logical scene label can be joined to the exact native session once the
+scene becomes ready, while release support still requires the production RUM
+scope to preserve its own reliable scene ownership.
 
 The core model is no longer the largest unknown. `EXP-079`/`EXP-080` pass the
 UIKit split ordering controls that failed in `EXP-071`/`EXP-073` on the
@@ -528,10 +536,11 @@ lifecycle, and ordinary-app behavior remain.
 `EXP-090`, `EXP-098`/`EXP-099`, and `EXP-102` through `EXP-105` now prove the
 RUM-only identity, retained return, same-type split replacement, and retained
 split-remount mechanics without customer-state reset. The named recorder and
-fixture-backed oracle now have mapper/backend agreement for one live prefix but no
-driven Home-return verdict (`EXP-107`). The debug source moves toward the approved
-optional container-level semantic SwiftUI integration, which must coexist with
-automatic discovery and suppress duplicates only in its target. Real-device and
+fixture-backed oracle and registry now have mapper/backend agreement for one live
+prefix but no driven Home-return verdict (`EXP-107`/`EXP-108`). The debug source
+moves toward the approved optional container-level semantic SwiftUI integration,
+which must coexist with automatic discovery and suppress duplicates only in its
+target. Real-device and
 human-driven gaps are explicitly queued in `EXPERIMENTS.md`; ignored synthetic
 gestures are not counted as cancellation evidence, and a simulator system-process
 crash after accepted telemetry is not counted as an SDK crash.

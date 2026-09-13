@@ -102,11 +102,11 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-1. Add the exact main-actor scene registry to the MultiSceneProbe, then connect
-   observable step acknowledgements to the structured recorder and oracle. The
-   catalog plus JSONL/oracle phases are complete in `EXP-106`/`EXP-107`; a local
-   live semantic result must precede backend confirmation. Keep harness and
-   production SDK commits separate.
+1. Connect observable step acknowledgements to the structured recorder and
+   oracle, then produce a local terminal result before backend confirmation. The
+   catalog, JSONL/oracle, and exact main-actor scene-registry phases are complete
+   in `EXP-106` through `EXP-108`; keep harness and production SDK commits
+   separate.
 2. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
@@ -146,17 +146,19 @@ experiment; it does not itself change the SDK support verdict.
    The only results are `PASS`, `FAIL`, `SKIPPED`, and `INCONCLUSIVE`; ordered and
    negative expectations must distinguish wrong attribution, missing events,
    cancelled transitions, ignored gestures, and unsupported capabilities. The
-   generated probe test plan passes 24/24, including correct return,
-   wrong-view, ignored-gesture, missing-event, and forbidden-event fixtures. The
+   generated probe test plan passed 24/24 at that checkpoint, including correct
+   return, wrong-view, ignored-gesture, missing-event, and forbidden-event
+   fixtures. The
    mapper records pre-persistence RUM snapshots; call-site source labels are never
    treated as ownership. A live ApplicationLaunch → Home → Detail prefix agrees
    with backend intake, but is not yet a live oracle PASS.
-3. Add one main-actor scene registry with stable logical labels, native session
-   identifiers, weak windows, activation, geometry, route, readiness, and
-   disconnection generation. Reserve an internal optional future Window Execution
-   Context identity without serializing it. All open, activate, close, and wait
-   steps address an exact scene; never select an unordered
-   `UIApplication.openSessions` member.
+3. Completed in `abfb93d45` and `EXP-108`: one main-actor scene registry keeps
+   stable logical labels, exact native session identifiers, weak windows,
+   activation, geometry/size classes, route, readiness, and disconnection
+   generation. It rejects aliasing and stale handles, and its internal future
+   Window Execution Context seam is not serialized. The probe plan passes 31/31;
+   a clean iPadOS 27 run and backend session validate the Home → Detail prefix.
+   Exact open, activate, close, and wait step execution remains part of phase 4.
 4. Drive SwiftUI path/split changes and UIKit deterministic transitions through
    observable `ProbeStep` acknowledgements. Keep deterministic state-machine proof
    separate from genuine native gesture proof. A drag without transition/path

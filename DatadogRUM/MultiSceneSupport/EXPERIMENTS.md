@@ -60,8 +60,9 @@ boundary, in this order:
 | 43 | `Document named probe scenario validation` | `EXP-106` process-boundary proof, exact valid/invalid launch evidence, and refreshed resume state |
 | 44 | `Record and validate multi-scene probe timelines` | Versioned JSONL recorder, mapper snapshot reduction, semantic oracle, five fixtures, and 24-test probe plan |
 | 45 | `Model one RUM destination per scene` | UIKit split manifests forbid structural Primary RUM views and retain Primary lifecycle only as negative diagnostic evidence |
+| 46 | `Add exact scene registry to multi-scene probe` | Main-actor logical/native scene registry, weak window ownership, lifecycle/geometry/route snapshots, disconnect fencing, and schema-version compatibility |
 
-Rows 1-45 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-46 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -70,7 +71,7 @@ Rows 1-45 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
 `4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
-`ff8750dc3`, and row 45 is `acca8907f`.
+`ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -85,8 +86,8 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-eighteen exact-path commits in rows 28-45 use that policy. This is local checkpoint
-history, not push-ready history.
+nineteen exact-path commits in rows 28-46 use that policy. This is local
+checkpoint history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 each checkpoint commit must use an exact path list. Do not use a broad `git commit`
@@ -207,6 +208,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-105 | `split-occurrence-retained-return-fix-20260913-1421` | `d4f3597e-2254-4b68-897a-5530299083cb` | iPadOS 27 | Fixed retained split return. The source-created returned Detail₂ UUID `761fe74b…` remained active while SwiftUI replaced the platform reader, and the replacement state adopted that identity without another start. Backend contains launch plus exactly Detail₁ `507ff93f…` → Detail₂ `3d921845…` → Placeholder `06dd0b13…` → Detail₂(returned) `761fe74b…`; all four action/Resource pairs use their exact occurrence, uploads returned 202, and no RUM error or app/SDK crash appeared. |
 | EXP-106 | `harness-phase1-valid-20260913`; `harness-phase1-invalid-20260913` | `6f556658-1444-4ddf-8d9f-82ce0d5dea91`; none | iPadOS 27 | Named-scenario harness startup proof. The valid `regression.single-scene` launch emitted its complete resolved manifest as the first structured record, then initialized Datadog and produced the expected Home/Detail payload. The unknown-scenario launch emitted only a manifest plus rejection: no Datadog initialization, session, or RUM payload. The catalog contains 35 stable scenarios; strict resolver/catalog tests pass 15/15 and probe build-for-testing succeeds. This validates harness configuration, not a new SDK support surface. |
 | EXP-107 | `structured-recorder-live-20260913` | `6b194ceb-b0d8-4d0c-8848-ab293594cb79` | iPadOS 27 | Structured-recorder/oracle phase. Versioned JSONL keeps probe source separate from mapper-observed RUM ownership; snapshot reduction derives first-observed starts and active-to-inactive stops. Five fixtures plus source tests pass 24/24. The live `regression.single-scene` prefix emitted ApplicationLaunch → Home `081e6f2c…` → Detail `f86c6dce…`; backend returned 18 events and exact Home/Detail action/Resource ownership. Xcode's device-interaction request returned `Skill not found`, so no synthetic navigation input or final live oracle result was produced and Home-return remains unproven. |
+| EXP-108 | `scene-registry-live-20260913-1647` | `de29d1e3-0ff6-44bb-a3e6-14c17047429a` | iPadOS 27 | Exact probe scene-registry phase. Seven new tests cover logical/native identity, alias rejection, disconnect/reconnect generations, stale-handle rejection, weak windows, scene-local route/presentation/future-context state, and peer isolation; the full probe plan passes 31/31. After a clean uninstall, schema-v2 JSONL emitted scene A ready as native `E32B88D1…`, generation 0, 955×1253 regular/regular, then foreground activation and Home → Detail mutation. Local mapper UUIDs Home `91826d58…` and Detail `3d91c699…` match 18 backend events, including all six actions and six Resources. The initial Home mapper snapshot preceded native resolution and is joined later through its stable logical scene; this harness seam is not a shipping SDK fix. Xcode install/run recovered, but its required `device-interaction` skill is still unavailable, so no Home-return or final live oracle claim is added. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -225,7 +227,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 
 | Priority | Experiments | Why the simulator or driver was insufficient | Appropriate rerun | Evidence required to close the row |
 | --- | --- | --- | --- | --- |
-| P0 | `EXP-107` | The Xcode workspace advertised device interaction, but the requested service returned `Skill not found`; no synthetic tap/path acknowledgement was sent. Console materialization is not visual proof | Retry with a working Xcode interaction service, `xcui`, or a human-driven tap while the agent records JSONL and backend intake | Produce acknowledged Home → Detail → Home steps, one final local oracle result, distinct H1/D1/H2 UUIDs, exact markers, and matching backend events in three clean runs |
+| P0 | `EXP-107`, `EXP-108` | Xcode can now install and run through an interaction session, but the session requires a `device-interaction` skill that is not installed; no synthetic tap/path acknowledgement was sent. Console materialization is not visual proof | Retry after that skill becomes available, use `xcui`, or use a human-driven tap while the agent records JSONL and backend intake | Produce acknowledged Home → Detail → Home steps, one final local oracle result, distinct H1/D1/H2 UUIDs, exact markers, and matching backend events in three clean runs |
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
@@ -247,9 +249,9 @@ driver reached the native navigation gesture.
 
 - Confirmed Xcode 27.0 and a booted iOS 27.0 iPad simulator.
 - Connected to Xcode's tool server through `xcrun mcpbridge`; workspace, schemes,
-  destinations, build, run, console, and test calls work. Device interaction was
-  advertised at this checkpoint but a later real request returned `Skill not
-  found` (`EXP-107`), so it is not currently a usable capability.
+  destinations, build, run, console, and test calls work. Device-interaction
+  install/run now works, but the session-mandated `device-interaction` skill is
+  not installed (`EXP-108`), so synthesized input is not currently usable.
 - Confirmed Datadog RUM backend search/aggregation access is available.
 - Confirmed the integration host opts out of multiple scenes and the Example host
   has no scene manifest.
@@ -2455,6 +2457,38 @@ proof that Primary is no longer *restarted* and returned Secondary gets a fresh
 UUID. Their initial Primary RUM views are now explicitly retained as gap evidence,
 not reinterpreted as final success.
 
+`abfb93d45` completes the exact scene-registry phase. The main-actor registry
+maps each stable logical probe scene to one exact native scene session, holds its
+`UIWindow` weakly, and stores readiness, activation, geometry, size classes,
+current route, and disconnect generation. It rejects native aliases and live
+logical remaps; disconnect invalidates the old handle, and reconnect produces a
+new generation without disturbing peers. An optional future Window Execution
+Context ID remains non-Codable internal state and is never copied into JSONL or
+RUM attributes. Seven focused registry tests plus the existing harness tests pass
+31/31. Build-for-testing succeeded in
+`BuildProject-Log-20260913-164450.txt`; changed harness/test lint added no new
+violation, and the large probe view retains its 18 pre-existing violations.
+
+`EXP-108` validates the registry in a clean iPadOS 27 process. Run
+`scene-registry-live-20260913-1647` first emitted scene A ready as native session
+`E32B88D1-3EFB-435C-B002-EAE1FCD03E14`, disconnect generation 0, frame
+955×1253, and regular horizontal/vertical size classes. It then recorded
+foreground activation, the exact Home → Detail path mutation, and Detail
+materialization with the same native identity. Mapper evidence recorded Home
+`91826d58-50be-4057-8b3a-5a764db504c5` and Detail
+`3d91c699-3a04-44d1-aacd-fe93187f5be8`. Backend session
+`de29d1e3-0ff6-44bb-a3e6-14c17047429a` returned 18 events: three views, six
+actions, six Resources, one long task, one vital, and the session event, with the
+same exact Home/Detail ownership and zero crashes/errors.
+
+The initial Home mapper snapshot still arrived before the scene reader resolved
+the native session. The harness can join that stable logical scene to its later
+exact registration; this does not prove that the shipping SDK has gained a new
+scene boundary. Xcode's workspace interaction session successfully installed and
+ran the app, but required the unavailable `device-interaction` skill for any UI
+event. No synthesized input, visual claim, Home return, or final live oracle
+result is attached to `EXP-108`.
+
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
 migration, descriptor immutability, stale/unversioned lifecycle rejection, and
@@ -2504,8 +2538,13 @@ ownership is safe in the exercised fullscreen topology.
   structured run first observed Home at version 1, so semantic start is derived
   from the first observed UUID and stop from an active-to-false transition.
 - Do not claim visual UI state because console logs say a destination materialized.
-  `EXP-107` had no functioning Xcode interaction driver and no synthetic input;
+  `EXP-108` could install and run through Xcode interaction, but the required
+  `device-interaction` skill was unavailable and no synthetic input occurred;
   use an acknowledged driver action, hierarchy/screenshot, or human observation.
+- Do not treat the probe scene registry as a shipping SDK fix or serialize its
+  future Execution Context seam. It makes exact experiment addressing and joins
+  deterministic; production RUM scopes must still preserve their own scene
+  ownership, and backend Execution Context serialization is separate work.
 - Do not query this probe with `@probe.run_id`; use
   `@context.probe.run_id` or fall back to `service:ios-sdk-multi-scene-probe`
   followed by an exact session-ID query.

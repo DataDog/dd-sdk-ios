@@ -81,12 +81,15 @@ adaptive resize, genuine reconnect/restoration, and human native-gesture evidenc
 also remain open.
 
 The structured probe records versioned JSONL, separates call-site source from
-mapper-observed ownership, and evaluates fixture timelines with a pure oracle
-(`EXP-107`, 24/24 tests). Backend intake agrees with the first live
-ApplicationLaunch → Home → Detail prefix, but unavailable device interaction
-prevented a driven Home return and live final verdict. Detailed conclusions live
-in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md); exact runs and rejected paths
-live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
+mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
+It now also has an exact main-actor scene registry with weak window ownership,
+readiness, activation, geometry, route, and disconnect generations (`EXP-108`,
+31/31 tests). A clean iPadOS 27 run and backend intake agree on the resulting
+ApplicationLaunch → Home → Detail prefix. The required interaction skill remains
+unavailable, so a driven Home return and live final verdict are still open.
+Detailed conclusions live in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md);
+exact runs and rejected paths live in
+[EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 | Surface | Current branch status | Remaining release condition |
 | --- | --- | --- |
@@ -181,11 +184,11 @@ customer workflow, and required tests live only in
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `60da5316b` (`Preserve revealed SwiftUI view occurrences across
-remount`). The latest implementation checkpoints are `ff8750dc3` (`Record and
-validate multi-scene probe timelines`) and `acca8907f` (`Model one RUM destination
-per scene`). All are unsigned local
-development commits and must not be pushed. The chronological checkpoint table
-in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
+remount`). The latest implementation checkpoints are `acca8907f` (`Model one RUM
+destination per scene`) and `abfb93d45` (`Add exact scene registry to multi-scene
+probe`). All are unsigned local development commits and must not be pushed. The
+chronological checkpoint table in
+[EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
 `EXP-090` through `EXP-105` are the latest SwiftUI occurrence loop: same-type
 replacement preserves customer state, coalesced abort creates no view, retained
@@ -196,10 +199,10 @@ the wider routing hardening; `EXP-102`/`EXP-103` pass same-type split replacemen
 without customer-state reset in one and two scenes. `EXP-104` records the duplicate
 returned Detail failure, and `EXP-105` proves the source-started UUID survives a
 SwiftUI subtree remount with exact action/resource ownership. This remains an
-experimental branch, not a release-ready support claim. `EXP-106`/`EXP-107` now
-cover deterministic configuration, structured mapper evidence, fixture-based
-semantic reduction, and backend acceptance; they do not yet execute a full live
-scenario through the oracle.
+experimental branch, not a release-ready support claim. `EXP-106` through
+`EXP-108` now cover deterministic configuration, structured mapper evidence,
+fixture-based semantic reduction, exact scene registration, and backend
+acceptance; they do not yet execute a full live scenario through the oracle.
 
 ### Exact next work
 
@@ -208,14 +211,14 @@ the remaining automatic SwiftUI P0 work produces local semantic verdicts before
 backend confirmation. This is an evidence-quality workstream, not a substitute
 for the shipping integration:
 
-1. Add the main-actor probe scene registry: stable logical labels, exact native
-   session IDs, weak windows, activation, geometry/size classes, current route,
-   readiness, and disconnect generation. Never choose an unordered
-   `UIApplication.openSessions` member. Preserve an explicit seam for the future
-   Window Execution Context ID without serializing it.
+1. Completed in `abfb93d45`/`EXP-108`: the main-actor probe scene registry keeps
+   stable logical labels, exact native session IDs, weak windows, activation,
+   geometry/size classes, current route, readiness, and disconnect generation.
+   It never chooses an unordered `UIApplication.openSessions` member. Its future
+   Window Execution Context seam is internal and absent from emitted signals.
 2. Wire observable step acknowledgements and the pure oracle into one clean
    Home → Detail → Home run repeated three times. The structured recorder and
-   reducer already pass 24/24 fixture/unit tests (`EXP-107`); the next run must
+   reducer plus scene registry pass 31/31 fixture/unit tests; the next run must
    produce a real local terminal verdict before its backend confirmation.
 3. Prepare RFC/API review for the optional container-level SwiftUI semantic
    integration. It must consume a customer path/router and centralized resolver,
@@ -293,11 +296,12 @@ As of 2026-09-13:
 - Focused retained-route, occurrence-isolation, transition-arbiter, Operations,
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
-- The named runner validates fail-closed startup (`EXP-106`); its structured
-  recorder/oracle plan passes 24/24. Session
-  `6b194ceb-b0d8-4d0c-8848-ab293594cb79` confirms the executed
-  ApplicationLaunch → Home → Detail prefix at intake, but not Home return
-  (`EXP-107`).
+- The named runner validates fail-closed startup (`EXP-106`); its recorder,
+  oracle, and exact scene registry pass 31/31. Clean run
+  `scene-registry-live-20260913-1647` emitted scene readiness, geometry,
+  lifecycle, and Home → Detail route signals for one native scene, and backend
+  session `de29d1e3-0ff6-44bb-a3e6-14c17047429a` confirms the matching views,
+  six actions, and six Resources. It does not prove Home return (`EXP-108`).
 - Backend split runs preserve exact destination occurrences and markers, including
   the retained-return remount fix (`EXP-102` through `EXP-105`). UIKit history
   still contains the now-forbidden initial structural Primary.

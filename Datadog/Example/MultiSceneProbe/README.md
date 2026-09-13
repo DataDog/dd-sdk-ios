@@ -73,10 +73,13 @@ now records versioned JSONL probe signals and mapper-observed RUM snapshots. A
 pure reducer derives first-observed starts and active-to-inactive stops, and the
 semantic oracle returns only `PASS`, `FAIL`, `SKIPPED`, or `INCONCLUSIVE`. Its
 five fixtures cover correct Home return, wrong-view attribution, a missing event,
-a forbidden view, and an ignored native gesture; the generated test plan passes
-24/24. Observable step driving and emission of a final oracle result from a live
-run remain the next harness phase, so a modeled timeline or partial live prefix is
-not itself a local PASS.
+a forbidden view, and an ignored native gesture. An exact main-actor scene
+registry adds stable logical/native identity, weak window ownership, readiness,
+activation, geometry, route, and disconnect generations without serializing its
+future Execution Context seam. The generated test plan passes 31/31. Observable
+step driving and emission of a final oracle result from a live run remain the next
+harness phase, so a modeled timeline or partial live prefix is not itself a local
+PASS.
 
 Probe call-site context and RUM ownership are intentionally separate. Source
 labels say where the harness invoked work; only mapper-observed RUM view UUIDs and
