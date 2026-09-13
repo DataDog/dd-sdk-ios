@@ -58,6 +58,12 @@ private enum ProbeTrackingBoundary: Equatable {
     case auxiliary
 }
 
+private struct ProbeRUMNavigationView {
+    let screen: String
+    let name: String
+    let occurrence: ProbeNavigationOccurrence
+}
+
 private struct ProbeRUMTrackedScreen<Content: View>: View {
     let window: ProbeWindow
     let sceneSessionID: String
@@ -159,6 +165,81 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
             return "native-swiftui-navigation-path"
         }
         return "native-swiftui"
+    }
+}
+
+/// Probe-only shape for the reviewed once-per-container integration. It keeps
+/// route-to-RUM metadata and the SDK-owned tracking modifier out of destination
+/// views while preserving route-owned placement at each materialized boundary.
+private struct ProbeRUMNavigationStack<Root: View, Destination: View>: View {
+    let window: ProbeWindow
+    let sceneSessionID: String
+    let readerControlGeneration: Int
+    let path: Binding<[ProbeRoute]>
+    let root: ProbeRUMNavigationView
+    let destination: (ProbeRoute) -> ProbeRUMNavigationView
+    let bindingGeneration: (ProbeNavigationOccurrence) -> UInt64
+    let navigationOccurrenceSource: ProbeNavigationOccurrenceSource
+    @ViewBuilder let rootContent: Root
+    @ViewBuilder let destinationContent: (ProbeRoute) -> Destination
+
+    init(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        readerControlGeneration: Int,
+        path: Binding<[ProbeRoute]>,
+        root: ProbeRUMNavigationView,
+        destination: @escaping (ProbeRoute) -> ProbeRUMNavigationView,
+        bindingGeneration: @escaping (ProbeNavigationOccurrence) -> UInt64,
+        navigationOccurrenceSource: ProbeNavigationOccurrenceSource,
+        @ViewBuilder rootContent: () -> Root,
+        @ViewBuilder destinationContent: @escaping (ProbeRoute) -> Destination
+    ) {
+        self.window = window
+        self.sceneSessionID = sceneSessionID
+        self.readerControlGeneration = readerControlGeneration
+        self.path = path
+        self.root = root
+        self.destination = destination
+        self.bindingGeneration = bindingGeneration
+        self.navigationOccurrenceSource = navigationOccurrenceSource
+        self.rootContent = rootContent()
+        self.destinationContent = destinationContent
+    }
+
+    var body: some View {
+        NavigationStack(path: path) {
+            tracked(rootContent, as: root)
+                .navigationDestination(for: ProbeRoute.self) { route in
+                    tracked(destinationContent(route), as: destination(route))
+                        .modifier(
+                            ProbeRouteIdentityModifier(
+                                identity: route,
+                                isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
+                                    && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
+                            )
+                        )
+                }
+        }
+    }
+
+    private func tracked<Content: View>(
+        _ content: Content,
+        as rumView: ProbeRUMNavigationView
+    ) -> some View {
+        ProbeRUMTrackedScreen(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: rumView.screen,
+            name: rumView.name,
+            trackingBoundary: .navigationRoute,
+            readerControlGeneration: readerControlGeneration,
+            navigationOccurrence: rumView.occurrence,
+            bindingGeneration: bindingGeneration(rumView.occurrence),
+            navigationOccurrenceSource: navigationOccurrenceSource
+        ) {
+            content
+        }
     }
 }
 
@@ -502,80 +583,40 @@ struct ProbeWindowRoot: View {
     }
 
     private var navigationStack: some View {
-        NavigationStack(path: navigationPath) {
-            ProbeRUMTrackedScreen(
+        ProbeRUMNavigationStack(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            readerControlGeneration: readerControlGeneration,
+            path: navigationPath,
+            root: rumView(for: nil),
+            destination: rumView(for:),
+            bindingGeneration: bindingGeneration(for:),
+            navigationOccurrenceSource: navigationOccurrenceSource
+        ) {
+            ProbeHomeView(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                screen: "home",
-                name: "ProbeHomeView",
-                trackingBoundary: .navigationRoute,
-                readerControlGeneration: readerControlGeneration,
-                navigationOccurrence: .home,
-                bindingGeneration: homeBindingGeneration,
-                navigationOccurrenceSource: navigationOccurrenceSource
-            ) {
-                ProbeHomeView(
-                    window: window,
-                    sceneSessionID: sceneSessionID,
-                    openDetail: openDetail,
-                    openSheet: { isSheetPresented = true },
-                    closeCurrentWindow: closeCurrentWindow,
-                    openPeer: openPeer
-                )
-            }
-            .navigationDestination(for: ProbeRoute.self) { route in
+                openDetail: openDetail,
+                openSheet: { isSheetPresented = true },
+                closeCurrentWindow: closeCurrentWindow,
+                openPeer: openPeer
+            )
+        } destinationContent: { route in
+            Group {
                 switch route {
                 case .detail(let instance):
-                    ProbeRUMTrackedScreen(
+                    ProbeDetailView(
                         window: window,
                         sceneSessionID: sceneSessionID,
-                        screen: "detail-\(instance)",
-                        name: "ProbeDetailView",
-                        trackingBoundary: .navigationRoute,
+                        instance: instance,
                         readerControlGeneration: readerControlGeneration,
-                        navigationOccurrence: .detail(instance),
-                        bindingGeneration: destinationBindingGeneration,
-                        navigationOccurrenceSource: navigationOccurrenceSource
-                    ) {
-                        ProbeDetailView(
-                            window: window,
-                            sceneSessionID: sceneSessionID,
-                            instance: instance,
-                            readerControlGeneration: readerControlGeneration,
-                            replaceWithAlternate: replaceDetailWithAlternate,
-                            didAppear: { didShowDetail = true }
-                        )
-                    }
-                    .modifier(
-                        ProbeRouteIdentityModifier(
-                            identity: route,
-                            isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
-                                && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
-                        )
+                        replaceWithAlternate: replaceDetailWithAlternate,
+                        didAppear: { didShowDetail = true }
                     )
                 case .alternate:
-                    ProbeRUMTrackedScreen(
+                    ProbeAlternateView(
                         window: window,
-                        sceneSessionID: sceneSessionID,
-                        screen: "alternate",
-                        name: "ProbeAlternateView",
-                        trackingBoundary: .navigationRoute,
-                        readerControlGeneration: readerControlGeneration,
-                        navigationOccurrence: .alternate,
-                        bindingGeneration: destinationBindingGeneration,
-                        navigationOccurrenceSource: navigationOccurrenceSource
-                    ) {
-                        ProbeAlternateView(
-                            window: window,
-                            sceneSessionID: sceneSessionID
-                        )
-                    }
-                    .modifier(
-                        ProbeRouteIdentityModifier(
-                            identity: route,
-                            isEnabled: ProbeRuntime.forcesNavigationRouteIdentity
-                                && !ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking
-                        )
+                        sceneSessionID: sceneSessionID
                     )
                 }
             }
@@ -738,6 +779,42 @@ struct ProbeWindowRoot: View {
 
     private func bindingGeneration(for path: [ProbeRoute]) -> UInt64 {
         path.isEmpty ? homeBindingGeneration : destinationBindingGeneration
+    }
+
+    private func bindingGeneration(
+        for occurrence: ProbeNavigationOccurrence
+    ) -> UInt64 {
+        switch occurrence {
+        case .home:
+            return homeBindingGeneration
+        case .detail, .alternate:
+            return destinationBindingGeneration
+        case .splitDetail, .splitPlaceholder:
+            return splitRUMViewBindingGeneration
+        }
+    }
+
+    private func rumView(for route: ProbeRoute?) -> ProbeRUMNavigationView {
+        switch route {
+        case .detail(let instance):
+            return ProbeRUMNavigationView(
+                screen: "detail-\(instance)",
+                name: "ProbeDetailView",
+                occurrence: .detail(instance)
+            )
+        case .alternate:
+            return ProbeRUMNavigationView(
+                screen: "alternate",
+                name: "ProbeAlternateView",
+                occurrence: .alternate
+            )
+        case nil:
+            return ProbeRUMNavigationView(
+                screen: "home",
+                name: "ProbeHomeView",
+                occurrence: .home
+            )
+        }
     }
 
     private func navigationOccurrence(for path: [ProbeRoute]) -> ProbeNavigationOccurrence {
