@@ -926,6 +926,250 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         XCTAssertEqual(state.configuration?.bindingGeneration, 2)
     }
 
+    func testWhenRevealedRouteMountsWithNewSwiftUIState_itAdoptsPublishedOccurrence() {
+        let retainedIdentities = RUMOccurrenceIdentityGenerator(
+            ["detail-1", "detail-returned"]
+        )
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let retainedState = RUMViewTrackingState(
+            identity: "retained-fallback",
+            occurrenceIdentityGenerator: retainedIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let initial = configuration(key: "detail", generation: 1)
+        _ = retainedState.mount(in: sceneA, configuration: initial)
+        _ = retainedState.disappear(configuration: initial)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: source,
+            state: retainedState,
+            configuration: initial,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: retainedState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("detail"),
+                bindingGeneration: 2
+            )
+        )
+        let returned = configuration(key: "detail", generation: 2)
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "detail-returned", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(retainedState.disappear(configuration: returned), [])
+
+        XCTAssertTrue(
+            source.consumeRevealedRoute(
+                configuration: returned,
+                sceneIdentifier: sceneA,
+                into: replacementState
+            )
+        )
+        XCTAssertFalse(retainedState.isAppeared)
+        XCTAssertNil(retainedState.activeLifecycleGeneration)
+        XCTAssertTrue(replacementState.isAppeared)
+        XCTAssertEqual(replacementState.activeLifecycleGeneration, 1)
+        XCTAssertEqual(replacementState.appear(configuration: returned), [])
+        XCTAssertEqual(
+            replacementState.disappear(configuration: returned),
+            [.stop(identity: "detail-returned", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(retainedIdentities.invocationCount, 2)
+        XCTAssertEqual(replacementIdentities.invocationCount, 0)
+    }
+
+    func testWhenRevealedRouteKeepsItsSwiftUIState_consumptionSettlesHandoff() {
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initial = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initial)
+        _ = state.disappear(configuration: initial)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: initial,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            _ = state.reconcile(
+                configuration: configuration,
+                attachment: .attached(sceneIdentifier),
+                isAppeared: true
+            )
+        }
+
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("home"),
+                bindingGeneration: 2
+            )
+        )
+        let returned = configuration(key: "home", generation: 2)
+
+        XCTAssertFalse(
+            source.consumeRevealedRoute(
+                configuration: returned,
+                sceneIdentifier: sceneA,
+                into: state
+            )
+        )
+        XCTAssertEqual(
+            state.disappear(configuration: returned),
+            [.stop(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(identities.invocationCount, 2)
+    }
+
+    func testWhenMultipleRegistrationsCanRevealSameRoute_onlyNewestRegistrationStarts() {
+        let olderState = RUMViewTrackingState(
+            identity: "older-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(
+                ["older-1", "older-2"]
+            ).next
+        )
+        let newerState = RUMViewTrackingState(
+            identity: "newer-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(
+                ["newer-1", "newer-2"]
+            ).next
+        )
+        let initial = configuration(key: "detail", generation: 1)
+        for state in [olderState, newerState] {
+            _ = state.mount(in: sceneA, configuration: initial)
+            _ = state.disappear(configuration: initial)
+            _ = state.update(configuration: initial, attachment: .detached)
+        }
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let olderRegistration = RUMSwiftUINavigationOccurrenceRegistration()
+        let newerRegistration = RUMSwiftUINavigationOccurrenceRegistration()
+        var olderTransitions: [RUMViewTrackingState.Transition] = []
+        var newerTransitions: [RUMViewTrackingState.Transition] = []
+        olderRegistration.rebind(
+            to: source,
+            state: olderState,
+            configuration: initial,
+            attachment: .detached
+        ) { configuration, sceneIdentifier in
+            olderTransitions.append(
+                contentsOf: olderState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+        newerRegistration.rebind(
+            to: source,
+            state: newerState,
+            configuration: initial,
+            attachment: .detached
+        ) { configuration, sceneIdentifier in
+            newerTransitions.append(
+                contentsOf: newerState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("detail"),
+                bindingGeneration: 2
+            )
+        )
+        XCTAssertEqual(olderTransitions, [])
+        XCTAssertEqual(
+            newerTransitions,
+            [.start(identity: "newer-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenAnotherRouteIsRevealed_pendingHandoffNoLongerSuppressesDisappear() {
+        let homeState = RUMViewTrackingState(
+            identity: "home-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(
+                ["home-1", "home-2"]
+            ).next
+        )
+        let detailState = RUMViewTrackingState(
+            identity: "detail-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(
+                ["detail-1", "detail-2"]
+            ).next
+        )
+        let initialHome = configuration(key: "home", generation: 1)
+        let initialDetail = configuration(key: "detail", generation: 1)
+        _ = homeState.mount(in: sceneA, configuration: initialHome)
+        _ = homeState.disappear(configuration: initialHome)
+        _ = detailState.mount(in: sceneA, configuration: initialDetail)
+        _ = detailState.disappear(configuration: initialDetail)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let homeRegistration = RUMSwiftUINavigationOccurrenceRegistration()
+        let detailRegistration = RUMSwiftUINavigationOccurrenceRegistration()
+        homeRegistration.rebind(
+            to: source,
+            state: homeState,
+            configuration: initialHome,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            _ = homeState.reconcile(
+                configuration: configuration,
+                attachment: .attached(sceneIdentifier),
+                isAppeared: true
+            )
+        }
+        detailRegistration.rebind(
+            to: source,
+            state: detailState,
+            configuration: initialDetail,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            _ = detailState.reconcile(
+                configuration: configuration,
+                attachment: .attached(sceneIdentifier),
+                isAppeared: true
+            )
+        }
+
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("home"),
+                bindingGeneration: 2
+            )
+        )
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("detail"),
+                bindingGeneration: 2
+            )
+        )
+        XCTAssertEqual(
+            homeState.disappear(configuration: configuration(key: "home", generation: 2)),
+            [.stop(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+    }
+
     func testWhenRouteIsStillActive_revealDoesNotCreateSyntheticOccurrence() {
         let identities = RUMOccurrenceIdentityGenerator(["home-1", "unused"])
         let state = RUMViewTrackingState(

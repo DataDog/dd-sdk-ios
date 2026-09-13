@@ -704,6 +704,7 @@ private struct ProbeSplitLayout: View {
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var didScheduleDetailTwo = false
     @State private var didSchedulePlaceholder = false
+    @State private var didScheduleReturnedDetail = false
     @State private var didRecordLayout = false
 
     init(
@@ -779,6 +780,15 @@ private struct ProbeSplitLayout: View {
                     return
                 }
                 commit(.placeholder)
+            case .placeholder
+                where ProbeRuntime.automaticallyReturnsSplitToDetail
+                    && !didScheduleReturnedDetail:
+                didScheduleReturnedDetail = true
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else {
+                    return
+                }
+                commit(.detail(2))
             default:
                 return
             }

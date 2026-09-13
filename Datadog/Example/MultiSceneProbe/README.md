@@ -36,6 +36,7 @@ DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=1
 DD_MULTI_SCENE_UIKIT_SPLIT_INTERACTIVE_POP=none
 DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=detail-1
 DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=1
+DD_MULTI_SCENE_SPLIT_RETURN_TO_DETAIL=0
 DD_MULTI_SCENE_UI_EVENT_HANDOFF=0
 DD_MULTI_SCENE_SYNTHETIC_READER_DISCONNECT=none
 ```
@@ -108,6 +109,11 @@ control, but also resets customer content lifetime. With
 `Detail₁ → Detail₂ → Placeholder`, each with a distinct UUID and without an
 intervening Sidebar or Home, while the Detail witness remains unchanged. The
 sequence is skipped in compact width.
+Set `DD_MULTI_SCENE_SPLIT_RETURN_TO_DETAIL=1` to extend that sequence to
+`Detail₁ → Detail₂ → Placeholder → Detail₂(returned)`. The returned Detail must
+receive a fresh UUID before its immediate marker while preserving the same Detail
+witness. This specifically exercises early reveal of an inactive retained split
+route; a repeated Detail name or occurrence key does not permit UUID reuse.
 Set `DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=none` and
 `DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=0` for the empty-detail control. It must
 not manufacture a Detail occurrence before the customer selects one.

@@ -81,6 +81,8 @@ enum ProbeRuntime {
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION"] == "none"
     static let automaticallyAdvancesSplitSelection =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE"] != "0"
+    static let automaticallyReturnsSplitToDetail =
+        ProcessInfo.processInfo.environment["DD_MULTI_SCENE_SPLIT_RETURN_TO_DETAIL"] == "1"
     static let exercisesUIEventContextHandoff =
         ProcessInfo.processInfo.environment["DD_MULTI_SCENE_UI_EVENT_HANDOFF"] == "1"
     static let uiEventHandoffControlAccessibilityIdentifier =
@@ -188,6 +190,7 @@ enum ProbeRuntime {
                 + "\(uiKitSplitInteractivePopOutcome?.rawValue ?? "none") "
                 + "split_initial_selection=\(startsSplitWithoutSelection ? "none" : "detail-1") "
                 + "split_automatic_sequence=\(automaticallyAdvancesSplitSelection) "
+                + "split_return_to_detail=\(automaticallyReturnsSplitToDetail) "
                 + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
                 + "synthetic_reader_disconnect_target="
                 + "\(syntheticReaderDisconnectTarget ?? "none")"
