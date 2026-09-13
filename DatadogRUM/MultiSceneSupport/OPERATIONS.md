@@ -5,7 +5,7 @@ duplicate-start behavior, the proposed public targeting API, customer guidance,
 or Operations tests. This is the authoritative home for the Operations contract;
 the [canonical overview](../MULTI_SCENE_SUPPORT.md) carries only its summary.
 
-Last updated: 2026-09-12
+Last updated: 2026-09-13
 
 ## RUM Operations contract and API review proposal
 
@@ -125,7 +125,7 @@ Required test coverage is tracked explicitly:
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public overload test pending API review |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key | Focused pass; live warning/raw-vital proof pending |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; full 1,033-test RUM suite passes |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,122-test RUM suite passes |
 
 API review must settle the public type/name and the scene-targeted keyed-view
 prerequisite. The requested application-wide identity means that scenes do not

@@ -6,7 +6,7 @@ The [assessment](ASSESSMENT.md) interprets this evidence; the
 [plan](PLAN.md) decides what to run next. Start at the
 [canonical overview](../MULTI_SCENE_SUPPORT.md) for the current resume point.
 
-Last updated: 2026-09-12
+Last updated: 2026-09-13
 
 ## Checkpoint commit structure
 
@@ -33,10 +33,34 @@ boundary, in this order:
 | 16 | `Add native SwiftUI multi-scene probe` | Standalone iOS 27 `WindowGroup` harness plus single-window and two-window backend baselines |
 | 17 | `Consolidate multi-scene support assessment` | Reconciled verdict, experiment results, product decisions, Operations contract, and resume state before the split |
 | 18 | `Split multi-scene support documentation` | Canonical overview plus assessment, plan, experiment, and Operations documents with one owner per topic |
+| 19 | `Expand the native multi-scene navigation probe` | Native manual/automatic controls, stress/modal/scene-close paths, route-owned tracking, cancelled and aborted navigation, materialized replacement, split-selection, and UIKit split controls |
+| 20 | `Keep repeated RUM view occurrences isolated` | Reducer identity, restored-scope boundaries, and action/resource ownership when a platform identity is reused for a later navigation occurrence |
+| 21 | `Track multi-scene navigation occurrences` | iOS 27 explicit SwiftUI early mount and interactive completion, atomic occurrence replacement, retained-reader teardown/remount, and UIKit split-column reconciliation with focused regressions |
+| 22 | `Add deterministic UIKit split transition controls` | Public-UIKit interactive cancel/finish controls and manual-pop hold used to validate committed navigation occurrences |
+| 23 | `Add concurrent and adaptive split probe controls` | Concurrent split-window launch plus empty-selection and sequence-disable controls for overlap and resize experiments |
+| 24 | `Use scene handoff for manual RUM work` | Exact-view/scene routing for manual actions and Resource starts invoked inside trustworthy UI-event context |
+| 25 | `Update the multi-scene support checkpoint` | Current backend evidence, assessment, plan, rejected paths, validation, and exact resume state |
 
-Rows 1-17 are committed. Row 16 is commit `e56262485`; row 17 is commit
-`2fb8dd9b5`. Row 18 is this documentation boundary, so its hash is not recorded
-inside its own commit.
+Rows 1-24 are committed. Row 16 is commit `e56262485`; row 17 is commit
+`2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
+`4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
+`77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`. Row 25 is this
+documentation checkpoint and intentionally does not self-reference its commit ID.
+
+Twelve earlier signed attempts failed before writing a commit object. The last
+attempt that returned signer stderr reported:
+
+```text
+error: Signing file /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T//.git_signing_buffer_tmpm6SzCt
+Couldn't sign message (signer): communication with agent failed?
+Signing /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T//.git_signing_buffer_tmpm6SzCt failed: communication with agent failed?
+
+fatal: failed to write commit object
+```
+
+The user subsequently approved unsigned development-cycle commits with the
+explicit restriction that they must not be pushed. The six exact-path commits
+above use that policy. This is a local checkpoint only, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 each checkpoint commit must use an exact path list. Do not use a broad `git commit`
@@ -79,6 +103,65 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-027 | `native-single-20260912171659` | `721dcd8f-c88c-44f8-be1b-99d60829da92` | iPadOS 27 | First standalone native SwiftUI single-window control. Home `.onAppear` and immediate `.task` actions/resources used `ApplicationLaunch` `9514e96c-4cf8-4efb-a55e-35c58ba4b61e`; delayed Home plus all three Detail phases used navigation host `2810e9e8-9676-4b6b-8838-c8efb78b00ad`. `ProbeHomeView` never appeared; final `ProbeDetailView` `9387c0d9-f0f2-4010-afb0-8f84e17e4275` started after the callbacks. Backend preserved all 6 actions and 6 resources across exactly those mappings, 5 views total, and zero view crashes/errors. |
 | EXP-028 | `native-swiftui-20260912171529` | `ffe3a564-c484-4d2a-b1c7-1e7170d333d0` | iPadOS 27 | First native `WindowGroup` plus `openWindow` proof. Scene A and B received distinct native sessions, but B Home `.onAppear` and immediate `.task` actions/resources used scene A Detail view `b33cbe9a-4613-4327-9e2f-a6ceadba5896`. B's own navigation host `5ed90c94-ebd0-491b-bb81-24d4b846468a` appeared afterward and received delayed Home plus all Detail lifecycle work; final B Detail `c7a46015-aa45-4d4e-a280-7b6e989f469a` started later. Backend preserved the exact 12-action/12-resource mapping, 9 noisy views, and zero view crashes/errors. |
 | EXP-029 | `lldb-native-lifecycle-20260912` | Not applicable | iPadOS 27 | Local LLDB timing/reflection inspection. Root base `viewWillAppear` had no title or children, then Home `.onAppear` ran before the navigation-controller/host callbacks. Detail `.onAppear` ran before both hosting-controller and base UIKit callbacks. Titles were correct only at the later host boundary. `content.list.item.type` is gone, while `elements.body.viewType` falsely exposes registered `ProbeDetailView` while Home is visible. No backend claim is attached to this experiment. |
+| EXP-030 | `native-manual-single-20260912-2207` | `1535edec-4f88-4158-a926-3268744b11c0` | iPadOS 27 | Existing explicit `.trackRUMView` control with the modifier inside each screen. Home lifecycle markers ultimately resolved correctly, but Detail `.onAppear` and immediate `.task` actions/resources used Home `4fed08f3-610f-4b6c-bea1-aff019e2e2b4`; only delayed Detail work used Detail `868d14a5-16a6-4425-84c5-338d25677f01`. |
+| EXP-031 | `native-outer-single-20260912-2211` | `6e3ae2b5-2b93-4545-bd29-d7b5eaa376fd` | iPadOS 27 | Moving unchanged `.trackRUMView` outside the fully constructed screen did not establish earlier semantics. Home `.onAppear`/immediate work used `ApplicationLaunch`; Detail `.onAppear`/immediate work used Home `951d3c80-42a3-4bc4-8088-88218edeee15`; delayed work alone reached Detail `26b13949-d8b4-463d-b1f7-6f37e1ac1122`. Modifier rearrangement is not the fix. |
+| EXP-032 | `native-mount-single-20260912-2219` | `7f01c652-6641-4759-b0df-43c6a3b9ddf0` | iPadOS 27 | First explicit early-mount candidate. The inherited scene trait triggered the `.trackRUMView` start while the hidden platform reader was created. All 6 actions and 6 resources mapped to semantic Home `1e61f052-7bab-4bef-98c7-3ce2591060ba` or Detail `26cc1198-b336-4396-80d3-9bd13cdd22a7`, with no fallback, warning, crash, or hang. |
+| EXP-033 | `native-mount-two-window-20260912-2223`, `native-mount-two-window-repeat1-20260912`, `native-mount-two-window-repeat2-20260912` | `739d9ac2-2d9e-44e0-ae72-390defae5ab5`, `ba8fbafe-f762-4203-abeb-08771ba2a02e`, `3557e5d5-d42f-450a-ac85-32c0276f7cc5` | iPadOS 27 | Three clean two-window early-mount runs. Across 72 lifecycle markers, every A/B Home/Detail on-appear, immediate-task, and delayed-task action/resource mapped once to its exact semantic view. Each run had four semantic view UUIDs plus `ApplicationLaunch`, zero fallback marker, duplicate semantic view, warning, crash, or hang. Backend aggregates match device logs. |
+| EXP-034 | `native-mount-dormant-20260912` | `4f34c6e1-2637-49a4-a6c8-d42826e6104e` | iPadOS 27 | A registered but never navigated-to Detail destination produced no Detail platform lifecycle, RUM view, action, or resource. Backend contained only `ApplicationLaunch`, Home `d33ece16-e02f-498e-9241-a91bebccabd7`, and Home's six expected markers. |
+| EXP-035 | `native-mount-nav-stress-20260912` | `09bead82-7639-49a1-aa78-ff9670ad1746` | iPadOS 27 | Three complete push/pop cycles produced the correct seven-occurrence RUM path: Home, Detail, Home, Detail, Home, Detail, Home, each with a distinct view UUID and strict stop-before-start ordering. Retained SwiftUI state does not collapse RUM occurrences; RUM views represent the navigation path. All emitted lifecycle and tap actions used the current occurrence. |
+| EXP-036 | `native-mount-offscreen-tab-20260912` | `593feed3-6c44-4c55-9350-d1ac7fb4942d` | iPadOS 27 | An explicitly tracked but unselected tab produced neither a platform-content `onAppear` log nor a `ProbeOffscreenTabView` RUM view. Backend contained only `ApplicationLaunch` and Home `57fda015-9e7c-4d88-a975-37cccd8bf984`. This case did not preload the offscreen representable, so it is a clean result but not a general construction/visibility proof. |
+| EXP-037 | `native-mount-cancelled-nav-20260912`, `explicit-cancel-baseline-20260912` | `f08c8011-1175-4715-909f-dfb3503dc33e`, `8864b6a6-da13-4201-888e-05634d2b0ddd` | iPadOS 27 | A cancelled 50-point interactive back swipe emitted a false roughly half-second Home occurrence and restarted Detail although Detail stayed visible. The early-mount candidate and the disabled-candidate control reproduced the same sequence (546 ms versus 506 ms), proving an existing explicit `.trackRUMView` cancellation gap rather than a regression from early mount. Both false occurrences reached backend intake. |
+| EXP-038 | `native-mount-final-repeat3-20260912`, `native-mount-final-repeat4-20260912` | `0fa4998d-4c39-4674-ac70-8dc91702fac9`, `683e6b94-efbc-4ff3-a865-8ee46915f9d3` | iPadOS 27 | Two clean repetitions completed the three-run bar for the final iOS-27-gated candidate. Each backend session had exactly five views, 12 lifecycle actions, and 12 lifecycle resources; every A/B Home/Detail phase mapped once to its exact UUID, with zero fallback or duplicate semantic view. Both scenes ended concurrently on Detail; there was no SDK/SwiftUI warning, crash, or hang. |
+| EXP-039 | `native-mount-view-that-fits-20260912` | `97ff096b-4c03-4de3-9271-2b9035f0c498` | iPadOS 27 | Inconclusive construction-only stress. `ViewThatFits` rejected an oversized tracked candidate without constructing its platform reader or invoking its appearance callbacks, so it could not test construction without semantic appearance. Backend contained only `ApplicationLaunch`, one Home occurrence, and Home's three actions/resources; all six markers used the Home UUID, with no rejected-candidate view, warning, crash, or hang. The dead stress harness was removed. |
+| EXP-040 | `native-mount-sheet-20260912` | `1c500aa3-b689-468d-bf49-1eaf6b417411` | iPadOS 27 | Explicit early-mount modal pass. Client and backend emitted the exact completed path `Home₁ → Sheet → Home₂`, with distinct UUIDs `0ec34c52…`, `7c8e644b…`, and `45b791dd…` despite retained Home state. All six Sheet lifecycle markers used Sheet, and the post-dismiss action/resource used Home₂. Four total views including `ApplicationLaunch`, nine actions, seven resources, zero fallback, errors, crashes, or warnings. |
+| EXP-041 | `native-mount-immediate-close-20260913` | `7d41417b-907b-42de-ac7b-6553d090b6af` | iPadOS 27 | Mixed immediate scene-close result. B Home started and stopped once; all six B lifecycle action/resource markers, including delayed completions after `dismissWindow`, retained B UUID `fbf4b50b…`. No fallback, error, crash, hang, or SDK warning occurred. Closing frontmost B returned the fullscreen simulator to SpringBoard and made A inactive; reactivating A correctly created a new lifecycle occurrence. This topology therefore did not test continuity of a simultaneously visible A window. |
+| EXP-042 | `native-mount-restoration-20260913` | `e578a172-4f94-47a9-990e-8fe0b85aee79`, then `35ad014f-8f8d-4998-b3e7-f7e0fd0072e3` | iPadOS 27 | Partial restoration pass with platform-limited topology. Before intentional termination, A/B Home views and all markers were isolated. Relaunch without uninstall restored only B, retaining native scene ID `77E241EA…`; its new RUM Home occurrence received all lifecycle and manual-marker work with no fallback. A did not reconnect, so concurrent two-scene restoration remains untested. Two sessions contained five views, 11 actions, 10 resources, and zero backend errors/crashes. |
+| EXP-043 | `native-transition-coordinator-probe-20260913` | `079b717d-7c5f-491c-bdd3-83316072a713` | iPadOS 27 | Public-UIKit cancellation diagnostic. At the speculative Home `onAppear`, the retained hidden reader resolved `NavigationStackHostingController<AnyView>` and a coordinator with `initiallyInteractive=true`; cancellation was not known until coordinator completion. The later reversal callback had already lost the coordinator and Detail emitted no matching SwiftUI callback. Backend preserved the erroneous `Home → Detail → false Home (0.549 s) → replacement Detail → Home` path, six views total, with no crash or warning. This positively qualifies a coordinator-completion gate for the exercised native `NavigationStack` path. |
+| EXP-044 | `native-cancel-gate-candidate-20260913` | `0206043e-8479-4f42-984e-7fb5235fbfa5` | iPadOS 27 | Explicit cancellation-gate pass. A short edge swipe invoked speculative Home callbacks but emitted no Home occurrence or replacement Detail; the UI and RUM branch remained on Detail `0b3bebb8…`. A completed interactive pop then stopped Detail and started fresh Home₂ `1a995513…`, distinct from Home₁ `a81641e6…`. Backend contains exactly `ApplicationLaunch → Home₁ → Detail → Home₂`; all six initial Home/Detail lifecycle action/resource pairs use their exact source view, and the post-pop action/resource use Home₂. Four views, eight actions, seven resources, zero errors/crashes, no warning, and accepted uploads. |
+| EXP-045 | `transition-gate-isolation-hardening-20260913` | No backend session; source/focused-test evidence | Xcode 27, iOS 27-gated code | Post-run review found that a recreated view could mount before its reader had responder ancestry, and that one scene-wide pending bucket could swallow unrelated lifecycle. The gate now resolves the tracked state's attached controller first, uses only the matching scene hierarchy as a provisional fallback, keys transactions by scene plus coordinator identity, revalidates ownership on real attachment, and lets unrelated or cross-scene-corrected state escape. Nineteen arbiter/provider tests pass, including retained and recreated returns, cancellation, same-scene unrelated work, two coordinators in one scene, two scenes, scene correction, disconnect, and stale completion. Full RUM passed 1,058/1,058; lint passed 713 source and 699 test files. This row adds no new runtime/backend claim. |
+| EXP-046 | `native-navigation-path-occurrence-20260913-0130` | `b6b4f018-4642-4321-92c6-6ff7f8462f4b` | iPadOS 27 | Probe-only scene-root/path prototype pass. One authoritative typed path recreated a hidden semantic tracker at each mutation. The push started Detail before its lifecycle work; a cancelled edge drag neither mutated the path nor emitted a RUM transition; a completed pop logged occurrence 2 and created Home₂ `6357e2ff…`, distinct from Home₁ `c9350381…`, around Detail `4ae1e947…`. Backend contains exactly `ApplicationLaunch → Home₁ → Detail → Home₂`, seven actions, seven resources, zero errors/crashes, and the post-pop marker pair on Home₂. The first `…-0124` attempt proved push ordering but was excluded from the gesture result after its Xcode launch expired and a device-only activation relaunched without the intended environment. This validates the proposed contract boundary, not a production API. |
+| EXP-047 | `native-navigation-path-two-window-20260913-0140` | `b17be708-453a-4c28-9570-e6f834ba49e7` | iPadOS 27 | Rejected root-background placement. A's Home/Detail and both final Detail views were correct, but B Home `.onAppear` and immediate work used A Detail before B's hidden sibling tracker existed; only B's delayed work used B Home. A scene-root path observer alone is not an early enough semantic boundary for a newly opened window. No duplicate view, warning, error, or crash occurred. |
+| EXP-048 | `native-navigation-path-wrapper-two-window-20260913-0143` | `84abe003-f3c1-4fe5-b6a1-3282a14bd825` | iPadOS 27 | Rejected whole-stack wrapper. B's first Home work still used A Detail, and changing the wrapper identity rebuilt the `NavigationStack`, replaying retained Home lifecycle work after each Detail start. Backend had five view starts including launch, but duplicated actions/resources on the wrong Detail occurrences. |
+| EXP-049 | `native-navigation-path-first-child-two-window-20260913-0146` | `12814ace-3aab-4073-976b-a143c1f6ec2c` | iPadOS 27 | Rejected stable first-child placement. It removed the whole-stack lifecycle replay and preserved one view per mutation, but B Home `.onAppear` and immediate work still used A Detail. Reordering a detached root tracker cannot establish B's semantic view before B content starts. No duplicate view, warning, error, or crash occurred. |
+| EXP-050 | `native-navigation-destination-owned-two-window-20260913-0151` | `722168c6-14f1-42b7-b4e1-533ed3b7be60` | iPadOS 27 | Route-owned boundary pass. Existing explicit tracking was applied directly to each Home and typed Detail builder while the bound path recorded mutations. A/B Home and Detail each started before their three lifecycle action/resource pairs; all 12 actions and 12 resources used the exact source view. Backend contains only `ApplicationLaunch` plus the four semantic views, with zero replay, duplicate, fallback, warning, error, or crash. This validates the placement required by a future integration; it is not transparent automatic support. |
+| EXP-051 | `native-navigation-destination-owned-cancel-20260913-0157` | `14e98588-7f40-488d-826d-f1ab55586b37` | iPadOS 27 | Route-owned occurrence/cancellation pass. The cancelled edge drag produced no path commit or RUM transition. The completed pop logged Home occurrence 2, stopped Detail `3853ced6…`, and started Home₂ `f2c30907…`, distinct from Home₁ `90e5e7ee…`; the final marker action/resource used Home₂. Backend contains exactly `ApplicationLaunch → Home₁ → Detail → Home₂`, with no replay, duplicate, fallback, warning, error, or crash. A diagnostic `probe.navigation_occurrence` value remained stale at 1 on retained Home₂ even though the UUID/path semantics were correct; that non-contract attribute was removed rather than used as evidence. |
+| EXP-052 | `native-navigation-aborted-programmatic-20260913-021355` | `e137947b-fad1-44f3-a083-0bf9126c3a74` | iPadOS 27 | Same-turn programmatic push/revert pass. The probe wrote `[.detail]` and then `[]`; SwiftUI exposed both binding mutations but no Detail lifecycle or RUM view, and no second Home occurrence. The post-abort action `3ed8395f…` and resource `96013dae…` used original Home `ce0da61e…`. Backend contains exactly ApplicationLaunch plus one Home, four actions, four resources, zero Detail events/errors/crashes, and two accepted uploads. Binding writes are not themselves RUM navigation occurrences. |
+| EXP-053 | `native-navigation-materialized-replacement-20260913-022525` | `7cf4ad27-2a7a-4ffb-9055-cfcadcd19afb` | iPadOS 27 | Invalid harness run, retained only to prevent a false SDK conclusion. Navigation-path mode accidentally excluded the new Alternate screen from explicit tracking. Home/Detail were correct, but Alternate emitted no view; its early work stayed on Detail and delayed work was rejected after Detail stopped. Backend has three views, eight actions, eight resources, no Alternate view, five no-active-view warnings, and zero errors/crashes. The omission was fixed before rerun. |
+| EXP-054 | `native-navigation-materialized-replacement-20260913-022917` | `b847bf2d-a643-49fe-ba00-1992248f5b66` | iPadOS 27 | Corrected materialized replacement pass. After one second on Detail, replacing `[.detail]` with `[.alternate]` produced exactly `ApplicationLaunch → Home → Detail → Alternate`, with no intermediate/restarted Home or duplicate. Each semantic screen started before its `.onAppear` and all nine action/resource pairs used its exact UUID; Alternate start led its callback by 0.614 ms. Backend contains four views, nine actions, nine resources, zero errors/crashes, and two accepted uploads. |
+| EXP-055 | `xcode27-uihosting-scene-delegate-review-20260913` | No backend session; Apple documentation and SDK interface evidence | Xcode 27 SDK | `UIHostingSceneDelegate` is public from iOS 26 and lets an application-owned `UISceneDelegate` declare a static SwiftUI `rootScene` and receive scene lifecycle for scenes activated through its configuration/request. It exposes no navigation-path or destination identity and cannot transparently wrap an existing pure-SwiftUI `WindowGroup`. It may be an explicit customer root/lifecycle option, but it does not solve semantic destination creation. No runtime claim is attached. |
+| EXP-056 | `native-navigation-replacement-two-window-20260913-023302` | `e3e33d60-dce7-4681-a51c-112f5776d9db` | iPadOS 27 | Concurrent materialized replacement passed for view creation: backend contains exactly `ApplicationLaunch` plus A/B `Home → Detail → Alternate`, one UUID per occurrence, with no restarted Home, replay, warning, error, or crash. All on-appear/immediate and all B delayed markers used their route view. A Alternate's delayed source-less manual action/resource ran after B Home became process representative and therefore used B Home, matching the approved compatibility fallback rather than indicating a route/view failure. Backend: 7 views, 18 actions, 18 resources, 2 long tasks, 1 vital; three uploads returned 202. |
+| EXP-057 | `native-navigation-same-type-replacement-20260913-024952` | `36a22f91-7823-4f4e-9052-891ca3e9b3a1` | iPadOS 27 | Reproduced semantic occurrence failure. Replacing `[.detail(1)]` with `[.detail(2)]` committed visible Detail 2 while reusing the same destination reader. RUM remained on the original active `ProbeDetailView` UUID with `screen=detail-1`; it emitted no Detail₂ view or lifecycle markers. Backend contains only launch, Home, Detail₁, six actions, and six resources, with zero errors/crashes and two accepted uploads. Same platform/view-modifier lifetime therefore collapses two navigation occurrences unless the integration supplies a route-occurrence identity. |
+| EXP-058 | `native-navigation-same-type-route-id-20260913-030955` | `ef550604-548a-40ff-a1a1-c6050a6acbbb` | iPadOS 27 | Probe-only route-identity control passed. Applying `.id(route)` around the tracked destination made `[.detail(1)] → [.detail(2)]` emit exactly launch, Home, Detail₁, Detail₂, with two distinct same-named `ProbeDetailView` UUIDs, no intermediate Home, and all nine action/resource pairs on their exact occurrence. Backend has 25 documents, zero errors/crashes, and two accepted uploads. This proves an occurrence token is the missing input; `.id` itself is not the proposed API because it also resets customer SwiftUI state. |
+| EXP-059 | `native-navigation-same-type-route-id-two-window-20260913-031734` | `6ade87bd-4d78-462e-ab47-2ee5a54f910d` | iPadOS 27 | Two-window route-identity control passed for view creation. Backend contains exactly launch plus A/B `Home → Detail₁ → Detail₂`, with distinct same-named Detail UUIDs in each scene and no intermediate Home, replay, warning, error, or crash. All route-owned early work and all B delayed work used the exact occurrence. A Detail₂'s delayed source-less manual pair used B Home after B became representative, matching compatibility policy. Backend: 7 views, 18 actions, 18 resources, 2 long tasks, 1 vital; three uploads returned 202. |
+| EXP-060 | `swiftui-atomic-occurrence-replacement-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Added an internal scene-local stack-slot replacement primitive for SwiftUI occurrence rollover. An active replacement stops Detail₁ and starts Detail₂ without exposing Home; a covered or backgrounded slot changes silently and starts the replacement only when revealed/resumed. Missing or cross-scene old occurrences fail closed instead of materializing stale work. Same-name identities and A/B isolation are covered. All 43 `RUMViewsHandlerTests` passed; two strengthened unwind/state assertions passed separately. This primitive is not wired to a public occurrence key, so it adds no runtime/backend support claim. |
+| EXP-061 | `retained-view-occurrence-isolation-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Fixed retained-scope contamination when a navigation path returns to the same platform identity. `Home₁ → Detail → Home₂` still creates three backend UUIDs, but inactive Home₁ now ignores later same-identity view start/stop commands while continuing to receive its exactly targeted pending Resource completion. The fix also marks transferred/restored scopes as having an established start boundary, so a later same-identity start leaves exactly one active occurrence. Regressions cover same-session and cross-session pending work plus restoration: focused 3/3, all 75 `RUMSessionScopeTests`, and all 27 `RUMApplicationScopeTests` passed. Active duplicate-start and stop behavior remains unchanged. |
+| EXP-062 | `swiftui-route-occurrence-state-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Added dormant internal route-occurrence propagation without changing the public API or current runtime path. An opaque non-serialized key, binding generation, and immutable descriptor now drive fresh keyed command identities, atomic same-scene replacement, stop/start scene migration, detached-key handling, and stale-generation rejection while legacy lifecycle identities remain stable. The interactive arbiter reduces multiple candidates to the final accepted configuration, retains its matching emission closure, mutates nothing on cancellation, rejects stale lifecycle and cross-scene escape, and requires the exact deferred transaction instance before accepting coordinator completion. Build-for-testing succeeded with zero diagnostics; all 25 state tests, 27 arbiter tests, and the targeted handler-publisher descriptor regression passed (53/53 total). Same-type runtime support remains open until a reviewed integration supplies the semantic key. |
+| EXP-063 | `swiftui-scene-disconnect-invalidation-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Closed state/handler divergence after scene teardown. The handler already stops and removes the disconnected scene's stack; the arbiter now silently invalidates only matching SwiftUI state, fences stale callbacks until an explicit platform remount, and retains keyed generation history so generation N cannot recreate a deleted entry. A fresh N+1 mount emits start, never replacement. Concurrent A/B transitions, a B-owned state speculatively targeting disconnected A, idempotent teardown, and exact one-stop/one-restart handler behavior pass. Build-for-testing has zero diagnostics; state 27/27, arbiter 29/29, and two targeted handler tests pass (58/58 combined). Reused-reader re-registration and unchanged-attachment delivery remain open before keyed runtime wiring. |
+| EXP-064 | `swiftui-retained-reader-remount-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Added retained-reader update re-registration and an explicit reader-mount path after silent scene teardown. The first green revision passed state 30/30, arbiter 30/30, and one handler regression (61/61), the full RUM plan 1,096/1,096, and lint. Review then found that deferred reconnect lost remount authorization and that repeated unchanged `updateUIView` delivery could restart a normally disappeared view. This records the integration seam and rejected first draft, not a completed support claim. |
+| EXP-065 | `swiftui-retained-reader-reconnect-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Hardened disconnect/reconnect and observer isolation after the `EXP-064` review. Ordinary unchanged updates are deduplicated; stale initial-trait input cannot resurrect disconnected state; inactive reconnect waits for semantic appearance; cancelled remount and reader-mount/disappear races rearm correctly; source-A disconnect preserves a pending migration to B; and detached or re-registered A observers cannot bypass B's coordinator gate. Final build-for-testing has zero diagnostics; state 34/34, arbiter 38/38, and two handler tests pass (74/74); the full RUM plan passes 1,108/1,108 and lint is clean across 713 source and 699 test files. Final source review found no P0/P1 issue. Live retained-reader reconnect remains open. |
+| EXP-066 | `native-retained-reader-control-20260913-063151` | `b1b2313a-9cd7-4cfa-90f8-272e2ae07de9` | iPadOS 27 | Probe-only retained-reader fault-injection pass. While scene B remained foreground-active and present in `connectedScenes`, the probe posted `UIScene.didDisconnectNotification`, then updated the same retained representable witness (`0x0000000113c51880`, generation 0→1). The pre-injection B Detail occurrence `992f0e7e-6b86-4bf2-be73-e403056363f4` stopped exactly once and the post-remount B Detail occurrence `4e029fe4-338e-496f-b0ea-b9029459180a` started exactly once; the post-remount action/resource used the new UUID and scene A was untouched. Backend contains exactly six views, 13 actions, 13 resources, two long tasks, one vital, one session, and zero errors/crashes. This validates the live handler/arbiter/update integration under explicit fault injection; it is not evidence of an OS scene disconnect/reconnect or a user navigation to another Detail. |
+| EXP-067 | `split-navigation-source-audit-20260913` | No backend session; source inspection only | Xcode 27 / iOS 27 target | Split/adaptive navigation has no semantic model beyond one callback-ordered stack per scene. UIKit can briefly restart a still-visible Primary when Secondary₁ disappears before Secondary₂ appears, and an app-subclassed split container passes the default predicate. SwiftUI skips its internal split container, same-controller Detail₁→Detail₂ can expose no automatic lifecycle occurrence, and explicit tracking has no public occurrence key. Actions identify the scene but not a pane. These are source-backed risks except the exact runtime callback/UUID sequences, which remain to be probed. |
+| EXP-068 | `native-split-route-owned-20260913-064110` | `7d622e5f-6489-4d26-a04b-9f7809a5f070` | iPadOS 27 | Regular-width route-owned `NavigationSplitView` reproduced the navigation-occurrence failure. Detail(1) started `f83c68df-14f7-45df-9adb-a98ab833e76c`; committing same-type Detail(2) retained the adjacent platform witness `0x000000010a8ccc40`, emitted no stop or fresh view, and put Detail(2)'s action/resource on the Detail(1) UUID. A different-type Placeholder then correctly started `9717a9c1-fc89-40d1-bd9a-5918537df070` with exact marker attribution and no intermediate Sidebar/Home. Backend contains launch plus only the collapsed Detail and Placeholder, three actions, three resources, and zero SDK/probe errors. This is a runtime/payload/backend failure against the required one-UUID-per-committed-path-occurrence contract. |
+| EXP-069 | `native-split-automatic-baseline-20260913-064445` | `27a59309-7862-4025-b028-94d6004487db` | iPadOS 27 | Regular-width automatic `NavigationSplitView` failed semantic creation and attribution. It emitted launch, a setup-only fallback, a transient host, and one final hosting-controller view—no Detail(1), Detail(2), or Placeholder view. Detail(1)'s marker used launch; Detail(2) and Placeholder markers both used the final host. Backend contains four non-semantic views, three actions, three resources, and zero SDK/probe errors. Unlike the route-owned baseline, even the different-type selection was invisible, confirming that scene-correct controller discovery is not a navigation-occurrence model. |
+| EXP-070 | `native-split-route-id-control-20260913-064735` | `611c8142-3efc-468a-b044-93fed25864f3` | iPadOS 27 | Probe-only `.id(selection)` control passed in regular-width `NavigationSplitView`: launch → Detail₁ → Detail₂ → Placeholder used four distinct UUIDs, no Sidebar/Home interval, and all three immediate action/resource pairs used their matching occurrence. The adjacent content witness was ultimately replaced for Detail₂, confirming that `.id` changes application state lifetime. This isolates explicit occurrence identity as the missing input but is not a production/customer fix. Backend also contains one long task, one vital, one session, and zero relevant warnings/errors/faults/crashes. |
+| EXP-071 | `native-uikit-split-stock-20260913-065700` | `0a320a0f-f610-450b-af79-3c47fb3c68b6` | iPadOS 27 | Isolated stock `UISplitViewController` tracking reproduced a manufactured occurrence. The platform kept the same visible Primary controller and sent it no second appearance callback, but replacing Secondary₁ with a fresh same-class Secondary₂ emitted launch → Primary₁ → Secondary₁ → Primary₂ → Secondary₂. The duplicate Primary had no marker; each genuinely materialized child action/resource otherwise used its exact view. SwiftUI automatic tracking was disabled, so the extra UUID comes from `RUMViewsHandler` restarting its lower stack item during Secondary₁ removal. Backend has five views instead of four, three actions, three resources, and no relevant warnings/errors/crash. |
+| EXP-072 | `native-uikit-split-subclass-20260913-070100` | `ea8c619c-685b-4b32-93d4-286c820352c8` | iPadOS 27 | Application-subclassed `UISplitViewController` reproduced two independent false occurrences. Because the default predicate filters by framework bundle rather than container inheritance, the subclass became a ~1.3 ms startup RUM view. The same visible Primary then restarted for ~1–5 ms between Secondary₁ and Secondary₂ despite receiving no lifecycle callback. The backend chain has six views instead of four: launch → container → Primary₁ → Secondary₁ → Primary₂ → Secondary₂. Neither spurious view has markers; all three real child marker pairs are exact. SwiftUI automatic tracking was disabled and no relevant SDK/probe error or crash occurred. |
+| EXP-073 | `native-uikit-split-navigation-20260913-071730` | `1a36a993-b62c-40b9-9124-6942529bd7b1` | iPadOS 27 | A stable secondary `UINavigationController` proves the defect also affects ordinary push/pop within a split column. The same Secondary₁ controller appeared once, pushed fresh Secondary₂, then appeared a second time after pop. RUM correctly allocated a fresh UUID for returned Secondary₁, but inserted a false Primary occurrence on both push and pop despite Primary remaining visible and receiving no lifecycle callback. The backend chain has seven views instead of five: launch → Primary₁ → Secondary₁ → false Primary₂ → Secondary₂ → false Primary₃ → returned Secondary₁. All four real child marker pairs use the intended occurrence; there are no relevant SDK/probe errors or crashes. This requires same-column transition coalescing while preserving one fresh RUM occurrence for the returned path item. |
+| EXP-074 | `native-uikit-split-fixed-20260913-074555` | `90394971-fa37-4c64-8604-6f46a26ab9d0` | iPadOS 27 | The iOS 27 multi-scene UIKit split-column handoff candidate fixes the stock root-replacement failure. The backend now contains exactly launch → Primary → Secondary₁ → Secondary₂, with no restarted Primary; all three action/resource marker pairs use their materialized child view. The run has four views, three actions, three resources, zero errors/crashes, and accepted uploads. The implementation is double-gated to iOS 27 and declared multi-scene applications, uses public UIKit ancestry to identify a split column, and does not change the separate subclass-container predicate behavior. |
+| EXP-075 | `native-uikit-split-navigation-fixed-20260913-074847` | `8d9ee17a-e7bd-4b0d-a024-23bb3b5dc2cd` | iPadOS 27 | The same candidate fixes nested secondary push/pop. The backend path is exactly launch → Primary → Secondary₁(first) → Secondary₂ → Secondary₁(returned), with no Primary interval. Returned Secondary₁ reused controller `0x00000001031b1400` but received fresh RUM UUID `bfc94bbd-fbd8-446f-9c00-3bbbc83e88a2`, preserving navigation-occurrence semantics. All four marker pairs are exact; totals are five views, four actions, four resources, and zero errors/crashes, with accepted uploads. |
+| EXP-076 | `split-no-selection-resize-preflight-20260913` | No backend session; source/tooling preflight only | Xcode 27 / iOS 27 target | Blocked before uninstall or launch, so this makes no runtime claim. The route-owned split probe hardcodes Detail₁ and automatically advances to Detail₂/Placeholder; no environment input reaches its existing nil branch. The harness also has no deterministic scene-width control, and Xcode device synthesis exposes orientation rather than a reliable regular → compact → regular window resize. Add an initial-nil/sequence-disable toggle plus a system-acknowledged width transition before running this control. |
+| EXP-077 | `uikit-split-lifecycle-review-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Post-run review found that a scene-only pending lookup let an unrelated UIKit appearance expose a sibling interval, and that app/scene background flushed removal while active before suspension. The corrected state machine handles an unrelated appearance directly and silently removes the now-covered pending item, suspends before lifecycle flush, and retains the disappearance timestamp through background/disconnect. Build-for-testing passed with zero diagnostics; all 57 `RUMViewsHandlerTests` and both multi-scene gate `RUMInstrumentationTests` pass. The two native controls still require rerun on this hardened revision. |
+| EXP-078 | `native-uikit-split-hardened-20260913-081410` | `14a847cf-0609-475f-b023-87f29ebc3b72` | iPadOS 27 | Stock root replacement passed with the exact four-view chain and marker ownership, but the source/build timestamp raced a later no-op conditional cleanup. This valid behavioral pass is retained but superseded for final-revision evidence by `EXP-080`. An earlier install attempt used an expired interaction session and was rejected before launch, so it produced no telemetry and is excluded. |
+| EXP-079 | `native-uikit-split-navigation-hardened-20260913-082047` | `78a9c268-7a84-47b0-a38b-8dc791e2174b` | iPadOS 27 | Authoritative nested push/pop rerun on the hardened candidate passed. The exact backend chain is launch → Primary → Secondary₁(first) → Secondary₂ → Secondary₁(returned), with no Primary interval. Returned Secondary₁ reused controller `0x00000001059b1400` but received fresh RUM UUID `2086f533-f0ab-4928-977e-f2fc34aa74a4`. Backend totals are five views, four actions, four resources, and zero errors/crashes; both uploads returned 202. |
+| EXP-080 | `native-uikit-split-current-tree-20260913-082619` | `1771ebb0-adb5-4b5f-8e58-c3ac2d5e425b` | iPadOS 27 | Final post-rebuild stock root-replacement control passed on the exact current tree. The backend chain is launch → Primary → Secondary₁ → Secondary₂, with no restarted Primary. All three action/resource pairs use their exact view; totals are four views, three actions, three resources, and zero errors/crashes. Both uploads returned 202. Together with `EXP-079`, this is the authoritative native pair for `EXP-077`. |
+| EXP-081 | `native-uikit-split-interactive-cancel-lldb-20260913-084206` plus four edge-swipe setup runs | `c2bb3b70-3044-4e6d-9015-51ee0a96f799`, `5a2a2d8c-0ad6-4394-88cc-29c15f8a29c6`, `5926a383-b5ec-4fb4-bda8-f31b91f5be19`, `4d392878-6b20-42dd-b679-1230b860c3c6` | iPadOS 27 | Tooling/harness discrimination only. Detached install-and-run could pass environment but had no LLDB process; RunProject could debug but not pass environment. The accepted straight swipe grammar could commit a pop but could not reverse it, while short drags at the split edge resized the Primary divider. These attempts make no cancelled-navigation claim and motivated the deterministic public-UIKit transition control. |
+| EXP-082 | `native-uikit-split-edge-commit-20260913-090650` | `312715b2-d818-402f-b468-4aff5d7b01e8` | iPadOS 27 | A real long edge swipe committed the nested pop. The exact backend path is launch → Primary → Secondary₁(first) → Secondary₂ → fresh returned Secondary₁, with no false Primary. The same controller received the two Secondary₁ appearances but distinct RUM UUIDs. All four marker pairs are exact; totals are five views, four actions, four resources, and zero errors/crashes. |
+| EXP-083 | `native-uikit-split-deterministic-cancel-20260913-092850` | `eb7c9b25-0f5c-443e-9a3a-c118ed608ace` | iPadOS 27 | A real `UIPercentDrivenInteractiveTransition` advanced a nested pop to 35 percent and cancelled it. UIKit emitted speculative S2-to-S1 lifecycle followed by reversal and a second S2 appearance, but RUM retained the original S2 UUID: launch → Primary → S1 → S2 only. No returned S1, replacement S2, or false Primary was created. Four action/resource pairs were exact; zero errors/crashes. |
+| EXP-084 | `native-uikit-split-deterministic-finish-20260913-093115` | `934eadc2-2712-4659-b156-f717f0504de3` | iPadOS 27 | The same 35-percent public-UIKit transition finished instead. RUM emitted launch → Primary → S1(first) → S2 → fresh S1(returned), with no Primary interval. All four marker pairs were exact; totals were five views, four actions, four resources, and zero errors/crashes. Together with `EXP-083`, this validates cancellation-versus-commit semantics on the current candidate. |
+| EXP-085 | `swiftui-navigation-public-seam-audit-20260913` | No backend session; Xcode 27 interface/source audit | Xcode 27 / iOS 27 target | No supported transparent SwiftUI navigation hook exposes both committed route identity and an early semantic destination boundary. `NavigationStack` exposes customer-owned paths and typed builders; type-erased `NavigationPath` cannot enumerate its elements; `UIHostingSceneDelegate` is only a root/lifecycle bridge; public `NavigationTransition` supplies no route metadata. The smallest viable experiment is a route-owned occurrence key delivered to the existing internal keyed reader/state path, with `.id` restricted to the hidden SDK reader only as a fallback control. Shipping requires RFC/API review and explicit automatic/manual mixing rules. |
+| EXP-086 | `native-uikit-split-concurrent-scenes-20260913-093545` | `ce5c7cc2-53e7-40ba-a127-f1887269c3da` | iPadOS 27 | Two scene-owned split sequences overlapped: B's S2 push began 0.714 ms after A's pop started. B completed push/pop with a fresh returned-S1 UUID and no false Primary; A's pop stalled after `willMove(nil)` once B became fullscreen, with no activation-state callback captured, so that stall is a topology observation rather than an SDK verdict. A's S2 manual lifecycle marker was attributed to B S1 because it called source-less public `addAction`/`startResource` after B became representative. Its diagnostic scene attributes are not SDK provenance; this is the approved last-interacted fallback, not a scene-routing regression. Backend: eight views, seven actions, seven resources, zero errors/crashes. |
+| EXP-087 | `e3c21695-d4a3-4a05-a606-7f192836e577` | `d2f7b981-9877-47e9-9147-ea6b01712c6a` | iPadOS 27 | The new initial-nil/sequence-disable split control passed its empty-detail baseline: the UI showed only Selections and backend intake contained no Detail occurrence, error, or crash. Deterministic regular → compact → regular remains blocked because both `devicectl device appResize start` and `info appResize` return CoreDevice error 1001: this simulator lacks `com.apple.coredevice.feature.resizableappmanagement`. No adaptive-transition claim is attached. |
+| EXP-088 | `manual-rum-handoff-targeting-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Public manual `addAction`/`startAction`/`stopAction` and all three `startResource` overloads now prefer the exact RUM view in a trustworthy execution-local handoff, then its scene, then the unchanged process representative. Resource metrics/stops/errors deliberately retain resource-key owner routing. `MonitorTests` pass 15/15, the complete RUM plan passes 1,122/1,122, build-for-testing has zero diagnostics, and focused source/test lint has zero violations. A source-less lifecycle call such as EXP-086 remains representative by design. |
 
 ## Experiment log
 
@@ -1031,9 +1114,1092 @@ the standalone iOS 27 `WindowGroup` probe.
 Conclusion: the failure is an observation and semantic-identity boundary, not a
 missing scene token or a one-segment reflection update. Do not use navigation
 titles as customer view names, replace the old path with `elements.body.viewType`,
-or add another controller appearance swizzle. The next distinct path is a reviewed
-explicit SwiftUI root/navigation integration that knows application semantics
-before customer lifecycle work.
+or add another controller appearance swizzle. The next distinct path is a
+reviewed semantic root/navigation integration for automatic tracking that knows
+application semantics before customer lifecycle work.
+
+### 2026-09-12 — Explicit SwiftUI early-mount candidate
+
+The native probe gained an `automatic`/`manual` switch. Manual mode disables
+`DefaultSwiftUIRUMViewsPredicate` and applies the existing public
+`.trackRUMView` modifier to semantic Home and Detail roots. It also has a
+`tab-preload` stress layout with an explicitly tracked but initially unselected
+tab. These controls isolate explicit tracking from the still-failing automatic
+tracker without changing the public SDK API.
+
+Two unchanged-SDK controls first disproved modifier placement as a solution:
+
+- In `EXP-030`, placing `.trackRUMView` inside each screen left Detail
+  `.onAppear` and immediate `.task` work on Home. Only delayed Detail work used
+  the Detail view.
+- In `EXP-031`, wrapping the fully constructed screen made initial Home worse:
+  its early work used `ApplicationLaunch`, while Detail's early work still used
+  Home. Moving the same modifier around the view tree therefore does not create
+  a reliable ordering boundary.
+
+The candidate passes the scene identifier already bridged from the hosting
+`UIWindowScene` into the hidden `UIViewRepresentable`. On iOS 27 only, creation
+of that platform reader marks the explicitly tracked RUM state as mounted and
+enqueues the semantic view start before later SwiftUI lifecycle callbacks. The
+existing attachment callbacks still correct a changed scene, and the ordinary
+`onAppear`/`onDisappear` path remains idempotent. The early behavior is disabled
+on iOS 15-26, on visionOS, and for applications that do not declare multiple
+scenes. This is an internal implementation change to `.trackRUMView`, not a new
+public API and not a change to automatic view discovery.
+
+`EXP-032` was the first single-window proof. Although the Detail lifecycle log
+preceded its mapped view payload by about 2.8 ms, source ordering plus the exact
+final attribution indicate that the start command reached RUM's serial queue
+before the customer work. Queue-entry instrumentation was not captured. All 12
+lifecycle markers resolved to the exact Home or Detail UUID, with no fallback.
+
+`EXP-033` repeated the complete A/B flow three times after clean uninstall. Each
+run emitted exactly four semantic views plus `ApplicationLaunch` and exactly 24
+lifecycle markers. Across the 72 action/resource records, every combination of
+scene A/B, Home/Detail, on-appear/immediate/delayed, and action/resource appeared
+once on its intended UUID. Device mapper output and backend aggregation agree;
+there were no duplicate or fallback semantic views and no SwiftUI warning,
+crash, or hang. All three exercised behavior-equivalent candidate code; the third
+alone exercised the final iOS 27 availability gate.
+
+`EXP-038` then repeated that final-gated revision twice after clean uninstall.
+Sessions `0fa4998d-4c39-4674-ac70-8dc91702fac9` and
+`683e6b94-efbc-4ff3-a865-8ee46915f9d3` each contained exactly five backend views,
+12 lifecycle actions, and 12 lifecycle resources. Every A/B Home/Detail phase
+appeared once on its exact semantic UUID, no marker used `ApplicationLaunch`, and
+no fallback or duplicate semantic view appeared. Both runs ended with scene A and
+B concurrently on Detail and remained running without an SDK/SwiftUI warning,
+crash, or hang. Together with the third `EXP-033` run, this is the required three
+clean repetitions of the final availability-gated implementation: 72/72 exact
+markers. Across all five behavior-equivalent A/B candidate runs, 120/120 markers
+were exact.
+
+The construction-versus-appearance risk was then tested rather than assumed:
+
+- `EXP-034` left a registered Detail destination dormant. No Detail RUM view or
+  lifecycle marker existed locally or in backend intake.
+- `EXP-035` performed three complete push/pop cycles. RUM correctly emitted
+  seven distinct occurrences in the exact navigation path
+  `Home → Detail → Home → Detail → Home → Detail → Home`, with strict
+  stop-before-start ordering. SwiftUI retained the Home view's state, but that
+  does not collapse the RUM history: a RUM view represents each navigation
+  occurrence, not the lifetime of a platform object. Each return created a new
+  Home UUID rather than resuming the prior Home occurrence.
+- `EXP-036` left a second tab unselected. Neither its content `onAppear` nor a
+  `ProbeOffscreenTabView` RUM event occurred. This particular `TabView` did not
+  preload the platform reader, so the result rules out a false view in that case
+  only; it is not a documented SwiftUI construction guarantee.
+- `EXP-039` put an oversized explicitly tracked candidate before Home in
+  `ViewThatFits`. SwiftUI rejected it without calling either its diagnostic
+  platform reader's `makeUIView` or its `onAppear`; no candidate RUM view reached
+  local mapping or backend intake. The positive-control Home occurrence and all
+  six of its markers were exact. Because no platform object was constructed,
+  this result is deliberately classified as inconclusive and the probe-only mode
+  was removed.
+
+`EXP-037` exposed a separate navigation-lifecycle defect. A short edge swipe
+cancelled visually and left Detail on screen, but explicit tracking stopped
+Detail, emitted a false Home for about half a second, then started a replacement
+Detail. The candidate produced a 546 ms false Home; a control build with early
+mount disabled produced the same sequence with a 506 ms false Home. Both reached
+backend intake. No lifecycle action or resource was emitted during either false
+interval. The A/B comparison proves this is existing SwiftUI
+`onDisappear`/`onAppear` transition behavior, not a regression introduced by the
+early-mount candidate. It remains a P1 explicit-navigation gap because RUM should
+represent the completed navigation path, not an interactive transition that was
+cancelled.
+
+`EXP-040` then validated modal occurrence semantics with the retained harness.
+The exact client and backend path was `Home₁ → Sheet → Home₂`; Home₂ received a
+new UUID even though SwiftUI retained Home's platform state. The present tap used
+Home₁, the dismiss tap and all six Sheet lifecycle markers used Sheet, and a
+post-dismiss manual action/resource used Home₂. Stop/start ordering was strict,
+with no extra semantic view or fallback attribution.
+
+`EXP-041` closed scene B 25 ms after its root task began. B still produced one
+semantic Home occurrence and all three action/resource lifecycle pairs stayed on
+that B UUID, including completions after `dismissWindow`; B then stopped once.
+Closing the frontmost fullscreen window returned the simulator to SpringBoard,
+made A inactive, and required explicit foreground activation. The replacement A
+UUID is therefore consistent with a real background/foreground lifecycle rather
+than evidence that B teardown mutated an active A branch. Repeat A-continuity only
+in a stable simultaneous-window layout where A demonstrably stays foreground.
+
+`EXP-042` intentionally terminated the process while A and B both had correctly
+isolated Home occurrences, then relaunched without uninstalling. iPadOS restored
+only B, with the exact same native scene session ID but a new RUM session and new
+Home occurrence. All restored-B lifecycle work and a manual marker used that new
+B UUID. This validates one restored scene without cross-attribution, but the
+platform did not reconnect A, so it cannot close the concurrent-restoration gate.
+
+`EXP-043` instrumented the retained Home and Detail subtrees with a probe-only
+responder-chain reader. During the short cancelled edge swipe, speculative Home
+`onAppear` synchronously resolved `NavigationStackHostingController<AnyView>` and
+its public UIKit transition coordinator. The coordinator was initially
+interactive, but cancellation was still false at that callback and became known
+only at completion. When SwiftUI later reversed Home with `onDisappear`, the
+coordinator was already absent; Detail supplied no corresponding lifecycle
+callback. Backend intake retained the exact false path: initial Home, initial
+Detail, a 0.549-second Home, a replacement Detail, and the later correctly
+completed Home, plus `ApplicationLaunch`. This turns the cancellation experiment
+from a theoretical UIKit option into a qualified iOS 27 implementation boundary:
+defer scene-local explicit lifecycle mutation until coordinator completion,
+discard it on cancellation, and commit it on success. It does not establish a
+general SwiftUI guarantee outside the exercised native `NavigationStack` shape.
+
+`EXP-044` applied the scene-local completion gate to the same native path. The
+first launch was deliberately invalidated: `WindowGroup(for:)` restored a
+serialized `ProbeWindow` carrying the prior run identifier even though the
+process environment had changed. After stopping and uninstalling only the probe,
+the clean run used native scene `1C546E56-EF9B-467A-8C1D-E3EC03D7453E`.
+Home₁ `a81641e6…` stopped for a normal push and Detail `0b3bebb8…` started. A
+short edge swipe produced the same speculative Home `onAppear` and reversal
+diagnostics as the baseline, but no RUM view start/stop occurred; Detail remained
+visible and active. A subsequent completed interactive swipe stopped Detail and
+created Home₂ `1a995513…`. A manual post-pop action and resource used Home₂.
+Backend aggregation independently reports exactly four views including
+`ApplicationLaunch`, three lifecycle actions and resources on Home₁, three on
+Detail, and the one manual action/resource on Home₂. No false Home or replacement
+Detail exists in the 22-event session, and no error, crash, warning, or rejected
+upload was observed. This validates cancellation and committed-return occurrence
+semantics together; it does not yet cover a second scene transitioning at the
+same time.
+
+`EXP-045` reviewed the implementation against lifecycle shapes that the retained
+Home run did not exercise. The first draft asked only already attached scene
+observers for a transition coordinator. A newly recreated destination therefore
+had no responder ancestry during `makeUIView` and could publish immediately. It
+also stored one pending transaction per scene, allowing an unrelated sheet, tab,
+or split subtree to be discarded with a cancelled pop. The corrected provider
+uses the tracked state's own controller and ancestors when attached. Before an
+observer attaches, it searches public controller hierarchy only in the
+`UIWindowScene` whose persistent identifier matches the intent, and marks that
+membership provisional. Trait updates and appearance callbacks do not clear the
+provisional flag; real responder attachment either confirms the same coordinator
+or commits that independent lifecycle outside the pop. A trustworthy attachment
+to another scene overrides the earlier trait and produces only the corrected
+scene occurrence. Pending transactions are keyed by scene and ephemeral UIKit
+coordinator identity, so independent coordinators in one scene and concurrent
+scenes resolve separately.
+
+The 19 focused arbiter/provider tests cover cancelled appearance and mount,
+reversal before completion, completed stop-before-start, repeated returns of the
+same platform identity, recreated-reader fallback, unrelated attached and
+initially unattached state, same-scene independent coordinators, two-scene
+isolation, scene correction, registration failure, duplicate callbacks,
+disconnect, and stale completion. An independent final read-only audit found the
+bounded retained/recreated `NavigationStack` gate clear after those corrections.
+This is source and focused-test evidence, not a second runtime run: `EXP-044`
+remains the native/backend proof. A provisional view that never attaches can
+still be committed when an unrelated transition succeeds, and a representable
+that survives disconnect/reconnect may have to use the less precise scene-root
+fallback because registration occurs in `makeUIView`. Keep both cases in the
+aborted-container and restoration matrix.
+
+`EXP-046` first tested a semantic path boundary without adding SDK public API.
+The probe disabled hosting-controller discovery and per-screen modifiers,
+observed its authoritative typed `[ProbeRoute]` binding, and recreated a hidden
+tracker for each path mutation. In one scene, the programmatic push started
+Detail before its lifecycle work. A short interactive edge drag left Detail
+visible and produced no path commit or RUM mutation. A completed drag committed
+occurrence 2 and created Home₂, distinct from Home₁; the post-pop marker pair used
+Home₂. This established that the typed binding exposes the right commit and
+cancellation semantics for the exercised `NavigationStack`, but did not prove
+where the tracker must be installed.
+
+The first launch for this experiment, run suffix `…-0124`, is retained as a
+harness lesson. Its initial Home/Detail ordering and backend attribution were
+valid, but the Xcode launch session expired before gesture interaction. A later
+device-only activation started a new process without the requested environment
+and restored the serialized probe window. It was excluded from the cancellation
+claim. The clean run uninstalled the probe and kept workspace launch plus all
+gestures in one interaction session.
+
+`EXP-047` through `EXP-049` then rejected three root-only placements in two
+windows. A background sibling was created after B's content lifecycle. Wrapping
+the entire stack remained too late and additionally rebuilt the stack whenever
+the tracker identity changed, replaying retained Home lifecycle work after Detail
+started. Keeping that tracker as a stable first child removed the replay but did
+not fix B's initial ordering. In all three shapes, B Home `.onAppear` and its
+immediate task still used A Detail. These runs are important negative evidence:
+the bound path is an authoritative commit signal, but a detached root tracker is
+not an authoritative semantic view-creation boundary.
+
+`EXP-050` moved the existing explicit modifier directly onto the Home and typed
+Detail content builders while retaining the bound path for commit diagnostics.
+That route-owned placement passed in two windows. The backend session contains
+only `ApplicationLaunch` plus A Home, A Detail, B Home, and B Detail. Each of the
+12 lifecycle actions and 12 resources used its exact source view, including B's
+first synchronous work, with no lifecycle replay or fallback. This is the first
+concurrent proof of the minimum integration shape, not a transparent automatic
+tracking fix or a reviewed public API.
+
+`EXP-051` repeated the committed-occurrence contract on that passing shape. A
+cancelled interactive pop emitted no new view. A completed pop stopped Detail and
+created a fresh Home₂ UUID, distinct from Home₁, even though SwiftUI retained the
+Home platform state. The final marker action/resource both used Home₂. This is
+the required semantic result: `Home → Detail → Home` is three RUM views because
+RUM models the path the user took, not platform-object lifetime. The probe had
+also copied its diagnostic path counter into view attributes. On retained Home₂
+that attribute remained `1` although the path log correctly reported occurrence
+`2`; SwiftUI had retained the earlier modifier value. The UUID sequence and
+event attribution were correct, but the stale diagnostic was removed so future
+runs cannot mistake it for the RUM occurrence identity.
+
+The passing boundary still does not cover `NavigationLink(destination:)`,
+type-erased `NavigationPath` inspection, `NavigationSplitView`, path replacement,
+restoration, or a production mixing contract with automatic discovery. Those are
+separate gates rather than reasons to weaken the occurrence rule.
+
+`EXP-052` separated a path mutation from an occurrence. One task wrote
+`[.detail]` and immediately wrote `[]`. The binding observed both mutations, but
+SwiftUI coalesced them without a Detail lifecycle callback, Detail RUM payload,
+or second Home start. The post-abort action/resource used the original Home UUID.
+Backend intake contains exactly ApplicationLaunch plus that one Home, four
+actions, four resources, zero Detail events, and zero errors/crashes. A route
+binding can tell the integration what was requested and, for the exercised
+interactive pop, when UIKit committed it; arbitrary writes are not independently
+RUM views. The semantic boundary remains the route content that actually
+materializes. Future probe logs therefore call these writes mutations, and RUM
+UUIDs plus stop/start order remain the occurrence evidence.
+
+The first materialized-replacement run, `EXP-053`, was invalid by construction.
+The new Alternate route was omitted from navigation-path mode's explicit-tracking
+allow-list. Its missing RUM view and rejected delayed work therefore say nothing
+about SDK support. This was caught before accepting the apparent ordering failure;
+the run remains in the ledger because repeating or citing it would produce the
+wrong conclusion.
+
+`EXP-054` reran the same flow after tracking Alternate at its route builder.
+Detail remained visible for one second before the app replaced `[.detail]` with
+`[.alternate]`. The exact backend path is ApplicationLaunch, Home, Detail, then
+Alternate—one UUID each, no intermediate/restarted Home, and no duplicate. Home,
+Detail, and Alternate each emitted three lifecycle actions and resources on their
+own view. Alternate started 0.614 ms before its `.onAppear`; its immediate and
+delayed work stayed on that UUID. This closes the single-scene materialized
+replacement row for the probe boundary while leaving concurrent replacement and
+production API/mixing behavior open.
+
+`EXP-055` checked the remaining documented scene-root API in Xcode 27.
+`UIHostingSceneDelegate` is available from iOS 26 and lets an app-owned scene
+delegate publish a static SwiftUI `rootScene`, either through scene configuration
+or the new activation requests. It can receive normal `UISceneDelegate` lifecycle
+callbacks, but the protocol contains no current navigation route or destination
+builder hook. Adopting it also changes how the customer declares/activates scenes;
+the SDK cannot transparently retrofit it around an existing SwiftUI `App` and
+`WindowGroup`. It is worth retaining as an explicit root/lifecycle integration
+option, not as an answer to semantic view creation. No runtime claim was made.
+
+`EXP-056` repeated the materialized Detail-to-Alternate replacement while opening
+scene B. The exact backend order was ApplicationLaunch, A Home, A Detail,
+A Alternate, B Home, B Detail, then B Alternate. These are seven distinct view
+UUIDs—one occurrence for each route in each scene—with no intermediate Home,
+restarted route, or lifecycle replay. Every on-appear/immediate marker and all
+three delayed markers from scene B used the correct route view. Scene A's delayed
+Alternate marker executed after B Home became the process representative. That
+manual `.task` call carried probe diagnostics saying A/Alternate, but it had no
+SDK view or scene target and was outside the UI-event handoff, so its action and
+resource used B Home under the approved source-less compatibility rule. A
+Alternate remained active at that time, cleanly separating the causal-attribution
+limit from view creation. No automatic tap was expected because autorun mutated
+the bound path programmatically; all 18 actions were custom lifecycle markers.
+The backend indexed 47 documents: 7 views, 18 actions, 18 resources, 2 long tasks,
+and 1 vital, with zero errors or crashes. Upload requests
+`F4388197-838B-4982-9BE1-D3E1D57FEDDD`,
+`DACBC0DE-453F-4ED9-955D-D86F0C6961D6`, and
+`E92A018D-4C5A-4FCD-96E5-3DB4EEB114D1` all returned 202. A later capture-only
+interaction session found the app in `NotRun` state with an empty log; retain its
+artifacts only as provenance, not live UI evidence.
+
+`EXP-057` changed only the value of the top route while keeping its destination
+type and RUM name stable: `[.detail(1)]` became `[.detail(2)]`. The visible UI and
+accessibility hierarchy settled on `scene-A: Detail 2`, but the probe logged
+`destination reader reused ... from=detail-1 to=detail-2` rather than creating a
+new reader. RUM kept Detail₁ `446de300-cad6-42c3-966d-42856dfb399c` active with
+its original `screen=detail-1` attributes. No stop/start, Detail₂ UUID,
+`.onAppear`, immediate task, or delayed task marker followed, even after more than
+one minute. This is a semantic failure under the navigation-occurrence contract:
+the route committed even though SwiftUI retained the platform and modifier state.
+The backend indexed 18 documents: 3 views, 6 actions, 6 resources, 1 long task,
+1 vital, and 1 session, with zero errors or crashes. Uploads
+`646D9D42-0FF1-4422-83A6-BA77BA920ABA` and
+`F6A2F562-50E2-4284-90ED-F0B4E7D0A297` returned 202. The build log is
+`BuildProject-Log-20260913-024952.txt`; the captured running hierarchy visibly
+shows Detail 2. Next test an explicit probe-only route identity. If that passes,
+it proves the missing input without making `.id` itself the customer API.
+
+`EXP-058` supplied that identity only as a probe control by applying `.id(route)`
+around the tracked destination. The authoritative run emitted ApplicationLaunch
+`59e58db7-ba39-4dea-8b0a-cea4a3ee4e05`, Home
+`fe23e592-96ea-45c4-9a01-96e41a896fff`, Detail₁
+`a7ffe4c7-2daf-447a-a133-e5d411cce9f2`, and Detail₂
+`62d0e6c9-566f-4137-89af-d8c4f31efc8b`, in that order. Both Detail views use the
+same `ProbeDetailView` RUM name and SwiftUI type. There was no intermediate Home,
+and each Home/Detail₁/Detail₂ on-appear, immediate, and delayed action/resource
+pair used its exact UUID. A Detail₂ reader was created before its view started.
+An additional old-reader update logged detail-1 to detail-2 just after the start;
+runtime evidence alone cannot identify that reader, but it did not alter the
+semantic result. Backend contains 25 documents: 4 views, 9 actions, 9 resources,
+1 long task, 1 vital, and 1 session, with zero errors or crashes. Uploads
+`7626268F-D993-47CD-AF42-F6AB3C683741` and
+`8D3C83C8-EFAE-43B1-B4E4-668D758440E4` returned 202. The captured running UI
+shows Detail 2. The earlier `…-025856` launch/session
+`c427051d-a3c9-4538-8b18-44a9b4820964` reached Detail₂ but was interrupted before
+delegated capture and backend verification; it was uninstalled and excluded from
+the PASS. `.id(route)` validates the required input but is not a suitable public
+RUM contract because it also changes the customer's content-state lifetime. A
+reviewed integration must restart only RUM occurrence state when the token changes.
+
+`EXP-059` repeated the `.id(route)` control in two windows. The exact client
+occurrences were launch `90ad3649-8ff0-4b50-a465-16db81059dda`; A Home
+`678ba34b-65f5-4929-b20f-d88d4b78e04d`, Detail₁
+`81f82227-ae86-4dfc-ba97-f1e3d03fb9fa`, Detail₂
+`c5a63750-63df-42b4-941b-4e5a7c3d0475`; and B Home
+`49c08c73-0628-4130-a0ee-4fff748e421c`, Detail₁
+`52e1db36-c39c-41ea-9793-c0de6dae35d2`, Detail₂
+`401ad07f-94cc-4715-ab05-cfae427f626a`. Backend chronology matches those two
+overlapping branches. There was no intermediate/restarted Home, duplicate, or
+replay. All on-appear/immediate markers and every B delayed marker used their
+exact occurrence. A Detail₂'s delayed source-less action
+`0d96753f-dd81-4d0d-b9d4-6ddfaf57c2d2` and resource
+`bc1f0ba0-f03d-48bc-8bc9-3bb6d61d740f` executed after B Home became process
+representative and used B Home, matching the decided fallback rather than
+invalidating view creation. Backend indexed 47 documents: 7 views, 18 actions,
+18 resources, 2 long tasks, 1 vital, and 1 session; errors and crashes were zero.
+Uploads `E9CC88AE-C7CA-42B2-91AC-F19EBCE49031`,
+`DFBEF37C-105B-43D1-9F73-129B8EB12124`, and
+`D4B2D838-1D7B-4808-8A74-454DC206E1CF` returned 202. Both captured windows show
+Detail 2. The preceding `…-031603` session
+`fa9e52ab-5b57-4a09-b700-1314c0f03031` used a misspelled environment key;
+console confirmed `force_route_identity=false`, so it is excluded and must not
+support any product conclusion.
+
+`EXP-060` implements the first production-side building block without adding a
+public API. `RUMViewsHandler` can now replace one exact SwiftUI occurrence in a
+scene stack atomically. Replacing the visible Detail slot emits only
+`stop Detail₁ → start Detail₂`; it never performs the ordinary remove behavior
+that would restart Home between them. Replacing a covered or inactive slot emits
+nothing until that slot is revealed or its scene returns to the foreground. A
+missing old identity and a request whose old identity exists only in another
+scene are no-ops, preventing cancelled, stale, or migrating work from creating a
+view implicitly. Tests also prove that a covered old slot cannot reappear after
+its replacement is removed and that scene B retains its original same-named
+identity when only scene A is replaced. All 43 handler tests passed in
+`Test-DatadogRUM-2026.09.13_03-37-17-+0200.xcresult`; the two strengthened final
+unwind assertions passed in
+`Test-DatadogRUM-2026.09.13_03-39-42-+0200.xcresult`. This is source and focused
+test evidence only. The reader/state/arbiter still need a reviewed occurrence key
+before the same-type runtime failure can use this primitive.
+
+`EXP-061` closes a separate retained-scope correctness gap revealed by the
+navigation-occurrence contract. A fresh backend UUID was already allocated when
+Home returned, but the old inactive Home scope could still match that later
+same-identity start and absorb Home₂ attributes while it remained alive for a
+pending Resource. Inactive occurrences now ignore subsequent view start/stop
+commands with the reused lifecycle identity; exactly targeted Resource completion
+still reaches Home₁, and current scene work reaches Home₂. The same review
+found that a transferred/restored scope had not recorded its synthetic start
+boundary, allowing a later same-identity start to leave two active scopes. Restored
+scopes now establish that boundary when created. Build-for-testing succeeded, the
+three focused regressions passed 3/3, all 75 session-scope tests passed in
+`Test-DatadogRUM-2026.09.13_04-12-37-+0200.xcresult`, and all 27 application-scope
+tests passed in `Test-DatadogRUM-2026.09.13_04-12-54-+0200.xcresult`. This is
+source and focused-test evidence; no new runtime/backend support claim is attached.
+
+`EXP-062` completes the next internal-only state and arbiter slice. A future
+navigation integration can provide an opaque occurrence key plus a monotonic
+binding generation without changing the customer's SwiftUI identity. Keyed
+occurrences receive fresh handler identities; a same-scene key change emits the
+atomic replacement from `EXP-060`, a simultaneous scene change emits stop A then
+start B, and a detached key change stops against the last-proven scene before
+waiting for attachment. Ordinary lifecycle returns on the existing API retain
+their stable command identity and still create fresh backend occurrences through
+the scope behavior proven in `EXP-061`.
+
+The interactive arbiter now captures the state's base revision, keeps only the
+final accepted key and matching emission closure, and allocates an occurrence
+only when the transition commits. Cancellation leaves state, generation, and
+identity allocation untouched. Older binding generations cannot replace the
+final descriptor closure or escape a pending transition into another scene.
+Completion also checks the concrete deferred-transaction instance, preventing an
+old completion from resolving newer work when UIKit reuses the same coordinator
+identity.
+
+The first green revision passed 22 state and 25 arbiter tests, but review found
+three material correctness holes: an old lifecycle generation could affect a
+same-key return or scene migration, the descriptor lived only in an emission
+closure instead of the committed occurrence, and keyed state still accepted
+unversioned lifecycle intents. The hardened revision stores an immutable
+descriptor with the occurrence, requires a strictly newer binding generation for
+every keyed materialization, and fails closed on unversioned keyed lifecycle
+events. It also preserves a valid pending replacement when a stale event claims a
+different scene. One intermediate build failed because two new assertions were
+placed in the preceding legacy test and referenced out-of-scope configurations;
+the assertions were moved into the keyed-return test rather than weakening them.
+Do not retry that placement.
+
+The hardened revision first passed 25 state tests, 26 arbiter tests, and the
+targeted handler-publisher descriptor regression. A final review found no P0 or
+P1 issue, then identified two compositional P2 coverage gaps. The final test
+revision adds a keyed A/B arbiter case where A cancels and B commits, proving
+independent configuration, generation, descriptor, identity allocation, and
+scene target. The publisher regression now also checks all three command targets.
+All 25 `RUMViewTrackingStateTests`, all 27
+`RUMSwiftUIInteractiveTransitionArbiterTests`, and the targeted publisher
+regression pass, 53/53 total. The final focused artifacts are
+`Test-DatadogRUM-2026.09.13_05-10-23-+0200.xcresult`,
+`Test-DatadogRUM-2026.09.13_05-10-42-+0200.xcresult`,
+`Test-DatadogRUM-2026.09.13_05-10-55-+0200.xcresult`, and
+`BuildProject-Log-20260913-051120.txt`. This is deliberately
+dormant internal machinery: the reader and public modifier do not yet provide a
+semantic key, so `EXP-057` remains the runtime verdict for same-type replacement.
+At the `EXP-062` checkpoint, the complete `DatadogRUM` plan passed
+1,087/1,087 with zero failures, skips, or not-run tests in
+`Test-DatadogRUM-2026.09.13_05-13-57-+0200.xcresult`. The immediately preceding
+full run was 1,086/1,087 because the unchanged timeseries pause/sampling test
+observed a third sample instead of two; its isolated retry passed before the clean
+full rerun. This is the same timing-test class already recorded below, not a
+multi-scene regression. A final build after the lint-only brace correction
+completed with zero diagnostics in `BuildProject-Log-20260913-051120.txt`;
+repository lint passed all 713 source and 699 test files with zero violations.
+
+`EXP-063` fixes the disconnect half of the retained-reader lifecycle. Before this
+slice, `RUMViewsHandler` stopped and removed scene A's stack while the SwiftUI
+state continued to believe its occurrence was active. A later callback could
+therefore emit no start or attempt a replacement against a handler entry that no
+longer existed. Scene discard now gathers A-owned registered and pending states,
+removes only A's deferred transactions, and silently invalidates those states.
+It clears attachment, appearance, and the active occurrence without emitting a
+second stop, increments the revision to fence late completions, and requires an
+explicit platform remount. Keyed configuration, last-started binding generation,
+and lifecycle generation remain intact, so stale generation N cannot resurrect
+the entry; an N+1 remount creates a fresh identity with `.start`.
+
+The first build of this slice failed before tests because eight new reconcile
+call sites omitted the private method's explicit configuration/revision arguments
+(`BuildProject-Log-20260913-052924.txt`). The call sites were fixed explicitly;
+do not loosen the reconcile overloads to hide the distinction. The final build
+has zero diagnostics in `BuildProject-Log-20260913-053257.txt`. State tests pass
+27/27 in `Test-DatadogRUM-2026.09.13_05-30-57-+0200.xcresult`, arbiter tests pass
+29/29 in `Test-DatadogRUM-2026.09.13_05-31-26-+0200.xcresult`, and the handler
+disconnect and publisher regressions each pass in
+`Test-DatadogRUM-2026.09.13_05-33-05-+0200.xcresult` and
+`Test-DatadogRUM-2026.09.13_05-33-17-+0200.xcresult`. The handler integration
+proves one A stop from teardown, no stop from state invalidation, one A start from
+remount, and no B stop. The complete current RUM plan passes 1,092/1,092 in
+`Test-DatadogRUM-2026.09.13_05-33-59-+0200.xcresult`; repository lint remains
+clean across 713 source and 699 test files. Reused `updateUIView` re-registration
+and authoritative unchanged-attachment delivery remain a separate integration
+requirement; this slice fails closed if SwiftUI retains the old reader rather
+than creating a new platform mount.
+
+`EXP-064` implemented that retained-reader seam. `RUMSceneIdentifierReader`
+gained a distinct mount callback; `updateUIView` rebinds and re-registers the
+observer; an unattached window scene is treated as disconnected; and ordinary
+unchanged attachments are deduplicated. State tracks remount authorization and
+allows an actual reader remount without letting an ordinary update after a
+semantic disappearance invent a new occurrence. The first green revision passed
+30/30 state tests, 30/30 arbiter tests, and one handler regression (61/61), the
+complete RUM plan passed 1,096/1,096, and lint was clean.
+
+That revision was not accepted as complete. Review found two correctness gaps:
+a deferred reconnect lost its remount authorization when committed through the
+general reconcile path, and repeated unchanged `updateUIView` delivery could
+restart a normally disappeared retained view. The first hardening split the
+reader-mount path from ordinary updates and reached 64/64 focused tests.
+
+Further review found four more gaps: a stale initial scene trait could remount
+after disconnect while the reader was still unattached; observer registrations
+were not scene-specific enough and an old A observer could contaminate B's
+coordinator selection; disconnecting source A discarded a pending migration to
+B; and cancellation consumed the retained reader's only mount notification.
+The first implementation of those corrections passed 67/69. One failure came
+from an old test using a detached-controller seam that could not establish real
+scene ownership; it was corrected to inject its intended coordinator provider.
+The second exposed a real arbiter defect: disconnect candidate discovery looked
+only at transitions targeting the disconnected scene and therefore missed a
+state migrating away from it. Candidate collection now includes every deferred
+state, invalidates the A occurrence, and rebases the surviving B transition.
+
+After those fixes, 71/71 passed. Review then found that a detached, re-registered
+A observer had no current scene and could still prevent B from falling back to
+its scene-root coordinator, allowing immediate ungated B lifecycle. The observer
+now retains a last-proven scene across detachment and disconnect; B filters it
+out. This reached 72/72 focused tests and 1,105/1,105 in the complete RUM plan.
+A final review found one remaining race: merging a reader mount with a disappear
+could clear remount authorization and permanently fence the state. Reader-mount
+authorization now remains sticky through coordinator completion; success clears
+the reconnect fence without starting an inactive view, cancellation rearms the
+reader, and a later semantic appearance creates exactly one occurrence.
+
+`EXP-065` is the final hardened source/focused-test checkpoint. It covers stale
+trait rejection, inactive reconnect, deferred success and cancellation,
+reader-mount/disappear ordering, source-A disconnect during pending migration to
+B, old-A observer removal, and detached-A isolation from B's cancellation gate.
+The final build-for-testing completed with zero diagnostics in
+`BuildProject-Log-20260913-061213.txt`. The combined focused plan passes 74/74
+(state 34/34, arbiter 38/38, two handler tests) in
+`Test-DatadogRUM-2026.09.13_06-12-22-+0200.xcresult`. The complete `DatadogRUM`
+plan passes 1,108/1,108 in
+`Test-DatadogRUM-2026.09.13_06-12-43-+0200.xcresult`, and repository lint remains
+clean across 713 source and 699 test files. Final source review found no P0/P1
+issue. At this checkpoint no retained-reader runtime had run, so `EXP-065` alone
+must not be promoted to runtime or backend evidence. `EXP-066` below adds a
+synthetic integration control; genuine OS disconnect/reconnect remains open.
+
+`EXP-066` adds a live integration control without overstating what the platform
+did. The probe targeted scene B after both scenes reached Detail, confirmed that
+B's `UIWindowScene` was foreground-active and still present in
+`UIApplication.connectedScenes`, and posted `UIScene.didDisconnectNotification`
+for that object. It then incremented a probe attribute to force representable
+update delivery while leaving the SwiftUI tree alive. A parallel diagnostic
+representable retained object `0x0000000113c51880` and reported generation 0→1,
+showing that the update was not a fresh probe tree.
+
+The SDK stopped the pre-injection B Detail occurrence
+`992f0e7e-6b86-4bf2-be73-e403056363f4` exactly once and started post-remount B
+Detail `4e029fe4-338e-496f-b0ea-b9029459180a` exactly once. Both carry B native
+scene ID `0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA`; A retained native scene ID
+`11EB84CD-18A5-4275-A905-8DF61E52F4C0` and its active RUM branch. The
+post-remount marker action and Resource both used the new B UUID. Backend session
+`b1b2313a-9cd7-4cfa-90f8-272e2ae07de9` contains exactly six views, 13 actions,
+13 resources, two long tasks, one vital, one session, and no errors or crashes.
+Three uploads returned HTTP 202 with request IDs
+`98531630-1ABC-467E-9E17-461593F6A7B9`,
+`B5C860B8-B72E-4F54-9A7D-C4E1B09EA351`, and
+`35165CD4-5E1F-46C5-983E-4AA7AE915C8B`.
+
+This is runtime, payload, and backend evidence for the explicitly synthetic
+handler/arbiter/retained-update integration. It is not an OS lifecycle result:
+the scene deliberately remained connected before and after the notification.
+The original Xcode interaction session expired before final capture. A later
+capture-only session showed SpringBoard and has no evidentiary value; do not cite
+its screenshot as the run's UI state. Genuine OS disconnect/reconnect and
+restoration remain open because iOS normally destroys and reconstructs the scene
+tree rather than preserving this exact representable.
+
+`EXP-067` is a source-only split/adaptive navigation audit. Both UIKit and SwiftUI
+ultimately publish into one `RUMViewsHandler` stack per scene. UIKit automatic
+tracking observes every eligible child controller's `viewDidAppear` and
+`viewDidDisappear`; if Secondary₁ disappears before Secondary₂ appears, ordinary
+stack removal stops Secondary₁ and restarts the lower Primary before the new
+secondary stops it again. A stock `UISplitViewController` is filtered with UIKit,
+but an application subclass is eligible under the default predicate and can add
+another container occurrence.
+
+SwiftUI automatic tracking explicitly skips
+`SwiftUI.NotifyingMulticolumnSplitViewController` and depends on child hosting
+controller lifecycle/reflection. A same-controller selection from Detail(1) to
+Detail(2) can therefore expose no semantic occurrence signal. Explicit
+`.trackRUMView` has scene ownership but its occurrence token remains dormant
+pending API review. Tap and scroll attribution carries a scene, not a pane, so it
+follows whichever column won callback order. The exact lifecycle order and false
+or missing UUID sequences were hypotheses at this source-only checkpoint;
+`EXP-068`/`EXP-069` below resolve the SwiftUI cases, while UIKit split remains to
+be run. No runtime/backend claim is attached to `EXP-067` itself.
+
+`EXP-068` turns the SwiftUI same-type hypothesis into a backend-proven failure.
+The probe used a regular-width `NavigationSplitView`, route-owned explicit
+tracking, and no `.id(route)` control. Native scene
+`0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA` started Detail(1) as RUM view
+`f83c68df-14f7-45df-9adb-a98ab833e76c`. It then visibly committed Detail(2)
+while the adjacent content witness retained object address
+`0x000000010a8ccc40`. RUM emitted no stop/start and continued the first Detail
+UUID, so the Detail(2) `selection-committed` action and Resource were attributed
+to Detail(1). This violates the navigation-path contract even though the
+platform object behaved normally.
+
+The following different-type Placeholder correctly started RUM view
+`9717a9c1-fc89-40d1-bd9a-5918537df070`, and its immediate action/resource used
+that UUID. There was no intermediate Sidebar or Home occurrence. Backend session
+`7d622e5f-6489-4d26-a04b-9f7809a5f070` contains exactly three views—the launch
+view, collapsed Detail, and Placeholder—three actions, three resources, and no
+SDK or probe errors. Uploads returned HTTP 202 with request IDs
+`1F7F9AE6-300F-4046-818D-DBD720C52E84` and
+`84AF6996-6523-4952-BA99-B4B376E9B5D7`. The required sequence was three semantic
+selection occurrences, `Detail₁ → Detail₂ → Placeholder`, each with a distinct
+UUID. The automatic-only baseline and route-identity control remain separate
+experiments so controller discovery and explicit occurrence input are not
+conflated.
+
+`EXP-069` records the automatic-only counterpart. In the same regular-width
+layout and native scene `0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA`, automatic
+tracking emitted launch `bd43e6cb-98a5-4cfa-8988-8fd2d8c690b9`, setup-only
+fallback `4d724467-9080-47c8-b0e5-a53926af36a6`, transient host
+`a93704fc-252b-4629-b088-3537886e8301`, and final host
+`42020e4a-0a3e-49c3-82dd-d35ee5a30cad`. It emitted no semantic selection view.
+Detail(1)'s immediate marker used launch, while Detail(2) and Placeholder both
+used the final host. Backend session `27a59309-7862-4025-b028-94d6004487db`
+contains four views, three actions, three resources, and no SDK or probe errors.
+Uploads returned HTTP 202 with request IDs
+`41D2162D-4867-43B3-BA4B-ADC032F303BC` and
+`2EA7F421-DBC5-4FD5-8525-DB70A466B38D`. The screenshot at
+`EXP 067 Split Automatic Baseline-06_46_04_266-screenshot.png` confirms the
+regular-width visual state, but the backend UUIDs are the semantic evidence.
+
+`EXP-070` is the positive route-identity discrimination control. With
+`.id(selection)` around the tracked split destination, backend session
+`611c8142-3efc-468a-b044-93fed25864f3` contains the exact semantic chain launch
+`4276dce9-a5bd-401a-934b-a794dc2ebe9a` → Detail₁
+`61857c33-549b-48dc-936c-bf8dc0fb065a` → Detail₂
+`674a3b9f-005a-45e5-92be-1dee5b9c66cc` → Placeholder
+`bdf5eec4-7cef-4ea6-b88a-d124113a0472`, with no Sidebar/Home occurrence.
+Detail₁, Detail₂, and Placeholder each emitted one action and Resource on that
+exact UUID. Their action IDs are `34773550-f743-4b2d-bfc2-5bd1311b6b2a`,
+`8a967975-55df-4deb-a082-3fa8cc3b7117`, and
+`0144f283-5679-457a-82e6-4638977e7d0a`; their Resource IDs are
+`48854d28-b5a0-42a1-b380-c1f5198b12d9`,
+`f3571779-f149-41b4-a07b-59032ac6d024`, and
+`a7b842cf-28e8-48d6-97b7-721bb630df9f`.
+
+The transition order is equally discriminating: Detail₁ stopped before Detail₂
+started, Detail₂'s markers followed that start, then Detail₂ stopped before
+Placeholder started and received its markers. The old Detail witness
+`0x000000010acccc40` briefly observed the Detail(1) → Detail(2) update before
+`.id` created Detail₂ witness `0x0000000112492bc0`; Placeholder used
+`0x0000000112491f80`. The control therefore proves the missing semantic input,
+but also proves why `.id` cannot be customer guidance: it replaces application
+content state rather than rotating only the RUM occurrence. Backend counts are
+four views, three actions, three resources, one long task, one vital, and one
+session. Uploads returned HTTP 202 with request IDs
+`78B2CA0D-B290-445D-8D0C-0B74DD45CCD6` and
+`D898F434-7BBA-4F93-B308-389C2248394F`; no relevant SDK/probe
+warning/error/fault/crash was present. The Xcode build log is
+`BuildProject-Log-20260913-064731.txt`, and the final screenshot stem is
+`EXP 067 Split Route Identity Control-06_49_09_309`.
+
+`EXP-071` backend-proves the UIKit stack-ordering defect with SwiftUI automatic
+tracking disabled and `DefaultUIKitRUMViewsPredicate` enabled. A stock split
+controller `0x00000001035b0a00` displayed Primary
+`0x00000001035b0f00`, then Secondary₁ `0x00000001035b1900`, and replaced it
+with fresh same-class Secondary₂ `0x00000001035b1400`. The replacement log
+confirmed `primary_visible=true`. Primary received no second `viewDidAppear` or
+intervening disappearance; Secondary₁ disappeared before Secondary₂ appeared.
+
+The platform path was therefore launch → Primary → Secondary₁ → Secondary₂.
+Backend session `0a320a0f-f610-450b-af79-3c47fb3c68b6` instead contains launch
+`d1e21f87-1ed5-4226-9219-f7cb0d369cd0` → Primary₁
+`bac07614-5836-438f-add6-45dff9aa940b` → Secondary₁
+`ea45d1fa-5766-47b1-856d-10b291bce0c8` → manufactured Primary₂
+`7b4b1cb9-c649-4cd7-8ed6-3503acb198c2` → Secondary₂
+`c55b671c-78cd-4a7c-9b40-323dfc690879`. Primary₂ has no lifecycle marker and
+was created solely because removing the active Secondary₁ restarted the lower
+handler-stack item before Secondary₂ arrived.
+
+The three real child markers remained exact: Primary action/resource
+`9625de7c-5763-4103-b7cf-fd2b12f62afc`/
+`1e3d287b-5d99-4ced-afee-27459dde601c`, Secondary₁
+`55ac1a04-399c-485d-9798-62054ddda9a9`/
+`3af06581-5a00-46ed-8c27-09ef66e1f64b`, and Secondary₂
+`f68825f7-f96c-4acf-8eb8-aa58a2e8b084`/
+`6873182c-4b67-46e2-8151-e87d4aed417f` used their matching RUM UUIDs. Backend
+totals are five views, three actions, three resources, one long task, one vital,
+and one session. Uploads returned HTTP 202 with request IDs
+`40A187B7-BAAD-48B3-B3BF-9D7312AEF9DC` and
+`64775B88-5A1A-4FFF-8E45-E98FEEA3A5F7`; no relevant SDK/probe warning, error,
+or crash occurred. The build log is `BuildProject-Log-20260913-065647.txt`; the
+final screenshot stem is `EXP 068 UIKit Split Stock-06_58_12_584`.
+
+`EXP-072` repeats that isolated flow with an application subclass of
+`UISplitViewController`. Container `0x0000000103db0a00`, Primary
+`0x0000000103db0f00`, Secondary₁ `0x0000000103db1400`, and Secondary₂
+`0x0000000103db1900` remained in the same regular-width native scene. Primary
+stayed visible without a disappear/reappear, and the container received no
+child-transition appearance callback. Nevertheless, backend session
+`ea8c619c-685b-4b32-93d4-286c820352c8` emitted launch
+`fabe644c-50a2-45e5-981b-560f2571bed9` → extra subclass-container
+`dbf26236-4c35-4f7d-ae61-1ef8687b66b8` → Primary₁
+`802061f7-ba1a-4d4c-ae64-6d61e73bde7d` → Secondary₁
+`213d793e-aa39-4dc6-9111-26220a3c46c7` → manufactured Primary₂
+`2ac1c8e6-d704-4e54-994a-e5c6dceb33ff` → Secondary₂
+`3ab7f656-1fd8-4b08-bb14-36072334fe1d`. The container lasted about 1.3 ms;
+the duplicate Primary lasted about 1–5 ms depending on client/backend boundary.
+Neither had a marker.
+
+Primary, Secondary₁, and Secondary₂ action/resource IDs were respectively
+`43c9b5c1-1aa0-498d-86d2-210afe7c478e`/
+`98f3fb97-2e5c-446b-b3fe-cd4cc0cc63c3`,
+`bba46fc6-e677-45dc-8e0b-9c1b389f3ad9`/
+`fdad2611-726b-432e-baa6-82a681aebddd`, and
+`04347e63-a492-4239-95a1-206e7405252c`/
+`b34b85a8-44ec-4956-9100-d5cd58f25de3`; every pair used its genuine child
+view. Backend totals are six views, three actions, three resources, one long
+task, one vital, and one session. Uploads returned HTTP 202 with request IDs
+`061FD24F-F336-4AB6-A6FD-583F5B2717D5` and
+`A7F29602-D6EE-443D-8CE0-9495DF30A453`; no relevant SDK/probe error or crash
+occurred. The final screenshot stem is
+`EXP 068 UIKit Split Subclass-07_02_18_954`.
+
+This separates two fixes. Split-column replacement must suppress the lower-stack
+restart without weakening ordinary push/pop, and container filtering must decide
+whether subclass inheritance is sufficient without breaking customers who
+intentionally track an application-owned container. The second change needs an
+explicit compatibility review rather than being bundled into the ordering fix.
+
+`EXP-073` then tests ordinary navigation inside a stable secondary
+`UINavigationController`, rather than replacing the split column root. Stock split
+controller `0x0000000105db0a00`, Primary `0x0000000105db0f00`, secondary
+navigation controller `0x0000000105dba400`, Secondary₁/root
+`0x0000000105db1400`, and pushed Secondary₂ `0x0000000105db1900` remained in
+native scene `0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA`. Primary received only its
+initial appearance and stayed visible. Secondary₁ appeared once initially and
+the exact same controller object appeared a second time after Secondary₂ was
+popped.
+
+The platform path was launch → Primary → Secondary₁ → Secondary₂ →
+returned Secondary₁. Backend session
+`1a36a993-b62c-40b9-9124-6942529bd7b1` instead contains launch
+`1536d66b-941c-4ccf-8c05-dcd9d00db5d3` → Primary₁
+`bd6b7f44-88f9-4c97-9230-bdceaadee2dd` → first Secondary₁
+`2999a158-40cc-4509-b611-ea4fe4895e09` → false Primary₂ on push
+`9eba74cb-bd1d-41e8-bfe7-44e310bbb064` → Secondary₂
+`5584bf3b-ac4e-43b1-abc5-30b057b171ec` → false Primary₃ on pop
+`0b7067fd-9716-4f84-95e1-cba5d1ca6c50` → returned Secondary₁
+`038e40bf-8d8c-486a-86b8-2010b4357010`. The returned UUID is correctly distinct
+from the first Secondary₁ UUID even though both appearances use the same view
+controller. The two Primary UUIDs are incorrect because no Primary navigation
+occurrence happened.
+
+Primary, first Secondary₁, Secondary₂, and returned Secondary₁ marker
+action/resource IDs are respectively
+`5826e07f-8f00-4c01-b55a-e5cd0d4e02c1`/
+`d70a2a32-df04-4c65-9f38-f3051cac811a`,
+`585c3ff0-6649-4048-a7a8-fd09fde5b03b`/
+`ddc3a737-004d-4737-a5b2-db6be8d33c43`,
+`8bbc117a-000f-4e28-8126-ed68e14aca73`/
+`d9c84dce-cf3d-462f-a63b-e799c751c9dd`, and
+`4f6346db-ba1b-416c-a569-8a9401e6d571`/
+`2f20dd9f-ffe8-4127-bc6d-35e834c3cf87`; every pair uses its intended UUID.
+Backend totals are seven views, four actions, four resources, one long task, one
+vital, and one session. Uploads returned HTTP 202 with request IDs
+`6D4F3A45-0ED7-42D5-AC2B-9DAED10BCAA4` and
+`21D3A036-4C10-4E82-AC6B-1E7F1B1490CE`; no relevant SDK/probe error or crash
+occurred. The build log is `BuildProject-Log-20260913-071722.txt`; the final
+screenshot stem is `EXP 069 UIKit Split Navigation-07_18_54_492`.
+
+This changes the implementation boundary from column-root replacement to any
+materialized navigation transition within the active split column. The RUM
+handoff must stop the outgoing secondary and start the incoming secondary
+without restarting a visible sibling column. It must still allocate a new RUM
+view occurrence when the incoming controller is a reused path item, as the
+returned Secondary₁ UUID in this baseline already demonstrates.
+
+`EXP-074` validates the first production candidate against the stock replacement
+control. On iOS 27, and only when the application declares multiple-scene
+support, `RUMViewsHandler` defers an outgoing active split-column removal for one
+main-queue turn. A trustworthy incoming controller in the same scene, split
+container, and column consumes that pending removal as one atomic handoff. The
+backend session contains exactly launch `b56bd2fa…` → Primary `77d88232…` →
+Secondary₁ `e27a3e4b…` → Secondary₂ `6d912ee2…`; it contains no second Primary.
+All three marker pairs use their intended occurrence. The run produced four
+views, three actions, three resources, and no errors or crashes. Full UUIDs are
+`b56bd2fa-c717-413f-bafe-0b27efeaa5ce`,
+`77d88232-40f9-4851-af0d-cb6b62c82fc4`,
+`e27a3e4b-2cce-4c1c-9cbd-d360e4ee2eae`, and
+`6d912ee2-4bd7-4d27-8ad9-a6a802483865`. Uploads returned HTTP 202 with request
+IDs `39963DD1-6D22-4A84-B38A-27B6F6F8B661` and
+`6F942F47-58EB-4AD7-9B77-0929CCB7B02B`.
+
+`EXP-075` validates the same implementation against nested navigation in a stable
+secondary `UINavigationController`. The exact controller used for Secondary₁,
+`0x00000001031b1400`, appeared first, yielded to Secondary₂, and appeared again
+after pop. The backend contains exactly launch `b0987aa0…` → Primary `8578f7fb…`
+→ Secondary₁ `ec3cd76b…` → Secondary₂ `8e03aa83…` → returned Secondary₁
+`bfc94bbd-fbd8-446f-9c00-3bbbc83e88a2`. Full preceding UUIDs are
+`b0987aa0-cd97-4891-8cbc-7feb4f9b7831`,
+`8578f7fb-cff8-4f3e-bbe7-4c3c2ccfb577`,
+`ec3cd76b-f5a5-40ae-9e82-27f5270fd590`, and
+`8e03aa83-75a9-44f6-b831-e51c9831678c`. There is no intervening Primary, while
+the returned instance receives a fresh RUM UUID. Its four action/resource pairs
+are exact; totals are five views, four actions, four resources, and no errors or
+crashes. Uploads returned HTTP 202 with request IDs
+`2F0CB9DA-6D93-4B3F-9ECA-1E1D9A299852` and
+`8FBCD2BE-DB82-417A-A203-ED8DF58A9602`.
+
+After correcting a test assertion that counted scene B's legitimate setup stop
+instead of only scene-A disconnect teardown, all 54 then-current
+`RUMViewsHandlerTests` passed. The two focused `RUMInstrumentationTests` for
+multi-scene capability propagation also passed. Together `EXP-074`/`EXP-075`
+turned the original UIKit split-ordering defect into a
+source/test/runtime/payload/backend pass without altering the still-open
+subclass-predicate decision.
+
+`EXP-076` stopped at preflight and created no run, session, upload, or capture
+artifact. `ProbeSplitLayout` currently initializes `selection` to `.detail(1)`
+and its materialization task automatically commits Detail₂ and Placeholder. Its
+nil detail branch is therefore not reachable as a stable experimental mode.
+The probe logs horizontal size class but has no scene geometry control; Xcode's
+device synthesis can rotate the simulator but cannot deterministically resize
+this iPad window through regular → compact → regular. The target-runtime UIKit
+headers confirm that iOS geometry preferences request interface orientation,
+while `sizeRestrictions` are preferences rather than a deterministic current-size
+request. Do not repeat this run until the probe can hold `selection == nil` and
+the system can acknowledge each width transition. This is a harness gap, not an
+SDK failure.
+
+Review after those native passes found two adjacent P1 ordering defects. First,
+the pending lookup selected by scene before validating the incoming split/column,
+so an unrelated appearance could remove the secondary, restart Primary, then add
+the unrelated view. The corrected path performs the ordinary direct transition
+and immediately removes the now-covered pending item, preventing another
+same-turn callback from revealing it. Second, app and scene background flushed
+pending removals while stacks were active, which deterministically started and
+then immediately suspended Primary. `EXP-077` suspends first, removes while
+inactive, and uses the recorded disappearance time when the pending identity is
+still top. Disconnect now preserves that timestamp too. New regressions cover an
+unrelated appearance, scene background, app background, and exact disconnect
+time; the full handler class passes 57/57, the two capability-plumbing tests pass,
+and build-for-testing reports zero diagnostics. Because this hardening followed
+`EXP-074`/`EXP-075`, both native controls were repeated as `EXP-079`/`EXP-080`
+before promoting the corrected revision to a runtime-backed pass.
+
+The reconciliation tests inject split/column context. An earlier attempt to test
+the default resolver with a retained `UIWindow` and real `UISplitViewController`
+inside the XCTest host did not reproduce native containment reliably, so it was
+removed rather than normalized into a false positive. Do not repeat that detached
+fixture as proof. `EXP-074`/`EXP-075` exercise the public UIKit resolver in the
+native app; add a direct resolver unit only if the test host can establish and
+assert the same containment contract deterministically.
+
+`EXP-078` first repeated stock split replacement on the hardened revision. Native scene
+`0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA` emitted launch
+`c3317588-501b-4572-a425-d93cd8fb1d9a` → Primary
+`bd80860a-28b7-4d01-9d78-4cce91ef00a7` → Secondary₁
+`12871423-90e6-4259-a0f5-e9b4883018b9` → Secondary₂
+`aefdee70-1a80-4208-9ab2-fa6c2c17fb9a`, with no second Primary callback or
+RUM UUID. The three action/resource marker pairs are exact. Backend totals are
+four views, three actions, three resources, and zero errors/crashes. Uploads
+returned HTTP 202 with request IDs `67D74524-10C0-4818-B464-D268F2CD4CAB` and
+`ECFC03C2-3BA1-4597-B914-CD8046298C9C`. One earlier attempt expired before
+launch and emitted no telemetry; it is excluded rather than counted as a run.
+Because a later no-op platform conditional cleanup raced source/build timing,
+this behavioral pass is retained but not used as exact final-tree evidence.
+
+`EXP-079` repeats nested push/pop on that revision. The same scene emitted launch
+`01613b1a-844e-4c20-85e0-22456a7b8faa` → Primary
+`ae6bff57-c9dd-4606-8972-42ac7b18c532` → first Secondary₁
+`c3ec803e-7f8f-45dd-9635-195d829ba89c` → Secondary₂
+`18023259-2e72-4a2c-bef6-4a8092727a0c` → returned Secondary₁
+`2086f533-f0ab-4928-977e-f2fc34aa74a4`. The returned view reused controller
+`0x00000001059b1400` across appearances 1 and 2 but received a fresh RUM UUID,
+which is the required occurrence-per-navigation-path behavior. No Primary
+interval was emitted; all four marker pairs are exact. Backend totals are five
+views, four actions, four resources, and zero errors/crashes. Uploads returned
+HTTP 202 with request IDs `54F62E56-62A4-4F74-9668-F4D84C173867` and
+`E2886D5F-35F6-4A43-A86B-D96F646C07CA`.
+
+After an explicit current-tree probe rebuild, `EXP-080` provides the final stock
+control. It emitted launch `5d4c02cf-4b91-48b3-91c4-4fbeb402230d` → Primary
+`c8655d49-71ff-48d9-af92-55340a35af02` → Secondary₁
+`2aaa7ae8-bea2-4f69-8720-fc3dc1b9aa3a` → Secondary₂
+`7eb93e48-c49c-4755-9897-8eba0c8e5d63`, with no extra Primary and exact marker
+ownership. Backend totals are four views, three actions, three resources, and
+zero errors/crashes. Uploads returned HTTP 202 with request IDs
+`1637636A-8DC5-431B-AB95-41AAE0C3F2B6` and
+`1D0179C3-01D5-48B4-AED4-BFAA6BA83609`. The final build-for-testing reports zero
+diagnostics and all 57 handler tests pass. `EXP-079`/`EXP-080` are therefore the
+authoritative nested/stock pair for the post-review implementation.
+
+`EXP-081` records the complete cancelled-edge-gesture tooling investigation so it
+is not mistaken for runtime evidence or repeated. Detached Xcode install-and-run
+accepted the required environment in
+`native-uikit-split-interactive-cancel-lldb-20260913-084206`, but LLDB reported no
+active debug process; the debugger-backed runner could not inject the environment.
+After adding `DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=0`, build
+`BuildProject-Log-20260913-084430.txt` passed. Recovery run
+`native-uikit-split-interactive-cancel-20260913-084836`, session
+`c2bb3b70-3044-4e6d-9015-51ee0a96f799`, reached S2 and positively logged that
+automatic pop was disabled.
+
+The first attempted gesture, run
+`native-uikit-split-edge-cancel-20260913-085301`, session
+`5a2a2d8c-0ad6-4394-88cc-29c15f8a29c6`, used invalid shorthand
+`s 322 688 372 688 0.8`; the tool rejected it and generated no device event. The
+accepted grammar is `t x1 y1 f x2 y2 duration`. Short straight drags in
+`native-uikit-split-edge-cancel-retry-20260913-090011`, session
+`5926a383-b5ec-4fb4-bda8-f31b91f5be19`, and
+`native-uikit-split-edge-cancel-proven-20260913-091535`, session
+`4d392878-6b20-42dd-b679-1230b860c3c6`, were captured by the split divider and
+widened Primary from 320 to 358.5 points. They emitted no navigation lifecycle.
+AXe's swipe and drag commands support one point-to-point path; gesture presets do
+not expose an edge-pop reversal, and batch touch exposes only down/up without
+move segments. A physical right-then-left cancellation is therefore not
+expressible with the available driver. These runs are setup evidence only.
+
+`EXP-082` proves the adjacent physical committed path. Run
+`native-uikit-split-edge-commit-20260913-090650`, session
+`312715b2-d818-402f-b468-4aff5d7b01e8`, sent
+`t 334 688 f 950 688 0.8`; Primary stayed 320 points wide and UIKit committed the
+pop. The exact backend chain was launch
+`33dd1065-44ab-4938-85ae-e6547676404b` → Primary
+`8c5f77ab-8e80-4b7a-a018-553f0dbfc87d` → S1(first)
+`068aa499-6c6d-4607-909b-9b2cc61fc276` → S2
+`0ba127ac-7fcd-45b3-9074-0078ebbf41b8` → S1(returned)
+`6a7e95c7-20ee-454e-b9f3-46e80cfa9a4c`. The same S1 controller received two
+appearances and two RUM UUIDs. All marker pairs were exact; uploads returned 202
+with `F2540746-50D0-46C2-90B2-1F16DB92A3BA`,
+`44B4973C-FB49-4519-9777-8588D4157E05`, and
+`2E080842-0A68-4F35-A150-01504E28E01E`.
+
+`EXP-083` replaces the unavailable reversal gesture with a deterministic control
+that still uses public UIKit transition machinery. Run
+`native-uikit-split-deterministic-cancel-20260913-092850`, session
+`eb7c9b25-0f5c-443e-9a3a-c118ed608ace`, drove a real
+`UIPercentDrivenInteractiveTransition` to 35 percent and cancelled it. At
+09:26:51.232 S2 `0x103dc1900` began a speculative transition to S1
+`0x103dc1400`; UIKit then reversed it and invoked `viewDidAppear` a second time on
+the same S2. Coordinator completion at 09:26:51.548 reported
+`cancelled=true`, with S2 still top. Backend remained exactly launch
+`e0bdffb1-e097-4149-a9ce-db7d7604fd1b` → Primary
+`f7aa9e2d-ff15-45ae-8dda-5d35149a209e` → S1
+`349a0459-a799-4516-a894-b5b31e39a4cd` → original S2
+`929efbd3-2f03-41f6-9ed1-ac63c1dedd87`. No returned S1, replacement S2, or
+false Primary occurrence was emitted. Both initial and reversal S2 markers used
+the same S2 UUID. Uploads returned 202 with
+`A4D88406-98E1-41A7-A065-1793111C1F04` and
+`B36346CD-1708-4865-AD92-56C48CE26562`; build
+`BuildProject-Log-20260913-092521.txt` passed.
+
+`EXP-084` ran the same deterministic transition with completion instead of
+cancellation. Run `native-uikit-split-deterministic-finish-20260913-093115`,
+session `934eadc2-2712-4659-b156-f717f0504de3`, reported
+`cancelled=false`. Backend emitted launch
+`44afe8ab-71f6-4aba-9689-c969c495ff68` → Primary
+`481f3af9-9c17-4bcd-ac99-2791a07b1f75` → S1(first)
+`b1875986-6494-4364-b849-d325bb01651b` → S2
+`c8db2b31-c807-4945-b628-f3e74a244777` → S1(returned)
+`6e913601-9c3b-4144-adfb-21371e756e86`. The returned occurrence reused the S1
+controller but received a fresh RUM UUID. No Primary interval was emitted; all
+four marker pairs were exact. Uploads returned 202 with
+`97717463-9647-40C4-A374-D6ABAAFD0D40` and
+`8F85B474-D5A7-4075-AC70-CA23D88856B9`.
+
+`EXP-085` audits the remaining supported Xcode 27 SwiftUI seams before proposing
+another automatic-tracking experiment. `NavigationStack` exposes customer-owned
+path initializers, while typed `navigationDestination` builders are the only
+public boundary carrying the route value into materialized content. A type-erased
+`NavigationPath` exposes count, codability, append, and remove operations but no
+element iteration. `UIHostingSceneDelegate` supplies scene root and lifecycle,
+not destination identity. `NavigationTransition` exposes no public semantic route
+metadata. The automatic tracker still first learns a semantic controller in
+`notify_viewDidAppear`, and its predicate receives only an extracted string.
+
+The smallest credible next experiment therefore delivers an opaque occurrence
+key at the root and every typed destination builder into the dormant keyed
+`RUMViewTrackingState`. `updateUIView` must reconcile occurrence configuration and
+attachment atomically. If updating a retained hidden reader remains too late,
+applying `.id(key)` to only that SDK-owned reader is an experimental fallback; it
+must never key customer content or reset customer `@State`. A shipping overload
+or destination wrapper needs RFC/API review, must not serialize or describe route
+values, and must define mixing with automatic tracking before use.
+
+`EXP-086` adds the first overlapping native UIKit split run. In
+`native-uikit-split-concurrent-scenes-20260913-093545`, RUM session
+`ce5c7cc2-53e7-40ba-a127-f1887269c3da`, scene A was
+`0C4ADCA5-128D-4D9C-A6EB-5DC3E92B1FAA` and scene B was
+`343ABCC2-E15F-4BBA-ADC4-4A4214516C8D`. A's pop began at 09:35:34.741125;
+B's S2 push began 0.714 ms later and completed while A's transition remained
+open. B then completed its pop to the same S1 object and received a fresh RUM
+UUID. Neither scene produced a false Primary occurrence.
+
+A emitted only S2 `willMove(nil)` for its pop and never completed disappearance,
+removal, or returned-S1 appearance before the final observation. The screenshot
+showed B fullscreen, while accessibility retained roots for B returned-S1 and A
+S2. No explicit activation, inactive, background, foreground, or disconnect
+callback appeared in the capture, so the exact `UIScene.ActivationState` and cause
+of the stalled A transition are unproven. This is a fullscreen-topology/harness
+observation, not an SDK lifecycle defect.
+
+The same run is a useful negative control for manual-source inference. A's S2
+marker action `07db621d-6f30-4255-9e3c-266a76945f6b` and resource
+`bda363f9-c245-4c68-b391-1f7baf39ef59` were emitted at 07:35:33.748 while A S2
+`99602670-7e97-4f9b-ad05-68352dbce68f` was alive, but B S1
+`cc3f7104-a9ba-42a7-b04e-988709c5a672` had become process representative one
+millisecond earlier. Both marker APIs were public manual `addAction` and
+`startResource` calls with no SDK scene target. The `source_scene`, native ID,
+and screen fields are arbitrary diagnostic attributes and do not create trusted
+SDK provenance. Their use of B S1 is therefore the approved source-less
+last-interacted fallback, not a routing defect. The test must use an actual
+source-bearing UIEvent/URLSession boundary before judging exact A ownership.
+
+Backend view lifetimes were launch `6a066c02-51f6-4dd6-a2a5-6a1e4b0c278e`, A
+Primary `94325cf3-8405-4feb-8edc-4ed4960f754d`, A S1
+`bcea0e0a-41e5-4067-903c-e305a6c3dc8e`, B Primary
+`75727a3a-c9f4-4392-831f-2ac7234a9eea`, A S2
+`99602670-7e97-4f9b-ad05-68352dbce68f`, B S1
+`cc3f7104-a9ba-42a7-b04e-988709c5a672`, B S2
+`dd8fa541-c0cc-4184-b772-b80f5c5e6f94`, and B returned S1
+`3aa0ee7f-814e-4823-b2a8-0021b79eafc5`. Totals were eight views, seven actions,
+seven resources, two long tasks, one vital, zero errors/crashes. Uploads returned
+202 with `B250CC5F-DB6E-4D80-A36E-E3082D1262FD` and
+`18D7ED4B-5A54-4D0D-A878-DC37917841C6`. The final artifact stem is
+`DeviceInteractionSynthesize/UIKit Split Concurrent Scenes-09_35_41_644-`.
+
+`EXP-087` exercises the new no-selection control before attempting adaptive
+collapse. Run `e3c21695-d4a3-4a05-a606-7f192836e577`, session
+`d2f7b981-9877-47e9-9147-ea6b01712c6a`, used route-owned split tracking with
+`DD_MULTI_SCENE_SPLIT_INITIAL_SELECTION=none` and
+`DD_MULTI_SCENE_SPLIT_AUTOMATIC_SEQUENCE=0`; second-window and navigation autoruns
+were disabled. The UI hierarchy showed the Selections sidebar and an empty detail
+area. Backend intake contained 15 matching events, three total views, no Detail
+occurrence, and no error/crash. Build
+`BuildProject-Log-20260913-094444.txt` passed. This is a positive empty-detail
+baseline, not an adaptive transition result.
+
+The exact resize request
+`xcrun devicectl device appResize start -d B4E4F039-CA5D-4D04-A904-1D71099BE651
+--preferred-size 1024x768 --corner-radius 0 --json-output /dev/stdout --timeout 60`
+and the corresponding `device info appResize` request both failed with CoreDevice
+error 1001. The simulator does not support capability
+`com.apple.coredevice.feature.resizableappmanagement`. No width was requested or
+acknowledged, so regular → compact → regular lifecycle and RUM semantics remain
+open. The hierarchy artifact is
+`DeviceInteractionSynthesize/Adaptive Split Resize Empty Detail-09_48_47_882-hierarchy.txt`.
+
+`EXP-088` closes a narrower action/resource gap discovered while classifying
+`EXP-086`. The existing `UIApplication.sendEvent` interception already establishes
+a trustworthy execution-local RUM context around customer target-action dispatch,
+but public manual actions and manual Resource starts ignored it. They now resolve
+the exact handoff view first, its scene second, and the process representative only
+when neither exists. This applies to `addAction`, continuous action start/stop, and
+all URLRequest, URL, and method/string Resource-start overloads. Resource metrics,
+success, and error completion commands deliberately remain untargeted: existing
+resource-key owner lookup must complete an A-owned Resource even when B is current.
+
+Focused `MonitorTests` pass 15/15 and cover exact-view precedence, scene fallback,
+unchanged source-less representative behavior, all three Resource starts, and a
+source-less completion retaining its start owner. Build-for-testing reports zero
+diagnostics. The complete `DatadogRUM` plan passes 1,122/1,122 with no failures,
+skips, or not-run tests; focused source and test lint report zero violations.
+Artifacts are `BuildProject-Log-20260913-095316.txt`,
+`RunSomeTests/AADF4B45-9F69-4189-81BA-B1B238844172.txt`, and
+`RunAllTests/11359C12-1C7D-4473-B74F-B3DD3CFF8019.txt`. This change does not alter
+`EXP-086`: its lifecycle marker ran after the UI-event scope and remains correctly
+source-less.
+
+Focused legacy and keyed state-machine coverage is now 34/34 and includes mount
+idempotence, disappearance, transient detachment, same-key return, scene
+migration, descriptor immutability, stale/unversioned lifecycle rejection, and
+disconnect/remount fencing. Arbiter coverage is 38/38, and
+the publisher regression proves replacement uses the committed occurrence
+descriptor rather than a stale modifier fallback. A separate session-scope
+regression proves that
+reusing Home's platform identity after Detail creates a second Home UUID, yielding
+three distinct RUM occurrences for `Home → Detail → Home`. The earlier complete
+`DatadogRUM` test plan passed 1,039/1,039 in
+`Test-DatadogRUM-2026.09.12_23-26-06-+0200.xcresult`. The immediately preceding
+full run was 1,038/1,039 because the unrelated timeseries pause/flush timing test
+observed one extra flushed batch; its isolated retry and the clean full rerun both
+passed. After `EXP-045`, all 19 gate/provider tests passed in
+`Test-DatadogRUM-2026.09.13_01-11-51-+0200.xcresult`, and the complete suite passed
+1,058/1,058 in `Test-DatadogRUM-2026.09.13_01-12-09-+0200.xcresult`. Both the SDK
+test build and native probe build in Xcode 27, and repository lint reports zero
+violations. These checks and runtime runs justify retaining the narrow candidate
+for continued evaluation. They do not turn `UIViewRepresentable.makeUIView` into
+an Apple-documented visibility guarantee; aborted construction, restoration,
+split-view, stable visible-peer closure, and additional container stress remain
+release gates. Modal occurrence navigation passes, and immediate closing-scene
+ownership is safe in the exercised fullscreen topology.
 
 ### Attempts not to repeat
 
@@ -1070,6 +2236,109 @@ before customer lifecycle work.
   view-before-callback guarantee. The trait supplies early scene identity and the
   initial callback materially narrows the gap, but two iOS 27 runs still emitted
   the RUM view after customer outer `.onAppear` and immediate `.task`.
+- Do not retry moving the unchanged `.trackRUMView` modifier inside or outside
+  the screen hierarchy as the early-attribution fix. `EXP-030` and `EXP-031`
+  preserve both placements; Detail early work still used Home, and the outer
+  placement also left Home early work on `ApplicationLaunch`.
+- Do not equate a retained SwiftUI value or `@State` object with one RUM view.
+  Returning through navigation must create a new RUM occurrence. `EXP-035`
+  validates seven distinct occurrences across three complete push/pop cycles.
+- Do not validate a returned navigation occurrence from fresh UUIDs alone. An old
+  inactive scope can remain alive for pending Resources and previously matched a
+  later start with the same platform lifecycle identity. Keep the `EXP-061`
+  pending-Resource regression: Home₁ must remain immutable while Home₂ owns
+  new scene work.
+- Do not place a semantic tracker as a background sibling, whole-stack wrapper,
+  or stable first child and call it a scene-root solution. `EXP-047` through
+  `EXP-049` show that all three remain too late for B's initial Home lifecycle;
+  the whole-stack wrapper also replays retained screen lifecycle.
+- Do not serialize a probe path counter as the RUM occurrence identity.
+  `EXP-051` showed that retained SwiftUI content can keep the earlier attribute
+  value while RUM correctly creates a new UUID. Validate occurrences with view
+  start/stop order and distinct UUIDs.
+- Do not treat every bound-path write as a committed RUM view. `EXP-052` observed
+  two same-turn writes but no materialized destination and correctly retained the
+  original Home UUID. Path state is input to semantic tracking, not the event by
+  itself.
+- Do not use `EXP-053` as SDK replacement evidence. The probe forgot to track its
+  new Alternate route in navigation-path mode. Only corrected `EXP-054` exercises
+  the intended route-owned boundary.
+- Do not present `UIHostingSceneDelegate` as transparent automatic navigation
+  tracking. `EXP-055` confirms it is an app-owned scene/root lifecycle bridge and
+  exposes no destination identity.
+- Do not equate a same-type destination update with the absence of navigation.
+  `EXP-057` visibly committed Detail₂ while RUM retained Detail₁. Name, path,
+  attributes, and the outer modifier's freshly generated identity are not safe
+  occurrence detectors: ordinary renders can change them, while real occurrences
+  can share them.
+- Do not prescribe `.id(route)` as the customer fix. `EXP-058` proves that route
+  identity is the missing input, but `.id` also resets customer SwiftUI state.
+  A reviewed SDK token must rotate only the internal RUM generation.
+- Do not implement token rollover as a normal stop followed by start in
+  `RUMViewsHandler`. Removing the top view intentionally restarts the underlying
+  stack entry and can synthesize Home between Detail₁ and Detail₂. Replace the
+  same-scene stack slot atomically.
+- Do not scope the UIKit split fix only to replacement of a column root.
+  `EXP-073` proves that a stable secondary navigation controller produces the
+  same false Primary interval on both push and pop. Coalesce the materialized
+  outgoing/incoming lifecycle pair within the active column, while starting the
+  returned controller as a fresh RUM occurrence.
+- Do not make a missing atomic-replacement source fall back to ordinary add.
+  Post-run review of the first `EXP-060` draft found that it could materialize a
+  cancelled or stale candidate, stop an unrelated current view, or turn scene
+  migration into an implicit add. Missing and cross-scene sources now fail closed;
+  a separately proven appearance must use the normal start path.
+- Do not treat every unchanged `updateUIView` as a retained-reader remount.
+  SwiftUI can update a reader after its semantic view disappeared; only a
+  disconnect-rearmed attachment or real appearance may create the next
+  occurrence. The first `EXP-064` draft restarted such views.
+- Do not reuse the initial scene trait as reconnect proof after disconnect. It is
+  valid only for the first clean iOS 27 mount. A retained reader must regain an
+  attached scene, and an inactive view must still wait for semantic appearance.
+- Do not index a detached observer only by its current scene. Preserve its last
+  proven scene for unregister/filter decisions, or a stale A reader can
+  participate in B and bypass B's interactive coordinator gate.
+- Do not delete all pending state merely because its source scene disconnected.
+  A committed migration may already target surviving scene B. Invalidate the A
+  occurrence, rebase the B transaction, and let coordinator success or
+  cancellation decide whether B materializes.
+- Do not consume the retained reader's sole remount signal before an interactive
+  transition resolves. Cancellation and a mount/disappear merge must preserve or
+  rearm authorization so the next real appearance can create exactly one view.
+- Do not attribute cancelled-interactive-navigation view churn to the iOS 27
+  early-mount candidate. `EXP-037` reproduced the same false half-second Home and
+  Detail restart with the candidate disabled. Fix cancellation as its own
+  explicit SwiftUI navigation problem and retain that A/B control.
+- Do not wait for SwiftUI's cancellation-reversal callback to discover transition
+  state. `EXP-043` found the public UIKit coordinator during speculative Home
+  `onAppear`, but it was already gone by Home `onDisappear` and Detail emitted no
+  matching callback. Capture `initiallyInteractive` at the first callback and use
+  coordinator completion as the commit/cancel boundary; mutable `isInteractive`
+  is not the decision signal.
+- Do not resolve a recreated destination only through already attached tracked
+  readers. Its own reader has no responder ancestry during `makeUIView`; use the
+  matching scene hierarchy provisionally, then confirm ownership after attachment.
+- Do not group every interactive lifecycle callback in one scene-wide pending
+  bucket. Key by coordinator identity and state membership, or a cancelled pop can
+  discard an unrelated sheet, tab, or split-subtree occurrence.
+- Do not trust a changed process environment to replace a restored
+  `WindowGroup(for:)` value. The first `EXP-044` launch restored the prior
+  `ProbeWindow.runID`; stop and uninstall the probe before an exact-run test, or
+  explicitly classify the run as restoration evidence rather than mixing its
+  attributes with the new experiment.
+- Do not generalize the clean unselected-tab result into a platform guarantee.
+  `EXP-036` emitted no false view because that container did not construct the
+  offscreen reader. Other aborted, restored, modal, split, or preloaded
+  containers still need direct runtime validation.
+- Do not retry the `ViewThatFits` rejected-candidate arrangement from `EXP-039`.
+  It never constructed the diagnostic `UIViewRepresentable`, so the absence of a
+  false RUM view is not evidence about construction without appearance. Use a
+  container whose platform child is demonstrably realized or record the case as
+  unsupported by available public SwiftUI lifecycle signals.
+- Do not cite the `EXP-042` force-termination relaunch as concurrent restoration.
+  It correctly restored B with the same native scene ID, but iPadOS did not
+  reconnect A. A repeat needs a lifecycle/setup that demonstrably restores both
+  scene sessions, not another identical terminate-and-launch sequence.
 - Do not count automatic SwiftUI tracking as correct merely because its tap and
   final hosting-controller view use the right scene. Run
   `76f40f1f-554f-4842-86a1-7bf4955b734c` proves the destination is discovered only
