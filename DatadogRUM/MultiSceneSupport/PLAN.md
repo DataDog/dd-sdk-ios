@@ -102,20 +102,30 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-1. Continue the MultiSceneProbe self-validating runner after the completed named-
-   scenario phase (`EXP-106`). Add structured signals and the pure semantic oracle;
-   local semantic PASS is required before backend confirmation. Keep harness and
+1. Add the exact main-actor scene registry to the MultiSceneProbe, then connect
+   observable step acknowledgements to the structured recorder and oracle. The
+   catalog plus JSONL/oracle phases are complete in `EXP-106`/`EXP-107`; a local
+   live semantic result must precede backend confirmation. Keep harness and
    production SDK commits separate.
-2. Convert the debug per-window keyed-occurrence source into a reviewable iOS 27
-   SwiftUI integration contract; no public API lands without RFC review.
-3. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+2. Turn the debug per-window occurrence source into the approved optional iOS 27
+   navigation-container integration: consume the application's path/router and
+   centralized RUM resolver, coexist with automatic tracking, and suppress
+   duplicates only in its authoritative container. No public API lands without
+   RFC/API review.
+3. Design the required scene-aware manual view start/stop overloads and Objective-C
+   companion. The same key must coexist independently in A and B while existing
+   APIs preserve inferred/last-interacted compatibility.
+4. Suppress structural UIKit Primary/sidebar/container views so each scene has one
+   current destination. Retain the passing fresh return-occurrence and transition
+   cancellation behavior.
+5. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-4. Preserve the passing retained split return from `EXP-105`, then validate
+6. Preserve the passing retained split return from `EXP-105`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-5. Validate simultaneous visible A/B transitions, then genuine disconnect,
+7. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-6. Complete Operation public targeting and its live backend matrix.
-7. Close the bounded causal/downstream rows and live normal-app compatibility.
+8. Complete Operation public targeting and its live backend matrix.
+9. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -131,16 +141,22 @@ experiment; it does not itself change the SDK support verdict.
    temporary environment adapter accepts only exact non-contradictory profiles,
    and the complete manifest is emitted before Datadog starts. Invalid launches
    fail closed. The generated hostless target currently passes 15/15 tests.
-2. Record versioned JSONL signals and evaluate them with a pure semantic oracle.
+2. Completed in `ff8750dc3` and `EXP-107`: record versioned JSONL signals and
+   evaluate them with a pure semantic oracle.
    The only results are `PASS`, `FAIL`, `SKIPPED`, and `INCONCLUSIVE`; ordered and
    negative expectations must distinguish wrong attribution, missing events,
-   cancelled transitions, ignored gestures, and unsupported capabilities. Add a
-   probe unit-test target through `project.yml`, including fixtures for `EXP-092`,
-   `EXP-098`, ignored gesture, missing event, and forbidden event.
+   cancelled transitions, ignored gestures, and unsupported capabilities. The
+   generated probe test plan passes 24/24, including correct return,
+   wrong-view, ignored-gesture, missing-event, and forbidden-event fixtures. The
+   mapper records pre-persistence RUM snapshots; call-site source labels are never
+   treated as ownership. A live ApplicationLaunch → Home → Detail prefix agrees
+   with backend intake, but is not yet a live oracle PASS.
 3. Add one main-actor scene registry with stable logical labels, native session
    identifiers, weak windows, activation, geometry, route, readiness, and
-   disconnection generation. All open, activate, close, and wait steps address an
-   exact scene; never select an unordered `UIApplication.openSessions` member.
+   disconnection generation. Reserve an internal optional future Window Execution
+   Context identity without serializing it. All open, activate, close, and wait
+   steps address an exact scene; never select an unordered
+   `UIApplication.openSessions` member.
 4. Drive SwiftUI path/split changes and UIKit deterministic transitions through
    observable `ProbeStep` acknowledgements. Keep deterministic state-machine proof
    separate from genuine native gesture proof. A drag without transition/path
@@ -182,6 +198,9 @@ prepared but unclosed in the experiment rerun queue.
   `EXP-074`/`EXP-075` validate an iOS 27 multi-scene-only atomic same-column
   handoff in both controls: neither backend chain restarts Primary, all markers
   are exact, and the reused returned controller still receives a fresh RUM UUID.
+  Those runs still start an initial Primary. Under the approved one-destination
+  model, that structural view and `EXP-072`'s subclass-container view are remaining
+  gaps rather than accepted final semantics.
   `EXP-077` then hardens unrelated callback, background, and disconnect ordering;
   all 57 handler tests pass. `EXP-079`/`EXP-080` repeat both native controls on
   that revision with the same exact paths. `EXP-082` through `EXP-084` add a
@@ -196,9 +215,10 @@ prepared but unclosed in the experiment rerun queue.
   separately proves an
   application-subclassed split container becomes a view, which needs explicit
   predicate-compatibility review. Keep these controls. Verify one UUID per
-  committed path occurrence, no
-  callback-manufactured Primary/Sidebar interval, and exact action/resource
-  attribution. `EXP-087` proves the new initial-nil/sequence-disable mode creates
+  committed path occurrence, no Primary/sidebar/container RUM occurrence at all,
+  and exact action/resource attribution to the current Secondary destination.
+  Keep structural lifecycle records in the probe as negative evidence rather than
+  deleting them. `EXP-087` proves the new initial-nil/sequence-disable mode creates
   no Detail occurrence. CoreDevice reports that this simulator lacks Resizable
   App Management, so run regular → compact → regular on a capable destination.
   Then finish UIKit scroll/deceleration and per-scene background/foreground.
@@ -285,10 +305,11 @@ prepared but unclosed in the experiment rerun queue.
   replayed retained lifecycle. `EXP-050` passes only after tracking is installed
   directly at the Home and typed-destination builders; `EXP-051` preserves that
   result through a cancelled and then completed pop. The smallest credible
-  contract therefore needs an explicit root descriptor, an authoritative typed
-  `[Route]` path, and a customer resolver or SDK-owned builder wrapper for every
-  route's RUM descriptor. `EXP-052` proves the path writes alone are not the
-  occurrence: a same-turn Detail/Home mutation produced no new RUM view. The SDK
+  contract therefore needs one integration at each independent navigation
+  container, an explicit root descriptor, the application's existing bound path
+  or router, and one centralized resolver for route-to-RUM metadata. It must not
+  require a modifier in every destination. `EXP-052` proves path writes alone are
+  not the occurrence: a same-turn Detail/Home mutation produced no new RUM view. The SDK
   must combine route state with the content that actually materializes and place
   that view boundary before customer lifecycle work; a passive `onChange` remains
   only an experiment because it has no ordering guarantee.
@@ -300,6 +321,9 @@ prepared but unclosed in the experiment rerun queue.
   cases require an explicit semantic descriptor or destination tracking. This
   customer-facing boundary and its mixing rules with
   `DefaultSwiftUIRUMViewsPredicate` require RFC/API review before production code.
+  Automatic discovery remains enabled elsewhere. Within this integration's target
+  container, semantic/manual ownership is authoritative and must suppress a
+  duplicate automatic view without suppressing unrelated scenes or containers.
   `EXP-054` and `EXP-056` now pass a replacement whose different destination type
   materializes, first in one scene and then independently in A/B. `EXP-057` now
   reproduces the expected same-type/same-name failure: SwiftUI reuses its reader
@@ -422,12 +446,14 @@ The implementation must satisfy these constraints:
   modifier's random identity. Those values can change without navigation, while
   two real occurrences may intentionally share all descriptors.
 
-The preferred RFC-only additive shape is an iOS-27-gated overload equivalent to
-`trackRUMView(name:occurrenceKey:attributes:in:)` with a generic `Hashable` key,
-erased immediately inside the SDK. Do not replace the existing symbol or add a
-defaulted optional parameter. The key is modifier-local, stable for one materialized
-route value, and changed only for a committed occurrence. Navigation-specific
-destination wrappers remain a broader alternative, not the first implementation.
+The preferred RFC direction is now an iOS-27-gated container modifier equivalent
+to `trackRUMNavigation(path:root:destination:)`. It consumes the customer's
+existing path/router once per independent `NavigationStack`, resolves route
+metadata centrally, and rotates only internal RUM occurrence identity when a
+committed route appears or reappears. The exact generic/path erasure, overloads,
+and availability require API review. Existing `.trackRUMView` remains valid for
+individual exceptions; an explicit/manual target is authoritative only in its
+container and cannot produce a duplicate automatic view.
 
 Focused validation covers mounted replacement, unchanged key, returning to an
 earlier key with a fresh third UUID, detached change, simultaneous scene migration,
@@ -533,16 +559,28 @@ this path until the remaining live matrix proves which pieces are necessary.
 These rules improve correctness after an owner is already known and do not claim
 that the SDK can discover a scene for arbitrary work.
 
-### 4. Review the explicit Operation target; defer generic attribution APIs
+### 4. Review scene-aware manual views and the explicit Operation target
 
-The explicit Operation view-target escape hatch is part of the support goal. Use
-the [Operations contract and API proposal](OPERATIONS.md) as the review starting
+Scene-aware manual view targeting is required, independently of Operations. Add
+reviewed Swift and Objective-C start/stop forms that accept a `UIWindowScene`
+without exposing internal UUIDs. The same customer key must coexist in A and B;
+stopping A closes only A. Existing forms remain source-compatible and keep their
+inferred/last-interacted behavior, while automatic tracking continues outside an
+explicitly targeted exceptional view.
+
+The explicit Operation view-target escape hatch is also part of the support goal.
+Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
 point, retain the existing APIs and their inferred behavior, and do not expose
 internal RUM view UUIDs. Resolve UIKit
 objects synchronously into internal scene/logical-view targets and provide an
 Objective-C companion. Add the same parameter to any future public update/retry
 API. Implementation remains blocked on normal public API review, not on further
 source-discovery experiments.
+
+The internal scene target used by both APIs should have a natural optional slot
+for the future Window Execution Context identity. It must not serialize a temporary
+window attribute, split the RUM session, or make current fixes wait for backend
+Execution Context presentation.
 
 Source-less work otherwise retains the process representative for compatibility.
 Keep these broader contracts as future options only if customer evidence later
@@ -601,14 +639,21 @@ context do not distinguish a scene.
 
 The assessment can change to supported only when:
 
-- concurrent UIKit and explicit SwiftUI windows keep independent, correct view
-  lifetimes, and automatically tracked SwiftUI creates the semantic root and
-  destination before lifecycle work is attributed, in both native `WindowGroup`
-  and UIKit-hosted applications;
+- concurrent UIKit and SwiftUI windows keep independent view lifetimes and never
+  attribute a new scene's work to another scene. Automatic SwiftUI remains the
+  zero-code default; the optional reviewed container integration provides exact
+  root/destination occurrence semantics in both native `WindowGroup` and
+  UIKit-hosted applications;
 - stack, modal, split/adaptive, and restored navigation plus tap and scroll actions
   are attributed to their originating windows; same-type split replacement and
   retained split return now pass experimentally, while adaptive hardware remains
   open;
+- each scene has exactly one current RUM destination: structural Primary/sidebar,
+  split container, and tab-bar surfaces never create competing views;
+- `Home → Detail → Home` produces distinct H1/D1/H2 occurrences, and the optional
+  semantic integration consumes an existing path/router through one centralized
+  resolver, coexists with automatic tracking, and suppresses duplicate automatic
+  views only within its authoritative container;
 - the iOS 27 explicit early-mount result survives the remaining aborted,
   split, restoration, stable visible-peer close, and preloaded-container stress;
   modal navigation and closing-scene ownership already pass. Its three successful
@@ -631,7 +676,10 @@ The assessment can change to supported only when:
 - Operations expose correct per-step start/end views across windows, preserve
   last-proven context only as fallback, keep exact application-wide
   `(name, operationKey)` identity, and provide the reviewed explicit target API;
-  manual errors, logs and mirrored errors, WebView containers, feature flags,
+- reviewed scene-aware manual view APIs let the same key coexist in A and B and
+  stop only the targeted scene, have Objective-C counterparts, preserve existing
+  inferred APIs, and coexist with automatic tracking elsewhere;
+- manual errors, logs and mirrored errors, WebView containers, feature flags,
   INV/TNS/vitals, fatal/exported context, profiling, and process-wide long
   tasks/hangs have explicit support levels and targeted runtime evidence or an
   explicit process-representative limitation; Session Replay coexists without a
@@ -643,7 +691,9 @@ The assessment can change to supported only when:
 - single-scene and legacy lifecycle tests plus a live ordinary-app flow demonstrate
   no regression; the extra `UIApplication.sendEvent` path has measured acceptable
   overhead and passes recursion/reentrancy stress with and without action tracking;
-- raw intake, reducer output, and product UI give a coherent representation of
-  overlapping views inside one application session;
+- raw intake and the local reducer agree on ownership and occurrence order inside
+  one application session. Internal scene identity is stable and ready to map to
+  a future Window Execution Context ID without any temporary serialized window
+  concept; backend Execution Context visualization is not a release blocker;
 - the iPad probe and backend session both confirm the intended model, followed by
   iPhone Duo validation on iOS 27.1 when that runtime is available.

@@ -90,11 +90,13 @@ conformers and the NOP monitor. The Objective-C surface needs a
 repository's existing non-watchOS UIKit availability convention rather than
 gating the API to iOS 27; `UIWindowScene` predates the SDK's iOS 15 minimum.
 
-One prerequisite remains: the public `startView(key:)` API cannot explicitly bind
-that manual key to a scene. A keyed target is deterministic only if the view
-already received scene ownership through internal/SwiftUI tracking. API review
-must therefore include scene-targeted manual keyed-view start/stop overloads, or
-drop the keyed target until that ownership can be established safely.
+One required prerequisite remains: the public `startView(key:)` API cannot
+explicitly bind that manual key to a scene. API review must include scene-targeted
+manual keyed-view start/stop overloads and Objective-C counterparts. The same key
+may be active independently in A and B, and an explicit stop in A must close only
+A. Existing APIs retain inferred/last-interacted behavior, while an explicit scene
+wins over the process representative. This establishes deterministic ownership
+for the Operation target without exposing internal RUM UUIDs.
 
 Customer documentation shipped with that API must state that scenes do not
 disambiguate Operations automatically. For a cross-window Operation:
@@ -125,10 +127,11 @@ Required test coverage is tracked explicitly:
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public overload test pending API review |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key | Focused pass; live warning/raw-vital proof pending |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,122-test RUM suite passes |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,151-test RUM suite passes |
 
-API review must settle the public type/name and the scene-targeted keyed-view
-prerequisite. The requested application-wide identity means that scenes do not
+API review must settle the public type/name and exact Swift/Objective-C signatures
+for the approved scene-targeted keyed-view prerequisite. The requested
+application-wide identity means that scenes do not
 namespace an Operation; it does not add a new cross-session persistence contract.
 The manager and its retained view snapshot remain session-local, while duplicate
 starts follow the explicitly requested four-hour orphan-timeout warning. Any

@@ -57,8 +57,11 @@ boundary, in this order:
 | 40 | `Preserve revealed SwiftUI view occurrences across remount` | Source-started retained routes transfer their published identity to replacement SwiftUI tracking state; split-return probe and focused regressions |
 | 41 | `Document retained split return and harness plan` | `EXP-104`/`EXP-105`, updated support verdict, deterministic harness workstream, and exact resume state |
 | 42 | `Introduce named multi-scene probe scenarios` | Validated 35-scenario catalog, strict legacy adapter, manifest-first fail-closed startup, generated hostless tests, and probe documentation |
+| 43 | `Document named probe scenario validation` | `EXP-106` process-boundary proof, exact valid/invalid launch evidence, and refreshed resume state |
+| 44 | `Record and validate multi-scene probe timelines` | Versioned JSONL recorder, mapper snapshot reduction, semantic oracle, five fixtures, and 24-test probe plan |
+| 45 | `Model one RUM destination per scene` | UIKit split manifests forbid structural Primary RUM views and retain Primary lifecycle only as negative diagnostic evidence |
 
-Rows 1-42 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-45 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -66,7 +69,8 @@ Rows 1-42 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `85da8fa9c`, `c657f15fd`, `149e58655`, `917bc36b3`, `798a2228a`, `79aefb836`,
 `119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
-`4010931b0`, and row 42 is `6bee92ee7`.
+`4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
+`ff8750dc3`, and row 45 is `acca8907f`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -81,7 +85,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-fifteen exact-path commits in rows 28-42 use that policy. This is local checkpoint
+eighteen exact-path commits in rows 28-45 use that policy. This is local checkpoint
 history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -202,6 +206,13 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-104 | `split-occurrence-retained-return-20260913-1408` | `0540b52f-b398-4886-b956-421cffa64df0` | iPadOS 27 | Retained split-return failure baseline. Detail₁ `2be7a2d9…` → Detail₂ `532c2db1…` → Placeholder `6334cd0c…` was correct. Returning to Detail₂ made the old subtree stop source-created UUID `ee1fd0c4…` after about 6.6 ms; the replacement reader then started `03545f03…`, which owned the marker pair. Backend therefore contained a ghost fifth semantic view. This is a conclusive SDK/prototype failure, not a simulator-input limitation. |
 | EXP-105 | `split-occurrence-retained-return-fix-20260913-1421` | `d4f3597e-2254-4b68-897a-5530299083cb` | iPadOS 27 | Fixed retained split return. The source-created returned Detail₂ UUID `761fe74b…` remained active while SwiftUI replaced the platform reader, and the replacement state adopted that identity without another start. Backend contains launch plus exactly Detail₁ `507ff93f…` → Detail₂ `3d921845…` → Placeholder `06dd0b13…` → Detail₂(returned) `761fe74b…`; all four action/Resource pairs use their exact occurrence, uploads returned 202, and no RUM error or app/SDK crash appeared. |
 | EXP-106 | `harness-phase1-valid-20260913`; `harness-phase1-invalid-20260913` | `6f556658-1444-4ddf-8d9f-82ce0d5dea91`; none | iPadOS 27 | Named-scenario harness startup proof. The valid `regression.single-scene` launch emitted its complete resolved manifest as the first structured record, then initialized Datadog and produced the expected Home/Detail payload. The unknown-scenario launch emitted only a manifest plus rejection: no Datadog initialization, session, or RUM payload. The catalog contains 35 stable scenarios; strict resolver/catalog tests pass 15/15 and probe build-for-testing succeeds. This validates harness configuration, not a new SDK support surface. |
+| EXP-107 | `structured-recorder-live-20260913` | `6b194ceb-b0d8-4d0c-8848-ab293594cb79` | iPadOS 27 | Structured-recorder/oracle phase. Versioned JSONL keeps probe source separate from mapper-observed RUM ownership; snapshot reduction derives first-observed starts and active-to-inactive stops. Five fixtures plus source tests pass 24/24. The live `regression.single-scene` prefix emitted ApplicationLaunch → Home `081e6f2c…` → Detail `f86c6dce…`; backend returned 18 events and exact Home/Detail action/Resource ownership. Xcode's device-interaction request returned `Skill not found`, so no synthetic navigation input or final live oracle result was produced and Home-return remains unproven. |
+
+The ledger preserves what each run emitted, even when a later product decision
+changes its acceptance meaning. In particular, UIKit split rows that contain an
+initial Primary still prove the removal of *restarted* Primary intervals and fresh
+returned-Secondary occurrence identity, but they now fail the final requirement
+that structural Primary/sidebar/container surfaces never become RUM views.
 
 ## Real-device and human-driven rerun queue
 
@@ -214,11 +225,12 @@ real simultaneous-window layout is useful for earlier discrimination.
 
 | Priority | Experiments | Why the simulator or driver was insufficient | Appropriate rerun | Evidence required to close the row |
 | --- | --- | --- | --- | --- |
+| P0 | `EXP-107` | The Xcode workspace advertised device interaction, but the requested service returned `Skill not found`; no synthetic tap/path acknowledgement was sent. Console materialization is not visual proof | Retry with a working Xcode interaction service, `xcui`, or a human-driven tap while the agent records JSONL and backend intake | Produce acknowledged Home → Detail → Home steps, one final local oracle result, distinct H1/D1/H2 UUIDs, exact markers, and matching backend events in three clean runs |
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
-| P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own path and immediate markers with no false sibling or cross-scene stop |
+| P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
 | P0 | `EXP-041`, `EXP-089` | Fullscreen switching backgrounded or reactivated A, preventing visible-peer close continuity and a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
-| P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed path without false Primary/Sidebar intervals |
+| P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
 
@@ -235,8 +247,9 @@ driver reached the native navigation gesture.
 
 - Confirmed Xcode 27.0 and a booted iOS 27.0 iPad simulator.
 - Connected to Xcode's tool server through `xcrun mcpbridge`; workspace, schemes,
-  destinations, build, run, console, test, and device-interaction tools are
-  available.
+  destinations, build, run, console, and test calls work. Device interaction was
+  advertised at this checkpoint but a later real request returned `Skill not
+  found` (`EXP-107`), so it is not currently a usable capability.
 - Confirmed Datadog RUM backend search/aggregation access is available.
 - Confirmed the integration host opts out of multiple scenes and the Example host
   has no scene manifest.
@@ -850,8 +863,10 @@ driver reached the native navigation gesture.
   has been run; it is now an explicit edge rather than an assumed guarantee.
 - The explicit-session-stop experiment already proved raw intake and the backend
   session reducer accept overlapping scene views: the reducer converged to
-  `view.count:2`. Only product UI presentation and analytics semantics remain
-  unchecked.
+  `view.count:2`. At this checkpoint, product UI presentation and analytics
+  semantics were still open. The later approved direction makes Window Execution
+  Context visualization follow-up work: the SDK must preserve internal scene
+  ownership now without adding a temporary serialized window concept.
 - Operation teardown is fixed for unique identities. The later contract decision
   confirms that local and backend identity intentionally omit scene. Focused tests
   now validate duplicate `(name, key)` starts, parallel distinct keys, reverse
@@ -2392,9 +2407,53 @@ manifest before Datadog initialization, then started RUM session
 payloads. Invalid run `harness-phase1-invalid-20260913` selected an unknown
 scenario. Its captured output contained exactly the structured rejection manifest
 and one human-readable rejection; it contained no Datadog SDK log, session, or
-RUM payload. The catalog models signal waits and semantic expectations, but the
-observable driver and oracle are not implemented yet, so this experiment does not
-claim that modeled timelines already execute or pass locally.
+RUM payload. At that checkpoint the catalog modeled signal waits and semantic
+expectations, but the observable driver and oracle were not implemented, so this
+experiment does not claim that modeled timelines executed or passed locally.
+
+`ff8750dc3` completes the structured-recorder and pure-oracle phase. The recorder
+emits a versioned JSONL manifest and signals with distinct `ProbeSourceContext`,
+mapper-observed `ProbeRUMContext`, and trusted combined semantic context. A RUM
+view mapper reports document snapshots rather than inventing lifecycle callbacks;
+the pure reducer treats the first observed UUID as a start and an active-to-false
+change as its stop. It does not assume a `documentVersion == 0` snapshot exists.
+Error records deliberately omit message, stack, causes, and headers. The oracle
+uses mapper-observed UUID ownership, never the source scene/screen label, and
+returns exactly `PASS`, `FAIL`, `SKIPPED`, or `INCONCLUSIVE`.
+
+`EXP-107` validates that implementation. The generated probe test plan passes
+24/24, including fixtures for a correct Home₁ → Detail → Home₂ return, wrong-view
+attribution, a missing required event, a forbidden view, and an ignored gesture.
+Live run `structured-recorder-live-20260913` selected
+`regression.single-scene`, emitted its manifest first, and started session
+`6b194ceb-b0d8-4d0c-8848-ab293594cb79`. Local records show
+ApplicationLaunch → Home `081e6f2c-6121-4535-a05e-d2f6e4a6e4fe` → Detail
+`f86c6dce-9707-4770-82cc-1d5a0def06d4`, with the corresponding markers using the
+exact Home and Detail UUIDs. The initial Home mapper record lacked a native scene
+session ID because tracking began before the scene reader resolved it; later
+Detail records had the native ID. This is the concrete Phase-3 registry gap, not
+permission to infer ownership from the source label.
+
+The exact session-ID backend query returned 18 events: three views, six actions,
+six Resources, one long task, one vital, and the session event. Intake reports
+`view_count:3`, `action_count:6`, `resource_count:6`, zero errors/crashes, and the
+same exact Home/Detail mappings as local JSONL. Mapper callbacks happen before
+persistence/upload, so this backend result is the required independent acceptance
+proof for the executed prefix. Xcode's device-interaction request then returned
+`Skill not found`; no synthetic input was sent, no step acknowledgement or final
+live oracle result was produced, and no visual UI state is claimed from the
+console's destination-materialized signal. Home return and the three-repeat live
+acceptance loop remain open and are routed through the device/human queue.
+
+`acca8907f` updates every UIKit split scenario's expected timeline to the approved
+one-current-destination model. Primary lifecycle remains recorded for diagnostics,
+but the semantic oracle now forbids Primary in each scene; concurrent A/B split
+scenarios forbid it independently. The focused catalog regression covers all nine
+UIKit split scenarios and the complete probe plan passes 24/24. Historical
+`EXP-074`/`EXP-075`/`EXP-079`/`EXP-080`/`EXP-082` through `EXP-084` remain valid
+proof that Primary is no longer *restarted* and returned Secondary gets a fresh
+UUID. Their initial Primary RUM views are now explicitly retained as gap evidence,
+not reinterpreted as final success.
 
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene
@@ -2436,6 +2495,17 @@ ownership is safe in the exercised fullscreen topology.
   this document.
 - Do not consider callback counts, compilation, or crash safety proof of correct
   semantic attribution.
+- Do not treat `probe.source_scene` or `probe.screen` as RUM ownership. Those
+  fields describe the call site. Only mapper/backend view UUIDs and trusted scene
+  association establish where RUM attributed the event.
+- Do not treat a mapper callback as persistence or upload proof. It observes an
+  event before storage/filtering; retain an exact backend query for support claims.
+- Do not require a first RUM view snapshot with `documentVersion == 0`. The live
+  structured run first observed Home at version 1, so semantic start is derived
+  from the first observed UUID and stop from an active-to-false transition.
+- Do not claim visual UI state because console logs say a destination materialized.
+  `EXP-107` had no functioning Xcode interaction driver and no synthetic input;
+  use an acknowledged driver action, hierarchy/screenshot, or human observation.
 - Do not query this probe with `@probe.run_id`; use
   `@context.probe.run_id` or fall back to `service:ios-sdk-multi-scene-probe`
   followed by an exact session-ID query.
@@ -2518,6 +2588,11 @@ ownership is safe in the exercised fullscreen topology.
   same false Primary interval on both push and pop. Coalesce the materialized
   outgoing/incoming lifecycle pair within the active column, while starting the
   returned controller as a fresh RUM occurrence.
+- Do not accept the initial Primary/sidebar/container views in historical UIKit
+  split runs as final product semantics. Those sessions remain valuable evidence
+  that the branch removed *restarted* Primary intervals and preserved fresh
+  returned destinations, but the approved model forbids structural RUM views
+  entirely and the current oracle encodes that negative expectation.
 - Do not make a missing atomic-replacement source fall back to ordinary add.
   Post-run review of the first `EXP-060` draft found that it could materialize a
   cancelled or stale candidate, stop an unrelated current view, or turn scene

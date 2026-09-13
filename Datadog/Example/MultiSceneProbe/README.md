@@ -68,10 +68,22 @@ The catalog currently preserves these experiment families:
 | `regression.single-scene` | `EXP-026`, `EXP-032` | Existing deterministic automation |
 
 The scenario manifest already models ordered steps, signal waits, completion
-conditions, required capabilities, and the expected semantic timeline. The
-current app still executes its existing automation controls while the observable
-step driver and local semantic oracle are added in subsequent harness phases.
-Do not treat a modeled timeline as a local PASS until that oracle is present.
+conditions, required capabilities, and the expected semantic timeline. The app
+now records versioned JSONL probe signals and mapper-observed RUM snapshots. A
+pure reducer derives first-observed starts and active-to-inactive stops, and the
+semantic oracle returns only `PASS`, `FAIL`, `SKIPPED`, or `INCONCLUSIVE`. Its
+five fixtures cover correct Home return, wrong-view attribution, a missing event,
+a forbidden view, and an ignored native gesture; the generated test plan passes
+24/24. Observable step driving and emission of a final oracle result from a live
+run remain the next harness phase, so a modeled timeline or partial live prefix is
+not itself a local PASS.
+
+Probe call-site context and RUM ownership are intentionally separate. Source
+labels say where the harness invoked work; only mapper-observed RUM view UUIDs and
+scene metadata establish attribution. Mapper callbacks occur before persistence
+and upload, so mapper agreement still requires backend confirmation. The first
+structured live prefix has that confirmation for ApplicationLaunch → Home →
+Detail, but did not drive or validate the returned Home occurrence.
 
 ## Legacy environment adapter
 
@@ -182,17 +194,23 @@ Set `DD_MULTI_SCENE_SWIFTUI_LAYOUT=uikit-split` for the stock
 controller, then installs Secondary 1, and finally replaces it with a fresh
 same-class Secondary 2 while Primary remains visible. Each child records UIKit
 containment and appearance lifecycle events and emits a post-materialization
-action/resource marker. The required RUM occurrence order is
-`Primary → Secondary₁ → Secondary₂`, with no restarted Primary between the two
-secondaries. Use `uikit-split-subclass` only as the follow-up control that swaps
+action/resource marker. Primary lifecycle remains recorded as structural
+diagnostic input, but the approved RUM model exposes one current destination per
+scene. The required RUM occurrence order is therefore
+`Secondary₁ → Secondary₂`, with no Primary RUM view. Historical
+`EXP-080` evidence contains an initial Primary and proves only that the branch no
+longer restarts it between secondaries. Use `uikit-split-subclass` only as the follow-up control that swaps
 the stock container for an application subclass; this reveals whether the
 container itself becomes an extra automatically tracked RUM view.
 Set `DD_MULTI_SCENE_SWIFTUI_LAYOUT=uikit-split-navigation` for the stock split
 navigation control. It keeps one secondary `UINavigationController`, installs
 Secondary 1 as its stable root, pushes a fresh same-class Secondary 2, and pops
 back to the same Secondary 1 controller. The required occurrence order is
-`Primary → Secondary₁ → Secondary₂ → Secondary₁`, with a fresh UUID for the
-returned Secondary 1 and no Primary occurrence during either push or pop.
+`Secondary₁ → Secondary₂ → Secondary₁`, with a fresh UUID for the returned
+Secondary 1 and no Primary RUM occurrence. Historical `EXP-079` and
+`EXP-082` through `EXP-084` retain an initial structural Primary and are now gap
+evidence, while their fresh returned-Secondary and cancellation behavior remain
+valid.
 Set `DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=0` to leave Secondary 2 visible
 after the automatic push. This probe-only gate permits an interactive edge-pop
 gesture to be cancelled or completed without racing the scheduled pop. A
@@ -239,8 +257,10 @@ The deterministic flow is:
 
 Each marker emits one custom action and one short manual resource. Attributes
 include `probe.run_id`, `probe.source_scene`, `probe.scene_session_id`,
-`probe.screen`, and `probe.phase`. Event mappers print the RUM session, view,
-action, and resource IDs selected by the SDK. Query ingested events with:
+`probe.screen`, and `probe.phase`; these describe the source call site, not proof
+of RUM ownership. Tracked-view records use the separate `probe.view.*` namespace.
+Event mappers print the RUM session, view, action, and resource IDs selected by the
+SDK. Query ingested events with:
 
 ```text
 @context.probe.run_id:<unique-run-id>
