@@ -107,28 +107,32 @@ Current execution order:
    Three clean Home → Detail → Home runs each produced one 7/7 local `PASS` before
    matching backend confirmation; the probe plan passes 35/35. Keep harness and
    production SDK commits separate.
-2. Extend the driver across deterministic stack abort/replacement, split
-   selection, UIKit cancel/finish, and exact scene open/activate/close steps.
+2. Completed in `4a1311dd4` and `EXP-110`: drive stack abort and
+   same-/different-type replacement through exact observed signals, with decisive
+   final action/Resource checks. Clean reruns passed 5/5, 6/6, and 6/6 locally
+   and in backend intake; the probe plan passes 37/37.
+3. Extend the driver across split selection, UIKit cancel/finish, and exact scene
+   open/activate/close steps.
    Keep native gesture proof in the real-device/human queue.
-3. Turn the debug per-window occurrence source into the approved optional iOS 27
+4. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
    duplicates only in its authoritative container. No public API lands without
    RFC/API review.
-4. Design the required scene-aware manual view start/stop overloads and Objective-C
+5. Design the required scene-aware manual view start/stop overloads and Objective-C
    companion. The same key must coexist independently in A and B while existing
    APIs preserve inferred/last-interacted compatibility.
-5. Suppress structural UIKit Primary/sidebar/container views so each scene has one
+6. Suppress structural UIKit Primary/sidebar/container views so each scene has one
    current destination. Retain the passing fresh return-occurrence and transition
    cancellation behavior.
-6. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+7. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-7. Preserve the passing retained split return from `EXP-105`, then validate
+8. Preserve the passing retained split return from `EXP-105`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-8. Validate simultaneous visible A/B transitions, then genuine disconnect,
+9. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-9. Complete Operation public targeting and its live backend matrix.
-10. Close the bounded causal/downstream rows and live normal-app compatibility.
+10. Complete Operation public targeting and its live backend matrix.
+11. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -168,22 +172,26 @@ experiment; it does not itself change the SDK support verdict.
    all 35 tests pass, and three clean iPadOS 27 runs each passed 7/7 locally and
    in backend intake. View-stop mapper snapshots may arrive after the next view
    start during animation, so the oracle requires those eventual lifecycle facts
-   without mistaking callback order for navigation order. Remaining phase-4 work
-   is exact open/activate/close execution, split selection, stack abort and
-   replacement, and deterministic UIKit transitions. Keep deterministic
+   without mistaking callback order for navigation order. Keep deterministic
    state-machine proof separate from genuine native gesture proof; a drag without
    transition/path recognition is `INCONCLUSIVE`.
-5. Add one reproducible run command that preflights capabilities, records source
+5. Completed in `4a1311dd4` and `EXP-110`: extend the signal-driven loop to stack
+   abort and same-/different-type replacement. The decisive final action and
+   Resource are part of each semantic timeline. The complete probe plan passes
+   37/37; clean iPadOS 27 runs pass locally and in backend intake without errors.
+   Remaining phase-4 work is split selection, deterministic UIKit transitions,
+   and exact scene open/activate/close execution.
+6. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The first harness acceptance loop is complete in `EXP-109`: three clean
+The stack harness acceptance loop is complete through `EXP-110`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
-the deliberately wrong-view fixture continues to fail locally with an actionable
-reason. Hardware-only rows remain prepared but unclosed in the experiment rerun
-queue.
+clean abort and replacement reruns passed 5/5, 6/6, and 6/6. The deliberately
+wrong-view fixture continues to fail locally with an actionable reason.
+Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
 

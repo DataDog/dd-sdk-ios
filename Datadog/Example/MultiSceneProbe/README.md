@@ -43,9 +43,9 @@ The catalog currently preserves these experiment families:
 | `swiftui.automatic.two-window` | `EXP-028` | Existing deterministic automation |
 | `swiftui.stack.occurrence-push` | `EXP-090` setup | Existing deterministic automation |
 | `swiftui.stack.return` | `EXP-098`, `EXP-099`, `EXP-109` | Signal-driven PASS |
-| `swiftui.stack.abort` | `EXP-091` | Existing deterministic automation |
-| `swiftui.stack.same-type-replacement` | `EXP-090` | Existing deterministic automation |
-| `swiftui.stack.different-type-replacement` | `EXP-054` | Existing deterministic automation; keyed rerun pending |
+| `swiftui.stack.abort` | `EXP-091`, `EXP-110` | Signal-driven PASS |
+| `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110` | Signal-driven PASS |
+| `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069` | Existing deterministic automation |
@@ -76,13 +76,13 @@ five fixtures cover correct Home return, wrong-view attribution, a missing event
 a forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 35/35. The
-`swiftui.stack.return` scenario now drives its exact scene, waits for observable
-path, destination, and RUM-occurrence signals, acknowledges every step, and emits
-exactly one final result. Three clean iPadOS 27 runs passed 7/7 locally and in
-backend intake (`EXP-109`). Other scenarios remain at the execution level shown
-in the table; a modeled timeline or partial live prefix is not itself a local
-PASS.
+future Execution Context seam. The generated test plan passes 37/37. The stack
+return, abort, same-type replacement, and different-type replacement scenarios
+now drive their exact scene, wait for observable path, destination, and
+RUM-occurrence signals, acknowledge every step, and emit exactly one final
+result. Clean iPadOS 27 runs pass locally and in backend intake (`EXP-109`,
+`EXP-110`). Other scenarios remain at the execution level shown in the table; a
+modeled timeline or partial live prefix is not itself a local PASS.
 
 Probe call-site context and RUM ownership are intentionally separate. Source
 labels say where the harness invoked work; only mapper-observed RUM view UUIDs and
@@ -93,13 +93,17 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 
 ## Observable driver
 
-Only `swiftui.stack.return` is wired into the signal-driven execution loop so far.
-It does not use arbitrary navigation delays: it waits for scene readiness, route
-mutation, destination materialization, and the expected mapper-observed RUM
-occurrence before advancing. View-stop mapper snapshots may arrive after the next
-view starts during a SwiftUI animation, so stops are required eventual lifecycle
-facts rather than navigation-order clocks. Ordered view starts and action/Resource
-ownership remain strict.
+`swiftui.stack.return`, `swiftui.stack.abort`,
+`swiftui.stack.same-type-replacement`, and
+`swiftui.stack.different-type-replacement` use the signal-driven execution loop.
+They do not use arbitrary navigation delays: the driver waits for scene readiness,
+route mutation, destination materialization, and expected mapper-observed RUM
+occurrences before advancing. The abort timeline forbids a speculative Detail;
+replacement timelines require the decisive action and Resource on the new
+occurrence. View-stop mapper snapshots may arrive after the next view starts
+during a SwiftUI animation, so stops are required eventual lifecycle facts rather
+than navigation-order clocks. Ordered view starts and action/Resource ownership
+remain strict.
 
 Run each acceptance attempt after uninstalling the probe, with a unique run ID
 and `--probe-run-mode clean`, then join its JSONL and backend query by that ID.

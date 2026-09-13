@@ -62,8 +62,9 @@ boundary, in this order:
 | 45 | `Model one RUM destination per scene` | UIKit split manifests forbid structural Primary RUM views and retain Primary lifecycle only as negative diagnostic evidence |
 | 46 | `Add exact scene registry to multi-scene probe` | Main-actor logical/native scene registry, weak window ownership, lifecycle/geometry/route snapshots, disconnect fencing, and schema-version compatibility |
 | 47 | `Drive probe navigation through observed signals` | Signal-driven Home → Detail → Home execution, exact scene/path/destination/RUM-occurrence waits, one terminal verdict, deferred lifecycle-fact reduction, and focused driver/oracle tests |
+| 48 | `Drive deterministic SwiftUI navigation scenarios` | Signal-driven stack abort and same-/different-type replacement, exact path/destination acknowledgements, decisive action/Resource expectations, and focused driver tests |
 
-Rows 1-47 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-48 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -73,7 +74,7 @@ Rows 1-47 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
 `4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
-Row 47 is `34ba7eabf`.
+Row 47 is `34ba7eabf`, and row 48 is `4a1311dd4`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -88,7 +89,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-twenty exact-path commits in rows 28-47 use that policy. This is local
+twenty-one exact-path commits in rows 28-48 use that policy. This is local
 checkpoint history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -212,6 +213,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-107 | `structured-recorder-live-20260913` | `6b194ceb-b0d8-4d0c-8848-ab293594cb79` | iPadOS 27 | Structured-recorder/oracle phase. Versioned JSONL keeps probe source separate from mapper-observed RUM ownership; snapshot reduction derives first-observed starts and active-to-inactive stops. Five fixtures plus source tests pass 24/24. The live `regression.single-scene` prefix emitted ApplicationLaunch → Home `081e6f2c…` → Detail `f86c6dce…`; backend returned 18 events and exact Home/Detail action/Resource ownership. Xcode's device-interaction request returned `Skill not found`, so no synthetic navigation input or final live oracle result was produced and Home-return remains unproven. |
 | EXP-108 | `scene-registry-live-20260913-1647` | `de29d1e3-0ff6-44bb-a3e6-14c17047429a` | iPadOS 27 | Exact probe scene-registry phase. Seven new tests cover logical/native identity, alias rejection, disconnect/reconnect generations, stale-handle rejection, weak windows, scene-local route/presentation/future-context state, and peer isolation; the full probe plan passes 31/31. After a clean uninstall, schema-v2 JSONL emitted scene A ready as native `E32B88D1…`, generation 0, 955×1253 regular/regular, then foreground activation and Home → Detail mutation. Local mapper UUIDs Home `91826d58…` and Detail `3d91c699…` match 18 backend events, including all six actions and six Resources. The initial Home mapper snapshot preceded native resolution and is joined later through its stable logical scene; this harness seam is not a shipping SDK fix. Xcode install/run recovered, but its required `device-interaction` skill is still unavailable, so no Home-return or final live oracle claim is added. |
 | EXP-109 | `observable-home-return-20260913-1736-c`; `observable-home-return-20260913-1739-d`; `observable-home-return-20260913-1741-e` | `272c5006-bf32-4ee9-9adb-3b75f9a39639`; `25cc4383-8f80-4ad8-9c44-0ef65771896b`; `11dba044-6d97-4095-a607-25ee742aa804` | iPadOS 27 | Signal-driven Home → Detail → Home acceptance. After a clean uninstall, all three runs produced exactly one local `PASS` with 7/7 expectations and six acknowledged steps. The view UUID chains were `30ff5793…` → `4ca6ef28…` → `03f41a11…`, `bc6d76ab…` → `d3d7648a…` → `6352a4d2…`, and `f5cf4344…` → `51c3c342…` → `d5edb3a6…`; each post-return action and Resource belonged to Home₂. Backend intake independently contains launch plus one Home₁, Detail, and Home₂ per run, the exact post-return owners, and no errors. Two harness-only failures are retained: root `onAppear` did not repeat because SwiftUI retained Home even while RUM correctly created Home₂, and one repeat delivered Home₁'s stop mapper snapshot after Detail's start during animation. The driver now waits for the new RUM occurrence, and the oracle requires eventual stop facts without treating callback order as navigation order. The probe plan passes 35/35. This validates deterministic occurrence/attribution behavior on the experimental SDK, not automatic zero-code SwiftUI support or genuine native gestures. |
+| EXP-110 | `observable-stack-abort-20260913-1800-a`; `observable-stack-same-type-20260913-1803-a`; `observable-stack-different-type-20260913-1806-a`; strengthened reruns `observable-stack-abort-20260913-1810-b`, `observable-stack-same-type-20260913-1812-b`, `observable-stack-different-type-20260913-1814-b` | `0550e989-8427-494f-b04a-505255a8acce`; `72dc8338-b5eb-470b-8d39-ecfa24f455ff`; `e7a99a66-a9d4-45e0-9719-e152de01b1a3`; `c8f6fb75-62cb-4f43-9515-988ae36d1586`; `5dea4da1-8949-4760-a89b-41c2758aebb0`; `8b913d29-e0f5-4449-880f-7e7c823e3b91` | iPadOS 27 | Signal-driven stack abort and replacement acceptance. The first clean trio proved the driver and view chains, then the oracle was strengthened to require a decisive action and Resource on the final view. The clean reruns emitted one local `PASS` each: abort 5/5 with only Home `fb10de5b…`; same-type replacement 6/6 with Home `22e06720…`, Detail₁ `40d87f4b…`, and distinct same-named Detail₂ `f75ca7dc…`; different-type replacement 6/6 with Home `47ac4967…`, Detail `b4cb7536…`, and Alternate `9a5ca46d…`. Backend intake independently reports those exact view sets, the required final action/Resource owners, and no error bucket. All 37 probe tests and repository lint pass. This validates deterministic experimental occurrence/attribution behavior, not automatic zero-code discovery or native gestures. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -2539,6 +2541,61 @@ that run's Home₂, and no error bucket. All 35 probe tests pass. This closes th
 structured Home-return acceptance loop. It does not close automatic zero-code
 SwiftUI semantics or the native interactive-pop rows; those still require their
 own integration and recognized gesture evidence.
+
+`4a1311dd4` extends the observable driver to three more deterministic stack
+scenarios. It executes coalesced push/revert, same-type replacement, and
+different-type replacement through the exact registered scene, then advances
+only after the expected path and destination signals. The old delay-driven
+autorun blocks are disabled for those scenarios. The semantic timelines also
+require one decisive action and Resource on the final view, so view creation
+alone cannot produce a passing result. Two focused driver tests cover the abort
+and same-type replacement state machines; the complete probe plan passes 37/37.
+
+`EXP-110` retains both live passes. The first clean trio established the driver
+shape before final-marker Resources were part of the timeline:
+
+- `observable-stack-abort-20260913-1800-a`, session
+  `0550e989-8427-494f-b04a-505255a8acce`, emitted only launch and Home
+  `f3691ed4-99b9-4fca-87c4-2c8afbd0452f`; no speculative Detail existed.
+- `observable-stack-same-type-20260913-1803-a`, session
+  `72dc8338-b5eb-470b-8d39-ecfa24f455ff`, emitted Home
+  `68d9b0ac-14d2-423f-ab56-7403c2f931c3`, Detail₁
+  `99ad3415-a5f9-40a0-b739-7f92662dfa5d`, and distinct same-named Detail₂
+  `d43a295e-ad72-4fac-bb9a-893afc52c97d`.
+- `observable-stack-different-type-20260913-1806-a`, session
+  `e7a99a66-a9d4-45e0-9719-e152de01b1a3`, emitted Home
+  `3bfd9740-7ba2-4b1f-be4a-9b5d3deb8fcf`, Detail
+  `0013d81e-5fef-446f-97d1-514979989de1`, and Alternate
+  `881a6ca0-820f-4ff3-80d1-20180ff5d7b8`.
+
+After strengthening the catalog, each scenario was rerun after a clean uninstall:
+
+- Abort run `observable-stack-abort-20260913-1810-b`, session
+  `c8f6fb75-62cb-4f43-9515-988ae36d1586`, passed 5/5. Backend contains one
+  launch and one Home `fb10de5b-f55b-436f-8d82-c1fba5d8ab7b`; all five
+  actions and Resources, including `post-aborted-navigation`, use Home. There is
+  no Detail or error event.
+- Same-type run `observable-stack-same-type-20260913-1812-b`, session
+  `5dea4da1-8949-4760-a89b-41c2758aebb0`, passed 6/6. Backend contains Home
+  `22e06720-665e-4e67-b724-6c3243ca1545`, Detail₁
+  `40d87f4b-275d-48ee-9615-6f908d96c93f`, and distinct same-named Detail₂
+  `f75ca7dc-a3b9-431d-9696-7eb3e4b8f7d0`; the `binding-update-2` action and
+  Resource use Detail₂. The Detail₁ delayed task ran after replacement and used
+  the current Detail₂ view. Its source label records where the task was scheduled,
+  but this scenario does not decide whether post-replacement work should retain
+  its origin or follow the current destination; that marker is outside the pass
+  criteria and remains a downstream causal-attribution follow-up.
+- Different-type run `observable-stack-different-type-20260913-1814-b`, session
+  `8b913d29-e0f5-4449-880f-7e7c823e3b91`, passed 6/6. Backend contains Home
+  `47ac4967-d99c-49b5-ad0b-c3782e2d90c9`, Detail
+  `b4cb7536-ab2e-4c42-b7b2-f882aede748d`, and Alternate
+  `9a5ca46d-2eae-4078-b35d-11fc8ebd3d52`; the Alternate `on-appear` action and
+  Resource use the Alternate view. No error event was reported.
+
+These runs close the deterministic stack abort and replacement harness rows. They
+do not change the product verdict: the passing route-owned debug input is the
+prototype for the reviewed container-level semantic integration, while
+transparent automatic SwiftUI discovery remains insufficient.
 
 Focused legacy and keyed state-machine coverage is now 35/35 and includes mount
 idempotence, disappearance, transient detachment, same-key return, scene

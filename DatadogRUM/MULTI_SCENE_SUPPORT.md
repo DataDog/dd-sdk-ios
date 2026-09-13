@@ -83,10 +83,12 @@ also remain open.
 The structured probe records versioned JSONL, separates call-site source from
 mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
-readiness, activation, geometry, route, and disconnect generations. Its first
-signal-driven scenario now passes 35/35 tests and three clean iPadOS 27 runs with
-distinct Home₁ → Detail → Home₂ UUIDs, exact post-return ownership, one local
-terminal verdict, and matching backend intake per run (`EXP-108`, `EXP-109`).
+readiness, activation, geometry, route, and disconnect generations. Its
+signal-driven stack scenarios now pass 37/37 tests. Clean iPadOS 27 runs prove
+distinct Home₁ → Detail → Home₂ occurrences, no speculative view for an aborted
+push, and fresh occurrences for same- and different-type replacements. Each run
+has exact final action/Resource ownership, one local terminal verdict, and
+matching backend intake (`EXP-108` through `EXP-110`).
 Native gesture synthesis remains unavailable and is kept separate from this
 deterministic programmatic proof.
 Detailed conclusions live in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md);
@@ -186,10 +188,11 @@ customer workflow, and required tests live only in
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `60da5316b` (`Preserve revealed SwiftUI view occurrences across
-remount`). The latest implementation checkpoints are `acca8907f` (`Model one RUM
-destination per scene`), `abfb93d45` (`Add exact scene registry to multi-scene
-probe`), and `34ba7eabf` (`Drive probe navigation through observed signals`). All
-are unsigned local development commits and must not be pushed. The
+remount`). The latest implementation checkpoints are `abfb93d45` (`Add exact
+scene registry to multi-scene probe`), `34ba7eabf` (`Drive probe navigation
+through observed signals`), and `4a1311dd4` (`Drive deterministic SwiftUI
+navigation scenarios`). All are unsigned local development commits and must not
+be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
@@ -203,10 +206,10 @@ without customer-state reset in one and two scenes. `EXP-104` records the duplic
 returned Detail failure, and `EXP-105` proves the source-started UUID survives a
 SwiftUI subtree remount with exact action/resource ownership. This remains an
 experimental branch, not a release-ready support claim. `EXP-106` through
-`EXP-109` cover deterministic configuration, structured mapper evidence,
+`EXP-110` cover deterministic configuration, structured mapper evidence,
 fixture-based semantic reduction, exact scene registration, signal-driven step
-execution, three repeatable local verdicts, and backend acceptance. Only the
-Home-return scenario is fully driven so far.
+execution, repeatable local verdicts, and backend acceptance. Home return, abort,
+same-type replacement, and different-type replacement are fully driven.
 
 ### Exact next work
 
@@ -224,32 +227,35 @@ for the shipping integration:
    mapper-occurrence signals drive Home → Detail → Home without arbitrary delays.
    Three clean runs each produced one 7/7 local `PASS`, distinct H1/D1/H2 UUIDs,
    and matching backend action/Resource ownership; the probe plan passes 35/35.
-3. Extend the same driver to stack abort and replacement, split selection, UIKit
-   deterministic transitions, and exact scene open/activate/close steps. Keep
-   native gesture rows explicitly hardware/human-driven.
-4. Prepare RFC/API review for the optional container-level SwiftUI semantic
+3. Completed in `4a1311dd4`/`EXP-110`: the same driver covers stack abort and
+   same-/different-type replacement. Strengthened clean runs passed 5/5, 6/6,
+   and 6/6 locally and in backend intake; the probe plan passes 37/37.
+4. Extend the driver to split selection, UIKit deterministic transitions, and
+   exact scene open/activate/close steps. Keep native gesture rows explicitly
+   hardware/human-driven.
+5. Prepare RFC/API review for the optional container-level SwiftUI semantic
    integration. It must consume a customer path/router and centralized resolver,
    coexist with automatic tracking, preserve customer state, and suppress
    duplicate automatic views only within its target container.
-5. Prepare the scene-aware manual view start/stop API and Objective-C companion.
+6. Prepare the scene-aware manual view start/stop API and Objective-C companion.
    The same manual key must coexist in A and B, and stopping A must not stop B.
-6. Update UIKit split tracking to exclude structural Primary/container views,
+7. Update UIKit split tracking to exclude structural Primary/container views,
    while retaining the already-correct fresh Secondary return occurrences and
    cancelled-transition behavior.
-7. Obtain a recognized native interactive SwiftUI pop and prove both cancellation
+8. Obtain a recognized native interactive SwiftUI pop and prove both cancellation
    and completion. Keep the focused arbiter tests, but do not reuse `EXP-100`'s
    ignored edge drags as evidence.
-8. Preserve the passing retained split return from `EXP-105`, then validate
+9. Preserve the passing retained split return from `EXP-105`, then validate
    adaptive collapse/expansion on a capable destination.
-9. Repeat simultaneous A/B navigation in a topology where both windows are visibly
+10. Repeat simultaneous A/B navigation in a topology where both windows are visibly
    active and can complete independently. Retain the iOS 27 UIKit handoff and
    review the separate application-subclass predicate issue.
-10. Run genuine scene disconnect/reconnect, per-scene background/foreground, and
+11. Run genuine scene disconnect/reconnect, per-scene background/foreground, and
    concurrent restoration. A retained scene snapshot is fallback evidence only;
    disconnect must fence it until a new concrete mount.
-11. Complete Operations public-target API review and live A-to-B/duplicate-start
+12. Complete Operations public-target API review and live A-to-B/duplicate-start
    validation. Keep application-wide `(name, operationKey)` identity.
-12. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
+13. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
    live single-scene/custom-handler compatibility and measure event-handoff
    recursion and overhead. Repeat the release matrix on iOS 27.1 and iPhone Duo.
 
@@ -288,9 +294,10 @@ for the shipping integration:
   initialization. It records ordered versioned JSONL signals, keeps call-site
   source separate from mapper-observed RUM ownership, derives view start/stop from
   snapshots, and evaluates ordered/negative expectations using only `PASS`,
-  `FAIL`, `SKIPPED`, and `INCONCLUSIVE`. Its first observable driver waits for
-  exact scene, path, destination, and RUM-occurrence signals; Home → Detail → Home
-  passes 35/35 tests and three clean live runs with one final verdict per run.
+  `FAIL`, `SKIPPED`, and `INCONCLUSIVE`. Its observable driver waits for exact
+  scene, path, destination, and RUM-occurrence signals. Home return, abort, and
+  same-/different-type replacement pass 37/37 tests and clean live runs with one
+  final verdict per run.
   This improves evidence quality but does not change the RUM support verdict.
 - UIKit split scenario manifests now forbid Primary as a RUM view. Primary
   lifecycle is retained as structural diagnostic evidence, while Secondary is
@@ -306,13 +313,19 @@ As of 2026-09-13:
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 35/35. Three clean
+  oracle, scene registry, and observable driver pass 37/37. Three clean
   `swiftui.stack.return` runs produced one 7/7 local `PASS` each, distinct
   Home₁/Detail/Home₂ UUIDs, and post-return action/Resource ownership on Home₂.
   Backend sessions `272c5006-bf32-4ee9-9adb-3b75f9a39639`,
   `25cc4383-8f80-4ad8-9c44-0ef65771896b`, and
   `11dba044-6d97-4095-a607-25ee742aa804` independently confirm those timelines
   with no errors (`EXP-109`).
+- Clean stack abort and same-/different-type replacement reruns passed 5/5, 6/6,
+  and 6/6 locally. Backend sessions `c8f6fb75-62cb-4f43-9515-988ae36d1586`,
+  `5dea4da1-8949-4760-a89b-41c2758aebb0`, and
+  `8b913d29-e0f5-4449-880f-7e7c823e3b91` confirm no speculative aborted view,
+  fresh replacement UUIDs, exact final action/Resource owners, and no errors
+  (`EXP-110`).
 - Backend split runs preserve exact destination occurrences and markers, including
   the retained-return remount fix (`EXP-102` through `EXP-105`). UIKit history
   still contains the now-forbidden initial structural Primary.
