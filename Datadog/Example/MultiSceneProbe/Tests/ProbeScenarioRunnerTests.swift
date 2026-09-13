@@ -18,6 +18,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
                 "swiftui.coexistence.automatic-manual-sheet",
+                "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
@@ -75,6 +76,77 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.ownerViewRelation == .same
             }
         )
+    }
+
+    func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.automatic-keyed-manual-view"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .startKeyedManualView && $0.value == "compose"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .stopKeyedManualView && $0.value == "compose"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "keyed-manual-stopped-immediate"
+                    && $0.ownerViewStartedAfterStep == .stopKeyedManualView
+                    && $0.ownerViewRelation == .different
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStopped
+                    && $0.rumViewOrigin == .automatic
+                    && $0.ownerViewReferenceAction == "automatic-home-before-keyed-manual"
+                    && $0.ownerViewRelation == .same
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.interval == "keyed-manual-authority"
+            }
+        )
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline.filter {
+                $0.name == "keyed-manual-active"
+                    && $0.scene == "scene-A"
+                    && $0.screen == "compose"
+                    && $0.occurrence == 1
+                    && $0.rumViewOrigin == .semantic
+            }.map(\.kind),
+            [.action, .resource]
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStopped
+                    && $0.scene == "scene-A"
+                    && $0.screen == "compose"
+                    && $0.occurrence == 1
+                    && $0.rumViewOrigin == .semantic
+            }
+        )
+        for marker in [
+            "keyed-manual-stopped-immediate",
+            "keyed-manual-stopped-settled"
+        ] {
+            XCTAssertEqual(
+                scenario.expectedSemanticTimeline.filter { $0.name == marker }.map(\.kind),
+                [.action, .resource]
+            )
+        }
     }
 
     func testUIKitSplitScenariosTreatPrimaryAsStructuralContext() throws {

@@ -498,12 +498,18 @@ internal enum ProbeSemanticOracle {
         }
         if let expectedOrigin = expectation.rumViewOrigin {
             guard let observedOrigin = timeline.rumViewOrigin(for: signal) else {
+                if isViewLifecycle(expectation.kind) && !hasNamedIdentity {
+                    return .noMatch
+                }
                 return .violation(
                     "expected \(describe(expectation)) on a \(expectedOrigin.rawValue) RUM view, "
                         + "but the owner view origin was unresolved"
                 )
             }
             guard observedOrigin == expectedOrigin else {
+                if isViewLifecycle(expectation.kind) && !hasNamedIdentity {
+                    return .noMatch
+                }
                 return .violation(
                     "expected \(describe(expectation)) on a \(expectedOrigin.rawValue) RUM view, "
                         + "observed \(observedOrigin.rawValue)"
@@ -546,6 +552,9 @@ internal enum ProbeSemanticOracle {
                 )
             }
             guard observedRelation == expectedRelation else {
+                if isViewLifecycle(expectation.kind) && !hasNamedIdentity {
+                    return .noMatch
+                }
                 return .violation(
                     "expected \(describe(expectation)) to use a \(expectedRelation.rawValue) "
                         + "RUM view from action \(referenceAction), observed "
@@ -720,6 +729,12 @@ internal enum ProbeSemanticOracle {
         _ kind: ProbeExpectationKind
     ) -> Bool {
         kind == .viewStopped || kind == .resource
+    }
+
+    private static func isViewLifecycle(
+        _ kind: ProbeExpectationKind
+    ) -> Bool {
+        kind == .viewStarted || kind == .viewStopped
     }
 
     private static func isRUMEvent(_ kind: ProbeExpectationKind) -> Bool {

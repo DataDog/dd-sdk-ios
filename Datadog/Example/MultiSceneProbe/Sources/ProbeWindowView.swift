@@ -278,6 +278,7 @@ struct ProbeWindowRoot: View {
     @State private var didShowDetail = false
     @State private var didOpenPeer = false
     @State private var isSheetPresented = false
+    @State private var isKeyedManualViewActive = false
     @State private var didScheduleClose = false
     @State private var didScheduleAbortedDetail = false
     @State private var didScheduleDetailReplacement = false
@@ -545,7 +546,12 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationContent: some View {
-        if
+        if isKeyedManualViewActive {
+            ProbeKeyedManualView(
+                window: window,
+                sceneSessionID: sceneSessionID
+            )
+        } else if
             ProbeRuntime.usesUIKitSplitLayout
                 || ProbeRuntime.usesUIKitSplitSubclass
                 || ProbeRuntime.usesUIKitSplitNavigationLayout
@@ -745,6 +751,9 @@ struct ProbeWindowRoot: View {
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection?.screen ?? "split-empty"
         }
+        if isKeyedManualViewActive {
+            return "compose"
+        }
         if isSheetPresented {
             return "sheet"
         }
@@ -756,6 +765,9 @@ struct ProbeWindowRoot: View {
             return splitSelection.map { [$0.screen] } ?? []
         }
         let navigationRoute = navigationPathDescription(for: path)
+        if isKeyedManualViewActive {
+            return navigationRoute + ["compose"]
+        }
         return isSheetPresented ? navigationRoute + ["sheet"] : navigationRoute
     }
 
@@ -1176,6 +1188,20 @@ struct ProbeWindowRoot: View {
                         reason: "unsupported SwiftUI presentation \(value)"
                     )
                 }
+            case .startKeyedManualView:
+                guard step.value == "compose" else {
+                    return .rejected(
+                        reason: "unsupported keyed manual view \(step.value ?? "nil")"
+                    )
+                }
+                setKeyedManualViewActive(true)
+            case .stopKeyedManualView:
+                guard step.value == "compose" else {
+                    return .rejected(
+                        reason: "unsupported keyed manual view \(step.value ?? "nil")"
+                    )
+                }
+                setKeyedManualViewActive(false)
             case .pushAndRevertSwiftUIPath:
                 guard step.value == "detail-1" else {
                     return .rejected(
@@ -1285,6 +1311,84 @@ struct ProbeWindowRoot: View {
         }
     }
 
+    private func setKeyedManualViewActive(_ isActive: Bool) {
+        guard isKeyedManualViewActive != isActive else {
+            return
+        }
+
+        if isActive {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "home"
+                    ),
+                    interval: "keyed-manual-authority"
+                )
+            )
+            isKeyedManualViewActive = true
+            updateSceneRoute()
+            RUMMonitor.shared().startView(
+                key: "probe-keyed-manual-view",
+                name: "ProbeKeyedManualView",
+                attributes: [
+                    ProbeRuntime.Attribute.runID: window.runID,
+                    ProbeRuntime.Attribute.host: "native-swiftui-keyed-manual",
+                    ProbeRuntime.Attribute.sourceScene: window.label,
+                    ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                    ProbeRuntime.Attribute.screen: "compose",
+                    ProbeRuntime.Attribute.viewScene: window.label,
+                    ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+                    ProbeRuntime.Attribute.viewScreen: "compose"
+                ]
+            )
+            ProbeRuntime.record(
+                "keyed manual view started source=\(window.label) "
+                    + "native=\(sceneSessionID) screen=compose"
+            )
+            return
+        }
+
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: "compose"
+                ),
+                interval: "keyed-manual-authority"
+            )
+        )
+        RUMMonitor.shared().stopView(key: "probe-keyed-manual-view")
+        isKeyedManualViewActive = false
+        updateSceneRoute()
+        ProbeRuntime.record(
+            "keyed manual view stopped source=\(window.label) "
+                + "native=\(sceneSessionID) screen=compose"
+        )
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: "home",
+            phase: "keyed-manual-stopped-immediate"
+        )
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, !isKeyedManualViewActive else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "home",
+                phase: "keyed-manual-stopped-settled"
+            )
+        }
+    }
+
     private func updateSceneRoute() {
         guard
             let handle = sceneHandle,
@@ -1296,6 +1400,40 @@ struct ProbeWindowRoot: View {
             currentSceneRoute,
             for: handle
         )
+    }
+}
+
+private struct ProbeKeyedManualView: View {
+    let window: ProbeWindow
+    let sceneSessionID: String
+
+    @State private var didAppear = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ProbeHeading(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "compose"
+            )
+            Text("This destination is tracked through the keyed manual RUM API.")
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .padding(24)
+        .accessibilityIdentifier("probe.native.\(window.label).compose")
+        .onAppear {
+            guard !didAppear else {
+                return
+            }
+            didAppear = true
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "compose",
+                isCommitted: true
+            )
+        }
     }
 }
 

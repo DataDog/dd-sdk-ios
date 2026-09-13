@@ -13,6 +13,8 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case closeWindow = "close-window"
     case setSwiftUIPath = "set-swiftui-path"
     case setSwiftUIPresentation = "set-swiftui-presentation"
+    case startKeyedManualView = "start-keyed-manual-view"
+    case stopKeyedManualView = "stop-keyed-manual-view"
     case replaceSwiftUIDestination = "replace-swiftui-destination"
     case pushAndRevertSwiftUIPath = "push-and-revert-swiftui-path"
     case setSplitSelection = "set-split-selection"

@@ -9,6 +9,23 @@ import Foundation
 enum ProbeScenarioCatalog {
     static let defaultIdentifier = "interactive.manual"
 
+    private static let observableDriverIdentifiers: Set<String> = [
+        "swiftui.stack.return",
+        "swiftui.stack.abort",
+        "swiftui.stack.same-type-replacement",
+        "swiftui.stack.different-type-replacement",
+        "swiftui.coexistence.semantic-a-automatic-b",
+        "swiftui.coexistence.automatic-manual-sheet",
+        "swiftui.coexistence.automatic-keyed-manual-view",
+        "swiftui.split.automatic-baseline",
+        "swiftui.split.same-type-selection",
+        "swiftui.split.retained-return",
+        "uikit.split.pop-cancel",
+        "uikit.split.pop-finish",
+        "windows.activation-sequence",
+        "windows.close-with-resource"
+    ]
+
     static let all: [ProbeScenario] = [
         interactiveManual,
         automaticSingleWindow,
@@ -20,6 +37,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackDifferentTypeReplacement,
         swiftUICoexistenceSemanticAAutomaticB,
         swiftUICoexistenceAutomaticManualSheet,
+        swiftUICoexistenceAutomaticKeyedManualView,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
         swiftUIStackNativePopFinish,
@@ -82,6 +100,10 @@ enum ProbeScenarioCatalog {
 
     static func scenario(identifier: String) -> ProbeScenario? {
         all.first { $0.identifier == identifier }
+    }
+
+    static func usesObservableDriver(_ scenario: ProbeScenario) -> Bool {
+        observableDriverIdentifiers.contains(scenario.identifier)
     }
 
     static func scenario(
@@ -495,6 +517,133 @@ enum ProbeScenarioCatalog {
             $0.manualSwiftUIViewScreensByScene = ["scene-A": ["sheet"]]
         }
     )
+
+    private static let swiftUICoexistenceAutomaticKeyedManualView = ProbeScenario(
+        identifier: "swiftui.coexistence.automatic-keyed-manual-view",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "automatic-home-before-keyed-manual"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "keyed-manual-active"),
+            ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "compose")
+        ],
+        completionConditions: keyedManualReturnExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .action,
+                name: "automatic-home-before-keyed-manual",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "automatic-home-before-keyed-manual",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                rumViewOrigin: .automatic,
+                ownerViewReferenceAction: "automatic-home-before-keyed-manual",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: "keyed-manual-authority"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                name: "keyed-manual-active",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                name: "keyed-manual-active",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + keyedManualReturnExpectations
+    )
+
+    private static let keyedManualReturnExpectations: [ProbeExpectation] = [
+        ProbeExpectation(
+            .action,
+            name: "keyed-manual-stopped-immediate",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            ownerViewReferenceAction: "automatic-home-before-keyed-manual",
+            ownerViewRelation: .different
+        ),
+        ProbeExpectation(
+            .resource,
+            name: "keyed-manual-stopped-immediate",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            ownerViewReferenceAction: "automatic-home-before-keyed-manual",
+            ownerViewRelation: .different
+        ),
+        ProbeExpectation(
+            .action,
+            name: "keyed-manual-stopped-settled",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+            ownerViewRelation: .same
+        ),
+        ProbeExpectation(
+            .resource,
+            name: "keyed-manual-stopped-settled",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+            ownerViewRelation: .same
+        )
+    ]
 
     private static let swiftUIStackNativePopCancel = ProbeScenario(
         identifier: "swiftui.stack.native-pop-cancel",

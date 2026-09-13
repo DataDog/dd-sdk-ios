@@ -239,6 +239,82 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesKeyedManualViewFromMaterializedDestinations() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-keyed-manual-view",
+            scenarioID: "driver-keyed-manual-view",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var requestedSteps: [ProbeStepKind] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            requestedSteps.append(step.kind)
+            let screen = step.kind == .startKeyedManualView
+                ? "compose"
+                : "home"
+            recorder.record(
+                ProbeSignal(
+                    kind: .destinationMaterialized,
+                    semanticContext: self.semanticContext(screen: screen)
+                )
+            )
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-keyed-manual-view",
+                trackingMode: .automatic,
+                layout: .stack,
+                steps: [
+                    ProbeStep(
+                        .startKeyedManualView,
+                        scene: "scene-A",
+                        value: "compose"
+                    ),
+                    ProbeStep(
+                        .stopKeyedManualView,
+                        scene: "scene-A",
+                        value: "compose"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            requestedSteps,
+            [.startKeyedManualView, .stopKeyedManualView]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            2
+        )
+    }
+
     func testDrivesAbortedPathWithoutSpeculativeView() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-abort",

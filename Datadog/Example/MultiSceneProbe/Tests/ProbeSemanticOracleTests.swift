@@ -790,6 +790,110 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
     }
 
+    func testKeyedManualAuthorityContractPasses() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testKeyedManualAuthorityRejectsRetainedAutomaticHome() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .retainInitialHome)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("missing expected view-stopped"))
+    }
+
+    func testKeyedManualAuthorityFindsDeferredHomeStopAfterManualStop() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .deferInitialHomeStop)
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testKeyedManualAuthorityRejectsAutomaticViewBeforeManualSnapshot() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .automaticBeforeManualSnapshot)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
+    }
+
+    func testKeyedManualAuthorityRejectsWrongManualWorkOwner() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .manualWorkUsesAutomaticHome)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("semantic RUM view"))
+    }
+
+    func testKeyedManualAuthorityRejectsReusedHomeAfterStop() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .reuseInitialHomeOnReturn)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
+    }
+
+    func testKeyedManualAuthorityRejectsDifferentSettledOwner() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.automatic-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: keyedManualSignals(mutation: .changeOwnerBeforeSettledWork)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed different"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -842,6 +946,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
 
     private func recordAutomaticView(
         id: String,
+        active: Bool = true,
         recorder: ProbeEventRecorder
     ) {
         recorder.record(
@@ -852,8 +957,8 @@ final class ProbeSemanticOracleTests: XCTestCase {
                     sessionID: "session",
                     viewID: id,
                     viewName: "NavigationStackHostingController",
-                    viewActive: true,
-                    viewDocumentVersion: 1
+                    viewActive: active,
+                    viewDocumentVersion: active ? 1 : 2
                 )
             )
         )
@@ -899,6 +1004,173 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 viewID: viewID
             ),
             eventID: id,
+            name: name
+        )
+    }
+
+    private enum KeyedManualMutation {
+        case retainInitialHome
+        case deferInitialHomeStop
+        case automaticBeforeManualSnapshot
+        case manualWorkUsesAutomaticHome
+        case reuseInitialHomeOnReturn
+        case changeOwnerBeforeSettledWork
+    }
+
+    private func keyedManualSignals(
+        mutation: KeyedManualMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "keyed-manual-contract",
+            scenarioID: "swiftui.coexistence.automatic-keyed-manual-view",
+            sink: { _ in },
+            clock: { 42 }
+        )
+
+        recordAutomaticView(id: "home-1", recorder: recorder)
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumAction,
+                name: "automatic-home-before-keyed-manual",
+                viewID: "home-1",
+                sourceScreen: "home"
+            )
+        )
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumResource,
+                name: "automatic-home-before-keyed-manual",
+                viewID: "home-1",
+                sourceScreen: "home"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .startKeyedManualView,
+                name: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "keyed-manual-authority"
+            )
+        )
+        if mutation == .automaticBeforeManualSnapshot {
+            recordAutomaticView(id: "early-automatic", recorder: recorder)
+        }
+        recorder.record(viewSignal(id: "compose", screen: "compose", active: true))
+        if mutation != .retainInitialHome && mutation != .deferInitialHomeStop {
+            recordAutomaticView(id: "home-1", active: false, recorder: recorder)
+        }
+
+        let manualWorkOwner = mutation == .manualWorkUsesAutomaticHome
+            ? "home-1"
+            : "compose"
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumAction,
+                name: "keyed-manual-active",
+                viewID: manualWorkOwner,
+                sourceScreen: "compose"
+            )
+        )
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumResource,
+                name: "keyed-manual-active",
+                viewID: manualWorkOwner,
+                sourceScreen: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .stopKeyedManualView,
+                name: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "keyed-manual-authority"
+            )
+        )
+        recorder.record(viewSignal(id: "compose", screen: "compose", active: false))
+        if mutation == .deferInitialHomeStop {
+            recordAutomaticView(id: "home-1", active: false, recorder: recorder)
+        }
+
+        let returnedOwner: String
+        if mutation == .reuseInitialHomeOnReturn {
+            returnedOwner = "home-1"
+        } else {
+            returnedOwner = "home-2"
+            recordAutomaticView(id: returnedOwner, recorder: recorder)
+        }
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumAction,
+                name: "keyed-manual-stopped-immediate",
+                viewID: returnedOwner,
+                sourceScreen: "home"
+            )
+        )
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumResource,
+                name: "keyed-manual-stopped-immediate",
+                viewID: returnedOwner,
+                sourceScreen: "home"
+            )
+        )
+
+        let settledOwner: String
+        if mutation == .changeOwnerBeforeSettledWork {
+            settledOwner = "home-3"
+            recordAutomaticView(id: settledOwner, recorder: recorder)
+        } else {
+            settledOwner = returnedOwner
+        }
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumAction,
+                name: "keyed-manual-stopped-settled",
+                viewID: settledOwner,
+                sourceScreen: "home"
+            )
+        )
+        recorder.record(
+            keyedManualWorkSignal(
+                kind: .rumResource,
+                name: "keyed-manual-stopped-settled",
+                viewID: settledOwner,
+                sourceScreen: "home"
+            )
+        )
+        return recorder.snapshot()
+    }
+
+    private func keyedManualWorkSignal(
+        kind: ProbeSignalKind,
+        name: String,
+        viewID: String,
+        sourceScreen: String
+    ) -> ProbeSignal {
+        ProbeSignal(
+            kind: kind,
+            evidenceSource: .rumMapper,
+            sourceContext: ProbeSourceContext(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                screen: sourceScreen
+            ),
+            rumContext: ProbeRUMContext(
+                sessionID: "session",
+                viewID: viewID
+            ),
+            eventID: "\(kind.rawValue)-\(name)",
             name: name
         )
     }

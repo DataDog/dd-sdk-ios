@@ -534,6 +534,36 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .startKeyedManualView, .stopKeyedManualView:
+            guard
+                let scene = step.scene,
+                step.value == "compose"
+            else {
+                return .failed("scene or keyed manual view is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            let destination = step.kind == .startKeyedManualView
+                ? "compose"
+                : "home"
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "destination:\(destination)"
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for keyed manual destination \(destination) in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
         case .pushAndRevertSwiftUIPath:
             guard
                 let scene = step.scene,

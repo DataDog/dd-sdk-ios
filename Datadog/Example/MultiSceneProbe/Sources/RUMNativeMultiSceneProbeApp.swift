@@ -70,23 +70,9 @@ enum ProbeRuntime {
         }
     )
     @MainActor static let sceneRegistry = ProbeSceneRegistry()
-    static let usesObservableScenarioDriver = scenario.map {
-        [
-            "swiftui.stack.return",
-            "swiftui.stack.abort",
-            "swiftui.stack.same-type-replacement",
-            "swiftui.stack.different-type-replacement",
-            "swiftui.coexistence.semantic-a-automatic-b",
-            "swiftui.coexistence.automatic-manual-sheet",
-            "swiftui.split.automatic-baseline",
-            "swiftui.split.same-type-selection",
-            "swiftui.split.retained-return",
-            "uikit.split.pop-cancel",
-            "uikit.split.pop-finish",
-            "windows.activation-sequence",
-            "windows.close-with-resource"
-        ].contains($0.identifier)
-    } ?? false
+    static let usesObservableScenarioDriver = scenario.map(
+        ProbeScenarioCatalog.usesObservableDriver
+    ) ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil
