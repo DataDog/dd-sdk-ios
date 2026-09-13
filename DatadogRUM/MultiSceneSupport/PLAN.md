@@ -115,20 +115,22 @@ Current execution order:
    return through exact scene/selection/destination signals. Route-owned runs pass
    10/10 and 13/13 locally and in backend intake; the automatic control fails 0/9
    with launch/internal-container ownership; the probe plan passes 40/40.
-4. Extend the driver across UIKit cancel/finish and exact scene
-   open/activate/close steps.
-   Keep native gesture proof in the real-device/human queue.
-5. Turn the debug per-window occurrence source into the approved optional iOS 27
+4. Completed in `f4c8669c0`, `df0322619`, and `EXP-112`: drive UIKit cancel and
+   finish through exact transition begin/progress/resolution signals and suppress
+   regular-width structural Primary/supplementary views on the iOS 27 multi-scene
+   path. Clean runs pass 11/11 and 13/13 locally and in backend intake; the probe
+   plan passes 42/42 and the complete RUM plan passes 1,153/1,153. Keep native
+   gesture proof in the real-device/human queue.
+5. Extend the exact scene driver across open, activate, close, lifecycle, and
+   visible-peer continuity. This is the next implementation/experiment slice.
+6. Turn the debug per-window occurrence source into the approved optional iOS 27
    navigation-container integration: consume the application's path/router and
    centralized RUM resolver, coexist with automatic tracking, and suppress
    duplicates only in its authoritative container. No public API lands without
    RFC/API review.
-6. Design the required scene-aware manual view start/stop overloads and Objective-C
+7. Design the required scene-aware manual view start/stop overloads and Objective-C
    companion. The same key must coexist independently in A and B while existing
    APIs preserve inferred/last-interacted compatibility.
-7. Suppress structural UIKit Primary/sidebar/container views so each scene has one
-   current destination. Retain the passing fresh return-occurrence and transition
-   cancellation behavior.
 8. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
 9. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
@@ -137,6 +139,11 @@ Current execution order:
    restoration, and adaptive topology on capable hardware.
 11. Complete Operation public targeting and its live backend matrix.
 12. Close the bounded causal/downstream rows and live normal-app compatibility.
+
+This order implements the approved product priority: view occurrences and
+navigation first, then scene-aware manual views, downstream ownership,
+compatibility, and Session Replay crash safety. Work that requires physical
+topology can run later without allowing lower-priority SDK design to replace it.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the
@@ -190,18 +197,25 @@ experiment; it does not itself change the SDK support verdict.
    0/9 with internal container views. Resource completion is an eventual ownership
    fact, not a navigation-order clock, and completion conditions skip earlier
    same-named occurrences. The complete probe plan passes 40/40.
-7. Add one reproducible run command that preflights capabilities, records source
+7. Completed in `df0322619` and `EXP-112`: UIKit cancel/finish commands execute
+   against the exact registered scene. The driver separately observes transition
+   begin, exact progress, resolution request, and coordinator result. Cancellation
+   retains S2; completion requires fresh returned S1; both require final exact
+   action/Resource ownership. The complete probe plan passes 42/42.
+8. Add one reproducible run command that preflights capabilities, records source
    revision and binary identity, performs explicit clean/restoration setup, waits
    for readiness, and bundles scrubbed manifest, capabilities, console, JSONL,
    semantic result, visual artifacts, and the run-ID backend query. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The deterministic stack and split harness loop is complete through `EXP-111`: three clean
+The deterministic stack, split, and UIKit-transition harness loop is complete
+through `EXP-112`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
-split baseline fails 0/9 for missing semantic views. The deliberately wrong-view
-fixture continues to fail locally with an actionable reason.
+split baseline fails 0/9 for missing semantic views. UIKit cancel/finish pass
+11/11 and 13/13 without a Primary RUM view. The deliberately wrong-view fixture
+continues to fail locally with an actionable reason.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -230,14 +244,21 @@ Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
   `EXP-074`/`EXP-075` validate an iOS 27 multi-scene-only atomic same-column
   handoff in both controls: neither backend chain restarts Primary, all markers
   are exact, and the reused returned controller still receives a fresh RUM UUID.
-  Those runs still start an initial Primary. Under the approved one-destination
-  model, that structural view and `EXP-072`'s subclass-container view are remaining
-  gaps rather than accepted final semantics.
+  Those historical runs still start an initial Primary.
   `EXP-077` then hardens unrelated callback, background, and disconnect ordering;
   all 57 handler tests pass. `EXP-079`/`EXP-080` repeat both native controls on
   that revision with the same exact paths. `EXP-082` through `EXP-084` add a
-  physical committed pop and deterministic cancel/finish pair without false
-  Primary occurrences. `EXP-086` proves A/B transition overlap, but B becoming
+  physical committed pop and deterministic cancel/finish pair without restarting
+  Primary during the transition, but retain the initial structural view.
+  `EXP-112` adds exact signal-driven transition control and changes the shipping
+  iOS 27 multi-scene handler to ignore regular-width structural Primary and
+  supplementary columns. Clean cancel/finish runs contain only S1/S2 semantic
+  destinations after the native host startup fallback: cancel retains S2 and
+  finish creates a fresh returned S1, with exact action/Resource ownership and no
+  Primary. The application-subclassed container from `EXP-072`, the native
+  SwiftUI host fallback, compact/adaptive behavior, and live ordinary-app
+  compatibility remain separate gates. `EXP-086` proves A/B transition overlap,
+  but B becoming
   fullscreen stalls A without activation-state evidence; repeat with both windows
   demonstrably visible and able to finish. `EXP-102`/`EXP-103` now pass
   same-type SwiftUI split replacement in one and two windows while preserving
@@ -246,9 +267,9 @@ Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
   so stable simultaneous-visible proof remains routed to hardware. `EXP-072`
   separately proves an
   application-subclassed split container becomes a view, which needs explicit
-  predicate-compatibility review. Keep these controls. Verify one UUID per
-  committed path occurrence, no Primary/sidebar/container RUM occurrence at all,
-  and exact action/resource attribution to the current Secondary destination.
+  predicate-compatibility review. Keep these controls. Preserve one UUID per
+  committed path occurrence and exact action/resource attribution to the current
+  Secondary destination while closing the remaining container/fallback cases.
   Keep structural lifecycle records in the probe as negative evidence rather than
   deleting them. `EXP-087` proves the new initial-nil/sequence-disable mode creates
   no Detail occurrence. CoreDevice reports that this simulator lacks Resizable
@@ -521,7 +542,29 @@ This phase is implemented experimentally and has the strongest unit, simulator,
 and backend evidence. It remains the primary workstream independent of the
 Resource/Trace investigation.
 
-### 2. Reduce Resource/Trace work to a bounded provenance experiment
+### 2. Review scene-aware manual views and the explicit Operation target
+
+Scene-aware manual view targeting is required, independently of Operations. Add
+reviewed Swift and Objective-C start/stop forms that accept a `UIWindowScene`
+without exposing internal UUIDs. The same customer key must coexist in A and B;
+stopping A closes only A. Existing forms remain source-compatible and keep their
+inferred/last-interacted behavior, while automatic tracking continues outside an
+explicitly targeted exceptional view.
+
+The explicit Operation view-target escape hatch is also part of the support goal.
+Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
+point, retain the existing APIs and their inferred behavior, and do not expose
+internal RUM view UUIDs. Resolve UIKit objects synchronously into internal
+scene/logical-view targets and provide an Objective-C companion. Add the same
+parameter to any future public update/retry API. Implementation remains blocked
+on normal public API review, not on further source-discovery experiments.
+
+The internal scene target used by both APIs should have a natural optional slot
+for the future Window Execution Context identity. It must not serialize a temporary
+window attribute, split the RUM session, or make current fixes wait for backend
+Execution Context presentation.
+
+### 3. Reduce Resource/Trace work to a bounded provenance experiment
 
 - Keep `UIApplication.sendEvent` only as a short dynamic scope around the actual
   event dispatch. Re-read the swizzling safety rules before retaining any change
@@ -566,7 +609,7 @@ experimental. `EXP-088` validates Monitor consumption in source and focused test
 discriminator open. No additional Resource/Trace routing should be layered on
 this path until the remaining live matrix proves which pieces are necessary.
 
-### 3. Fix core owner routing independently of source discovery
+### 4. Fix core owner routing independently of source discovery
 
 - Resolve one `.view` destination once before mutating view scopes. A completion
   must not first remove its old resource owner and then fall through to the
@@ -591,29 +634,6 @@ this path until the remaining live matrix proves which pieces are necessary.
 These rules improve correctness after an owner is already known and do not claim
 that the SDK can discover a scene for arbitrary work.
 
-### 4. Review scene-aware manual views and the explicit Operation target
-
-Scene-aware manual view targeting is required, independently of Operations. Add
-reviewed Swift and Objective-C start/stop forms that accept a `UIWindowScene`
-without exposing internal UUIDs. The same customer key must coexist in A and B;
-stopping A closes only A. Existing forms remain source-compatible and keep their
-inferred/last-interacted behavior, while automatic tracking continues outside an
-explicitly targeted exceptional view.
-
-The explicit Operation view-target escape hatch is also part of the support goal.
-Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
-point, retain the existing APIs and their inferred behavior, and do not expose
-internal RUM view UUIDs. Resolve UIKit
-objects synchronously into internal scene/logical-view targets and provide an
-Objective-C companion. Add the same parameter to any future public update/retry
-API. Implementation remains blocked on normal public API review, not on further
-source-discovery experiments.
-
-The internal scene target used by both APIs should have a natural optional slot
-for the future Window Execution Context identity. It must not serialize a temporary
-window attribute, split the RUM session, or make current fixes wait for backend
-Execution Context presentation.
-
 Source-less work otherwise retains the process representative for compatibility.
 Keep these broader contracts as future options only if customer evidence later
 justifies deterministic attribution:
@@ -636,8 +656,9 @@ context do not distinguish a scene.
 ### 5. Validate, simplify, and regress
 
 - Extend the probe before running cases for which no control currently exists:
-  split navigation, restoration, WebView,
-  fatal/exported context, and mirrored logger errors.
+  restoration, WebView, fatal/exported context, and mirrored logger errors.
+  Stack, SwiftUI split, and UIKit split navigation already have signal-driven
+  controls and must use those existing scenarios.
 - Finish only the untested causal-boundary rows: SwiftUI Button -> structured
   `Task`, shared/coalesced work, two-scene reverse completion, and trace-only
   URLSession. Do not repeat structured-task inheritance, source-less schedulers,
@@ -681,7 +702,10 @@ The assessment can change to supported only when:
   retained split return now pass experimentally, while adaptive hardware remains
   open;
 - each scene has exactly one current RUM destination: structural Primary/sidebar,
-  split container, and tab-bar surfaces never create competing views;
+  split container, and tab-bar surfaces never create competing views. The stock
+  regular-width UIKit path passes after `EXP-112`; the application-subclassed
+  container, native-host startup fallback, compact/adaptive transitions, and tab
+  modeling remain open;
 - `Home → Detail → Home` produces distinct H1/D1/H2 occurrences, and the optional
   semantic integration consumes an existing path/router through one centralized
   resolver, coexists with automatic tracking, and suppresses duplicate automatic

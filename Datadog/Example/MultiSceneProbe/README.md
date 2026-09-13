@@ -55,7 +55,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.split.empty-selection` | `EXP-087` | Existing deterministic control |
 | `uikit.split.replacement`, `uikit.split.subclass` | `EXP-080`, `EXP-072` | Existing deterministic automation |
 | `uikit.split.pop-automatic` | `EXP-079` | Existing deterministic automation |
-| `uikit.split.pop-cancel`, `uikit.split.pop-finish` | `EXP-083`, `EXP-084` | Existing deterministic transition control |
+| `uikit.split.pop-cancel`, `uikit.split.pop-finish` | `EXP-083`, `EXP-084`, `EXP-112` | Signal-driven PASS |
 | `uikit.split.native-pop-control`, `uikit.split.native-pop-cancel`, `uikit.split.native-pop-finish` | `EXP-081`, `EXP-082` | Prepared; cancellation needs hardware or human input |
 | `uikit.split.concurrent-scenes` | `EXP-086` | Existing automation; simultaneous topology remains unproven |
 | `windows.parallel-navigation` | `EXP-033`, `EXP-059`, `EXP-103` | Existing automation; simultaneous topology remains unproven |
@@ -77,15 +77,16 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 40/40. The stack
-return, abort, replacement, and split-selection scenarios now drive their exact
-scene, wait for observable path/selection, destination, and RUM-occurrence
-signals, acknowledge every step, and emit exactly one final result. Clean iPadOS
-27 semantic runs pass locally and in backend intake (`EXP-109` through
-`EXP-111`). The automatic split control executes the same steps but fails because
-it emits internal container views instead of semantic selections. Other scenarios
-remain at the execution level shown in the table; a modeled timeline or partial
-live prefix is not itself a local PASS.
+future Execution Context seam. The generated test plan passes 42/42. The stack
+return, abort, replacement, split-selection, and deterministic UIKit transition
+scenarios drive their exact scene, wait for observable path/selection,
+destination, transition, and RUM-occurrence signals, acknowledge every step, and
+emit exactly one final result. Clean iPadOS 27 semantic runs pass locally and in
+backend intake (`EXP-109` through `EXP-112`). The automatic SwiftUI split control
+executes the same selection steps but fails because it emits internal container
+views instead of semantic selections. Other scenarios remain at the execution
+level shown in the table; a modeled timeline or partial live prefix is not itself
+a local PASS.
 
 Probe call-site context and RUM ownership are intentionally separate. Source
 labels say where the harness invoked work; only mapper-observed RUM view UUIDs and
@@ -100,7 +101,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.stack.same-type-replacement`, and
 `swiftui.stack.different-type-replacement`, plus
 `swiftui.split.automatic-baseline`, `swiftui.split.same-type-selection`, and
-`swiftui.split.retained-return`, use the signal-driven execution loop.
+`swiftui.split.retained-return`, plus `uikit.split.pop-cancel` and
+`uikit.split.pop-finish`, use the signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
 occurrences before advancing. The abort timeline forbids a speculative Detail;
@@ -112,6 +114,15 @@ Resource ownership must still match the view captured at start. Ordered view
 starts and actions remain strict. Completion conditions scan past earlier
 same-named occurrences so a returned destination can satisfy an
 occurrence-specific condition.
+
+The UIKit transition driver separately begins a real
+`UIPercentDrivenInteractiveTransition`, observes its accepted coordinator,
+advances it to the requested percentage, requests cancellation or completion,
+and waits for the coordinator's actual result. Cancellation keeps the original
+Secondary 2 RUM UUID; completion creates a fresh returned Secondary 1 UUID. Each
+result also requires an action and Resource on the resolved occurrence. Primary
+lifecycle remains visible to the probe, but the iOS 27 multi-scene SDK path no
+longer turns a regular-width structural Primary into a RUM view (`EXP-112`).
 
 Run each acceptance attempt after uninstalling the probe, with a unique run ID
 and `--probe-run-mode clean`, then join its JSONL and backend query by that ID.
@@ -234,18 +245,21 @@ diagnostic input, but the approved RUM model exposes one current destination per
 scene. The required RUM occurrence order is therefore
 `Secondary₁ → Secondary₂`, with no Primary RUM view. Historical
 `EXP-080` evidence contains an initial Primary and proves only that the branch no
-longer restarts it between secondaries. Use `uikit-split-subclass` only as the follow-up control that swaps
-the stock container for an application subclass; this reveals whether the
-container itself becomes an extra automatically tracked RUM view.
+longer restarts it between secondaries. `EXP-112` removes that structural Primary
+from the current iOS 27 multi-scene path. Use `uikit-split-subclass` only as the
+follow-up control that swaps the stock container for an application subclass;
+this reveals whether the container itself becomes an extra automatically tracked
+RUM view.
 Set `DD_MULTI_SCENE_SWIFTUI_LAYOUT=uikit-split-navigation` for the stock split
 navigation control. It keeps one secondary `UINavigationController`, installs
 Secondary 1 as its stable root, pushes a fresh same-class Secondary 2, and pops
 back to the same Secondary 1 controller. The required occurrence order is
 `Secondary₁ → Secondary₂ → Secondary₁`, with a fresh UUID for the returned
 Secondary 1 and no Primary RUM occurrence. Historical `EXP-079` and
-`EXP-082` through `EXP-084` retain an initial structural Primary and are now gap
-evidence, while their fresh returned-Secondary and cancellation behavior remain
-valid.
+`EXP-082` through `EXP-084` retain an initial structural Primary and remain
+failure evidence for the old path, while their fresh returned-Secondary and
+cancellation behavior remain valid. `EXP-112` reruns the deterministic
+cancel/finish pair without any Primary RUM occurrence.
 Set `DD_MULTI_SCENE_UIKIT_SPLIT_AUTOMATIC_POP=0` to leave Secondary 2 visible
 after the automatic push. This probe-only gate permits an interactive edge-pop
 gesture to be cancelled or completed without racing the scheduled pop. A

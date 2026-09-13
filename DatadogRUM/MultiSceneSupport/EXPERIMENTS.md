@@ -65,8 +65,11 @@ boundary, in this order:
 | 48 | `Drive deterministic SwiftUI navigation scenarios` | Signal-driven stack abort and same-/different-type replacement, exact path/destination acknowledgements, decisive action/Resource expectations, and focused driver tests |
 | 49 | `Document deterministic stack scenario evidence` | `EXP-110` local/backend evidence, strengthened acceptance timelines, and refreshed handoff state |
 | 50 | `Drive deterministic SwiftUI split selection` | Root-owned split selection commands, observed selection/destination waits, exact per-occurrence action/Resource checks, and asynchronous oracle ordering fixes |
+| 51 | `Document signal-driven split selection evidence` | `EXP-111` local/backend evidence, automatic semantic failure control, oracle corrections, and refreshed handoff state |
+| 52 | `Treat regular split primaries as structural` | iOS 27 multi-scene suppression of regular structural Primary/supplementary UIKit split columns, retained same-column reconciliation, and compatibility regressions |
+| 53 | `Drive deterministic UIKit transitions` | Exact-scene begin/progress/resolve commands, coordinator-result signals, semantic UIKit names, resolved-view marker checks, and focused cancel/finish driver tests |
 
-Rows 1-50 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-53 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -76,8 +79,9 @@ Rows 1-50 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
 `4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
 `ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
-Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, and
-row 50 is `96a6208ff`.
+Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
+is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
+`df0322619`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -92,7 +96,7 @@ fatal: failed to write commit object
 
 That blocker is superseded for this development branch: the user explicitly
 authorized unsigned development-cycle commits and prohibited pushing them. The
-twenty-three exact-path commits in rows 28-50 use that policy. This is local
+twenty-six exact-path commits in rows 28-53 use that policy. This is local
 checkpoint history, not push-ready history.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
@@ -218,12 +222,15 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-109 | `observable-home-return-20260913-1736-c`; `observable-home-return-20260913-1739-d`; `observable-home-return-20260913-1741-e` | `272c5006-bf32-4ee9-9adb-3b75f9a39639`; `25cc4383-8f80-4ad8-9c44-0ef65771896b`; `11dba044-6d97-4095-a607-25ee742aa804` | iPadOS 27 | Signal-driven Home → Detail → Home acceptance. After a clean uninstall, all three runs produced exactly one local `PASS` with 7/7 expectations and six acknowledged steps. The view UUID chains were `30ff5793…` → `4ca6ef28…` → `03f41a11…`, `bc6d76ab…` → `d3d7648a…` → `6352a4d2…`, and `f5cf4344…` → `51c3c342…` → `d5edb3a6…`; each post-return action and Resource belonged to Home₂. Backend intake independently contains launch plus one Home₁, Detail, and Home₂ per run, the exact post-return owners, and no errors. Two harness-only failures are retained: root `onAppear` did not repeat because SwiftUI retained Home even while RUM correctly created Home₂, and one repeat delivered Home₁'s stop mapper snapshot after Detail's start during animation. The driver now waits for the new RUM occurrence, and the oracle requires eventual stop facts without treating callback order as navigation order. The probe plan passes 35/35. This validates deterministic occurrence/attribution behavior on the experimental SDK, not automatic zero-code SwiftUI support or genuine native gestures. |
 | EXP-110 | `observable-stack-abort-20260913-1800-a`; `observable-stack-same-type-20260913-1803-a`; `observable-stack-different-type-20260913-1806-a`; strengthened reruns `observable-stack-abort-20260913-1810-b`, `observable-stack-same-type-20260913-1812-b`, `observable-stack-different-type-20260913-1814-b` | `0550e989-8427-494f-b04a-505255a8acce`; `72dc8338-b5eb-470b-8d39-ecfa24f455ff`; `e7a99a66-a9d4-45e0-9719-e152de01b1a3`; `c8f6fb75-62cb-4f43-9515-988ae36d1586`; `5dea4da1-8949-4760-a89b-41c2758aebb0`; `8b913d29-e0f5-4449-880f-7e7c823e3b91` | iPadOS 27 | Signal-driven stack abort and replacement acceptance. The first clean trio proved the driver and view chains, then the oracle was strengthened to require a decisive action and Resource on the final view. The clean reruns emitted one local `PASS` each: abort 5/5 with only Home `fb10de5b…`; same-type replacement 6/6 with Home `22e06720…`, Detail₁ `40d87f4b…`, and distinct same-named Detail₂ `f75ca7dc…`; different-type replacement 6/6 with Home `47ac4967…`, Detail `b4cb7536…`, and Alternate `9a5ca46d…`. Backend intake independently reports those exact view sets, the required final action/Resource owners, and no error bucket. All 37 probe tests and repository lint pass. This validates deterministic experimental occurrence/attribution behavior, not automatic zero-code discovery or native gestures. |
 | EXP-111 | `observable-split-selection-20260913-1831-a`; corrected `observable-split-selection-20260913-1840-b`; `observable-split-return-20260913-1843-a`; corrected `observable-split-return-20260913-1844-b`; automatic baseline `observable-split-automatic-20260913-1846-a` | `cc00fae2-3911-4846-b8b8-68f0c06b9c1f`; `ab78101b-8528-4e0c-9505-1d0bc926ba91`; `84a12a1a-b251-41e0-8f9a-53404427b628`; `9f5a87b0-75b0-4da3-9902-0ce3dc059c57`; `ba04a828-38f8-4135-8e1d-4c25ca875fb8` | iPadOS 27 | Signal-driven split acceptance and automatic failure baseline. The corrected route-owned runs pass 10/10 and 13/13: Detail₁ → Detail₂ → Placeholder and Detail₁ → Detail₂₁ → Placeholder → fresh Detail₂₂ each have one distinct UUID plus an exact action/Resource pair. Backend intake agrees and reports no errors. Automatic tracking fails 0/9: Detail₁ work uses `ApplicationLaunch`, while Detail₂ and Placeholder share one internal `NavigationStackHostingController` UUID. The two earlier local failures are retained as harness lessons: Resource completion is asynchronous ownership evidence rather than a navigation-order clock, and an unordered completion check must continue past an earlier same-named occurrence. All 40 probe tests and repository lint pass. |
+| EXP-112 | Baseline `observable-uikit-cancel-20260913-1911-a`; first corrected `observable-uikit-cancel-20260913-1916-b`, `observable-uikit-finish-20260913-1917-a`; final `observable-uikit-cancel-20260913-1923-c`, `observable-uikit-finish-20260913-1925-b` | `dbf47e00-d912-4ef8-862b-abe462931710`; `edc0ba78-6225-4271-9b7d-97dcb34baa2a`; `7ec940ff-5960-45b9-83c6-01b24a04e1cc`; `df3e4faf-727a-4e5b-ae73-c7bac5984658`; `7f1dcd04-7b71-4285-a39a-89cfb81d6cd4` | iPadOS 27 | Signal-driven UIKit cancellation/completion acceptance plus a shipping structural-view fix. The baseline drove a real 35% `UIPercentDrivenInteractiveTransition` correctly but failed immediately because Primary became a RUM view. The iOS 27 declared-multi-scene handler now ignores regular-width structural Primary/supplementary columns and retains same-column pending reconciliation. Final cancellation passes 11/11, keeps S2 `24edf931…`, and attributes three action/Resource pairs to it; completion passes 13/13 and emits S1 `983bb960…` → S2 `b99009d3…` → fresh returned S1 `38058b25…`, with exact 1/1, 1/1, and 2/2 action/Resource ownership. Backend intake has no Primary and no errors. The native SwiftUI host still emits a short fallback before S1, but it owns no probe work. Probe tests pass 42/42, the full RUM plan passes 1,153/1,153, and repository lint reports zero violations. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
 initial Primary still prove the removal of *restarted* Primary intervals and fresh
 returned-Secondary occurrence identity, but they now fail the final requirement
 that structural Primary/sidebar/container surfaces never become RUM views.
+`EXP-112` is the superseding stock regular-width acceptance run; the historical
+rows remain negative evidence and are not rewritten.
 
 ## Real-device and human-driven rerun queue
 
@@ -2677,6 +2684,95 @@ split-view, stable visible-peer closure, and additional container stress remain
 release gates. Modal occurrence navigation passes, and immediate closing-scene
 ownership is safe in the exercised fullscreen topology.
 
+### 2026-09-13 — Signal-driven UIKit transition acceptance
+
+`df0322619` moves `uikit.split.pop-cancel` and
+`uikit.split.pop-finish` from scheduled transition controls into the observable
+driver. Signal schema 4 adds explicit transition progress and resolution-request
+records. The exact scene executor now begins the real
+`UIPercentDrivenInteractiveTransition`, waits for UIKit to accept it, advances it
+to 35 percent, asks it to cancel or finish, then waits separately for the
+transition coordinator's observed resolution. A requested outcome is therefore
+not accepted as proof of the actual outcome. The semantic timelines require S1
+and S2 occurrences plus their post-materialization action/Resource pairs;
+cancellation forbids a second S1 and requires post-cancel work on the original
+S2, while completion requires a fresh returned S1 plus post-finish work.
+
+The first exact run, `observable-uikit-cancel-20260913-1911-a`, session
+`dbf47e00-d912-4ef8-862b-abe462931710`, failed locally at its first expectation
+because the SDK created structural Primary view
+`f7dd356a-d5ea-482c-aa73-98ecb83d6d42`. ApplicationLaunch was
+`42e8ff59-e946-4478-bf8d-0a217bc09921`, the native-host fallback was
+`57c846fd-cf7a-441d-ab20-0662ccfa8371`, S1 was
+`6e35638c-8c9a-4356-b124-b727cf754314`, and S2 was
+`bba31eb6-d408-446d-ab8a-5f3f2ca260a7`. The transition itself was conclusive:
+begin, 0.35 progress, cancel request, and cancelled coordinator completion were
+all observed; UIKit reappeared S2 but RUM kept the same S2 UUID, and the decisive
+post-cancel action/Resource used it. Backend intake contained 18 events and no
+error. This isolated a product-model failure rather than a transition or crash
+failure.
+
+`f4c8669c0` fixes that stock split case without changing the wire format or
+ordinary-app path. On iOS 27 only, and only when the bundle declares multiple
+scenes, concurrently displayed Primary and supplementary columns in a
+regular-width `UISplitViewController` are classified as structural and ignored
+by automatic view start. Compact, older-system, and ordinary-app behavior stays
+legacy. Same-column disappearance must still enter pending reconciliation after
+Primary is absent; retaining the earlier requirement for another tracked column
+would bypass cancellation handling and lose fresh returned occurrences.
+
+The first corrected runs established the fix before the final harness cleanup.
+Cancellation run `observable-uikit-cancel-20260913-1916-b`, session
+`edc0ba78-6225-4271-9b7d-97dcb34baa2a`, passed 11/11 with S1
+`ba97a38e-8939-4f64-bdce-443aeaf29d13` and retained S2
+`cc2f2a94-32ba-4328-8d93-0c3627995835`. Completion run
+`observable-uikit-finish-20260913-1917-a`, session
+`7ec940ff-5960-45b9-83c6-01b24a04e1cc`, passed 13/13 with S1
+`98c5fc4d-7173-4bf5-83e2-d14591a99e55`, S2
+`f1d2299a-1827-4ffe-ae0b-55905427869e`, and fresh returned S1
+`49aa9f6d-dfa4-45cd-aaac-f3f63f18bd9b`. Both had exact semantic owners and no
+Primary, but the probe's diagnostic Primary callback emitted a marker onto the
+startup fallback after production tracking intentionally suppressed Primary.
+That was a harness-only attribution artifact. Observable UIKit runs now retain
+the Primary lifecycle signal as negative evidence without asking RUM to emit
+Primary work; legacy non-observable controls retain their prior marker behavior.
+
+Two clean-install final runs close `EXP-112`:
+
+- `observable-uikit-cancel-20260913-1923-c`, session
+  `df3e4faf-727a-4e5b-ae73-c7bac5984658`, acknowledged all six steps and passed
+  11/11. S1 `894c9fbc-903e-47e2-98a6-ca63218b5540` owns one action/Resource
+  pair. S2 `24edf931-4823-4863-85d5-354be1fcea3e` remains the only S2
+  occurrence across cancellation and owns three pairs: initial materialization,
+  UIKit's cancelled-transition reappearance, and `post-cancel-resolution`.
+- `observable-uikit-finish-20260913-1925-b`, session
+  `7f1dcd04-7b71-4285-a39a-89cfb81d6cd4`, acknowledged all six steps and passed
+  13/13. First S1 `983bb960-5639-494f-b315-4bd56e609675` and S2
+  `b99009d3-0be1-4c59-af6a-e25a1b78f9ec` each own one action/Resource pair.
+  Returned S1 `38058b25-0085-40fb-a248-486cad5e7787` is a fresh occurrence and
+  owns both `post-return-materialization` and `post-finish-resolution` pairs.
+
+Backend aggregation independently contains no Primary and no error bucket for
+either final run. The cancellation session has launch, native-host fallback, S1,
+and S2 views; the completion session adds the distinct returned S1. The fallback
+owns no action or Resource in either session. It is the native SwiftUI host's
+startup automatic view and remains a separate semantic-discovery issue, not part
+of the structural UIKit-column fix. The probe uses a custom UIKit predicate only
+to give its child controllers stable semantic names and scene metadata; lifecycle
+start/stop remains automatic, and no temporary scene field is added to the SDK
+wire contract.
+
+Two focused driver tests cover the complete cancel and finish state machines.
+Seven focused handler tests cover old-before-new handoff, fresh return,
+replacement, structural suppression, ordinary-app compatibility, cancelled
+reappearance, and legacy immediate restart. The final probe plan passes 42/42,
+the complete DatadogRUM plan passes 1,153/1,153, both projects build through
+Xcode 27, and repository lint reports zero violations across 713 source and 699
+test files. This closes deterministic stock UIKit cancellation/completion and
+regular structural-Primary filtering. It does not close the application-subclass
+container, compact/adaptive transition, stable simultaneous-window topology,
+genuine human edge gesture, or live ordinary-app rows.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -2920,9 +3016,10 @@ ownership is safe in the exercised fullscreen topology.
 - The shared/coalesced request helper stores one task and does not clear it after
   completion. Relaunch or reset/fix that state before a second shared-request run,
   or it can silently join an already completed task.
-- Do not look for split navigation, restoration, WebView, fatal/exported-context,
-  or mirrored `logger.error` controls in the current probe. They do not exist yet;
-  extend the harness before scheduling those rows.
+- Do not look for restoration, WebView, fatal/exported-context, or mirrored
+  `logger.error` controls in the current probe. They do not exist yet; extend the
+  harness before scheduling those rows. Stack, SwiftUI split, and UIKit split
+  navigation controls do exist and now have signal-driven coverage.
 - Do not use separate simulator-driver processes to race a three-second operation
   against scene closure. Process initialization can reverse the taps. Use AXe's
   ordered `batch` command and fixed toolbar controls; the final teardown run
@@ -2934,3 +3031,17 @@ ownership is safe in the exercised fullscreen topology.
   is locked. In run `c28442df-d11a-456b-9ca7-1ffe13bad483`, the accessibility tree
   was readable but the operation controls never invoked and their status remained
   unchanged. Unlock the GUI before resuming the cross-window Operation matrix.
+- Do not restore the requirement that a pending UIKit split removal must find a
+  tracked controller in another split column. Once structural Primary is
+  intentionally absent, S1/S2 navigation has only one tracked column; that guard
+  bypasses the coordinator reconciliation needed to distinguish cancel from
+  completion.
+- Do not count UIKit's second `viewDidAppear` for S2 during a cancelled transition
+  as a new RUM occurrence. `EXP-112` proves UIKit may re-deliver appearance while
+  RUM correctly retains the same S2 UUID. Use view UUIDs and the coordinator
+  result, not callback count alone.
+- Do not attach a diagnostic Primary marker after production tracking has
+  intentionally suppressed Primary. The marker falls onto the startup fallback
+  and creates a false harness attribution failure. Keep Primary lifecycle as a
+  probe signal without asking RUM to own Primary work in observable acceptance
+  runs.
