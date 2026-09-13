@@ -734,6 +734,22 @@ extension Monitor: RUMMonitorProtocol {
         return .processRepresentative
     }
 
+    private var currentExecutionSceneTarget: RUMCommandTarget {
+        guard let handoff = RUMContextHandoff.current else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID,
+           let sceneIdentifier = rumContextSnapshotsByScene.first(where: {
+               $0.value.viewID == viewID
+           })?.key {
+            return .scene(sceneIdentifier)
+        }
+        if let sceneIdentifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        return .processRepresentative
+    }
+
     private func instanceSuffix(_ operationKey: String?) -> String {
         guard let operationKey = operationKey else {
             return ""
@@ -863,7 +879,7 @@ extension Monitor: RUMMonitorViewProtocol {
             .windowScene?
             .session
             .persistentIdentifier else {
-            return .processRepresentative
+            return currentExecutionSceneTarget
         }
         return .scene(RUMSceneIdentifier(rawValue: identifier))
     }
@@ -878,20 +894,21 @@ extension Monitor: RUMMonitorViewProtocol {
                 path: key,
                 globalAttributes: self.attributes,
                 attributes: attributes,
-                instrumentationType: .manual
+                instrumentationType: .manual,
+                target: currentExecutionSceneTarget
             )
         )
     }
 
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                identity: ViewIdentifier(key)
-            )
+        var command = RUMStopViewCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            identity: ViewIdentifier(key)
         )
+        command.target = currentExecutionSceneTarget
+        process(command: command)
     }
 
     func addTiming(name: String) {

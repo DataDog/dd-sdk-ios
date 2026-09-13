@@ -5,6 +5,9 @@
  */
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 @_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
@@ -313,6 +316,82 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(viewB.featureFlags["flag-B"] as? String, "B")
         XCTAssertNil(viewB.featureFlags["flag-A"])
     }
+
+    func testGivenMatchingManualViewKeysInTwoScenes_whenAStopsAndReturns_itKeepsIndependentOccurrences() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(key: "Home", name: "Home A", attributes: [:])
+        }
+        let firstA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.startView(key: "Home", name: "Home B", attributes: [:])
+        }
+        let firstB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        XCTAssertNotEqual(firstA.viewID, firstB.viewID)
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.stopView(key: "Home", attributes: [:])
+        }
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, firstB.viewID)
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(key: "Home", name: "Home A", attributes: [:])
+        }
+        let returnedA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertNotEqual(returnedA.viewID, firstA.viewID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, firstB.viewID)
+    }
+
+    func testGivenExactViewAndContradictoryScene_whenStartingManualView_itUsesExactViewsScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.startView(key: "detail", name: "Detail A", attributes: [:])
+        }
+
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "Detail A")
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, contextB.viewID)
+    }
+
+    #if os(iOS)
+    func testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(viewController: UIViewController(), name: "Controller A", attributes: [:])
+        }
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "Controller A")
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(type: .custom, name: "Represent B", attributes: [:])
+        }
+        monitor.startView(viewController: UIViewController(), name: "Representative Controller", attributes: [:])
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .scene(sceneB))?.viewName,
+            "Representative Controller"
+        )
+    }
+    #endif
 
     func testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene() throws {
         let dateProvider = DateProviderMock()
