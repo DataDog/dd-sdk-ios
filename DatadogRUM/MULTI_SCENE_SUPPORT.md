@@ -40,6 +40,7 @@ multi-scene support is not claimed.
 | [Assessment and evidence](MultiSceneSupport/ASSESSMENT.md) | You need the detailed verdict, source baseline, causal-attribution boundaries, or surface-by-surface evidence |
 | [Implementation and validation plan](MultiSceneSupport/PLAN.md) | You are choosing the next implementation slice, extending a probe, or checking release gates |
 | [Experiment history](MultiSceneSupport/EXPERIMENTS.md) | You need exact run/session IDs, chronological observations, rejected attempts, or checkpoint history |
+| [Navigation API proposal](MultiSceneSupport/NAVIGATION_API.md) | You are reviewing the optional SwiftUI container integration, scene-aware manual views, coexistence rules, or Swift/Objective-C compatibility |
 | [Operations contract](MultiSceneSupport/OPERATIONS.md) | You are changing Operation identity, per-step attribution, duplicate-start behavior, public targeting, documentation, or tests |
 
 Read this overview first, then open only the document that owns the question.
@@ -88,6 +89,15 @@ occurrence and downstream ownership semantics with no automatic duplicate
 (`EXP-116`). This proves an integration shape, not a reviewed public API. The
 customer-facing signature remains unimplemented and requires API review.
 
+An exceptional explicit SwiftUI Sheet over an otherwise automatic hierarchy now
+has a deterministic discriminator (`EXP-119`). It produces automatic Home H1,
+explicit Sheet S1, and fresh automatic Home H2 without an automatic Sheet
+duplicate. The corrected run still fails semantically: immediate Home work from
+SwiftUI's `onDismiss` callback belongs to outgoing S1 because UIKit automatic
+discovery starts H2 afterward; work 250 ms later belongs to H2. The backend
+confirms the same ownership. Coexistence and dedup work, but the return boundary
+is not yet correct.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -102,8 +112,8 @@ The structured probe records versioned JSONL, separates call-site source from
 mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
-signal-driven stack, split, UIKit-transition, and scene-lifecycle scenarios now
-pass 45/45 tests.
+signal-driven stack, split, UIKit-transition, scene-lifecycle, and
+automatic/manual coexistence scenarios now pass 56/56 tests.
 Clean iPadOS 27 runs prove
 distinct Home₁ → Detail → Home₂ occurrences, no speculative view for an aborted
 push, and fresh occurrences for same- and different-type replacements. Each run
@@ -234,9 +244,9 @@ customer workflow, and required tests live only in
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `85d03e5ee` (`Suppress automatic SwiftUI views in explicit subtrees`).
-The latest probe integration checkpoint is `265657c33` (`Prepare semantic and
-automatic scene coexistence probe`), following the container checkpoint
-`b5f74467d` and documentation checkpoint `e8c2b159b`.
+The latest probe integration checkpoint is `336bdd504` (`Report the active
+SwiftUI presentation screen`), following the exceptional-view checkpoint
+`a86c41e96` and evidence checkpoint `319d214a1`.
 All are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
@@ -260,26 +270,28 @@ run. `EXP-118` adds the exact separate-scene automatic/semantic discriminator.
 Two clean simulator attempts proved that A's authority does not suppress B's
 automatic controller views, but `backboardd` crashed before the decisive B marker
 and terminal oracle. That row remains explicitly simulator-inconclusive and is
-queued for physical multi-window hardware. The complete
+queued for physical multi-window hardware. `EXP-119` proves exceptional explicit
+Sheet dedup and eventual automatic Home restoration, while conclusively exposing
+incorrect immediate `onDismiss` ownership. The complete
 chronology and every failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-117`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-119`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Turn the `EXP-116` probe-only container prototype into the SwiftUI RFC/API
-   proposal. The final design must own or otherwise inject the tracking boundary
-   at materialized root/destination builders; `EXP-047` through `EXP-049` already
-   reject a passive root/background modifier as too late. Do not land an
-   unreviewed public API.
+1. Review the concrete SwiftUI and manual-view starting points in
+   [NAVIGATION_API.md](MultiSceneSupport/NAVIGATION_API.md). Resolve the
+   `EXP-119` return boundary through a container/router presentation signal or a
+   manual-stack reveal that starts fresh Home H2 before immediate Home work,
+   without speculative views or an unreviewed public API.
 2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
    hardware. The simulator prefix already proves B automatic discovery remains
    eligible; require the final B marker and backend owner before closing it.
-   Independently exercise one exceptional manual view over an otherwise automatic
-   hierarchy.
-3. Prepare the scene-aware manual view start/stop API and Objective-C companion.
-   The same manual key must coexist in A and B, and stopping A must not stop B.
+3. Exercise direct keyed manual start/stop over an automatic view, then implement
+   the reviewed scene-aware Swift/Objective-C surface. Routing a command to a
+   scene is already proven, but stop must also reveal a fresh underlying
+   automatic occurrence rather than leave the scene off-view.
 4. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
    iPad. Require the activated scene to become foreground-active and the peer to
    become background before asserting fresh view occurrences or marker ownership.
@@ -399,6 +411,10 @@ As of 2026-09-13:
   an aborted Detail occurrence, and gives same-named Detail₁/Detail₂ distinct
   UUIDs with exact final action/Resource ownership. All three isolated runs agree
   locally and in backend intake (`EXP-116`).
+- The exceptional-manual-Sheet scenario builds and all 56 probe tests pass. Its
+  corrected local and backend run has exact H1/S1/H2 occurrence and dedup
+  evidence, but fails because immediate `onDismiss` action/Resource work remains
+  on S1 before H2 starts (`EXP-119`).
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
@@ -451,7 +467,10 @@ Rejected experiments and do-not-repeat guidance are authoritative in
 
 ## Open API-review questions
 
-Product behavior is settled for this project. API review still needs to choose:
+Product behavior is settled for this project. The concrete alternatives, call
+sites, compatibility constraints, and required tests are consolidated in
+[NAVIGATION_API.md](MultiSceneSupport/NAVIGATION_API.md). API review still needs
+to choose:
 
 - the concrete container-level SwiftUI wrapper/modifier, path abstraction, root
   descriptor, route-resolver shape, destination-builder integration, and iOS 27

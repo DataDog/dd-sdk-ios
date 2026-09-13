@@ -3,7 +3,8 @@
 Read this document when choosing or executing the next implementation slice,
 extending the probes, or checking the release gates. Evidence and current support
 levels live in [ASSESSMENT.md](ASSESSMENT.md); chronological run details live in
-[EXPERIMENTS.md](EXPERIMENTS.md). Start at the
+[EXPERIMENTS.md](EXPERIMENTS.md); public navigation/manual-view review starts in
+[NAVIGATION_API.md](NAVIGATION_API.md). Start at the
 [canonical overview](../MULTI_SCENE_SUPPORT.md) for the current resume point.
 
 Evidence references use the stable `EXP-*` identifiers from the experiment
@@ -144,18 +145,23 @@ Current execution order:
    final marker and oracle. Finish that exact row when physical hardware is
    available; meanwhile, write the RFC/API proposal and continue independent
    simulator-capable experiments. No public API lands without normal review.
-7. Exercise one exceptional manual view over an otherwise automatic hierarchy,
-   then design the required scene-aware manual view start/stop overloads and
-   Objective-C companion. The same key must coexist independently in A and B
-   while existing APIs preserve inferred/last-interacted compatibility.
-8. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
+7. `EXP-119` now exercises one exceptional explicit Sheet over automatic Home.
+   Dedup and eventual H1 -> S1 -> H2 restoration work, but immediate Home work in
+   `onDismiss` still owns S1. Use the review starting points in
+   [NAVIGATION_API.md](NAVIGATION_API.md) to test a presentation-aware semantic
+   boundary or manual-stack reveal. Do not weaken the failing expectation.
+8. Exercise direct keyed manual start/stop over an automatic current view. Then
+   take the scene-aware Swift/Objective-C overloads through API review. The same
+   key must coexist independently in A and B, explicit stop must reveal a fresh
+   underlying automatic occurrence, and existing APIs retain inferred behavior.
+9. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
-9. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
+10. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
    adaptive collapse/expand without customer `.id` or state reset.
-10. Validate simultaneous visible A/B transitions, then genuine disconnect,
+11. Validate simultaneous visible A/B transitions, then genuine disconnect,
    restoration, and adaptive topology on capable hardware.
-11. Complete Operation public targeting and its live backend matrix.
-12. Close the bounded causal/downstream rows and live normal-app compatibility.
+12. Complete Operation public targeting and its live backend matrix.
+13. Close the bounded causal/downstream rows and live normal-app compatibility.
 
 This order implements the approved product priority: view occurrences and
 navigation first, then scene-aware manual views, downstream ownership,
@@ -163,7 +169,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-117`. It still
+decision record after `EXP-119`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -601,10 +607,12 @@ state. Automatic SwiftUI controller discovery is skipped only when an appeared,
 window-attached observer is contained by that controller; detached/inactive
 entries and unrelated sibling controllers remain eligible, and UIKit predicate
 acceptance keeps precedence. `EXP-115` proves exact H1/D1/H2 output with both
-tracking modes enabled. Still required before API review: a live second
-automatic-only container/scene, the once-per-container path/resolver prototype,
-and a precise rule for a single hosting controller that embeds multiple customer
-navigation containers.
+tracking modes enabled. `EXP-116` completes the once-per-container path/resolver
+prototype, and `EXP-118` proves from two simulator prefixes that semantic A does
+not globally suppress automatic B. Still required is the terminal B marker on
+physical hardware, a precise rule for sibling navigation containers sharing one
+hosting controller, and the immediate exceptional-view return fix exposed by
+`EXP-119`.
 
 Focused validation covers mounted replacement, unchanged key, returning to an
 earlier key with a fresh third UUID, detached change, simultaneous scene migration,
@@ -650,7 +658,17 @@ reviewed Swift and Objective-C start/stop forms that accept a `UIWindowScene`
 without exposing internal UUIDs. The same customer key must coexist in A and B;
 stopping A closes only A. Existing forms remain source-compatible and keep their
 inferred/last-interacted behavior, while automatic tracking continues outside an
-explicitly targeted exceptional view.
+explicitly targeted exceptional view. The concrete proposal and compatibility
+options live in [NAVIGATION_API.md](NAVIGATION_API.md).
+
+Routing the existing start/stop commands to `.scene` is necessary but not
+sufficient. Direct monitor calls bypass `RUMViewsHandler`'s retained platform-view
+stack, so stopping an exceptional manual view can leave no underlying automatic
+occurrence to reveal. Require automatic Home H1 -> manual M1 -> fresh automatic
+Home H2 in one scene while a peer scene remains unchanged. `EXP-119` proves the
+related modifier-based path eventually restores H2 without a duplicate, but
+immediate `onDismiss` work still owns outgoing S1. Preserve that failure until a
+presentation-aware semantic signal or stack reveal starts H2 first.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting

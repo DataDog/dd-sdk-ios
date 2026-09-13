@@ -96,7 +96,9 @@ manual keyed-view start/stop overloads and Objective-C counterparts. The same ke
 may be active independently in A and B, and an explicit stop in A must close only
 A. Existing APIs retain inferred/last-interacted behavior, while an explicit scene
 wins over the process representative. This establishes deterministic ownership
-for the Operation target without exposing internal RUM UUIDs.
+for the Operation target without exposing internal RUM UUIDs. The concrete
+starting point and automatic-view coexistence constraint are consolidated in
+[NAVIGATION_API.md](NAVIGATION_API.md).
 
 Customer documentation shipped with that API must state that scenes do not
 disambiguate Operations automatically. For a cross-window Operation:

@@ -74,7 +74,11 @@ boundary, in this order:
 | 57 | `Drive observable scene activation transitions` | Exact registered-scene activation, latched lifecycle-state conditions, durable terminal-result logging, explicit inconclusive classification, and focused driver coverage |
 | 58 | `Suppress automatic SwiftUI views in explicit subtrees` | iOS 27 multi-scene authority registry, subtree-scoped automatic-view suppression, focused coexistence regressions, and a probe configuration that enables automatic and explicit tracking together |
 | 59 | `Centralize probe SwiftUI navigation tracking` | Probe-only once-per-container `NavigationStack` wrapper, one bound path, centralized route metadata resolver, and route-owned root/destination tracking placement |
-| 60 | `Prepare semantic and automatic scene coexistence probe` | Scene-selective semantic tracking, exact source-versus-owner oracle evidence, automatic-view origin checks, and rejection of owner views created before the target scene opened |
+| 60 | `Document container SwiftUI navigation evidence` | `EXP-116` local/backend evidence, clean-run contamination warning, and refreshed handoff state |
+| 61 | `Prepare semantic and automatic scene coexistence probe` | Scene-selective semantic tracking, exact source-versus-owner oracle evidence, automatic-view origin checks, and rejection of owner views created before the target scene opened |
+| 62 | `Document automatic scene coexistence evidence` | `EXP-118` partial mapper evidence, simulator compositor failures, physical-device rerun routing, and refreshed plan |
+| 63 | `Probe exceptional manual SwiftUI view coexistence` | Automatic Home, one explicit Sheet exception, fresh automatic Home expectations, presentation commands, semantic-view intervals, and exact owner-relation checks |
+| 64 | `Report the active SwiftUI presentation screen` | Correct source labeling for driver markers and the explicit presentation interval while a sheet is active |
 
 Rows 1-60 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
@@ -91,7 +95,8 @@ is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 `df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
 `a97e943df`, row 57 is `4d1783198`, row 58 is `85d03e5ee`, and row 59 is
 `b5f74467d`.
-Row 60 is `265657c33`.
+Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
+is `a86c41e96`, and row 64 is `336bdd504`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -243,6 +248,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-116 | Return `container-navigation-prototype-20260913-2210-a`; abort `container-navigation-abort-clean-20260913-2247-a`; replacement `container-navigation-same-type-clean-20260913-2254-a` | `9d1653fc-80e8-4794-9a29-50a60246d2ca`; `8b89254e-ba81-4595-86a6-5fa399d480c5`; `0436c9b2-08fc-4c92-a311-7336eafaad4a` | iPadOS 27 | Once-per-container SwiftUI integration-shape pass. A probe-only wrapper consumes one bound `NavigationStack` path and centralized route-to-RUM resolver, owns root/destination materialization, and injects the existing route-owned tracking boundary without putting metadata into Home/Detail view types. Clean return passed 7/7 with launch plus Home H1 `a2dc84f9…`, Detail D1 `2a20ec3c…`, and fresh Home H2 `c82a59c9…`; abort passed 5/5 with only Home `b0166eb3…` and no Detail; same-type replacement passed 6/6 with same-named Detail₁ `f5311b38…` and Detail₂ `d8375a2b…` plus final action/Resource on Detail₂. Backend view sets and ownership agree, with no automatic/hosting duplicate. A delayed source-less callback scheduled by removed Detail₁ used the then-current Detail₂, preserving the approved fallback. Probe tests pass 45/45 and repository lint has zero violations. Commit `b5f74467d` is probe-only; no public API was added. |
 | EXP-117 | Contaminated abort `container-navigation-abort-20260913-2225-a`; contaminated replacement `container-navigation-same-type-20260913-2232-a` | `18cb3927-8afb-4f39-92bf-75b3391de050`; `1f6964c8-0200-44b9-a775-ffd91e4a0bc9` | iPadOS 27 | Clean-run isolation failure in the harness workflow, not an SDK-semantic failure. Both back-to-back Xcode launches passed their local oracle, but the test bundle had not been uninstalled. Their newly created Home/Detail view documents retained `container-navigation-prototype-20260913-2210-a` as `context.probe.run_id`, while later actions and Resources carried the new run ID. A new-run aggregate therefore showed only ApplicationLaunch until direct view-ID inspection exposed the mixed metadata. Explicit host-side uninstall followed by the `EXP-116` reruns removed the contamination. `--probe-run-mode clean` is only manifest input inside the app; Phase 5's host runner must perform teardown and verify every semantic view's run ID before accepting backend evidence. |
 | EXP-118 | `semantic-auto-coexistence-20260913-2256-a`; `semantic-auto-coexistence-20260913-2259-b` | `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`; `43e42ece-f77d-4215-8c6c-22c5ce101136` | iPadOS 27 simulator | Prepared automatic/semantic scene-coexistence discriminator; simulator-inconclusive after two explicitly uninstalled runs because `backboardd` aborted in Metal/CoreAnimation before the terminal oracle. Both runs kept scene A's explicit marker on A/Home H1 and created scene-B automatic fallback plus navigation-host views after B opened, proving A's authority did not suppress B globally. Attempt 1 mapped B's delayed source-less marker to B's non-launch automatic host, but the decisive driver marker never ran. Earlier B source-less lifecycle work used representative A before discovery settled, which is the approved compatibility fallback rather than exact provenance. No probe/SDK crash or terminal PASS/FAIL occurred; rerun the named scenario on physical hardware. Probe tests pass 49/49 and lint reports zero violations. |
+| EXP-119 | Invalid-source run `automatic-manual-sheet-20260913-2332-a`; corrected run `automatic-manual-sheet-20260913-2338-b` | `b2f50cf0-1394-4b1b-9da9-09d752a22bbf`; `f483b9eb-3ea8-4cfc-a884-c0b547effb5a` | iPadOS 27 simulator | Exceptional explicit SwiftUI Sheet over automatic Home. The first run exposed a probe-only source label defect, fixed in `336bdd504`. The corrected run then failed conclusively after 6 matches: Home-source work in immediate `onDismiss` still belonged to Sheet S1 because automatic Home H2 had not started; settled work used H2. Local mapper and backend intake otherwise agree on launch, an 18 ms automatic fallback, automatic H1 `60a6d680…`, explicit S1 `fad831da…`, and fresh automatic H2 `c36d0109…`; sheet work owns S1, pre-sheet work owns H1, no duplicate automatic Sheet appears, and no error/crash occurred. Probe build-for-testing and 56/56 tests pass. This proves coexistence/dedup and exposes a real return-boundary attribution gap. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3152,6 +3158,70 @@ reports zero violations across 713 source and 699 test files. The scenario is no
 prepared for one explicitly uninstalled iPhone Duo or physical multi-window iPad
 run. It must not be upgraded from `INCONCLUSIVE` until the final B marker passes
 locally and exact run-ID backend intake confirms its owner.
+
+### 2026-09-13 — EXP-119: exceptional manual Sheet over automatic Home
+
+The named scenario `swiftui.coexistence.automatic-manual-sheet` keeps automatic
+SwiftUI discovery enabled and makes only scene A's `sheet` screen explicit. Its
+required sequence is automatic Home H1 -> explicit Sheet S1 -> fresh automatic
+Home H2. The oracle forbids an automatic view during S1's actual mapper lifetime,
+requires sheet action/Resource work on S1, and requires returned-Home work on an
+automatic owner created after dismissal and distinct from H1. Commit `a86c41e96`
+contains the scenario, dedicated presentation command, view-lifetime interval,
+and owner-relation checks.
+
+The first explicitly uninstalled run,
+`automatic-manual-sheet-20260913-2332-a`, RUM session
+`b2f50cf0-1394-4b1b-9da9-09d752a22bbf`, stopped after three matches because the
+probe driver derived marker source only from the stack path. It therefore labeled
+`manual-sheet-active` as Home even though the mapper correctly attached the
+action and Resource to explicit Sheet S1
+`8164da1d-6b46-422f-8a13-8e6fd9a0d1bb`. This was invalid experiment metadata,
+not an SDK attribution failure. Commit `336bdd504` makes driver markers use the
+complete current scene destination and labels the interval start as Sheet. The
+project then built for testing and all 56 probe tests passed.
+
+The corrected, explicitly uninstalled run,
+`automatic-manual-sheet-20260913-2338-b`, RUM session
+`f483b9eb-3ea8-4cfc-a884-c0b547effb5a`, produced a conclusive local `FAIL` after
+six matched expectations. The exact mapper sequence was:
+
+1. ApplicationLaunch `a97616e2-a188-45f3-8a0c-6b27aaabb9f5`.
+2. Automatic fallback `97c08dbb-f8cd-49a0-abba-20bba27d27a9`, active for about
+   18 ms and owning no decisive scenario work.
+3. Automatic Home H1 `60a6d680-4f7b-4adf-af99-6809a716d4e8`.
+4. Explicit Sheet S1 `fad831da-1e4c-4dc9-bec3-d71b0b14e586`.
+5. Fresh automatic Home H2 `c36d0109-9b9c-476a-8b40-09ad586b816e`.
+
+Pre-sheet action/Resource work used H1. The sheet's `on-appear`, immediate and
+delayed task work, and corrected `manual-sheet-active` pair all used S1. No
+automatic Sheet or hosting-controller duplicate started inside S1's mapper
+lifetime. The failure is specifically the return boundary:
+
+- dismissal state mutation was sequence 60;
+- the probe observed Home materialized at sequence 68;
+- Home-source `sheet-dismissed-immediate` action and Resource started at sequence
+  69 while S1 was still current;
+- H2 started at sequence 72;
+- the immediate Resource completed on its frozen S1 owner at sequence 73;
+- S1 stopped at sequence 74; and
+- the settled Home action/Resource at sequences 75/78 used H2.
+
+Backend intake independently reports the same five views and ownership. The
+session aggregate contains five views, ten actions, ten Resources, two long
+tasks, zero RUM errors, and zero crashes. This is not a duplicate-view failure:
+the explicit exception correctly owns the sheet, automatic tracking remains
+available, and a fresh H2 eventually returns. It is a semantic timing gap because
+customer work executed from SwiftUI's immediate `onDismiss` callback is already
+Home work but is still attributed to the outgoing Sheet.
+
+Do not weaken the scenario to accept S1 for that callback. Investigate whether a
+reviewed container/router presentation signal or a manual-stack reveal can start
+H2 before immediate return work without speculative views or normal-app
+regressions. UIKit `viewDidAppear` starts H2 only after `onDismiss`; retrying the
+same scenario on physical hardware is useful for ordering parity but does not
+replace the deterministic failure already observed. No probe, SDK, simulator, or
+Session Replay crash occurred in either run.
 
 ### Attempts not to repeat
 

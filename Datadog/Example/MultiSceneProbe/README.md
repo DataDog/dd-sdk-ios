@@ -54,6 +54,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
+| `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -86,7 +87,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 49/49. The stack
+future Execution Context seam. The generated test plan passes 56/56. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -100,6 +101,11 @@ moving the path and route metadata to one probe-container call site. The wrapper
 still owns the root and typed destination builders so it can install the early
 tracking boundary at each materialized route; a passive root-only modifier is
 known to be too late. This is an API-shape prototype, not a shipped integration.
+`EXP-119` adds one explicit Sheet over an otherwise automatic hierarchy. It
+proves automatic Home H1 -> explicit Sheet S1 -> fresh automatic Home H2 without
+an automatic Sheet duplicate, but intentionally fails while immediate
+`onDismiss` work still owns S1 before H2 starts. Do not treat the later settled
+H2 attribution as closing that boundary.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes
