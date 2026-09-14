@@ -62,6 +62,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.nested-keyed-manual-view` | `EXP-128` | Signal-driven PASS 29/29; Compose C1 → Preview P1 → fresh Compose C2 → fresh Home H2, with duplicate Compose start crash-safe and restart-free |
 | `swiftui.coexistence.same-key-manual-two-scenes` | `EXP-129` | Hostless contract PASS 91/91; clean simulator run reached both scenes but expired before manual starts, so live acceptance requires iPhone Duo or physical iPad |
 | `operations.navigation.lifecycle` | `EXP-130` | Signal-driven PASS 27/27; backend raw steps and reduced Operations prove independent start/end view attribution across same-scene navigation, failure, and duplicate-start orphan semantics |
+| `operations.cross-scene.lifecycle` | `EXP-131` | Hostless contract PASS 100/100; exact A→B success/failure and distinct-key reverse-completion oracle prepared, with live acceptance reserved for iPhone Duo or physical iPad |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -94,7 +95,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 93/93. The stack
+future Execution Context seam. The generated test plan passes 100/100. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -175,6 +176,14 @@ to Detail D3 followed by success on the latest D3 start. The earlier H3 duplicat
 start remains an unclosed raw backend operation as specified; no synthetic end,
 error event, or app/SDK crash was observed. Cross-scene completion and the public
 view-targeting API remain separate gates.
+`EXP-131` isolates the remaining cross-window Operation contract without adding
+navigation already covered by `EXP-130`. It starts success and failure in A and
+completes them in B, then starts distinct `parallel-alpha` and `parallel-beta`
+instances in A and B and completes B before A. The hostless oracle rejects shared
+A/B view IDs, wrong-scene B work, a B completion on A, and A owner drift after B
+completes. No local signal is treated as Operation telemetry. The exact scenario
+must still produce eight raw steps and four reduced Operations on capable
+multi-window hardware.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes

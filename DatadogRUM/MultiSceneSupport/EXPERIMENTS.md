@@ -97,8 +97,10 @@ boundary, in this order:
 | 80 | `Exercise nested manual view authority` | `EXP-128` nested Compose/Preview suffix, duplicate-active-key crash safety, immutable prior-evidence waits, and adversarial oracle coverage |
 | 81 | `Exercise same-key manual views across scenes` | `EXP-129` same-key A/B isolation and reverse-stop driver contract plus cross-scene adversarial fixtures |
 | 82 | `Exercise operation attribution across navigation` | `EXP-130` success, failure, and duplicate Operation invocation driver across fresh semantic navigation occurrences |
+| 83 | `Update the multi-scene support checkpoint` | Progressive-disclosure checkpoint through `EXP-130`, consolidated evidence, aligned next-work order, and signed-history handoff |
+| 84 | `Prepare cross-scene operation attribution probe` | `EXP-131` A-to-B success/failure plus same-name distinct-key reverse-completion driver and adversarial ownership fixtures |
 
-Rows 1-82 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-84 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -119,9 +121,9 @@ is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
 Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
 Rows 74-79 are `f1c0547b6`, `c70920c94`, `100fa116a`, `45ec5656a`,
 `0c6b35770`, and `b6b1b57bc`.
-Rows 80-82 are `af2a2666d`, `9fa58e3c0`, and `5d536e0bd`. All three
-signatures were verified against the configured Datadog developer key before the
-branch advanced.
+Rows 80-84 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`, and
+`a653e29f2`. All five signatures were verified against the configured Datadog
+developer key before the branch advanced.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -143,13 +145,17 @@ branch remains local-only and must not be pushed.
 Four `git commit -S` attempts for `EXP-128` on 2026-09-14 failed before creating
 an object with the same signer-agent communication error, although `ssh-add -L`
 still listed the configured key. The isolated-index workflow preserved the exact
-code-only boundary until signing recovered. `EXP-128`, `EXP-129`, and `EXP-130`
-were then created as separate signed commits from frozen trees
+code-only boundary until signing recovered. `EXP-128`, `EXP-129`, `EXP-130`, and
+`EXP-131` were then created as separate signed commits from frozen trees
 `082310e18ecfbdb9fc18a4f9d1914c7660a6edfd`,
 `0b41cbbb34cd5ff138a9b792a0c8e528505e17a8`, and
-`22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`. Their diffs contain respectively
-six, seven, and eight harness/test paths and contain no documentation, project
-file, or xcconfig. This closes the signing blocker without an unsigned fallback.
+`22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`, and
+`67eb64a23f985494992ef53db36130557414fd1d`. Their diffs contain respectively
+six, seven, eight, and four harness/test paths and contain no documentation,
+project file, or xcconfig. The intervening documentation-only checkpoint is
+signed commit `140e57c11` with frozen tree
+`ac22bf1ad1a4adc4d60bfa00d8a375b9aa8a4851`. This closes the signing blocker
+without an unsigned fallback.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 an exact `git add` is not enough: an ordinary `git commit` still commits every
@@ -297,6 +303,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-128 | Harness-race trial `nested-keyed-manual-20260914-0835-a`; accepted retry `nested-keyed-manual-20260914-0837-b` | no backend claim for attempt A; `7e617c78-c0a4-4494-8b90-7d11e635ccdf` | iPadOS 27 simulator | Nested keyed-manual authority and duplicate-start acceptance. Attempt A timed out because Compose C1's exact mapper snapshot preceded the driver's `rum-view:compose#1` wait; immutable exact-view waits now search recorded evidence before subscribing. Attempt B passes 29/29 with automatic H1 `3e67eb39…` → Compose C1 `e8393107…` → Preview P1 `82b08791…` → fresh Compose C2 `996d39fe…` → fresh automatic H2 `c7a6332f…`. Duplicate active Compose creates no view and its action/Resource remain on C2. Immediate/settled reveal work uses C2 after Preview and H2 after Compose. Backend intake contains seven views including launch/startup fallback, 15 actions, 15 Resources, one long task, one vital, and no error or crash. Probe tests pass 83/83; build, repository lint, and `git diff --check` pass. |
 | EXP-129 | `same-key-manual-two-scenes-20260914-0931-a` | local RUM session `5986e490-0f5d-426c-8bb1-b9490d18843c`; no backend event received | iPadOS 27 simulator | Prepared exact same-key A/B isolation with reverse-order stop. The 91-test local plan proves the scenario and adversarial oracle: A/B Compose must have distinct UUIDs, exact work cannot cross scenes, stopping B cannot preempt A, and each returned Home must be fresh. The clean runtime reached distinct native scene A `1FB7195F…` and scene B `AFAB95FA…`, with B ready at signal 43, then the Xcode launch/device session expired amid CoreAnimation/BoardServices interruptions before the first manual start or terminal oracle. The interaction session vanished before a hierarchy capture, and exact run/session backend queries returned zero events. This is simulator-inconclusive with no semantic or app/SDK-crash claim; do not repeat this topology on the simulator. Run the named scenario on iPhone Duo or a physical multi-window iPad. |
 | EXP-130 | `operations-navigation-20260914-1015-a` | `74b23c67-b6b7-4917-86ed-2ff8c7c4f559` | iPadOS 27 simulator | Operation per-step navigation and duplicate-start acceptance. An explicit uninstall plus missing-container check established a clean run. The named scenario passes 27/27 and the full probe plan passes 93/93. Six fresh semantic occurrences carry success H1 `d6617ab6…` → D1 `11e4efeb…`, failure H2 `88e9e4d6…` → D2 `e7a48e28…`, and duplicate H3 `b6d3feb0…` → D3 `e0b3e68c…`. Backend intake has seven raw `operation_step` documents and three reduced Operations: success H1→D1, failure H2→D2 with its error, and duplicate D3→D3. The duplicate raw sequence is `[start H3, start D3, end D3]`; no synthetic H3 end exists, so the earlier operation remains open for the documented four-hour timeout. The corrected warning appeared exactly, and the session contains no error event or crash. Local assertion signals prove only the API call site; raw/reduced backend documents are the Operation attribution oracle. Cross-scene A-to-B and the public view target remain open. |
+| EXP-131 | No live run attempted | No backend session claimed | Xcode 27 hostless tests; hardware run pending | Prepared `operations.cross-scene.lifecycle`. Its exact eight-step driver starts success/failure in A and completes them in B, then starts same-name `parallel-alpha` and `parallel-beta` instances in A and B and completes beta before alpha. The 100/100 hostless plan includes a passing fixture and rejects a shared A/B view ID, B Home owned by A, a B completion attributed to A, and A owner drift after B completes. Local assertion/action/Resource signals prove invocation and scene context only; raw and reduced Operation documents remain the acceptance oracle. Build-for-testing, repository lint, and `git diff --check` pass. No redundant simulator run was attempted after `EXP-129` established that this two-scene compositor topology expires before the decisive steps. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -324,6 +331,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-114` | The simulator kept both exact scenes foreground-active instead of acknowledging a focus handoff, then crashed `backboardd` in CoreAnimation/Metal during a rapid retry | Run `windows.activation-sequence` on iPhone Duo or a physical multi-window iPad; let the OS complete each focus transition before continuing | For every step, record target foreground-active plus peer background before judging telemetry. Each confirmed foreground re-entry must create the scenario's fresh Home occurrence, and its immediate action/Resource pair must use that occurrence. A plain source label must never be treated as SDK provenance; source-less fallback remains last-interacted |
 | P0 | `EXP-118` | Two clean runs created B's automatic views but the simulator compositor aborted before the exact B marker and terminal oracle completed | Run `swiftui.coexistence.semantic-a-automatic-b` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require A's semantic marker on A/Home H1; a B-sourced marker on a non-launch automatic view first observed after opening B; no automatic duplicate in A; no cross-scene stop; terminal local PASS followed by exact run-ID backend confirmation |
 | P0 | `EXP-129` | The clean run reached both native scenes, then Xcode/device capture expired amid simulator graphics/window-service interruptions before either manual view started | Run `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require distinct A/B automatic Home owners, distinct Compose UUIDs for the same customer key, B-first stop revealing fresh B Home without changing A Compose, A stop revealing fresh A Home, exact action/Resource ownership, terminal PASS, and exact run-ID backend confirmation |
+| P0 | `EXP-131` | `EXP-129` already showed that the required two-scene simulator compositor/session expires before decisive cross-window work; repeating it would not add evidence | Run `operations.cross-scene.lifecycle` unchanged on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require distinct A/B Home view IDs, eight raw Operation steps, and four reduced Operations: cross-success A→B, cross-failure A→B with its error, parallel-alpha A→A, and parallel-beta B→B. Raw beta completion must precede alpha completion. Require no extra/orphan Operation, RUM error, or app/SDK crash |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
@@ -3842,6 +3850,55 @@ long tasks, and one session, with no error event or crash.
 This is a conclusive pass for per-step same-scene navigation attribution,
 failure, and duplicate identity semantics. It does not close start-in-A/end-in-B,
 reverse-order cross-scene completion, or the public view-targeting API.
+
+### 2026-09-14 — EXP-131: prepared cross-scene Operation attribution
+
+The new `operations.cross-scene.lifecycle` scenario isolates the remaining
+cross-window Operation contract from navigation already accepted in `EXP-130`.
+It requires distinct automatic Home occurrences in scenes A and B, then invokes
+this exact application-wide identity sequence:
+
+1. start `cross-success` in A and succeed it in B;
+2. start `cross-failure` in A and fail it in B;
+3. start same-name Operations with distinct `parallel-alpha` and
+   `parallel-beta` keys in A and B;
+4. succeed `parallel-beta` in B before succeeding `parallel-alpha` in A.
+
+The driver records eight acknowledgements after the corresponding SDK calls.
+Its marker actions and Resources verify only call-site progress and scene
+context. The scenario intentionally has no synthetic Operation-step observation:
+the runtime acceptance oracle remains eight raw `operation_step` documents and
+four reduced Operations with A→B, A→B failure, A→A, and B→B ownership.
+
+The passing semantic fixture uses distinct, stable A/B Home owners. Four negative
+fixtures independently reject a shared view UUID, B Home attributed to A, a B
+completion attributed to A, and drift of A's owner after B completes. The exact
+eight-command order, eight acknowledgements, scenario capabilities, and absence
+of fake Operation-step expectations are covered in the driver/catalog tests.
+
+The full generated probe plan passes 100/100:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/21CC83EA-9FB8-4540-BC2B-E6F6DF92B114.txt`
+
+The result bundle is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.14_10-55-40-+0200.xcresult`
+
+Build-for-testing passes with no diagnostics:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-105600.txt`
+
+Repository lint reports zero violations across 713 source and 699 test files,
+and `git diff --check` passes. Signed commit `a653e29f2` contains exactly four
+harness/test paths from frozen tree
+`67eb64a23f985494992ef53db36130557414fd1d`.
+
+No simulator run was attempted. `EXP-129` already reached two native scenes in
+the same required topology and then lost the compositor/Xcode session before the
+decisive work. Repeating that known-inconclusive path would add no semantic
+evidence. Run this named scenario unchanged on iPhone Duo or a physical
+multi-window iPad, then inspect raw and reduced backend documents before claiming
+cross-scene Operation support. A terminal local PASS alone is insufficient.
 
 ### Attempts not to repeat
 

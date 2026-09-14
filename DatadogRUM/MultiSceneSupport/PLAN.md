@@ -108,7 +108,9 @@ Sheet/full-screen-cover behavior, sibling-container isolation, and one-scene
 nested-manual/duplicate-start behavior now pass; public names and exact
 Swift/Objective-C signatures remain gated on normal API review. The exact
 two-scene same-key contract is implemented and passes hostless tests, but its
-live acceptance is now in the physical-device queue.
+live acceptance is now in the physical-device queue. The exact cross-scene
+Operation driver is also implemented through `EXP-131`; its 100/100 hostless
+contract is ready for the same hardware gate.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -221,8 +223,11 @@ live acceptance is now in the physical-device queue.
     active, make B the representative, interact in A without a focus transition,
     and prove the action plus its immediate Resource use A. Repeat UIKit drag and
     deceleration and require one action on the originating view occurrence.
-18. Prepare an exact Operation A-to-B/reverse-completion scenario using the
-    existing internal scene handoff, then run it on capable multi-window hardware.
+18. Completed in `a653e29f2` and `EXP-131`: prepare exact A-to-B Operation
+    success/failure plus same-name, distinct-key parallel Operations completed
+    B-before-A. The driver and adversarial ownership oracle pass in the 100/100
+    hostless plan. Run the unchanged scenario on capable multi-window hardware
+    and require eight raw steps plus four correctly reduced Operations.
 19. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
     iPad, requiring exact foreground-active target and background peer state.
 20. After API approval, land the optional complete-destination SwiftUI semantic
@@ -398,7 +403,12 @@ experiment; it does not itself change the SDK support verdict.
    `[start H3, start D3, end D3]`. Its local 27/27 result and 93/93 full plan are
    backend-confirmed by seven raw steps and three reduced Operations. The earlier
    H3 start has no synthetic end and the exact corrected warning is preserved.
-20. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+20. Cross-scene Operation coverage prepared in `a653e29f2` and `EXP-131`: start
+   success/failure in A and complete them in B, then start same-name Operations
+   with distinct keys in A and B and complete B before A. The 100/100 hostless
+   plan rejects shared A/B view identity, wrong-scene B work, B completion on A,
+   and A owner drift. Runtime/backend acceptance remains hardware-gated.
+21. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -408,7 +418,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, exact scene lifecycle,
-coexistence, and Operation/navigation harness is implemented through `EXP-130`:
+coexistence, and Operation harness is implemented through `EXP-131`:
 three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
@@ -434,7 +444,7 @@ M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
 fresh H2 before immediate and settled work. `EXP-126` independently repeats the
 same complete-destination contract for `fullScreenCover`, including target-scoped
 dedup through native dismissal and a fresh H2 before both dismiss pairs. The test
-plan is 93/93. Presentation-style parity, sibling-container scope, and the
+plan is 100/100. Presentation-style parity, sibling-container scope, and the
 single-scene nested/duplicate manual contract are now closed internally; reviewed
 public APIs remain. `EXP-127` adds the exact H1/manual-M1/fresh-Detail sibling
 path, with no right-side intermediate view while M1 is current. `EXP-128` adds
@@ -443,7 +453,9 @@ Compose misuse creates no restart. `EXP-129` adds the complete same-key A/B and
 reverse-stop oracle, but its live simulator attempt expired before manual starts.
 `EXP-130` adds backend-confirmed success/failure navigation attribution and
 duplicate latest-start semantics without using mapper assertions as Operation
-evidence.
+evidence. `EXP-131` adds the exact A-to-B success/failure and distinct-key
+reverse-completion contract; its local assertions remain invocation evidence,
+not Operation telemetry, until raw and reduced backend intake is captured.
 Both same-key and semantic-A/automatic-B acceptance now require capable hardware.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 

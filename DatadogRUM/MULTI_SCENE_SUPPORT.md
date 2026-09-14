@@ -170,6 +170,14 @@ leaves the earlier H3 start open without a synthetic end. The corrected warning,
 failure reason, zero error/crash result, and exact six semantic view occurrences
 are all observed. Cross-scene A-to-B completion and public targeting remain open.
 
+`EXP-131` prepares the exact remaining cross-scene Operation discriminator. It
+starts success and failure in A and completes them in B, then starts two
+same-name Operations with distinct keys in A and B and completes B before A. The
+hostless driver and adversarial oracle raise the probe plan to 100/100 while
+rejecting shared view identity, wrong-scene B work, B completion on A, and A owner
+drift after B completes. No simulator or backend claim is made: the named scenario
+is queued intact for iPhone Duo or a physical multi-window iPad.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -185,10 +193,10 @@ mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
 signal-driven stack, split, UIKit-transition, scene-lifecycle,
-automatic/manual-coexistence, and Operation/navigation scenarios through
-`EXP-130` pass 93/93 tests. The prepared two-scene same-key scenario remains
-hardware-gated; the single-scene Operation/navigation scenario passes locally and
-in backend intake.
+automatic/manual-coexistence, and Operation scenarios through `EXP-131` pass
+100/100 tests. The prepared two-scene same-key and cross-scene Operation scenarios
+remain hardware-gated; the single-scene Operation/navigation scenario passes
+locally and in backend intake.
 Clean iPadOS 27 runs prove
 distinct Home₁ → Detail → Home₂ occurrences, no speculative view for an aborted
 push, and fresh occurrences for same- and different-type replacements. Each run
@@ -226,11 +234,11 @@ exact runs and rejected paths live in
 | Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, `EXP-125`/`EXP-126` cover presentation subtrees, and `EXP-127` leaves an unrelated sibling controller eligible while manual authority is active | Validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the semantic-container shape through API review |
 | Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
-| Operations | Internal per-step routing and exact application-wide identity pass focused tests. `EXP-130` proves live Home→Detail success and failure attribution, plus duplicate-start latest-instance reduction and an orphaned earlier raw start, with seven raw steps and three reduced Operations | Public target API review and live A-to-B cross-scene completion; duplicate behavior itself is backend-confirmed |
+| Operations | Internal per-step routing and exact application-wide identity pass focused tests. `EXP-130` proves live Home→Detail success/failure plus duplicate latest-instance reduction. `EXP-131` adds the exact hostless A→B and distinct-key reverse-completion contract | Run `EXP-131` on capable multi-window hardware and complete public target API review; duplicate behavior itself is backend-confirmed |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 93/93 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 100/100 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -337,16 +345,19 @@ customer workflow, and required tests live only in
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `f452e9e3f` (`Preserve semantic presentation authority through
 dismissal`), following the exact-scene manual stack in `29c8cec2c` and
-`b1a0fb6b8`. The latest probe checkpoint is `5d536e0bd` (`Exercise operation
-attribution across navigation`), following `9fa58e3c0` (`Exercise same-key manual
-views across scenes`) and `af2a2666d` (`Exercise nested manual view authority`).
-Their exact code-only trees are respectively
+`b1a0fb6b8`. The latest probe checkpoint is `a653e29f2` (`Prepare cross-scene
+operation attribution probe`), following `5d536e0bd` (`Exercise operation
+attribution across navigation`), `9fa58e3c0` (`Exercise same-key manual views
+across scenes`), and `af2a2666d` (`Exercise nested manual view authority`). The
+latest documentation checkpoint is `140e57c11`. Their exact probe trees from
+newest to oldest are
+`67eb64a23f985494992ef53db36130557414fd1d`,
 `22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`,
 `0b41cbbb34cd5ff138a9b792a0c8e528505e17a8`, and
 `082310e18ecfbdb9fc18a4f9d1914c7660a6edfd`. The approved product decision
 checkpoint is
 `b61e783a6`; the public-navigation proposal starts at `b5494adb0`.
-All existing branch commits through `5d536e0bd` are verified signed local commits
+All existing branch commits through `a653e29f2` are verified signed local commits
 and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
@@ -410,12 +421,15 @@ scenario. Its 27/27 local oracle and 93/93 full plan agree with backend intake:
 successful and failed Operations retain different start/end views across
 navigation, while a duplicate identity emits `[start, start, end]`, reduces from
 the latest start, and leaves the earlier raw start open without a synthetic end.
+`EXP-131` prepares A→B success/failure and two distinct same-name Operations
+completed B-before-A. The full hostless plan passes 100/100 with four adversarial
+cross-scene ownership fixtures; live execution remains in the hardware queue.
 The complete chronology and every failed attempt live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-130`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-131`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
 1. Finish `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a
@@ -433,10 +447,9 @@ owns the finished phases and full release matrix. Continue in this order:
    visible, make B representative, interact in A without a focus-driven fallback,
    and prove exact A ownership. Repeat UIKit drag plus deceleration and require one
    action on the originating occurrence.
-5. Extend the Operation driver to start in A and complete in B using one exact
-   application-wide identity. Preserve each step's actual view and exercise
-   reverse-order completion for distinct keys; execute it on capable hardware if
-   the simulator again loses its two-scene session.
+5. Run `operations.cross-scene.lifecycle` on capable hardware. Require A→B
+   success/failure, distinct A/B Home owners, and distinct-key reverse completion
+   with eight raw steps and four reduced Operations.
 6. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
    iPad. Require the activated scene to become foreground-active and the peer to
    become background before asserting fresh view occurrences or marker ownership.
@@ -507,7 +520,7 @@ owns the finished phases and full release matrix. Continue in this order:
 - Profiling uses the same typed Operation identity and distinguishes omitted from
   empty keys.
 - Session Replay is required only to coexist without an SDK crash.
-- The standalone probe now resolves 45 named scenarios from command-line input,
+- The standalone probe now resolves 46 named scenarios from command-line input,
   preserves exact known legacy environment profiles, and fails closed before SDK
   initialization. It records ordered versioned JSONL signals, keeps call-site
   source separate from mapper-observed RUM ownership, derives view start/stop from
@@ -541,7 +554,7 @@ As of 2026-09-14:
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 93/93. Clean runs prove
+  oracle, scene registry, and observable driver pass 100/100. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -624,6 +637,11 @@ As of 2026-09-14:
   four-hour-timeout warning appeared, with no synthetic end, error event, or
   app/SDK crash (`EXP-130`). Exact identifiers and artifacts for these runs stay
   in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
+- The exact cross-scene Operation scenario raises the probe plan to 100/100. Its
+  driver proves the eight A/B invocations and reverse-completion order. The
+  semantic oracle passes its valid fixture and rejects four ownership failures.
+  Because the same two-scene simulator topology already expired in `EXP-129`, no
+  redundant runtime claim is made; `EXP-131` is queued for capable hardware.
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
@@ -634,9 +652,9 @@ runtime rows. Detailed run evidence remains in
 ### Blockers and workspace safety
 
 Public SwiftUI and Operation API work requires normal RFC/API review. The branch
-history through `5d536e0bd` has been re-signed or created with verified SSH
+history through `a653e29f2` has been re-signed or created with verified SSH
 signatures. The earlier signer outages remain documented, together with the exact
-frozen trees for `EXP-128` through `EXP-130`; no unsigned fallback was used.
+frozen trees for `EXP-128` through `EXP-131`; no unsigned fallback was used.
 The iOS 27 integration-runner half-and-half layout repeatedly respawned
 `backboardd`, although the standalone native `WindowGroup` probe opens two windows.
 The standalone probe also reproduced a `backboardd` CoreAnimation/Metal SIGABRT

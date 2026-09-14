@@ -141,15 +141,24 @@ duplicate semantics; it does not close A-to-B completion or the public target.
 Exact run, session, view, and artifact identifiers remain in the
 [experiment ledger](EXPERIMENTS.md).
 
+`EXP-131` prepares the remaining live discriminator without weakening that
+evidence boundary. Its `operations.cross-scene.lifecycle` driver starts success
+and failure in A and completes them in B. It then starts same-name Operations
+with distinct `parallel-alpha` and `parallel-beta` keys in A and B and completes
+B before A. The 100/100 hostless plan verifies all eight invocations and rejects
+shared A/B view identity, wrong-scene B ownership, a B completion on A, and A
+owner drift after B completes. It deliberately makes no live or backend claim;
+the unchanged scenario is queued for iPhone Duo or a physical multi-window iPad.
+
 Required test coverage is tracked explicitly:
 
 | Required case | Current coverage | Status |
 | --- | --- | --- |
-| Start in A, succeed in B | Manager and session-scope start/end view assertions | Focused pass; live backend pending |
-| Start in A, fail in B | Manager start/end view and failure-reason assertions | Focused pass; live backend pending |
+| Start in A, succeed in B | Manager/session-scope assertions plus the exact `EXP-131` hostless driver and ownership oracle | Focused/hostless pass; live backend pending |
+| Start in A, fail in B | Manager failure assertions plus the exact `EXP-131` hostless driver and ownership oracle | Focused/hostless pass; live backend pending |
 | Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
-| Parallel A/B, same name, different keys | Manager identity and view sequence | Focused pass |
-| Reverse-order completion | Manager identity and view sequence | Focused pass |
+| Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` `parallel-alpha`/`parallel-beta` driver | Focused/hostless pass; live backend pending |
+| Reverse-order completion | Manager sequence plus `EXP-131` B-before-A driver order | Focused/hostless pass; live backend pending |
 | Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; public overload test pending API review |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
