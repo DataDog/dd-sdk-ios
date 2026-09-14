@@ -36,14 +36,16 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // Given
+        let applicationID: String = .mockRandom()
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
+            applicationID: applicationID,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
         )
 
-        // When
+        // When: no RUM context exists, e.g. the session expired or was stopped
         TelemetryMock(with: receiver).debug("Hello world!", attributes: ["foo": 42])
 
         // Then
@@ -55,6 +57,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.message, "Hello world!")
         XCTAssertEqual(event?.telemetry.telemetryInfo["foo"] as? Int, 42)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
+        XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the event to the RUM application even with no session")
     }
 
     func testSendTelemetryError() {
@@ -65,14 +68,16 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // Given
+        let applicationID: String = .mockRandom()
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
+            applicationID: applicationID,
             dateProvider: RelativeDateProvider(
                 using: .init(timeIntervalSince1970: 0)
             )
         )
 
-        // When
+        // When: no RUM context exists, e.g. the session expired or was stopped
         TelemetryMock(with: receiver).error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
         // Then
@@ -85,13 +90,14 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.error?.kind, "OutOfMemory")
         XCTAssertEqual(event?.telemetry.error?.stack, "a\nhay\nneedle\nstack")
         XCTAssertEqual(event?.effectiveSampleRate, 100)
+        XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the event to the RUM application even with no session")
     }
 
     func testSendTelemetryDebug_withRUMContext() {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
-        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: rumContext.applicationID)
 
         // When
         TelemetryMock(with: receiver).debug("telemetry debug", attributes: ["foo": 42])
@@ -111,7 +117,7 @@ class TelemetryReceiverTests: XCTestCase {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.set(additionalContext: rumContext)
-        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: rumContext.applicationID)
 
         // When
         TelemetryMock(with: receiver).error("telemetry error")
@@ -323,8 +329,10 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // Given
+        let applicationID: String = .mockRandom()
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
+            applicationID: applicationID,
             dateProvider: RelativeDateProvider(using: .init(timeIntervalSince1970: 0))
         )
         let telemetry = TelemetryMock(with: receiver)
@@ -426,6 +434,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)
         XCTAssertEqual(event?.telemetry.configuration.useTracing, useTracing)
         XCTAssertEqual(event?.effectiveSampleRate, 100)
+        XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the event to the RUM application even with no session")
     }
 
     // MARK: - Track Resource Headers Configuration Telemetry
@@ -615,9 +624,10 @@ class TelemetryReceiverTests: XCTestCase {
     func testSendTelemetryUsage_trackWebView() {
         // Given
         featureScope.contextMock = .mockWith(source: "ios", sdkVersion: "sdk-version")
-        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, sampler: .mockKeepAll())
+        let applicationID: String = .mockRandom()
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope, applicationID: applicationID, sampler: .mockKeepAll())
 
-        // When
+        // When: no RUM context exists, e.g. the session expired or was stopped
         let result = receiver.receive(
             message: .telemetry(.usage(.init(event: .trackWebView, sampleRate: 100))),
             from: NOPDatadogCore()
@@ -631,6 +641,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source, .ios)
         XCTAssertEqual(event?.version, "sdk-version")
+        XCTAssertEqual(event?.application?.id, applicationID, "It should attribute the event to the RUM application even with no session")
         guard case .telemetryMobileFeaturesUsage(let usage) = event?.telemetry.usage,
               case .trackWebView = usage else {
             XCTFail("Expected .telemetryMobileFeaturesUsage(.trackWebView)")
