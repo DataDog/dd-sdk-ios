@@ -59,6 +59,9 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.automatic-scene-targeted-full-screen-cover` | `EXP-126` | Independent signal-driven PASS 14/14 with semantic full-screen cover, no automatic duplicate, and fresh Home before immediate dismiss work |
 | `swiftui.coexistence.sibling-container-authority` | `EXP-127` | Signal-driven PASS 19/19; real left/right controller ancestries prove container-local authority and latest right-Detail reveal |
 | `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120`–`EXP-122` | Legacy direct-command baseline FAIL; internal exact-scene successor PASS 16/16 with authoritative Compose and fresh Home H2 |
+| `swiftui.coexistence.nested-keyed-manual-view` | `EXP-128` | Signal-driven PASS 29/29; Compose C1 → Preview P1 → fresh Compose C2 → fresh Home H2, with duplicate Compose start crash-safe and restart-free |
+| `swiftui.coexistence.same-key-manual-two-scenes` | `EXP-129` | Hostless contract PASS 91/91; clean simulator run reached both scenes but expired before manual starts, so live acceptance requires iPhone Duo or physical iPad |
+| `operations.navigation.lifecycle` | `EXP-130` | Signal-driven PASS 27/27; backend raw steps and reduced Operations prove independent start/end view attribution across same-scene navigation, failure, and duplicate-start orphan semantics |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -91,7 +94,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 76/76. The stack
+future Execution Context seam. The generated test plan passes 93/93. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -145,6 +148,33 @@ settled return work on the same fresh Home H2. Do not add a Compose-view wait as
 a barrier or treat deferred mapper stop ordering as navigation order. This probe
 uses an internal capability; customer-facing scene overloads still require API
 review.
+`EXP-128` extends that exact-scene path to a real keyed manual suffix. Its clean
+run creates automatic Home H1, Compose C1, Preview P1, fresh Compose C2 after the
+Preview stop, and fresh automatic Home H2 after the Compose stop. A duplicate
+active Compose start changes no probe destination and creates no RUM occurrence;
+its action/Resource remains on C2. The first attempt timed out because the C1
+mapper snapshot arrived before the driver began waiting. Exact `rum-view` waits
+now search already-recorded immutable evidence before subscribing, and the retry
+passes 29/29 locally and in backend intake with no error or crash.
+`EXP-129` uses a harness-only exact scene-context marker to model work invoked
+from a trustworthy UI-event call site while leaving ordinary source-less marker
+behavior unchanged. It starts the same `compose` key in A and B, stops B before
+A, and requires distinct Compose owners, continued A authority after B stops,
+and fresh returned Home owners in both scenes. Adversarial fixtures reject shared
+UUIDs and cross-scene stop or work leakage. The clean iPad simulator run reached
+both native scenes, then the Xcode/device session expired before manual authority
+began. It emitted no terminal result or backend event, so run this exact named
+scenario on capable hardware rather than treating the hostless contract as live
+acceptance.
+`EXP-130` exercises Operations across six fresh single-scene navigation
+occurrences without pretending mapper assertions are Operation telemetry. The
+local driver proves every API invocation happened from the intended scene and
+destination. Backend raw `operation_step` intake then proves success from Home H1
+to Detail D1, failure from Home H2 to Detail D2, and duplicate start from Home H3
+to Detail D3 followed by success on the latest D3 start. The earlier H3 duplicate
+start remains an unclosed raw backend operation as specified; no synthetic end,
+error event, or app/SDK crash was observed. Cross-scene completion and the public
+view-targeting API remain separate gates.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes
@@ -175,7 +205,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.split.retained-return`, plus `uikit.split.pop-cancel` and
 `uikit.split.pop-finish`, plus `windows.close-with-resource` and
 `windows.activation-sequence`, plus
-`swiftui.coexistence.sibling-container-authority`, use the
+`swiftui.coexistence.sibling-container-authority` and
+`swiftui.coexistence.nested-keyed-manual-view`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM

@@ -145,6 +145,33 @@ That makes the semantic contract visible to custom conformers but requires a ful
 library-evolution and Objective-C compatibility review. Do not choose it only to
 make the declaration look symmetrical.
 
+The review alternatives are:
+
+| Shape | Exact SDK behavior | External conformers | Compatibility cost | Recommendation |
+| --- | --- | --- | --- | --- |
+| Extension-only overload plus private capability | `Monitor` captures the scene ID and uses the proven handler stack | Existing conformers compile unchanged and fall back once to their legacy implementation | No new protocol witness; explicit scene semantics are unavailable through a custom conformer | Preferred first release |
+| Defaulted protocol requirement | Same SDK route | A conformer can implement exact scene behavior through the existential | Requires library-evolution, binary-compatibility, mock, and Objective-C review | Use only if exact third-party-conformer dispatch is a requirement |
+| New concrete monitor surface | Could provide exact dispatch | Avoids protocol extension dispatch | `RUMMonitor.shared()` currently returns `RUMMonitorProtocol`; changing that shape is substantially broader | Reject for this project |
+
+For the preferred shape, the implementation sequence is fixed even though the
+public declaration is not yet approved:
+
+1. On the main actor, read only `scene.session.persistentIdentifier`.
+2. If the receiver implements the private scene-targeted capability, forward the
+   key, name, attributes, and internal scene identifier to it.
+3. Otherwise invoke the existing source-less start or stop exactly once. Do not
+   recurse through the new overload and do not search all scenes.
+4. The capability routes through `RUMViewsHandler`; it must not emit the legacy
+   direct command used by `EXP-120`.
+5. Release every UIKit object before work crosses to the RUM queue.
+
+The SDK deployment target remains iOS 15, but the validated automatic/manual
+coexistence machinery is the declared-multi-scene iOS 27 path. API review should
+choose explicitly between an iOS 27 availability annotation and a wider API
+availability whose pre-iOS-27 behavior is documented as legacy-compatible rather
+than multi-scene acceptance. The branch contains no evidence supporting a broad
+pre-iOS-27 correctness claim.
+
 ### Objective-C companion
 
 The Objective-C wrapper should expose selectors equivalent to:
@@ -224,6 +251,26 @@ and reveal only the latest as a fresh occurrence. Stopping nested Preview starts
 a fresh Compose occurrence. Repeating an active `(scene, key)` start is ignored
 crash-safely without restart or reference counting. These tests validate
 internal behavior; they do not add or approve the public overloads.
+
+`EXP-128` validates the nesting and duplicate rules through the real probe rather
+than fixtures alone. It produces automatic Home H1 → Compose C1 → Preview P1 →
+fresh Compose C2 → fresh automatic Home H2. A duplicate active Compose start
+creates no C3 and does not move the duplicate marker action/Resource away from
+C2. Backend intake confirms distinct C1/C2 and H1/H2 IDs with no error or crash.
+The first attempt timed out only because the C1 mapper snapshot arrived before
+the driver began waiting; exact immutable occurrence waits now also consume
+already-recorded evidence. Same-key A/B isolation remains a separate live row.
+
+`EXP-129` implements that separate discriminator. It starts the same customer
+key in A and B, stops B before A, and requires distinct Compose occurrences,
+continued A authority after B stops, and fresh returned Home occurrences in both
+scenes. The scenario uses an internal debug-only scene-context marker to model a
+trustworthy UI-event call site; it does not change the existing source-less
+fallback. Its adversarial fixtures and full probe plan pass 91/91. The clean
+iPad simulator run reached both native scenes but lost the Xcode/device session
+before the first manual start, so the public-design evidence remains source and
+hostless-contract evidence until the same named scenario passes on capable
+hardware.
 
 `EXP-119` is the legacy modifier baseline: Sheet S1 suppresses its duplicate and
 automatic Home H2 eventually returns, but immediate `onDismiss` work still owns
@@ -322,12 +369,13 @@ active explicit or suppression-only reader is contained by an automatic
 candidate controller. The suppression-only form publishes no RUM lifecycle; a
 centralized router remains its sole semantic owner.
 `EXP-115` proves this for one container, `EXP-118` partially proves that scene A
-does not suppress scene B, and `EXP-127` proves containment remains local across
+does not suppress scene B, `EXP-127` proves containment remains local across
 two sibling controller branches hosted below one outer SwiftUI root. The latter
 passes only after observing both exact controller ancestries; a missing or
 collapsed topology is `INCONCLUSIVE`, not authority evidence. This closes the
 internal isolation question without approving how the public integration creates
-and owns the boundary.
+and owns the boundary. `EXP-129` adds the exact same-key A/B contract, but its
+live acceptance remains hardware-inconclusive before manual authority began.
 
 Exceptional `.trackRUMView` instrumentation remains supported alongside a
 semantic container. It owns only its explicit occurrence. Returning from that

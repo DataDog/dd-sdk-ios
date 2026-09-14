@@ -5,7 +5,7 @@ duplicate-start behavior, the proposed public targeting API, customer guidance,
 or Operations tests. This is the authoritative home for the Operations contract;
 the [canonical overview](../MULTI_SCENE_SUPPORT.md) carries only its summary.
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 ## RUM Operations contract and API review proposal
 
@@ -87,8 +87,12 @@ capability, with the existing inferred method called exactly once for custom
 conformers and the NOP monitor. The Objective-C surface needs a
 `DDRUMOperationViewTarget` companion with `inferred`, `currentInScene:`,
 `trackedViewWithKey:inScene:`, and `trackedViewController:` factories. Use the
-repository's existing non-watchOS UIKit availability convention rather than
-gating the API to iOS 27; `UIWindowScene` predates the SDK's iOS 15 minimum.
+same availability decision as the scene-targeted manual-view prerequisite in
+[NAVIGATION_API.md](NAVIGATION_API.md). `UIWindowScene` predates the SDK's iOS 15
+minimum, but the validated coexistence contract currently targets declared
+multi-scene applications on iOS 27. API review must choose whether to expose the
+overloads broadly with legacy-compatible behavior or annotate them for iOS 27;
+the Operations proposal must not decide that independently.
 
 One required prerequisite remains: the public `startView(key:)` API cannot
 explicitly bind that manual key to a scene. API review must include scene-targeted
@@ -115,21 +119,43 @@ Independent loads in identical windows must use distinct identities, for example
 concurrent same-name work, can leave the earlier Operation open until the four-
 hour backend timeout.
 
+## Current runtime evidence
+
+`EXP-130` adds a clean named probe for the part of the contract that can be
+decided without stable simultaneous windows. It passes 27/27 locally and raises
+the full probe plan to 93/93. Backend intake contains seven raw Operation steps
+and three reduced Operations:
+
+- success starts on Home H1 and ends on fresh Detail D1;
+- failure starts on Home H2 and ends on fresh Detail D2 with its failure reason;
+- a duplicate identity starts on Home H3, starts again on Detail D3, and ends on
+  D3. The reduced Operation uses D3 for both ends, while the earlier H3 raw start
+  has no synthetic end and remains open for the four-hour timeout.
+
+The exact corrected duplicate warning appeared and the session had no error event
+or app/SDK crash. The probe's local signals intentionally attest only that the SDK
+API was invoked from the expected scene and navigation occurrence. Operation-step
+vitals bypass public event mappers, so raw and reduced backend documents are the
+attribution oracle. This result closes same-scene navigation, failure, and
+duplicate semantics; it does not close A-to-B completion or the public target.
+Exact run, session, view, and artifact identifiers remain in the
+[experiment ledger](EXPERIMENTS.md).
+
 Required test coverage is tracked explicitly:
 
 | Required case | Current coverage | Status |
 | --- | --- | --- |
 | Start in A, succeed in B | Manager and session-scope start/end view assertions | Focused pass; live backend pending |
 | Start in A, fail in B | Manager start/end view and failure-reason assertions | Focused pass; live backend pending |
-| Start in A1, navigate in A, end in A2 | Manager and session-scope navigation assertions | Focused pass |
+| Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
 | Parallel A/B, same name, different keys | Manager identity and view sequence | Focused pass |
 | Reverse-order completion | Manager identity and view sequence | Focused pass |
 | Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; public overload test pending API review |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public overload test pending API review |
-| Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key | Focused pass; live warning/raw-vital proof pending |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,151-test RUM suite passes |
+| Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,169-test RUM suite passes |
 
 API review must settle the public type/name and exact Swift/Objective-C signatures
 for the approved scene-targeted keyed-view prerequisite. The requested

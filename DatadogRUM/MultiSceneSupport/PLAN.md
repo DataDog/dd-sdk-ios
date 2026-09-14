@@ -103,9 +103,12 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-No product decision blocks the remaining internal work. The complete-destination
-Sheet/full-screen-cover slice and sibling-container isolation now pass; public
-names and exact Swift/Objective-C signatures remain gated on normal API review.
+No product decision blocks the remaining internal work. Complete-destination
+Sheet/full-screen-cover behavior, sibling-container isolation, and one-scene
+nested-manual/duplicate-start behavior now pass; public names and exact
+Swift/Objective-C signatures remain gated on normal API review. The exact
+two-scene same-key contract is implemented and passes hostless tests, but its
+live acceptance is now in the physical-device queue.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -187,27 +190,52 @@ names and exact Swift/Objective-C signatures remain gated on normal API review.
     and immediate plus settled work uses it. Two clean runs pass 19/19; the final
     backend session has exactly four views and 11 action/Resource pairs with zero
     errors or crashes. The probe plan passes 76/76.
-12. Next, add a one-scene runtime discriminator for the approved manual stack
-    rules: Compose -> Preview -> fresh Compose, followed separately by a duplicate
-    active `(scene, key)` start that remains crash-safe and creates no restart.
-13. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
-    hardware, requiring the decisive scene-B marker and backend owner.
-14. Take the scene-aware Swift/Objective-C manual-view overloads through API
+12. Completed in `EXP-128`: exercise a real distinct-key manual suffix and a
+    duplicate active key. The clean run passes 29/29 with H1 -> C1 -> P1 -> fresh
+    C2 -> fresh H2. Duplicate Compose creates no restart and leaves its
+    action/Resource on C2. The first attempt exposed a driver race when C1 was
+    recorded before its wait step; immutable exact-view waits now accept prior
+    evidence. The probe plan passes 83/83 and backend intake agrees with no error
+    or crash.
+13. Harness and simulator prefix completed in `EXP-129`: the exact same-key A/B
+    scenario starts `compose` in each scene, stops B before A, and rejects shared
+    UUIDs, cross-scene work, wrong-scene stop effects, and reused returned Home
+    occurrences. The probe plan passes 91/91. The explicitly uninstalled
+    simulator run reached both native scenes, then lost the Xcode/device session
+    before manual authority began; it has no terminal or backend result. Do not
+    repeat this topology on the simulator.
+14. Completed in `5d536e0bd` and `EXP-130`: drive successful and failed
+    Operations across fresh Home→Detail occurrences, then start one duplicate
+    identity before navigation and again after navigation. The scenario passes
+    27/27 and the full probe plan passes 93/93. Backend intake preserves H1→D1
+    success and H2→D2 failure, while the duplicate emits `[start H3, start D3,
+    end D3]`, reduces from D3, and leaves H3 open without a synthetic end. The
+    corrected warning and zero error/crash result are captured.
+15. Finish `swiftui.coexistence.same-key-manual-two-scenes` and
+    `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
+    hardware. Require each terminal oracle and exact backend owners; neither
+    partial simulator prefix is acceptance evidence.
+16. Take the scene-aware Swift/Objective-C manual-view overloads through API
     review while preserving the existing inferred/last-interacted APIs.
-15. Add a live two-scene same-key manual-view discriminator on capable hardware;
-    stop A and B in reverse order and prove each closes only its exact scene/key.
-16. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
+17. Close the primary action-attribution hardware row: hold A and B visibly
+    active, make B the representative, interact in A without a focus transition,
+    and prove the action plus its immediate Resource use A. Repeat UIKit drag and
+    deceleration and require one action on the originating view occurrence.
+18. Prepare an exact Operation A-to-B/reverse-completion scenario using the
+    existing internal scene handoff, then run it on capable multi-window hardware.
+19. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
     iPad, requiring exact foreground-active target and background peer state.
-17. After API approval, land the optional complete-destination SwiftUI semantic
+20. After API approval, land the optional complete-destination SwiftUI semantic
     integration with centralized path/router metadata, presentation coverage, and
     target-local automatic deduplication.
-18. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
+21. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
     split result through adaptive collapse/expand, and validate stable simultaneous
     A/B topology through the real-device/human queue.
-19. Run genuine disconnect/reconnect, per-scene background/foreground, and
+22. Run genuine disconnect/reconnect, per-scene background/foreground, and
     concurrent restoration.
-20. Complete Operation public targeting and its live A-to-B/duplicate-start matrix.
-21. Close the bounded Resource/Trace and downstream rows, live single-scene and
+23. Complete Operation public targeting; duplicate-start backend behavior is
+    already closed by `EXP-130` and must not be rerun as an A-to-B prerequisite.
+24. Close the bounded Resource/Trace and downstream rows, live single-scene and
     custom-handler compatibility, handoff overhead, and iOS 27.1/iPhone Duo matrix.
 
 This order implements the approved product priority: view occurrences and
@@ -216,7 +244,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-127`. It still
+decision record after `EXP-129`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -350,7 +378,27 @@ experiment; it does not itself change the SDK support verdict.
    clean 19/19 runs. The final backend session has four views, 11 actions, 11
    Resources, three long tasks, one session, one vital, and no error or crash.
    The probe plan passes 76/76.
-17. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+17. Nested manual-stack coverage completed in `EXP-128`: use real Compose and
+   Preview SwiftUI destinations with exact-scene keyed starts/stops, require fresh
+   Compose and Home occurrences on reveal, and bound duplicate-start misuse with
+   a no-view-start interval. Attempt A timed out after C1 was already recorded;
+   the driver now treats an earlier exact immutable RUM occurrence like an earlier
+   assertion. Clean attempt B passes 29/29, and backend intake confirms distinct
+   H1/C1/P1/C2/H2,
+   duplicate work on C2, final return work on H2, and no error or crash. The probe
+   plan passes 83/83.
+18. Same-key A/B contract completed locally in `EXP-129`: use exact scene-context
+   markers, start the same `compose` key in both scenes, stop B before A, and
+   require independent Compose and returned-Home owners. Six adversarial fixtures
+   reject identity and attribution leaks; the full probe plan passes 91/91. The
+   clean simulator prefix reached both native scenes but expired before manual
+   starts, so runtime acceptance remains in the physical-device queue.
+19. Operation/navigation coverage completed in `5d536e0bd` and `EXP-130`: a
+   single named scenario drives success H1→D1, failure H2→D2, and duplicate
+   `[start H3, start D3, end D3]`. Its local 27/27 result and 93/93 full plan are
+   backend-confirmed by seven raw steps and three reduced Operations. The earlier
+   H3 start has no synthetic end and the exact corrected warning is preserved.
+20. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -359,8 +407,9 @@ experiment; it does not itself change the SDK support verdict.
    Reject a run if semantic view documents retain another run ID. Unsupported
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
-The deterministic stack, split, UIKit-transition, exact scene lifecycle, and
-coexistence harness is implemented through `EXP-127`: three clean
+The deterministic stack, split, UIKit-transition, exact scene lifecycle,
+coexistence, and Operation/navigation harness is implemented through `EXP-130`:
+three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -385,11 +434,17 @@ M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
 fresh H2 before immediate and settled work. `EXP-126` independently repeats the
 same complete-destination contract for `fullScreenCover`, including target-scoped
 dedup through native dismissal and a fresh H2 before both dismiss pairs. The test
-plan is 76/76. Presentation-style parity and sibling-container scope are now
-closed internally; reviewed public APIs remain. `EXP-127` adds the exact
-H1/manual-M1/fresh-Detail sibling path, with no right-side intermediate view while
-M1 is current. The next simulator-capable discriminator is nested different-key
-manual authority plus duplicate-active-key crash safety.
+plan is 93/93. Presentation-style parity, sibling-container scope, and the
+single-scene nested/duplicate manual contract are now closed internally; reviewed
+public APIs remain. `EXP-127` adds the exact H1/manual-M1/fresh-Detail sibling
+path, with no right-side intermediate view while M1 is current. `EXP-128` adds
+H1/Compose-C1/Preview-P1/fresh-Compose-C2/fresh-H2 and confirms that duplicate
+Compose misuse creates no restart. `EXP-129` adds the complete same-key A/B and
+reverse-stop oracle, but its live simulator attempt expired before manual starts.
+`EXP-130` adds backend-confirmed success/failure navigation attribution and
+duplicate latest-start semantics without using mapper assertions as Operation
+evidence.
+Both same-key and semantic-A/automatic-B acceptance now require capable hardware.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -783,7 +838,9 @@ starts a fresh Compose occurrence; and duplicate active `(scene, key)` starts ar
 ignored crash-safely without restart/reference-counting. Legacy source-less stop
 remains a separate inferred API, not a supported pair for targeted start. Take
 the surface through API review, then obtain live same-key A/B proof on capable
-hardware.
+hardware. `EXP-128` now provides the independent runtime proof for the nested
+Preview and duplicate-active-key portions, including fresh C2/H2 IDs and exact
+action/Resource owners.
 
 `EXP-119` is the legacy modifier-based presentation baseline: it eventually
 restores H2 without a duplicate, but immediate `onDismiss` work still owns S1.
@@ -796,9 +853,19 @@ adds an independent full-screen-cover discriminator, and `EXP-126` passes the
 same 14/14 contract with no automatic cover and exact H1/M1/fresh-H2 ownership.
 `EXP-127` closes the internal sibling-container discriminator with two distinct
 controller ancestries and exact H1/M1/fresh-Detail ownership. The public router
-integration still requires API review. The next simulator-capable authority
-discriminator is the live nested-manual/duplicate-active-key sequence already
-covered in focused source tests.
+integration still requires API review. `EXP-128` closes the live
+nested-manual/duplicate-active-key sequence. `EXP-129` closes the hostless
+same-key exact-scene contract and routes its live acceptance to capable hardware
+after the simulator session expired before manual authority began.
+
+`EXP-130` closes the available single-scene Operation/navigation experiment. It
+proves that every step resolves its call-site destination independently, that a
+failure preserves its reason and end owner, and that a duplicate start changes
+only the locally tracked latest instance. It deliberately records local API
+invocation assertions rather than counterfeit Operation mapper evidence; raw and
+reduced backend documents are the attribution oracle. The remaining Operation
+work is exact A-to-B/reverse completion on capable hardware and public targeting
+API review.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting
