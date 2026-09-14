@@ -29,11 +29,67 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
+                "actions.uikit-scroll-navigation-deceleration",
                 "windows.parallel-navigation",
                 "windows.close-with-resource",
                 "actions.exact-source-handoff",
                 "regression.single-scene"
             ]).isSubset(of: Set(identifiers))
+        )
+    }
+
+    func testUIKitScrollNavigationScenarioRequiresARealGestureAndExactOriginAction() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "actions.uikit-scroll-navigation-deceleration"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertEqual(scenario.layout, .uikitSplitNavigation)
+        XCTAssertEqual(scenario.requiredCapabilities, [.nativeUIKitGesture])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(scenario.runtimeOptions.exercisesUIKitScrollOwnership)
+        XCTAssertFalse(scenario.runtimeOptions.automaticallyPopsUIKitSplitNavigation)
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.signal == "assertion:uikit-scroll-drag-ended-decelerating"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.signal == "assertion:uikit-scroll-lift-classifies-as-swipe"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "secondary-3"
+                    && $0.occurrence == 1
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .action
+                    && $0.name == "uikit-scroll-origin"
+                    && $0.screen == "secondary-2"
+                    && $0.occurrence == 1
+                    && $0.actionType == "scroll"
+                    && $0.expectedCount == 1
+            }
+        )
+    }
+
+    func testUIKitScrollClassificationMatchesProductionSwipeThreshold() {
+        XCTAssertFalse(
+            ProbeUIKitScrollClassification.wouldClassifyAsSwipe(
+                CGPoint(x: 0, y: 499)
+            )
+        )
+        XCTAssertTrue(
+            ProbeUIKitScrollClassification.wouldClassifyAsSwipe(
+                CGPoint(x: 300, y: 400)
+            )
         )
     }
 

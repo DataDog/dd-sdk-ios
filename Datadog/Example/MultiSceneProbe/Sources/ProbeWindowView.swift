@@ -3149,6 +3149,11 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             {
                 emitMarker(afterMaterializing: secondary, phase: "post-materialization")
                 schedulePop(after: secondary)
+            } else if
+                let secondary = child as? ProbeUIKitSplitSecondaryViewController,
+                secondary.instance == 3
+            {
+                emitMarker(afterMaterializing: secondary, phase: "post-scroll-navigation")
             }
         }
 
@@ -3857,8 +3862,19 @@ internal class ProbeUIKitSplitChildViewController: UIViewController {
 
 private final class ProbeUIKitSplitPrimaryViewController: ProbeUIKitSplitChildViewController {}
 
-private final class ProbeUIKitSplitSecondaryViewController: ProbeUIKitSplitChildViewController {
+private final class ProbeUIKitSplitSecondaryViewController:
+    ProbeUIKitSplitChildViewController,
+    UITableViewDataSource,
+    UITableViewDelegate
+{
     let instance: Int
+
+    private var scrollTableView: ProbeUIKitScrollTableView?
+    private var decelerationWatchdog: DispatchWorkItem?
+    private var didRecordDragBegan = false
+    private var didRequestScrollNavigation = false
+    private var didEndDeceleration = false
+    private var isScrollNavigationIntervalOpen = false
 
     init(window: ProbeWindow, sceneSessionID: String, screen: String, instance: Int) {
         self.instance = instance
@@ -3867,6 +3883,267 @@ private final class ProbeUIKitSplitSecondaryViewController: ProbeUIKitSplitChild
 
     required init?(coder: NSCoder) {
         instance = 0
+        super.init(coder: coder)
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        guard ProbeRuntime.exercisesUIKitScrollOwnership, instance == 2 else {
+            return
+        }
+
+        let tableView = ProbeUIKitScrollTableView(
+            logicalSceneID: window.label,
+            sceneSessionID: sceneSessionID,
+            screen: semanticRUMScreen
+        )
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.accessibilityIdentifier = [
+            ProbeRuntime.uiKitScrollAccessibilityIdentifier,
+            window.label,
+            semanticRUMScreen
+        ].joined(separator: ".")
+        tableView.accessibilityLabel = "UIKit scroll attribution list \(window.label)"
+        tableView.rowHeight = 56
+        tableView.dataSource = self
+        tableView.delegate = self
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.topAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: 82
+            ),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        scrollTableView = tableView
+        recordScrollAssertion(
+            name: "uikit-scroll-ready",
+            result: .pass,
+            reason: "real UITableView delegate was installed on secondary-2"
+        )
+    }
+
+    deinit {
+        decelerationWatchdog?.cancel()
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        120
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        let reuseIdentifier = "probe-scroll-row"
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier)
+            ?? UITableViewCell(style: .default, reuseIdentifier: reuseIdentifier)
+        cell.textLabel?.text = "Scroll row \(indexPath.row + 1)"
+        cell.accessibilityIdentifier =
+            "probe.native.uikit-scroll-row.\(indexPath.row + 1)"
+        return cell
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        guard !didRecordDragBegan else {
+            return
+        }
+        didRecordDragBegan = true
+        recordScrollAssertion(
+            name: "uikit-scroll-drag-began",
+            result: .pass,
+            reason: "customer UITableView delegate observed a real drag begin"
+        )
+    }
+
+    func scrollViewDidEndDragging(
+        _ scrollView: UIScrollView,
+        willDecelerate decelerate: Bool
+    ) {
+        guard !didRequestScrollNavigation else {
+            return
+        }
+        didRequestScrollNavigation = true
+        let liftVelocity = scrollView.panGestureRecognizer.velocity(in: scrollView)
+        let liftSpeed = ProbeUIKitScrollClassification.liftSpeed(liftVelocity)
+        let wouldClassifyAsSwipe = ProbeUIKitScrollClassification.wouldClassifyAsSwipe(
+            liftVelocity
+        )
+
+        recordScrollAssertion(
+            name: "uikit-scroll-drag-ended-decelerating",
+            result: decelerate ? .pass : .inconclusive,
+            reason: decelerate
+                ? "customer UITableView delegate observed willDecelerate=true"
+                : "the synthesized drag did not produce UIKit deceleration"
+        )
+        recordScrollAssertion(
+            name: "uikit-scroll-lift-classifies-as-swipe",
+            result: wouldClassifyAsSwipe ? .pass : .inconclusive,
+            reason: wouldClassifyAsSwipe
+                ? "lift speed \(liftSpeed) pt/s meets the SDK's 500 pt/s swipe threshold"
+                : "lift speed \(liftSpeed) pt/s is below the SDK's 500 pt/s swipe threshold"
+        )
+
+        DispatchQueue.main.async { [weak self, weak scrollView] in
+            guard let self, let scrollView else {
+                return
+            }
+            self.presentScrollDestination(
+                whileDecelerating: decelerate
+                    && scrollView.isDecelerating
+                    && !self.didEndDeceleration
+            )
+        }
+    }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        finishScrollDeceleration(
+            result: .pass,
+            reason: "customer UITableView delegate observed deceleration end"
+        )
+    }
+
+    private func presentScrollDestination(whileDecelerating: Bool) {
+        beginScrollNavigationInterval()
+        recordScrollAssertion(
+            name: "uikit-scroll-navigation-during-deceleration",
+            result: whileDecelerating ? .pass : .inconclusive,
+            reason: whileDecelerating
+                ? "secondary-3 presentation began while the origin table was decelerating"
+                : "the origin table stopped decelerating before secondary-3 presentation"
+        )
+
+        let destination = ProbeUIKitSplitSecondaryViewController(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: "uikit-navigation-secondary-3",
+            instance: 3
+        )
+        destination.lifecycleDelegate = lifecycleDelegate
+        destination.modalPresentationStyle = .overFullScreen
+        present(destination, animated: false)
+
+        guard whileDecelerating else {
+            if didEndDeceleration {
+                endScrollNavigationInterval()
+            } else {
+                finishScrollDeceleration(
+                    result: .inconclusive,
+                    reason: "no post-navigation deceleration callback can be proven"
+                )
+            }
+            return
+        }
+
+        let watchdog = DispatchWorkItem { [weak self] in
+            self?.finishScrollDeceleration(
+                result: .inconclusive,
+                reason: "UIKit did not deliver deceleration end after navigation"
+            )
+        }
+        decelerationWatchdog = watchdog
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: watchdog)
+    }
+
+    private func finishScrollDeceleration(
+        result: ProbeSemanticResultState,
+        reason: String
+    ) {
+        guard !didEndDeceleration else {
+            return
+        }
+        didEndDeceleration = true
+        decelerationWatchdog?.cancel()
+        decelerationWatchdog = nil
+        endScrollNavigationInterval()
+        recordScrollAssertion(
+            name: "uikit-scroll-deceleration-ended",
+            result: result,
+            reason: reason
+        )
+    }
+
+    private func beginScrollNavigationInterval() {
+        guard !isScrollNavigationIntervalOpen else {
+            return
+        }
+        isScrollNavigationIntervalOpen = true
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                semanticContext: scrollSemanticContext,
+                interval: "uikit-scroll-after-navigation"
+            )
+        )
+    }
+
+    private func endScrollNavigationInterval() {
+        guard isScrollNavigationIntervalOpen else {
+            return
+        }
+        isScrollNavigationIntervalOpen = false
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: scrollSemanticContext,
+                interval: "uikit-scroll-after-navigation"
+            )
+        )
+    }
+
+    private func recordScrollAssertion(
+        name: String,
+        result: ProbeSemanticResultState,
+        reason: String
+    ) {
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: scrollSemanticContext,
+                name: name,
+                result: result,
+                reason: reason
+            )
+        )
+        ProbeRuntime.record(
+            "uikit scroll assertion source=\(window.label) native=\(sceneSessionID) "
+                + "screen=\(semanticRUMScreen) name=\(name) "
+                + "result=\(result.rawValue) reason=\(reason)"
+        )
+    }
+
+    private var scrollSemanticContext: ProbeSemanticContext {
+        ProbeSemanticContext(
+            logicalSceneID: window.label,
+            nativeSceneID: sceneSessionID,
+            screen: semanticRUMScreen,
+            occurrence: appearanceCount
+        )
+    }
+}
+
+internal final class ProbeUIKitScrollTableView: UITableView {
+    let logicalSceneID: String
+    let sceneSessionID: String
+    let screen: String
+
+    init(logicalSceneID: String, sceneSessionID: String, screen: String) {
+        self.logicalSceneID = logicalSceneID
+        self.sceneSessionID = sceneSessionID
+        self.screen = screen
+        super.init(frame: .zero, style: .plain)
+    }
+
+    required init?(coder: NSCoder) {
+        logicalSceneID = "decoded"
+        sceneSessionID = "unresolved"
+        screen = "decoded"
         super.init(coder: coder)
     }
 }

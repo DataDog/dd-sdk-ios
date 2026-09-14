@@ -29,6 +29,7 @@ enum ProbeScenarioCatalog {
         "swiftui.split.retained-return",
         "uikit.split.pop-cancel",
         "uikit.split.pop-finish",
+        "actions.uikit-scroll-navigation-deceleration",
         "windows.activation-sequence",
         "windows.close-with-resource"
     ]
@@ -69,6 +70,7 @@ enum ProbeScenarioCatalog {
         uikitSplitNativePopCancel,
         uikitSplitNativePopFinish,
         uikitSplitConcurrentScenes,
+        actionsUIKitScrollNavigationDeceleration,
         windowsParallelNavigation,
         windowsActivationSequence,
         windowsCloseWithResource,
@@ -2121,6 +2123,118 @@ enum ProbeScenarioCatalog {
         ],
         runtimeOptions: runtime {
             $0.automaticallyOpensSecondWindow = true
+        }
+    )
+
+    /// Begins a real UIKit scroll action on secondary-2, presents a fresh
+    /// destination while the scroll view is decelerating, and waits for the
+    /// original delegate's late deceleration callback. The action must be
+    /// emitted exactly once on its originating view occurrence.
+    private static let actionsUIKitScrollNavigationDeceleration = ProbeScenario(
+        identifier: "actions.uikit-scroll-navigation-deceleration",
+        trackingMode: .automatic,
+        layout: .uikitSplitNavigation,
+        requiredCapabilities: [.nativeUIKitGesture],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "uikit-navigation:secondary-2"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-ready"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-drag-began"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-drag-ended-decelerating"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-lift-classifies-as-swipe"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-navigation-during-deceleration"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "uikit-navigation:secondary-3"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:uikit-scroll-deceleration-ended"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "secondary-2",
+                occurrence: 1,
+                name: "uikit-scroll-origin",
+                sourceScene: "scene-A",
+                sourceScreen: "secondary-2",
+                actionType: "scroll",
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .noEvent,
+                scene: "scene-A",
+                screen: "secondary-3",
+                name: "uikit-scroll-origin",
+                interval: "uikit-scroll-after-navigation"
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "secondary-2",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "secondary-2",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "secondary-3",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "secondary-3",
+                occurrence: 1,
+                name: "post-scroll-navigation"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "secondary-3",
+                occurrence: 1,
+                name: "post-scroll-navigation"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.automaticallyPopsUIKitSplitNavigation = false
+            $0.exercisesUIKitScrollOwnership = true
         }
     )
 

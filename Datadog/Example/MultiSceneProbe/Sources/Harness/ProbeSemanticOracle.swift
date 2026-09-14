@@ -389,6 +389,49 @@ internal enum ProbeSemanticOracle {
                 continue
             }
 
+            if let expectedCount = expectation.expectedCount {
+                var observedCount = 0
+                var firstViolation: ProbeSemanticIssue?
+                for event in timeline.events {
+                    switch candidate(
+                        event,
+                        for: expectation,
+                        timeline: timeline
+                    ) {
+                    case .noMatch:
+                        continue
+                    case .match:
+                        observedCount += 1
+                    case .violation(let reason):
+                        if firstViolation == nil {
+                            firstViolation = ProbeSemanticIssue(
+                                expectationIndex: index,
+                                expectation: expectation,
+                                signalSequence: event.signal.sequence,
+                                reason: reason
+                            )
+                        }
+                    }
+                }
+                if let firstViolation {
+                    return (matched, firstViolation)
+                }
+                guard observedCount == expectedCount else {
+                    return (
+                        matched,
+                        ProbeSemanticIssue(
+                            expectationIndex: index,
+                            expectation: expectation,
+                            signalSequence: nil,
+                            reason: "expected \(expectedCount) matching \(describe(expectation)), "
+                                + "observed \(observedCount)"
+                        )
+                    )
+                }
+                matched += 1
+                continue
+            }
+
             var found = false
             var firstViolation: ProbeSemanticIssue?
             for event in timeline.events {
@@ -478,6 +521,14 @@ internal enum ProbeSemanticOracle {
         let hasNamedIdentity = expectation.name != nil
         if let expectedName = expectation.name, signal.name != expectedName {
             return .noMatch
+        }
+        if let expectedActionType = expectation.actionType {
+            guard signal.action?.type == expectedActionType else {
+                return .violation(
+                    "expected \(describe(expectation)) with action type \(expectedActionType), "
+                        + "observed \(signal.action?.type ?? "unresolved")"
+                )
+            }
         }
 
         if let expectedSourceScene = expectation.sourceScene {
@@ -683,6 +734,11 @@ internal enum ProbeSemanticOracle {
             return false
         }
         if
+            let actionType = expectation.actionType,
+            signal.action?.type != actionType {
+            return false
+        }
+        if
             let sourceScene = expectation.sourceScene,
             signal.sourceContext?.logicalSceneID != sourceScene {
             return false
@@ -824,6 +880,12 @@ internal enum ProbeSemanticOracle {
         }
         if let interval = expectation.interval {
             parts.append("interval=\(interval)")
+        }
+        if let actionType = expectation.actionType {
+            parts.append("action-type=\(actionType)")
+        }
+        if let expectedCount = expectation.expectedCount {
+            parts.append("expected-count=\(expectedCount)")
         }
         return parts.joined(separator: " ")
     }

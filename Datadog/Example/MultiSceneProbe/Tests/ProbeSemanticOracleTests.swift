@@ -1276,6 +1276,94 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed different"))
     }
 
+    func testUIKitScrollNavigationAttributionContractPasses() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testUIKitScrollNavigationRejectsActionMigratingToDestination() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .moveActionToDestination)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed secondary-3"))
+    }
+
+    func testUIKitScrollNavigationRejectsDuplicateOriginAction() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .duplicateOriginAction)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
+    }
+
+    func testUIKitScrollNavigationRejectsDuplicateDestinationAction() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .duplicateDestinationAction)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed secondary-3"))
+    }
+
+    func testUIKitScrollNavigationRejectsWrongFinalActionType() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .changeActionType)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("action type scroll"))
+        XCTAssertTrue(result.issues[0].reason.contains("observed swipe"))
+    }
+
+    func testUIKitScrollNavigationRejectsIncorrectSourceProvenance() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .changeSourceScreen)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("from screen secondary-2"))
+    }
+
+    func testUIKitScrollNavigationRejectsReusedDestinationViewID() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(
+                named: "actions.uikit-scroll-navigation-deceleration"
+            ),
+            signals: uikitScrollNavigationSignals(mutation: .reuseDestinationViewID)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("maps to both"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -1452,6 +1540,161 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case manualWorkUsesHome
         case revealGenericFallback
         case changeSettledOwner
+    }
+
+    private enum UIKitScrollNavigationMutation {
+        case moveActionToDestination
+        case duplicateOriginAction
+        case duplicateDestinationAction
+        case changeActionType
+        case changeSourceScreen
+        case reuseDestinationViewID
+    }
+
+    private func uikitScrollNavigationSignals(
+        mutation: UIKitScrollNavigationMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "uikit-scroll-navigation-contract",
+            scenarioID: "actions.uikit-scroll-navigation-deceleration",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        let originViewID = "secondary-2-view"
+        let destinationViewID = mutation == .reuseDestinationViewID
+            ? originViewID
+            : "secondary-3-view"
+
+        recorder.record(
+            viewSignal(
+                id: originViewID,
+                screen: "secondary-2",
+                active: true
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: "scene-A",
+                    nativeSceneID: "native-A",
+                    screen: "secondary-2",
+                    occurrence: 1
+                ),
+                interval: "uikit-scroll-after-navigation"
+            )
+        )
+
+        recordUIKitScrollAction(
+            id: "scroll-origin",
+            viewID: mutation == .moveActionToDestination
+                ? destinationViewID
+                : originViewID,
+            sourceScreen: mutation == .changeSourceScreen
+                ? "secondary-3"
+                : "secondary-2",
+            actionType: mutation == .changeActionType ? "swipe" : "scroll",
+            recorder: recorder
+        )
+        if mutation == .duplicateOriginAction {
+            recordUIKitScrollAction(
+                id: "scroll-origin-duplicate",
+                viewID: originViewID,
+                sourceScreen: "secondary-2",
+                actionType: "scroll",
+                recorder: recorder
+            )
+        }
+
+        recorder.record(
+            viewSignal(
+                id: originViewID,
+                screen: "secondary-2",
+                active: false
+            )
+        )
+        recorder.record(
+            viewSignal(
+                id: destinationViewID,
+                screen: "secondary-3",
+                active: true
+            )
+        )
+        if mutation == .duplicateDestinationAction {
+            recordUIKitScrollAction(
+                id: "scroll-destination-duplicate",
+                viewID: destinationViewID,
+                sourceScreen: "secondary-2",
+                actionType: "scroll",
+                recorder: recorder
+            )
+        }
+        recorder.record(
+            workSignal(
+                kind: .rumAction,
+                id: "destination-marker-action",
+                name: "post-scroll-navigation",
+                viewID: destinationViewID,
+                screen: "secondary-3",
+                occurrence: 1
+            )
+        )
+        recorder.record(
+            workSignal(
+                kind: .rumResource,
+                id: "destination-marker-resource",
+                name: "post-scroll-navigation",
+                viewID: destinationViewID,
+                screen: "secondary-3",
+                occurrence: 1
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: "scene-A",
+                    nativeSceneID: "native-A",
+                    screen: "secondary-3",
+                    occurrence: 1
+                ),
+                interval: "uikit-scroll-after-navigation"
+            )
+        )
+        return recorder.snapshot()
+    }
+
+    private func recordUIKitScrollAction(
+        id: String,
+        viewID: String,
+        sourceScreen: String,
+        actionType: String,
+        recorder: ProbeEventRecorder
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .rumAction,
+                evidenceSource: .rumMapper,
+                sourceContext: ProbeSourceContext(
+                    logicalSceneID: "scene-A",
+                    nativeSceneID: "native-A",
+                    screen: sourceScreen,
+                    phase: "uikit-scroll-origin"
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: viewID
+                ),
+                eventID: id,
+                name: "uikit-scroll-origin",
+                action: ProbeActionSignal(
+                    id: id,
+                    type: actionType,
+                    target: "uikit-scroll-origin",
+                    loadingTimeNanoseconds: 100
+                )
+            )
+        )
     }
 
     private func siblingContainerAuthoritySignals(

@@ -85,7 +85,10 @@ enum ProbeRuntime {
         return ProbeScenarioDriver(
             scenario: scenario,
             recorder: eventRecorder,
-            sceneRegistry: sceneRegistry
+            sceneRegistry: sceneRegistry,
+            stepTimeoutNanoseconds: options.exercisesUIKitScrollOwnership
+                ? 60_000_000_000
+                : 10_000_000_000
         )
     }()
 
@@ -110,8 +113,10 @@ enum ProbeRuntime {
         options.automaticallyAdvancesSplitSelection
     static let automaticallyReturnsSplitToDetail = options.automaticallyReturnsSplitToDetail
     static let exercisesUIEventContextHandoff = options.exercisesUIEventContextHandoff
+    static let exercisesUIKitScrollOwnership = options.exercisesUIKitScrollOwnership
     static let uiEventHandoffControlAccessibilityIdentifier =
         "probe.native.uikit-ui-event-handoff"
+    static let uiKitScrollAccessibilityIdentifier = "probe.native.uikit-scroll"
     static let usesAnySplitLayout =
         usesSplitSelectionLayout
         || usesUIKitSplitLayout
@@ -181,6 +186,7 @@ enum ProbeRuntime {
                 applicationID: applicationID,
                 uiKitViewsPredicate: ProbeUIKitViewsPredicate(),
                 uiKitActionsPredicate: exercisesUIEventContextHandoff
+                    || exercisesUIKitScrollOwnership
                     ? ProbeUIKitActionsPredicate()
                     : nil,
                 swiftUIViewsPredicate: usesAutomaticSwiftUIViewTracking
@@ -482,6 +488,21 @@ private struct ProbeUIKitActionsPredicate: UIKitRUMActionsPredicate {
     private let defaultPredicate = DefaultUIKitRUMActionsPredicate()
 
     func rumAction(targetView: UIView) -> RUMAction? {
+        if let scrollView = targetView as? ProbeUIKitScrollTableView {
+            let uptime = ProcessInfo.processInfo.systemUptime
+            return RUMAction(
+                name: "uikit-scroll-origin",
+                attributes: [
+                    ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
+                    ProbeRuntime.Attribute.host: "native-uikit",
+                    ProbeRuntime.Attribute.sourceScene: scrollView.logicalSceneID,
+                    ProbeRuntime.Attribute.sceneSessionID: scrollView.sceneSessionID,
+                    ProbeRuntime.Attribute.screen: scrollView.screen,
+                    ProbeRuntime.Attribute.phase: "uikit-scroll-origin",
+                    ProbeRuntime.Attribute.uptime: uptime
+                ]
+            )
+        }
         if targetView.accessibilityIdentifier?.hasPrefix(
             ProbeRuntime.uiEventHandoffControlAccessibilityIdentifier
         ) == true {

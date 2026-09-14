@@ -50,6 +50,8 @@ struct ProbeExpectation: Codable, Equatable {
     let ownerViewRelation: ProbeRUMViewOwnerRelation?
     let interval: String?
     let outcome: ProbeTransitionOutcome?
+    let actionType: String?
+    let expectedCount: Int?
 
     init(
         _ kind: ProbeExpectationKind,
@@ -67,7 +69,9 @@ struct ProbeExpectation: Codable, Equatable {
         ownerViewReferenceAction: String? = nil,
         ownerViewRelation: ProbeRUMViewOwnerRelation? = nil,
         interval: String? = nil,
-        outcome: ProbeTransitionOutcome? = nil
+        outcome: ProbeTransitionOutcome? = nil,
+        actionType: String? = nil,
+        expectedCount: Int? = nil
     ) {
         self.kind = kind
         self.scene = scene
@@ -85,5 +89,7 @@ struct ProbeExpectation: Codable, Equatable {
         self.ownerViewRelation = ownerViewRelation
         self.interval = interval
         self.outcome = outcome
+        self.actionType = actionType
+        self.expectedCount = expectedCount
     }
 }

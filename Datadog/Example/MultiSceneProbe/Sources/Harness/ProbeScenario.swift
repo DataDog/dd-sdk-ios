@@ -6,6 +6,21 @@
 
 import Foundation
 
+/// Mirrors `RUMScrollHandler.velocityThreshold` so the runtime probe can prove
+/// that a late scroll-handler stop would classify the gesture as a swipe. The
+/// expected `.scroll` event is only an ordering discriminator above this speed.
+enum ProbeUIKitScrollClassification {
+    static let swipeVelocityThreshold: CGFloat = 500
+
+    static func liftSpeed(_ velocity: CGPoint) -> CGFloat {
+        hypot(velocity.x, velocity.y)
+    }
+
+    static func wouldClassifyAsSwipe(_ velocity: CGPoint) -> Bool {
+        liftSpeed(velocity) >= swipeVelocityThreshold
+    }
+}
+
 enum ProbeTrackingMode: String, Codable, CaseIterable {
     case automatic
     case manual
@@ -63,6 +78,7 @@ struct ProbeRuntimeOptions: Codable, Equatable {
     var automaticallyAdvancesSplitSelection = true
     var automaticallyReturnsSplitToDetail = false
     var exercisesUIEventContextHandoff = false
+    var exercisesUIKitScrollOwnership = false
     var swiftUIStress = ProbeSwiftUIStress.none
     var semanticNavigationSceneIDs: [String]?
     var manualSwiftUIViewScreensByScene: [String: [String]] = [:]
