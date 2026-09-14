@@ -99,8 +99,9 @@ boundary, in this order:
 | 82 | `Exercise operation attribution across navigation` | `EXP-130` success, failure, and duplicate Operation invocation driver across fresh semantic navigation occurrences |
 | 83 | `Update the multi-scene support checkpoint` | Progressive-disclosure checkpoint through `EXP-130`, consolidated evidence, aligned next-work order, and signed-history handoff |
 | 84 | `Prepare cross-scene operation attribution probe` | `EXP-131` A-to-B success/failure plus same-name distinct-key reverse-completion driver and adversarial ownership fixtures |
+| 85 | `Exercise UIKit scroll attribution across navigation` | `EXP-132` threshold-qualified real `UITableView` fling, navigation during deceleration, exact-once origin action, fresh-destination follow-up ownership, and adversarial oracle coverage |
 
-Rows 1-84 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-85 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -121,9 +122,9 @@ is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
 Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
 Rows 74-79 are `f1c0547b6`, `c70920c94`, `100fa116a`, `45ec5656a`,
 `0c6b35770`, and `b6b1b57bc`.
-Rows 80-84 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`, and
-`a653e29f2`. All five signatures were verified against the configured Datadog
-developer key before the branch advanced.
+Rows 80-85 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
+`a653e29f2`, and `3c9730805`. All six signatures were verified against the
+configured Datadog developer key before the branch advanced.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -145,13 +146,14 @@ branch remains local-only and must not be pushed.
 Four `git commit -S` attempts for `EXP-128` on 2026-09-14 failed before creating
 an object with the same signer-agent communication error, although `ssh-add -L`
 still listed the configured key. The isolated-index workflow preserved the exact
-code-only boundary until signing recovered. `EXP-128`, `EXP-129`, `EXP-130`, and
-`EXP-131` were then created as separate signed commits from frozen trees
+code-only boundary until signing recovered. `EXP-128`, `EXP-129`, `EXP-130`,
+`EXP-131`, and `EXP-132` were then created as separate signed commits from frozen trees
 `082310e18ecfbdb9fc18a4f9d1914c7660a6edfd`,
 `0b41cbbb34cd5ff138a9b792a0c8e528505e17a8`, and
-`22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`, and
-`67eb64a23f985494992ef53db36130557414fd1d`. Their diffs contain respectively
-six, seven, eight, and four harness/test paths and contain no documentation,
+`22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`,
+`67eb64a23f985494992ef53db36130557414fd1d`, and
+`3f1edaf17f4d7dd4fe654c8738ca6cb9c09440f7`. Their diffs contain respectively
+six, seven, eight, four, and eight harness/test paths and contain no documentation,
 project file, or xcconfig. The intervening documentation-only checkpoint is
 signed commit `140e57c11` with frozen tree
 `ac22bf1ad1a4adc4d60bfa00d8a375b9aa8a4851`. This closes the signing blocker
@@ -304,6 +306,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-129 | `same-key-manual-two-scenes-20260914-0931-a` | local RUM session `5986e490-0f5d-426c-8bb1-b9490d18843c`; no backend event received | iPadOS 27 simulator | Prepared exact same-key A/B isolation with reverse-order stop. The 91-test local plan proves the scenario and adversarial oracle: A/B Compose must have distinct UUIDs, exact work cannot cross scenes, stopping B cannot preempt A, and each returned Home must be fresh. The clean runtime reached distinct native scene A `1FB7195F…` and scene B `AFAB95FA…`, with B ready at signal 43, then the Xcode launch/device session expired amid CoreAnimation/BoardServices interruptions before the first manual start or terminal oracle. The interaction session vanished before a hierarchy capture, and exact run/session backend queries returned zero events. This is simulator-inconclusive with no semantic or app/SDK-crash claim; do not repeat this topology on the simulator. Run the named scenario on iPhone Duo or a physical multi-window iPad. |
 | EXP-130 | `operations-navigation-20260914-1015-a` | `74b23c67-b6b7-4917-86ed-2ff8c7c4f559` | iPadOS 27 simulator | Operation per-step navigation and duplicate-start acceptance. An explicit uninstall plus missing-container check established a clean run. The named scenario passes 27/27 and the full probe plan passes 93/93. Six fresh semantic occurrences carry success H1 `d6617ab6…` → D1 `11e4efeb…`, failure H2 `88e9e4d6…` → D2 `e7a48e28…`, and duplicate H3 `b6d3feb0…` → D3 `e0b3e68c…`. Backend intake has seven raw `operation_step` documents and three reduced Operations: success H1→D1, failure H2→D2 with its error, and duplicate D3→D3. The duplicate raw sequence is `[start H3, start D3, end D3]`; no synthetic H3 end exists, so the earlier operation remains open for the documented four-hour timeout. The corrected warning appeared exactly, and the session contains no error event or crash. Local assertion signals prove only the API call site; raw/reduced backend documents are the Operation attribution oracle. Cross-scene A-to-B and the public view target remain open. |
 | EXP-131 | No live run attempted | No backend session claimed | Xcode 27 hostless tests; hardware run pending | Prepared `operations.cross-scene.lifecycle`. Its exact eight-step driver starts success/failure in A and completes them in B, then starts same-name `parallel-alpha` and `parallel-beta` instances in A and B and completes beta before alpha. The 100/100 hostless plan includes a passing fixture and rejects a shared A/B view ID, B Home owned by A, a B completion attributed to A, and A owner drift after B completes. Local assertion/action/Resource signals prove invocation and scene context only; raw and reduced Operation documents remain the acceptance oracle. Build-for-testing, repository lint, and `git diff --check` pass. No redundant simulator run was attempted after `EXP-129` established that this two-scene compositor topology expires before the decisive steps. |
+| EXP-132 | Incomplete `uikit-scroll-20260914-1156-b`; accepted `uikit-scroll-20260914-1205-c` | `47557219-bfe9-4a52-8ed2-c717d3fcf9dd`; `ef240096-9449-464b-a20d-59888693f444` | iPadOS 27 simulator | Real UIKit scroll/navigation acceptance. Earlier Xcode interaction sessions expired before a gesture and are invalid tooling attempts. The first completed run produced one origin `.scroll` locally and in backend intake, but its oracle did not measure whether lift speed exceeded the SDK's 500 pt/s swipe threshold, so it is retained as incomplete. After adding the fail-closed threshold witness, an explicit uninstall and missing-container check established a clean accepted run. A 3,792 pt/s lift began deceleration on Secondary 2 `2a4f0428…`; Secondary 3 `08802270…` appeared before deceleration ended. Exactly one `uikit-scroll-origin` action `23ceac7d…` remained on Secondary 2, and the fresh destination owned its immediate action and Resource. The local oracle passes 7/7; backend returns exactly one matching action with the same type, source, and owner. No RUM error, retry, app crash, or SDK crash occurred. The full probe plan passes 109/109; repository lint and `git diff --check` pass. Signed commit `3c9730805` contains the eight probe/oracle paths. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -327,7 +330,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-100` | Both bounded SwiftUI edge drags were ignored; no path, transition coordinator, source, or lifecycle signal occurred | Human-driven edge-pop cancel and complete on a physical iOS 27.1 device, preferably iPhone Duo; an agent can record the run | For cancel, prove the coordinator became interactive and cancelled while Detail stayed the sole active occurrence. For complete, prove a committed path contraction, fresh returned-Home UUID, and immediate action/resource on Home₂ |
 | P0 | `EXP-081` | The available driver cannot express a right-then-left reversal; short drags hit the split divider instead of navigation | Human-driven native UIKit edge-pop cancel on physical iPad/iPhone Duo, followed by a completed pop | Capture coordinator start/completion and exact view chain. Cancellation must add no S1/Primary/restarted-S2 occurrence; completion must create a fresh returned-S1 UUID without Primary |
 | P0 | `EXP-086`, `EXP-103` | Fullscreen topology stalled one UIKit transition in `EXP-086`; both split sequences completed in `EXP-103`, but final capture crashed simulator `backboardd` before stable simultaneous visibility could be recorded | Two visibly active windows on iPhone Duo or a physical iPad multitasking layout; navigate A and B concurrently | Record both scene activation states, stable simultaneous visibility, and both transition completions. Each scene must keep its own destination path and immediate markers with no structural Primary/sidebar view or cross-scene stop |
-| P0 | `EXP-041`, `EXP-089`, `EXP-113` | Exact open/close now passes, but fullscreen switching backgrounded or reactivated A and never proved stable simultaneous visibility or a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then exact-close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership |
+| P0 | `EXP-041`, `EXP-089`, `EXP-113` | Exact open/close now passes, and `EXP-132` separately closes UIKit deceleration across same-scene navigation. Fullscreen switching still backgrounded or reactivated A and never proved stable simultaneous visibility or a different-representative handoff discriminator | Keep A and B visibly active. Make B representative, interact with A without foreground re-entry, then exact-close B while A remains visible | A Resource start invoked before any representative-changing action and the manual action must use A; later source-less work must use last-interacted A. Closing B must not stop/restart A, and delayed B completion must retain B ownership. Do not repeat the already-passing same-scene scroll case as a prerequisite |
 | P0 | `EXP-114` | The simulator kept both exact scenes foreground-active instead of acknowledging a focus handoff, then crashed `backboardd` in CoreAnimation/Metal during a rapid retry | Run `windows.activation-sequence` on iPhone Duo or a physical multi-window iPad; let the OS complete each focus transition before continuing | For every step, record target foreground-active plus peer background before judging telemetry. Each confirmed foreground re-entry must create the scenario's fresh Home occurrence, and its immediate action/Resource pair must use that occurrence. A plain source label must never be treated as SDK provenance; source-less fallback remains last-interacted |
 | P0 | `EXP-118` | Two clean runs created B's automatic views but the simulator compositor aborted before the exact B marker and terminal oracle completed | Run `swiftui.coexistence.semantic-a-automatic-b` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require A's semantic marker on A/Home H1; a B-sourced marker on a non-launch automatic view first observed after opening B; no automatic duplicate in A; no cross-scene stop; terminal local PASS followed by exact run-ID backend confirmation |
 | P0 | `EXP-129` | The clean run reached both native scenes, then Xcode/device capture expired amid simulator graphics/window-service interruptions before either manual view started | Run `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require distinct A/B automatic Home owners, distinct Compose UUIDs for the same customer key, B-first stop revealing fresh B Home without changing A Compose, A stop revealing fresh A Home, exact action/Resource ownership, terminal PASS, and exact run-ID backend confirmation |
@@ -349,10 +352,12 @@ driver reached the native navigation gesture.
 
 - Confirmed Xcode 27.0 and a booted iOS 27.0 iPad simulator.
 - Connected to Xcode's tool server through `xcrun mcpbridge`; workspace, schemes,
-  destinations, build, run, console, and test calls work. The requested
-  `device-interaction` skill is not installed, so synthesized native gestures and
-  visual UI input are unavailable. Exact programmatic scenario driving is
-  available through the probe registry and observable driver (`EXP-109`).
+  destinations, build, run, console, and test calls work. At this checkpoint the
+  requested `device-interaction` skill was unavailable through the attempted
+  route, so no synthesized native gesture or visual input was claimed. Exact
+  programmatic scenario driving remained available through the probe registry and
+  observable driver (`EXP-109`). Later `EXP-132` exported Xcode 27's packaged
+  device-interaction skill and used its measured-coordinate gesture command.
 - Confirmed Datadog RUM backend search/aggregation access is available.
 - Confirmed the integration host opts out of multiple scenes and the Example host
   has no scene manifest.
@@ -3900,6 +3905,90 @@ evidence. Run this named scenario unchanged on iPhone Duo or a physical
 multi-window iPad, then inspect raw and reduced backend documents before claiming
 cross-scene Operation support. A terminal local PASS alone is insufficient.
 
+### 2026-09-14 — EXP-132: UIKit scroll ownership across navigation
+
+The new `actions.uikit-scroll-navigation-deceleration` scenario isolates a real
+UIKit ordering boundary without requiring a second live window. It installs a
+production-instrumented `UITableView` on automatic Secondary 2, waits for the
+customer delegate to observe a drag, and presents fresh Secondary 3 from the next
+main-actor turn after lift while the table is still decelerating. The original
+table remains alive long enough to receive its late deceleration callback.
+
+The first helper placement compiled in the app target but not in the generated
+hostless test target. That test failure was a harness-target mistake, not SDK
+evidence. Moving the Foundation/CoreGraphics-only threshold helper into
+`ProbeScenario.swift`, which both targets compile, fixed the target boundary.
+
+Several short-lived Xcode interaction sessions expired before any gesture. They
+contain no runtime observation and must not be retried or interpreted as a RUM
+failure. Xcode's packaged device-interaction skill was exported and read before
+the accepted interaction. Its `help` interaction command is unsupported; prepare
+the measured command before opening the session instead. The real gesture used
+the table's observed bounds `{{39,178},{955,1065}}` and the command:
+
+```text
+t 676 1050 f 676 320 0.15
+```
+
+The first completed run, `uikit-scroll-20260914-1156-b`, started session
+`47557219-bfe9-4a52-8ed2-c717d3fcf9dd`. It passed the original local oracle and
+backend intake contained exactly one origin `.scroll` action. Review found that
+`willDecelerate == true` alone did not prove the lift exceeded
+`RUMScrollHandler`'s 500 pt/s swipe threshold. That run therefore remains useful
+behavioral evidence but is incomplete for the intended ordering discriminator.
+
+The hardened probe mirrors only that public experiment threshold, records the
+actual pan velocity at lift, and fails closed unless its magnitude is at least
+500 pt/s. A focused boundary test rejects 499 pt/s and accepts a 300-by-400 pt/s
+vector. The scenario also requires drag begin, `willDecelerate == true`, active
+deceleration at presentation, the fresh destination, and the original delegate's
+eventual deceleration-end callback. Its exact-count oracle rejects a missing,
+duplicated, migrated, wrong-type, wrong-source, or wrong-owner action.
+
+For accepted run `uikit-scroll-20260914-1205-c`, the simulator app was explicitly
+uninstalled and the pre-launch container lookup returned `ENOENT`. Native scene
+`730D30F0-9ED2-4469-B7DF-0B883A7EEF21` installed table
+`probe.native.uikit-scroll.scene-A.secondary-2`. The gesture lifted at
+3,792.000000882894 pt/s, entered deceleration, and began presenting Secondary 3
+before deceleration ended. The terminal result is:
+
+```json
+{"result":{"issues":[],"matchedExpectationCount":7,"scenarioID":"actions.uikit-scroll-navigation-deceleration","schemaVersion":1,"state":"PASS"},"runID":"uikit-scroll-20260914-1205-c","type":"semantic-result"}
+```
+
+Session `ef240096-9449-464b-a20d-59888693f444` contains origin Secondary 2
+`2a4f0428-798c-42a5-9006-dc0867e5593c` and fresh Secondary 3
+`08802270-6fc6-424b-8cce-5d0e1807c059`. Local mapper output and an exact backend
+query both find exactly one `uikit-scroll-origin` action,
+`23ceac7d-09ac-4b26-8b49-6a9034ba8357`, of type `.scroll` on Secondary 2. No
+matching action migrates to Secondary 3; that fresh view owns its immediate
+post-navigation action and Resource.
+
+The `.scroll` type is intentional evidence. Above threshold, a late normal
+deceleration stop could promote the active action to `.swipe`; starting the fresh
+view ends the action first, so the later origin callback must neither migrate nor
+duplicate it. This validates the existing branch behavior and required no
+production SDK fix. It does not prove exact A ownership while simultaneously
+visible B is the process representative.
+
+The complete generated probe plan passes 109/109:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/7440D0EE-AB73-43A4-B325-952C8E639FD6.txt`
+
+The result bundle is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.14_12-02-34-+0200.xcresult`
+
+The accepted interaction artifacts share this stem:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP132 Threshold Proof-12_04_23_107-*`
+
+Repository lint passes 713 source and 699 test files with no violations, and
+`git diff --check` passes. Signed commit `3c9730805` contains exactly eight
+probe/oracle files from tree
+`3f1edaf17f4d7dd4fe654c8738ca6cb9c09440f7`. Backend intake reports no RUM
+error, retry, app crash, or SDK crash for the accepted run.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -4031,6 +4120,15 @@ cross-scene Operation support. A terminal local PASS alone is insufficient.
 - Do not infer a result after an Xcode device-interaction key expires. The first
   `EXP-126` launch had no captured terminal JSONL or hierarchy; start a newly
   identified, explicitly uninstalled run and classify only that evidence.
+- Do not open a short-lived Xcode interaction session before exporting and reading
+  its packaged device-interaction skill and preparing the exact measured command.
+  A `Session not found` before input is an invalid tooling attempt, not an SDK
+  result. The interaction command `help` is unsupported; use the documented
+  hierarchy, screenshot, tap, and drag grammar directly.
+- Do not accept `willDecelerate == true` alone as proof of the late UIKit swipe
+  classification path. `EXP-132`'s first completed run omitted the lift-speed
+  witness. Require the measured magnitude to meet the SDK's 500 pt/s threshold
+  before interpreting an exact `.scroll` at navigation as the ordering result.
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.

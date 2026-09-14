@@ -63,6 +63,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.same-key-manual-two-scenes` | `EXP-129` | Hostless contract PASS 91/91; clean simulator run reached both scenes but expired before manual starts, so live acceptance requires iPhone Duo or physical iPad |
 | `operations.navigation.lifecycle` | `EXP-130` | Signal-driven PASS 27/27; backend raw steps and reduced Operations prove independent start/end view attribution across same-scene navigation, failure, and duplicate-start orphan semantics |
 | `operations.cross-scene.lifecycle` | `EXP-131` | Hostless contract PASS 100/100; exact A→B success/failure and distinct-key reverse-completion oracle prepared, with live acceptance reserved for iPhone Duo or physical iPad |
+| `actions.uikit-scroll-navigation-deceleration` | `EXP-132` | Real-gesture PASS 7/7; a threshold-qualified `UITableView` fling remains exactly once on stopped Secondary 2 when fresh Secondary 3 is presented during deceleration, and backend ownership agrees |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -95,7 +96,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 100/100. The stack
+future Execution Context seam. The generated test plan passes 109/109. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -184,6 +185,13 @@ A/B view IDs, wrong-scene B work, a B completion on A, and A owner drift after B
 completes. No local signal is treated as Operation telemetry. The exact scenario
 must still produce eight raw steps and four reduced Operations on capable
 multi-window hardware.
+`EXP-132` adds a real UIKit action discriminator. A measured fling must exceed
+the SDK's 500 pt/s swipe threshold, enter deceleration on Secondary 2, and present
+fresh Secondary 3 before the original table reports deceleration end. The oracle
+requires exactly one `.scroll` action on Secondary 2, forbids migration to
+Secondary 3, and requires immediate follow-up work on the fresh destination. Local
+mapper output and backend intake pass; the simultaneous A/B
+different-representative action row remains hardware-gated.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes
@@ -215,7 +223,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `uikit.split.pop-finish`, plus `windows.close-with-resource` and
 `windows.activation-sequence`, plus
 `swiftui.coexistence.sibling-container-authority` and
-`swiftui.coexistence.nested-keyed-manual-view`, use the
+`swiftui.coexistence.nested-keyed-manual-view`, plus
+`actions.uikit-scroll-navigation-deceleration`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
@@ -256,6 +265,13 @@ Secondary 2 RUM UUID; completion creates a fresh returned Secondary 1 UUID. Each
 result also requires an action and Resource on the resolved occurrence. Primary
 lifecycle remains visible to the probe, but the iOS 27 multi-scene SDK path no
 longer turns a regular-width structural Primary into a RUM view (`EXP-112`).
+
+The UIKit scroll driver requires native gesture input. It exposes a real
+`UITableView` on Secondary 2, records lift velocity and customer-delegate
+callbacks, and presents Secondary 3 only after an above-threshold drag enters
+deceleration. A late deceleration callback must not migrate or duplicate the
+origin action. `EXP-132` passes this sequence locally and in backend intake; use a
+fresh explicit uninstall and a unique run ID for any regression rerun.
 
 Run each acceptance attempt after uninstalling the probe, with a unique run ID
 and `--probe-run-mode clean`, then join its JSONL and backend query by that ID.

@@ -39,6 +39,7 @@ multi-scene support is not claimed.
 | --- | --- |
 | [Assessment and evidence](MultiSceneSupport/ASSESSMENT.md) | You need the detailed verdict, source baseline, causal-attribution boundaries, or surface-by-surface evidence |
 | [Implementation and validation plan](MultiSceneSupport/PLAN.md) | You are choosing the next implementation slice, extending a probe, or checking release gates |
+| [Deferred single-scene extraction](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md) | The multi-scene runtime is frozen and you are ready to separate generic reliability fixes before review |
 | [Experiment history](MultiSceneSupport/EXPERIMENTS.md) | You need exact run/session IDs, chronological observations, rejected attempts, or checkpoint history |
 | [Navigation API proposal](MultiSceneSupport/NAVIGATION_API.md) | You are reviewing the optional SwiftUI container integration, scene-aware manual views, coexistence rules, or Swift/Objective-C compatibility |
 | [Operations contract](MultiSceneSupport/OPERATIONS.md) | You are changing Operation identity, per-step attribution, duplicate-start behavior, public targeting, documentation, or tests |
@@ -178,6 +179,15 @@ rejecting shared view identity, wrong-scene B work, B completion on A, and A own
 drift after B completes. No simulator or backend claim is made: the named scenario
 is queued intact for iPhone Duo or a physical multi-window iPad.
 
+`EXP-132` closes the simulator-capable UIKit scroll/navigation discriminator
+with a real gesture through the production `UITableView` delegate proxy. The
+lift speed exceeded the SDK's swipe threshold, UIKit remained in deceleration
+while a fresh destination appeared, and exactly one `.scroll` action stayed on
+the originating occurrence. The new destination then owned its immediate action
+and Resource. Mapper and backend evidence agree, with no duplicate action, RUM
+error, or app/SDK crash. This does not replace the still-hardware-gated proof of
+interacting in A while a simultaneously visible B is process representative.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -193,8 +203,8 @@ mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
 signal-driven stack, split, UIKit-transition, scene-lifecycle,
-automatic/manual-coexistence, and Operation scenarios through `EXP-131` pass
-100/100 tests. The prepared two-scene same-key and cross-scene Operation scenarios
+automatic/manual-coexistence, action, and Operation scenarios through `EXP-132`
+pass 109/109 tests. The prepared two-scene same-key and cross-scene Operation scenarios
 remain hardware-gated; the single-scene Operation/navigation scenario passes
 locally and in backend intake.
 Clean iPadOS 27 runs prove
@@ -221,8 +231,10 @@ inside CoreAnimation/Metal before the harness timeout (`EXP-114`). A prior run
 also confirmed that a plain source-labelled manual call is still source-less to
 the SDK and correctly follows the last-interacted representative. This is a
 compatibility result, not cross-scene attribution evidence.
-Native gesture synthesis remains unavailable and is kept separate from this
-deterministic programmatic proof.
+Xcode's packaged device-interaction instructions now make measured UIKit gesture
+synthesis available. `EXP-132` uses it for a conclusive real scroll/deceleration
+run. Native SwiftUI edge-pop cancellation, simultaneous-window gestures, and
+other device-only rows remain separate from deterministic programmatic proof.
 Detailed conclusions live in [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md);
 exact runs and rejected paths live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
@@ -232,13 +244,13 @@ exact runs and rejected paths live in
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
 | Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125` and `EXP-126` extend that mechanism to complete-destination Sheet and full-screen-cover boundaries. `EXP-127` proves a boundary in one sibling container does not suppress an independently materialized controller branch and reveals only its latest staged destination. `EXP-128` proves Compose → Preview → fresh Compose nesting and duplicate-active-key crash safety without restart. `EXP-129` adds the strict same-key A/B contract, but its live simulator run expired before manual authority began | Convert the proven wrapper/builder, presentation-boundary, and manual-overload shapes into API-reviewed integrations; complete same-key A/B acceptance on capable hardware, then cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
 | Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, `EXP-125`/`EXP-126` cover presentation subtrees, and `EXP-127` leaves an unrelated sibling controller eligible while manual authority is active | Validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the semantic-container shape through API review |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-132` proves a threshold-qualified real UIKit fling remains exactly once on its origin when navigation starts during deceleration. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative, then finish targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step routing and exact application-wide identity pass focused tests. `EXP-130` proves live Home→Detail success/failure plus duplicate latest-instance reduction. `EXP-131` adds the exact hostless A→B and distinct-key reverse-completion contract | Run `EXP-131` on capable multi-window hardware and complete public target API review; duplicate behavior itself is backend-confirmed |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 100/100 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 109/109 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -345,19 +357,21 @@ customer workflow, and required tests live only in
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `f452e9e3f` (`Preserve semantic presentation authority through
 dismissal`), following the exact-scene manual stack in `29c8cec2c` and
-`b1a0fb6b8`. The latest probe checkpoint is `a653e29f2` (`Prepare cross-scene
-operation attribution probe`), following `5d536e0bd` (`Exercise operation
-attribution across navigation`), `9fa58e3c0` (`Exercise same-key manual views
-across scenes`), and `af2a2666d` (`Exercise nested manual view authority`). The
-latest documentation checkpoint is `140e57c11`. Their exact probe trees from
-newest to oldest are
+`b1a0fb6b8`. The latest probe checkpoint is `3c9730805` (`Exercise UIKit scroll
+attribution across navigation`), following `a653e29f2` (`Prepare cross-scene
+operation attribution probe`), `5d536e0bd` (`Exercise operation attribution
+across navigation`), `9fa58e3c0` (`Exercise same-key manual views across
+scenes`), and `af2a2666d` (`Exercise nested manual view authority`). The latest
+documentation checkpoint is `0382e6f49`. Their exact probe trees from newest to
+oldest are
+`3f1edaf17f4d7dd4fe654c8738ca6cb9c09440f7`,
 `67eb64a23f985494992ef53db36130557414fd1d`,
 `22ddf1f9b4ab1193cc1bb635b6ebae83f97e0f20`,
 `0b41cbbb34cd5ff138a9b792a0c8e528505e17a8`, and
 `082310e18ecfbdb9fc18a4f9d1914c7660a6edfd`. The approved product decision
 checkpoint is
 `b61e783a6`; the public-navigation proposal starts at `b5494adb0`.
-All existing branch commits through `a653e29f2` are verified signed local commits
+All existing branch commits through `3c9730805` are verified signed local commits
 and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
@@ -424,12 +438,17 @@ the latest start, and leaves the earlier raw start open without a synthetic end.
 `EXP-131` prepares A→B success/failure and two distinct same-name Operations
 completed B-before-A. The full hostless plan passes 100/100 with four adversarial
 cross-scene ownership fixtures; live execution remains in the hardware queue.
+`EXP-132` then drives a real threshold-qualified UIKit fling on Secondary 2,
+presents Secondary 3 while UIKit is still decelerating, and proves one `.scroll`
+action remains on the stopped origin occurrence. The fresh destination owns its
+post-navigation action and Resource. The full probe plan passes 109/109; mapper
+and backend intake agree on exact ownership and count.
 The complete chronology and every failed attempt live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-131`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-132`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
 1. Finish `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a
@@ -443,10 +462,11 @@ owns the finished phases and full release matrix. Continue in this order:
 3. Take the scene-aware Swift/Objective-C
    overloads through API review. The same key must coexist independently in A
    and B; existing overloads keep inferred/last-interacted behavior.
-4. Close the primary action-attribution hardware row: keep A and B simultaneously
-   visible, make B representative, interact in A without a focus-driven fallback,
-   and prove exact A ownership. Repeat UIKit drag plus deceleration and require one
-   action on the originating occurrence.
+4. Close the remaining action-attribution hardware row: keep A and B
+   simultaneously visible, make B representative, interact in A without a
+   focus-driven fallback, and prove exact A ownership. `EXP-132` already closes
+   UIKit drag/deceleration across same-scene navigation and should remain a
+   regression gate rather than be repeated as a prerequisite.
 5. Run `operations.cross-scene.lifecycle` on capable hardware. Require A→B
    success/failure, distinct A/B Home owners, and distinct-key reverse completion
    with eight raw steps and four reduced Operations.
@@ -469,6 +489,12 @@ owns the finished phases and full release matrix. Continue in this order:
 11. Finish the bounded Resource/Trace and downstream-signal runtime rows, then prove
    live single-scene/custom-handler compatibility and measure event-handoff
    recursion and overhead. Repeat the release matrix on iOS 27.1 and iPhone Duo.
+12. Only after the multi-scene runtime is frozen and every experiment is closed or
+    explicitly deferred, execute the
+    [single-scene reliability extraction](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md).
+    Preserve the completed branch, prove every extracted fix as a source-less
+    defect on `develop`, rebuild the multi-scene branch on the generic stack, and
+    stop before any push.
 
 ### Proven and implemented
 
@@ -551,10 +577,10 @@ As of 2026-09-14:
   Internal 477/477, Logs 95/95,
   Trace 151/151, WebView 31/31, and Profiling 233/233.
 - Focused retained-route, occurrence-isolation, transition-arbiter, Operations,
-  and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
-  unproven because `EXP-100` produced no navigation signal.
+  UIKit-scroll, and OpenTelemetry ownership regressions pass. Native SwiftUI
+  edge gestures remain unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 100/100. Clean runs prove
+  oracle, scene registry, and observable driver pass 109/109. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -642,6 +668,12 @@ As of 2026-09-14:
   semantic oracle passes its valid fixture and rejects four ownership failures.
   Because the same two-scene simulator topology already expired in `EXP-129`, no
   redundant runtime claim is made; `EXP-131` is queued for capable hardware.
+- The real UIKit scroll/navigation scenario raises the probe plan to 109/109.
+  A measured lift above the SDK's swipe threshold entered deceleration, then
+  Secondary 3 appeared before deceleration ended. Exactly one `.scroll` action
+  stayed on the stopped Secondary 2 occurrence; a fresh Secondary 3 owned the
+  immediate action and Resource. The terminal oracle, mapper output, backend
+  count and ownership, and zero-error/crash checks all pass (`EXP-132`).
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
@@ -652,9 +684,9 @@ runtime rows. Detailed run evidence remains in
 ### Blockers and workspace safety
 
 Public SwiftUI and Operation API work requires normal RFC/API review. The branch
-history through `a653e29f2` has been re-signed or created with verified SSH
+history through `3c9730805` has been re-signed or created with verified SSH
 signatures. The earlier signer outages remain documented, together with the exact
-frozen trees for `EXP-128` through `EXP-131`; no unsigned fallback was used.
+frozen trees for `EXP-128` through `EXP-132`; no unsigned fallback was used.
 The iOS 27 integration-runner half-and-half layout repeatedly respawned
 `backboardd`, although the standalone native `WindowGroup` probe opens two windows.
 The standalone probe also reproduced a `backboardd` CoreAnimation/Metal SIGABRT
@@ -663,11 +695,12 @@ recorded for that interrupted run. Do not repeat that activation loop on this
 simulator.
 The current iPad simulator also rejects `devicectl appResize` because it lacks
 Resizable App Management; adaptive width proof needs a capable destination.
-Xcode device-interaction guidance is now available, but the auto-driven
-`EXP-115` launch session had expired before its opaque interaction key could be
-reused for visual inspection. Read-only OSLog and backend verification remained
-available. Native gesture and visual claims still require a live interaction key
-or human/device evidence; programmatic runs do not become native-gesture proof.
+Xcode's packaged device-interaction skill can be exported before opening its
+short-lived session. `EXP-132` used the documented measured-coordinate command
+and now supplies real UIKit gesture evidence. Earlier sessions expired before
+input and remain tooling-only attempts. Other native gesture and visual claims
+still require a live interaction key or human/device evidence; programmatic runs
+do not become native-gesture proof.
 Ignored native edge drags, fullscreen-only peer-window layouts, partial scene
 restoration, and unsupported resize are tracked in the dedicated
 [real-device and human-driven rerun queue](MultiSceneSupport/EXPERIMENTS.md#real-device-and-human-driven-rerun-queue).

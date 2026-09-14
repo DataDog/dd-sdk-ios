@@ -4,7 +4,10 @@ Read this document when choosing or executing the next implementation slice,
 extending the probes, or checking the release gates. Evidence and current support
 levels live in [ASSESSMENT.md](ASSESSMENT.md); chronological run details live in
 [EXPERIMENTS.md](EXPERIMENTS.md); public navigation/manual-view review starts in
-[NAVIGATION_API.md](NAVIGATION_API.md). Start at the
+[NAVIGATION_API.md](NAVIGATION_API.md). The post-freeze branch extraction is
+owned separately by
+[DEFERRED_SINGLE_SCENE_EXTRACTION.md](DEFERRED_SINGLE_SCENE_EXTRACTION.md) and is
+not active yet. Start at the
 [canonical overview](../MULTI_SCENE_SUPPORT.md) for the current resume point.
 
 Evidence references use the stable `EXP-*` identifiers from the experiment
@@ -110,7 +113,9 @@ Swift/Objective-C signatures remain gated on normal API review. The exact
 two-scene same-key contract is implemented and passes hostless tests, but its
 live acceptance is now in the physical-device queue. The exact cross-scene
 Operation driver is also implemented through `EXP-131`; its 100/100 hostless
-contract is ready for the same hardware gate.
+contract is ready for the same hardware gate. `EXP-132` closes the independent
+real UIKit scroll/navigation discriminator and raises the full probe plan to
+109/109.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -221,32 +226,42 @@ contract is ready for the same hardware gate.
     review while preserving the existing inferred/last-interacted APIs.
 17. Close the primary action-attribution hardware row: hold A and B visibly
     active, make B the representative, interact in A without a focus transition,
-    and prove the action plus its immediate Resource use A. Repeat UIKit drag and
-    deceleration and require one action on the originating view occurrence.
+    and prove the action plus its immediate Resource use A. Keep the completed
+    UIKit drag/deceleration scenario as a regression gate.
 18. Completed in `a653e29f2` and `EXP-131`: prepare exact A-to-B Operation
     success/failure plus same-name, distinct-key parallel Operations completed
     B-before-A. The driver and adversarial ownership oracle pass in the 100/100
     hostless plan. Run the unchanged scenario on capable multi-window hardware
     and require eight raw steps plus four correctly reduced Operations.
-19. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
+19. Completed in `3c9730805` and `EXP-132`: drive one real `UITableView` fling,
+    prove its lift exceeds the SDK's swipe threshold, present a fresh destination
+    while deceleration continues, and require exactly one `.scroll` action on the
+    origin. The 109/109 probe plan, mapper output, and backend intake agree; no
+    production fix was needed.
+20. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
     iPad, requiring exact foreground-active target and background peer state.
-20. After API approval, land the optional complete-destination SwiftUI semantic
+21. After API approval, land the optional complete-destination SwiftUI semantic
     integration with centralized path/router metadata, presentation coverage, and
     target-local automatic deduplication.
-21. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
+22. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
     split result through adaptive collapse/expand, and validate stable simultaneous
     A/B topology through the real-device/human queue.
-22. Run genuine disconnect/reconnect, per-scene background/foreground, and
+23. Run genuine disconnect/reconnect, per-scene background/foreground, and
     concurrent restoration.
-23. Complete Operation public targeting; duplicate-start backend behavior is
+24. Complete Operation public targeting; duplicate-start backend behavior is
     already closed by `EXP-130` and must not be rerun as an A-to-B prerequisite.
-24. Close the bounded Resource/Trace and downstream rows, live single-scene and
+25. Close the bounded Resource/Trace and downstream rows, live single-scene and
     custom-handler compatibility, handoff overhead, and iOS 27.1/iPhone Duo matrix.
+26. After the multi-scene freeze gate—not before—execute the
+    [deferred single-scene extraction](DEFERRED_SINGLE_SCENE_EXTRACTION.md),
+    rebuild this work on that generic stack, and stop before pushing.
 
 This order implements the approved product priority: view occurrences and
 navigation first, then scene-aware manual views, downstream ownership,
 compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
+The deferred extraction is a delivery phase after this order is complete, not a
+reason to interrupt or reshape the remaining runtime experiments.
 
 This plan was rechecked against the original objective and the approved product
 decision record after `EXP-129`. It still
@@ -408,7 +423,14 @@ experiment; it does not itself change the SDK support verdict.
    with distinct keys in A and B and complete B before A. The 100/100 hostless
    plan rejects shared A/B view identity, wrong-scene B work, B completion on A,
    and A owner drift. Runtime/backend acceptance remains hardware-gated.
-21. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+21. UIKit scroll/navigation coverage completed in `3c9730805` and `EXP-132`: a
+   measured real `UITableView` fling exceeds the SDK's swipe threshold, starts
+   decelerating on Secondary 2, and presents Secondary 3 before deceleration ends.
+   Exactly one `.scroll` action stays with the stopped Secondary 2 occurrence;
+   the fresh Secondary 3 occurrence owns immediate follow-up work. The local
+   oracle, mapper, backend count, and backend ownership agree, and the full probe
+   plan passes 109/109.
+22. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -418,7 +440,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, exact scene lifecycle,
-coexistence, and Operation harness is implemented through `EXP-131`:
+coexistence, action, and Operation harness is implemented through `EXP-132`:
 three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
@@ -443,8 +465,8 @@ passes, and the complete-destination Sheet successor now passes 14/14: semantic
 M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
 fresh H2 before immediate and settled work. `EXP-126` independently repeats the
 same complete-destination contract for `fullScreenCover`, including target-scoped
-dedup through native dismissal and a fresh H2 before both dismiss pairs. The test
-plan is 100/100. Presentation-style parity, sibling-container scope, and the
+   dedup through native dismissal and a fresh H2 before both dismiss pairs.
+   Presentation-style parity, sibling-container scope, and the
 single-scene nested/duplicate manual contract are now closed internally; reviewed
 public APIs remain. `EXP-127` adds the exact H1/manual-M1/fresh-Detail sibling
 path, with no right-side intermediate view while M1 is current. `EXP-128` adds
@@ -456,6 +478,10 @@ duplicate latest-start semantics without using mapper assertions as Operation
 evidence. `EXP-131` adds the exact A-to-B success/failure and distinct-key
 reverse-completion contract; its local assertions remain invocation evidence,
 not Operation telemetry, until raw and reduced backend intake is captured.
+`EXP-132` adds a threshold-qualified real UIKit fling across same-scene
+navigation. One `.scroll` action remains on the stopped origin occurrence, while
+the fresh destination owns its immediate action and Resource. The full probe plan
+passes 109/109 and backend intake confirms exact count and ownership.
 Both same-key and semantic-A/automatic-B acceptance now require capable hardware.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
@@ -515,7 +541,9 @@ Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
   deleting them. `EXP-087` proves the new initial-nil/sequence-disable mode creates
   no Detail occurrence. CoreDevice reports that this simulator lacks Resizable
   App Management, so run regular → compact → regular on a capable destination.
-  Then finish UIKit scroll/deceleration and per-scene background/foreground.
+  Keep the completed UIKit scroll/deceleration scenario as a regression gate,
+  then finish per-scene background/foreground and simultaneous A/B action
+  attribution with a deliberately different process representative.
   Action timeout/stop
   ownership and session rollover already have focused and live coverage.
 - Preserve the automatic SwiftUI mode and `EXP-021` as the failing baseline.
@@ -1015,6 +1043,17 @@ context do not distinguish a scene.
 - Update the [assessment](ASSESSMENT.md) and
   [canonical overview](../MULTI_SCENE_SUPPORT.md) with exact supported, partial,
   ambiguous, and unsupported surfaces before proposing a release contract.
+
+### 6. Deferred post-freeze extraction
+
+Do not begin the
+[single-scene reliability extraction](DEFERRED_SINGLE_SCENE_EXTRACTION.md) while
+the active multi-scene implementation or runtime matrix is still changing. Once
+this plan reaches its freeze gate, preserve the completed branch, prove every
+generic candidate as a source-less defect from the then-current `develop`, build
+the signed local reliability stack, and reconstruct the scene-specific branch on
+top. Compare the preserved and rebuilt implementations, rerun both ordinary and
+multi-scene controls, and stop before any push or code-review creation.
 
 ## Completion gates
 
