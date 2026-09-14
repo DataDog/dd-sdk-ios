@@ -30,6 +30,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
                 "actions.uikit-scroll-navigation-deceleration",
+                "traces.urlsession-cross-scene",
                 "windows.parallel-navigation",
                 "windows.close-with-resource",
                 "actions.exact-source-handoff",
@@ -90,6 +91,44 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             ProbeUIKitScrollClassification.wouldClassifyAsSwipe(
                 CGPoint(x: 300, y: 400)
             )
+        )
+    }
+
+    func testTraceOnlyURLSessionScenarioMovesRepresentativeWithoutMovingSpanOwner() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "traces.urlsession-cross-scene"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.layout, .stack)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .startTraceOnlyURLSessionRequest
+                    || $0.kind == .completeTraceOnlyURLSessionRequest
+            }.map(\.scene),
+            ["scene-A", "scene-B"]
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.scene == "scene-B"
+                    && $0.name == "trace-completion-representative"
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .trace
+                    && $0.scene == "scene-A"
+                    && $0.screen == "home"
+                    && $0.occurrence == 1
+                    && $0.expectedCount == 1
+            }
         )
     }
 

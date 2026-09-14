@@ -25,11 +25,54 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case armNativeUIKitGesture = "arm-native-uikit-gesture"
     case emitMarker = "emit-marker"
     case emitSceneContextMarker = "emit-scene-context-marker"
+    case startTraceOnlyURLSessionRequest = "start-trace-only-url-session-request"
+    case completeTraceOnlyURLSessionRequest = "complete-trace-only-url-session-request"
     case startOperation = "start-operation"
     case succeedOperation = "succeed-operation"
     case failOperation = "fail-operation"
     case disconnectRetainedReader = "disconnect-retained-reader"
     case waitForSignal = "wait-for-signal"
+}
+
+enum ProbeTraceOnlyURLSessionContract {
+    static let host = "multi-scene-probe.invalid"
+    static let requestName = "trace-only-home-request"
+
+    static func requestURL(
+        runID: String,
+        sourceScene: String,
+        sourceScreen: String,
+        requestName: String
+    ) -> URL {
+        URL(string: "https://\(host)")!
+            .appendingPathComponent("trace-only")
+            .appendingPathComponent(runID)
+            .appendingPathComponent(sourceScene)
+            .appendingPathComponent(sourceScreen)
+            .appendingPathComponent(requestName)
+    }
+
+    static func sourceContext(
+        from url: URL,
+        expectedRunID: String
+    ) -> ProbeSourceContext? {
+        guard url.host == host else {
+            return nil
+        }
+        let components = url.pathComponents.filter { $0 != "/" }
+        guard
+            components.count == 5,
+            components[0] == "trace-only",
+            components[1] == expectedRunID
+        else {
+            return nil
+        }
+        return ProbeSourceContext(
+            logicalSceneID: components[2],
+            screen: components[3],
+            phase: components[4]
+        )
+    }
 }
 
 enum ProbeOperationContract {

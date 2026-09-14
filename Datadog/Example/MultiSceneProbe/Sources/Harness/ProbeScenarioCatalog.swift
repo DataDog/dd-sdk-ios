@@ -30,6 +30,7 @@ enum ProbeScenarioCatalog {
         "uikit.split.pop-cancel",
         "uikit.split.pop-finish",
         "actions.uikit-scroll-navigation-deceleration",
+        "traces.urlsession-cross-scene",
         "windows.activation-sequence",
         "windows.close-with-resource"
     ]
@@ -71,6 +72,7 @@ enum ProbeScenarioCatalog {
         uikitSplitNativePopFinish,
         uikitSplitConcurrentScenes,
         actionsUIKitScrollNavigationDeceleration,
+        tracesURLSessionCrossScene,
         windowsParallelNavigation,
         windowsActivationSequence,
         windowsCloseWithResource,
@@ -2235,6 +2237,114 @@ enum ProbeScenarioCatalog {
         runtimeOptions: runtime {
             $0.automaticallyPopsUIKitSplitNavigation = false
             $0.exercisesUIKitScrollOwnership = true
+        }
+    )
+
+    /// Starts an automatically instrumented Trace-only URLSession request on
+    /// scene A, opens scene B so it becomes the process representative, then
+    /// releases the response from B. The completion-time span must retain A's
+    /// request-time Home view.
+    private static let tracesURLSessionCrossScene = ProbeScenario(
+        identifier: "traces.urlsession-cross-scene",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "trace-request-representative"
+            ),
+            ProbeStep(
+                .startTraceOnlyURLSessionRequest,
+                scene: "scene-A",
+                value: ProbeTraceOnlyURLSessionContract.requestName
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-B",
+                value: "trace-completion-representative"
+            ),
+            ProbeStep(
+                .completeTraceOnlyURLSessionRequest,
+                scene: "scene-B",
+                value: ProbeTraceOnlyURLSessionContract.requestName
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.requestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                expectedCount: 1
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-request-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-request-representative"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-completion-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-completion-representative"
+            ),
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.requestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.exercisesTraceOnlyURLSessionOwnership = true
         }
     )
 

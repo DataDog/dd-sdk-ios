@@ -1364,6 +1364,49 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("maps to both"))
     }
 
+    func testTraceOnlyURLSessionCrossSceneAttributionContractPasses() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-cross-scene"),
+            signals: traceOnlyURLSessionSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testTraceOnlyURLSessionRejectsCompletionRepresentativeAsOwner() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-cross-scene"),
+            signals: traceOnlyURLSessionSignals(mutation: .moveTraceToSceneB)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed scene-B"))
+    }
+
+    func testTraceOnlyURLSessionRejectsMissingSpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-cross-scene"),
+            signals: traceOnlyURLSessionSignals(mutation: .omitTrace)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("missing expected trace"))
+    }
+
+    func testTraceOnlyURLSessionRejectsDuplicateSpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-cross-scene"),
+            signals: traceOnlyURLSessionSignals(mutation: .duplicateTrace)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -1549,6 +1592,138 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case changeActionType
         case changeSourceScreen
         case reuseDestinationViewID
+    }
+
+    private enum TraceOnlyURLSessionMutation: Equatable {
+        case moveTraceToSceneB
+        case omitTrace
+        case duplicateTrace
+    }
+
+    private func traceOnlyURLSessionSignals(
+        mutation: TraceOnlyURLSessionMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "trace-only-cross-scene-contract",
+            scenarioID: "traces.urlsession-cross-scene",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        let sceneAViewID = "scene-A-home-1"
+        let sceneBViewID = "scene-B-home-1"
+
+        recorder.record(
+            viewSignal(
+                id: sceneAViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-request-representative",
+            scene: "scene-A",
+            nativeSceneID: "native-A",
+            viewID: sceneAViewID,
+            recorder: recorder
+        )
+        recorder.record(
+            viewSignal(
+                id: sceneBViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-completion-representative",
+            scene: "scene-B",
+            nativeSceneID: "native-B",
+            viewID: sceneBViewID,
+            recorder: recorder
+        )
+
+        guard mutation != .omitTrace else {
+            return recorder.snapshot()
+        }
+        let traceOwner = mutation == .moveTraceToSceneB
+            ? sceneBViewID
+            : sceneAViewID
+        recordTraceOnlyURLSessionSignal(
+            viewID: traceOwner,
+            recorder: recorder
+        )
+        if mutation == .duplicateTrace {
+            recordTraceOnlyURLSessionSignal(
+                viewID: sceneAViewID,
+                recorder: recorder
+            )
+        }
+        return recorder.snapshot()
+    }
+
+    private func recordTraceRepresentativeMarker(
+        name: String,
+        scene: String,
+        nativeSceneID: String,
+        viewID: String,
+        recorder: ProbeEventRecorder
+    ) {
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                ProbeSignal(
+                    kind: kind,
+                    evidenceSource: .rumMapper,
+                    sourceContext: ProbeSourceContext(
+                        logicalSceneID: scene,
+                        nativeSceneID: nativeSceneID,
+                        screen: "home",
+                        phase: name
+                    ),
+                    rumContext: ProbeRUMContext(
+                        sessionID: "session",
+                        viewID: viewID
+                    ),
+                    eventID: "\(scene)-\(kind.rawValue)-\(name)",
+                    name: name
+                )
+            )
+        }
+    }
+
+    private func recordTraceOnlyURLSessionSignal(
+        viewID: String,
+        recorder: ProbeEventRecorder
+    ) {
+        recorder.record(
+            ProbeSignal(
+                kind: .rumTrace,
+                evidenceSource: .traceMapper,
+                sourceContext: ProbeSourceContext(
+                    logicalSceneID: "scene-A",
+                    screen: "home",
+                    phase: ProbeTraceOnlyURLSessionContract.requestName
+                ),
+                rumContext: ProbeRUMContext(
+                    sessionID: "session",
+                    viewID: viewID
+                ),
+                name: ProbeTraceOnlyURLSessionContract.requestName,
+                trace: ProbeTraceSignal(
+                    operationName: "urlsession.request",
+                    serviceName: "ios-sdk-native-multi-scene-probe",
+                    resourceName: "https://multi-scene-probe.invalid/trace-only/request",
+                    startTimeMilliseconds: 42,
+                    durationNanoseconds: 1,
+                    isError: false,
+                    rumSessionID: "session",
+                    rumViewID: viewID,
+                    rumActionIDs: nil
+                )
+            )
+        )
     }
 
     private func uikitScrollNavigationSignals(

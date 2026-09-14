@@ -38,6 +38,8 @@ targets:
         product: DatadogCore
       - package: Datadog
         product: DatadogRUM
+      - package: Datadog
+        product: DatadogTrace
 
   RUMNativeMultiSceneProbeTests:
     type: bundle.unit-test

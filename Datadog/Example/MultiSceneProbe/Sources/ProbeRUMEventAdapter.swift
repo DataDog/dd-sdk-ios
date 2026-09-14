@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogRUM
+import DatadogTrace
 
 internal enum ProbeRUMEventAdapter {
     static func sessionStarted(
@@ -139,6 +140,49 @@ internal enum ProbeRUMEventAdapter {
                 traceID: event.dd.traceId,
                 spanID: event.dd.spanId,
                 parentSpanID: event.dd.parentSpanId
+            )
+        )
+    }
+
+    static func trace(_ event: SpanEvent, runID: String) -> ProbeSignal? {
+        guard
+            event.operationName == "urlsession.request",
+            event.tags[ProbeRuntime.Attribute.runID] == runID,
+            let url = URL(string: event.resource),
+            let source = ProbeTraceOnlyURLSessionContract.sourceContext(
+                from: url,
+                expectedRunID: runID
+            )
+        else {
+            return nil
+        }
+        return ProbeSignal(
+            kind: .rumTrace,
+            evidenceSource: .traceMapper,
+            sourceContext: source,
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: Int64(
+                    (event.startTime.timeIntervalSince1970 * 1_000).rounded()
+                ),
+                sessionID: event.tags["_dd.session.id"],
+                viewID: event.tags["_dd.view.id"],
+                actionIDs: event.tags["_dd.action.id"].map { [$0] }
+            ),
+            name: source.phase,
+            trace: ProbeTraceSignal(
+                operationName: event.operationName,
+                serviceName: event.serviceName,
+                resourceName: event.resource,
+                startTimeMilliseconds: Int64(
+                    (event.startTime.timeIntervalSince1970 * 1_000).rounded()
+                ),
+                durationNanoseconds: Int64(
+                    (event.duration * 1_000_000_000).rounded()
+                ),
+                isError: event.isError,
+                rumSessionID: event.tags["_dd.session.id"],
+                rumViewID: event.tags["_dd.view.id"],
+                rumActionIDs: event.tags["_dd.action.id"].map { [$0] }
             )
         )
     }

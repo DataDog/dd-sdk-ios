@@ -79,6 +79,7 @@ struct ProbeRuntimeOptions: Codable, Equatable {
     var automaticallyReturnsSplitToDetail = false
     var exercisesUIEventContextHandoff = false
     var exercisesUIKitScrollOwnership = false
+    var exercisesTraceOnlyURLSessionOwnership = false
     var swiftUIStress = ProbeSwiftUIStress.none
     var semanticNavigationSceneIDs: [String]?
     var manualSwiftUIViewScreensByScene: [String: [String]] = [:]

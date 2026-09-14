@@ -1684,6 +1684,24 @@ struct ProbeWindowRoot: View {
                     phase: marker
                 )
                 #endif
+            case .startTraceOnlyURLSessionRequest:
+                guard let requestName = step.value else {
+                    return .rejected(reason: "Trace-only request name is missing")
+                }
+                return ProbeRuntime.startTraceOnlyURLSessionRequest(
+                    window: window,
+                    sceneSessionID: handle.nativeSceneID,
+                    screen: currentSceneScreen,
+                    requestName: requestName
+                )
+            case .completeTraceOnlyURLSessionRequest:
+                guard let requestName = step.value else {
+                    return .rejected(reason: "Trace-only request name is missing")
+                }
+                return ProbeRuntime.completeTraceOnlyURLSessionRequest(
+                    requestName: requestName,
+                    releasingScene: logicalSceneID
+                )
             case .startOperation, .succeedOperation, .failOperation:
                 guard
                     let instance = step.value,

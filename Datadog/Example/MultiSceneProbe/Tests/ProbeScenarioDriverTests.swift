@@ -1901,6 +1901,105 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesTraceOnlyURLSessionStartAndCompletionThroughExactScene() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-trace-only",
+            scenarioID: "driver-trace-only",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var invocations: [ProbeStepKind] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            invocations.append(step.kind)
+            switch step.kind {
+            case .startTraceOnlyURLSessionRequest:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        sourceContext: ProbeSourceContext(
+                            logicalSceneID: "scene-A",
+                            screen: "home",
+                            phase: ProbeTraceOnlyURLSessionContract.requestName
+                        ),
+                        name: "trace-only-request-started-"
+                            + ProbeTraceOnlyURLSessionContract.requestName,
+                        result: .pass
+                    )
+                )
+            case .completeTraceOnlyURLSessionRequest:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .rumTrace,
+                        evidenceSource: .traceMapper,
+                        sourceContext: ProbeSourceContext(
+                            logicalSceneID: "scene-A",
+                            screen: "home",
+                            phase: ProbeTraceOnlyURLSessionContract.requestName
+                        ),
+                        name: ProbeTraceOnlyURLSessionContract.requestName
+                    )
+                )
+            default:
+                return .rejected(reason: "unsupported step")
+            }
+            return .accepted
+        }
+
+        let scenario = ProbeScenario(
+            identifier: "driver-trace-only",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [
+                ProbeStep(
+                    .startTraceOnlyURLSessionRequest,
+                    scene: "scene-A",
+                    value: ProbeTraceOnlyURLSessionContract.requestName
+                ),
+                ProbeStep(
+                    .completeTraceOnlyURLSessionRequest,
+                    scene: "scene-A",
+                    value: ProbeTraceOnlyURLSessionContract.requestName
+                )
+            ],
+            completionConditions: [],
+            expectedSemanticTimeline: []
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            invocations,
+            [.startTraceOnlyURLSessionRequest, .completeTraceOnlyURLSessionRequest]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            2
+        )
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),

@@ -9,6 +9,7 @@ import SwiftUI
 import UIKit
 import DatadogCore
 import DatadogRUM
+import DatadogTrace
 
 @main
 struct RUMNativeMultiSceneProbeApp: App {
@@ -114,6 +115,8 @@ enum ProbeRuntime {
     static let automaticallyReturnsSplitToDetail = options.automaticallyReturnsSplitToDetail
     static let exercisesUIEventContextHandoff = options.exercisesUIEventContextHandoff
     static let exercisesUIKitScrollOwnership = options.exercisesUIKitScrollOwnership
+    static let exercisesTraceOnlyURLSessionOwnership =
+        options.exercisesTraceOnlyURLSessionOwnership
     static let uiEventHandoffControlAccessibilityIdentifier =
         "probe.native.uikit-ui-event-handoff"
     static let uiKitScrollAccessibilityIdentifier = "probe.native.uikit-scroll"
@@ -229,6 +232,28 @@ enum ProbeRuntime {
         RUMMonitor.shared().addAttribute(forKey: Attribute.runID, value: runID)
         RUMMonitor.shared().addAttribute(forKey: Attribute.host, value: "native-swiftui")
 
+        if exercisesTraceOnlyURLSessionOwnership {
+            Trace.enable(
+                with: Trace.Configuration(
+                    sampleRate: 100,
+                    service: serviceName,
+                    tags: [Attribute.runID: runID],
+                    urlSessionTracking: .init(
+                        firstPartyHostsTracing: .trace(
+                            hosts: [ProbeTraceOnlyURLSessionContract.host],
+                            sampleRate: 100,
+                            traceControlInjection: .all
+                        )
+                    ),
+                    bundleWithRumEnabled: true,
+                    eventMapper: { event in
+                        record(traceEvent: event)
+                        return event
+                    }
+                )
+            )
+        }
+
         record(
             "configured service=\(serviceName) "
                 + "scenario=\(scenario?.identifier ?? "invalid") "
@@ -250,6 +275,7 @@ enum ProbeRuntime {
                 + "split_automatic_sequence=\(automaticallyAdvancesSplitSelection) "
                 + "split_return_to_detail=\(automaticallyReturnsSplitToDetail) "
                 + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
+                + "trace_only_urlsession=\(exercisesTraceOnlyURLSessionOwnership) "
                 + "semantic_navigation_scenes="
                 + "\(options.semanticNavigationSceneIDs?.joined(separator: ",") ?? "all") "
                 + "manual_swiftui_view_screens_by_scene="
@@ -308,6 +334,62 @@ enum ProbeRuntime {
                 attributes: attributes
             )
         }
+    }
+
+    static func startTraceOnlyURLSessionRequest(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String,
+        requestName: String
+    ) -> ProbeStepExecutionResult {
+        guard exercisesTraceOnlyURLSessionOwnership else {
+            return .rejected(reason: "Trace-only URLSession tracking is disabled")
+        }
+        let sourceContext = ProbeSourceContext(
+            logicalSceneID: window.label,
+            nativeSceneID: sceneSessionID,
+            screen: screen,
+            phase: requestName,
+            uptime: ProcessInfo.processInfo.systemUptime
+        )
+        let url = ProbeTraceOnlyURLSessionContract.requestURL(
+            runID: runID,
+            sourceScene: window.label,
+            sourceScreen: screen,
+            requestName: requestName
+        )
+        let result = traceOnlyURLSessionController.start(
+            requestName: requestName,
+            url: url,
+            sourceContext: sourceContext
+        )
+        if case .accepted = result {
+            record(
+                "trace-only request scheduled source=\(window.label) "
+                    + "native=\(sceneSessionID) screen=\(screen) "
+                    + "request=\(requestName)"
+            )
+        }
+        return result
+    }
+
+    static func completeTraceOnlyURLSessionRequest(
+        requestName: String,
+        releasingScene: String
+    ) -> ProbeStepExecutionResult {
+        guard exercisesTraceOnlyURLSessionOwnership else {
+            return .rejected(reason: "Trace-only URLSession tracking is disabled")
+        }
+        let result = traceOnlyURLSessionController.complete(
+            requestName: requestName
+        )
+        if case .accepted = result {
+            record(
+                "trace-only response released scene=\(releasingScene) "
+                    + "request=\(requestName)"
+            )
+        }
+        return result
     }
 
     static func record(_ message: String) {
@@ -414,6 +496,47 @@ enum ProbeRuntime {
         )
     }
 
+    private static func record(traceEvent event: SpanEvent) {
+        guard let signal = ProbeRUMEventAdapter.trace(event, runID: runID) else {
+            return
+        }
+        eventRecorder.record(signal)
+        record(
+            "payload type=trace session=\(signal.rumContext?.sessionID ?? "nil") "
+                + "view=\(signal.rumContext?.viewID ?? "nil") "
+                + "operation=\(event.operationName) request=\(signal.name ?? "nil")"
+        )
+    }
+
+    private static let traceOnlyURLSessionController =
+        ProbeTraceOnlyURLSessionController(
+            didStart: { sourceContext in
+                eventRecorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        sourceContext: sourceContext,
+                        name: "trace-only-request-started-\(sourceContext.phase ?? "unknown")",
+                        result: .pass
+                    )
+                )
+            },
+            didComplete: { sourceContext, error in
+                let result: ProbeSemanticResultState = error == nil ? .pass : .fail
+                eventRecorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        sourceContext: sourceContext,
+                        name: "trace-only-request-completed-\(sourceContext.phase ?? "unknown")",
+                        result: result,
+                        reason: error.map {
+                            "controlled Trace-only request failed with "
+                                + String(reflecting: type(of: $0))
+                        }
+                    )
+                )
+            }
+        )
+
     private static func configuredValue(for key: String) -> String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             return nil
@@ -427,6 +550,228 @@ enum ProbeRuntime {
             return nil
         }
         return trimmed
+    }
+}
+
+private final class ProbeTraceOnlyURLSessionController: @unchecked Sendable {
+    private struct InFlightRequest {
+        let url: URL
+        let session: URLSession
+        let task: URLSessionDataTask
+        let sourceContext: ProbeSourceContext
+    }
+
+    private let lock = NSLock()
+    private var requests: [String: InFlightRequest] = [:]
+    private let didStart: @Sendable (ProbeSourceContext) -> Void
+    private let didComplete: @Sendable (ProbeSourceContext, Error?) -> Void
+
+    init(
+        didStart: @escaping @Sendable (ProbeSourceContext) -> Void,
+        didComplete: @escaping @Sendable (ProbeSourceContext, Error?) -> Void
+    ) {
+        self.didStart = didStart
+        self.didComplete = didComplete
+    }
+
+    func start(
+        requestName: String,
+        url: URL,
+        sourceContext: ProbeSourceContext
+    ) -> ProbeStepExecutionResult {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard requests[requestName] == nil else {
+            return .rejected(reason: "Trace-only request \(requestName) is already active")
+        }
+        guard ProbeTraceOnlyURLProtocol.prepare(
+            url: url,
+            sourceContext: sourceContext,
+            didStart: didStart
+        ) else {
+            return .rejected(reason: "Trace-only protocol fixture is already prepared")
+        }
+
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.protocolClasses = [ProbeTraceOnlyURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        var request = URLRequest(url: url)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.httpMethod = "GET"
+        let task = session.dataTask(with: request) { [weak self, weak session] _, _, error in
+            self?.finish(requestName: requestName, error: error)
+            session?.finishTasksAndInvalidate()
+        }
+        requests[requestName] = InFlightRequest(
+            url: url,
+            session: session,
+            task: task,
+            sourceContext: sourceContext
+        )
+        task.resume()
+        return .accepted
+    }
+
+    func complete(requestName: String) -> ProbeStepExecutionResult {
+        lock.lock()
+        let request = requests[requestName]
+        lock.unlock()
+
+        guard let request else {
+            return .rejected(reason: "Trace-only request \(requestName) is not active")
+        }
+        guard ProbeTraceOnlyURLProtocol.complete(url: request.url) else {
+            return .rejected(reason: "Trace-only request \(requestName) has not started loading")
+        }
+        return .accepted
+    }
+
+    private func finish(requestName: String, error: Error?) {
+        lock.lock()
+        let request = requests.removeValue(forKey: requestName)
+        lock.unlock()
+        guard let request else {
+            return
+        }
+        didComplete(request.sourceContext, error)
+    }
+}
+
+private final class ProbeTraceOnlyURLProtocol: URLProtocol {
+    private final class Registration {
+        let sourceContext: ProbeSourceContext
+        let didStart: @Sendable (ProbeSourceContext) -> Void
+        var loader: ProbeTraceOnlyURLProtocol?
+
+        init(
+            sourceContext: ProbeSourceContext,
+            didStart: @escaping @Sendable (ProbeSourceContext) -> Void
+        ) {
+            self.sourceContext = sourceContext
+            self.didStart = didStart
+        }
+    }
+
+    private final class Registry: @unchecked Sendable {
+        private let lock = NSLock()
+        private var registrations: [String: Registration] = [:]
+
+        func prepare(
+            key: String,
+            sourceContext: ProbeSourceContext,
+            didStart: @escaping @Sendable (ProbeSourceContext) -> Void
+        ) -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            guard registrations[key] == nil else {
+                return false
+            }
+            registrations[key] = Registration(
+                sourceContext: sourceContext,
+                didStart: didStart
+            )
+            return true
+        }
+
+        func attach(
+            loader: ProbeTraceOnlyURLProtocol,
+            key: String
+        ) -> Registration? {
+            lock.lock()
+            defer { lock.unlock() }
+            guard
+                let registration = registrations[key],
+                registration.loader == nil
+            else {
+                return nil
+            }
+            registration.loader = loader
+            return registration
+        }
+
+        func take(key: String) -> ProbeTraceOnlyURLProtocol? {
+            lock.lock()
+            defer { lock.unlock() }
+            return registrations.removeValue(forKey: key)?.loader
+        }
+
+        func cancel(loader: ProbeTraceOnlyURLProtocol, key: String) {
+            lock.lock()
+            defer { lock.unlock() }
+            guard registrations[key]?.loader === loader else {
+                return
+            }
+            registrations.removeValue(forKey: key)
+        }
+    }
+
+    private static let registry = Registry()
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        request.url?.host == ProbeTraceOnlyURLSessionContract.host
+            && request.url?.path.hasPrefix("/trace-only/") == true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        guard
+            let url = request.url,
+            let registration = Self.registry.attach(
+                loader: self,
+                key: url.absoluteString
+            )
+        else {
+            client?.urlProtocol(self, didFailWithError: URLError(.unsupportedURL))
+            return
+        }
+        registration.didStart(registration.sourceContext)
+    }
+
+    override func stopLoading() {
+        guard let url = request.url else {
+            return
+        }
+        Self.registry.cancel(loader: self, key: url.absoluteString)
+    }
+
+    fileprivate static func prepare(
+        url: URL,
+        sourceContext: ProbeSourceContext,
+        didStart: @escaping @Sendable (ProbeSourceContext) -> Void
+    ) -> Bool {
+        registry.prepare(
+            key: url.absoluteString,
+            sourceContext: sourceContext,
+            didStart: didStart
+        )
+    }
+
+    fileprivate static func complete(url: URL) -> Bool {
+        guard let loader = registry.take(key: url.absoluteString) else {
+            return false
+        }
+        loader.finishSuccessfully(url: url)
+        return true
+    }
+
+    private func finishSuccessfully(url: URL) {
+        guard let response = HTTPURLResponse(
+            url: url,
+            statusCode: 200,
+            httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json"]
+        ) else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data("{}".utf8))
+        client?.urlProtocolDidFinishLoading(self)
     }
 }
 

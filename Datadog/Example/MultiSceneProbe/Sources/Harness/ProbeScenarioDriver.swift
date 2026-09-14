@@ -222,6 +222,11 @@ internal final class ProbeScenarioDriver {
                     occurrence: occurrence
                 ) == viewID
             }
+            if value.hasPrefix("trace:") {
+                return signal.kind == .rumTrace
+                    && signal.evidenceSource == .traceMapper
+                    && signal.name == String(value.dropFirst("trace:".count))
+            }
 
             for prefix in [
                 "destination:",
@@ -485,6 +490,7 @@ internal final class ProbeScenarioDriver {
             if
                 signal.hasPrefix("assertion:")
                     || signal.hasPrefix("rum-view:")
+                    || signal.hasPrefix("trace:")
             {
                 let recordedSignals = recorder.snapshot()
                 let requirement = SignalRequirement.encoded(
@@ -790,6 +796,62 @@ internal final class ProbeScenarioDriver {
                 timeoutNanoseconds: stepTimeoutNanoseconds
             ) else {
                 return .failed("timed out waiting for marker \(marker) in \(scene)")
+            }
+            return .acknowledged(signal)
+
+        case .startTraceOnlyURLSessionRequest:
+            guard
+                let scene = step.scene,
+                let requestName = step.value,
+                requestName == ProbeTraceOnlyURLSessionContract.requestName
+            else {
+                return .failed("scene or Trace-only request name is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "assertion:trace-only-request-started-\(requestName)"
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for Trace-only request \(requestName) to start"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .completeTraceOnlyURLSessionRequest:
+            guard
+                let scene = step.scene,
+                let requestName = step.value,
+                requestName == ProbeTraceOnlyURLSessionContract.requestName
+            else {
+                return .failed("scene or Trace-only request name is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: nil,
+                    value: "trace:\(requestName)"
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for Trace-only span \(requestName)"
+                )
             }
             return .acknowledged(signal)
 
