@@ -154,15 +154,13 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         let pageViewController = NSPageController()
         let splitViewController = NSSplitViewController()
 
-        // Should return nil for UIKit bundle controllers
+        // Should return nil for AppKit bundle controllers
         XCTAssertNil(extractor.extractName(from: tabbar))
         XCTAssertNil(extractor.extractName(from: pageViewController))
         XCTAssertNil(extractor.extractName(from: splitViewController))
 
-        if #available(iOS 13.0, tvOS 13.0, *) {
-            let hostingController = NSHostingController(rootView: EmptyView())
-            XCTAssertNotNil(hostingController)
-        }
+        let hostingController = NSHostingController(rootView: EmptyView())
+        XCTAssertEqual(extractor.extractName(from: hostingController), "EmptyView")
     }
     #else
     func testShouldSkipViewController() {
