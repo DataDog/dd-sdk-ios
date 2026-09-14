@@ -47,13 +47,21 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 
+    private static var appFrameworkPrefix: String {
+        #if os(macOS)
+        "NS"
+        #else
+        "UI"
+        #endif
+    }
+
     func testFallbackViewNameExtraction() {
         let testCases: [(String, String)] = [
             // Format: (input, expectedExtractedName)
             // Hosting Controller cases
-            ("UIHostingController<HomeView>", "HomeView"),
-            ("UIHostingController<AnyView>", "UIHostingController<AnyView>"),
-            ("UIHostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_HostingController_Fallback"),
+            ("\(Self.appFrameworkPrefix)HostingController<HomeView>", "HomeView"),
+            ("\(Self.appFrameworkPrefix)HostingController<AnyView>", "\(Self.appFrameworkPrefix)HostingController<AnyView>"),
+            ("\(Self.appFrameworkPrefix)HostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_HostingController_Fallback"),
             // Navigation Stack Hosting Controller cases
             ("NavigationStackHostingController<DetailView>", "DetailView"),
             ("NavigationStackHostingController<AnyView>", "NavigationStackHostingController<AnyView>"),
@@ -107,11 +115,11 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         // Define test cases with controller, class name and expected controller type
         let testCases: [(String, ControllerType)] = [
             // Format: (controller, className, expectedType)
-            ("_TtGC7SwiftUI19UIHostingController", .hostingController),
-            ("SwiftUI.UIKitNavigationController", .navigationStackHostingController),
+            ("_TtGC7SwiftUI19\(Self.appFrameworkPrefix)HostingController", .hostingController),
+            ("SwiftUI.\(Self.appFrameworkPrefix)KitNavigationController", .navigationStackHostingController),
             ("NavigationStackHostingController", .navigationStackHostingController),
             ("_TtGC7SwiftUI29PresentationHostingController", .modal),
-            ("UIViewController", .unknown)
+            ("\(Self.appFrameworkPrefix)ViewController", .unknown)
         ]
 
         for (className, expectedType) in testCases {
