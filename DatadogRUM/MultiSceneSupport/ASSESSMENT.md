@@ -131,7 +131,7 @@ programmatic scenario driving.
 manual-stack path. That run proves authority fixed: M1 remains current and owns
 its active action/Resource. It still fails because a generic automatic hosting
 fallback is staged below M1 and revealed for immediate post-stop work before the
-real H2 owns settled work. Commit `94075aa47` retains the last semantic
+real H2 owns settled work. Commit `b1a0fb6b8` retains the last semantic
 destination through that structural churn and rejects known generic SwiftUI
 hosting/navigation-stack fallbacks while manual authority is active. The clean
 `EXP-122` successor passes 16/16 with exactly H1 → M1 → fresh H2, no intervening
@@ -142,16 +142,16 @@ Swift/Objective-C scene overloads and two-live-scene same-key proof remain open.
 `EXP-123` applies that exact handler path to a semantic Sheet and proves it is
 only half of presentation coexistence: automatic discovery still emits a
 redundant `ProbeSheetView` presentation host and structural navigation-host
-churn. Commit `f277763d7` adds a suppression-only authority state mounted in the
+churn. Commit `f452e9e3f` adds a suppression-only authority state mounted in the
 presented subtree while the router remains the sole publisher of its semantic
 RUM lifecycle. `EXP-124` then produces the correct H1/M1/fresh-H2 view set and
 owners but exposes a harness error: M1's final aggregate snapshot is delayed by
 a pending Resource and therefore cannot delimit semantic authority. Commit
-`2b9759446` separates router authority from native subtree lifetime. The clean
+`fad83f58f` separates router authority from native subtree lifetime. The clean
 `EXP-125` successor passes 14/14 with no automatic Sheet, active work on M1, and
 immediate plus settled dismiss work on the same fresh H2. Backend intake agrees
 across 29 events and reports zero errors or crashes. The complete RUM suite now
-passes 1,169/1,169. Commit `56e7bf2fe` adds an independent `fullScreenCover`
+passes 1,169/1,169. Commit `c70920c94` adds an independent `fullScreenCover`
 discriminator. Its clean `EXP-126` successor also passes 14/14 with H1 → semantic
 Cover M1 → fresh H2, no automatic `ProbeFullScreenCoverView`, active work on M1,
 and immediate plus settled work on H2. Exact backend intake contains 28 events—
@@ -630,8 +630,8 @@ hatch for a targeted start, and no public UUID or returned handle is introduced.
 `EXP-120` proves this cannot be implemented as a scene-targeted copy of the
 existing direct commands. Targeted manual entries need per-scene stack ownership
 and must remain authoritative over automatic candidates until exact removal.
-That internal requirement is implemented by `ddfc38008` and hardened by
-`94075aa47`; `EXP-122` validates its one-scene H1/M1/H2 behavior. The scene-A/B
+That internal requirement is implemented by `29c8cec2c` and hardened by
+`b1a0fb6b8`; `EXP-122` validates its one-scene H1/M1/H2 behavior. The scene-A/B
 same-key behavior passes focused tests but still needs live capable-hardware
 evidence before the support claim.
 

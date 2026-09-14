@@ -58,7 +58,7 @@ stopping A leaves B active. A public bridge therefore needs to capture
 start/stop intent. It does not need a second scene registry or a wire change.
 `EXP-120` proves it cannot send the existing direct command unchanged because
 that path bypasses the platform-view stack and has no authority over later
-automatic appearances. Commits `ddfc38008` and `94075aa47` implement and harden
+automatic appearances. Commits `29c8cec2c` and `b1a0fb6b8` implement and harden
 the internal stack route; `EXP-122` validates it locally and in backend intake.
 Only the reviewed public Swift/Objective-C bridge remains absent.
 
@@ -210,7 +210,7 @@ Existing source-less methods remain on their inferred direct-command path.
 
 `EXP-121` validates the authority portion: M1 owns its active action/Resource,
 but the first implementation staged and revealed a generic hosting fallback
-before H2. Commit `94075aa47` retains the last semantic destination across that
+before H2. Commit `b1a0fb6b8` retains the last semantic destination across that
 structural churn and rejects known generic SwiftUI hosting/navigation-stack
 fallbacks while manual authority is active. It does not reject a newly
 trustworthy semantic destination, which can still replace the retained candidate
@@ -218,7 +218,7 @@ below M1. The clean `EXP-122` run passes 16/16 with exactly H1 → M1 → fresh 
 M1 owns active work and the same H2 owns immediate plus settled post-stop work.
 Backend intake confirms all owners and reports no error or crash.
 
-Commit `f277763d7` covers the remaining approved internal manual rules. Several
+Commit `f452e9e3f` covers the remaining approved internal manual rules. Several
 committed automatic destinations beneath M1 emit no intermediate current view
 and reveal only the latest as a fresh occurrence. Stopping nested Preview starts
 a fresh Compose occurrence. Repeating an active `(scene, key)` start is ignored
@@ -233,7 +233,7 @@ controller. The complete internal shape has two responsibilities: the router
 publishes the semantic destination, and a UI-attached boundary suppresses
 automatic discovery only for the matching native subtree through dismissal.
 `EXP-125` validates exact H1 → Sheet M1 → fresh H2, no automatic Sheet, and
-immediate plus settled dismiss work on H2. Commit `56e7bf2fe` clones the
+immediate plus settled dismiss work on H2. Commit `c70920c94` clones the
 discriminator for `fullScreenCover`; `EXP-126` independently passes the same
 14/14 contract with no automatic `ProbeFullScreenCoverView`. The two presentation
 styles now have separate local and backend evidence.

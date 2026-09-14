@@ -95,24 +95,24 @@ boundary, in this order:
 
 Rows 1-77 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
-`4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
-`77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
-`adaec8bdb`, row 26 is `e124ae72c`, and row 27 is `8cb8661af`. Rows 28-37 are
-`85da8fa9c`, `c657f15fd`, `149e58655`, `917bc36b3`, `798a2228a`, `79aefb836`,
-`119afcac6`, `c5cf8cfaf`, `08126fedd`, and `eece6ec17` respectively. Row 38 is
-`96222a6b1`; row 39 is `e2bac40da`, row 40 is `60da5316b`, row 41 is
-`4010931b0`, row 42 is `6bee92ee7`, row 43 is `98fa60559`, row 44 is
-`ff8750dc3`, row 45 is `acca8907f`, and row 46 is `abfb93d45`.
-Row 47 is `34ba7eabf`, row 48 is `4a1311dd4`, row 49 is `9657713e2`, row 50
-is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
-`df0322619`. Row 54 is `4f1bf4d55`, row 55 is `45e5999e4`, row 56 is
-`a97e943df`, row 57 is `4d1783198`, row 58 is `85d03e5ee`, and row 59 is
-`b5f74467d`.
-Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
-is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
-`dc863758f`. Rows 67-69 are `ddfc38008`, `94075aa47`, and `0394ad6cc`.
-Rows 70-73 are `6e4e5e892`, `d0bcebaf2`, `f277763d7`, and `2b9759446`.
-Rows 74-77 are `e0bd4a87d`, `56e7bf2fe`, `e68660841`, and `765640fab`.
+`874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
+`32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
+`b180ecc33`, row 26 is `37f363bd5`, and row 27 is `73f6574a6`. Rows 28-37 are
+`fb6b3bde7`, `a6cd5df60`, `efa91fa34`, `e4526162a`, `5c977da32`, `bfb752fa1`,
+`9fc9e1123`, `051e71292`, `251f6b8bc`, and `9a656cd41` respectively. Row 38 is
+`81da104d2`; row 39 is `7c3601c37`, row 40 is `89e9cb19f`, row 41 is
+`22f027113`, row 42 is `41029e1e3`, row 43 is `051eac32c`, row 44 is
+`e70e5ca51`, row 45 is `494dc4e66`, and row 46 is `af18679f2`.
+Row 47 is `115dc9e38`, row 48 is `116220bed`, row 49 is `da701a043`, row 50
+is `38b6868a3`, row 51 is `4b85048a7`, row 52 is `a001c8377`, and row 53 is
+`35e53ba30`. Row 54 is `481ba47d1`, row 55 is `0234183e0`, row 56 is
+`210a80fd9`, row 57 is `853f90648`, row 58 is `4fc9d91b3`, and row 59 is
+`93cbb3387`.
+Row 60 is `04305cb0a`, row 61 is `3cdb4b915`, row 62 is `44b4921cf`, row 63
+is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
+`56969d8a5`. Rows 67-69 are `29c8cec2c`, `b1a0fb6b8`, and `a40e7903c`.
+Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
+Rows 74-77 are `f1c0547b6`, `c70920c94`, `100fa116a`, and `45ec5656a`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -246,7 +246,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-098 | `nav-occurrence-retained-last-proven-20260913-1249` | `08cd4ae3-eb0e-4336-8a9c-f63390c843f5` | iPadOS 27 | Retaining the last concrete scene across ordinary hidden-reader detachment passed. The exact backend path was Home `96aad43e…` → Detail `06a622ff…` → fresh returned Home `8ad9240d…`; Home reused state token `749f53ae…`. Source delivery preceded `onAppear`, and both `navigation-appearance-2` action and Resource used returned Home. Scene disconnect clears that proof and requires a newer reader remount; `.attached(nil)` remains rejected. |
 | EXP-099 | `nav-occurrence-arbiter-button-20260913-1258` | `11bdae75-fc4e-4873-ab0a-95de7179591c` | iPadOS 27 | After routing source delivery through the interactive-transition arbiter, a normal Back-button pop retained the pass: Home `24453c4e…` → Detail `8de298b6…` → fresh Home `e20f3c08…`, with the same Home state token and both immediate marker events on Home2. The backend query returned 26 exact-session events. |
 | EXP-100 | `nav-occurrence-arbiter-interactive-cancel-20260913-1258`; `nav-occurrence-arbiter-interactive-finish-20260913-1320` | `9c36e499-14a9-4579-9855-3d0139649370`; `bca36b14-70dc-49e8-9301-23f37295b74d` | iPadOS 27 | Both single, bounded edge drags were ignored by the simulator: Detail remained active and no path, coordinator, source, or lifecycle signal followed either gesture. They make no cancellation or completion claim. The production-shaped arbiter path is covered instead by focused cancel/finish tests, but a recognized native SwiftUI interactive gesture remains an explicit live gap. |
-| EXP-101 | `post-checkpoint-attribution-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Commits `85da8fa9c` through `08126fedd` close exact-view representative updates, Resource completion ownership, manual error/view/mutation routing, internal view-command handoff, and native/OpenTelemetry span-start parity. The final RUM plan passes 1,147/1,147; the Trace plan passes 151/151, including 4/4 focused OpenTelemetry handoff tests. Focused changed-file lint has zero violations and the final probe build succeeds. These are compatibility and ownership proofs, not substitutes for the still-pending simultaneous-window runtime discriminators. |
+| EXP-101 | `post-checkpoint-attribution-hardening-20260913` | No backend session; source and focused-test evidence | Xcode 27 / iOS 27 simulator | Commits `fb6b3bde7` through `251f6b8bc` close exact-view representative updates, Resource completion ownership, manual error/view/mutation routing, internal view-command handoff, and native/OpenTelemetry span-start parity. The final RUM plan passes 1,147/1,147; the Trace plan passes 151/151, including 4/4 focused OpenTelemetry handoff tests. Focused changed-file lint has zero violations and the final probe build succeeds. These are compatibility and ownership proofs, not substitutes for the still-pending simultaneous-window runtime discriminators. |
 | EXP-102 | `split-occurrence-source-20260913-1345` | `d7c4fb96-161a-4dd9-b376-628b1172238e` | iPadOS 27 | Regular-width single-scene split occurrence pass without customer `.id`. One retained Detail witness moved from Detail 1 to Detail 2 while the keyed generation advanced 1 → 2 → 3. Backend emitted exactly launch → Detail₁ `cafa2f12…` → Detail₂ `70a9f413…` → Placeholder `fa8ce9d7…`, with three exact action/Resource marker pairs and zero errors/crashes. The retained-route source returned false as expected because Detail₁ → Detail₂ was an active in-place keyed replacement, not a reveal of an inactive retained route. |
 | EXP-103 | `split-occurrence-two-window-20260913-1400` | `a354f09b-557c-43a7-815c-95379ea3504d` | iPadOS 27 | Both native scenes reached regular width and independently retained their Detail witness while advancing generation 1 → 2 → 3. Backend emitted seven views: launch plus distinct A and B Detail₁, Detail₂, and Placeholder UUIDs; all six action/Resource pairs used their exact scene occurrence and no RUM error appeared. Both upload batches completed before final hierarchy capture triggered the known simulator `backboardd` Metal crash. The probe app produced no crash report; this is a concurrent telemetry pass plus a simulator-stability limitation, not an SDK crash-safety failure. |
 | EXP-104 | `split-occurrence-retained-return-20260913-1408` | `0540b52f-b398-4886-b956-421cffa64df0` | iPadOS 27 | Retained split-return failure baseline. Detail₁ `2be7a2d9…` → Detail₂ `532c2db1…` → Placeholder `6334cd0c…` was correct. Returning to Detail₂ made the old subtree stop source-created UUID `ee1fd0c4…` after about 6.6 ms; the replacement reader then started `03545f03…`, which owned the marker pair. Backend therefore contained a ghost fifth semantic view. This is a conclusive SDK/prototype failure, not a simulator-input limitation. |
@@ -261,18 +261,18 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-113 | Interrupted `observable-window-close-20260913-2016-a`; final `observable-window-close-20260913-2020-b` | `6a37d312-8ca1-41fc-87e4-b42d5142fb64`; `be396759-0393-42e1-b08e-acb2a5cb0c7c` | iPadOS 27 | Exact scene-lifecycle driver acceptance. `open-window` dispatches through exact source A and waits for exact target B readiness; `close-window` dispatches through exact B and waits for B disconnect. The first launch session expired after B became ready and before a terminal result, so it is retained as inconclusive. The clean retry acknowledged all five steps and passed 9/9. B `before-close` action/Resource use B Home `22dce95f…`; after B disconnect generation 1, A `after-peer-close` action/Resource use unchanged A Home `f7f72acf…`. Backend intake confirms both pairs, two independent Home view IDs, and no error bucket. The fullscreen simulator did not prove both windows visible concurrently. Probe tests pass 43/43 and repository lint remains clean. |
 | EXP-114 | Completed compatibility control `observable-window-activation-20260913-2039-a`; expired lifecycle-gated prefix `observable-window-activation-20260913-2056-b`; compositor-interrupted prefix `observable-window-activation-20260913-2059-c` | `d2d11fda-28ce-4fce-bf46-cd858ce49adb`; no terminal session claim; locally observed `fe55cea1-4c9f-4a72-97e0-398c4302ed71`, zero backend events | iPadOS 27 | Exact activation-harness boundary. The first scenario version acknowledged ten exact-scene commands, but its source-labelled markers were plain public RUM calls with no SDK provenance. Backend therefore correctly kept A-labelled source-less work on last-interacted B until B closed; this is compatibility evidence, not an activation attribution failure. The corrected scenario dispatches activation only through the target registered `UIWindowScene`, waits for its foreground-active state, and requires the peer's latest non-superseded state to become background before asserting a fresh occurrence or marker ownership. The simulator kept both scenes foreground-active. One retry lost its Xcode launch/stdout session before a verdict; another ended when simulator `backboardd`, not the probe, aborted in CoreAnimation/Metal before the 10-second harness timeout. The latter produced no terminal OSLog or backend event. Probe tests pass 45/45 and repository lint is clean. Exact activation remains inconclusive pending capable hardware. |
 | EXP-115 | `semantic-authority-coexistence-20260913-2146-a` | `fae57f5a-ba01-4d42-9e32-2774090b1585` | iPadOS 27 | Target-scoped SwiftUI authority pass. Navigation-occurrence mode enabled `DefaultSwiftUIRUMViewsPredicate` at the same time as explicit route-owned tracking. An active explicit hidden reader suppressed automatic discovery only for a containing controller hierarchy; unrelated sibling controllers remain eligible and UIKit predicate acceptance remains authoritative. The signal-driven scenario passed 7/7 and both mapper output and backend intake contained exactly `ApplicationLaunch → Home H1 → Detail D1 → Home H2`, with distinct Home UUIDs and no hosting-controller duplicate. Intake totals were four views, nine actions, nine Resources, three long tasks, one session, and one vital. The RUM suite passes 1,157/1,157, the probe 45/45, and lint is clean. This closes the internal coexistence/dedup mechanics, not the reviewed once-per-container path/router API or automatic-only semantic-navigation gap. |
-| EXP-116 | Return `container-navigation-prototype-20260913-2210-a`; abort `container-navigation-abort-clean-20260913-2247-a`; replacement `container-navigation-same-type-clean-20260913-2254-a` | `9d1653fc-80e8-4794-9a29-50a60246d2ca`; `8b89254e-ba81-4595-86a6-5fa399d480c5`; `0436c9b2-08fc-4c92-a311-7336eafaad4a` | iPadOS 27 | Once-per-container SwiftUI integration-shape pass. A probe-only wrapper consumes one bound `NavigationStack` path and centralized route-to-RUM resolver, owns root/destination materialization, and injects the existing route-owned tracking boundary without putting metadata into Home/Detail view types. Clean return passed 7/7 with launch plus Home H1 `a2dc84f9…`, Detail D1 `2a20ec3c…`, and fresh Home H2 `c82a59c9…`; abort passed 5/5 with only Home `b0166eb3…` and no Detail; same-type replacement passed 6/6 with same-named Detail₁ `f5311b38…` and Detail₂ `d8375a2b…` plus final action/Resource on Detail₂. Backend view sets and ownership agree, with no automatic/hosting duplicate. A delayed source-less callback scheduled by removed Detail₁ used the then-current Detail₂, preserving the approved fallback. Probe tests pass 45/45 and repository lint has zero violations. Commit `b5f74467d` is probe-only; no public API was added. |
+| EXP-116 | Return `container-navigation-prototype-20260913-2210-a`; abort `container-navigation-abort-clean-20260913-2247-a`; replacement `container-navigation-same-type-clean-20260913-2254-a` | `9d1653fc-80e8-4794-9a29-50a60246d2ca`; `8b89254e-ba81-4595-86a6-5fa399d480c5`; `0436c9b2-08fc-4c92-a311-7336eafaad4a` | iPadOS 27 | Once-per-container SwiftUI integration-shape pass. A probe-only wrapper consumes one bound `NavigationStack` path and centralized route-to-RUM resolver, owns root/destination materialization, and injects the existing route-owned tracking boundary without putting metadata into Home/Detail view types. Clean return passed 7/7 with launch plus Home H1 `a2dc84f9…`, Detail D1 `2a20ec3c…`, and fresh Home H2 `c82a59c9…`; abort passed 5/5 with only Home `b0166eb3…` and no Detail; same-type replacement passed 6/6 with same-named Detail₁ `f5311b38…` and Detail₂ `d8375a2b…` plus final action/Resource on Detail₂. Backend view sets and ownership agree, with no automatic/hosting duplicate. A delayed source-less callback scheduled by removed Detail₁ used the then-current Detail₂, preserving the approved fallback. Probe tests pass 45/45 and repository lint has zero violations. Commit `93cbb3387` is probe-only; no public API was added. |
 | EXP-117 | Contaminated abort `container-navigation-abort-20260913-2225-a`; contaminated replacement `container-navigation-same-type-20260913-2232-a` | `18cb3927-8afb-4f39-92bf-75b3391de050`; `1f6964c8-0200-44b9-a775-ffd91e4a0bc9` | iPadOS 27 | Clean-run isolation failure in the harness workflow, not an SDK-semantic failure. Both back-to-back Xcode launches passed their local oracle, but the test bundle had not been uninstalled. Their newly created Home/Detail view documents retained `container-navigation-prototype-20260913-2210-a` as `context.probe.run_id`, while later actions and Resources carried the new run ID. A new-run aggregate therefore showed only ApplicationLaunch until direct view-ID inspection exposed the mixed metadata. Explicit host-side uninstall followed by the `EXP-116` reruns removed the contamination. `--probe-run-mode clean` is only manifest input inside the app; Phase 5's host runner must perform teardown and verify every semantic view's run ID before accepting backend evidence. |
 | EXP-118 | `semantic-auto-coexistence-20260913-2256-a`; `semantic-auto-coexistence-20260913-2259-b` | `5a4d3add-7100-4ca3-bb8f-62f0c012b4d0`; `43e42ece-f77d-4215-8c6c-22c5ce101136` | iPadOS 27 simulator | Prepared automatic/semantic scene-coexistence discriminator; simulator-inconclusive after two explicitly uninstalled runs because `backboardd` aborted in Metal/CoreAnimation before the terminal oracle. Both runs kept scene A's explicit marker on A/Home H1 and created scene-B automatic fallback plus navigation-host views after B opened, proving A's authority did not suppress B globally. Attempt 1 mapped B's delayed source-less marker to B's non-launch automatic host, but the decisive driver marker never ran. Earlier B source-less lifecycle work used representative A before discovery settled, which is the approved compatibility fallback rather than exact provenance. No probe/SDK crash or terminal PASS/FAIL occurred; rerun the named scenario on physical hardware. Probe tests pass 49/49 and lint reports zero violations. |
-| EXP-119 | Invalid-source run `automatic-manual-sheet-20260913-2332-a`; corrected run `automatic-manual-sheet-20260913-2338-b` | `b2f50cf0-1394-4b1b-9da9-09d752a22bbf`; `f483b9eb-3ea8-4cfc-a884-c0b547effb5a` | iPadOS 27 simulator | Exceptional explicit SwiftUI Sheet over automatic Home. The first run exposed a probe-only source label defect, fixed in `336bdd504`. The corrected run then failed conclusively after 6 matches: Home-source work in immediate `onDismiss` still belonged to Sheet S1 because automatic Home H2 had not started; settled work used H2. Local mapper and backend intake otherwise agree on launch, an 18 ms automatic fallback, automatic H1 `60a6d680…`, explicit S1 `fad831da…`, and fresh automatic H2 `c36d0109…`; sheet work owns S1, pre-sheet work owns H1, no duplicate automatic Sheet appears, and no error/crash occurred. Probe build-for-testing and 56/56 tests pass. This proves coexistence/dedup and exposes a real return-boundary attribution gap. |
-| EXP-120 | Invalid harness `automatic-keyed-manual-20260914-0005-a`; partial `automatic-keyed-manual-20260914-0010-b`; conclusive `automatic-keyed-manual-20260914-0015-c`; hardened baseline `automatic-keyed-manual-20260914-0030-d` | `54005e3d-daf7-460e-8c38-2cf4e7505e4f`; `26990bc0-7785-4eda-b0f7-f3971516f5a3`; `9382bf4d-5985-4047-898c-deb8103af68b`; `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0` | iPadOS 27 simulator | Existing direct keyed manual API over automatic Home fails authoritative coexistence. Attempt A never started because the scenario was omitted from a second driver allowlist; the catalog now owns that selection. Attempt B proved Compose was already stopped before a now-removed wait. Attempts C/D conclusively show H1 → M1 → automatic fallback → fresh H2: M1 lasts only 31–48 ms, active and immediate-stop action/Resource pairs use the fallback, and only settled work uses H2. Final D has six views, ten actions, ten Resources, zero errors/crashes. Its initial H1-stop failure was an oracle matcher defect caused by a deferred exact stop arriving after an unrelated M1 stop; the corrected matcher scans onward and keeps the real manual-authority failure. Commit `dc863758f`; probe 65/65, build-for-testing and repository lint pass. |
-| EXP-121 | `scene-targeted-manual-20260914-0120-a` | `f32f25c8-7403-4513-89fa-75d9e3a3952d` | iPadOS 27 simulator | First internal scene-targeted manual-stack run after `ddfc38008`. Compose M1 remained authoritative and owned its active action/Resource, closing the `EXP-120` preemption. The run still failed because automatic discovery staged a generic hosting fallback beneath M1; exact stop revealed that fallback for the immediate pair before fresh H2 owned the settled pair. Mapper and backend agree on six views and 30 events with zero errors/crashes. This isolated fallback selection from manual authority rather than reopening the direct-command diagnosis. |
-| EXP-122 | `scene-targeted-manual-20260914-0135-b` | `7194cd61-23d0-4727-877a-79fbc985fc32` | iPadOS 27 simulator | Clean exact-scene manual-view acceptance after `94075aa47`. The oracle passes 16/16. Mapper and backend contain only launch, the expected startup-only fallback, Home H1, authoritative Compose M1, and fresh Home H2; no generic fallback appears during or after manual authority. Pre-manual work uses H1, active Compose work uses M1, and both immediate and settled post-stop pairs use the same H2, distinct from H1. Exact-run intake has 28 events: five views, ten actions, ten Resources, one long task, one vital, zero errors, and zero crashes. Host uninstall and ENOENT container lookup prove clean isolation; all five view documents carry the requested run ID. |
+| EXP-119 | Invalid-source run `automatic-manual-sheet-20260913-2332-a`; corrected run `automatic-manual-sheet-20260913-2338-b` | `b2f50cf0-1394-4b1b-9da9-09d752a22bbf`; `f483b9eb-3ea8-4cfc-a884-c0b547effb5a` | iPadOS 27 simulator | Exceptional explicit SwiftUI Sheet over automatic Home. The first run exposed a probe-only source label defect, fixed in `dd1b1cf34`. The corrected run then failed conclusively after 6 matches: Home-source work in immediate `onDismiss` still belonged to Sheet S1 because automatic Home H2 had not started; settled work used H2. Local mapper and backend intake otherwise agree on launch, an 18 ms automatic fallback, automatic H1 `60a6d680…`, explicit S1 `fad831da…`, and fresh automatic H2 `c36d0109…`; sheet work owns S1, pre-sheet work owns H1, no duplicate automatic Sheet appears, and no error/crash occurred. Probe build-for-testing and 56/56 tests pass. This proves coexistence/dedup and exposes a real return-boundary attribution gap. |
+| EXP-120 | Invalid harness `automatic-keyed-manual-20260914-0005-a`; partial `automatic-keyed-manual-20260914-0010-b`; conclusive `automatic-keyed-manual-20260914-0015-c`; hardened baseline `automatic-keyed-manual-20260914-0030-d` | `54005e3d-daf7-460e-8c38-2cf4e7505e4f`; `26990bc0-7785-4eda-b0f7-f3971516f5a3`; `9382bf4d-5985-4047-898c-deb8103af68b`; `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0` | iPadOS 27 simulator | Existing direct keyed manual API over automatic Home fails authoritative coexistence. Attempt A never started because the scenario was omitted from a second driver allowlist; the catalog now owns that selection. Attempt B proved Compose was already stopped before a now-removed wait. Attempts C/D conclusively show H1 → M1 → automatic fallback → fresh H2: M1 lasts only 31–48 ms, active and immediate-stop action/Resource pairs use the fallback, and only settled work uses H2. Final D has six views, ten actions, ten Resources, zero errors/crashes. Its initial H1-stop failure was an oracle matcher defect caused by a deferred exact stop arriving after an unrelated M1 stop; the corrected matcher scans onward and keeps the real manual-authority failure. Commit `56969d8a5`; probe 65/65, build-for-testing and repository lint pass. |
+| EXP-121 | `scene-targeted-manual-20260914-0120-a` | `f32f25c8-7403-4513-89fa-75d9e3a3952d` | iPadOS 27 simulator | First internal scene-targeted manual-stack run after `29c8cec2c`. Compose M1 remained authoritative and owned its active action/Resource, closing the `EXP-120` preemption. The run still failed because automatic discovery staged a generic hosting fallback beneath M1; exact stop revealed that fallback for the immediate pair before fresh H2 owned the settled pair. Mapper and backend agree on six views and 30 events with zero errors/crashes. This isolated fallback selection from manual authority rather than reopening the direct-command diagnosis. |
+| EXP-122 | `scene-targeted-manual-20260914-0135-b` | `7194cd61-23d0-4727-877a-79fbc985fc32` | iPadOS 27 simulator | Clean exact-scene manual-view acceptance after `b1a0fb6b8`. The oracle passes 16/16. Mapper and backend contain only launch, the expected startup-only fallback, Home H1, authoritative Compose M1, and fresh Home H2; no generic fallback appears during or after manual authority. Pre-manual work uses H1, active Compose work uses M1, and both immediate and settled post-stop pairs use the same H2, distinct from H1. Exact-run intake has 28 events: five views, ten actions, ten Resources, one long task, one vital, zero errors, and zero crashes. Host uninstall and ENOENT container lookup prove clean isolation; all five view documents carry the requested run ID. |
 | EXP-123 | `scene-targeted-sheet-20260914-0208-a` | `33b814f6-c709-4f14-bc08-ffebd43f4203` | iPadOS 27 simulator | Exact-scene Sheet lifecycle without a UI-attached suppression boundary. The semantic Sheet M1 was authoritative, but automatic discovery still emitted structural `NavigationStackHostingController` churn and a redundant automatic `ProbeSheetView` presentation-host occurrence. The transient automatic presentation preempted the early revealed Home and produced two returned-Home occurrences. Pre-Sheet, active-Sheet, immediate-dismiss, and settled owners otherwise remained observable; zero errors or crashes occurred. This rejects handler-stack authority alone as a complete semantic-presentation integration. |
 | EXP-124 | `semantic-sheet-suppression-20260914-0222-a` | `8101b16d-ed17-4ded-8a29-c9bbf8aa219b` | iPadOS 27 simulator | First suppression-only presentation-boundary run. Mapper output contains exactly launch, the startup fallback, H1, semantic Sheet M1, and fresh H2; active work owns M1 and both dismiss pairs own H2, with no automatic `ProbeSheetView`. The old oracle nevertheless failed because a pending Sheet Resource delayed M1's final aggregate snapshot until after H2 started. This is an oracle interval defect, not a RUM ownership failure: aggregate delivery lifetime is not semantic presentation authority. |
-| EXP-125 | `semantic-sheet-authority-20260914-0232-a` | `c01631fb-8b2c-4071-b7c3-78c6f042774f` | iPadOS 27 simulator | Clean complete-destination Sheet acceptance after `f277763d7` and `2b9759446`. The oracle passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `76aada56…`, semantic Sheet M1 `81ecbf07…`, and fresh H2 `b7e26b43…`. No automatic `ProbeSheetView` occurs while its native presentation subtree is mounted. Pre-Sheet work owns H1, active work owns M1, and immediate plus settled dismissal work own the same fresh H2. Backend intake has 29 exact-session events: one session, five views, ten actions, ten Resources, two long tasks, and one vital, with zero errors or crashes. Probe tests pass 68/68 and the complete RUM suite passes 1,169/1,169. |
-| EXP-126 | Uncaptured setup `semantic-full-screen-cover-authority-20260914-0304-a`; accepted `semantic-full-screen-cover-authority-20260914-0312-b` | none claimed; `ba5d005c-ce65-40eb-b639-2845e570f70b` | iPadOS 27 simulator | Independent complete-destination `fullScreenCover` acceptance after `56e7bf2fe`. The first Xcode interaction session expired before capture and receives no semantic or backend claim. The explicitly uninstalled retry passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `700cf5c7…`, semantic Cover M1 `6cc95aa2…`, and fresh H2 `baf8d431…`. No automatic `ProbeFullScreenCoverView` occurs while the native cover subtree is mounted. Pre-cover work owns H1, active work owns M1, and immediate plus settled dismissal work own H2. Backend intake has 28 exact-session events: one session, five views, ten actions, ten Resources, one long task, and one vital, with zero errors or crashes. Probe tests pass 69/69; build-for-testing, repository lint, and `git diff --check` pass. |
-| EXP-127 | Probe-only-noise trial `sibling-container-authority-20260914-0350-a`; clean successor `sibling-container-authority-20260914-0354-b`; accepted hardened `sibling-container-authority-20260914-0403-c` | `6b0407b0-ec2e-49c1-927b-eb0ac3ef589f`; `c484fb2a-bd67-45f6-9c4e-8f284baaf843`; `46b9029f-eee9-4e1f-9fec-67a735efcc19` | iPadOS 27 simulator | Sibling-container authority acceptance after `765640fab`. Two `NavigationStack` branches mount under one outer SwiftUI host; a required ancestry assertion proves distinct left and right controller branches. Left manual M1 remains current while right Home commits to Detail, no automatic view starts during M1, and exact stop reveals only fresh right Detail. All three runs pass 19/19 locally. The first is retained as harness-negative evidence because the probe-only ancestry reader became a late fifth automatic view. The exact measurement-type predicate removes it in the clean successors, and the final driver waits for the immutable topology assertion. Accepted backend intake has 31 events: one session, four views, 11 actions, 11 Resources, three long tasks, and one vital, with zero errors or crashes. Probe tests pass 76/76; build-for-testing, repository lint, and `git diff --check` pass. |
+| EXP-125 | `semantic-sheet-authority-20260914-0232-a` | `c01631fb-8b2c-4071-b7c3-78c6f042774f` | iPadOS 27 simulator | Clean complete-destination Sheet acceptance after `f452e9e3f` and `fad83f58f`. The oracle passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `76aada56…`, semantic Sheet M1 `81ecbf07…`, and fresh H2 `b7e26b43…`. No automatic `ProbeSheetView` occurs while its native presentation subtree is mounted. Pre-Sheet work owns H1, active work owns M1, and immediate plus settled dismissal work own the same fresh H2. Backend intake has 29 exact-session events: one session, five views, ten actions, ten Resources, two long tasks, and one vital, with zero errors or crashes. Probe tests pass 68/68 and the complete RUM suite passes 1,169/1,169. |
+| EXP-126 | Uncaptured setup `semantic-full-screen-cover-authority-20260914-0304-a`; accepted `semantic-full-screen-cover-authority-20260914-0312-b` | none claimed; `ba5d005c-ce65-40eb-b639-2845e570f70b` | iPadOS 27 simulator | Independent complete-destination `fullScreenCover` acceptance after `c70920c94`. The first Xcode interaction session expired before capture and receives no semantic or backend claim. The explicitly uninstalled retry passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `700cf5c7…`, semantic Cover M1 `6cc95aa2…`, and fresh H2 `baf8d431…`. No automatic `ProbeFullScreenCoverView` occurs while the native cover subtree is mounted. Pre-cover work owns H1, active work owns M1, and immediate plus settled dismissal work own H2. Backend intake has 28 exact-session events: one session, five views, ten actions, ten Resources, one long task, and one vital, with zero errors or crashes. Probe tests pass 69/69; build-for-testing, repository lint, and `git diff --check` pass. |
+| EXP-127 | Probe-only-noise trial `sibling-container-authority-20260914-0350-a`; clean successor `sibling-container-authority-20260914-0354-b`; accepted hardened `sibling-container-authority-20260914-0403-c` | `6b0407b0-ec2e-49c1-927b-eb0ac3ef589f`; `c484fb2a-bd67-45f6-9c4e-8f284baaf843`; `46b9029f-eee9-4e1f-9fec-67a735efcc19` | iPadOS 27 simulator | Sibling-container authority acceptance after `45ec5656a`. Two `NavigationStack` branches mount under one outer SwiftUI host; a required ancestry assertion proves distinct left and right controller branches. Left manual M1 remains current while right Home commits to Detail, no automatic view starts during M1, and exact stop reveals only fresh right Detail. All three runs pass 19/19 locally. The first is retained as harness-negative evidence because the probe-only ancestry reader became a late fifth automatic view. The exact measurement-type predicate removes it in the clean successors, and the final driver waits for the immutable topology assertion. Accepted backend intake has 31 events: one session, four views, 11 actions, 11 Resources, three long tasks, and one vital, with zero errors or crashes. Probe tests pass 76/76; build-for-testing, repository lint, and `git diff --check` pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -2357,11 +2357,11 @@ inventing provenance. Exact-view actions now also update the last-interacted
 representative; Resource completion uses its key-owned start scope; manual errors,
 manual views, per-view mutations, and internal view commands consume a trustworthy
 event handoff; and OpenTelemetry now uses the same span-start snapshot selection
-as the native tracer. These changes are commits `85da8fa9c` through `08126fedd`.
+as the native tracer. These changes are commits `fb6b3bde7` through `251f6b8bc`.
 The final module results are recorded in `EXP-101`.
 
 `EXP-090` and `EXP-091` validate the debug-only keyed SwiftUI seam added in
-`119afcac6` and installed in the probe by `c5cf8cfaf`. A same-type Detail
+`9fc9e1123` and installed in the probe by `051e71292`. A same-type Detail
 replacement receives a new RUM UUID without replacing customer state, while a
 coalesced push/revert creates no synthetic occurrence. Returning to retained Home
 then exposed a separate ordering issue in `EXP-092`: Home2 existed eventually,
@@ -2377,7 +2377,7 @@ a prior concrete scene but no current attachment when the path contracted.
 This was `.detached`; `.attached(nil)` is a distinct unresolved state and remains
 rejected.
 
-`eece6ec17` retains the last concrete scene only across ordinary reader
+`9a656cd41` retains the last concrete scene only across ordinary reader
 detachment, clears it on scene disconnect, and requires a newer concrete reader
 mount before reuse. A source retains registrations weakly, never replays an old
 route selection, requires a previously started and currently inactive matching
@@ -2398,7 +2398,7 @@ The final focused set passes 13/13. The complete RUM result is
 `RunAllTests/AE2B46B1-C858-4045-8AA5-855A8C020E0A.txt`; the final probe build is
 `BuildProject-Log-20260913-131828.txt`.
 
-`96222a6b1` extends the keyed occurrence input to regular-width
+`81da104d2` extends the keyed occurrence input to regular-width
 `NavigationSplitView` without applying `.id` to customer content. Each split root
 owns its source and generation counter. An active Detail 1 → Detail 2 replacement
 updates the stable hidden reader in place; the source correctly reports
@@ -2442,7 +2442,7 @@ marker action and Resource. Backend session
 so this is a conclusive remount handoff failure rather than a simulator gesture or
 topology limitation.
 
-`60da5316b` lets a source-created occurrence remain canonical while SwiftUI
+`89e9cb19f` lets a source-created occurrence remain canonical while SwiftUI
 decides whether to reuse or rebuild the subtree. A replacement tracking state may
 adopt that already-published UUID without a second start and then owns its later
 lifecycle and stop. Only the newest eligible registration may reveal a route, and
@@ -2461,7 +2461,7 @@ RUM plan passes 1,151/1,151, changed Swift files lint with zero violations, and
 the native probe rebuild succeeds in
 `BuildProject-Log-20260913-143157.txt`.
 
-`6bee92ee7` completes the named-scenario phase of the deterministic harness.
+`41029e1e3` completes the named-scenario phase of the deterministic harness.
 `ProbeScenarioRunner` accepts `--probe-scenario`, `--probe-run-id`, and
 `--probe-run-mode`, generates a run ID only when one is not supplied, rejects
 unknown probe arguments/environment keys and contradictory legacy combinations,
@@ -2481,7 +2481,7 @@ RUM payload. At that checkpoint the catalog modeled signal waits and semantic
 expectations, but the observable driver and oracle were not implemented, so this
 experiment does not claim that modeled timelines executed or passed locally.
 
-`ff8750dc3` completes the structured-recorder and pure-oracle phase. The recorder
+`e70e5ca51` completes the structured-recorder and pure-oracle phase. The recorder
 emits a versioned JSONL manifest and signals with distinct `ProbeSourceContext`,
 mapper-observed `ProbeRUMContext`, and trusted combined semantic context. A RUM
 view mapper reports document snapshots rather than inventing lifecycle callbacks;
@@ -2515,7 +2515,7 @@ live oracle result was produced, and no visual UI state is claimed from the
 console's destination-materialized signal. Home return and the three-repeat live
 acceptance loop remain open and are routed through the device/human queue.
 
-`acca8907f` updates every UIKit split scenario's expected timeline to the approved
+`494dc4e66` updates every UIKit split scenario's expected timeline to the approved
 one-current-destination model. Primary lifecycle remains recorded for diagnostics,
 but the semantic oracle now forbids Primary in each scene; concurrent A/B split
 scenarios forbid it independently. The focused catalog regression covers all nine
@@ -2525,7 +2525,7 @@ proof that Primary is no longer *restarted* and returned Secondary gets a fresh
 UUID. Their initial Primary RUM views are now explicitly retained as gap evidence,
 not reinterpreted as final success.
 
-`abfb93d45` completes the exact scene-registry phase. The main-actor registry
+`af18679f2` completes the exact scene-registry phase. The main-actor registry
 maps each stable logical probe scene to one exact native scene session, holds its
 `UIWindow` weakly, and stores readiness, activation, geometry, size classes,
 current route, and disconnect generation. It rejects native aliases and live
@@ -2557,7 +2557,7 @@ ran the app, but required the unavailable `device-interaction` skill for any UI
 event. No synthesized input, visual claim, Home return, or final live oracle
 result is attached to `EXP-108`.
 
-`34ba7eabf` completes the first observable-driver slice. The driver addresses the
+`115dc9e38` completes the first observable-driver slice. The driver addresses the
 exact logical scene through `ProbeSceneRegistry`, executes only after declared
 signals become observable, records every step acknowledgement, and emits exactly
 one terminal semantic result. For `swiftui.stack.return`, it waits for scene A,
@@ -2605,7 +2605,7 @@ structured Home-return acceptance loop. It does not close automatic zero-code
 SwiftUI semantics or the native interactive-pop rows; those still require their
 own integration and recognized gesture evidence.
 
-`4a1311dd4` extends the observable driver to three more deterministic stack
+`116220bed` extends the observable driver to three more deterministic stack
 scenarios. It executes coalesced push/revert, same-type replacement, and
 different-type replacement through the exact registered scene, then advances
 only after the expected path and destination signals. The old delay-driven
@@ -2660,7 +2660,7 @@ do not change the product verdict: the passing route-owned debug input is the
 prototype for the reviewed container-level semantic integration, while
 transparent automatic SwiftUI discovery remains insufficient.
 
-`96a6208ff` moves split-selection ownership to the registered scene root and
+`38b6868a3` moves split-selection ownership to the registered scene root and
 drives each mutation only after its prior destination is observable. The exact
 scene executor now waits for the corresponding selection mutation, and repeated
 destination waits derive occurrence order when the materialization signal has no
@@ -2738,7 +2738,7 @@ ownership is safe in the exercised fullscreen topology.
 
 ### 2026-09-13 — Signal-driven UIKit transition acceptance
 
-`df0322619` moves `uikit.split.pop-cancel` and
+`35e53ba30` moves `uikit.split.pop-cancel` and
 `uikit.split.pop-finish` from scheduled transition controls into the observable
 driver. Signal schema 4 adds explicit transition progress and resolution-request
 records. The exact scene executor now begins the real
@@ -2764,7 +2764,7 @@ post-cancel action/Resource used it. Backend intake contained 18 events and no
 error. This isolated a product-model failure rather than a transition or crash
 failure.
 
-`f4c8669c0` fixes that stock split case without changing the wire format or
+`a001c8377` fixes that stock split case without changing the wire format or
 ordinary-app path. On iOS 27 only, and only when the bundle declares multiple
 scenes, concurrently displayed Primary and supplementary columns in a
 regular-width `UISplitViewController` are classified as structural and ignored
@@ -2887,7 +2887,7 @@ focused test also constructed B's `UIWindow` inline; the registry intentionally
 owns windows weakly, so the fixture immediately lost B. Retaining the window in
 the test fixed the fixture without weakening production ownership. The complete
 probe plan passes 43/43 and repository lint reports zero violations across 713
-source and 699 test files. Commit `45e5999e4` contains the exact-path harness
+source and 699 test files. Commit `0234183e0` contains the exact-path harness
 checkpoint.
 
 ### 2026-09-13 — EXP-114: exact activation and simulator boundary
@@ -2963,7 +2963,7 @@ registry retained it. Neither correction changes production SDK ownership.
 Terminal semantic JSON is now mirrored through OSLog so an ordinary Xcode console
 session expiry does not discard a completed verdict. Two focused activation and
 state-condition tests raise the probe plan to 45/45. Repository lint remains clean
-across 713 source and 699 test files. Commit `4d1783198` contains only the harness
+across 713 source and 699 test files. Commit `853f90648` contains only the harness
 slice. No production SDK source changed. Do not repeat the rapid A/B activation
 loop on this simulator; the prepared scenario belongs on iPhone Duo or a physical
 multi-window iPad.
@@ -3020,7 +3020,7 @@ complete RUM plan passes 1,157/1,157 on a clean rerun; an immediately preceding
 run had one unrelated timeseries sampling timing failure that passed both in
 isolation and in the clean full rerun. The native probe passes 45/45 and repository
 lint reports zero violations across 713 source and 699 test files. Commit
-`85d03e5ee` contains the six source/test/probe files. The probe project file and
+`4fc9d91b3` contains the six source/test/probe files. The probe project file and
 local xcconfig remain excluded.
 
 This closes only target-scoped coexistence for an already explicit semantic
@@ -3093,7 +3093,7 @@ handoff. The terminal oracle does not flag it.
 
 The probe build-for-testing succeeds, all 45 tests pass, and repository lint
 reports zero violations across 713 source and 699 test files. Commit
-`b5f74467d` contains only the probe source refactor. This proves that the approved
+`93cbb3387` contains only the probe source refactor. This proves that the approved
 once-per-container semantics are implementable with a builder-owning boundary;
 it does not approve a public wrapper/modifier signature or make transparent
 automatic navigation semantic.
@@ -3132,7 +3132,7 @@ container boundary is installed only in logical scene A. The oracle keeps
 call-site source separate from mapper-observed ownership and requires B's final
 marker to use a non-launch automatic view whose first snapshot occurred after the
 exact open-B command. A stale automatic view from A therefore cannot produce a
-false pass. Commit `265657c33` contains only this probe/oracle slice.
+false pass. Commit `3cdb4b915` contains only this probe/oracle slice.
 
 Two explicitly uninstalled simulator runs were inconclusive because the simulator
 system compositor aborted before the terminal marker and oracle result. They are
@@ -3190,7 +3190,7 @@ SwiftUI discovery enabled and makes only scene A's `sheet` screen explicit. Its
 required sequence is automatic Home H1 -> explicit Sheet S1 -> fresh automatic
 Home H2. The oracle forbids an automatic view during S1's actual mapper lifetime,
 requires sheet action/Resource work on S1, and requires returned-Home work on an
-automatic owner created after dismissal and distinct from H1. Commit `a86c41e96`
+automatic owner created after dismissal and distinct from H1. Commit `2a15478df`
 contains the scenario, dedicated presentation command, view-lifetime interval,
 and owner-relation checks.
 
@@ -3201,7 +3201,7 @@ probe driver derived marker source only from the stack path. It therefore labele
 `manual-sheet-active` as Home even though the mapper correctly attached the
 action and Resource to explicit Sheet S1
 `8164da1d-6b46-422f-8a13-8e6fd9a0d1bb`. This was invalid experiment metadata,
-not an SDK attribution failure. Commit `336bdd504` makes driver markers use the
+not an SDK attribution failure. Commit `dd1b1cf34` makes driver markers use the
 complete current scene destination and labels the interval start as Sheet. The
 project then built for testing and all 56 probe tests passed.
 
@@ -3258,7 +3258,7 @@ interval bounded by the driver steps, active Compose work on M1, exact H1 and M1
 stops, and immediate plus settled returned-Home work on a fresh H2. It forbids an
 automatic view from becoming current while manual authority is active.
 
-Commit `dc863758f` adds the scenario, keyed manual steps, exact scene/destination
+Commit `56969d8a5` adds the scenario, keyed manual steps, exact scene/destination
 driving, a catalog-owned observable-driver set, and positive/adversarial oracle
 fixtures. Those fixtures reject a retained H1, an automatic view before the first
 M1 snapshot, wrong M1 ownership, H1 reused as H2, and disagreement between
@@ -3336,7 +3336,7 @@ plus its matching hierarchy and screenshot.
 
 ### 2026-09-14 — EXP-121: first scene-targeted manual-stack run
 
-Commits `ddfc38008` and the probe switch later checkpointed as `0394ad6cc`
+Commits `29c8cec2c` and the probe switch later checkpointed as `a40e7903c`
 replace only the experimental call site with an internal exact-scene capability.
 `Monitor` forwards that capability to the bound `RUMViewsHandler`; existing
 source-less public start/stop methods remain on their process-inferred path. The
@@ -3374,7 +3374,7 @@ for logs, hierarchy, screenshot, and thumbnail.
 
 ### 2026-09-14 — EXP-122: scene-targeted manual-view acceptance
 
-Commit `94075aa47` retains the destination that was current when the first
+Commit `b1a0fb6b8` retains the destination that was current when the first
 targeted manual view takes authority. While that manual suffix remains current,
 the platform disappearance of that immediate retained destination is ignored,
 and generic SwiftUI hosting/navigation-stack fallback names are not staged as
@@ -3442,7 +3442,7 @@ Artifacts use the prefix
 
 ### 2026-09-14 — EXP-124: correct ownership with an invalid aggregate interval
 
-Commit `f277763d7` generalized the weak SwiftUI authority registry so an attached
+Commit `f452e9e3f` generalized the weak SwiftUI authority registry so an attached
 state may suppress automatic discovery without publishing a second RUM view.
 The probe applied that suppression-only boundary to the Sheet subtree while its
 centralized router continued to start and stop the semantic Sheet through the
@@ -3468,7 +3468,7 @@ Artifacts use the prefix
 
 ### 2026-09-14 — EXP-125: semantic Sheet authority acceptance
 
-Commit `2b9759446` separates the two relevant intervals. The exact
+Commit `fad83f58f` separates the two relevant intervals. The exact
 `manual-sheet-active` interval represents semantic router authority. A separate
 `swiftui-presentation-subtree` interval follows the mounted platform subtree
 through native dismissal and rejects only an automatic RUM view named
@@ -3512,7 +3512,7 @@ Runtime artifacts use the prefix
 
 ### 2026-09-14 — EXP-126: semantic full-screen-cover authority acceptance
 
-Commit `56e7bf2fe` generalizes the probe's presentation model and adds an
+Commit `c70920c94` generalizes the probe's presentation model and adds an
 independent strict scenario for SwiftUI `fullScreenCover`. It does not infer
 support from the Sheet result: the scenario has its own presentation command,
 semantic view name/key, router-authority interval, native-subtree interval,
@@ -3579,7 +3579,7 @@ the 69-test summary is
 
 ### 2026-09-14 — EXP-127: sibling-container authority acceptance
 
-Commit `765640fab` adds
+Commit `45ec5656a` adds
 `swiftui.coexistence.sibling-container-authority`. A `TabView` was deliberately
 rejected as the discriminator because selection, preload, and deactivation would
 make it ambiguous whether both containers were truly mounted and independently

@@ -302,12 +302,12 @@ customer workflow, and required tests live only in
 ### Checkpoint
 
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
-checkpoint is `f277763d7` (`Preserve semantic presentation authority through
-dismissal`), following the exact-scene manual stack in `ddfc38008` and
-`94075aa47`. The latest probe checkpoint is `765640fab` (`Exercise sibling
-container authority`), following full-screen-cover coverage in `56e7bf2fe`. The
+checkpoint is `f452e9e3f` (`Preserve semantic presentation authority through
+dismissal`), following the exact-scene manual stack in `29c8cec2c` and
+`b1a0fb6b8`. The latest probe checkpoint is `45ec5656a` (`Exercise sibling
+container authority`), following full-screen-cover coverage in `c70920c94`. The
 approved product decision checkpoint is
-`d0bcebaf2`; the public-navigation proposal starts at `685054dbe`.
+`b61e783a6`; the public-navigation proposal starts at `b5494adb0`.
 All are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
