@@ -331,6 +331,159 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesNestedAndDuplicateKeyedManualViewsFromExactSignals() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-nested-keyed-manual-view",
+            scenarioID: "driver-nested-keyed-manual-view",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var requestedSteps: [(ProbeStepKind, String?)] = []
+        var composeStartCount = 0
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            requestedSteps.append((step.kind, step.value))
+            switch (step.kind, step.value) {
+            case (.startKeyedManualView, "compose"):
+                composeStartCount += 1
+                if composeStartCount == 1 {
+                    recorder.record(
+                        self.viewSignal(
+                            id: "compose-1",
+                            screen: "compose",
+                            active: true,
+                            documentVersion: 1
+                        )
+                    )
+                    recorder.record(
+                        ProbeSignal(
+                            kind: .destinationMaterialized,
+                            semanticContext: self.semanticContext(screen: "compose")
+                        )
+                    )
+                } else {
+                    recorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: self.semanticContext(screen: "compose"),
+                            name: "duplicate-keyed-manual-start-compose",
+                            result: .pass
+                        )
+                    )
+                }
+            case (.startKeyedManualView, "preview"):
+                recorder.record(
+                    self.viewSignal(
+                        id: "preview-1",
+                        screen: "preview",
+                        active: true,
+                        documentVersion: 1
+                    )
+                )
+                recorder.record(
+                    ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: self.semanticContext(screen: "preview")
+                    )
+                )
+            case (.stopKeyedManualView, "preview"):
+                recorder.record(
+                    self.viewSignal(
+                        id: "compose-2",
+                        screen: "compose",
+                        active: true,
+                        documentVersion: 1
+                    )
+                )
+                recorder.record(
+                    ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: self.semanticContext(screen: "compose")
+                    )
+                )
+            case (.stopKeyedManualView, "compose"):
+                recorder.record(
+                    ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: self.semanticContext(screen: "home")
+                    )
+                )
+            default:
+                return .rejected(reason: "unexpected keyed manual step")
+            }
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-nested-keyed-manual-view",
+                trackingMode: .automatic,
+                layout: .stack,
+                steps: [
+                    ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "rum-view:compose#1"
+                    ),
+                    ProbeStep(.startKeyedManualView, scene: "scene-A", value: "preview"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "rum-view:preview#1"
+                    ),
+                    ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "preview"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "rum-view:compose#2"
+                    ),
+                    ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+                    ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "compose")
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(composeStartCount, 2)
+        XCTAssertEqual(
+            requestedSteps.map(\.0),
+            [
+                .startKeyedManualView,
+                .startKeyedManualView,
+                .stopKeyedManualView,
+                .startKeyedManualView,
+                .stopKeyedManualView
+            ]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            8
+        )
+    }
+
     func testDrivesSiblingAuthorityToLatestUnderlyingDestination() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-sibling-authority",

@@ -19,6 +19,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-scene-targeted-sheet",
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.coexistence.automatic-keyed-manual-view",
+        "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.sibling-container-authority",
         "swiftui.split.automatic-baseline",
         "swiftui.split.same-type-selection",
@@ -43,6 +44,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticSceneTargetedSheet,
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUICoexistenceAutomaticKeyedManualView,
+        swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSiblingContainerAuthority,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
@@ -883,6 +885,346 @@ enum ProbeScenarioCatalog {
             ownerViewRelation: .same
         )
     ]
+
+    /// Exercises a real keyed manual destination stack and a duplicate active
+    /// `(scene, key)` start. Returning from Preview must create a fresh Compose
+    /// occurrence, while the duplicate Compose start must not create another
+    /// view or disturb ownership before the final return to automatic Home.
+    private static let swiftUICoexistenceNestedKeyedManualView = ProbeScenario(
+        identifier: "swiftui.coexistence.nested-keyed-manual-view",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "automatic-home-before-nested-keyed-manual"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:compose#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "nested-keyed-manual-compose-first-active"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-A", value: "preview"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:preview#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "nested-keyed-manual-preview-active"
+            ),
+            ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "preview"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:compose#2"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "nested-keyed-manual-compose-resumed"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:keyed-manual-stopped-settled"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: "keyed-manual-authority"
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                interval: "duplicate-keyed-manual-start-compose"
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "keyed-manual-preview-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "keyed-manual-preview-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "keyed-manual-preview-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "keyed-manual-preview-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .action,
+                name: "keyed-manual-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "keyed-manual-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .action,
+                name: "automatic-home-before-nested-keyed-manual",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "automatic-home-before-nested-keyed-manual",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                rumViewOrigin: .automatic,
+                ownerViewReferenceAction: "automatic-home-before-nested-keyed-manual",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                name: "nested-keyed-manual-compose-first-active",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                name: "nested-keyed-manual-compose-first-active",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "preview",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "preview",
+                occurrence: 1,
+                name: "nested-keyed-manual-preview-active",
+                sourceScene: "scene-A",
+                sourceScreen: "preview",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "preview",
+                occurrence: 1,
+                name: "nested-keyed-manual-preview-active",
+                sourceScene: "scene-A",
+                sourceScreen: "preview",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "preview",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "keyed-manual-preview-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "preview",
+                ownerViewReferenceAction: "nested-keyed-manual-compose-first-active",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "keyed-manual-preview-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "preview",
+                ownerViewReferenceAction: "nested-keyed-manual-compose-first-active",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "nested-keyed-manual-compose-resumed",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "keyed-manual-preview-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "nested-keyed-manual-compose-resumed",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "keyed-manual-preview-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "duplicate-keyed-manual-start-compose",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "nested-keyed-manual-compose-resumed",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                name: "duplicate-keyed-manual-start-compose",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "nested-keyed-manual-compose-resumed",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                name: "keyed-manual-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "automatic-home-before-nested-keyed-manual",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "keyed-manual-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "automatic-home-before-nested-keyed-manual",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                name: "keyed-manual-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "keyed-manual-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "compose",
+                ownerViewReferenceAction: "keyed-manual-stopped-immediate",
+                ownerViewRelation: .same
+            )
+        ]
+    )
 
     /// Exercises UI-attached automatic-authority containment with two sibling
     /// NavigationStacks under one SwiftUI host. The left stack stays mounted as

@@ -206,6 +206,29 @@ private enum ProbeSwiftUIPresentation: String {
     var dismissedSettledPhase: String { "\(rawValue)-dismissed-settled" }
 }
 
+private enum ProbeKeyedManualDestination: String, Hashable {
+    case compose
+    case preview
+
+    var manualViewKey: String {
+        switch self {
+        case .compose:
+            return "probe-keyed-manual-view"
+        case .preview:
+            return "probe-keyed-manual-preview"
+        }
+    }
+
+    var rumViewName: String {
+        switch self {
+        case .compose:
+            return "ProbeKeyedManualView"
+        case .preview:
+            return "ProbeKeyedManualPreviewView"
+        }
+    }
+}
+
 private struct ProbeRUMSemanticPresentationBoundary<Content: View>: View {
     let isEnabled: Bool
     @ViewBuilder let content: Content
@@ -419,7 +442,7 @@ struct ProbeWindowRoot: View {
     @State private var didShowDetail = false
     @State private var didOpenPeer = false
     @State private var swiftUIPresentation: ProbeSwiftUIPresentation?
-    @State private var isKeyedManualViewActive = false
+    @State private var keyedManualViewStack: [ProbeKeyedManualDestination] = []
     @State private var isSiblingAuthorityActive = false
     @State private var siblingControllerAncestries: [String: ProbeControllerAncestry] = [:]
     @State private var didReportSiblingControllerTopology = false
@@ -720,11 +743,13 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationContent: some View {
-        if isKeyedManualViewActive {
+        if let destination = keyedManualViewStack.last {
             ProbeKeyedManualView(
                 window: window,
-                sceneSessionID: sceneSessionID
+                sceneSessionID: sceneSessionID,
+                destination: destination
             )
+            .id(destination)
         } else if
             ProbeRuntime.usesUIKitSplitLayout
                 || ProbeRuntime.usesUIKitSplitSubclass
@@ -983,8 +1008,8 @@ struct ProbeWindowRoot: View {
         if isSiblingAuthorityActive {
             return "sibling-authority"
         }
-        if isKeyedManualViewActive {
-            return "compose"
+        if let keyedManualDestination = keyedManualViewStack.last {
+            return keyedManualDestination.rawValue
         }
         if let swiftUIPresentation {
             return swiftUIPresentation.rawValue
@@ -1000,8 +1025,8 @@ struct ProbeWindowRoot: View {
         if isSiblingAuthorityActive {
             return navigationRoute + ["sibling-authority"]
         }
-        if isKeyedManualViewActive {
-            return navigationRoute + ["compose"]
+        if let keyedManualDestination = keyedManualViewStack.last {
+            return navigationRoute + [keyedManualDestination.rawValue]
         }
         return swiftUIPresentation.map { navigationRoute + [$0.rawValue] } ?? navigationRoute
     }
@@ -1569,7 +1594,9 @@ struct ProbeWindowRoot: View {
             case .startKeyedManualView:
                 switch step.value {
                 case "compose":
-                    setKeyedManualViewActive(true)
+                    startKeyedManualView(.compose)
+                case "preview":
+                    startKeyedManualView(.preview)
                 case "sibling-authority"
                     where ProbeRuntime.usesSiblingContainerAuthorityStress:
                     setSiblingAuthorityActive(true)
@@ -1581,7 +1608,9 @@ struct ProbeWindowRoot: View {
             case .stopKeyedManualView:
                 switch step.value {
                 case "compose":
-                    setKeyedManualViewActive(false)
+                    stopKeyedManualView(.compose)
+                case "preview":
+                    stopKeyedManualView(.preview)
                 case "sibling-authority"
                     where ProbeRuntime.usesSiblingContainerAuthorityStress:
                     setSiblingAuthorityActive(false)
@@ -1957,123 +1986,237 @@ struct ProbeWindowRoot: View {
         }
     }
 
-    private func setKeyedManualViewActive(_ isActive: Bool) {
-        guard isKeyedManualViewActive != isActive else {
+    private func startKeyedManualView(
+        _ destination: ProbeKeyedManualDestination
+    ) {
+        #if DEBUG
+        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+            recordSceneTargetedManualViewFailure(operation: "\(destination.rawValue)-start")
             return
         }
+        #endif
 
-        if isActive {
-            #if DEBUG
-            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-                recordSceneTargetedManualViewFailure(operation: "start")
-                return
-            }
-            #endif
+        let isDuplicate = keyedManualViewStack.contains(destination)
+        let duplicateInterval = "duplicate-keyed-manual-start-\(destination.rawValue)"
+        if isDuplicate {
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
                     kind: .intervalBegan,
                     semanticContext: ProbeSemanticContext(
                         logicalSceneID: window.label,
                         nativeSceneID: sceneSessionID,
-                        screen: "home"
+                        screen: currentSceneScreen
                     ),
-                    interval: "keyed-manual-authority"
+                    interval: duplicateInterval
                 )
             )
-            isKeyedManualViewActive = true
+        } else {
+            if keyedManualViewStack.isEmpty {
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .intervalBegan,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: sceneSessionID,
+                            screen: currentSceneScreen
+                        ),
+                        interval: "keyed-manual-authority"
+                    )
+                )
+            }
+            keyedManualViewStack.append(destination)
             updateSceneRoute()
-            #if DEBUG
-            monitor.startView(
-                key: "probe-keyed-manual-view",
-                name: "ProbeKeyedManualView",
-                attributes: [
-                    ProbeRuntime.Attribute.runID: window.runID,
-                    ProbeRuntime.Attribute.host: "native-swiftui-scene-targeted-manual",
-                    ProbeRuntime.Attribute.sourceScene: window.label,
-                    ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-                    ProbeRuntime.Attribute.screen: "compose",
-                    ProbeRuntime.Attribute.viewScene: window.label,
-                    ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
-                    ProbeRuntime.Attribute.viewScreen: "compose"
-                ],
-                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+        }
+
+        #if DEBUG
+        monitor.startView(
+            key: destination.manualViewKey,
+            name: destination.rumViewName,
+            attributes: keyedManualViewAttributes(for: destination),
+            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+        )
+        #else
+        RUMMonitor.shared().startView(
+            key: destination.manualViewKey,
+            name: destination.rumViewName,
+            attributes: keyedManualViewAttributes(for: destination)
+        )
+        #endif
+        ProbeRuntime.record(
+            "keyed manual view started source=\(window.label) "
+                + "native=\(sceneSessionID) screen=\(destination.rawValue) "
+                + "duplicate=\(isDuplicate)"
+        )
+
+        guard isDuplicate else {
+            return
+        }
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentSceneScreen,
+            phase: duplicateInterval
+        )
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard
+                !Task.isCancelled,
+                keyedManualViewStack.contains(destination)
+            else {
+                return
+            }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentSceneScreen
+                    ),
+                    interval: duplicateInterval
+                )
             )
-            #else
-            RUMMonitor.shared().startView(
-                key: "probe-keyed-manual-view",
-                name: "ProbeKeyedManualView",
-                attributes: [
-                    ProbeRuntime.Attribute.runID: window.runID,
-                    ProbeRuntime.Attribute.host: "native-swiftui-keyed-manual",
-                    ProbeRuntime.Attribute.sourceScene: window.label,
-                    ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-                    ProbeRuntime.Attribute.screen: "compose",
-                    ProbeRuntime.Attribute.viewScene: window.label,
-                    ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
-                    ProbeRuntime.Attribute.viewScreen: "compose"
-                ]
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentSceneScreen
+                    ),
+                    name: duplicateInterval,
+                    result: .pass,
+                    reason: "duplicate start reached the SDK without changing the probe destination"
+                )
             )
-            #endif
-            ProbeRuntime.record(
-                "keyed manual view started source=\(window.label) "
-                    + "native=\(sceneSessionID) screen=compose"
+        }
+    }
+
+    private func stopKeyedManualView(
+        _ destination: ProbeKeyedManualDestination
+    ) {
+        guard keyedManualViewStack.last == destination else {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentSceneScreen
+                    ),
+                    name: "keyed-manual-stop-\(destination.rawValue)",
+                    result: .fail,
+                    reason: "attempted to stop a keyed manual destination that was not current"
+                )
             )
             return
         }
 
+        #if DEBUG
+        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+            recordSceneTargetedManualViewFailure(operation: "\(destination.rawValue)-stop")
+            return
+        }
+        #endif
+
+        if keyedManualViewStack.count == 1 {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: destination.rawValue
+                    ),
+                    interval: "keyed-manual-authority"
+                )
+            )
+        }
         ProbeRuntime.eventRecorder.record(
             ProbeSignal(
-                kind: .intervalEnded,
+                kind: .intervalBegan,
                 semanticContext: ProbeSemanticContext(
                     logicalSceneID: window.label,
                     nativeSceneID: sceneSessionID,
-                    screen: "compose"
+                    screen: destination.rawValue
                 ),
-                interval: "keyed-manual-authority"
+                interval: "keyed-manual-stop-\(destination.rawValue)"
             )
         )
         #if DEBUG
-        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "stop")
-            return
-        }
         monitor.stopView(
-            key: "probe-keyed-manual-view",
+            key: destination.manualViewKey,
             attributes: [
                 ProbeRuntime.Attribute.runID: window.runID,
                 ProbeRuntime.Attribute.sourceScene: window.label,
                 ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-                ProbeRuntime.Attribute.screen: "compose"
+                ProbeRuntime.Attribute.screen: destination.rawValue
             ],
             sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
         )
         #else
-        RUMMonitor.shared().stopView(key: "probe-keyed-manual-view")
+        RUMMonitor.shared().stopView(key: destination.manualViewKey)
         #endif
-        isKeyedManualViewActive = false
+        keyedManualViewStack.removeLast()
         updateSceneRoute()
+        let revealedDestination = keyedManualViewStack.last
+        let revealedScreen = currentSceneScreen
+        let stoppedPhase = destination == .preview
+            ? "keyed-manual-preview-stopped"
+            : "keyed-manual-stopped"
         ProbeRuntime.record(
             "keyed manual view stopped source=\(window.label) "
-                + "native=\(sceneSessionID) screen=compose"
+                + "native=\(sceneSessionID) screen=\(destination.rawValue) "
+                + "revealed=\(revealedScreen)"
         )
         ProbeRuntime.emitLifecycleMarker(
             window: window,
             sceneSessionID: sceneSessionID,
-            screen: "home",
-            phase: "keyed-manual-stopped-immediate"
+            screen: revealedScreen,
+            phase: "\(stoppedPhase)-immediate"
         )
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled, !isKeyedManualViewActive else {
+            guard
+                !Task.isCancelled,
+                keyedManualViewStack.last == revealedDestination,
+                currentSceneScreen == revealedScreen
+            else {
                 return
             }
             ProbeRuntime.emitLifecycleMarker(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                screen: "home",
-                phase: "keyed-manual-stopped-settled"
+                screen: revealedScreen,
+                phase: "\(stoppedPhase)-settled"
+            )
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: revealedScreen
+                    ),
+                    interval: "keyed-manual-stop-\(destination.rawValue)"
+                )
             )
         }
+    }
+
+    private func keyedManualViewAttributes(
+        for destination: ProbeKeyedManualDestination
+    ) -> [String: Encodable] {
+        [
+            ProbeRuntime.Attribute.runID: window.runID,
+            ProbeRuntime.Attribute.host: "native-swiftui-scene-targeted-manual",
+            ProbeRuntime.Attribute.sourceScene: window.label,
+            ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.screen: destination.rawValue,
+            ProbeRuntime.Attribute.viewScene: window.label,
+            ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.viewScreen: destination.rawValue
+        ]
     }
 
     private func recordSceneTargetedManualViewFailure(operation: String) {
@@ -2141,6 +2284,7 @@ private struct ProbeSiblingAuthorityView: View {
 private struct ProbeKeyedManualView: View {
     let window: ProbeWindow
     let sceneSessionID: String
+    let destination: ProbeKeyedManualDestination
 
     @State private var didAppear = false
 
@@ -2149,14 +2293,18 @@ private struct ProbeKeyedManualView: View {
             ProbeHeading(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                screen: "compose"
+                screen: destination.rawValue
             )
-            Text("This destination is tracked through the keyed manual RUM API.")
+            Text(
+                destination == .compose
+                    ? "This destination is tracked through the keyed manual RUM API."
+                    : "This nested preview temporarily replaces the Compose destination."
+            )
                 .foregroundStyle(.secondary)
             Spacer()
         }
         .padding(24)
-        .accessibilityIdentifier("probe.native.\(window.label).compose")
+        .accessibilityIdentifier("probe.native.\(window.label).\(destination.rawValue)")
         .onAppear {
             guard !didAppear else {
                 return
@@ -2165,7 +2313,7 @@ private struct ProbeKeyedManualView: View {
             ProbeRuntime.recordDestination(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                screen: "compose",
+                screen: destination.rawValue,
                 isCommitted: true
             )
         }

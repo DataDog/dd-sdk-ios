@@ -957,6 +957,80 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed different"))
     }
 
+    func testNestedKeyedManualAuthorityContractPasses() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.nested-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: nestedKeyedManualSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testNestedKeyedManualAuthorityRejectsReusedComposeOccurrence() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.nested-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: nestedKeyedManualSignals(mutation: .reuseFirstComposeOnReveal)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(result.issues[0].expectation?.kind, .viewStarted)
+        XCTAssertEqual(result.issues[0].expectation?.screen, "compose")
+        XCTAssertEqual(result.issues[0].expectation?.occurrence, 2)
+    }
+
+    func testNestedKeyedManualAuthorityRejectsViewRestartDuringDuplicateStart() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.nested-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: nestedKeyedManualSignals(mutation: .startViewDuringDuplicate)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
+    }
+
+    func testNestedKeyedManualAuthorityRejectsWrongResumedComposeOwner() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.nested-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: nestedKeyedManualSignals(mutation: .resumedWorkUsesFirstCompose)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+    }
+
+    func testNestedKeyedManualAuthorityRejectsReusedHomeOccurrence() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.nested-keyed-manual-view"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: nestedKeyedManualSignals(mutation: .reuseInitialHomeOnReturn)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
+    }
+
     func testSiblingContainerAuthorityContractPasses() throws {
         let scenario = try scenario(
             named: "swiftui.coexistence.sibling-container-authority"
@@ -1179,6 +1253,13 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case manualWorkUsesAutomaticHome
         case reuseInitialHomeOnReturn
         case changeOwnerBeforeSettledWork
+    }
+
+    private enum NestedKeyedManualMutation {
+        case reuseFirstComposeOnReveal
+        case startViewDuringDuplicate
+        case resumedWorkUsesFirstCompose
+        case reuseInitialHomeOnReturn
     }
 
     private enum SiblingContainerAuthorityMutation {
@@ -1467,6 +1548,195 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 sourceScreen: "home"
             )
         )
+        return recorder.snapshot()
+    }
+
+    private func nestedKeyedManualSignals(
+        mutation: NestedKeyedManualMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "nested-keyed-manual-contract",
+            scenarioID: "swiftui.coexistence.nested-keyed-manual-view",
+            sink: { _ in },
+            clock: { 42 }
+        )
+
+        recordAutomaticView(id: "home-1", recorder: recorder)
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "automatic-home-before-nested-keyed-manual",
+                    viewID: "home-1",
+                    sourceScreen: "home"
+                )
+            )
+        }
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .startKeyedManualView,
+                name: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(kind: .intervalBegan, interval: "keyed-manual-authority")
+        )
+        recorder.record(viewSignal(id: "compose-1", screen: "compose", active: true))
+        recordAutomaticView(id: "home-1", active: false, recorder: recorder)
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "nested-keyed-manual-compose-first-active",
+                    viewID: "compose-1",
+                    sourceScreen: "compose"
+                )
+            )
+        }
+
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .startKeyedManualView,
+                name: "preview"
+            )
+        )
+        recorder.record(viewSignal(id: "compose-1", screen: "compose", active: false))
+        recorder.record(viewSignal(id: "preview-1", screen: "preview", active: true))
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "nested-keyed-manual-preview-active",
+                    viewID: "preview-1",
+                    sourceScreen: "preview"
+                )
+            )
+        }
+
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .stopKeyedManualView,
+                name: "preview"
+            )
+        )
+        recorder.record(viewSignal(id: "preview-1", screen: "preview", active: false))
+        let resumedComposeID = mutation == .reuseFirstComposeOnReveal
+            ? "compose-1"
+            : "compose-2"
+        if mutation != .reuseFirstComposeOnReveal {
+            recorder.record(
+                viewSignal(id: resumedComposeID, screen: "compose", active: true)
+            )
+        }
+        for name in [
+            "keyed-manual-preview-stopped-immediate",
+            "keyed-manual-preview-stopped-settled"
+        ] {
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                recorder.record(
+                    keyedManualWorkSignal(
+                        kind: kind,
+                        name: name,
+                        viewID: resumedComposeID,
+                        sourceScreen: "compose"
+                    )
+                )
+            }
+        }
+        let resumedWorkOwner = mutation == .resumedWorkUsesFirstCompose
+            ? "compose-1"
+            : resumedComposeID
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "nested-keyed-manual-compose-resumed",
+                    viewID: resumedWorkOwner,
+                    sourceScreen: "compose"
+                )
+            )
+        }
+
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .startKeyedManualView,
+                name: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "duplicate-keyed-manual-start-compose"
+            )
+        )
+        if mutation == .startViewDuringDuplicate {
+            recorder.record(viewSignal(id: "compose-3", screen: "compose", active: true))
+        }
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "duplicate-keyed-manual-start-compose",
+                    viewID: resumedComposeID,
+                    sourceScreen: "compose"
+                )
+            )
+        }
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "duplicate-keyed-manual-start-compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                name: "duplicate-keyed-manual-start-compose",
+                result: .pass,
+                reason: "fixture duplicate start completed"
+            )
+        )
+
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .stopKeyedManualView,
+                name: "compose"
+            )
+        )
+        recorder.record(
+            ProbeSignal(kind: .intervalEnded, interval: "keyed-manual-authority")
+        )
+        if mutation != .reuseFirstComposeOnReveal {
+            recorder.record(
+                viewSignal(id: resumedComposeID, screen: "compose", active: false)
+            )
+        }
+        let returnedHomeID = mutation == .reuseInitialHomeOnReturn
+            ? "home-1"
+            : "home-2"
+        if mutation != .reuseInitialHomeOnReturn {
+            recordAutomaticView(id: returnedHomeID, recorder: recorder)
+        }
+        for name in [
+            "keyed-manual-stopped-immediate",
+            "keyed-manual-stopped-settled"
+        ] {
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                recorder.record(
+                    keyedManualWorkSignal(
+                        kind: kind,
+                        name: name,
+                        viewID: returnedHomeID,
+                        sourceScreen: "home"
+                    )
+                )
+            }
+        }
         return recorder.snapshot()
     }
 

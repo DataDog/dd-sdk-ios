@@ -61,6 +61,7 @@ internal final class ProbeScenarioDriver {
         case path(scene: String, value: String)
         case splitSelection(scene: String, value: String)
         case presentation(scene: String, value: String)
+        case keyedManualStart(scene: String, value: String)
         case activation(scene: String, value: ProbeSceneActivationState)
         case transitionBegan(scene: String)
         case transitionProgress(scene: String, value: Double)
@@ -91,6 +92,21 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == expectedPath
+            case .keyedManualStart(let scene, let value):
+                if
+                    signal.kind == .assertion,
+                    signal.semanticContext?.logicalSceneID == scene,
+                    signal.name == "duplicate-keyed-manual-start-\(value)",
+                    signal.result == .pass
+                {
+                    return true
+                }
+                return Self.matches(
+                    encoded: "destination:\(value)",
+                    scene: scene,
+                    signal: signal,
+                    recordedSignals: recordedSignals
+                )
             case .activation(let scene, let value):
                 return signal.kind == .sceneLifecycle
                     && signal.semanticContext?.logicalSceneID == scene
@@ -453,7 +469,10 @@ internal final class ProbeScenarioDriver {
                 return .failed("signal requirement is missing")
             }
 
-            if signal.hasPrefix("assertion:") {
+            if
+                signal.hasPrefix("assertion:")
+                    || signal.hasPrefix("rum-view:")
+            {
                 let recordedSignals = recorder.snapshot()
                 let requirement = SignalRequirement.encoded(
                     scene: step.scene,
@@ -552,11 +571,40 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
-        case .startKeyedManualView, .stopKeyedManualView:
+        case .startKeyedManualView:
             guard
                 let scene = step.scene,
                 let value = step.value,
-                value == "compose" || value == "sibling-authority"
+                value == "compose"
+                    || value == "preview"
+                    || value == "sibling-authority"
+            else {
+                return .failed("scene or keyed manual view is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .keyedManualStart(scene: scene, value: value),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for keyed manual start \(value) in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .stopKeyedManualView:
+            guard
+                let scene = step.scene,
+                let value = step.value,
+                value == "compose"
+                    || value == "preview"
+                    || value == "sibling-authority"
             else {
                 return .failed("scene or keyed manual view is invalid")
             }
@@ -567,10 +615,13 @@ internal final class ProbeScenarioDriver {
                 return .failed(reason)
             }
             let destination: String
-            if step.kind == .startKeyedManualView {
-                destination = value
-            } else {
-                destination = value == "compose" ? "home" : "detail-1"
+            switch value {
+            case "preview":
+                destination = "compose"
+            case "compose":
+                destination = "home"
+            default:
+                destination = "detail-1"
             }
             guard let signal = await wait(
                 for: .encoded(

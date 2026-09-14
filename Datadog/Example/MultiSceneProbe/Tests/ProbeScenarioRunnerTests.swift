@@ -21,6 +21,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-scene-targeted-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.coexistence.automatic-keyed-manual-view",
+                "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.sibling-container-authority",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
@@ -232,6 +233,74 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 [.action, .resource]
             )
         }
+    }
+
+    func testNestedKeyedManualViewRequiresFreshComposeAndHomeOccurrences() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.nested-keyed-manual-view"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .startKeyedManualView && $0.value == "compose"
+            }.count,
+            2
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .startKeyedManualView && $0.value == "preview"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .stopKeyedManualView && $0.value == "preview"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .waitForSignal && $0.signal == "rum-view:compose#2"
+            }
+        )
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline.filter {
+                $0.kind == .viewStarted
+                    && $0.scene == "scene-A"
+                    && $0.screen == "compose"
+            }.compactMap(\.occurrence),
+            [1, 2]
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == nil
+                    && $0.interval == "duplicate-keyed-manual-start-compose"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "duplicate-keyed-manual-start-compose"
+                    && $0.scene == "scene-A"
+                    && $0.screen == "compose"
+                    && $0.occurrence == 2
+                    && $0.ownerViewReferenceAction
+                        == "nested-keyed-manual-compose-resumed"
+                    && $0.ownerViewRelation == .same
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "keyed-manual-stopped-immediate"
+                    && $0.ownerViewStartedAfterStep == .stopKeyedManualView
+                    && $0.ownerViewStartedAfterStepValue == "compose"
+                    && $0.ownerViewReferenceAction
+                        == "automatic-home-before-nested-keyed-manual"
+                    && $0.ownerViewRelation == .different
+            }
+        )
     }
 
     func testSiblingContainerAuthorityStagesLatestAutomaticDestination() throws {
