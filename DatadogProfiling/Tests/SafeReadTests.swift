@@ -404,8 +404,8 @@ final class SafeReadTests: XCTestCase {
         // Listener thread waits up to 500ms for an exception message.
         // Timeout = no exception was raised; receive = safe-read regressed.
         let listenerDone = DispatchSemaphore(value: 0)
-        let receivedLock = NSLock()
-        var didReceiveMessage = false
+        let messageReceived = DispatchSemaphore(value: 0)
+        let listenerExceptionPort = exceptionPort
 
         DispatchQueue.global().async {
             let bufferSize: mach_msg_size_t = 1_024
@@ -417,14 +417,14 @@ final class SafeReadTests: XCTestCase {
                     MACH_RCV_MSG | MACH_RCV_TIMEOUT,
                     0,
                     bufferSize,
-                    exceptionPort,
+                    listenerExceptionPort,
                     500,
                     0
                 )
             }
-            receivedLock.lock()
-            didReceiveMessage = (result == MACH_MSG_SUCCESS)
-            receivedLock.unlock()
+            if result == MACH_MSG_SUCCESS {
+                messageReceived.signal()
+            }
             listenerDone.signal()
         }
 
@@ -440,9 +440,7 @@ final class SafeReadTests: XCTestCase {
         let waitResult = listenerDone.wait(timeout: .now() + 1.5)
         XCTAssertEqual(waitResult, .success, "Listener should complete (timed out, as expected)")
 
-        receivedLock.lock()
-        let gotMessage = didReceiveMessage
-        receivedLock.unlock()
+        let gotMessage = messageReceived.wait(timeout: .now()) == .success
 
         let regressionMessage = "Mach exception handler must NOT receive a message - this is the Crashlytics fix"
         XCTAssertFalse(gotMessage, regressionMessage)

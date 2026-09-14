@@ -1703,7 +1703,7 @@ public struct FlagsEvaluationContext: Equatable, Codable
 public enum Profiling
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
 [?] extension Profiling
-    public struct Configuration
+    public struct Configuration: Sendable
         public var customEndpoint: URL?
         public var applicationLaunchSampleRate: SampleRate
         public var continuousSampleRate: SampleRate
@@ -1711,7 +1711,7 @@ public enum Profiling
         public init(customEndpoint: URL? = nil,applicationLaunchSampleRate: SampleRate = 5,continuousSampleRate: SampleRate = 5,featureFlags: FeatureFlags = .defaults)
 [?] extension Profiling.Configuration
     public typealias FeatureFlags = [FeatureFlag: Bool]
-    public enum FeatureFlag: String
+    public enum FeatureFlag: String, Sendable
         case cpuTimeSamples
 [?] extension Profiling.Configuration.FeatureFlags
     public static var defaults: Self

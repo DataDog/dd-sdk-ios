@@ -306,7 +306,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
 
         // Then
-        waitForExpectations(timeout: 1.0)
+        wait(for: [expectation], timeout: 1.0)
     }
 }
 
@@ -327,7 +327,7 @@ private extension ProfilingQuotaCheckerTests {
 final class ProfilingQuotaCheckerMock: ProfilingQuotaChecking {
     private(set) var receivedContexts: [DatadogContext] = []
     var quotaResult: ProfilingQuotaResult?
-    var onQuotaResultUpdate: ((ProfilingQuotaResult?) -> Void)?
+    var onQuotaResultUpdate: ProfilingQuotaResultListener?
     var receiveHandler: ((DatadogContext) -> ProfilingQuotaResult?)?
     private var currentSessionID: String?
 
