@@ -421,6 +421,16 @@ enum ProbeScenarioRunner {
             layout != .uikitSplitSubclass {
             errors.append("UI-event handoff control requires a UIKit split layout")
         }
+        if options.exercisesSwiftUIButtonStructuredTask {
+            if layout != .stack {
+                errors.append("SwiftUI Button structured Task requires the stack layout")
+            }
+            if trackingMode != .navigationOccurrence {
+                errors.append(
+                    "SwiftUI Button structured Task requires navigation-occurrence tracking"
+                )
+            }
+        }
         if options.forcesNavigationRouteIdentity {
             if trackingMode == .automatic || trackingMode == .manual {
                 errors.append("forced route identity requires navigation-path tracking")
@@ -511,7 +521,7 @@ enum ProbeScenarioRunner {
                         "scenario \(scenario.identifier) open-window uses undeclared scene \(scene)"
                     )
                 }
-            case .activateWindow, .closeWindow:
+            case .activateWindow, .closeWindow, .releaseSwiftUIButtonStructuredTask:
                 guard let scene = normalized(step.scene) else {
                     errors.append(
                         "scenario \(scenario.identifier) \(step.kind.rawValue) requires a scene"

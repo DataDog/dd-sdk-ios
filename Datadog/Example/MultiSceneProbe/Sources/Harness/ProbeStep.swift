@@ -27,11 +27,21 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case emitSceneContextMarker = "emit-scene-context-marker"
     case startTraceOnlyURLSessionRequest = "start-trace-only-url-session-request"
     case completeTraceOnlyURLSessionRequest = "complete-trace-only-url-session-request"
+    case releaseSwiftUIButtonStructuredTask = "release-swiftui-button-structured-task"
     case startOperation = "start-operation"
     case succeedOperation = "succeed-operation"
     case failOperation = "fail-operation"
     case disconnectRetainedReader = "disconnect-retained-reader"
     case waitForSignal = "wait-for-signal"
+}
+
+enum ProbeSwiftUIButtonStructuredTaskContract {
+    static let buttonTitle = "Run structured task"
+    static let automaticActionName = "SwiftUI_Button"
+    static let startedAssertion = "swiftui-button-structured-task-started"
+    static let completedAssertion = "swiftui-button-structured-task-completed"
+    static let resumedMarker = "swiftui-button-structured-task-resumed"
+    static let representativeMarker = "swiftui-button-task-completion-representative"
 }
 
 enum ProbeTraceOnlyURLSessionContract {

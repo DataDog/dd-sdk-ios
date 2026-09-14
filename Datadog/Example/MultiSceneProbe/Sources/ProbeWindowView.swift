@@ -1702,6 +1702,10 @@ struct ProbeWindowRoot: View {
                     requestName: requestName,
                     releasingScene: logicalSceneID
                 )
+            case .releaseSwiftUIButtonStructuredTask:
+                return ProbeRuntime.releaseSwiftUIButtonStructuredTask(
+                    releasingScene: logicalSceneID
+                )
             case .startOperation, .succeedOperation, .failOperation:
                 guard
                     let instance = step.value,
@@ -4239,6 +4243,7 @@ private struct ProbeHomeView: View {
 
     @State private var didAppear = false
     @State private var didRunTask = false
+    @State private var didStartStructuredTask = false
     @State private var stateWitness = UUID()
     @State private var appearanceCount = 0
 
@@ -4269,6 +4274,43 @@ private struct ProbeHomeView: View {
             }
             .buttonStyle(.bordered)
             .accessibilityIdentifier("probe.native.\(window.label).emit-marker")
+
+            if ProbeRuntime.exercisesSwiftUIButtonStructuredTask {
+                Button(ProbeSwiftUIButtonStructuredTaskContract.buttonTitle) {
+                    guard !didStartStructuredTask else {
+                        return
+                    }
+                    didStartStructuredTask = true
+                    recordStructuredTaskExecutionContext(phase: "button-callback")
+                    Task { @MainActor in
+                        recordStructuredTaskExecutionContext(phase: "task-start")
+                        let wasReleased = await ProbeRuntime
+                            .waitForSwiftUIButtonStructuredTaskRelease(
+                                window: window,
+                                sceneSessionID: sceneSessionID,
+                                screen: "home"
+                            )
+                        guard wasReleased else {
+                            return
+                        }
+                        await Task.yield()
+                        recordStructuredTaskExecutionContext(phase: "task-resumed")
+                        emit(
+                            phase: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker
+                        )
+                        ProbeRuntime.recordSwiftUIButtonStructuredTaskCompletion(
+                            window: window,
+                            sceneSessionID: sceneSessionID,
+                            screen: "home"
+                        )
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(didStartStructuredTask)
+                .accessibilityIdentifier(
+                    "probe.native.\(window.label).swiftui-button-structured-task"
+                )
+            }
 
             Button("Close this window") {
                 closeCurrentWindow()
@@ -4334,6 +4376,28 @@ private struct ProbeHomeView: View {
             sceneSessionID: sceneSessionID,
             screen: "home",
             phase: phase
+        )
+    }
+
+    @MainActor
+    private func recordStructuredTaskExecutionContext(phase: String) {
+        #if DEBUG
+        let handoffScene = RUMUIEventNetworkContext.currentSceneIdentifier?.rawValue
+        let traitScene: String?
+        if #available(iOS 17.0, *) {
+            traitScene = UITraitCollection.current[RUMSceneIdentifierTrait.self]
+        } else {
+            traitScene = nil
+        }
+        #else
+        let handoffScene: String? = nil
+        let traitScene: String? = nil
+        #endif
+        ProbeRuntime.record(
+            "SwiftUI Button execution context phase=\(phase) "
+                + "source=\(window.label) native=\(sceneSessionID) "
+                + "handoff=\(handoffScene ?? "nil") "
+                + "trait=\(traitScene ?? "nil")"
         )
     }
 }

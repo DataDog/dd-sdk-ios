@@ -87,9 +87,11 @@ enum ProbeRuntime {
             scenario: scenario,
             recorder: eventRecorder,
             sceneRegistry: sceneRegistry,
-            stepTimeoutNanoseconds: options.exercisesUIKitScrollOwnership
-                ? 60_000_000_000
-                : 10_000_000_000
+            stepTimeoutNanoseconds: options.exercisesSwiftUIButtonStructuredTask
+                ? 180_000_000_000
+                : options.exercisesUIKitScrollOwnership
+                    ? 60_000_000_000
+                    : 10_000_000_000
         )
     }()
 
@@ -117,6 +119,8 @@ enum ProbeRuntime {
     static let exercisesUIKitScrollOwnership = options.exercisesUIKitScrollOwnership
     static let exercisesTraceOnlyURLSessionOwnership =
         options.exercisesTraceOnlyURLSessionOwnership
+    static let exercisesSwiftUIButtonStructuredTask =
+        options.exercisesSwiftUIButtonStructuredTask
     static let uiEventHandoffControlAccessibilityIdentifier =
         "probe.native.uikit-ui-event-handoff"
     static let uiKitScrollAccessibilityIdentifier = "probe.native.uikit-scroll"
@@ -276,6 +280,7 @@ enum ProbeRuntime {
                 + "split_return_to_detail=\(automaticallyReturnsSplitToDetail) "
                 + "ui_event_handoff=\(exercisesUIEventContextHandoff) "
                 + "trace_only_urlsession=\(exercisesTraceOnlyURLSessionOwnership) "
+                + "swiftui_button_structured_task=\(exercisesSwiftUIButtonStructuredTask) "
                 + "semantic_navigation_scenes="
                 + "\(options.semanticNavigationSceneIDs?.joined(separator: ",") ?? "all") "
                 + "manual_swiftui_view_screens_by_scene="
@@ -334,6 +339,64 @@ enum ProbeRuntime {
                 attributes: attributes
             )
         }
+    }
+
+    @MainActor
+    static func waitForSwiftUIButtonStructuredTaskRelease(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String
+    ) async -> Bool {
+        await swiftUIButtonStructuredTaskGate.waitUntilReleased {
+            eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: screen
+                    ),
+                    name: ProbeSwiftUIButtonStructuredTaskContract.startedAssertion,
+                    result: .pass,
+                    reason: "SwiftUI Button Task is suspended at its controlled gate"
+                )
+            )
+            record(
+                "SwiftUI Button structured Task waiting source=\(window.label) "
+                    + "native=\(sceneSessionID) screen=\(screen)"
+            )
+        }
+    }
+
+    @MainActor
+    static func releaseSwiftUIButtonStructuredTask(
+        releasingScene: String
+    ) -> ProbeStepExecutionResult {
+        let result = swiftUIButtonStructuredTaskGate.release()
+        if case .accepted = result {
+            record("SwiftUI Button structured Task released scene=\(releasingScene)")
+        }
+        return result
+    }
+
+    static func recordSwiftUIButtonStructuredTaskCompletion(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String
+    ) {
+        eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: screen
+                ),
+                name: ProbeSwiftUIButtonStructuredTaskContract.completedAssertion,
+                result: .pass,
+                reason: "SwiftUI Button Task emitted its post-suspension marker"
+            )
+        )
     }
 
     static func startTraceOnlyURLSessionRequest(
@@ -537,6 +600,9 @@ enum ProbeRuntime {
             }
         )
 
+    @MainActor private static let swiftUIButtonStructuredTaskGate =
+        ProbeSwiftUIButtonStructuredTaskGate()
+
     private static func configuredValue(for key: String) -> String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             return nil
@@ -550,6 +616,35 @@ enum ProbeRuntime {
             return nil
         }
         return trimmed
+    }
+}
+
+@MainActor
+private final class ProbeSwiftUIButtonStructuredTaskGate {
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var wasReleased = false
+
+    func waitUntilReleased(onWaiting: () -> Void) async -> Bool {
+        guard continuation == nil, !wasReleased else {
+            return false
+        }
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            onWaiting()
+        }
+        return true
+    }
+
+    func release() -> ProbeStepExecutionResult {
+        guard !wasReleased, let continuation else {
+            return .rejected(
+                reason: "SwiftUI Button structured Task is not waiting"
+            )
+        }
+        wasReleased = true
+        self.continuation = nil
+        continuation.resume()
+        return .accepted
     }
 }
 

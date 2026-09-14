@@ -1456,6 +1456,55 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
     }
 
+    func testSwiftUIButtonStructuredTaskContractPasses() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "actions.swiftui-button-structured-task"),
+            signals: swiftUIButtonStructuredTaskSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testSwiftUIButtonStructuredTaskRejectsResumedWorkOnSceneB() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "actions.swiftui-button-structured-task"),
+            signals: swiftUIButtonStructuredTaskSignals(
+                mutation: .resumeOnSceneB
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed scene-B"))
+    }
+
+    func testSwiftUIButtonStructuredTaskRejectsMissingAutomaticTap() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "actions.swiftui-button-structured-task"),
+            signals: swiftUIButtonStructuredTaskSignals(
+                mutation: .omitAutomaticTap
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 0"))
+    }
+
+    func testSwiftUIButtonStructuredTaskRejectsDuplicateResumedWork() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "actions.swiftui-button-structured-task"),
+            signals: swiftUIButtonStructuredTaskSignals(
+                mutation: .duplicateResumedWork
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -1565,7 +1614,14 @@ final class ProbeSemanticOracleTests: XCTestCase {
                     sessionID: "session",
                     viewID: viewID
                 ),
-                name: name
+                eventID: name,
+                name: name,
+                action: ProbeActionSignal(
+                    id: name,
+                    type: "tap",
+                    target: name,
+                    loadingTimeNanoseconds: 1
+                )
             )
         )
     }
@@ -1653,6 +1709,12 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case swapTraceOwners
         case omitSceneBTrace
         case duplicateSceneATrace
+    }
+
+    private enum SwiftUIButtonStructuredTaskMutation {
+        case resumeOnSceneB
+        case omitAutomaticTap
+        case duplicateResumedWork
     }
 
     private func traceOnlyURLSessionSignals(
@@ -1802,6 +1864,69 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 requestName: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
                 sourceScene: "scene-A",
                 sourceNativeSceneID: "native-A",
+                viewID: sceneAViewID,
+                recorder: recorder
+            )
+        }
+        return recorder.snapshot()
+    }
+
+    private func swiftUIButtonStructuredTaskSignals(
+        mutation: SwiftUIButtonStructuredTaskMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "swiftui-button-structured-task-contract",
+            scenarioID: "actions.swiftui-button-structured-task",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        let sceneAViewID = "scene-A-home-1"
+        let sceneBViewID = "scene-B-home-1"
+
+        recorder.record(
+            viewSignal(
+                id: sceneAViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        if mutation != .omitAutomaticTap {
+            recordAutomaticAction(
+                name: ProbeSwiftUIButtonStructuredTaskContract.automaticActionName,
+                viewID: sceneAViewID,
+                recorder: recorder
+            )
+        }
+        recorder.record(
+            viewSignal(
+                id: sceneBViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: ProbeSwiftUIButtonStructuredTaskContract.representativeMarker,
+            scene: "scene-B",
+            nativeSceneID: "native-B",
+            viewID: sceneBViewID,
+            recorder: recorder
+        )
+        recordTraceRepresentativeMarker(
+            name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+            scene: "scene-A",
+            nativeSceneID: "native-A",
+            viewID: mutation == .resumeOnSceneB ? sceneBViewID : sceneAViewID,
+            recorder: recorder
+        )
+        if mutation == .duplicateResumedWork {
+            recordTraceRepresentativeMarker(
+                name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+                scene: "scene-A",
+                nativeSceneID: "native-A",
                 viewID: sceneAViewID,
                 recorder: recorder
             )

@@ -30,6 +30,7 @@ enum ProbeScenarioCatalog {
         "uikit.split.pop-cancel",
         "uikit.split.pop-finish",
         "actions.uikit-scroll-navigation-deceleration",
+        "actions.swiftui-button-structured-task",
         "traces.urlsession-cross-scene",
         "traces.urlsession-reverse-completion",
         "windows.activation-sequence",
@@ -73,6 +74,7 @@ enum ProbeScenarioCatalog {
         uikitSplitNativePopFinish,
         uikitSplitConcurrentScenes,
         actionsUIKitScrollNavigationDeceleration,
+        actionsSwiftUIButtonStructuredTask,
         tracesURLSessionCrossScene,
         tracesURLSessionReverseCompletion,
         windowsParallelNavigation,
@@ -2246,6 +2248,116 @@ enum ProbeScenarioCatalog {
     /// scene A, opens scene B so it becomes the process representative, then
     /// releases the response from B. The completion-time span must retain A's
     /// request-time Home view.
+    private static let actionsSwiftUIButtonStructuredTask = ProbeScenario(
+        identifier: "actions.swiftui-button-structured-task",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:"
+                    + ProbeSwiftUIButtonStructuredTaskContract.startedAssertion
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: ProbeSwiftUIButtonStructuredTaskContract.representativeMarker
+            ),
+            ProbeStep(.releaseSwiftUIButtonStructuredTask, scene: "scene-B")
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.automaticActionName,
+                actionType: "tap",
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                expectedCount: 1
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.representativeMarker
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.representativeMarker
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeSwiftUIButtonStructuredTaskContract.resumedMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.exercisesSwiftUIButtonStructuredTask = true
+        }
+    )
+
     private static let tracesURLSessionCrossScene = ProbeScenario(
         identifier: "traces.urlsession-cross-scene",
         trackingMode: .navigationOccurrence,

@@ -30,6 +30,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
                 "actions.uikit-scroll-navigation-deceleration",
+                "actions.swiftui-button-structured-task",
                 "traces.urlsession-cross-scene",
                 "traces.urlsession-reverse-completion",
                 "windows.parallel-navigation",
@@ -180,6 +181,52 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 $0.kind == .action
                     && $0.scene == "scene-B"
                     && $0.name == "trace-reverse-a-completion-representative"
+            }
+        )
+    }
+
+    func testSwiftUIButtonStructuredTaskScenarioSuspendsBeforeSceneHandoff() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "actions.swiftui-button-structured-task"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.layout, .stack)
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(scenario.runtimeOptions.exercisesSwiftUIButtonStructuredTask)
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.scene == "scene-A"
+                    && $0.signal == "assertion:"
+                        + ProbeSwiftUIButtonStructuredTaskContract.startedAssertion
+            }
+        )
+        XCTAssertEqual(
+            scenario.steps.first {
+                $0.kind == .releaseSwiftUIButtonStructuredTask
+            }?.scene,
+            "scene-B"
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .action
+                    && $0.name
+                        == ProbeSwiftUIButtonStructuredTaskContract.automaticActionName
+                    && $0.scene == "scene-A"
+                    && $0.actionType == "tap"
+                    && $0.expectedCount == 1
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .resource
+                    && $0.name == ProbeSwiftUIButtonStructuredTaskContract.resumedMarker
+                    && $0.scene == "scene-A"
+                    && $0.occurrence == 1
+                    && $0.expectedCount == 1
             }
         )
     }

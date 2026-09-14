@@ -855,6 +855,31 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .releaseSwiftUIButtonStructuredTask:
+            guard let scene = step.scene else {
+                return .failed("scene is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: nil,
+                    value: "assertion:"
+                        + ProbeSwiftUIButtonStructuredTaskContract.completedAssertion
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for SwiftUI Button structured Task completion"
+                )
+            }
+            return .acknowledged(signal)
+
         case .startOperation, .succeedOperation, .failOperation:
             guard
                 let scene = step.scene,

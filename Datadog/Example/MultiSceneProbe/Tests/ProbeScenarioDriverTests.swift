@@ -2000,6 +2000,76 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testReleasesSwiftUIButtonStructuredTaskThroughExactScene() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-swiftui-button-task",
+            scenarioID: "driver-swiftui-button-task",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-B",
+                nativeSceneID: "native-B",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var invocations: [ProbeStepKind] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            invocations.append(step.kind)
+            guard step.kind == .releaseSwiftUIButtonStructuredTask else {
+                return .rejected(reason: "unsupported step")
+            }
+            recorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: "scene-A",
+                        nativeSceneID: "native-A",
+                        screen: "home"
+                    ),
+                    name: ProbeSwiftUIButtonStructuredTaskContract.completedAssertion,
+                    result: .pass
+                )
+            )
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-swiftui-button-task",
+                trackingMode: .navigationOccurrence,
+                layout: .stack,
+                steps: [
+                    ProbeStep(.releaseSwiftUIButtonStructuredTask, scene: "scene-B")
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(invocations, [.releaseSwiftUIButtonStructuredTask])
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            1
+        )
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
