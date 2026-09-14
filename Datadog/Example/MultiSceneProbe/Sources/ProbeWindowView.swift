@@ -177,6 +177,35 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     }
 }
 
+private enum ProbeSwiftUIPresentation: String {
+    case sheet
+    case fullScreenCover = "full-screen-cover"
+
+    var rumViewName: String {
+        switch self {
+        case .sheet:
+            return "ProbeSheetView"
+        case .fullScreenCover:
+            return "ProbeFullScreenCoverView"
+        }
+    }
+
+    var manualViewKey: String { "probe-scene-targeted-\(rawValue)" }
+    var activeInterval: String { "manual-\(rawValue)-active" }
+
+    var subtreeInterval: String {
+        switch self {
+        case .sheet:
+            return "swiftui-presentation-subtree"
+        case .fullScreenCover:
+            return "swiftui-full-screen-cover-subtree"
+        }
+    }
+
+    var dismissedImmediatePhase: String { "\(rawValue)-dismissed-immediate" }
+    var dismissedSettledPhase: String { "\(rawValue)-dismissed-settled" }
+}
+
 private struct ProbeRUMSemanticPresentationBoundary<Content: View>: View {
     let isEnabled: Bool
     @ViewBuilder let content: Content
@@ -300,7 +329,7 @@ struct ProbeWindowRoot: View {
     @State private var didScheduleNavigation = false
     @State private var didShowDetail = false
     @State private var didOpenPeer = false
-    @State private var isSheetPresented = false
+    @State private var swiftUIPresentation: ProbeSwiftUIPresentation?
     @State private var isKeyedManualViewActive = false
     @State private var didScheduleClose = false
     @State private var didScheduleAbortedDetail = false
@@ -347,6 +376,28 @@ struct ProbeWindowRoot: View {
                     readerControlGeneration: readerControlGeneration
                 ) {
                     ProbeSheetView(
+                        window: window,
+                        sceneSessionID: sceneSessionID
+                    )
+                }
+            }
+        }
+        .fullScreenCover(
+            isPresented: fullScreenCoverPresentation,
+            onDismiss: fullScreenCoverDidDismiss
+        ) {
+            ProbeRUMSemanticPresentationBoundary(
+                isEnabled: ProbeRuntime.usesSceneTargetedPresentationAuthority
+            ) {
+                ProbeRUMTrackedScreen(
+                    window: window,
+                    sceneSessionID: sceneSessionID,
+                    screen: ProbeSwiftUIPresentation.fullScreenCover.rawValue,
+                    name: ProbeSwiftUIPresentation.fullScreenCover.rumViewName,
+                    trackingBoundary: .auxiliary,
+                    readerControlGeneration: readerControlGeneration
+                ) {
+                    ProbeFullScreenCoverView(
                         window: window,
                         sceneSessionID: sceneSessionID
                     )
@@ -642,7 +693,7 @@ struct ProbeWindowRoot: View {
                 window: window,
                 sceneSessionID: sceneSessionID,
                 openDetail: openDetail,
-                openSheet: { setSheetPresented(true) },
+                openSheet: { setSwiftUIPresentation(.sheet) },
                 closeCurrentWindow: closeCurrentWindow,
                 openPeer: openPeer
             )
@@ -781,8 +832,8 @@ struct ProbeWindowRoot: View {
         if isKeyedManualViewActive {
             return "compose"
         }
-        if isSheetPresented {
-            return "sheet"
+        if let swiftUIPresentation {
+            return swiftUIPresentation.rawValue
         }
         return currentNavigationScreen
     }
@@ -795,31 +846,57 @@ struct ProbeWindowRoot: View {
         if isKeyedManualViewActive {
             return navigationRoute + ["compose"]
         }
-        return isSheetPresented ? navigationRoute + ["sheet"] : navigationRoute
+        return swiftUIPresentation.map { navigationRoute + [$0.rawValue] } ?? navigationRoute
     }
 
     private var sheetPresentation: Binding<Bool> {
+        presentationBinding(for: .sheet)
+    }
+
+    private var fullScreenCoverPresentation: Binding<Bool> {
+        presentationBinding(for: .fullScreenCover)
+    }
+
+    private func presentationBinding(
+        for presentation: ProbeSwiftUIPresentation
+    ) -> Binding<Bool> {
         Binding(
-            get: { isSheetPresented },
-            set: { setSheetPresented($0) }
+            get: { swiftUIPresentation == presentation },
+            set: { isPresented in
+                if isPresented {
+                    setSwiftUIPresentation(presentation)
+                } else if swiftUIPresentation == presentation {
+                    setSwiftUIPresentation(nil)
+                }
+            }
         )
     }
 
-    private func setSheetPresented(_ isPresented: Bool) {
-        guard isSheetPresented != isPresented else {
+    private func setSwiftUIPresentation(_ presentation: ProbeSwiftUIPresentation?) {
+        guard swiftUIPresentation != presentation else {
             return
         }
+        guard swiftUIPresentation == nil || presentation == nil else {
+            ProbeRuntime.record(
+                "rejected direct presentation replacement source=\(window.label) "
+                    + "from=\(swiftUIPresentation?.rawValue ?? "none") "
+                    + "to=\(presentation?.rawValue ?? "none")"
+            )
+            return
+        }
+
+        let previousPresentation = swiftUIPresentation
         let previousRoute = currentSceneRoute
-        if isPresented {
+        if let presentation {
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
                     kind: .intervalBegan,
                     semanticContext: ProbeSemanticContext(
                         logicalSceneID: window.label,
                         nativeSceneID: sceneSessionID,
-                        screen: "sheet"
+                        screen: presentation.rawValue
                     ),
-                    interval: "manual-sheet-active"
+                    interval: presentation.activeInterval
                 )
             )
             ProbeRuntime.eventRecorder.record(
@@ -828,13 +905,13 @@ struct ProbeWindowRoot: View {
                     semanticContext: ProbeSemanticContext(
                         logicalSceneID: window.label,
                         nativeSceneID: sceneSessionID,
-                        screen: "sheet"
+                        screen: presentation.rawValue
                     ),
-                    interval: "swiftui-presentation-subtree"
+                    interval: presentation.subtreeInterval
                 )
             )
         }
-        isSheetPresented = isPresented
+        swiftUIPresentation = presentation
         navigationMutation += 1
         updateSceneRoute()
         ProbeRuntime.eventRecorder.record(
@@ -851,9 +928,17 @@ struct ProbeWindowRoot: View {
             )
         )
         if ProbeRuntime.usesSceneTargetedPresentationAuthority {
-            updateSceneTargetedSheetAuthority(isPresented: isPresented)
+            if let previousPresentation {
+                updateSceneTargetedPresentationAuthority(
+                    previousPresentation,
+                    isPresented: false
+                )
+            }
+            if let presentation {
+                updateSceneTargetedPresentationAuthority(presentation, isPresented: true)
+            }
         }
-        if !isPresented {
+        if let previousPresentation {
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
                     kind: .intervalEnded,
@@ -862,39 +947,43 @@ struct ProbeWindowRoot: View {
                         nativeSceneID: sceneSessionID,
                         screen: currentSceneScreen
                     ),
-                    interval: "manual-sheet-active"
+                    interval: previousPresentation.activeInterval
                 )
             )
         }
         ProbeRuntime.record(
-            "sheet presentation mutated source=\(window.label) "
-                + "presented=\(isPresented) mutation=\(navigationMutation)"
+            "SwiftUI presentation mutated source=\(window.label) "
+                + "from=\(previousPresentation?.rawValue ?? "none") "
+                + "to=\(presentation?.rawValue ?? "none") "
+                + "mutation=\(navigationMutation)"
         )
     }
 
-    private func updateSceneTargetedSheetAuthority(isPresented: Bool) {
-        let key = "probe-scene-targeted-sheet"
+    private func updateSceneTargetedPresentationAuthority(
+        _ presentation: ProbeSwiftUIPresentation,
+        isPresented: Bool
+    ) {
         if isPresented {
             #if DEBUG
             guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-                recordSceneTargetedManualViewFailure(operation: "sheet-start")
+                recordSceneTargetedManualViewFailure(operation: "\(presentation.rawValue)-start")
                 return
             }
             monitor.startView(
-                key: key,
-                name: "ProbeSheetView",
-                attributes: sceneTargetedSheetAttributes,
+                key: presentation.manualViewKey,
+                name: presentation.rumViewName,
+                attributes: sceneTargetedPresentationAttributes(for: presentation),
                 sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
             )
             #else
             RUMMonitor.shared().startView(
-                key: key,
-                name: "ProbeSheetView",
-                attributes: sceneTargetedSheetAttributes
+                key: presentation.manualViewKey,
+                name: presentation.rumViewName,
+                attributes: sceneTargetedPresentationAttributes(for: presentation)
             )
             #endif
             ProbeRuntime.record(
-                "scene-targeted sheet started source=\(window.label) "
+                "scene-targeted \(presentation.rawValue) started source=\(window.label) "
                     + "native=\(sceneSessionID)"
             )
             return
@@ -902,42 +991,52 @@ struct ProbeWindowRoot: View {
 
         #if DEBUG
         guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "sheet-stop")
+            recordSceneTargetedManualViewFailure(operation: "\(presentation.rawValue)-stop")
             return
         }
         monitor.stopView(
-            key: key,
+            key: presentation.manualViewKey,
             attributes: [
                 ProbeRuntime.Attribute.runID: window.runID,
                 ProbeRuntime.Attribute.sourceScene: window.label,
                 ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-                ProbeRuntime.Attribute.screen: "sheet"
+                ProbeRuntime.Attribute.screen: presentation.rawValue
             ],
             sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
         )
         #else
-        RUMMonitor.shared().stopView(key: key)
+        RUMMonitor.shared().stopView(key: presentation.manualViewKey)
         #endif
         ProbeRuntime.record(
-            "scene-targeted sheet stopped source=\(window.label) "
+            "scene-targeted \(presentation.rawValue) stopped source=\(window.label) "
                 + "native=\(sceneSessionID)"
         )
     }
 
-    private var sceneTargetedSheetAttributes: [String: Encodable] {
+    private func sceneTargetedPresentationAttributes(
+        for presentation: ProbeSwiftUIPresentation
+    ) -> [String: Encodable] {
         [
             ProbeRuntime.Attribute.runID: window.runID,
             ProbeRuntime.Attribute.host: "native-swiftui-complete-destination",
             ProbeRuntime.Attribute.sourceScene: window.label,
             ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
-            ProbeRuntime.Attribute.screen: "sheet",
+            ProbeRuntime.Attribute.screen: presentation.rawValue,
             ProbeRuntime.Attribute.viewScene: window.label,
             ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
-            ProbeRuntime.Attribute.viewScreen: "sheet"
+            ProbeRuntime.Attribute.viewScreen: presentation.rawValue
         ]
     }
 
     private func sheetDidDismiss() {
+        presentationDidDismiss(.sheet)
+    }
+
+    private func fullScreenCoverDidDismiss() {
+        presentationDidDismiss(.fullScreenCover)
+    }
+
+    private func presentationDidDismiss(_ presentation: ProbeSwiftUIPresentation) {
         ProbeRuntime.eventRecorder.record(
             ProbeSignal(
                 kind: .intervalEnded,
@@ -946,9 +1045,12 @@ struct ProbeWindowRoot: View {
                     nativeSceneID: sceneSessionID,
                     screen: currentNavigationScreen
                 ),
-                interval: "swiftui-presentation-subtree"
+                interval: presentation.subtreeInterval
             )
         )
+        guard swiftUIPresentation == nil else {
+            return
+        }
         ProbeRuntime.recordDestination(
             window: window,
             sceneSessionID: sceneSessionID,
@@ -959,19 +1061,19 @@ struct ProbeWindowRoot: View {
             window: window,
             sceneSessionID: sceneSessionID,
             screen: currentNavigationScreen,
-            phase: "sheet-dismissed-immediate"
+            phase: presentation.dismissedImmediatePhase
         )
         Task { @MainActor in
             await Task.yield()
             try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled, !isSheetPresented else {
+            guard !Task.isCancelled, swiftUIPresentation == nil else {
                 return
             }
             ProbeRuntime.emitLifecycleMarker(
                 window: window,
                 sceneSessionID: sceneSessionID,
                 screen: currentNavigationScreen,
-                phase: "sheet-dismissed-settled"
+                phase: presentation.dismissedSettledPhase
             )
         }
     }
@@ -1297,9 +1399,11 @@ struct ProbeWindowRoot: View {
                 }
                 switch value {
                 case "sheet":
-                    setSheetPresented(true)
+                    setSwiftUIPresentation(.sheet)
+                case "full-screen-cover":
+                    setSwiftUIPresentation(.fullScreenCover)
                 case "home":
-                    setSheetPresented(false)
+                    setSwiftUIPresentation(nil)
                 default:
                     return .rejected(
                         reason: "unsupported SwiftUI presentation \(value)"
@@ -3271,6 +3375,75 @@ private struct ProbeSheetView: View {
             window: window,
             sceneSessionID: sceneSessionID,
             screen: "sheet",
+            phase: phase
+        )
+    }
+}
+
+private struct ProbeFullScreenCoverView: View {
+    let window: ProbeWindow
+    let sceneSessionID: String
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var didAppear = false
+    @State private var didRunTask = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ProbeHeading(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: ProbeSwiftUIPresentation.fullScreenCover.rawValue
+            )
+            Text("This screen is presented as a SwiftUI full-screen cover.")
+                .foregroundStyle(.secondary)
+            Button("Dismiss full-screen cover") {
+                ProbeRuntime.record(
+                    "tap handler source=\(window.label) target=dismiss-full-screen-cover"
+                )
+                dismiss()
+            }
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier(
+                "probe.native.\(window.label).dismiss-full-screen-cover"
+            )
+            Spacer()
+        }
+        .padding(24)
+        .accessibilityIdentifier("probe.native.\(window.label).full-screen-cover")
+        .onAppear {
+            guard !didAppear else {
+                return
+            }
+            didAppear = true
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: ProbeSwiftUIPresentation.fullScreenCover.rawValue,
+                isCommitted: true
+            )
+            emit(phase: "on-appear")
+        }
+        .task {
+            guard !didRunTask else {
+                return
+            }
+            didRunTask = true
+            emit(phase: "task-immediate")
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(100))
+            guard !Task.isCancelled else {
+                return
+            }
+            emit(phase: "task-delayed")
+        }
+    }
+
+    private func emit(phase: String) {
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: ProbeSwiftUIPresentation.fullScreenCover.rawValue,
             phase: phase
         )
     }

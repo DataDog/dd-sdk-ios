@@ -19,6 +19,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.semantic-a-automatic-b",
                 "swiftui.coexistence.automatic-manual-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-sheet",
+                "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
@@ -116,6 +117,49 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(scenario.completionConditions, baseline.completionConditions)
         XCTAssertEqual(scenario.expectedSemanticTimeline, baseline.expectedSemanticTimeline)
         XCTAssertTrue(scenario.runtimeOptions.manualSwiftUIViewScreensByScene.isEmpty)
+    }
+
+    func testSceneTargetedFullScreenCoverHasIndependentStrictOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.automatic-scene-targeted-full-screen-cover"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority(scenario)
+        )
+        XCTAssertTrue(scenario.runtimeOptions.manualSwiftUIViewScreensByScene.isEmpty)
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .setSwiftUIPresentation && $0.value == "full-screen-cover"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "full-screen-cover"
+                    && $0.rumViewOrigin == .semantic
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.rumViewName == "ProbeFullScreenCoverView"
+                    && $0.interval == "swiftui-full-screen-cover-subtree"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "full-screen-cover-dismissed-immediate"
+                    && $0.ownerViewReferenceAction
+                        == "automatic-home-before-full-screen-cover"
+                    && $0.ownerViewRelation == .different
+            }
+        )
     }
 
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {

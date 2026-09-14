@@ -17,6 +17,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.semantic-a-automatic-b",
         "swiftui.coexistence.automatic-manual-sheet",
         "swiftui.coexistence.automatic-scene-targeted-sheet",
+        "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.split.automatic-baseline",
         "swiftui.split.same-type-selection",
@@ -39,6 +40,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceSemanticAAutomaticB,
         swiftUICoexistenceAutomaticManualSheet,
         swiftUICoexistenceAutomaticSceneTargetedSheet,
+        swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
@@ -112,6 +114,8 @@ enum ProbeScenarioCatalog {
         _ scenario: ProbeScenario
     ) -> Bool {
         scenario.identifier == swiftUICoexistenceAutomaticSceneTargetedSheet.identifier
+            || scenario.identifier
+                == swiftUICoexistenceAutomaticSceneTargetedFullScreenCover.identifier
     }
 
     static func scenario(
@@ -545,6 +549,211 @@ enum ProbeScenarioCatalog {
         completionConditions: swiftUICoexistenceAutomaticManualSheet.completionConditions,
         expectedSemanticTimeline: swiftUICoexistenceAutomaticManualSheet.expectedSemanticTimeline
     )
+
+    private static let swiftUICoexistenceAutomaticSceneTargetedFullScreenCover =
+        ProbeScenario(
+            identifier: "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: sceneTargetedPresentationSteps(
+                presentation: "full-screen-cover",
+                activeMarker: "manual-full-screen-cover-active",
+                dismissedSettledMarker: "full-screen-cover-dismissed-settled"
+            ),
+            completionConditions: sceneTargetedPresentationCompletionConditions(
+                rumViewName: "ProbeFullScreenCoverView",
+                activeInterval: "manual-full-screen-cover-active",
+                subtreeInterval: "swiftui-full-screen-cover-subtree",
+                beforeMarker: "automatic-home-before-full-screen-cover",
+                dismissedImmediateMarker: "full-screen-cover-dismissed-immediate",
+                dismissedSettledMarker: "full-screen-cover-dismissed-settled"
+            ),
+            expectedSemanticTimeline: sceneTargetedPresentationTimeline(
+                presentation: "full-screen-cover",
+                activeMarker: "manual-full-screen-cover-active",
+                beforeMarker: "automatic-home-before-full-screen-cover",
+                dismissedImmediateMarker: "full-screen-cover-dismissed-immediate",
+                dismissedSettledMarker: "full-screen-cover-dismissed-settled"
+            )
+        )
+
+    private static func sceneTargetedPresentationSteps(
+        presentation: String,
+        activeMarker: String,
+        dismissedSettledMarker: String
+    ) -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "automatic-home-before-\(presentation)"
+            ),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: presentation),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "destination:\(presentation)"
+            ),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: activeMarker),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:\(dismissedSettledMarker)"
+            )
+        ]
+    }
+
+    private static func sceneTargetedPresentationCompletionConditions(
+        rumViewName: String,
+        activeInterval: String,
+        subtreeInterval: String,
+        beforeMarker: String,
+        dismissedImmediateMarker: String,
+        dismissedSettledMarker: String
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: activeInterval
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                rumViewName: rumViewName,
+                interval: subtreeInterval
+            ),
+            ProbeExpectation(
+                .action,
+                name: dismissedSettledMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: beforeMarker,
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: dismissedSettledMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: dismissedImmediateMarker,
+                ownerViewRelation: .same
+            )
+        ]
+    }
+
+    private static func sceneTargetedPresentationTimeline(
+        presentation: String,
+        activeMarker: String,
+        beforeMarker: String,
+        dismissedImmediateMarker: String,
+        dismissedSettledMarker: String
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .action,
+                name: beforeMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: beforeMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: presentation,
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: presentation,
+                occurrence: 1,
+                name: activeMarker,
+                sourceScene: "scene-A",
+                sourceScreen: presentation,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: presentation,
+                occurrence: 1,
+                name: activeMarker,
+                sourceScene: "scene-A",
+                sourceScreen: presentation,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: presentation,
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                name: dismissedImmediateMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: beforeMarker,
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: dismissedImmediateMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: beforeMarker,
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                name: dismissedSettledMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: dismissedImmediateMarker,
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: dismissedSettledMarker,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .setSwiftUIPresentation,
+                ownerViewStartedAfterStepValue: "home",
+                ownerViewReferenceAction: dismissedImmediateMarker,
+                ownerViewRelation: .same
+            )
+        ]
+    }
 
     private static let swiftUICoexistenceAutomaticKeyedManualView = ProbeScenario(
         identifier: "swiftui.coexistence.automatic-keyed-manual-view",

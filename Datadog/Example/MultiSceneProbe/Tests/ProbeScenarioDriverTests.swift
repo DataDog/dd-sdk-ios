@@ -182,6 +182,7 @@ final class ProbeScenarioDriverTests: XCTestCase {
         XCTAssertNotNil(registry.markReady(handle))
 
         var requestedPresentations: [String] = []
+        var currentPath = ["home"]
         let executor = ProbeSceneStepExecutor()
         executor.configure(handle: handle) { step in
             guard
@@ -191,12 +192,14 @@ final class ProbeScenarioDriverTests: XCTestCase {
                 return .rejected(reason: "unsupported step")
             }
             requestedPresentations.append(value)
+            let nextPath = value == "home" ? ["home"] : ["home", value]
             recorder.record(
                 self.pathSignal(
-                    previous: value == "sheet" ? ["home"] : ["home", "sheet"],
-                    current: value == "sheet" ? ["home", "sheet"] : ["home"]
+                    previous: currentPath,
+                    current: nextPath
                 )
             )
+            currentPath = nextPath
             return .accepted
         }
 
@@ -210,6 +213,16 @@ final class ProbeScenarioDriverTests: XCTestCase {
                         .setSwiftUIPresentation,
                         scene: "scene-A",
                         value: "sheet"
+                    ),
+                    ProbeStep(
+                        .setSwiftUIPresentation,
+                        scene: "scene-A",
+                        value: "home"
+                    ),
+                    ProbeStep(
+                        .setSwiftUIPresentation,
+                        scene: "scene-A",
+                        value: "full-screen-cover"
                     ),
                     ProbeStep(
                         .setSwiftUIPresentation,
@@ -232,10 +245,13 @@ final class ProbeScenarioDriverTests: XCTestCase {
         let result = try XCTUnwrap(completedResult)
 
         XCTAssertEqual(result.state, .pass)
-        XCTAssertEqual(requestedPresentations, ["sheet", "home"])
+        XCTAssertEqual(
+            requestedPresentations,
+            ["sheet", "home", "full-screen-cover", "home"]
+        )
         XCTAssertEqual(
             recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
-            2
+            4
         )
     }
 

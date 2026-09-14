@@ -87,9 +87,7 @@ internal final class ProbeScenarioDriver {
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == [value]
             case .presentation(let scene, let value):
-                let expectedPath = value == "sheet"
-                    ? ["home", "sheet"]
-                    : ["home"]
+                let expectedPath = value == "home" ? ["home"] : ["home", value]
                 return signal.kind == .navigationPathMutation
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.navigationPath == expectedPath
@@ -513,7 +511,7 @@ internal final class ProbeScenarioDriver {
             guard
                 let scene = step.scene,
                 let value = step.value,
-                value == "sheet" || value == "home"
+                value == "sheet" || value == "full-screen-cover" || value == "home"
             else {
                 return .failed("scene or SwiftUI presentation is invalid")
             }
