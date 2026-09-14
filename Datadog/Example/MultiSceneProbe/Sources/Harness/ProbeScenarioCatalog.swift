@@ -12,6 +12,7 @@ enum ProbeScenarioCatalog {
     private static let observableDriverIdentifiers: Set<String> = [
         "swiftui.stack.return",
         "operations.navigation.lifecycle",
+        "operations.cross-scene.lifecycle",
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -39,6 +40,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackOccurrencePush,
         swiftUIStackReturn,
         operationsNavigationLifecycle,
+        operationsCrossSceneLifecycle,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -365,6 +367,96 @@ enum ProbeScenarioCatalog {
                 screen: "detail-1",
                 occurrence: 3
             )
+    )
+
+    /// Exercises one application-wide Operation identity across two scenes and
+    /// two independent same-name identities completed in reverse order. Local
+    /// signals prove exact call sites; raw and reduced backend Operation events
+    /// remain the attribution oracle.
+    private static let operationsCrossSceneLifecycle = ProbeScenario(
+        identifier: "operations.cross-scene.lifecycle",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-cross-home-a"
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "operation-cross-home-b"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "cross-success"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-cross-success-start-a"
+            ),
+            ProbeStep(.succeedOperation, scene: "scene-B", value: "cross-success"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "operation-cross-success-end-b"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "cross-failure"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-cross-failure-start-a"
+            ),
+            ProbeStep(.failOperation, scene: "scene-B", value: "cross-failure"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "operation-cross-failure-end-b"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "parallel-alpha"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-parallel-alpha-start-a"
+            ),
+            ProbeStep(.startOperation, scene: "scene-B", value: "parallel-beta"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "operation-parallel-beta-start-b"
+            ),
+            ProbeStep(.succeedOperation, scene: "scene-B", value: "parallel-beta"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "operation-parallel-beta-end-b"
+            ),
+            ProbeStep(.succeedOperation, scene: "scene-A", value: "parallel-alpha"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-parallel-alpha-end-a"
+            ),
+        ],
+        completionConditions: operationCrossSceneWorkExpectations(
+            name: "operation-parallel-alpha-end-a",
+            scene: "scene-A",
+            reference: "operation-cross-home-a"
+        ),
+        expectedSemanticTimeline: operationCrossSceneTimeline()
     )
 
     private static let swiftUIStackAbort = ProbeScenario(
@@ -2629,6 +2721,97 @@ enum ProbeScenarioCatalog {
                 rumViewOrigin: .semantic
             )
         ]
+    }
+
+    private static func operationCrossSceneTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-home-a",
+            scene: "scene-A"
+        )
+        + [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-home-b",
+            scene: "scene-B",
+            reference: "operation-cross-home-a",
+            relation: .different
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-success-start-a",
+            scene: "scene-A",
+            reference: "operation-cross-home-a"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-success-end-b",
+            scene: "scene-B",
+            reference: "operation-cross-home-b"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-failure-start-a",
+            scene: "scene-A",
+            reference: "operation-cross-home-a"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-cross-failure-end-b",
+            scene: "scene-B",
+            reference: "operation-cross-home-b"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-parallel-alpha-start-a",
+            scene: "scene-A",
+            reference: "operation-cross-home-a"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-parallel-beta-start-b",
+            scene: "scene-B",
+            reference: "operation-cross-home-b"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-parallel-beta-end-b",
+            scene: "scene-B",
+            reference: "operation-cross-home-b"
+        )
+        + operationCrossSceneWorkExpectations(
+            name: "operation-parallel-alpha-end-a",
+            scene: "scene-A",
+            reference: "operation-cross-home-a"
+        )
+    }
+
+    private static func operationCrossSceneWorkExpectations(
+        name: String,
+        scene: String,
+        reference: String? = nil,
+        relation: ProbeRUMViewOwnerRelation = .same
+    ) -> [ProbeExpectation] {
+        sameKeyWorkExpectations(
+            name: name,
+            sourceScene: scene,
+            sourceScreen: "home",
+            scene: scene,
+            screen: "home",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            ownerViewStartedAfterSceneOpen: scene == "scene-B" ? "scene-B" : nil,
+            actionReference: reference,
+            actionRelation: reference == nil ? nil : relation
+        )
     }
 
     private static func stackPushSteps() -> [ProbeStep] {

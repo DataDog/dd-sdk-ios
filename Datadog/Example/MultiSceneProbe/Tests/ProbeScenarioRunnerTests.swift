@@ -15,6 +15,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             Set([
                 "swiftui.stack.return",
                 "operations.navigation.lifecycle",
+                "operations.cross-scene.lifecycle",
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
@@ -98,6 +99,71 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.screen == "detail-1"
                     && $0.occurrence == 3
             }
+        )
+    }
+
+    func testOperationCrossSceneLifecycleCoversSuccessFailureAndReverseCompletion() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "operations.cross-scene.lifecycle"
+            )
+        )
+        let operationSteps = scenario.steps.filter {
+            [.startOperation, .succeedOperation, .failOperation].contains($0.kind)
+        }
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(
+            Set(scenario.requiredCapabilities),
+            [.multipleScenes, .simultaneousVisibleWindows]
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(
+            operationSteps.map(\.kind),
+            [
+                .startOperation,
+                .succeedOperation,
+                .startOperation,
+                .failOperation,
+                .startOperation,
+                .startOperation,
+                .succeedOperation,
+                .succeedOperation,
+            ]
+        )
+        XCTAssertEqual(
+            operationSteps.map(\.scene),
+            [
+                "scene-A",
+                "scene-B",
+                "scene-A",
+                "scene-B",
+                "scene-A",
+                "scene-B",
+                "scene-B",
+                "scene-A",
+            ]
+        )
+        XCTAssertEqual(
+            operationSteps.map(\.value),
+            [
+                "cross-success",
+                "cross-success",
+                "cross-failure",
+                "cross-failure",
+                "parallel-alpha",
+                "parallel-beta",
+                "parallel-beta",
+                "parallel-alpha",
+            ]
+        )
+        XCTAssertEqual(Set(operationSteps.compactMap(\.value)).count, 4)
+        XCTAssertFalse(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .operationStep
+            },
+            "Operation vitals have no customer mapper; backend evidence is required"
         )
     }
 

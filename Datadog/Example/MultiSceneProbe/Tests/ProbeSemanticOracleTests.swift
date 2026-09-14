@@ -1031,6 +1031,73 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
     }
 
+    func testOperationCrossSceneContractPasses() throws {
+        let scenario = try scenario(named: "operations.cross-scene.lifecycle")
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: operationCrossSceneSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testOperationCrossSceneRejectsOneViewIDAcrossScenes() throws {
+        let scenario = try scenario(named: "operations.cross-scene.lifecycle")
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: operationCrossSceneSignals(mutation: .reuseViewIDAcrossScenes)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(try XCTUnwrap(result.issues.first).reason.contains("maps to both"))
+    }
+
+    func testOperationCrossSceneRejectsBHomeWorkOnA() throws {
+        let scenario = try scenario(named: "operations.cross-scene.lifecycle")
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: operationCrossSceneSignals(mutation: .attributeBHomeToA)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(
+            try XCTUnwrap(result.issues.first).expectation?.name,
+            "operation-cross-home-b"
+        )
+    }
+
+    func testOperationCrossSceneRejectsBCompletionOnA() throws {
+        let scenario = try scenario(named: "operations.cross-scene.lifecycle")
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: operationCrossSceneSignals(mutation: .attributeBCompletionToA)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(
+            try XCTUnwrap(result.issues.first).expectation?.name,
+            "operation-cross-success-end-b"
+        )
+    }
+
+    func testOperationCrossSceneRejectsChangedAOwnerAfterBCompletes() throws {
+        let scenario = try scenario(named: "operations.cross-scene.lifecycle")
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: operationCrossSceneSignals(mutation: .changeAOwnerAfterBCompletion)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(
+            try XCTUnwrap(result.issues.first).expectation?.name,
+            "operation-parallel-alpha-end-a"
+        )
+    }
+
     func testSameKeyManualTwoSceneContractPasses() throws {
         let scenario = try scenario(
             named: "swiftui.coexistence.same-key-manual-two-scenes"
@@ -1371,6 +1438,13 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case stopAWhenBStops
         case reuseReturnedBHome
         case reuseReturnedAHome
+    }
+
+    private enum OperationCrossSceneMutation {
+        case reuseViewIDAcrossScenes
+        case attributeBHomeToA
+        case attributeBCompletionToA
+        case changeAOwnerAfterBCompletion
     }
 
     private enum SiblingContainerAuthorityMutation {
@@ -1854,6 +1928,186 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 )
             }
         }
+        return recorder.snapshot()
+    }
+
+    private func operationCrossSceneSignals(
+        mutation: OperationCrossSceneMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "operation-cross-scene-contract",
+            scenarioID: "operations.cross-scene.lifecycle",
+            sink: { _ in },
+            clock: { 42 }
+        )
+
+        func nativeSceneID(for scene: String) -> String {
+            scene == "scene-A" ? "native-A" : "native-B"
+        }
+
+        func recordStep(
+            _ kind: ProbeStepKind,
+            scene: String,
+            name: String
+        ) {
+            recorder.record(
+                ProbeSignal(
+                    kind: .stepStarted,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: scene,
+                        nativeSceneID: nativeSceneID(for: scene)
+                    ),
+                    stepKind: kind,
+                    name: name
+                )
+            )
+        }
+
+        func recordWork(
+            name: String,
+            scene: String,
+            viewID: String
+        ) {
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                recorder.record(
+                    keyedManualWorkSignal(
+                        kind: kind,
+                        name: name,
+                        viewID: viewID,
+                        sourceScreen: "home",
+                        scene: scene,
+                        nativeSceneID: nativeSceneID(for: scene)
+                    )
+                )
+            }
+        }
+
+        func recordOperation(
+            _ kind: ProbeStepKind,
+            scene: String,
+            instance: String,
+            marker: String,
+            viewID: String
+        ) {
+            recordStep(kind, scene: scene, name: instance)
+            recordWork(name: marker, scene: scene, viewID: viewID)
+        }
+
+        let homeA = "operation-home-A"
+        let homeB = mutation == .reuseViewIDAcrossScenes
+            ? homeA
+            : "operation-home-B"
+        recorder.record(
+            viewSignal(
+                id: homeA,
+                screen: "home",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        recordWork(
+            name: "operation-cross-home-a",
+            scene: "scene-A",
+            viewID: homeA
+        )
+        recordStep(.openWindow, scene: "scene-A", name: "scene-B")
+        recorder.record(
+            viewSignal(
+                id: homeB,
+                screen: "home",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordWork(
+            name: "operation-cross-home-b",
+            scene: "scene-B",
+            viewID: mutation == .attributeBHomeToA ? homeA : homeB
+        )
+
+        recordOperation(
+            .startOperation,
+            scene: "scene-A",
+            instance: "cross-success",
+            marker: "operation-cross-success-start-a",
+            viewID: homeA
+        )
+        recordOperation(
+            .succeedOperation,
+            scene: "scene-B",
+            instance: "cross-success",
+            marker: "operation-cross-success-end-b",
+            viewID: mutation == .attributeBCompletionToA ? homeA : homeB
+        )
+        recordOperation(
+            .startOperation,
+            scene: "scene-A",
+            instance: "cross-failure",
+            marker: "operation-cross-failure-start-a",
+            viewID: homeA
+        )
+        recordOperation(
+            .failOperation,
+            scene: "scene-B",
+            instance: "cross-failure",
+            marker: "operation-cross-failure-end-b",
+            viewID: homeB
+        )
+        recordOperation(
+            .startOperation,
+            scene: "scene-A",
+            instance: "parallel-alpha",
+            marker: "operation-parallel-alpha-start-a",
+            viewID: homeA
+        )
+        recordOperation(
+            .startOperation,
+            scene: "scene-B",
+            instance: "parallel-beta",
+            marker: "operation-parallel-beta-start-b",
+            viewID: homeB
+        )
+        recordOperation(
+            .succeedOperation,
+            scene: "scene-B",
+            instance: "parallel-beta",
+            marker: "operation-parallel-beta-end-b",
+            viewID: homeB
+        )
+
+        let finalAOwner: String
+        if mutation == .changeAOwnerAfterBCompletion {
+            recorder.record(
+                viewSignal(
+                    id: homeA,
+                    screen: "home",
+                    active: false,
+                    scene: "scene-A",
+                    nativeSceneID: "native-A"
+                )
+            )
+            finalAOwner = "operation-home-A-2"
+            recorder.record(
+                viewSignal(
+                    id: finalAOwner,
+                    screen: "home",
+                    active: true,
+                    scene: "scene-A",
+                    nativeSceneID: "native-A"
+                )
+            )
+        } else {
+            finalAOwner = homeA
+        }
+        recordOperation(
+            .succeedOperation,
+            scene: "scene-A",
+            instance: "parallel-alpha",
+            marker: "operation-parallel-alpha-end-a",
+            viewID: finalAOwner
+        )
         return recorder.snapshot()
     }
 

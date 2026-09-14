@@ -586,6 +586,171 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesCrossSceneOperationCommandsInReverseCompletionOrder() async throws {
+        let runID = "driver-cross-scene-operations"
+        let recorder = ProbeEventRecorder(
+            runID: runID,
+            scenarioID: runID,
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let windowA = UIWindow()
+        let windowB = UIWindow()
+        let handleA = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: windowA,
+                currentRoute: ["home"]
+            )
+        )
+        let handleB = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-B",
+                nativeSceneID: "native-B",
+                window: windowB,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handleA))
+        XCTAssertNotNil(registry.markReady(handleB))
+
+        var requestedSteps: [(ProbeStepKind, String, String)] = []
+        func execute(
+            _ step: ProbeStep,
+            scene: String,
+            nativeSceneID: String
+        ) -> ProbeStepExecutionResult {
+            guard let instance = step.value else {
+                return .rejected(reason: "operation instance is missing")
+            }
+            let operationStep: String
+            let failureReason: String?
+            switch step.kind {
+            case .startOperation:
+                operationStep = "start"
+                failureReason = nil
+            case .succeedOperation:
+                operationStep = "succeed"
+                failureReason = nil
+            case .failOperation:
+                operationStep = "fail"
+                failureReason = "error"
+            default:
+                return .rejected(reason: "unexpected operation step")
+            }
+            requestedSteps.append((step.kind, scene, instance))
+            recorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: self.semanticContext(
+                        screen: "home",
+                        scene: scene,
+                        nativeSceneID: nativeSceneID
+                    ),
+                    stepKind: step.kind,
+                    operation: ProbeOperationSignal(
+                        vitalID: nil,
+                        name: ProbeOperationContract.name,
+                        key: ProbeOperationContract.key(
+                            runID: runID,
+                            instance: instance
+                        ),
+                        step: operationStep,
+                        failureReason: failureReason
+                    ),
+                    result: .pass
+                )
+            )
+            return .accepted
+        }
+
+        let executorA = ProbeSceneStepExecutor()
+        executorA.configure(handle: handleA) { step in
+            execute(step, scene: "scene-A", nativeSceneID: "native-A")
+        }
+        let executorB = ProbeSceneStepExecutor()
+        executorB.configure(handle: handleB) { step in
+            execute(step, scene: "scene-B", nativeSceneID: "native-B")
+        }
+        let scenario = ProbeScenario(
+            identifier: runID,
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            initialWindows: ["scene-A", "scene-B"],
+            steps: [
+                ProbeStep(.startOperation, scene: "scene-A", value: "cross-success"),
+                ProbeStep(.succeedOperation, scene: "scene-B", value: "cross-success"),
+                ProbeStep(.startOperation, scene: "scene-A", value: "cross-failure"),
+                ProbeStep(.failOperation, scene: "scene-B", value: "cross-failure"),
+                ProbeStep(.startOperation, scene: "scene-A", value: "parallel-alpha"),
+                ProbeStep(.startOperation, scene: "scene-B", value: "parallel-beta"),
+                ProbeStep(.succeedOperation, scene: "scene-B", value: "parallel-beta"),
+                ProbeStep(.succeedOperation, scene: "scene-A", value: "parallel-alpha"),
+            ],
+            completionConditions: [],
+            expectedSemanticTimeline: []
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handleA, executor: executorA)
+        driver.register(handle: handleB, executor: executorB)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            requestedSteps.map(\.0),
+            [
+                .startOperation,
+                .succeedOperation,
+                .startOperation,
+                .failOperation,
+                .startOperation,
+                .startOperation,
+                .succeedOperation,
+                .succeedOperation,
+            ]
+        )
+        XCTAssertEqual(
+            requestedSteps.map(\.1),
+            [
+                "scene-A",
+                "scene-B",
+                "scene-A",
+                "scene-B",
+                "scene-A",
+                "scene-B",
+                "scene-B",
+                "scene-A",
+            ]
+        )
+        XCTAssertEqual(
+            requestedSteps.map(\.2),
+            [
+                "cross-success",
+                "cross-success",
+                "cross-failure",
+                "cross-failure",
+                "parallel-alpha",
+                "parallel-beta",
+                "parallel-beta",
+                "parallel-alpha",
+            ]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            8
+        )
+    }
+
     func testDrivesSameManualKeyAcrossExactScenesAndStopsInReverseOrder() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-same-key-manual-two-scenes",
