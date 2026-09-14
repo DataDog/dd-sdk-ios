@@ -103,9 +103,9 @@ and RUM UUID evidence distinguish it from an ignored touch.
 
 Current execution order:
 
-No product decision blocks the next internal manual-authority or complete-
-destination presentation slice. Public names and exact Swift/Objective-C
-signatures remain gated on normal API review.
+No product decision blocks the remaining internal work. The complete-destination
+Sheet and full-screen-cover slice now passes; public names and exact
+Swift/Objective-C signatures remain gated on normal API review.
 
 1. Completed in `34ba7eabf` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -149,14 +149,16 @@ signatures remain gated on normal API review.
    final marker and oracle. Finish that exact row when physical hardware is
    available; meanwhile, write the RFC/API proposal and continue independent
    simulator-capable experiments. No public API lands without normal review.
-7. Sheet half completed in `f277763d7`, `2b9759446`, and `EXP-123` through
-   `EXP-125`. The exact-scene router publishes Sheet M1 while a UI-attached
+7. Presentation slice completed in `f277763d7`, `2b9759446`, `56e7bf2fe`, and
+   `EXP-123` through `EXP-126`. The exact-scene router publishes the semantic
+   Sheet or full-screen-cover M1 while a UI-attached
    suppression-only state excludes only its automatic presentation controller
-   until native dismissal. The clean run passes 14/14 with H1 -> M1 -> fresh H2,
-   no automatic Sheet, and immediate plus settled dismiss work on H2. `EXP-124`
-   proves an outgoing aggregate's delayed final snapshot is not an authority
-   interval. Add the equivalent full-screen-cover path before closing the
-   approved complete-destination presentation slice.
+   until native dismissal. Separate clean runs each pass 14/14 with H1 -> M1 ->
+   fresh H2, no automatic presentation duplicate, and immediate plus settled
+   dismiss work on H2. `EXP-124` proves an outgoing aggregate's delayed final
+   snapshot is not an authority interval. The Sheet backend set has 29 events;
+   full-screen cover has 28; both report zero errors or crashes. Next prove
+   sibling-container isolation before API review.
 8. Completed as a negative discriminator in `dc863758f` and `EXP-120`: direct
    keyed manual start/stop over automatic H1 does not provide manual authority.
    Automatic discovery displaced M1 within 31–48 ms, and the intended M1
@@ -194,7 +196,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-125`. It still
+decision record after `EXP-126`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -311,14 +313,14 @@ experiment; it does not itself change the SDK support verdict.
    The first run kept M1 authoritative but revealed a staged generic fallback.
    The second rejects that structural candidate, retains Home, and passes 16/16
    with exact backend H1/M1/H2 ownership. The probe plan remains 65/65.
-15. Sheet completed in `f277763d7`, `2b9759446`, and `EXP-123` through
-   `EXP-125`: drive the complete semantic destination through exact-scene start
-   and stop while a mounted suppression-only boundary excludes its automatic
-   presentation host. Separate semantic authority from the outgoing aggregate's
-   delivery lifetime. The final clean run passes 14/14 locally and in backend
-   intake with H1/M1/fresh-H2 ownership, no automatic Sheet, and zero errors or
-   crashes. The probe plan passes 68/68. Clone the discriminator for
-   full-screen-cover before declaring presentation coverage complete.
+15. Presentation coverage completed in `f277763d7`, `2b9759446`, `56e7bf2fe`,
+   and `EXP-123` through `EXP-126`: drive the complete semantic destination
+   through exact-scene start and stop while a mounted suppression-only boundary
+   excludes its automatic presentation host. Separate semantic authority from
+   the outgoing aggregate's delivery lifetime. Independent clean Sheet and
+   full-screen-cover runs each pass 14/14 locally and in backend intake with
+   H1/M1/fresh-H2 ownership, no automatic presentation duplicate, and zero errors
+   or crashes. The probe plan passes 69/69.
 16. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
@@ -329,7 +331,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, exact scene lifecycle, and
-coexistence harness is implemented through `EXP-125`: three clean
+coexistence harness is implemented through `EXP-126`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -351,8 +353,11 @@ failures: immediate legacy Sheet dismissal work remains on S1, while automatic
 discovery preempts a legacy direct manual M1. The exact-scene manual successor
 passes, and the complete-destination Sheet successor now passes 14/14: semantic
 M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
-fresh H2 before immediate and settled work. The test plan is 68/68. Full-screen
-cover remains a separate required discriminator rather than inferred parity.
+fresh H2 before immediate and settled work. `EXP-126` independently repeats the
+same complete-destination contract for `fullScreenCover`, including target-scoped
+dedup through native dismissal and a fresh H2 before both dismiss pairs. The test
+plan is 69/69. Presentation-style parity is now closed internally; sibling
+container scope and reviewed public APIs remain.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -750,9 +755,11 @@ restores H2 without a duplicate, but immediate `onDismiss` work still owns S1.
 presentation host. The suppression-only subtree boundary in `f277763d7` and the
 corrected interval oracle in `2b9759446` close the Sheet path: `EXP-125` has exact
 H1/M1/fresh-H2 ownership before immediate work and no automatic Sheet. The
-presentation replaces the scene's current RUM destination. Full-screen-cover
-parity is the next internal requirement; the public router integration still
-requires API review.
+presentation replaces the scene's current RUM destination. Commit `56e7bf2fe`
+adds an independent full-screen-cover discriminator, and `EXP-126` passes the
+same 14/14 contract with no automatic cover and exact H1/M1/fresh-H2 ownership.
+The public router integration still requires API review; sibling-container scope
+is the next simulator-capable authority discriminator.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting

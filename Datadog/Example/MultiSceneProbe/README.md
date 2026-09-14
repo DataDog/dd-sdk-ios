@@ -56,6 +56,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
+| `swiftui.coexistence.automatic-scene-targeted-full-screen-cover` | `EXP-126` | Independent signal-driven PASS 14/14 with semantic full-screen cover, no automatic duplicate, and fresh Home before immediate dismiss work |
 | `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120`–`EXP-122` | Legacy direct-command baseline FAIL; internal exact-scene successor PASS 16/16 with authoritative Compose and fresh Home H2 |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
@@ -89,7 +90,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 68/68. The stack
+future Execution Context seam. The generated test plan passes 69/69. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -116,7 +117,10 @@ delay M1's final aggregate snapshot after semantic stop. `EXP-125` separates the
 semantic authority interval from the mounted presentation-subtree interval and
 passes 14/14 locally and in backend intake. It contains no automatic Sheet;
 active work owns M1 and immediate plus settled dismiss work owns fresh H2. The
-same shape still requires a separate full-screen-cover scenario.
+independent `EXP-126` scenario repeats that strict contract for
+`fullScreenCover`: it passes 14/14 locally and in backend intake, creates no
+automatic `ProbeFullScreenCoverView`, and assigns immediate plus settled dismiss
+work to one fresh Home H2.
 `EXP-120` starts and stops a direct keyed Compose view over automatic Home. Its
 step-bounded authority interval and exact owner relations catch automatic
 preemption even when Compose starts and stops before the driver can wait for it.

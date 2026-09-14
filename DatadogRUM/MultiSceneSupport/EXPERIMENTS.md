@@ -88,8 +88,10 @@ boundary, in this order:
 | 71 | `Record manual authority and presentation decisions` | Approved underlying-navigation, nesting, targeted-pairing, and complete SwiftUI presentation-destination contracts |
 | 72 | `Preserve semantic presentation authority through dismissal` | Suppression-only SwiftUI presentation boundary plus underlying-navigation, nested-manual, and duplicate-start regressions |
 | 73 | `Exercise semantic SwiftUI sheet authority` | Exact-scene semantic Sheet lifecycle, target-scoped automatic suppression, presentation-subtree intervals, and adversarial oracle coverage |
+| 74 | `Document semantic SwiftUI sheet evidence` | `EXP-123` through `EXP-125` local/backend evidence, aggregate-lifetime oracle correction, validation snapshot, and exact resume state |
+| 75 | `Exercise semantic SwiftUI full-screen authority` | Independent `fullScreenCover` lifecycle, complete-destination resolver state, target-scoped automatic suppression, and strict dismiss ownership oracle |
 
-Rows 1-73 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-75 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -108,6 +110,7 @@ Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
 is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
 `dc863758f`. Rows 67-69 are `ddfc38008`, `94075aa47`, and `0394ad6cc`.
 Rows 70-73 are `6e4e5e892`, `d0bcebaf2`, `f277763d7`, and `2b9759446`.
+Rows 74-75 are `e0bd4a87d` and `56e7bf2fe`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -266,6 +269,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-123 | `scene-targeted-sheet-20260914-0208-a` | `33b814f6-c709-4f14-bc08-ffebd43f4203` | iPadOS 27 simulator | Exact-scene Sheet lifecycle without a UI-attached suppression boundary. The semantic Sheet M1 was authoritative, but automatic discovery still emitted structural `NavigationStackHostingController` churn and a redundant automatic `ProbeSheetView` presentation-host occurrence. The transient automatic presentation preempted the early revealed Home and produced two returned-Home occurrences. Pre-Sheet, active-Sheet, immediate-dismiss, and settled owners otherwise remained observable; zero errors or crashes occurred. This rejects handler-stack authority alone as a complete semantic-presentation integration. |
 | EXP-124 | `semantic-sheet-suppression-20260914-0222-a` | `8101b16d-ed17-4ded-8a29-c9bbf8aa219b` | iPadOS 27 simulator | First suppression-only presentation-boundary run. Mapper output contains exactly launch, the startup fallback, H1, semantic Sheet M1, and fresh H2; active work owns M1 and both dismiss pairs own H2, with no automatic `ProbeSheetView`. The old oracle nevertheless failed because a pending Sheet Resource delayed M1's final aggregate snapshot until after H2 started. This is an oracle interval defect, not a RUM ownership failure: aggregate delivery lifetime is not semantic presentation authority. |
 | EXP-125 | `semantic-sheet-authority-20260914-0232-a` | `c01631fb-8b2c-4071-b7c3-78c6f042774f` | iPadOS 27 simulator | Clean complete-destination Sheet acceptance after `f277763d7` and `2b9759446`. The oracle passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `76aada56…`, semantic Sheet M1 `81ecbf07…`, and fresh H2 `b7e26b43…`. No automatic `ProbeSheetView` occurs while its native presentation subtree is mounted. Pre-Sheet work owns H1, active work owns M1, and immediate plus settled dismissal work own the same fresh H2. Backend intake has 29 exact-session events: one session, five views, ten actions, ten Resources, two long tasks, and one vital, with zero errors or crashes. Probe tests pass 68/68 and the complete RUM suite passes 1,169/1,169. |
+| EXP-126 | Uncaptured setup `semantic-full-screen-cover-authority-20260914-0304-a`; accepted `semantic-full-screen-cover-authority-20260914-0312-b` | none claimed; `ba5d005c-ce65-40eb-b639-2845e570f70b` | iPadOS 27 simulator | Independent complete-destination `fullScreenCover` acceptance after `56e7bf2fe`. The first Xcode interaction session expired before capture and receives no semantic or backend claim. The explicitly uninstalled retry passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `700cf5c7…`, semantic Cover M1 `6cc95aa2…`, and fresh H2 `baf8d431…`. No automatic `ProbeFullScreenCoverView` occurs while the native cover subtree is mounted. Pre-cover work owns H1, active work owns M1, and immediate plus settled dismissal work own H2. Backend intake has 28 exact-session events: one session, five views, ten actions, ten Resources, one long task, and one vital, with zero errors or crashes. Probe tests pass 69/69; build-for-testing, repository lint, and `git diff --check` pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3503,6 +3507,73 @@ same-key A/B targeting remain open.
 Runtime artifacts use the prefix
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-125 Semantic Sheet Authority-02_33_30_317`.
 
+### 2026-09-14 — EXP-126: semantic full-screen-cover authority acceptance
+
+Commit `56e7bf2fe` generalizes the probe's presentation model and adds an
+independent strict scenario for SwiftUI `fullScreenCover`. It does not infer
+support from the Sheet result: the scenario has its own presentation command,
+semantic view name/key, router-authority interval, native-subtree interval,
+dismiss markers, source/owner expectations, and catalog regression. Sheet and
+full-screen cover share only the harness implementation needed to express the
+same approved product contract.
+
+The initial `semantic-full-screen-cover-authority-20260914-0304-a` launch is not
+classified. Its Xcode interaction session expired before a hierarchy or terminal
+JSONL capture, and no backend session is claimed for it. A new clean run was
+therefore created instead of inferring a result from stale simulator state.
+
+Before `semantic-full-screen-cover-authority-20260914-0312-b`, the exact probe
+bundle was uninstalled and its app-container lookup returned ENOENT. The run's
+single terminal result passes 14/14 with no issue. Its exact mapper sequence is:
+
+1. ApplicationLaunch `1f03e92f-7f8c-4c40-b8f1-ce460ec902c8`.
+2. Expected startup-only fallback `a2dc9183-66bb-49af-be2c-c2ca116fb90e`.
+3. Home H1 `700cf5c7-041b-45c7-854a-64f050580e18`.
+4. Semantic full-screen-cover M1 `6cc95aa2-d685-4116-8ddd-02a81e177d0e`.
+5. Fresh Home H2 `baf8d431-c728-431f-be4b-752066fc8784`.
+
+The `manual-full-screen-cover-active` authority interval spans recorder
+sequences 32–61 and contains no automatic view. The
+`swiftui-full-screen-cover-subtree` interval spans sequences 33–70 and contains
+no automatic `ProbeFullScreenCoverView`. H2 starts at sequence 63, after exact
+semantic authority stops. M1's delayed final aggregate arrives at sequence 69,
+and native subtree suppression ends at sequence 70. This independently confirms
+the `EXP-124`/`EXP-125` distinction between semantic ownership, aggregate
+delivery, and native subtree lifetime.
+
+The decisive mapper events are:
+
+- pre-cover action `d366f046-2da9-4782-a4de-ea2f0b02660d` and Resource
+  `f2f57ccc-660c-48d8-8183-ed8d637718d0` own H1;
+- active-cover action `8b15d5bf-cefb-4b29-95e1-2e54b63b9e46` and Resource
+  `c0e0ed3f-e4a3-47a0-a90e-6bdd3e3c3c47` own M1;
+- immediate-dismiss action `d5bfd375-6f37-4bb4-bbc4-1a07c6a8e7f1` and Resource
+  `3cbd69e0-d7d2-4f91-8e0e-52b549d0e345` own H2; and
+- settled-dismiss action `118ef52d-864d-45c8-8490-5f63e4b1fdc7` and Resource
+  `6626bd20-457c-4f40-a066-3b900615727d` own the same H2.
+
+Datadog intake for session `ba5d005c-ce65-40eb-b639-2845e570f70b`
+independently returns 28 exact-run documents: one session, five views, ten
+actions, ten Resources, one long task, and one vital. The backend owners and
+view IDs match the mapper, `session.error_count` and `session.crash_count` are
+zero, and all queried documents carry the requested
+`@context.probe.run_id`.
+
+The probe builds for testing and passes 69/69. Repository lint reports zero
+violations across 713 source and 699 test files, and `git diff --check` passes.
+The production RUM implementation did not change in this slice, so the existing
+clean 1,169/1,169 RUM result remains the relevant regression gate. Internal
+complete-destination presentation parity is now closed for Sheet and full-screen
+cover. Public API review, sibling-container isolation, and live same-key A/B
+targeting remain open.
+
+Runtime artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-126 Full Screen Cover 0312b-03_08_59_519`.
+The successful Xcode build log is
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-030132.txt`;
+the 69-test summary is
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/BE82E273-1149-4FDD-9833-56FACB9398D3.txt`.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3609,6 +3680,9 @@ Runtime artifacts use the prefix
   UIKit can retain the hosting controller through dismissal. Keep the UI-attached
   boundary active until the subtree actually disappears and reject a delayed
   automatic view for that presentation by semantic name (`EXP-125`).
+- Do not infer a result after an Xcode device-interaction key expires. The first
+  `EXP-126` launch had no captured terminal JSONL or hierarchy; start a newly
+  identified, explicitly uninstalled run and classify only that evidence.
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.

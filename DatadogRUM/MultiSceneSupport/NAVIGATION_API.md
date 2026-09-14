@@ -233,8 +233,10 @@ controller. The complete internal shape has two responsibilities: the router
 publishes the semantic destination, and a UI-attached boundary suppresses
 automatic discovery only for the matching native subtree through dismissal.
 `EXP-125` validates exact H1 → Sheet M1 → fresh H2, no automatic Sheet, and
-immediate plus settled dismiss work on H2. Full-screen-cover parity remains
-required.
+immediate plus settled dismiss work on H2. Commit `56e7bf2fe` clones the
+discriminator for `fullScreenCover`; `EXP-126` independently passes the same
+14/14 contract with no automatic `ProbeFullScreenCoverView`. The two presentation
+styles now have separate local and backend evidence.
 
 ## SwiftUI semantic navigation
 
@@ -332,8 +334,10 @@ duplicate. A same-turn presentation mutation that never commits starts no view.
 The internal Sheet path passes this contract in `EXP-125`. Its semantic router
 authority ends before the outgoing aggregate's last mapper snapshot, while its
 UI-attached suppression remains through native subtree removal. Those are
-intentionally distinct lifetimes. Full-screen cover is not yet validated and
-cannot be inferred from the Sheet result.
+intentionally distinct lifetimes. `EXP-126` repeats this independently for
+`fullScreenCover`: the exact-scene semantic occurrence replaces Home, dismissal
+starts a fresh Home before immediate customer work, and target-scoped suppression
+lasts until the native cover subtree disappears.
 
 ## Required review and test matrix
 
@@ -380,9 +384,8 @@ Semantic SwiftUI navigation requires:
 
 ## API-review questions
 
-No product-behavior decision blocks the next internal manual-authority or
-presentation experiment. The remaining questions are public shape, compatibility,
-and implementation-boundary review:
+No product-behavior decision blocks implementation. The remaining questions are
+public shape, compatibility, and implementation-boundary review:
 
 1. Wrapper, modifier with destination builders, or another shape that provides
    the proven materialization boundary?

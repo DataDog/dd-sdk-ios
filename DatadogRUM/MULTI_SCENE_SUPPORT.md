@@ -99,7 +99,12 @@ subtree while the router publishes the semantic Sheet. After correcting an
 aggregate-lifetime oracle defect found in `EXP-124`, `EXP-125` passes 14/14 with
 H1 → semantic Sheet M1 → fresh H2, no automatic Sheet, and both immediate and
 settled dismiss work on H2. Backend intake agrees with zero errors or crashes.
-Full-screen-cover parity and public API review remain open.
+The independent full-screen-cover discriminator now passes the same 14/14
+contract in `EXP-126`: H1 → semantic Cover M1 → fresh H2, no automatic
+`ProbeFullScreenCoverView`, and immediate plus settled dismissal work on H2.
+Its exact backend session contains 28 events and zero errors or crashes. This
+closes the internal complete-destination presentation slice for both required
+SwiftUI presentation styles; public API and sibling-container review remain open.
 
 The existing direct keyed manual API has now been exercised over an automatic
 Home view (`EXP-120`). It is not a coexistence solution: Compose M1 was stopped
@@ -137,7 +142,7 @@ mapper-observed ownership, and evaluates fixture timelines with a pure oracle.
 It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
 signal-driven stack, split, UIKit-transition, scene-lifecycle, and
-automatic/manual coexistence scenarios now pass 68/68 tests.
+automatic/manual coexistence scenarios now pass 69/69 tests.
 Clean iPadOS 27 runs prove
 distinct Home₁ → Detail → Home₂ occurrences, no speculative view for an aborted
 push, and fresh occurrences for same- and different-type replacements. Each run
@@ -171,15 +176,15 @@ exact runs and rejected paths live in
 | Surface | Current branch status | Remaining release condition |
 | --- | --- | --- |
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
-| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125` extends that mechanism to a complete-destination Sheet boundary: exact H1 → M1 → fresh H2 with immediate dismissal work already on H2 | Add the equivalent full-screen-cover discriminator, then convert the proven wrapper/builder, presentation-boundary, and manual-overload shapes into API-reviewed integrations; cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
-| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, and `EXP-125` suppresses only the automatic controller representing the authoritative Sheet subtree through native dismissal | Prove full-screen-cover and sibling-container parity, validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the semantic-container shape through API review |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` does the same across semantic Sheet dismissal | Repeat exact precedence with simultaneously visible A/B and a different representative; finish full-screen-cover, UIKit deceleration, and targeted downstream runtime rows |
+| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125` and `EXP-126` extend that mechanism to complete-destination Sheet and full-screen-cover boundaries: each produces exact H1 → M1 → fresh H2 with immediate dismissal work already on H2 | Convert the proven wrapper/builder, presentation-boundary, and manual-overload shapes into API-reviewed integrations; prove sibling-container isolation and cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
+| Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, and `EXP-125`/`EXP-126` suppress only the automatic controllers representing authoritative Sheet and full-screen-cover subtrees through native dismissal | Prove sibling-container parity, validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the semantic-container shape through API review |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across Sheet and full-screen-cover dismissal | Repeat exact precedence with simultaneously visible A/B and a different representative; finish UIKit deceleration and targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans now use the same scene-handoff model | Finish the bounded causal matrix, simultaneous-window/reverse-completion proof, normal-handler compatibility, and overhead measurement |
 | Operations | Internal per-step cross-window routing and exact identity pass focused tests | Public target API review and live A-to-B/duplicate-start backend runs |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | The exact manual-authority set passes 8/8, the new focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 68/68 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 69/69 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -286,8 +291,9 @@ customer workflow, and required tests live only in
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `f277763d7` (`Preserve semantic presentation authority through
 dismissal`), following the exact-scene manual stack in `ddfc38008` and
-`94075aa47`. The latest probe checkpoint is `2b9759446` (`Exercise semantic
-SwiftUI sheet authority`). The approved product decision checkpoint is
+`94075aa47`. The latest probe checkpoint is `56e7bf2fe` (`Exercise semantic
+SwiftUI full-screen authority`), following the Sheet probe in `2b9759446`. The
+approved product decision checkpoint is
 `d0bcebaf2`; the public-navigation proposal starts at `685054dbe`.
 All are unsigned local development commits and must not be pushed. The
 chronological checkpoint table in
@@ -326,20 +332,22 @@ a semantic Sheet. `EXP-124` produces the correct five-view chain but exposes an
 oracle error: a pending Resource can delay an outgoing aggregate snapshot beyond
 semantic stop. The corrected `EXP-125` run passes 14/14 locally and in backend
 intake with exact H1 → semantic Sheet M1 → fresh H2, no automatic Sheet, and
-immediate plus settled dismissal work on H2. The complete chronology and every
-failed attempt live in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
+immediate plus settled dismissal work on H2. `EXP-126` independently repeats the
+complete-destination contract for `fullScreenCover`: its clean 14/14 run and 28
+backend events contain H1 → semantic Cover M1 → fresh H2, no automatic
+`ProbeFullScreenCoverView`, exact pre/active/dismiss ownership, and zero errors or
+crashes. The complete chronology and every failed attempt live in
+[EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-125`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-126`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Add full-screen-cover parity for the complete-destination presentation
-   contract proven for Sheet in `EXP-125`. The presented destination replaces
-   Home; dismissal must reveal a fresh Home occurrence before post-dismiss work;
-   the UI-attached suppression boundary must last through native subtree removal.
-   Do not infer parity from Sheet, weaken the oracle, emit intermediate
-   destinations, or start speculative views.
+1. Prove sibling-container isolation inside one SwiftUI hosting controller. One
+   authoritative semantic/manual container must suppress only its own automatic
+   representation while an unrelated sibling remains eligible and correctly
+   attributed. Do not broaden authority to a hosting-controller-wide switch.
 2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
    hardware. The simulator prefix already proves B automatic discovery remains
    eligible; require the final B marker and backend owner before closing it.
@@ -443,7 +451,7 @@ As of 2026-09-14:
   and OpenTelemetry ownership regressions pass. Native SwiftUI gestures remain
   unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 68/68. Clean runs prove
+  oracle, scene registry, and observable driver pass 69/69. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -491,6 +499,12 @@ As of 2026-09-14:
   work uses H2. The backend session has 29 events and zero errors or crashes.
   `EXP-123` preserves the failure without that boundary, and `EXP-124` preserves
   the corrected lesson that delayed aggregate snapshots are not authority clocks.
+- The independent full-screen-cover successor passes the same 14/14 contract
+  (`EXP-126`). Its mapper and 28-event backend session contain only the expected
+  startup views plus H1, semantic Cover M1, and fresh H2. No automatic
+  `ProbeFullScreenCoverView` starts; active work owns M1, both dismiss pairs own
+  H2, and zero errors or crashes appear. This closes internal presentation-style
+  parity without approving the public semantic API.
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
