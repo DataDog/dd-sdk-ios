@@ -377,7 +377,7 @@ final class ProbeScenarioDriverTests: XCTestCase {
                         ProbeSignal(
                             kind: .assertion,
                             semanticContext: self.semanticContext(screen: "compose"),
-                            name: "duplicate-keyed-manual-start-compose",
+                            name: "duplicate-keyed-manual-start-compose-scene-A",
                             result: .pass
                         )
                     )
@@ -477,6 +477,184 @@ final class ProbeScenarioDriverTests: XCTestCase {
                 .startKeyedManualView,
                 .stopKeyedManualView
             ]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            8
+        )
+    }
+
+    func testDrivesSameManualKeyAcrossExactScenesAndStopsInReverseOrder() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-same-key-manual-two-scenes",
+            scenarioID: "driver-same-key-manual-two-scenes",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let windowA = UIWindow()
+        let windowB = UIWindow()
+        let handleA = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: windowA,
+                currentRoute: ["home"]
+            )
+        )
+        let handleB = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-B",
+                nativeSceneID: "native-B",
+                window: windowB,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handleA))
+        XCTAssertNotNil(registry.markReady(handleB))
+
+        var requestedSteps: [(ProbeStepKind, String?)] = []
+        var ownerByScene = [
+            "scene-A": "home-A-1",
+            "scene-B": "home-B-1",
+        ]
+        func execute(
+            _ step: ProbeStep,
+            scene: String,
+            nativeSceneID: String
+        ) -> ProbeStepExecutionResult {
+            requestedSteps.append((step.kind, step.scene))
+            switch step.kind {
+            case .startKeyedManualView:
+                let owner = "compose-\(scene)"
+                ownerByScene[scene] = owner
+                recorder.record(
+                    viewSignal(
+                        id: owner,
+                        screen: "compose",
+                        active: true,
+                        documentVersion: 1,
+                        scene: scene,
+                        nativeSceneID: nativeSceneID
+                    )
+                )
+                recorder.record(
+                    ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: semanticContext(
+                            screen: "compose",
+                            scene: scene,
+                            nativeSceneID: nativeSceneID
+                        )
+                    )
+                )
+            case .stopKeyedManualView:
+                ownerByScene[scene] = "home-\(scene)-2"
+                recorder.record(
+                    ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: semanticContext(
+                            screen: "home",
+                            scene: scene,
+                            nativeSceneID: nativeSceneID
+                        )
+                    )
+                )
+            case .emitSceneContextMarker:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .rumAction,
+                        evidenceSource: .rumMapper,
+                        sourceContext: ProbeSourceContext(
+                            logicalSceneID: scene,
+                            nativeSceneID: nativeSceneID,
+                            screen: ownerByScene[scene]?.hasPrefix("compose") == true
+                                ? "compose"
+                                : "home"
+                        ),
+                        rumContext: ProbeRUMContext(
+                            sessionID: "session",
+                            viewID: ownerByScene[scene]
+                        ),
+                        name: step.value
+                    )
+                )
+            default:
+                return .rejected(reason: "unexpected same-key step")
+            }
+            return .accepted
+        }
+
+        let executorA = ProbeSceneStepExecutor()
+        executorA.configure(handle: handleA) { step in
+            execute(step, scene: "scene-A", nativeSceneID: "native-A")
+        }
+        let executorB = ProbeSceneStepExecutor()
+        executorB.configure(handle: handleB) { step in
+            execute(step, scene: "scene-B", nativeSceneID: "native-B")
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-same-key-manual-two-scenes",
+                trackingMode: .automatic,
+                layout: .stack,
+                initialWindows: ["scene-A", "scene-B"],
+                steps: [
+                    ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "rum-view:compose#1"
+                    ),
+                    ProbeStep(.startKeyedManualView, scene: "scene-B", value: "compose"),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-B",
+                        signal: "rum-view:compose#1"
+                    ),
+                    ProbeStep(
+                        .emitSceneContextMarker,
+                        scene: "scene-B",
+                        value: "scene-b-compose"
+                    ),
+                    ProbeStep(.stopKeyedManualView, scene: "scene-B", value: "compose"),
+                    ProbeStep(
+                        .emitSceneContextMarker,
+                        scene: "scene-A",
+                        value: "scene-a-still-compose"
+                    ),
+                    ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "compose")
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handleA, executor: executorA)
+        driver.register(handle: handleB, executor: executorB)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            requestedSteps.map(\.0),
+            [
+                .startKeyedManualView,
+                .startKeyedManualView,
+                .emitSceneContextMarker,
+                .stopKeyedManualView,
+                .emitSceneContextMarker,
+                .stopKeyedManualView,
+            ]
+        )
+        XCTAssertEqual(
+            requestedSteps.map(\.1),
+            ["scene-A", "scene-B", "scene-B", "scene-B", "scene-A", "scene-A"]
         )
         XCTAssertEqual(
             recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
@@ -1711,11 +1889,13 @@ final class ProbeScenarioDriverTests: XCTestCase {
 
     private func semanticContext(
         screen: String,
-        occurrence: Int? = nil
+        occurrence: Int? = nil,
+        scene: String = "scene-A",
+        nativeSceneID: String = "native-A"
     ) -> ProbeSemanticContext {
         ProbeSemanticContext(
-            logicalSceneID: "scene-A",
-            nativeSceneID: "native-A",
+            logicalSceneID: scene,
+            nativeSceneID: nativeSceneID,
             screen: screen,
             occurrence: occurrence
         )
@@ -1739,12 +1919,18 @@ final class ProbeScenarioDriverTests: XCTestCase {
         id: String,
         screen: String,
         active: Bool,
-        documentVersion: Int64
+        documentVersion: Int64,
+        scene: String = "scene-A",
+        nativeSceneID: String = "native-A"
     ) -> ProbeSignal {
         ProbeSignal(
             kind: .rumViewSnapshot,
             evidenceSource: .rumMapper,
-            semanticContext: semanticContext(screen: screen),
+            semanticContext: semanticContext(
+                screen: screen,
+                scene: scene,
+                nativeSceneID: nativeSceneID
+            ),
             rumContext: ProbeRUMContext(
                 sessionID: "session",
                 viewID: id,

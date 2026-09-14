@@ -24,6 +24,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case armNativeSwiftUIGesture = "arm-native-swiftui-gesture"
     case armNativeUIKitGesture = "arm-native-uikit-gesture"
     case emitMarker = "emit-marker"
+    case emitSceneContextMarker = "emit-scene-context-marker"
     case disconnectRetainedReader = "disconnect-retained-reader"
     case waitForSignal = "wait-for-signal"
 }

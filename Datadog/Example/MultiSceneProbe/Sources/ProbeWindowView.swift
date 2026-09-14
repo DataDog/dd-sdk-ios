@@ -1658,6 +1658,32 @@ struct ProbeWindowRoot: View {
                         : currentSceneScreen,
                     phase: marker
                 )
+            case .emitSceneContextMarker:
+                guard let marker = step.value else {
+                    return .rejected(reason: "marker is missing")
+                }
+                #if DEBUG
+                RUMUIEventNetworkContext.withValue(
+                    sceneIdentifier: RUMSceneIdentifier(
+                        rawValue: handle.nativeSceneID
+                    ),
+                    rumContext: nil
+                ) {
+                    ProbeRuntime.emitLifecycleMarker(
+                        window: window,
+                        sceneSessionID: handle.nativeSceneID,
+                        screen: currentSceneScreen,
+                        phase: marker
+                    )
+                }
+                #else
+                ProbeRuntime.emitLifecycleMarker(
+                    window: window,
+                    sceneSessionID: handle.nativeSceneID,
+                    screen: currentSceneScreen,
+                    phase: marker
+                )
+                #endif
             default:
                 return .rejected(
                     reason: "unsupported scene step \(step.kind.rawValue)"
@@ -1997,7 +2023,9 @@ struct ProbeWindowRoot: View {
         #endif
 
         let isDuplicate = keyedManualViewStack.contains(destination)
-        let duplicateInterval = "duplicate-keyed-manual-start-\(destination.rawValue)"
+        let duplicateInterval = keyedManualInterval(
+            "duplicate-keyed-manual-start-\(destination.rawValue)"
+        )
         if isDuplicate {
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
@@ -2020,7 +2048,7 @@ struct ProbeWindowRoot: View {
                             nativeSceneID: sceneSessionID,
                             screen: currentSceneScreen
                         ),
-                        interval: "keyed-manual-authority"
+                        interval: keyedManualInterval("keyed-manual-authority")
                     )
                 )
             }
@@ -2128,7 +2156,7 @@ struct ProbeWindowRoot: View {
                         nativeSceneID: sceneSessionID,
                         screen: destination.rawValue
                     ),
-                    interval: "keyed-manual-authority"
+                    interval: keyedManualInterval("keyed-manual-authority")
                 )
             )
         }
@@ -2140,7 +2168,9 @@ struct ProbeWindowRoot: View {
                     nativeSceneID: sceneSessionID,
                     screen: destination.rawValue
                 ),
-                interval: "keyed-manual-stop-\(destination.rawValue)"
+                interval: keyedManualInterval(
+                    "keyed-manual-stop-\(destination.rawValue)"
+                )
             )
         )
         #if DEBUG
@@ -2198,10 +2228,16 @@ struct ProbeWindowRoot: View {
                         nativeSceneID: sceneSessionID,
                         screen: revealedScreen
                     ),
-                    interval: "keyed-manual-stop-\(destination.rawValue)"
+                    interval: keyedManualInterval(
+                        "keyed-manual-stop-\(destination.rawValue)"
+                    )
                 )
             )
         }
+    }
+
+    private func keyedManualInterval(_ name: String) -> String {
+        "\(name)-\(window.label)"
     }
 
     private func keyedManualViewAttributes(

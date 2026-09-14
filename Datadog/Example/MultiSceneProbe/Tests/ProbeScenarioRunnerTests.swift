@@ -22,6 +22,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
+                "swiftui.coexistence.same-key-manual-two-scenes",
                 "swiftui.coexistence.sibling-container-authority",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
@@ -202,7 +203,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.expectedSemanticTimeline.contains {
                 $0.kind == .noViewStarted
                     && $0.rumViewOrigin == .automatic
-                    && $0.interval == "keyed-manual-authority"
+                    && $0.interval == "keyed-manual-authority-scene-A"
             }
         )
         XCTAssertEqual(
@@ -277,12 +278,13 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.completionConditions.contains {
                 $0.kind == .noViewStarted
                     && $0.rumViewOrigin == nil
-                    && $0.interval == "duplicate-keyed-manual-start-compose"
+                    && $0.interval
+                        == "duplicate-keyed-manual-start-compose-scene-A"
             }
         )
         XCTAssertTrue(
             scenario.expectedSemanticTimeline.contains {
-                $0.name == "duplicate-keyed-manual-start-compose"
+                $0.name == "duplicate-keyed-manual-start-compose-scene-A"
                     && $0.scene == "scene-A"
                     && $0.screen == "compose"
                     && $0.occurrence == 2
@@ -299,6 +301,70 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.ownerViewReferenceAction
                         == "automatic-home-before-nested-keyed-manual"
                     && $0.ownerViewRelation == .different
+            }
+        )
+    }
+
+    func testSameKeyManualTwoScenesUsesExactContextAndReverseOrderStops() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.same-key-manual-two-scenes"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(
+            Set(scenario.requiredCapabilities),
+            [.multipleScenes, .simultaneousVisibleWindows]
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .startKeyedManualView && $0.value == "compose"
+            }.compactMap(\.scene),
+            ["scene-A", "scene-B"]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .stopKeyedManualView && $0.value == "compose"
+            }.compactMap(\.scene),
+            ["scene-B", "scene-A"]
+        )
+        XCTAssertEqual(
+            Set(
+                scenario.steps.filter {
+                    $0.kind == .emitSceneContextMarker
+                }.compactMap(\.scene)
+            ),
+            ["scene-A", "scene-B"]
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.interval == "keyed-manual-authority-scene-B"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "same-key-compose-b-active"
+                    && $0.scene == "scene-B"
+                    && $0.screen == "compose"
+                    && $0.occurrence == 1
+                    && $0.ownerViewReferenceAction
+                        == "same-key-compose-a-active"
+                    && $0.ownerViewRelation == .different
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "same-key-compose-a-after-b-stop"
+                    && $0.scene == "scene-A"
+                    && $0.screen == "compose"
+                    && $0.ownerViewReferenceAction
+                        == "same-key-compose-a-active"
+                    && $0.ownerViewRelation == .same
             }
         )
     }

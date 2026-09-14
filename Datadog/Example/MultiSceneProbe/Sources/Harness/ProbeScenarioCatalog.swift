@@ -20,6 +20,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
+        "swiftui.coexistence.same-key-manual-two-scenes",
         "swiftui.coexistence.sibling-container-authority",
         "swiftui.split.automatic-baseline",
         "swiftui.split.same-type-selection",
@@ -45,6 +46,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
+        swiftUICoexistenceSameKeyManualTwoScenes,
         swiftUICoexistenceSiblingContainerAuthority,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
@@ -800,7 +802,7 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(
                 .noViewStarted,
                 rumViewOrigin: .automatic,
-                interval: "keyed-manual-authority"
+                interval: "keyed-manual-authority-scene-A"
             ),
             ProbeExpectation(
                 .viewStarted,
@@ -947,11 +949,11 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(
                 .noViewStarted,
                 rumViewOrigin: .automatic,
-                interval: "keyed-manual-authority"
+                interval: "keyed-manual-authority-scene-A"
             ),
             ProbeExpectation(
                 .noViewStarted,
-                interval: "duplicate-keyed-manual-start-compose"
+                interval: "duplicate-keyed-manual-start-compose-scene-A"
             ),
             ProbeExpectation(
                 .action,
@@ -1153,7 +1155,7 @@ enum ProbeScenarioCatalog {
                 scene: "scene-A",
                 screen: "compose",
                 occurrence: 2,
-                name: "duplicate-keyed-manual-start-compose",
+                name: "duplicate-keyed-manual-start-compose-scene-A",
                 sourceScene: "scene-A",
                 sourceScreen: "compose",
                 rumViewOrigin: .semantic,
@@ -1165,7 +1167,7 @@ enum ProbeScenarioCatalog {
                 scene: "scene-A",
                 screen: "compose",
                 occurrence: 2,
-                name: "duplicate-keyed-manual-start-compose",
+                name: "duplicate-keyed-manual-start-compose-scene-A",
                 sourceScene: "scene-A",
                 sourceScreen: "compose",
                 rumViewOrigin: .semantic,
@@ -1224,6 +1226,110 @@ enum ProbeScenarioCatalog {
                 ownerViewRelation: .same
             )
         ]
+    )
+
+    /// Starts the same customer key in two live scenes, then stops scene B
+    /// before scene A. Exact scene-context work must remain on each distinct
+    /// Compose occurrence, and stopping B must neither stop nor reassign A.
+    private static let swiftUICoexistenceSameKeyManualTwoScenes = ProbeScenario(
+        identifier: "swiftui.coexistence.same-key-manual-two-scenes",
+        trackingMode: .automatic,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "same-key-home-a-before-manual"
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "same-key-home-b-before-manual"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:compose#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "same-key-compose-a-active"
+            ),
+            ProbeStep(.startKeyedManualView, scene: "scene-B", value: "compose"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:compose#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "same-key-compose-b-active"
+            ),
+            ProbeStep(.stopKeyedManualView, scene: "scene-B", value: "compose"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "same-key-home-b-returned"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "same-key-compose-a-after-b-stop"
+            ),
+            ProbeStep(.stopKeyedManualView, scene: "scene-A", value: "compose"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "same-key-home-a-returned"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: "keyed-manual-authority-scene-B"
+            ),
+            ProbeExpectation(
+                .action,
+                name: "same-key-home-b-returned",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewReferenceAction: "same-key-home-b-before-manual",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                name: "same-key-compose-a-after-b-stop",
+                sourceScene: "scene-A",
+                sourceScreen: "compose",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "same-key-compose-a-active",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .action,
+                name: "same-key-home-a-returned",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic,
+                ownerViewReferenceAction: "same-key-home-a-before-manual",
+                ownerViewRelation: .different
+            )
+        ],
+        expectedSemanticTimeline: sameKeyManualTwoSceneTimeline()
     )
 
     /// Exercises UI-attached automatic-authority containment with two sibling
@@ -2157,6 +2263,158 @@ enum ProbeScenarioCatalog {
             $0.automaticallyNavigates = true
         }
     )
+
+    private static func sameKeyManualTwoSceneTimeline() -> [ProbeExpectation] {
+        sameKeyWorkExpectations(
+            name: "same-key-home-a-before-manual",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic
+        )
+        + sameKeyWorkExpectations(
+            name: "same-key-home-b-before-manual",
+            sourceScene: "scene-B",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterSceneOpen: "scene-B",
+            actionReference: "same-key-home-a-before-manual",
+            actionRelation: .different
+        )
+        + [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + sameKeyWorkExpectations(
+            name: "same-key-compose-a-active",
+            sourceScene: "scene-A",
+            sourceScreen: "compose",
+            scene: "scene-A",
+            screen: "compose",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            actionReference: "same-key-home-a-before-manual",
+            actionRelation: .different
+        )
+        + [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + sameKeyWorkExpectations(
+            name: "same-key-compose-b-active",
+            sourceScene: "scene-B",
+            sourceScreen: "compose",
+            scene: "scene-B",
+            screen: "compose",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            actionReference: "same-key-compose-a-active",
+            actionRelation: .different
+        )
+        + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-B",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + sameKeyWorkExpectations(
+            name: "same-key-home-b-returned",
+            sourceScene: "scene-B",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            actionReference: "same-key-compose-b-active",
+            actionRelation: .different
+        )
+        + sameKeyWorkExpectations(
+            name: "same-key-compose-a-after-b-stop",
+            sourceScene: "scene-A",
+            sourceScreen: "compose",
+            scene: "scene-A",
+            screen: "compose",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            actionReference: "same-key-compose-a-active",
+            actionRelation: .same
+        )
+        + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "compose",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        + sameKeyWorkExpectations(
+            name: "same-key-home-a-returned",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            rumViewOrigin: .automatic,
+            ownerViewStartedAfterStep: .stopKeyedManualView,
+            ownerViewStartedAfterStepValue: "compose",
+            actionReference: "same-key-compose-a-after-b-stop",
+            actionRelation: .different
+        )
+    }
+
+    private static func sameKeyWorkExpectations(
+        name: String,
+        sourceScene: String,
+        sourceScreen: String,
+        scene: String? = nil,
+        screen: String? = nil,
+        occurrence: Int? = nil,
+        rumViewOrigin: ProbeRUMViewOrigin,
+        ownerViewStartedAfterSceneOpen: String? = nil,
+        ownerViewStartedAfterStep: ProbeStepKind? = nil,
+        ownerViewStartedAfterStepValue: String? = nil,
+        actionReference: String? = nil,
+        actionRelation: ProbeRUMViewOwnerRelation? = nil
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .action,
+                scene: scene,
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: sourceScene,
+                sourceScreen: sourceScreen,
+                rumViewOrigin: rumViewOrigin,
+                ownerViewStartedAfterSceneOpen: ownerViewStartedAfterSceneOpen,
+                ownerViewStartedAfterStep: ownerViewStartedAfterStep,
+                ownerViewStartedAfterStepValue: ownerViewStartedAfterStepValue,
+                ownerViewReferenceAction: actionReference,
+                ownerViewRelation: actionRelation
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: scene,
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: sourceScene,
+                sourceScreen: sourceScreen,
+                rumViewOrigin: rumViewOrigin,
+                ownerViewReferenceAction: name,
+                ownerViewRelation: .same
+            )
+        ]
+    }
 
     private static func runtime(
         _ configure: (inout ProbeRuntimeOptions) -> Void

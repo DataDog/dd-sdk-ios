@@ -96,7 +96,8 @@ internal final class ProbeScenarioDriver {
                 if
                     signal.kind == .assertion,
                     signal.semanticContext?.logicalSceneID == scene,
-                    signal.name == "duplicate-keyed-manual-start-\(value)",
+                    signal.name
+                        == "duplicate-keyed-manual-start-\(value)-\(scene)",
                     signal.result == .pass
                 {
                     return true
@@ -755,7 +756,7 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
-        case .emitMarker:
+        case .emitMarker, .emitSceneContextMarker:
             guard
                 let scene = step.scene,
                 let marker = step.value

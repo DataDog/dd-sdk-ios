@@ -1031,6 +1031,107 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
     }
 
+    func testSameKeyManualTwoSceneContractPasses() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testSameKeyManualTwoSceneRejectsOneComposeViewIDAcrossScenes() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals(
+                mutation: .reuseComposeViewIDAcrossScenes
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("maps to both"))
+    }
+
+    func testSameKeyManualTwoSceneRejectsBWorkOnACompose() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals(
+                mutation: .attributeBWorkToACompose
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(result.issues[0].expectation?.scene, "scene-B")
+        XCTAssertEqual(result.issues[0].expectation?.screen, "compose")
+    }
+
+    func testSameKeyManualTwoSceneRejectsBStopPreemptingA() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals(
+                mutation: .stopAWhenBStops
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertEqual(
+            result.issues[0].expectation?.name,
+            "same-key-compose-a-after-b-stop"
+        )
+    }
+
+    func testSameKeyManualTwoSceneRejectsReusedBHome() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals(
+                mutation: .reuseReturnedBHome
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
+    }
+
+    func testSameKeyManualTwoSceneRejectsReusedAHome() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.same-key-manual-two-scenes"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: sameKeyManualTwoSceneSignals(
+                mutation: .reuseReturnedAHome
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
+    }
+
     func testSiblingContainerAuthorityContractPasses() throws {
         let scenario = try scenario(
             named: "swiftui.coexistence.sibling-container-authority"
@@ -1138,14 +1239,16 @@ final class ProbeSemanticOracleTests: XCTestCase {
     private func viewSignal(
         id: String,
         screen: String,
-        active: Bool
+        active: Bool,
+        scene: String = "scene-A",
+        nativeSceneID: String = "native-A"
     ) -> ProbeSignal {
         ProbeSignal(
             kind: .rumViewSnapshot,
             evidenceSource: .rumMapper,
             semanticContext: ProbeSemanticContext(
-                logicalSceneID: "scene-A",
-                nativeSceneID: "native-A",
+                logicalSceneID: scene,
+                nativeSceneID: nativeSceneID,
                 screen: screen
             ),
             rumContext: ProbeRUMContext(
@@ -1260,6 +1363,14 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case startViewDuringDuplicate
         case resumedWorkUsesFirstCompose
         case reuseInitialHomeOnReturn
+    }
+
+    private enum SameKeyManualTwoSceneMutation {
+        case reuseComposeViewIDAcrossScenes
+        case attributeBWorkToACompose
+        case stopAWhenBStops
+        case reuseReturnedBHome
+        case reuseReturnedAHome
     }
 
     private enum SiblingContainerAuthorityMutation {
@@ -1453,7 +1564,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         recorder.record(
             ProbeSignal(
                 kind: .intervalBegan,
-                interval: "keyed-manual-authority"
+                interval: "keyed-manual-authority-scene-A"
             )
         )
         if mutation == .automaticBeforeManualSnapshot {
@@ -1493,7 +1604,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         recorder.record(
             ProbeSignal(
                 kind: .intervalEnded,
-                interval: "keyed-manual-authority"
+                interval: "keyed-manual-authority-scene-A"
             )
         )
         recorder.record(viewSignal(id: "compose", screen: "compose", active: false))
@@ -1580,7 +1691,10 @@ final class ProbeSemanticOracleTests: XCTestCase {
             )
         )
         recorder.record(
-            ProbeSignal(kind: .intervalBegan, interval: "keyed-manual-authority")
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "keyed-manual-authority-scene-A"
+            )
         )
         recorder.record(viewSignal(id: "compose-1", screen: "compose", active: true))
         recordAutomaticView(id: "home-1", active: false, recorder: recorder)
@@ -1670,7 +1784,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
         recorder.record(
             ProbeSignal(
                 kind: .intervalBegan,
-                interval: "duplicate-keyed-manual-start-compose"
+                interval: "duplicate-keyed-manual-start-compose-scene-A"
             )
         )
         if mutation == .startViewDuringDuplicate {
@@ -1680,7 +1794,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
             recorder.record(
                 keyedManualWorkSignal(
                     kind: kind,
-                    name: "duplicate-keyed-manual-start-compose",
+                    name: "duplicate-keyed-manual-start-compose-scene-A",
                     viewID: resumedComposeID,
                     sourceScreen: "compose"
                 )
@@ -1689,13 +1803,13 @@ final class ProbeSemanticOracleTests: XCTestCase {
         recorder.record(
             ProbeSignal(
                 kind: .intervalEnded,
-                interval: "duplicate-keyed-manual-start-compose"
+                interval: "duplicate-keyed-manual-start-compose-scene-A"
             )
         )
         recorder.record(
             ProbeSignal(
                 kind: .assertion,
-                name: "duplicate-keyed-manual-start-compose",
+                name: "duplicate-keyed-manual-start-compose-scene-A",
                 result: .pass,
                 reason: "fixture duplicate start completed"
             )
@@ -1709,7 +1823,10 @@ final class ProbeSemanticOracleTests: XCTestCase {
             )
         )
         recorder.record(
-            ProbeSignal(kind: .intervalEnded, interval: "keyed-manual-authority")
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "keyed-manual-authority-scene-A"
+            )
         )
         if mutation != .reuseFirstComposeOnReveal {
             recorder.record(
@@ -1740,18 +1857,227 @@ final class ProbeSemanticOracleTests: XCTestCase {
         return recorder.snapshot()
     }
 
+    private func sameKeyManualTwoSceneSignals(
+        mutation: SameKeyManualTwoSceneMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "same-key-manual-two-scenes-contract",
+            scenarioID: "swiftui.coexistence.same-key-manual-two-scenes",
+            sink: { _ in },
+            clock: { 42 }
+        )
+
+        func recordStep(
+            _ kind: ProbeStepKind,
+            scene: String,
+            name: String
+        ) {
+            recorder.record(
+                ProbeSignal(
+                    kind: .stepStarted,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: scene,
+                        nativeSceneID: scene == "scene-A" ? "native-A" : "native-B"
+                    ),
+                    stepKind: kind,
+                    name: name
+                )
+            )
+        }
+
+        func recordWork(
+            name: String,
+            scene: String,
+            screen: String,
+            viewID: String
+        ) {
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                recorder.record(
+                    keyedManualWorkSignal(
+                        kind: kind,
+                        name: name,
+                        viewID: viewID,
+                        sourceScreen: screen,
+                        scene: scene,
+                        nativeSceneID: scene == "scene-A" ? "native-A" : "native-B"
+                    )
+                )
+            }
+        }
+
+        recordAutomaticView(id: "home-A-1", recorder: recorder)
+        recordWork(
+            name: "same-key-home-a-before-manual",
+            scene: "scene-A",
+            screen: "home",
+            viewID: "home-A-1"
+        )
+        recordStep(.openWindow, scene: "scene-A", name: "scene-B")
+        recordAutomaticView(id: "home-B-1", recorder: recorder)
+        recordWork(
+            name: "same-key-home-b-before-manual",
+            scene: "scene-B",
+            screen: "home",
+            viewID: "home-B-1"
+        )
+
+        recordStep(.startKeyedManualView, scene: "scene-A", name: "compose")
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "keyed-manual-authority-scene-A"
+            )
+        )
+        recorder.record(
+            viewSignal(
+                id: "compose-A",
+                screen: "compose",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        recordAutomaticView(id: "home-A-1", active: false, recorder: recorder)
+        recordWork(
+            name: "same-key-compose-a-active",
+            scene: "scene-A",
+            screen: "compose",
+            viewID: "compose-A"
+        )
+
+        recordStep(.startKeyedManualView, scene: "scene-B", name: "compose")
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "keyed-manual-authority-scene-B"
+            )
+        )
+        let composeBID = mutation == .reuseComposeViewIDAcrossScenes
+            ? "compose-A"
+            : "compose-B"
+        recorder.record(
+            viewSignal(
+                id: composeBID,
+                screen: "compose",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordAutomaticView(id: "home-B-1", active: false, recorder: recorder)
+        recordWork(
+            name: "same-key-compose-b-active",
+            scene: "scene-B",
+            screen: "compose",
+            viewID: mutation == .attributeBWorkToACompose
+                ? "compose-A"
+                : composeBID
+        )
+
+        recordStep(.stopKeyedManualView, scene: "scene-B", name: "compose")
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "keyed-manual-authority-scene-B"
+            )
+        )
+        recorder.record(
+            viewSignal(
+                id: composeBID,
+                screen: "compose",
+                active: false,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        let returnedBID: String
+        if mutation == .reuseReturnedBHome {
+            returnedBID = "home-B-1"
+        } else {
+            returnedBID = "home-B-2"
+            recordAutomaticView(id: returnedBID, recorder: recorder)
+        }
+        recordWork(
+            name: "same-key-home-b-returned",
+            scene: "scene-B",
+            screen: "home",
+            viewID: returnedBID
+        )
+
+        let aAfterBStopOwner: String
+        if mutation == .stopAWhenBStops {
+            recorder.record(
+                viewSignal(
+                    id: "compose-A",
+                    screen: "compose",
+                    active: false,
+                    scene: "scene-A",
+                    nativeSceneID: "native-A"
+                )
+            )
+            aAfterBStopOwner = "home-A-2"
+            recordAutomaticView(id: aAfterBStopOwner, recorder: recorder)
+        } else {
+            aAfterBStopOwner = "compose-A"
+        }
+        recordWork(
+            name: "same-key-compose-a-after-b-stop",
+            scene: "scene-A",
+            screen: "compose",
+            viewID: aAfterBStopOwner
+        )
+
+        recordStep(.stopKeyedManualView, scene: "scene-A", name: "compose")
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "keyed-manual-authority-scene-A"
+            )
+        )
+        if mutation != .stopAWhenBStops {
+            recorder.record(
+                viewSignal(
+                    id: "compose-A",
+                    screen: "compose",
+                    active: false,
+                    scene: "scene-A",
+                    nativeSceneID: "native-A"
+                )
+            )
+        }
+        let returnedAID: String
+        switch mutation {
+        case .reuseReturnedAHome:
+            returnedAID = "home-A-1"
+        case .stopAWhenBStops:
+            returnedAID = "home-A-2"
+        default:
+            returnedAID = "home-A-2"
+            recordAutomaticView(id: returnedAID, recorder: recorder)
+        }
+        recordWork(
+            name: "same-key-home-a-returned",
+            scene: "scene-A",
+            screen: "home",
+            viewID: returnedAID
+        )
+        return recorder.snapshot()
+    }
+
     private func keyedManualWorkSignal(
         kind: ProbeSignalKind,
         name: String,
         viewID: String,
-        sourceScreen: String
+        sourceScreen: String,
+        scene: String = "scene-A",
+        nativeSceneID: String = "native-A"
     ) -> ProbeSignal {
         ProbeSignal(
             kind: kind,
             evidenceSource: .rumMapper,
             sourceContext: ProbeSourceContext(
-                logicalSceneID: "scene-A",
-                nativeSceneID: "native-A",
+                logicalSceneID: scene,
+                nativeSceneID: nativeSceneID,
                 screen: sourceScreen
             ),
             rumContext: ProbeRUMContext(
