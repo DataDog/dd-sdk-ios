@@ -121,6 +121,8 @@ enum ProbeRuntime {
     static let usesNavigationOccurrenceSwiftUIViewTracking =
         swiftUIViewTrackingMode == "navigation-occurrence"
     static let usesTabPreloadStress = options.swiftUIStress == .tabPreload
+    static let usesSiblingContainerAuthorityStress =
+        options.swiftUIStress == .siblingContainerAuthority
 
     static func usesSemanticNavigationTracking(in logicalSceneID: String) -> Bool {
         guard usesNavigationOccurrenceSwiftUIViewTracking else {
@@ -181,7 +183,7 @@ enum ProbeRuntime {
                     : nil,
                 swiftUIViewsPredicate: usesAutomaticSwiftUIViewTracking
                     || usesNavigationOccurrenceSwiftUIViewTracking
-                    ? DefaultSwiftUIRUMViewsPredicate()
+                    ? ProbeSwiftUIViewsPredicate()
                     : nil,
                 swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(
                     isLegacyDetectionEnabled: false
@@ -224,7 +226,7 @@ enum ProbeRuntime {
                 + "scenario=\(scenario?.identifier ?? "invalid") "
                 + "run_mode=\(resolution.manifest.runMode.rawValue) "
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
-                + "swiftui_stress=\(usesTabPreloadStress ? "tab-preload" : "none") "
+                + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "automatic_detail=\(automaticallyNavigates) "
                 + "automatic_second_window=\(automaticallyOpensSecondWindow) "
                 + "automatic_close_scene_b=\(automaticallyClosesSceneB) "
@@ -457,6 +459,20 @@ private struct ProbeUIKitViewsPredicate: UIKitRUMViewsPredicate {
         )
         view.path = child.semanticRUMScreen
         return view
+    }
+}
+
+private struct ProbeSwiftUIViewsPredicate: SwiftUIRUMViewsPredicate {
+    private let defaultPredicate = DefaultSwiftUIRUMViewsPredicate()
+
+    func rumView(for extractedViewName: String) -> RUMView? {
+        guard extractedViewName != "ProbeControllerAncestryReader" else {
+            ProbeRuntime.record(
+                "filtered probe-only SwiftUI ancestry witness from automatic view tracking"
+            )
+            return nil
+        }
+        return defaultPredicate.rumView(for: extractedViewName)
     }
 }
 

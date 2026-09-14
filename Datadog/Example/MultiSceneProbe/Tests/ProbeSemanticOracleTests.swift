@@ -957,6 +957,83 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed different"))
     }
 
+    func testSiblingContainerAuthorityContractPasses() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.sibling-container-authority"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testSiblingContainerAuthorityRejectsReusedUnderlyingHome() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.sibling-container-authority"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(mutation: .reuseInitialHome)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("started after stop-keyed-manual-view"))
+    }
+
+    func testSiblingContainerAuthorityRejectsWrongManualOwner() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.sibling-container-authority"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(mutation: .manualWorkUsesHome)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("semantic RUM view"))
+    }
+
+    func testSiblingContainerAuthorityRejectsGenericFallback() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.sibling-container-authority"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(mutation: .revealGenericFallback)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(
+            result.issues[0].reason.contains(
+                "rum-view-name=AutoTracked_HostingController_Fallback"
+            )
+        )
+    }
+
+    func testSiblingContainerAuthorityRejectsDifferentSettledOwner() throws {
+        let scenario = try scenario(
+            named: "swiftui.coexistence.sibling-container-authority"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(mutation: .changeSettledOwner)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed different"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -1102,6 +1179,160 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case manualWorkUsesAutomaticHome
         case reuseInitialHomeOnReturn
         case changeOwnerBeforeSettledWork
+    }
+
+    private enum SiblingContainerAuthorityMutation {
+        case reuseInitialHome
+        case manualWorkUsesHome
+        case revealGenericFallback
+        case changeSettledOwner
+    }
+
+    private func siblingContainerAuthoritySignals(
+        mutation: SiblingContainerAuthorityMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "sibling-container-authority-contract",
+            scenarioID: "swiftui.coexistence.sibling-container-authority",
+            sink: { _ in },
+            clock: { 42 }
+        )
+
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "sibling-container-observation"
+            )
+        )
+        recordAutomaticView(id: "home-1", recorder: recorder)
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "sibling-home-before-authority",
+                    viewID: "home-1",
+                    sourceScreen: "home"
+                )
+            )
+        }
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .startKeyedManualView,
+                name: "sibling-authority"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                interval: "manual-sibling-authority"
+            )
+        )
+        recorder.record(
+            viewSignal(
+                id: "sibling-authority",
+                screen: "sibling-authority",
+                active: true
+            )
+        )
+        recordAutomaticView(id: "home-1", active: false, recorder: recorder)
+
+        let manualOwner = mutation == .manualWorkUsesHome
+            ? "home-1"
+            : "sibling-authority"
+        for (name, sourceScreen) in [
+            ("sibling-authority-active", "sibling-authority"),
+            ("task-delayed", "detail-1"),
+            ("sibling-underlying-detail-active", "detail-1")
+        ] {
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                recorder.record(
+                    keyedManualWorkSignal(
+                        kind: kind,
+                        name: name,
+                        viewID: manualOwner,
+                        sourceScreen: sourceScreen
+                    )
+                )
+            }
+        }
+        recorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                name: "sibling-controller-topology",
+                result: .pass,
+                reason: "fixture exposes independent controller branches"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .stepStarted,
+                stepKind: .stopKeyedManualView,
+                name: "sibling-authority"
+            )
+        )
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "manual-sibling-authority"
+            )
+        )
+        recorder.record(
+            viewSignal(
+                id: "sibling-authority",
+                screen: "sibling-authority",
+                active: false
+            )
+        )
+
+        let revealedOwner: String
+        if mutation == .reuseInitialHome {
+            revealedOwner = "home-1"
+        } else {
+            revealedOwner = "detail-1"
+            recordAutomaticView(
+                id: revealedOwner,
+                viewName: mutation == .revealGenericFallback
+                    ? "AutoTracked_HostingController_Fallback"
+                    : "NavigationStackHostingController",
+                recorder: recorder
+            )
+        }
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "sibling-authority-stopped-immediate",
+                    viewID: revealedOwner,
+                    sourceScreen: "detail-1"
+                )
+            )
+        }
+
+        let settledOwner: String
+        if mutation == .changeSettledOwner {
+            settledOwner = "detail-2"
+            recordAutomaticView(id: settledOwner, recorder: recorder)
+        } else {
+            settledOwner = revealedOwner
+        }
+        for kind in [ProbeSignalKind.rumAction, .rumResource] {
+            recorder.record(
+                keyedManualWorkSignal(
+                    kind: kind,
+                    name: "sibling-authority-stopped-settled",
+                    viewID: settledOwner,
+                    sourceScreen: "detail-1"
+                )
+            )
+        }
+        recorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                interval: "sibling-container-observation"
+            )
+        )
+        return recorder.snapshot()
     }
 
     private func keyedManualSignals(

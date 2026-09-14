@@ -166,6 +166,10 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .rumAction
                     && signal.name == String(value.dropFirst("marker:".count))
             }
+            if value.hasPrefix("assertion:") {
+                return signal.kind == .assertion
+                    && signal.name == String(value.dropFirst("assertion:".count))
+            }
             if value.hasPrefix("rum-view:") {
                 let destination = String(value.dropFirst("rum-view:".count))
                 let components = destination.split(
@@ -449,6 +453,19 @@ internal final class ProbeScenarioDriver {
                 return .failed("signal requirement is missing")
             }
 
+            if signal.hasPrefix("assertion:") {
+                let recordedSignals = recorder.snapshot()
+                let requirement = SignalRequirement.encoded(
+                    scene: step.scene,
+                    value: signal
+                )
+                if let assertion = recordedSignals.last(where: {
+                    requirement.matches($0, recordedSignals: recordedSignals)
+                }) {
+                    return .acknowledged(assertion)
+                }
+            }
+
             if signal.hasPrefix("scene-state:") {
                 guard
                     let scene = step.scene,
@@ -481,6 +498,9 @@ internal final class ProbeScenarioDriver {
                 after: observationCursor,
                 timeoutNanoseconds: stepTimeoutNanoseconds
             ) else {
+                if signal.hasPrefix("assertion:") {
+                    return .inconclusive("timed out waiting for \(signal)")
+                }
                 return .failed("timed out waiting for \(signal)")
             }
             return .acknowledged(observation)
@@ -535,7 +555,8 @@ internal final class ProbeScenarioDriver {
         case .startKeyedManualView, .stopKeyedManualView:
             guard
                 let scene = step.scene,
-                step.value == "compose"
+                let value = step.value,
+                value == "compose" || value == "sibling-authority"
             else {
                 return .failed("scene or keyed manual view is invalid")
             }
@@ -545,9 +566,12 @@ internal final class ProbeScenarioDriver {
             ) {
                 return .failed(reason)
             }
-            let destination = step.kind == .startKeyedManualView
-                ? "compose"
-                : "home"
+            let destination: String
+            if step.kind == .startKeyedManualView {
+                destination = value
+            } else {
+                destination = value == "compose" ? "home" : "detail-1"
+            }
             guard let signal = await wait(
                 for: .encoded(
                     scene: scene,

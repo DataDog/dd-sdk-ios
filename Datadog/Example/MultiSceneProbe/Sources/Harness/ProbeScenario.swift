@@ -45,6 +45,7 @@ enum ProbeScenarioResolutionSource: String, Codable {
 enum ProbeSwiftUIStress: String, Codable, CaseIterable {
     case none
     case tabPreload = "tab-preload"
+    case siblingContainerAuthority = "sibling-container-authority"
 }
 
 struct ProbeRuntimeOptions: Codable, Equatable {

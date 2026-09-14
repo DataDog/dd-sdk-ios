@@ -21,6 +21,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-scene-targeted-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.coexistence.automatic-keyed-manual-view",
+                "swiftui.coexistence.sibling-container-authority",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
                 "uikit.split.pop-finish",
@@ -231,6 +232,69 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 [.action, .resource]
             )
         }
+    }
+
+    func testSiblingContainerAuthorityStagesLatestAutomaticDestination() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.sibling-container-authority"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertEqual(
+            scenario.runtimeOptions.swiftUIStress,
+            .siblingContainerAuthority
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .setSwiftUIPath && $0.value == "detail-1"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .waitForSignal
+                    && $0.signal == "assertion:sibling-controller-topology"
+            }
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .emitMarker
+                    && $0.value == "sibling-underlying-detail-active"
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.interval == "manual-sibling-authority"
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewName == "AutoTracked_HostingController_Fallback"
+                    && $0.interval == "sibling-container-observation"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "sibling-underlying-detail-active"
+                    && $0.sourceScreen == "detail-1"
+                    && $0.screen == "sibling-authority"
+                    && $0.rumViewOrigin == .semantic
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "sibling-authority-stopped-immediate"
+                    && $0.ownerViewStartedAfterStep == .stopKeyedManualView
+                    && $0.ownerViewStartedAfterStepValue == "sibling-authority"
+                    && $0.ownerViewReferenceAction == "sibling-home-before-authority"
+                    && $0.ownerViewRelation == .different
+            }
+        )
     }
 
     func testUIKitSplitScenariosTreatPrimaryAsStructuralContext() throws {

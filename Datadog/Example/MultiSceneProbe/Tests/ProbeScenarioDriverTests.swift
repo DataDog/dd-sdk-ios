@@ -331,6 +331,97 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesSiblingAuthorityToLatestUnderlyingDestination() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-sibling-authority",
+            scenarioID: "driver-sibling-authority",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var requestedSteps: [ProbeStepKind] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            requestedSteps.append(step.kind)
+            let screen = step.kind == .startKeyedManualView
+                ? "sibling-authority"
+                : "detail-1"
+            recorder.record(
+                ProbeSignal(
+                    kind: .destinationMaterialized,
+                    semanticContext: self.semanticContext(screen: screen)
+                )
+            )
+            if step.kind == .startKeyedManualView {
+                recorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: self.semanticContext(screen: "detail-1"),
+                        name: "sibling-controller-topology",
+                        result: .pass
+                    )
+                )
+            }
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-sibling-authority",
+                trackingMode: .automatic,
+                layout: .stack,
+                steps: [
+                    ProbeStep(
+                        .startKeyedManualView,
+                        scene: "scene-A",
+                        value: "sibling-authority"
+                    ),
+                    ProbeStep(
+                        .waitForSignal,
+                        scene: "scene-A",
+                        signal: "assertion:sibling-controller-topology"
+                    ),
+                    ProbeStep(
+                        .stopKeyedManualView,
+                        scene: "scene-A",
+                        value: "sibling-authority"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            requestedSteps,
+            [.startKeyedManualView, .stopKeyedManualView]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            3
+        )
+    }
+
     func testDrivesAbortedPathWithoutSpeculativeView() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-abort",

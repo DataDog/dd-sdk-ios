@@ -19,6 +19,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-scene-targeted-sheet",
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.coexistence.automatic-keyed-manual-view",
+        "swiftui.coexistence.sibling-container-authority",
         "swiftui.split.automatic-baseline",
         "swiftui.split.same-type-selection",
         "swiftui.split.retained-return",
@@ -42,6 +43,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticSceneTargetedSheet,
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUICoexistenceAutomaticKeyedManualView,
+        swiftUICoexistenceSiblingContainerAuthority,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
         swiftUIStackNativePopFinish,
@@ -881,6 +883,241 @@ enum ProbeScenarioCatalog {
             ownerViewRelation: .same
         )
     ]
+
+    /// Exercises UI-attached automatic-authority containment with two sibling
+    /// NavigationStacks under one SwiftUI host. The left stack stays mounted as
+    /// a suppression-only manual boundary while the right stack navigates from
+    /// Home to Detail underneath an exact-scene manual RUM view. Stopping the
+    /// manual view must reveal only the latest right-hand destination.
+    private static let swiftUICoexistenceSiblingContainerAuthority = ProbeScenario(
+        identifier: "swiftui.coexistence.sibling-container-authority",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "sibling-home-before-authority"
+            ),
+            ProbeStep(
+                .startKeyedManualView,
+                scene: "scene-A",
+                value: "sibling-authority"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:sibling-authority#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "sibling-authority-active"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:sibling-controller-topology"
+            ),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "sibling-underlying-detail-active"
+            ),
+            ProbeStep(
+                .stopKeyedManualView,
+                scene: "scene-A",
+                value: "sibling-authority"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:sibling-authority-stopped-settled"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                interval: "manual-sibling-authority"
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                rumViewName: "AutoTracked_HostingController_Fallback",
+                interval: "sibling-container-observation"
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sibling-authority-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-authority-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sibling-authority-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-authority-stopped-immediate",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .action,
+                name: "sibling-home-before-authority",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sibling-home-before-authority",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                rumViewOrigin: .automatic,
+                ownerViewReferenceAction: "sibling-home-before-authority",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "sibling-authority-active",
+                sourceScene: "scene-A",
+                sourceScreen: "sibling-authority",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "sibling-authority-active",
+                sourceScene: "scene-A",
+                sourceScreen: "sibling-authority",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "task-delayed",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "task-delayed",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "sibling-underlying-detail-active",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                name: "sibling-underlying-detail-active",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "sibling-authority",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sibling-authority-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-home-before-authority",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sibling-authority-stopped-immediate",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-home-before-authority",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                name: "sibling-authority-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-authority-stopped-immediate",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "sibling-authority-stopped-settled",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .stopKeyedManualView,
+                ownerViewStartedAfterStepValue: "sibling-authority",
+                ownerViewReferenceAction: "sibling-authority-stopped-immediate",
+                ownerViewRelation: .same
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.swiftUIStress = .siblingContainerAuthority
+        }
+    )
 
     private static let swiftUIStackNativePopCancel = ProbeScenario(
         identifier: "swiftui.stack.native-pop-cancel",

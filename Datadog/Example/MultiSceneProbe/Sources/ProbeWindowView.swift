@@ -229,6 +229,95 @@ private struct ProbeRUMSemanticPresentationBoundary<Content: View>: View {
     }
 }
 
+private struct ProbeControllerAncestry: Equatable {
+    let identities: [ObjectIdentifier]
+    let classNames: [String]
+}
+
+/// Runtime witness used only by the sibling-container experiment. It proves
+/// that SwiftUI materialized separate controller branches before the probe
+/// draws conclusions from the SDK's controller-containment authority rule.
+private struct ProbeControllerAncestryReader: UIViewRepresentable {
+    let role: String
+    let didResolve: (String, ProbeControllerAncestry) -> Void
+
+    func makeUIView(context: Context) -> ReaderView {
+        ReaderView(role: role, didResolve: didResolve)
+    }
+
+    func updateUIView(_ uiView: ReaderView, context: Context) {
+        uiView.role = role
+        uiView.didResolve = didResolve
+        uiView.resolveAfterAttachment()
+    }
+
+    final class ReaderView: UIView {
+        var role: String
+        var didResolve: (String, ProbeControllerAncestry) -> Void
+
+        init(
+            role: String,
+            didResolve: @escaping (String, ProbeControllerAncestry) -> Void
+        ) {
+            self.role = role
+            self.didResolve = didResolve
+            super.init(frame: .zero)
+            isHidden = true
+            isUserInteractionEnabled = false
+            accessibilityIdentifier = "probe.controller-ancestry.\(role)"
+        }
+
+        required init?(coder: NSCoder) {
+            role = "unresolved"
+            didResolve = { _, _ in }
+            super.init(coder: coder)
+            isHidden = true
+            isUserInteractionEnabled = false
+        }
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            resolveAfterAttachment()
+        }
+
+        func resolveAfterAttachment() {
+            Task { @MainActor [weak self] in
+                await Task.yield()
+                self?.resolve()
+            }
+        }
+
+        private func resolve() {
+            guard window != nil else {
+                return
+            }
+            var responder: UIResponder? = self
+            var identities: [ObjectIdentifier] = []
+            var classNames: [String] = []
+            var remainingDepth = 64
+            while remainingDepth > 0, let next = responder?.next {
+                responder = next
+                remainingDepth -= 1
+                guard let controller = next as? UIViewController else {
+                    continue
+                }
+                identities.append(ObjectIdentifier(controller))
+                classNames.append(String(reflecting: type(of: controller)))
+            }
+            guard !identities.isEmpty else {
+                return
+            }
+            didResolve(
+                role,
+                ProbeControllerAncestry(
+                    identities: identities,
+                    classNames: classNames
+                )
+            )
+        }
+    }
+}
+
 /// Probe-only shape for the reviewed once-per-container integration. It keeps
 /// route-to-RUM metadata and the SDK-owned tracking modifier out of destination
 /// views while preserving route-owned placement at each materialized boundary.
@@ -331,6 +420,11 @@ struct ProbeWindowRoot: View {
     @State private var didOpenPeer = false
     @State private var swiftUIPresentation: ProbeSwiftUIPresentation?
     @State private var isKeyedManualViewActive = false
+    @State private var isSiblingAuthorityActive = false
+    @State private var siblingControllerAncestries: [String: ProbeControllerAncestry] = [:]
+    @State private var didReportSiblingControllerTopology = false
+    @State private var didBeginSiblingContainerObservation = false
+    @State private var didEndSiblingContainerObservation = false
     @State private var didScheduleClose = false
     @State private var didScheduleAbortedDetail = false
     @State private var didScheduleDetailReplacement = false
@@ -339,7 +433,9 @@ struct ProbeWindowRoot: View {
 
     var body: some View {
         Group {
-            if ProbeRuntime.usesTabPreloadStress {
+            if ProbeRuntime.usesSiblingContainerAuthorityStress {
+                siblingContainerContent
+            } else if ProbeRuntime.usesTabPreloadStress {
                 TabView {
                     navigationContent
                         .tabItem { Label("Visible", systemImage: "house") }
@@ -642,6 +738,35 @@ struct ProbeWindowRoot: View {
         }
     }
 
+    private var siblingContainerContent: some View {
+        HStack(spacing: 0) {
+            NavigationStack {
+                ProbeRUMSemanticPresentationBoundary(isEnabled: true) {
+                    ProbeSiblingAuthorityView(
+                        window: window,
+                        sceneSessionID: sceneSessionID,
+                        isActive: isSiblingAuthorityActive
+                    )
+                    .background(
+                        ProbeControllerAncestryReader(
+                            role: "left-authority",
+                            didResolve: recordSiblingControllerAncestry
+                        )
+                    )
+                }
+            }
+            .frame(minWidth: 240, idealWidth: 280, maxWidth: 320)
+
+            Divider()
+
+            navigationStack
+                .frame(maxWidth: .infinity)
+        }
+        .onAppear {
+            beginSiblingContainerObservationIfNeeded()
+        }
+    }
+
     @ViewBuilder
     private var uikitSplitContent: some View {
         if sceneSessionID == "unresolved" {
@@ -689,7 +814,7 @@ struct ProbeWindowRoot: View {
             bindingGeneration: bindingGeneration(for:),
             navigationOccurrenceSource: navigationOccurrenceSource
         ) {
-                ProbeHomeView(
+            ProbeHomeView(
                 window: window,
                 sceneSessionID: sceneSessionID,
                 openDetail: openDetail,
@@ -697,6 +822,14 @@ struct ProbeWindowRoot: View {
                 closeCurrentWindow: closeCurrentWindow,
                 openPeer: openPeer
             )
+            .background {
+                if ProbeRuntime.usesSiblingContainerAuthorityStress {
+                    ProbeControllerAncestryReader(
+                        role: "right-home",
+                        didResolve: recordSiblingControllerAncestry
+                    )
+                }
+            }
         } destinationContent: { route in
             Group {
                 switch route {
@@ -707,8 +840,16 @@ struct ProbeWindowRoot: View {
                         instance: instance,
                         readerControlGeneration: readerControlGeneration,
                         replaceWithAlternate: replaceDetailWithAlternate,
-                        didAppear: { didShowDetail = true }
+                        didAppear: detailDidAppear
                     )
+                    .background {
+                        if ProbeRuntime.usesSiblingContainerAuthorityStress {
+                            ProbeControllerAncestryReader(
+                                role: "right-detail",
+                                didResolve: recordSiblingControllerAncestry
+                            )
+                        }
+                    }
                 case .alternate:
                     ProbeAlternateView(
                         window: window,
@@ -743,6 +884,16 @@ struct ProbeWindowRoot: View {
                 + "destination=detail-2 same_type=true"
         )
         navigationPath.wrappedValue = [.detail(2)]
+    }
+
+    private func detailDidAppear() {
+        didShowDetail = true
+        if isSiblingAuthorityActive {
+            // ProbeDetailView records the materialized call-site destination.
+            // Restore the authoritative scene route while the left manual view
+            // remains current.
+            updateSceneRoute()
+        }
     }
 
     private var isShowingDetail: Bool {
@@ -829,6 +980,9 @@ struct ProbeWindowRoot: View {
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection?.screen ?? "split-empty"
         }
+        if isSiblingAuthorityActive {
+            return "sibling-authority"
+        }
         if isKeyedManualViewActive {
             return "compose"
         }
@@ -843,6 +997,9 @@ struct ProbeWindowRoot: View {
             return splitSelection.map { [$0.screen] } ?? []
         }
         let navigationRoute = navigationPathDescription(for: path)
+        if isSiblingAuthorityActive {
+            return navigationRoute + ["sibling-authority"]
+        }
         if isKeyedManualViewActive {
             return navigationRoute + ["compose"]
         }
@@ -1410,19 +1567,29 @@ struct ProbeWindowRoot: View {
                     )
                 }
             case .startKeyedManualView:
-                guard step.value == "compose" else {
+                switch step.value {
+                case "compose":
+                    setKeyedManualViewActive(true)
+                case "sibling-authority"
+                    where ProbeRuntime.usesSiblingContainerAuthorityStress:
+                    setSiblingAuthorityActive(true)
+                default:
                     return .rejected(
                         reason: "unsupported keyed manual view \(step.value ?? "nil")"
                     )
                 }
-                setKeyedManualViewActive(true)
             case .stopKeyedManualView:
-                guard step.value == "compose" else {
+                switch step.value {
+                case "compose":
+                    setKeyedManualViewActive(false)
+                case "sibling-authority"
+                    where ProbeRuntime.usesSiblingContainerAuthorityStress:
+                    setSiblingAuthorityActive(false)
+                default:
                     return .rejected(
                         reason: "unsupported keyed manual view \(step.value ?? "nil")"
                     )
                 }
-                setKeyedManualViewActive(false)
             case .pushAndRevertSwiftUIPath:
                 guard step.value == "detail-1" else {
                     return .rejected(
@@ -1457,7 +1624,9 @@ struct ProbeWindowRoot: View {
                 ProbeRuntime.emitLifecycleMarker(
                     window: window,
                     sceneSessionID: handle.nativeSceneID,
-                    screen: currentSceneScreen,
+                    screen: marker == "sibling-underlying-detail-active"
+                        ? currentNavigationScreen
+                        : currentSceneScreen,
                     phase: marker
                 )
             default:
@@ -1529,6 +1698,262 @@ struct ProbeWindowRoot: View {
                 screen: "home",
                 phase: "post-aborted-navigation"
             )
+        }
+    }
+
+    private func beginSiblingContainerObservationIfNeeded() {
+        guard
+            ProbeRuntime.usesSiblingContainerAuthorityStress,
+            !didBeginSiblingContainerObservation
+        else {
+            return
+        }
+        didBeginSiblingContainerObservation = true
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalBegan,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID == "unresolved" ? nil : sceneSessionID,
+                    screen: "sibling-authority"
+                ),
+                interval: "sibling-container-observation"
+            )
+        )
+    }
+
+    private func endSiblingContainerObservationIfNeeded() {
+        guard
+            didBeginSiblingContainerObservation,
+            !didEndSiblingContainerObservation
+        else {
+            return
+        }
+        didEndSiblingContainerObservation = true
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentNavigationScreen
+                ),
+                interval: "sibling-container-observation"
+            )
+        )
+    }
+
+    private func recordSiblingControllerAncestry(
+        role: String,
+        ancestry: ProbeControllerAncestry
+    ) {
+        guard ProbeRuntime.usesSiblingContainerAuthorityStress else {
+            return
+        }
+        if siblingControllerAncestries[role] == ancestry {
+            return
+        }
+        siblingControllerAncestries[role] = ancestry
+        let identities = ancestry.identities.map(String.init(describing:))
+        ProbeRuntime.record(
+            "sibling controller ancestry source=\(window.label) role=\(role) "
+                + "classes=\(ancestry.classNames.joined(separator: ">")) "
+                + "identities=\(identities.joined(separator: ">"))"
+        )
+        validateSiblingControllerTopology()
+    }
+
+    private func validateSiblingControllerTopology() {
+        guard !didReportSiblingControllerTopology else {
+            return
+        }
+        guard
+            let left = siblingControllerAncestries["left-authority"],
+            let rightHome = siblingControllerAncestries["right-home"],
+            let rightDetail = siblingControllerAncestries["right-detail"]
+        else {
+            return
+        }
+
+        let leftIDs = Set(left.identities)
+        let rightHomeIndex = rightHome.identities.firstIndex {
+            !leftIDs.contains($0)
+        }
+        let preexistingIDs = leftIDs.union(rightHome.identities)
+        let rightDetailIndex = rightDetail.identities.firstIndex {
+            !preexistingIDs.contains($0)
+        }
+        if let rightHomeIndex, let rightDetailIndex {
+            reportSiblingControllerTopology(
+                result: .pass,
+                reason: "right Home and fresh Detail have controller branches outside left authority: "
+                    + "home=\(rightHome.classNames[rightHomeIndex]) "
+                    + "detail=\(rightDetail.classNames[rightDetailIndex])"
+            )
+        } else {
+            reportSiblingControllerTopology(
+                result: .inconclusive,
+                reason: "iOS did not expose a fresh right Detail controller branch outside "
+                    + "the left authority and right Home ancestries"
+            )
+        }
+    }
+
+    private func reportSiblingControllerTopology(
+        result: ProbeSemanticResultState,
+        reason: String
+    ) {
+        guard !didReportSiblingControllerTopology else {
+            return
+        }
+        didReportSiblingControllerTopology = true
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentNavigationScreen
+                ),
+                name: "sibling-controller-topology",
+                result: result,
+                reason: reason
+            )
+        )
+        ProbeRuntime.record(
+            "sibling controller topology source=\(window.label) "
+                + "result=\(result.rawValue) reason=\(reason)"
+        )
+    }
+
+    private func setSiblingAuthorityActive(_ isActive: Bool) {
+        guard
+            ProbeRuntime.usesSiblingContainerAuthorityStress,
+            isSiblingAuthorityActive != isActive
+        else {
+            return
+        }
+
+        if isActive {
+            #if DEBUG
+            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+                recordSceneTargetedManualViewFailure(operation: "sibling-authority-start")
+                return
+            }
+            #endif
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "sibling-authority"
+                    ),
+                    interval: "manual-sibling-authority"
+                )
+            )
+            isSiblingAuthorityActive = true
+            updateSceneRoute()
+            let attributes: [String: Encodable] = [
+                ProbeRuntime.Attribute.runID: window.runID,
+                ProbeRuntime.Attribute.host: "native-swiftui-sibling-authority",
+                ProbeRuntime.Attribute.sourceScene: window.label,
+                ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                ProbeRuntime.Attribute.screen: "sibling-authority",
+                ProbeRuntime.Attribute.viewScene: window.label,
+                ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+                ProbeRuntime.Attribute.viewScreen: "sibling-authority"
+            ]
+            #if DEBUG
+            monitor.startView(
+                key: "probe-sibling-authority",
+                name: "ProbeSiblingAuthorityView",
+                attributes: attributes,
+                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            )
+            #else
+            RUMMonitor.shared().startView(
+                key: "probe-sibling-authority",
+                name: "ProbeSiblingAuthorityView",
+                attributes: attributes
+            )
+            #endif
+            ProbeRuntime.recordDestination(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "sibling-authority",
+                isCommitted: true
+            )
+            ProbeRuntime.record(
+                "sibling manual authority started source=\(window.label) "
+                    + "native=\(sceneSessionID)"
+            )
+            return
+        }
+
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: "sibling-authority"
+                ),
+                interval: "manual-sibling-authority"
+            )
+        )
+        #if DEBUG
+        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+            recordSceneTargetedManualViewFailure(operation: "sibling-authority-stop")
+            return
+        }
+        monitor.stopView(
+            key: "probe-sibling-authority",
+            attributes: [
+                ProbeRuntime.Attribute.runID: window.runID,
+                ProbeRuntime.Attribute.sourceScene: window.label,
+                ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                ProbeRuntime.Attribute.screen: "sibling-authority"
+            ],
+            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+        )
+        #else
+        RUMMonitor.shared().stopView(key: "probe-sibling-authority")
+        #endif
+        isSiblingAuthorityActive = false
+        updateSceneRoute()
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentNavigationScreen,
+            isCommitted: true
+        )
+        ProbeRuntime.record(
+            "sibling manual authority stopped source=\(window.label) "
+                + "native=\(sceneSessionID) revealed=\(currentNavigationScreen)"
+        )
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentNavigationScreen,
+            phase: "sibling-authority-stopped-immediate"
+        )
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled, !isSiblingAuthorityActive else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: currentNavigationScreen,
+                phase: "sibling-authority-stopped-settled"
+            )
+            try? await Task.sleep(for: .milliseconds(150))
+            guard !Task.isCancelled, !isSiblingAuthorityActive else {
+                return
+            }
+            endSiblingContainerObservationIfNeeded()
         }
     }
 
@@ -1682,6 +2107,34 @@ struct ProbeWindowRoot: View {
             currentSceneRoute,
             for: handle
         )
+    }
+}
+
+private struct ProbeSiblingAuthorityView: View {
+    let window: ProbeWindow
+    let sceneSessionID: String
+    let isActive: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            ProbeHeading(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: "sibling-authority"
+            )
+            Text("Sibling authority container")
+                .font(.headline)
+            Text(
+                isActive
+                    ? "This container is the exact-scene RUM destination."
+                    : "This container remains mounted only to test scoped automatic suppression."
+            )
+            .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .padding(24)
+        .navigationTitle("Authority")
+        .accessibilityIdentifier("probe.native.\(window.label).sibling-authority")
     }
 }
 
