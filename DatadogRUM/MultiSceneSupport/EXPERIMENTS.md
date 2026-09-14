@@ -100,8 +100,11 @@ boundary, in this order:
 | 83 | `Update the multi-scene support checkpoint` | Progressive-disclosure checkpoint through `EXP-130`, consolidated evidence, aligned next-work order, and signed-history handoff |
 | 84 | `Prepare cross-scene operation attribution probe` | `EXP-131` A-to-B success/failure plus same-name distinct-key reverse-completion driver and adversarial ownership fixtures |
 | 85 | `Exercise UIKit scroll attribution across navigation` | `EXP-132` threshold-qualified real `UITableView` fling, navigation during deceleration, exact-once origin action, fresh-destination follow-up ownership, and adversarial oracle coverage |
+| 86 | `Update multi-scene support through UIKit scroll validation` | Documentation checkpoint through `EXP-132`, deferred single-scene extraction gate, simulator/hardware routing, and exact resume state |
+| 87 | `Exercise trace-only URLSession attribution across scenes` | `EXP-133` held Trace-only URLSession completion after A→B representative churn, exact start-view/session oracle, no-RUM-Resource contract, and adversarial coverage |
+| 88 | `Exercise trace-only reverse completion across scenes` | `EXP-134` independent A/B Trace-only requests, opposite-scene representatives at B-before-A completion, exact start-owner/session oracle, and adversarial coverage |
 
-Rows 1-85 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-87 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -122,9 +125,13 @@ is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
 Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
 Rows 74-79 are `f1c0547b6`, `c70920c94`, `100fa116a`, `45ec5656a`,
 `0c6b35770`, and `b6b1b57bc`.
-Rows 80-85 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
-`a653e29f2`, and `3c9730805`. All six signatures were verified against the
-configured Datadog developer key before the branch advanced.
+Rows 80-87 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
+`a653e29f2`, `3c9730805`, `99e6c4a29`, and `130ba7646`. All eight signatures
+were verified against the configured Datadog developer key before the branch
+advanced.
+Row 88 is local development commit `9d5be7be2`. It is intentionally unsigned
+because the SSH signing agent returned `Connection refused`; re-sign it before
+the next signed freeze or any handoff that treats the branch as release-ready.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -158,6 +165,17 @@ project file, or xcconfig. The intervening documentation-only checkpoint is
 signed commit `140e57c11` with frozen tree
 `ac22bf1ad1a4adc4d60bfa00d8a375b9aa8a4851`. This closes the signing blocker
 without an unsigned fallback.
+
+The next documentation checkpoint is signed commit `99e6c4a29`, frozen tree
+`45cbee4510ef4f15540859b1823a9494a6152477`. `EXP-133` is signed commit
+`130ba7646`, frozen tree `942f1207f6e6dad9cfab6c897894f2e1ea5f7a15`.
+Its 12-path boundary contains only the native probe source, tests, XcodeGen
+specification, and regenerated standalone probe project. It does not contain the
+repository project, local xcconfig, support documentation, or intake artifacts.
+`EXP-134` is the isolated six-path development commit `9d5be7be2`, frozen tree
+`efe7f2a754c0191ebfacd1952eb422a41fafa315`. It contains only scenario,
+driver, contract, and focused test changes. Its pending signature is a known
+development-state exception, not a release-ready checkpoint.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 an exact `git add` is not enough: an ordinary `git commit` still commits every
@@ -307,6 +325,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-130 | `operations-navigation-20260914-1015-a` | `74b23c67-b6b7-4917-86ed-2ff8c7c4f559` | iPadOS 27 simulator | Operation per-step navigation and duplicate-start acceptance. An explicit uninstall plus missing-container check established a clean run. The named scenario passes 27/27 and the full probe plan passes 93/93. Six fresh semantic occurrences carry success H1 `d6617ab6…` → D1 `11e4efeb…`, failure H2 `88e9e4d6…` → D2 `e7a48e28…`, and duplicate H3 `b6d3feb0…` → D3 `e0b3e68c…`. Backend intake has seven raw `operation_step` documents and three reduced Operations: success H1→D1, failure H2→D2 with its error, and duplicate D3→D3. The duplicate raw sequence is `[start H3, start D3, end D3]`; no synthetic H3 end exists, so the earlier operation remains open for the documented four-hour timeout. The corrected warning appeared exactly, and the session contains no error event or crash. Local assertion signals prove only the API call site; raw/reduced backend documents are the Operation attribution oracle. Cross-scene A-to-B and the public view target remain open. |
 | EXP-131 | No live run attempted | No backend session claimed | Xcode 27 hostless tests; hardware run pending | Prepared `operations.cross-scene.lifecycle`. Its exact eight-step driver starts success/failure in A and completes them in B, then starts same-name `parallel-alpha` and `parallel-beta` instances in A and B and completes beta before alpha. The 100/100 hostless plan includes a passing fixture and rejects a shared A/B view ID, B Home owned by A, a B completion attributed to A, and A owner drift after B completes. Local assertion/action/Resource signals prove invocation and scene context only; raw and reduced Operation documents remain the acceptance oracle. Build-for-testing, repository lint, and `git diff --check` pass. No redundant simulator run was attempted after `EXP-129` established that this two-scene compositor topology expires before the decisive steps. |
 | EXP-132 | Incomplete `uikit-scroll-20260914-1156-b`; accepted `uikit-scroll-20260914-1205-c` | `47557219-bfe9-4a52-8ed2-c717d3fcf9dd`; `ef240096-9449-464b-a20d-59888693f444` | iPadOS 27 simulator | Real UIKit scroll/navigation acceptance. Earlier Xcode interaction sessions expired before a gesture and are invalid tooling attempts. The first completed run produced one origin `.scroll` locally and in backend intake, but its oracle did not measure whether lift speed exceeded the SDK's 500 pt/s swipe threshold, so it is retained as incomplete. After adding the fail-closed threshold witness, an explicit uninstall and missing-container check established a clean accepted run. A 3,792 pt/s lift began deceleration on Secondary 2 `2a4f0428…`; Secondary 3 `08802270…` appeared before deceleration ended. Exactly one `uikit-scroll-origin` action `23ceac7d…` remained on Secondary 2, and the fresh destination owned its immediate action and Resource. The local oracle passes 7/7; backend returns exactly one matching action with the same type, source, and owner. No RUM error, retry, app crash, or SDK crash occurred. The full probe plan passes 109/109; repository lint and `git diff --check` pass. Signed commit `3c9730805` contains the eight probe/oracle paths. |
+| EXP-133 | Tool-incomplete `trace-only-20260914-1301-a`; accepted `trace-only-20260914-1310-b` | local-only `aa1e1aea-f5a4-4efa-96dd-37186f2aed42`; accepted `46330376-b5d0-4ee2-875c-d050aeab4c72` | iPadOS 27 simulator | Trace-only automatic URLSession owner-freezing acceptance. Attempt A reached the trace mapper with A ownership after B became representative, but the Xcode interaction session ended before a terminal result; no crash report, fatal/assertion output, or UI crash state existed, so it is tooling-incomplete rather than an SDK-crash claim. Clean retry B passes 8/8. The held request starts on A/Home H1 `4e84ed1e…`, B/Home B1 `a108479b…` becomes representative, and B releases the response. Exactly one `urlsession.request` span retains A/H1 and session `46330376…`; the B-view predicate returns zero and no matching RUM Resource exists. Raw span search and aggregate queries agree. Trace-detail lookup returned no trace for the same ID, which is retained as a backend-tool retrieval discrepancy rather than an SDK result. The full probe plan passes 115/115; repository lint and `git diff --check` pass. Signed commit `130ba7646` contains the 12 probe/project paths. |
+| EXP-134 | `trace-reverse-20260914-2330-a` | `a9d038c5-d8e4-4d82-aa09-449a6f0b82cd` | iPadOS 27 simulator | Independent Trace-only reverse-completion acceptance. A/Home H1 `b0bff76c…` starts request A, B/Home H1 `6c67dece…` starts request B, then B completes first while A is representative and A completes second while B is representative. The local oracle passes 14/14 with exactly two Trace mapper events. Backend intake contains exactly one B span on B/H1 and one A span on A/H1, zero opposite-view matches, and both spans on session `a9d038c5…`; neither Trace-only URL appears as a RUM Resource. Trace upload returned HTTP 202. The initial exact backend query returned zero before indexing caught up; later raw URL/run searches and six aggregate predicates are the accepted result. Xcode marked the launch session expired only after PASS and upload, with no crash/fatal/assertion evidence. The full probe plan passes 120/120; build-for-testing, repository lint, and `git diff --check` pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -524,6 +544,9 @@ driver reached the native navigation gesture.
   supplies it to the late writer. Four Trace tests prove that supplied A/B
   selections survive reverse completion and later representative changes. They
   do not prove that a generic request automatically selected A or B correctly.
+  `EXP-133` adds the live automatic path: after A's request-time selection is
+  established, one completion-created span retains A/H1 while B/H1 is the later
+  representative. Unknown simultaneous-window source discovery remains open.
   Requests tracked as RUM resources still avoid duplicate client spans as before.
 - The first feature-operation routing experiment remembered the scene that owned
   the start and resolved every later step against that scene's current view. It
@@ -3989,6 +4012,130 @@ probe/oracle files from tree
 `3f1edaf17f4d7dd4fe654c8738ca6cb9c09440f7`. Backend intake reports no RUM
 error, retry, app crash, or SDK crash for the accepted run.
 
+### 2026-09-14 — EXP-133: Trace-only URLSession ownership across scene churn
+
+The `traces.urlsession-cross-scene` scenario exercises the production
+Trace-owned URLSession path without enabling RUM URLSession tracking. A custom
+scenario-only `URLProtocol` holds one first-party response so the driver can
+control completion without relying on Wi-Fi or an external server.
+
+The sequence first establishes A/Home H1 and emits
+`trace-request-representative`, then starts the real automatically instrumented
+request from A. It opens B, waits for B/Home B1, and emits
+`trace-completion-representative`, proving that B is now the process
+representative. B then releases the response. The local oracle requires exactly
+one Trace mapper event named `trace-only-home-request` on A/H1 and rejects a
+missing, duplicate, B-owned, wrong-session, or accidentally RUM-Resource result.
+
+Attempt `trace-only-20260914-1301-a`, local RUM session
+`aa1e1aea-f5a4-4efa-96dd-37186f2aed42`, reached the Trace mapper after the B
+representative marker and showed A ownership. The Xcode/device interaction
+session then reported the app unavailable before the terminal summary was
+captured. There was no crash report, fatal/assertion output, or crash dialog.
+This attempt is preserved as tooling-incomplete and carries no acceptance or SDK
+crash claim.
+
+Clean retry `trace-only-20260914-1310-b` passes 8/8. Its RUM session is
+`46330376-b5d0-4ee2-875c-d050aeab4c72`; A/Home H1 is
+`4e84ed1e-3cff-45a8-a74f-5296f2aa8b94`, B/Home B1 is
+`a108479b-1833-404f-8ba9-f6026abd231e`, and B's representative marker action is
+`a224a601-5218-45fe-b578-3ec140632f35`. The Trace mapper emits exactly one
+`urlsession.request` span. It starts at `2026-09-14T11:06:40.240Z`, lasts
+870,901,585 ns, and retains A/H1 plus the same RUM session after B became
+representative.
+
+Exact backend queries over `2026-09-14T10:55:00Z` through
+`2026-09-14T11:20:00Z` find one span with trace ID
+`6aa7d54000000000a0db0c6c5798739e`, span ID `3316148314706593714`, service
+`ios-sdk-native-multi-scene-probe`, operation `urlsession.request`, HTTP 200,
+client kind, and resource
+`https://multi-scene-probe.invalid/trace-only/trace-only-20260914-1310-b/scene-A/home/trace-only-home-request`.
+The base count is one, the A/H1 predicate count is one, the B/H1 predicate count
+is zero, and the session predicate count is one. The RUM aggregate for that exact
+URL has zero Resource buckets. Trace upload returned HTTP 202. A detail lookup
+for the exact trace ID nevertheless returned `No trace found` while raw search
+and aggregates continued to find the span; this is a backend-tool retrieval
+discrepancy, not contradictory SDK telemetry.
+
+Build-for-testing completes without diagnostics. The full generated probe plan
+passes 115/115 in:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.14_12-56-59-+0200.xcresult`
+
+Its build log is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-125644.txt`
+
+Repository lint passes 713 source and 699 test files with no violations, and
+`git diff --check` passes. Signed commit `130ba7646` contains the 12 isolated
+probe/project paths. This result closes request-time Trace owner freezing across
+cross-scene representative churn. It does not close simultaneous-visible exact
+source discovery, reverse completion between two requests, shared/coalesced
+work, custom-handler compatibility, or handoff-overhead gates.
+
+### 2026-09-14 — EXP-134: Trace-only reverse completion across scenes
+
+The `traces.urlsession-reverse-completion` scenario extends the deterministic
+Trace-only URLSession fixture from one held response to independent named A and
+B requests. RUM URLSession tracking stays disabled. The driver starts A on
+A/Home H1, opens B, starts B on B/Home H1, then establishes A as representative
+before releasing B and establishes B as representative before releasing A. This
+creates a B-before-A completion order that is the reverse of A-before-B starts
+and makes completion-time representative selection wrong for both requests.
+
+The scenario and four adversarial oracle fixtures add five tests, raising the
+generated probe plan to 120/120. The oracle requires exactly one
+`trace-only-reverse-scene-b` signal on B/Home H1 followed by exactly one
+`trace-only-reverse-scene-a` signal on A/Home H1. It rejects swapped owners, a
+missing B span, and a duplicate A span. The existing driver test now also proves
+that named non-default requests travel through the exact-scene executor.
+
+The clean run `trace-reverse-20260914-2330-a` passes 14/14. Its RUM session is
+`a9d038c5-d8e4-4d82-aa09-449a6f0b82cd`; A/Home H1 is
+`b0bff76c-1fd7-4c71-b863-618b39623270`, and B/Home H1 is
+`6c67dece-3e44-4645-97af-59c953570720`. Local Trace mapper output records B's
+request first at completion on B/H1, then A's request on A/H1. The Xcode launch
+session expired only after the terminal PASS. There is no crash report,
+crash-state result, fatal output, or failed assertion. The simulator's standard
+accessibility-class warning is not classified as a crash.
+
+The Trace uploader received HTTP 202 at `2026-09-14T22:29:52.798Z`. Exact raw
+backend search over `2026-09-14T22:20:00Z` through
+`2026-09-14T23:00:00Z` returns two `urlsession.request` client spans:
+
+- request A: trace `6aa8755a000000004e49de117d84b47b`, span
+  `3965348668343851039`, HTTP 200, A/Home H1;
+- request B: trace `6aa8755b00000000ac30116fd24b1bbb`, span
+  `8285421205566233636`, HTTP 200, B/Home H1.
+
+The aggregate base count is two. The A-request/A-view and B-request/B-view
+predicates each return one; A-request/B-view and B-request/A-view each return
+zero. The expected session predicate returns two. Backend RUM intake contains
+the same A and B view UUIDs in session `a9d038c5…`, while the exact
+`/trace-only/trace-reverse-20260914-2330-a/` RUM Resource predicate returns zero.
+The first exact APM query returned zero moments after upload even though RUM had
+already indexed. A retry using the indexed `@http.url` and `@probe.run_id`
+attributes returned both spans, followed by the exact aggregates. Preserve that
+whole chain as ingestion latency, not as contradictory telemetry.
+
+Build-for-testing completed without diagnostics. The full probe plan passes
+120/120 in:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.14_23-27-28-+0100.xcresult`
+
+Its build log is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-232701.txt`
+
+Repository lint passes 713 source and 699 test files with no violations, and
+`git diff --check` passes. This closes independent two-request Trace-only
+reverse completion. It does not close shared/coalesced ownership,
+simultaneous-visible exact-source discovery, custom-handler compatibility, or
+handoff-overhead gates. Local development commit `9d5be7be2`, tree
+`efe7f2a754c0191ebfacd1952eb422a41fafa315`, contains the six isolated
+scenario/driver/test paths; it remains pending re-sign while the SSH agent is
+unavailable.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -4003,6 +4150,18 @@ error, retry, app crash, or SDK crash for the accepted run.
   telemetry and does not solve shared instrumentation or downstream context.
 - Do not expose or copy values from `Datadog.local.xcconfig` into source, logs, or
   this document.
+- Do not treat a relative-time backend Trace query as absence after the wall clock
+  or tool session has advanced. `EXP-133` initially returned zero outside its
+  moving window; the exact historical UTC interval found the accepted span and
+  its A/B/session predicates.
+- Do not treat an exact APM query issued immediately after an accepted upload as
+  final absence. In `EXP-134`, RUM events were already searchable while the first
+  APM query still returned zero. Retry the same bounded interval through an
+  independently indexed attribute such as `@http.url`, then confirm with exact
+  count and owner predicates before classifying the run.
+- Do not classify an expired Xcode/device interaction session as an app or SDK
+  crash without a crash report, fatal/assertion output, or crash UI. Preserve it
+  as tooling-incomplete and rerun from a clean install, as in `EXP-133`.
 - Do not rely on an exact `git add` path list to isolate a checkpoint while the
   local xcconfig is pre-staged. Ordinary `git commit` includes every staged path.
   Use `git commit --only -- <exact paths>` or an isolated index, then verify both

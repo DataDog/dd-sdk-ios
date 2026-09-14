@@ -64,6 +64,8 @@ The catalog currently preserves these experiment families:
 | `operations.navigation.lifecycle` | `EXP-130` | Signal-driven PASS 27/27; backend raw steps and reduced Operations prove independent start/end view attribution across same-scene navigation, failure, and duplicate-start orphan semantics |
 | `operations.cross-scene.lifecycle` | `EXP-131` | Hostless contract PASS 100/100; exact A→B success/failure and distinct-key reverse-completion oracle prepared, with live acceptance reserved for iPhone Duo or physical iPad |
 | `actions.uikit-scroll-navigation-deceleration` | `EXP-132` | Real-gesture PASS 7/7; a threshold-qualified `UITableView` fling remains exactly once on stopped Secondary 2 when fresh Secondary 3 is presented during deceleration, and backend ownership agrees |
+| `traces.urlsession-cross-scene` | `EXP-133` | Signal-driven PASS 8/8; one Trace-only URLSession request starts while A/Home H1 is representative, completes after B/Home B1 becomes representative, and emits exactly one backend span on A/H1 with no matching RUM Resource |
+| `traces.urlsession-reverse-completion` | `EXP-134` | Signal-driven PASS 14/14; independent A and B Trace-only requests complete B-before-A while the opposite scene is representative, yet exactly one backend span for each request remains on its own start-scene Home view and neither URL becomes a RUM Resource |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -96,7 +98,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 109/109. The stack
+future Execution Context seam. The generated test plan passes 120/120. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -192,6 +194,20 @@ requires exactly one `.scroll` action on Secondary 2, forbids migration to
 Secondary 3, and requires immediate follow-up work on the fresh destination. Local
 mapper output and backend intake pass; the simultaneous A/B
 different-representative action row remains hardware-gated.
+`EXP-133` adds a deterministic Trace-only URLSession completion discriminator.
+The request starts on A/Home H1, B/Home B1 becomes the process representative,
+and B releases the held response. Exactly one `urlsession.request` span keeps
+A/H1 and the original RUM session, while no matching RUM Resource is emitted.
+This validates request-time owner freezing across representative churn. It does
+not prove that the SDK can infer exact A provenance from a simultaneous visible
+window interaction when no trustworthy source reaches the call site.
+`EXP-134` extends that path to two concurrent named requests. A starts its
+request, B starts its request, then B completes while A is representative and A
+completes while B is representative. The 14/14 local oracle and backend intake
+both retain A/Home for A and B/Home for B, with one span per request and no
+Trace-only RUM Resources. This closes the two-request reverse-completion row;
+shared/coalesced work and exact simultaneous-window source discovery remain
+separate.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes
@@ -224,7 +240,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `windows.activation-sequence`, plus
 `swiftui.coexistence.sibling-container-authority` and
 `swiftui.coexistence.nested-keyed-manual-view`, plus
-`actions.uikit-scroll-navigation-deceleration`, use the
+`actions.uikit-scroll-navigation-deceleration` and
+`traces.urlsession-cross-scene`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM
@@ -272,6 +289,17 @@ callbacks, and presents Secondary 3 only after an above-threshold drag enters
 deceleration. A late deceleration callback must not migrate or duplicate the
 origin action. `EXP-132` passes this sequence locally and in backend intake; use a
 fresh explicit uninstall and a unique run ID for any regression rerun.
+
+The Trace-only URLSession driver uses a scenario-scoped custom `URLProtocol` to
+hold named first-party responses independently. `EXP-133` records an A
+representative marker, starts one real automatically traced request from A,
+opens B, records a B representative marker, then releases the response from B.
+`EXP-134` starts one request from each scene and releases them in reverse order
+while deliberately making the opposite scene representative before each
+completion. Trace mapping and the oracle require exactly one
+`urlsession.request` span on each request's captured start view and session. RUM
+URLSession tracking remains disabled for these scenarios, so matching RUM
+Resources are forbidden.
 
 Run each acceptance attempt after uninstalling the probe, with a unique run ID
 and `--probe-run-mode clean`, then join its JSONL and backend query by that ID.
