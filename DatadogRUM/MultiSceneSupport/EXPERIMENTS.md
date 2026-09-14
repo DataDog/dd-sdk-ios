@@ -6,7 +6,7 @@ The [assessment](ASSESSMENT.md) interprets this evidence; the
 [plan](PLAN.md) decides what to run next. Start at the
 [canonical overview](../MULTI_SCENE_SUPPORT.md) for the current resume point.
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## Checkpoint commit structure
 
@@ -103,8 +103,10 @@ boundary, in this order:
 | 86 | `Update multi-scene support through UIKit scroll validation` | Documentation checkpoint through `EXP-132`, deferred single-scene extraction gate, simulator/hardware routing, and exact resume state |
 | 87 | `Exercise trace-only URLSession attribution across scenes` | `EXP-133` held Trace-only URLSession completion after A→B representative churn, exact start-view/session oracle, no-RUM-Resource contract, and adversarial coverage |
 | 88 | `Exercise trace-only reverse completion across scenes` | `EXP-134` independent A/B Trace-only requests, opposite-scene representatives at B-before-A completion, exact start-owner/session oracle, and adversarial coverage |
+| 89 | `Document trace-only reverse completion evidence` | `EXP-134` local/backend evidence, signer recovery, bounded remaining causal rows, and refreshed resume state |
+| 90 | `Exercise SwiftUI structured task attribution across scenes` | `EXP-135` real SwiftUI Button tap, suspended child-task handoff/trait diagnostics, strict expected-origin oracle, and source-less fallback classification |
 
-Rows 1-87 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-90 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -125,13 +127,10 @@ is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
 Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
 Rows 74-79 are `f1c0547b6`, `c70920c94`, `100fa116a`, `45ec5656a`,
 `0c6b35770`, and `b6b1b57bc`.
-Rows 80-87 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
-`a653e29f2`, `3c9730805`, `99e6c4a29`, and `130ba7646`. All eight signatures
-were verified against the configured Datadog developer key before the branch
-advanced.
-Row 88 is local development commit `9d5be7be2`. It is intentionally unsigned
-because the SSH signing agent returned `Connection refused`; re-sign it before
-the next signed freeze or any handoff that treats the branch as release-ready.
+Rows 80-90 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
+`a653e29f2`, `3c9730805`, `99e6c4a29`, `130ba7646`, `353679bb5`,
+`0dca626df`, and `2972d3de1`. Their signatures were verified against the
+configured Datadog developer key before this checkpoint.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -172,10 +171,16 @@ The next documentation checkpoint is signed commit `99e6c4a29`, frozen tree
 Its 12-path boundary contains only the native probe source, tests, XcodeGen
 specification, and regenerated standalone probe project. It does not contain the
 repository project, local xcconfig, support documentation, or intake artifacts.
-`EXP-134` is the isolated six-path development commit `9d5be7be2`, frozen tree
-`efe7f2a754c0191ebfacd1952eb422a41fafa315`. It contains only scenario,
-driver, contract, and focused test changes. Its pending signature is a known
-development-state exception, not a release-ready checkpoint.
+`EXP-134` is signed six-path commit `353679bb5`, frozen tree
+`efe7f2a754c0191ebfacd1952eb422a41fafa315`; its documentation checkpoint is
+signed commit `0dca626df`, frozen tree
+`614e83f2d1bdad6ba166f152b9bc90c5a2bc30a9`. Temporary unsigned objects
+`9d5be7be2` and `87fedd595` were replaced with those signed commits while
+preserving their exact trees, messages, and author/committer metadata; they are
+not branch history. `EXP-135` is signed ten-path commit `2972d3de1`, frozen tree
+`05f9db5089a769acbb1fe5df79645641cc83464e`. It contains only native probe
+scenario, driver, UI, and focused-test changes; it excludes documentation, the
+repository project, local xcconfig, and tooling runbook.
 
 Because `xcconfigs/Datadog.local.xcconfig` already has a user-owned staged entry,
 an exact `git add` is not enough: an ordinary `git commit` still commits every
@@ -327,6 +332,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-132 | Incomplete `uikit-scroll-20260914-1156-b`; accepted `uikit-scroll-20260914-1205-c` | `47557219-bfe9-4a52-8ed2-c717d3fcf9dd`; `ef240096-9449-464b-a20d-59888693f444` | iPadOS 27 simulator | Real UIKit scroll/navigation acceptance. Earlier Xcode interaction sessions expired before a gesture and are invalid tooling attempts. The first completed run produced one origin `.scroll` locally and in backend intake, but its oracle did not measure whether lift speed exceeded the SDK's 500 pt/s swipe threshold, so it is retained as incomplete. After adding the fail-closed threshold witness, an explicit uninstall and missing-container check established a clean accepted run. A 3,792 pt/s lift began deceleration on Secondary 2 `2a4f0428…`; Secondary 3 `08802270…` appeared before deceleration ended. Exactly one `uikit-scroll-origin` action `23ceac7d…` remained on Secondary 2, and the fresh destination owned its immediate action and Resource. The local oracle passes 7/7; backend returns exactly one matching action with the same type, source, and owner. No RUM error, retry, app crash, or SDK crash occurred. The full probe plan passes 109/109; repository lint and `git diff --check` pass. Signed commit `3c9730805` contains the eight probe/oracle paths. |
 | EXP-133 | Tool-incomplete `trace-only-20260914-1301-a`; accepted `trace-only-20260914-1310-b` | local-only `aa1e1aea-f5a4-4efa-96dd-37186f2aed42`; accepted `46330376-b5d0-4ee2-875c-d050aeab4c72` | iPadOS 27 simulator | Trace-only automatic URLSession owner-freezing acceptance. Attempt A reached the trace mapper with A ownership after B became representative, but the Xcode interaction session ended before a terminal result; no crash report, fatal/assertion output, or UI crash state existed, so it is tooling-incomplete rather than an SDK-crash claim. Clean retry B passes 8/8. The held request starts on A/Home H1 `4e84ed1e…`, B/Home B1 `a108479b…` becomes representative, and B releases the response. Exactly one `urlsession.request` span retains A/H1 and session `46330376…`; the B-view predicate returns zero and no matching RUM Resource exists. Raw span search and aggregate queries agree. Trace-detail lookup returned no trace for the same ID, which is retained as a backend-tool retrieval discrepancy rather than an SDK result. The full probe plan passes 115/115; repository lint and `git diff --check` pass. Signed commit `130ba7646` contains the 12 probe/project paths. |
 | EXP-134 | `trace-reverse-20260914-2330-a` | `a9d038c5-d8e4-4d82-aa09-449a6f0b82cd` | iPadOS 27 simulator | Independent Trace-only reverse-completion acceptance. A/Home H1 `b0bff76c…` starts request A, B/Home H1 `6c67dece…` starts request B, then B completes first while A is representative and A completes second while B is representative. The local oracle passes 14/14 with exactly two Trace mapper events. Backend intake contains exactly one B span on B/H1 and one A span on A/H1, zero opposite-view matches, and both spans on session `a9d038c5…`; neither Trace-only URL appears as a RUM Resource. Trace upload returned HTTP 202. The initial exact backend query returned zero before indexing caught up; later raw URL/run searches and six aggregate predicates are the accepted result. Xcode marked the launch session expired only after PASS and upload, with no crash/fatal/assertion evidence. The full probe plan passes 120/120; build-for-testing, repository lint, and `git diff --check` pass. |
+| EXP-135 | Timeout/tooling attempts `swiftui-button-task-20260915-0005-a`, `swiftui-button-task-20260915-0007-b`, `swiftui-button-task-trait-20260915-0030-a`, `swiftui-button-task-trait-20260915-0040-a`; pre-diagnostic failure `swiftui-button-task-20260915-0010-c`; accepted boundary `swiftui-button-task-trait-20260915-0050-a` | accepted `a423021e-49d1-455e-ac11-bf018c517c82`; pre-diagnostic `6c024fcd-7ffb-49d2-99d8-d7e6b349e426`; other incomplete IDs retained below | iPadOS 27 simulator | Ordinary SwiftUI Button → structured-task causal-boundary result. A hierarchy-derived physical tap emits exactly one automatic `tap on SwiftUI_Button` action on A/Home H1 `308f0a66…`. SDK handoff is nil in the button callback, child-task start, and resumed task; UIKit's ambient scene trait starts as A and changes to B after suspension and B takeover. The resumed manual Action `888ffe58…` and Resource `3e8b5cf4…` carry source A diagnostics but are attributed to B/Home H1 `cb3d2a7b…`, the approved source-less representative fallback. The strict expected-A scenario terminates `FAIL` after four matched expectations, intentionally preserving the unsupported exact-origin contract. Backend intake has 28 events, one automatic tap, both resumed events on B, and zero errors/crashes. The full probe plan passes 126/126; build-for-testing, repository lint, and `git diff --check` pass. Exact async origin requires explicit targeting/scoping; `UITraitCollection.current` is not durable provenance. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -4133,8 +4139,110 @@ reverse completion. It does not close shared/coalesced ownership,
 simultaneous-visible exact-source discovery, custom-handler compatibility, or
 handoff-overhead gates. Local development commit `9d5be7be2`, tree
 `efe7f2a754c0191ebfacd1952eb422a41fafa315`, contains the six isolated
-scenario/driver/test paths; it remains pending re-sign while the SSH agent is
-unavailable.
+scenario/driver/test paths in the historical unsigned object. Signed replacement
+`353679bb5` preserves that exact tree; documentation checkpoint `0dca626df`
+preserves the completed evidence. The unsigned objects are not branch history.
+
+### 2026-09-15 — EXP-135: SwiftUI Button structured-task causal boundary
+
+The `actions.swiftui-button-structured-task` scenario physically taps a real
+SwiftUI Button in A. Its callback creates `Task { @MainActor in ... }`, waits on
+a controlled continuation, and emits a manual Action and Resource after the
+driver opens B, makes B representative, and releases the task from B. The strict
+semantic contract expects the automatic tap exactly once on A/Home H1 and the
+resumed work on the same A occurrence. Keeping that expected-A contract makes a
+wrong fallback a visible failure instead of normalizing it in the oracle.
+
+DEBUG diagnostics record `RUMUIEventNetworkContext.currentSceneIdentifier` and
+`UITraitCollection.current[RUMSceneIdentifierTrait.self]` at the button callback,
+task start, and task resume. The actual automatic action contract is SDK target
+`SwiftUI_Button` and name `tap on SwiftUI_Button`; the visible button title is not
+the automatic target name. The scenario timeout is 180 seconds because several
+otherwise valid Xcode device-interaction sessions consumed the earlier 10- or
+60-second budget before their first input.
+
+Attempts are retained individually:
+
+- `swiftui-button-task-20260915-0005-a`: the 10-second harness timeout elapsed
+  before the device interaction delivered its tap. A later tap proved the button
+  callback could be invoked, but B never opened. `INCONCLUSIVE`; no ownership
+  claim.
+- `swiftui-button-task-20260915-0007-b`: the fresh hierarchy/interaction session
+  expired before input. `INCONCLUSIVE`; no tap or ownership claim.
+- `swiftui-button-task-20260915-0010-c`: conclusive pre-diagnostic failure in RUM
+  session `6c024fcd-7ffb-49d2-99d8-d7e6b349e426`. A/Home H1 was
+  `84237009-d662-4110-b15d-a5cfe8e58574`; B/Home H1 was
+  `7f34a167-b5ca-4d25-94df-be4c6787e292`. The automatic tap occurred once on A,
+  but resumed Action `2e80dafa-c462-4b8e-8ea1-c2ea02cab865` and Resource
+  `3a8d69e2-57eb-4615-9217-099ba872a3f6` used B. The original oracle incorrectly
+  expected the visible button title as the SDK target, so no terminal verdict is
+  claimed. Later Xcode stdout loss had no fatal/assertion/crash evidence.
+- `swiftui-button-task-trait-20260915-0030-a`: the 60-second timeout elapsed
+  before input. The late tap showed handoff nil and trait A at both callback and
+  task start, but B never opened and the task never resumed. RUM session
+  `93f5872e-1d68-41cc-8e53-adb4795fa905`, A view
+  `c4cb5d5f-ad36-4002-bc3e-3ed9ab7eb6c4`; `INCONCLUSIVE` for suspension.
+- `swiftui-button-task-trait-20260915-0040-a`: the second interaction session
+  expired before its first hierarchy capture. Installed run session
+  `eab11ef8-66f4-4c40-8583-6f8241da0361`; tooling-incomplete, no result claim.
+- `swiftui-button-task-trait-20260915-0050-a`: accepted discriminator run after
+  extending the timeout to 180 seconds. One hierarchy-derived tap at
+  `(330.5, 479.2)` invoked A exactly once, B opened, and the task resumed after B
+  became representative.
+
+The accepted run's RUM session is
+`a423021e-49d1-455e-ac11-bf018c517c82`. Native A is
+`E89A20DF-DB91-4FCE-B645-0C6FF84C4470`; native B is
+`837F47AC-EDD1-44CB-A2D6-2E0E9D5CBCD7`. A/Home H1 is
+`308f0a66-34d7-4318-bf99-2775e4857166`; B/Home H1 is
+`cb3d2a7b-fc53-468a-9cd2-a1d2bc28a9a1`. The handoff is nil at callback, task
+start, and task resume. The UIKit scene trait is A at callback and task start,
+then B after suspension. Automatic tap event
+`5e03583e-fc23-4dd8-b5e5-21128c4ef726` occurs exactly once on A/H1. Resumed
+Action `888ffe58-59ce-4e73-9773-39bdcadc4c51` and Resource
+`3e8b5cf4-88e8-42c5-bca7-4249ec9c8b4a` retain source-scene A diagnostics but
+both use B/H1. The terminal oracle is `FAIL` after four matched expectations:
+expectation five requires A and observes B.
+
+Exact backend query `@context.probe.run_id:swiftui-button-task-trait-20260915-0050-a`
+returns 28 events: three views, 11 actions, ten Resources, two long tasks, one
+vital, and one session. The session reports `view.count=3`, `action.count=11`,
+`resource.count=10`, `error.count=0`, and `crash.count=0`. The exact automatic
+tap predicate returns one A/H1 event. The resumed-phase predicate returns two
+events; both contain source A/native-A diagnostics and B as the mapped RUM scene
+with B/H1. The exact error predicate returns zero.
+
+Xcode later labeled its device-interaction session `Crashed`, but the captured
+logs contain only XPC/stdout disconnection—no crash report, signal, fatal output,
+or failed assertion—and backend crash/error counts are zero. This is a tooling
+disconnect, not an SDK-crash result. Primary interaction artifacts are:
+
+- `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/SwiftUI Trait Suspension Run-00_30_50_558-*`
+- `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/SwiftUI Trait Suspension Run-00_31_08_062-*`
+- `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/SwiftUI Trait Suspension Run-00_31_31_928-*`
+
+This result proves the automatic SwiftUI tap path is correct, while an ordinary
+SwiftUI Button's customer closure is outside the SDK's synchronous `sendEvent`
+scope. A task created there cannot inherit an absent `TaskLocal`. UIKit's ambient
+trait follows later execution context and is not durable provenance. The resumed
+B attribution is therefore the approved source-less/last-interacted compatibility
+behavior, not a new regression. Exact A attribution requires an explicit view
+target or scoped public integration after API review; no trait fallback is added.
+
+The full probe plan passes 126/126 in:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.15_00-36-04-+0100.xcresult`
+
+Summary output is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/8C30F235-7413-4A2F-B7D9-A5CA8A9F9604.txt`
+
+Repository lint passes 713 source and 699 test files with zero violations, and
+`git diff --check` passes. Signed commit `2972d3de1`, tree
+`05f9db5089a769acbb1fe5df79645641cc83464e`, contains the ten isolated
+scenario/driver/UI/test paths. This closes the SwiftUI Button/task discriminator
+as a documented causal boundary. Shared/coalesced work is the next bounded
+simulator-capable row.
 
 ### Attempts not to repeat
 
@@ -4162,6 +4270,19 @@ unavailable.
 - Do not classify an expired Xcode/device interaction session as an app or SDK
   crash without a crash report, fatal/assertion output, or crash UI. Preserve it
   as tooling-incomplete and rerun from a clean install, as in `EXP-133`.
+- Do not infer durable asynchronous scene ownership from
+  `UITraitCollection.current`. `EXP-135` observes A at SwiftUI callback/task start
+  and B after suspension. It is ambient UIKit execution context, not a task-local
+  origin token.
+- Do not assume a SwiftUI Button closure runs inside the synchronous
+  `UIApplication.sendEvent` handoff merely because the tap triggered it.
+  `EXP-135` records nil handoff at callback, task start, and task resume. Only a
+  task actually created while that dynamic scope is active can inherit it.
+- Do not change the strict expected-A `EXP-135` oracle to accept B. B is the
+  approved fallback for source-less compatibility, but the scenario deliberately
+  records that exact asynchronous origin is unsupported without an explicit
+  target or scope. Also use SDK target `SwiftUI_Button`, not the visible button
+  title, when counting the automatic tap.
 - Do not rely on an exact `git add` path list to isolate a checkpoint while the
   local xcconfig is pre-staged. Ordinary `git commit` includes every staged path.
   Use `git commit --only -- <exact paths>` or an isolated index, then verify both

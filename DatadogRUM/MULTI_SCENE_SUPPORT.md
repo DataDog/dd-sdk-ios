@@ -7,7 +7,7 @@ work can start here without reading the complete experiment history.
 It remains separate from `RUM_FEATURE.md` until the behavior is implemented,
 validated, and ready to become a supported contract.
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## Goal
 
@@ -204,6 +204,17 @@ start-scene view and shared RUM session. The opposite-view predicates and both
 Trace-only RUM Resource predicates return zero. Shared/coalesced work and exact
 simultaneous-window source discovery remain separate.
 
+`EXP-135` closes the ordinary SwiftUI Button → structured `Task` discriminator
+as a negative causal boundary. A real automatic SwiftUI tap emits exactly once
+on A/Home H1. The button callback and child-task start have no SDK handoff, while
+the scene trait initially reports A; after the task suspends and B becomes the
+representative, that ambient trait reports B. The resumed manual Action and
+Resource therefore use the approved source-less fallback and land on B/Home H1.
+Backend intake confirms the exact A tap and B resumed owners with zero errors or
+crashes. Neither task-local handoff nor `UITraitCollection.current` can recover
+durable origin for this ordinary SwiftUI callback; exact A ownership requires a
+future explicit target or scoped customer integration.
+
 UIKit split tracking now suppresses regular-width Primary and supplementary
 columns for declared multi-scene applications on iOS 27 while preserving fresh
 returned-Secondary occurrences. Signal-driven cancellation keeps the existing
@@ -220,7 +231,7 @@ It also has an exact main-actor scene registry with weak window ownership,
 readiness, activation, geometry, route, and disconnect generations. Its
 signal-driven stack, split, UIKit-transition, scene-lifecycle,
 automatic/manual-coexistence, action, Operation, and Trace scenarios through
-`EXP-134` pass 120/120 tests. The prepared two-scene same-key and cross-scene Operation scenarios
+`EXP-135` pass 126/126 tests. The prepared two-scene same-key and cross-scene Operation scenarios
 remain hardware-gated; the single-scene Operation/navigation scenario passes
 locally and in backend intake.
 Clean iPadOS 27 runs prove
@@ -260,13 +271,13 @@ exact runs and rejected paths live in
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
 | Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves that a probe-only integration can consume one container path and centralized resolver without moving instrumentation into every destination view. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125` and `EXP-126` extend that mechanism to complete-destination Sheet and full-screen-cover boundaries. `EXP-127` proves a boundary in one sibling container does not suppress an independently materialized controller branch and reveals only its latest staged destination. `EXP-128` proves Compose → Preview → fresh Compose nesting and duplicate-active-key crash safety without restart. `EXP-129` adds the strict same-key A/B contract, but its live simulator run expired before manual authority began | Convert the proven wrapper/builder, presentation-boundary, and manual-overload shapes into API-reviewed integrations; complete same-key A/B acceptance on capable hardware, then cover gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
 | Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, `EXP-125`/`EXP-126` cover presentation subtrees, and `EXP-127` leaves an unrelated sibling controller eligible while manual authority is active | Validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the semantic-container shape through API review |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-132` proves a threshold-qualified real UIKit fling remains exactly once on its origin when navigation starts during deceleration. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative, then finish targeted downstream runtime rows |
-| Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans use the same scene-handoff model. `EXP-133` backend-confirms one Trace-only request across A→B representative churn; `EXP-134` backend-confirms independent A/B requests completed in reverse order while each retains its own start-scene Home view. Neither scenario emits a matching RUM Resource | Finish simultaneous-window exact-source discovery, shared/coalesced completion, SwiftUI Button/Task, normal-handler compatibility, and overhead measurement |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-132` proves a threshold-qualified real UIKit fling remains exactly once on its origin when navigation starts during deceleration. `EXP-135` proves one automatic SwiftUI Button tap stays on A, while source-less work resumed after B takes over follows B by compatibility. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative, then finish explicitly targeted downstream runtime rows |
+| Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans use the same scene-handoff model. `EXP-133` backend-confirms one Trace-only request across A→B representative churn; `EXP-134` backend-confirms independent A/B requests completed in reverse order while each retains its own start-scene Home view. Neither scenario emits a matching RUM Resource. `EXP-135` proves an ordinary SwiftUI Button callback is outside the synchronous handoff and its resumed task is source-less | Finish simultaneous-window exact-source discovery, shared/coalesced completion, normal-handler compatibility, explicit target/scoped API review, and overhead measurement |
 | Operations | Internal per-step routing and exact application-wide identity pass focused tests. `EXP-130` proves live Home→Detail success/failure plus duplicate latest-instance reduction. `EXP-131` adds the exact hostless A→B and distinct-key reverse-completion contract | Run `EXP-131` on capable multi-window hardware and complete public target API review; duplicate behavior itself is backend-confirmed |
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount | Prove the activation/background sequence and stable simultaneous-visible peer continuity on capable hardware, then genuine OS disconnect/reconnect, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 120/120 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
+| Normal applications | The exact manual-authority set passes 8/8, the focused presentation/manual contract set passes 6/6, and the clean full DatadogRUM rerun passes 1,169/1,169. DatadogTrace remains 151/151; repository lint and both probes build, with the native probe at 126/126 | Live single-scene and custom-handler behavior plus `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -373,15 +384,19 @@ customer workflow, and required tests live only in
 The branch is `valpertui/multiple-windows-scenes`. The latest production SDK
 checkpoint is `f452e9e3f` (`Preserve semantic presentation authority through
 dismissal`), following the exact-scene manual stack in `29c8cec2c` and
-`b1a0fb6b8`. The latest probe checkpoint is development commit `9d5be7be2`
-(`Exercise trace-only reverse completion across scenes`), following `130ba7646`
-(`Exercise trace-only URLSession attribution across scenes`), `3c9730805` (`Exercise UIKit
-scroll attribution across navigation`), `a653e29f2` (`Prepare cross-scene
-operation attribution probe`), `5d536e0bd` (`Exercise operation attribution
-across navigation`), `9fa58e3c0` (`Exercise same-key manual views across
-scenes`), and `af2a2666d` (`Exercise nested manual view authority`). The latest
-documentation checkpoint is `99e6c4a29`. Their exact probe trees from newest to
-oldest are
+`b1a0fb6b8`. The latest probe checkpoint is signed commit `2972d3de1`
+(`Exercise SwiftUI structured task attribution across scenes`), following the
+signed documentation checkpoint `0dca626df` (`Document trace-only reverse
+completion evidence`) and signed probe commit `353679bb5` (`Exercise trace-only
+reverse completion across scenes`). Earlier probe checkpoints are `130ba7646`
+(`Exercise trace-only URLSession attribution across scenes`), `3c9730805`
+(`Exercise UIKit scroll attribution across navigation`), `a653e29f2` (`Prepare
+cross-scene operation attribution probe`), `5d536e0bd` (`Exercise operation
+attribution across navigation`), `9fa58e3c0` (`Exercise same-key manual views
+across scenes`), and `af2a2666d` (`Exercise nested manual view authority`). Their
+frozen trees from newest to oldest are
+`05f9db5089a769acbb1fe5df79645641cc83464e`,
+`614e83f2d1bdad6ba166f152b9bc90c5a2bc30a9`,
 `efe7f2a754c0191ebfacd1952eb422a41fafa315`,
 `942f1207f6e6dad9cfab6c897894f2e1ea5f7a15`,
 `3f1edaf17f4d7dd4fe654c8738ca6cb9c09440f7`,
@@ -391,10 +406,9 @@ oldest are
 `082310e18ecfbdb9fc18a4f9d1914c7660a6edfd`. The approved product decision
 checkpoint is
 `b61e783a6`; the public-navigation proposal starts at `b5494adb0`.
-All existing branch commits through `130ba7646` are verified signed local commits
-and must not be pushed. `9d5be7be2` is an explicitly allowed unsigned
-development checkpoint because the SSH agent is refusing connections; re-sign
-it before the next release-ready freeze. The
+All existing branch commits through `2972d3de1` are verified signed local commits
+and must not be pushed. Earlier signer outages and the exact rewritten commit
+mapping remain preserved in the experiment ledger. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
@@ -476,59 +490,74 @@ representative. The 14/14 run and backend predicates find exactly one span for
 each request on its own start view, zero on the opposite view, the same RUM
 session for both, and zero matching RUM Resources. The full probe plan now
 passes 120/120.
+`EXP-135` then drives a real SwiftUI Button in A, creates a child task, suspends
+it, opens B, and resumes from B. The automatic button tap emits once on A/H1.
+Diagnostic evidence shows the SDK handoff is already nil in the SwiftUI closure
+and at task creation; UIKit's ambient scene trait begins as A but changes to B
+after suspension. The resumed manual Action and Resource consequently use the
+approved source-less fallback and land on B/H1. The strict expected-A oracle
+terminates `FAIL` after matching four of six expectations, intentionally preserving
+the unsupported exact-origin contract, while backend intake confirms the same
+boundary and reports zero errors or crashes.
+The full probe plan passes 126/126.
 The complete chronology and every failed attempt live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-134`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-135`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. Continue in this order:
 
-1. Finish `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a
+1. Run the simulator-capable shared/coalesced-request discriminator. Reset its
+   one-shot helper first. Require one underlying request with no fan-out; retain
+   trustworthy creator provenance when it exists, otherwise classify the work as
+   source-less and use the last-interacted representative. A later consumer must
+   not silently retarget already-started network work.
+2. Finish `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a
    physical multi-window iPad. The simulator prefix reached both native scenes
    but expired before manual starts. Stop B before A and prove each exact
    scene/key closes only its own Compose occurrence while automatic tracking
    remains active.
-2. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
+3. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
    hardware. The simulator prefix already proves B automatic discovery remains
    eligible; require the final B marker and backend owner before closing it.
-3. Take the scene-aware Swift/Objective-C
+4. Take the scene-aware Swift/Objective-C
    overloads through API review. The same key must coexist independently in A
    and B; existing overloads keep inferred/last-interacted behavior.
-4. Close the remaining action-attribution hardware row: keep A and B
+5. Close the remaining action-attribution hardware row: keep A and B
    simultaneously visible, make B representative, interact in A without a
    focus-driven fallback, and prove exact A ownership. `EXP-132` already closes
    UIKit drag/deceleration across same-scene navigation and should remain a
    regression gate rather than be repeated as a prerequisite.
-5. Run `operations.cross-scene.lifecycle` on capable hardware. Require A→B
+6. Run `operations.cross-scene.lifecycle` on capable hardware. Require A→B
    success/failure, distinct A/B Home owners, and distinct-key reverse completion
    with eight raw steps and four reduced Operations.
-6. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
+7. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
    iPad. Require the activated scene to become foreground-active and the peer to
    become background before asserting fresh view occurrences or marker ownership.
-7. After API approval, land the optional container-level SwiftUI semantic
+8. After API approval, land the optional container-level SwiftUI semantic
    integration. It must consume a customer path/router's complete current
    destination—including sheets and full-screen covers—and a centralized resolver,
    coexist with automatic tracking, preserve customer state, and suppress
    duplicate automatic views only within its target container.
-8. Route recognized native gestures, adaptive resize, and stable simultaneous A/B
+9. Route recognized native gestures, adaptive resize, and stable simultaneous A/B
    topology through the real-device/human queue; ignored simulator input is not
    evidence.
-9. Run genuine disconnect/reconnect, per-scene background/foreground, and
+10. Run genuine disconnect/reconnect, per-scene background/foreground, and
    concurrent restoration.
-10. Complete Operations public-target API review. Keep application-wide
+11. Complete Operations public-target API review. Keep application-wide
    `(name, operationKey)` identity; `EXP-130` already closes duplicate-start
-   backend behavior, while A-to-B execution remains item 5.
-11. Finish the remaining bounded Resource/Trace and downstream-signal runtime
-   rows: SwiftUI Button/structured Task, shared/coalesced requests, and targeted
-   downstream surfaces. `EXP-133` closes one-request Trace-only owner freezing
-   across A→B representative churn; `EXP-134` closes independent two-request
-   reverse completion.
+   backend behavior, while A-to-B execution remains item 6.
+12. Finish explicitly targeted downstream-signal runtime rows. `EXP-133` closes
+   one-request Trace-only owner freezing across A→B representative churn;
+   `EXP-134` closes independent two-request reverse completion; `EXP-135`
+   classifies an ordinary SwiftUI Button child task as source-less after the
+   framework callback escapes the synchronous handoff.
    Then prove live single-scene/custom-handler compatibility and measure
    event-handoff recursion and overhead. Repeat the release matrix on iOS 27.1
    and iPhone Duo.
-12. Only after the multi-scene runtime is frozen and every experiment is closed or
-    explicitly deferred, execute the
+13. Only after the multi-scene runtime is frozen and every experiment is closed or
+   explicitly deferred, execute the
     [single-scene reliability extraction](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md).
     Preserve the completed branch, prove every extracted fix as a source-less
     defect on `develop`, rebuild the multi-scene branch on the generic stack, and
@@ -584,7 +613,7 @@ owns the finished phases and full release matrix. Continue in this order:
 - Profiling uses the same typed Operation identity and distinguishes omitted from
   empty keys.
 - Session Replay is required only to coexist without an SDK crash.
-- The standalone probe now resolves 47 named scenarios from command-line input,
+- The standalone probe now resolves 50 named scenarios from command-line input,
   preserves exact known legacy environment profiles, and fails closed before SDK
   initialization. It records ordered versioned JSONL signals, keeps call-site
   source separate from mapper-observed RUM ownership, derives view start/stop from
@@ -609,7 +638,7 @@ owns the finished phases and full release matrix. Continue in this order:
 
 ### Validation snapshot
 
-As of 2026-09-14:
+As of 2026-09-15:
 
 - The current RUM plan passes 1,169/1,169. Earlier complete suites pass:
   Internal 477/477, Logs 95/95,
@@ -618,7 +647,7 @@ As of 2026-09-14:
   UIKit-scroll, and OpenTelemetry ownership regressions pass. Native SwiftUI
   edge gestures remain unproven because `EXP-100` produced no navigation signal.
 - The named runner validates fail-closed startup (`EXP-106`), and its recorder,
-  oracle, scene registry, and observable driver pass 120/120. Clean runs prove
+  oracle, scene registry, and observable driver pass 126/126. Clean runs prove
   Home₁/Detail/Home₂, aborted and replacement stacks, split replacement/retained
   return, and exact per-occurrence action/Resource ownership (`EXP-109` through
   `EXP-111`). The fully driven automatic SwiftUI split control fails locally as
@@ -726,6 +755,15 @@ As of 2026-09-14:
   (`EXP-134`). The initial backend query returned zero before indexing caught
   up; the accepted 202 upload and later raw plus aggregate results are retained
   as the complete evidence chain.
+- The real SwiftUI Button → structured-task scenario raises the probe plan to
+  126/126 (`EXP-135`). Its accepted run emits exactly one automatic tap on A/H1,
+  then intentionally fails the expected-A semantic oracle after matching four
+  expectations because resumed source-less Action/Resource work lands on the
+  later B/H1 representative. SDK handoff is nil at callback, task start, and
+  resume; the ambient UIKit scene trait changes from A to B across suspension.
+  Backend intake confirms those owners, one tap, and zero errors/crashes. Four
+  earlier timeout/tooling attempts and the pre-diagnostic failure remain recorded
+  separately and make no support claim.
 - Both probes build through Xcode 27; package build, recorded repository lint, and
   focused changed-source lint pass at their stated checkpoints.
 
@@ -736,12 +774,10 @@ runtime rows. Detailed run evidence remains in
 ### Blockers and workspace safety
 
 Public SwiftUI and Operation API work requires normal RFC/API review. The branch
-history through `130ba7646` has been re-signed or created with verified SSH
-signatures. The earlier signer outages remain documented, together with the exact
-frozen trees for `EXP-128` through `EXP-133`; no unsigned fallback was used for
-that frozen history. `EXP-134` is isolated in unsigned development commit
-`9d5be7be2` while `ssh-add -L` returns `Connection refused`; its exact tree is
-recorded in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) for later re-signing.
+history through `2972d3de1` has been re-signed or created with verified SSH
+signatures. The earlier signer outages, replaced hashes, and exact frozen trees
+remain documented in [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md); no
+unsigned branch commit remains at this checkpoint.
 The iOS 27 integration-runner half-and-half layout repeatedly respawned
 `backboardd`, although the standalone native `WindowGroup` probe opens two windows.
 The standalone probe also reproduced a `backboardd` CoreAnimation/Metal SIGABRT
