@@ -790,6 +790,69 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
     }
 
+    func testPresentationAuthorityAllowsFreshUnderlyingViewBeforeOutgoingFinalSnapshot() {
+        let recorder = ProbeEventRecorder(
+            runID: "presentation-overlap",
+            scenarioID: "presentation-authority",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(ProbeSignal(kind: .intervalBegan, interval: "manual-sheet-active"))
+        recorder.record(
+            ProbeSignal(kind: .intervalBegan, interval: "swiftui-presentation-subtree")
+        )
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: true))
+        recorder.record(ProbeSignal(kind: .intervalEnded, interval: "manual-sheet-active"))
+        recordAutomaticView(id: "home-2", recorder: recorder)
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: false))
+        recorder.record(
+            ProbeSignal(kind: .intervalEnded, interval: "swiftui-presentation-subtree")
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: presentationAuthorityScenario(),
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testPresentationAuthorityRejectsDelayedAutomaticPresentationAfterSemanticStop() {
+        let recorder = ProbeEventRecorder(
+            runID: "presentation-duplicate",
+            scenarioID: "presentation-authority",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        recorder.record(ProbeSignal(kind: .intervalBegan, interval: "manual-sheet-active"))
+        recorder.record(
+            ProbeSignal(kind: .intervalBegan, interval: "swiftui-presentation-subtree")
+        )
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: true))
+        recorder.record(ProbeSignal(kind: .intervalEnded, interval: "manual-sheet-active"))
+        recorder.record(viewSignal(id: "sheet", screen: "sheet", active: false))
+        recordAutomaticView(
+            id: "automatic-sheet",
+            viewName: "ProbeSheetView",
+            recorder: recorder
+        )
+        recorder.record(
+            ProbeSignal(kind: .intervalEnded, interval: "swiftui-presentation-subtree")
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: presentationAuthorityScenario(),
+            signals: recorder.snapshot()
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("rum-view-name=ProbeSheetView"))
+    }
+
     func testKeyedManualAuthorityContractPasses() throws {
         let scenario = try scenario(
             named: "swiftui.coexistence.automatic-keyed-manual-view"
@@ -947,6 +1010,7 @@ final class ProbeSemanticOracleTests: XCTestCase {
     private func recordAutomaticView(
         id: String,
         active: Bool = true,
+        viewName: String = "NavigationStackHostingController",
         recorder: ProbeEventRecorder
     ) {
         recorder.record(
@@ -956,11 +1020,34 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 rumContext: ProbeRUMContext(
                     sessionID: "session",
                     viewID: id,
-                    viewName: "NavigationStackHostingController",
+                    viewName: viewName,
                     viewActive: active,
                     viewDocumentVersion: active ? 1 : 2
                 )
             )
+        )
+    }
+
+    private func presentationAuthorityScenario() -> ProbeScenario {
+        ProbeScenario(
+            identifier: "presentation-authority",
+            trackingMode: .automatic,
+            layout: .stack,
+            steps: [],
+            completionConditions: [
+                ProbeExpectation(
+                    .noViewStarted,
+                    rumViewOrigin: .automatic,
+                    interval: "manual-sheet-active"
+                ),
+                ProbeExpectation(
+                    .noViewStarted,
+                    rumViewOrigin: .automatic,
+                    rumViewName: "ProbeSheetView",
+                    interval: "swiftui-presentation-subtree"
+                )
+            ],
+            expectedSemanticTimeline: []
         )
     }
 

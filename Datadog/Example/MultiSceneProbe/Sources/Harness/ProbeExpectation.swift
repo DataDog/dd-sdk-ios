@@ -42,6 +42,7 @@ struct ProbeExpectation: Codable, Equatable {
     let sourceScene: String?
     let sourceScreen: String?
     let rumViewOrigin: ProbeRUMViewOrigin?
+    let rumViewName: String?
     let ownerViewStartedAfterSceneOpen: String?
     let ownerViewStartedAfterStep: ProbeStepKind?
     let ownerViewStartedAfterStepValue: String?
@@ -59,6 +60,7 @@ struct ProbeExpectation: Codable, Equatable {
         sourceScene: String? = nil,
         sourceScreen: String? = nil,
         rumViewOrigin: ProbeRUMViewOrigin? = nil,
+        rumViewName: String? = nil,
         ownerViewStartedAfterSceneOpen: String? = nil,
         ownerViewStartedAfterStep: ProbeStepKind? = nil,
         ownerViewStartedAfterStepValue: String? = nil,
@@ -75,6 +77,7 @@ struct ProbeExpectation: Codable, Equatable {
         self.sourceScene = sourceScene
         self.sourceScreen = sourceScreen
         self.rumViewOrigin = rumViewOrigin
+        self.rumViewName = rumViewName
         self.ownerViewStartedAfterSceneOpen = ownerViewStartedAfterSceneOpen
         self.ownerViewStartedAfterStep = ownerViewStartedAfterStep
         self.ownerViewStartedAfterStepValue = ownerViewStartedAfterStepValue

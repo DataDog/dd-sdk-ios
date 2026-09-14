@@ -18,6 +18,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
                 "swiftui.coexistence.automatic-manual-sheet",
+                "swiftui.coexistence.automatic-scene-targeted-sheet",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.split.same-type-selection",
                 "uikit.split.pop-cancel",
@@ -76,6 +77,45 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.ownerViewRelation == .same
             }
         )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.rumViewName == nil
+                    && $0.interval == "manual-sheet-active"
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.rumViewName == "ProbeSheetView"
+                    && $0.interval == "swiftui-presentation-subtree"
+            }
+        )
+    }
+
+    func testSceneTargetedSheetKeepsStrictOracleWithoutViewLifecycleModifier() throws {
+        let baseline = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.automatic-manual-sheet"
+            )
+        )
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.automatic-scene-targeted-sheet"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority(scenario)
+        )
+        XCTAssertEqual(scenario.steps, baseline.steps)
+        XCTAssertEqual(scenario.completionConditions, baseline.completionConditions)
+        XCTAssertEqual(scenario.expectedSemanticTimeline, baseline.expectedSemanticTimeline)
+        XCTAssertTrue(scenario.runtimeOptions.manualSwiftUIViewScreensByScene.isEmpty)
     }
 
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {

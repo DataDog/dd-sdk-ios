@@ -177,6 +177,29 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     }
 }
 
+private struct ProbeRUMSemanticPresentationBoundary<Content: View>: View {
+    let isEnabled: Bool
+    @ViewBuilder let content: Content
+
+    init(isEnabled: Bool, @ViewBuilder content: () -> Content) {
+        self.isEnabled = isEnabled
+        self.content = content()
+    }
+
+    @ViewBuilder
+    var body: some View {
+        #if DEBUG
+        if isEnabled {
+            content.suppressAutomaticRUMViewTracking()
+        } else {
+            content
+        }
+        #else
+        content
+        #endif
+    }
+}
+
 /// Probe-only shape for the reviewed once-per-container integration. It keeps
 /// route-to-RUM metadata and the SDK-owned tracking modifier out of destination
 /// views while preserving route-owned placement at each materialized boundary.
@@ -312,18 +335,22 @@ struct ProbeWindowRoot: View {
             isPresented: sheetPresentation,
             onDismiss: sheetDidDismiss
         ) {
-            ProbeRUMTrackedScreen(
-                window: window,
-                sceneSessionID: sceneSessionID,
-                screen: "sheet",
-                name: "ProbeSheetView",
-                trackingBoundary: .auxiliary,
-                readerControlGeneration: readerControlGeneration
+            ProbeRUMSemanticPresentationBoundary(
+                isEnabled: ProbeRuntime.usesSceneTargetedPresentationAuthority
             ) {
-                ProbeSheetView(
+                ProbeRUMTrackedScreen(
                     window: window,
-                    sceneSessionID: sceneSessionID
-                )
+                    sceneSessionID: sceneSessionID,
+                    screen: "sheet",
+                    name: "ProbeSheetView",
+                    trackingBoundary: .auxiliary,
+                    readerControlGeneration: readerControlGeneration
+                ) {
+                    ProbeSheetView(
+                        window: window,
+                        sceneSessionID: sceneSessionID
+                    )
+                }
             }
         }
         .background(
@@ -795,6 +822,17 @@ struct ProbeWindowRoot: View {
                     interval: "manual-sheet-active"
                 )
             )
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalBegan,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: "sheet"
+                    ),
+                    interval: "swiftui-presentation-subtree"
+                )
+            )
         }
         isSheetPresented = isPresented
         navigationMutation += 1
@@ -812,6 +850,9 @@ struct ProbeWindowRoot: View {
                 mutation: navigationMutation
             )
         )
+        if ProbeRuntime.usesSceneTargetedPresentationAuthority {
+            updateSceneTargetedSheetAuthority(isPresented: isPresented)
+        }
         if !isPresented {
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
@@ -831,7 +872,83 @@ struct ProbeWindowRoot: View {
         )
     }
 
+    private func updateSceneTargetedSheetAuthority(isPresented: Bool) {
+        let key = "probe-scene-targeted-sheet"
+        if isPresented {
+            #if DEBUG
+            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+                recordSceneTargetedManualViewFailure(operation: "sheet-start")
+                return
+            }
+            monitor.startView(
+                key: key,
+                name: "ProbeSheetView",
+                attributes: sceneTargetedSheetAttributes,
+                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            )
+            #else
+            RUMMonitor.shared().startView(
+                key: key,
+                name: "ProbeSheetView",
+                attributes: sceneTargetedSheetAttributes
+            )
+            #endif
+            ProbeRuntime.record(
+                "scene-targeted sheet started source=\(window.label) "
+                    + "native=\(sceneSessionID)"
+            )
+            return
+        }
+
+        #if DEBUG
+        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
+            recordSceneTargetedManualViewFailure(operation: "sheet-stop")
+            return
+        }
+        monitor.stopView(
+            key: key,
+            attributes: [
+                ProbeRuntime.Attribute.runID: window.runID,
+                ProbeRuntime.Attribute.sourceScene: window.label,
+                ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+                ProbeRuntime.Attribute.screen: "sheet"
+            ],
+            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+        )
+        #else
+        RUMMonitor.shared().stopView(key: key)
+        #endif
+        ProbeRuntime.record(
+            "scene-targeted sheet stopped source=\(window.label) "
+                + "native=\(sceneSessionID)"
+        )
+    }
+
+    private var sceneTargetedSheetAttributes: [String: Encodable] {
+        [
+            ProbeRuntime.Attribute.runID: window.runID,
+            ProbeRuntime.Attribute.host: "native-swiftui-complete-destination",
+            ProbeRuntime.Attribute.sourceScene: window.label,
+            ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.screen: "sheet",
+            ProbeRuntime.Attribute.viewScene: window.label,
+            ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.viewScreen: "sheet"
+        ]
+    }
+
     private func sheetDidDismiss() {
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .intervalEnded,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentNavigationScreen
+                ),
+                interval: "swiftui-presentation-subtree"
+            )
+        )
         ProbeRuntime.recordDestination(
             window: window,
             sceneSessionID: sceneSessionID,
@@ -1445,7 +1562,7 @@ struct ProbeWindowRoot: View {
             )
         )
         ProbeRuntime.record(
-            "keyed manual view failed source=\(window.label) "
+            "scene-targeted manual view failed source=\(window.label) "
                 + "native=\(sceneSessionID) reason=\(reason)"
         )
     }

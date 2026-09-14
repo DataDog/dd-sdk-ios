@@ -516,6 +516,11 @@ internal enum ProbeSemanticOracle {
                 )
             }
         }
+        if
+            let expectedRUMViewName = expectation.rumViewName,
+            signal.rumContext?.viewName != expectedRUMViewName {
+            return .noMatch
+        }
         if let openedScene = expectation.ownerViewStartedAfterSceneOpen {
             guard timeline.ownerView(for: signal, startedAfterOpening: openedScene) else {
                 return .violation(
@@ -693,6 +698,11 @@ internal enum ProbeSemanticOracle {
             return false
         }
         if
+            let rumViewName = expectation.rumViewName,
+            signal.rumContext?.viewName != rumViewName {
+            return false
+        }
+        if
             let openedScene = expectation.ownerViewStartedAfterSceneOpen,
             !timeline.ownerView(for: signal, startedAfterOpening: openedScene) {
             return false
@@ -792,6 +802,9 @@ internal enum ProbeSemanticOracle {
         }
         if let rumViewOrigin = expectation.rumViewOrigin {
             parts.append("rum-view-origin=\(rumViewOrigin.rawValue)")
+        }
+        if let rumViewName = expectation.rumViewName {
+            parts.append("rum-view-name=\(rumViewName)")
         }
         if let openedScene = expectation.ownerViewStartedAfterSceneOpen {
             parts.append("owner-view-after-open=\(openedScene)")

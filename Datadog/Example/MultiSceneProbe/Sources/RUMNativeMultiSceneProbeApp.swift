@@ -73,6 +73,9 @@ enum ProbeRuntime {
     static let usesObservableScenarioDriver = scenario.map(
         ProbeScenarioCatalog.usesObservableDriver
     ) ?? false
+    static let usesSceneTargetedPresentationAuthority = scenario.map(
+        ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority
+    ) ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil

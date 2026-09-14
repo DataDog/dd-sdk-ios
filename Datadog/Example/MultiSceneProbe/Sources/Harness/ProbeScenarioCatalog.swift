@@ -16,6 +16,7 @@ enum ProbeScenarioCatalog {
         "swiftui.stack.different-type-replacement",
         "swiftui.coexistence.semantic-a-automatic-b",
         "swiftui.coexistence.automatic-manual-sheet",
+        "swiftui.coexistence.automatic-scene-targeted-sheet",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.split.automatic-baseline",
         "swiftui.split.same-type-selection",
@@ -37,6 +38,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackDifferentTypeReplacement,
         swiftUICoexistenceSemanticAAutomaticB,
         swiftUICoexistenceAutomaticManualSheet,
+        swiftUICoexistenceAutomaticSceneTargetedSheet,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUIStackManualSheetReturn,
         swiftUIStackNativePopCancel,
@@ -104,6 +106,12 @@ enum ProbeScenarioCatalog {
 
     static func usesObservableDriver(_ scenario: ProbeScenario) -> Bool {
         observableDriverIdentifiers.contains(scenario.identifier)
+    }
+
+    static func usesSceneTargetedPresentationAuthority(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUICoexistenceAutomaticSceneTargetedSheet.identifier
     }
 
     static func scenario(
@@ -394,7 +402,13 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(
                 .noViewStarted,
                 rumViewOrigin: .automatic,
-                interval: "rum-view:scene-A/sheet#1"
+                interval: "manual-sheet-active"
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                rumViewOrigin: .automatic,
+                rumViewName: "ProbeSheetView",
+                interval: "swiftui-presentation-subtree"
             ),
             ProbeExpectation(
                 .action,
@@ -516,6 +530,20 @@ enum ProbeScenarioCatalog {
         runtimeOptions: runtime {
             $0.manualSwiftUIViewScreensByScene = ["scene-A": ["sheet"]]
         }
+    )
+
+    /// Positive successor to the lifecycle-modifier baseline above. It keeps the
+    /// exact same oracle while moving presentation ownership to the centralized
+    /// scene router and the handler-backed exact-scene manual stack. A separate
+    /// UI-attached token suppresses automatic discovery only for the presented
+    /// platform subtree while its native dismissal completes.
+    private static let swiftUICoexistenceAutomaticSceneTargetedSheet = ProbeScenario(
+        identifier: "swiftui.coexistence.automatic-scene-targeted-sheet",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: swiftUICoexistenceAutomaticManualSheet.steps,
+        completionConditions: swiftUICoexistenceAutomaticManualSheet.completionConditions,
+        expectedSemanticTimeline: swiftUICoexistenceAutomaticManualSheet.expectedSemanticTimeline
     )
 
     private static let swiftUICoexistenceAutomaticKeyedManualView = ProbeScenario(
