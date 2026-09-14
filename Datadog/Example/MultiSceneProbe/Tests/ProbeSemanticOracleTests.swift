@@ -1407,6 +1407,55 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
     }
 
+    func testTraceOnlyURLSessionReverseCompletionContractPasses() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-reverse-completion"),
+            signals: traceOnlyURLSessionReverseCompletionSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testTraceOnlyURLSessionReverseCompletionRejectsSwappedOwners() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-reverse-completion"),
+            signals: traceOnlyURLSessionReverseCompletionSignals(
+                mutation: .swapTraceOwners
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed scene-A"))
+    }
+
+    func testTraceOnlyURLSessionReverseCompletionRejectsMissingSceneBSpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-reverse-completion"),
+            signals: traceOnlyURLSessionReverseCompletionSignals(
+                mutation: .omitSceneBTrace
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("missing expected trace"))
+    }
+
+    func testTraceOnlyURLSessionReverseCompletionRejectsDuplicateSceneASpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-reverse-completion"),
+            signals: traceOnlyURLSessionReverseCompletionSignals(
+                mutation: .duplicateSceneATrace
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),
@@ -1600,6 +1649,12 @@ final class ProbeSemanticOracleTests: XCTestCase {
         case duplicateTrace
     }
 
+    private enum TraceOnlyURLSessionReverseCompletionMutation {
+        case swapTraceOwners
+        case omitSceneBTrace
+        case duplicateSceneATrace
+    }
+
     private func traceOnlyURLSessionSignals(
         mutation: TraceOnlyURLSessionMutation? = nil
     ) -> [ProbeSignal] {
@@ -1664,6 +1719,96 @@ final class ProbeSemanticOracleTests: XCTestCase {
         return recorder.snapshot()
     }
 
+    private func traceOnlyURLSessionReverseCompletionSignals(
+        mutation: TraceOnlyURLSessionReverseCompletionMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "trace-only-reverse-completion-contract",
+            scenarioID: "traces.urlsession-reverse-completion",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        let sceneAViewID = "scene-A-home-1"
+        let sceneBViewID = "scene-B-home-1"
+
+        recorder.record(
+            viewSignal(
+                id: sceneAViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-reverse-a-start-representative",
+            scene: "scene-A",
+            nativeSceneID: "native-A",
+            viewID: sceneAViewID,
+            recorder: recorder
+        )
+        recorder.record(
+            viewSignal(
+                id: sceneBViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-reverse-b-start-representative",
+            scene: "scene-B",
+            nativeSceneID: "native-B",
+            viewID: sceneBViewID,
+            recorder: recorder
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-reverse-b-completion-representative",
+            scene: "scene-A",
+            nativeSceneID: "native-A",
+            viewID: sceneAViewID,
+            recorder: recorder
+        )
+        if mutation != .omitSceneBTrace {
+            recordTraceOnlyURLSessionSignal(
+                requestName: ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName,
+                sourceScene: "scene-B",
+                sourceNativeSceneID: "native-B",
+                viewID: mutation == .swapTraceOwners
+                    ? sceneAViewID
+                    : sceneBViewID,
+                recorder: recorder
+            )
+        }
+        recordTraceRepresentativeMarker(
+            name: "trace-reverse-a-completion-representative",
+            scene: "scene-B",
+            nativeSceneID: "native-B",
+            viewID: sceneBViewID,
+            recorder: recorder
+        )
+        recordTraceOnlyURLSessionSignal(
+            requestName: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
+            sourceScene: "scene-A",
+            sourceNativeSceneID: "native-A",
+            viewID: mutation == .swapTraceOwners
+                ? sceneBViewID
+                : sceneAViewID,
+            recorder: recorder
+        )
+        if mutation == .duplicateSceneATrace {
+            recordTraceOnlyURLSessionSignal(
+                requestName: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
+                sourceScene: "scene-A",
+                sourceNativeSceneID: "native-A",
+                viewID: sceneAViewID,
+                recorder: recorder
+            )
+        }
+        return recorder.snapshot()
+    }
+
     private func recordTraceRepresentativeMarker(
         name: String,
         scene: String,
@@ -1697,24 +1842,41 @@ final class ProbeSemanticOracleTests: XCTestCase {
         viewID: String,
         recorder: ProbeEventRecorder
     ) {
+        recordTraceOnlyURLSessionSignal(
+            requestName: ProbeTraceOnlyURLSessionContract.requestName,
+            sourceScene: "scene-A",
+            sourceNativeSceneID: "native-A",
+            viewID: viewID,
+            recorder: recorder
+        )
+    }
+
+    private func recordTraceOnlyURLSessionSignal(
+        requestName: String,
+        sourceScene: String,
+        sourceNativeSceneID: String,
+        viewID: String,
+        recorder: ProbeEventRecorder
+    ) {
         recorder.record(
             ProbeSignal(
                 kind: .rumTrace,
                 evidenceSource: .traceMapper,
                 sourceContext: ProbeSourceContext(
-                    logicalSceneID: "scene-A",
+                    logicalSceneID: sourceScene,
+                    nativeSceneID: sourceNativeSceneID,
                     screen: "home",
-                    phase: ProbeTraceOnlyURLSessionContract.requestName
+                    phase: requestName
                 ),
                 rumContext: ProbeRUMContext(
                     sessionID: "session",
                     viewID: viewID
                 ),
-                name: ProbeTraceOnlyURLSessionContract.requestName,
+                name: requestName,
                 trace: ProbeTraceSignal(
                     operationName: "urlsession.request",
                     serviceName: "ios-sdk-native-multi-scene-probe",
-                    resourceName: "https://multi-scene-probe.invalid/trace-only/request",
+                    resourceName: "https://multi-scene-probe.invalid/trace-only/\(requestName)",
                     startTimeMilliseconds: 42,
                     durationNanoseconds: 1,
                     isError: false,

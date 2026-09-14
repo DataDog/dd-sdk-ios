@@ -1902,6 +1902,7 @@ final class ProbeScenarioDriverTests: XCTestCase {
     }
 
     func testDrivesTraceOnlyURLSessionStartAndCompletionThroughExactScene() async throws {
+        let requestName = ProbeTraceOnlyURLSessionContract.reverseSceneARequestName
         let recorder = ProbeEventRecorder(
             runID: "driver-trace-only",
             scenarioID: "driver-trace-only",
@@ -1931,10 +1932,9 @@ final class ProbeScenarioDriverTests: XCTestCase {
                         sourceContext: ProbeSourceContext(
                             logicalSceneID: "scene-A",
                             screen: "home",
-                            phase: ProbeTraceOnlyURLSessionContract.requestName
+                            phase: requestName
                         ),
-                        name: "trace-only-request-started-"
-                            + ProbeTraceOnlyURLSessionContract.requestName,
+                        name: "trace-only-request-started-" + requestName,
                         result: .pass
                     )
                 )
@@ -1946,9 +1946,9 @@ final class ProbeScenarioDriverTests: XCTestCase {
                         sourceContext: ProbeSourceContext(
                             logicalSceneID: "scene-A",
                             screen: "home",
-                            phase: ProbeTraceOnlyURLSessionContract.requestName
+                            phase: requestName
                         ),
-                        name: ProbeTraceOnlyURLSessionContract.requestName
+                        name: requestName
                     )
                 )
             default:
@@ -1965,12 +1965,12 @@ final class ProbeScenarioDriverTests: XCTestCase {
                 ProbeStep(
                     .startTraceOnlyURLSessionRequest,
                     scene: "scene-A",
-                    value: ProbeTraceOnlyURLSessionContract.requestName
+                    value: requestName
                 ),
                 ProbeStep(
                     .completeTraceOnlyURLSessionRequest,
                     scene: "scene-A",
-                    value: ProbeTraceOnlyURLSessionContract.requestName
+                    value: requestName
                 )
             ],
             completionConditions: [],

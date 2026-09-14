@@ -37,6 +37,14 @@ enum ProbeStepKind: String, Codable, CaseIterable {
 enum ProbeTraceOnlyURLSessionContract {
     static let host = "multi-scene-probe.invalid"
     static let requestName = "trace-only-home-request"
+    static let reverseSceneARequestName = "trace-only-reverse-scene-a"
+    static let reverseSceneBRequestName = "trace-only-reverse-scene-b"
+
+    static func supports(requestName: String) -> Bool {
+        requestName == self.requestName
+            || requestName == reverseSceneARequestName
+            || requestName == reverseSceneBRequestName
+    }
 
     static func requestURL(
         runID: String,

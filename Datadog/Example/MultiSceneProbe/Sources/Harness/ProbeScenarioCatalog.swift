@@ -31,6 +31,7 @@ enum ProbeScenarioCatalog {
         "uikit.split.pop-finish",
         "actions.uikit-scroll-navigation-deceleration",
         "traces.urlsession-cross-scene",
+        "traces.urlsession-reverse-completion",
         "windows.activation-sequence",
         "windows.close-with-resource"
     ]
@@ -73,6 +74,7 @@ enum ProbeScenarioCatalog {
         uikitSplitConcurrentScenes,
         actionsUIKitScrollNavigationDeceleration,
         tracesURLSessionCrossScene,
+        tracesURLSessionReverseCompletion,
         windowsParallelNavigation,
         windowsActivationSequence,
         windowsCloseWithResource,
@@ -2339,6 +2341,180 @@ enum ProbeScenarioCatalog {
                 screen: "home",
                 occurrence: 1,
                 name: ProbeTraceOnlyURLSessionContract.requestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.exercisesTraceOnlyURLSessionOwnership = true
+        }
+    )
+
+    /// Starts independent Trace-only URLSession requests in A and B, then
+    /// completes them B-before-A while the opposite scene is representative.
+    /// Each completion-created span must retain its own request-time Home view.
+    private static let tracesURLSessionReverseCompletion = ProbeScenario(
+        identifier: "traces.urlsession-reverse-completion",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "trace-reverse-a-start-representative"
+            ),
+            ProbeStep(
+                .startTraceOnlyURLSessionRequest,
+                scene: "scene-A",
+                value: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "trace-reverse-b-start-representative"
+            ),
+            ProbeStep(
+                .startTraceOnlyURLSessionRequest,
+                scene: "scene-B",
+                value: ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "trace-reverse-b-completion-representative"
+            ),
+            ProbeStep(
+                .completeTraceOnlyURLSessionRequest,
+                scene: "scene-A",
+                value: ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "trace-reverse-a-completion-representative"
+            ),
+            ProbeStep(
+                .completeTraceOnlyURLSessionRequest,
+                scene: "scene-B",
+                value: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .trace,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName,
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                expectedCount: 1
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-a-start-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-a-start-representative"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-b-start-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-b-start-representative"
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-b-completion-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-b-completion-representative"
+            ),
+            ProbeExpectation(
+                .trace,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName,
+                sourceScene: "scene-B",
+                sourceScreen: "home"
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-a-completion-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-reverse-a-completion-representative"
+            ),
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
                 sourceScene: "scene-A",
                 sourceScreen: "home"
             )

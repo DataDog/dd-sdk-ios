@@ -803,7 +803,7 @@ internal final class ProbeScenarioDriver {
             guard
                 let scene = step.scene,
                 let requestName = step.value,
-                requestName == ProbeTraceOnlyURLSessionContract.requestName
+                ProbeTraceOnlyURLSessionContract.supports(requestName: requestName)
             else {
                 return .failed("scene or Trace-only request name is invalid")
             }
@@ -831,7 +831,7 @@ internal final class ProbeScenarioDriver {
             guard
                 let scene = step.scene,
                 let requestName = step.value,
-                requestName == ProbeTraceOnlyURLSessionContract.requestName
+                ProbeTraceOnlyURLSessionContract.supports(requestName: requestName)
             else {
                 return .failed("scene or Trace-only request name is invalid")
             }

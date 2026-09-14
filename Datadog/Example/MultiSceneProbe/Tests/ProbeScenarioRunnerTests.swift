@@ -31,6 +31,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "uikit.split.pop-finish",
                 "actions.uikit-scroll-navigation-deceleration",
                 "traces.urlsession-cross-scene",
+                "traces.urlsession-reverse-completion",
                 "windows.parallel-navigation",
                 "windows.close-with-resource",
                 "actions.exact-source-handoff",
@@ -128,6 +129,57 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.screen == "home"
                     && $0.occurrence == 1
                     && $0.expectedCount == 1
+            }
+        )
+    }
+
+    func testTraceOnlyURLSessionReverseCompletionUsesOppositeRepresentatives() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "traces.urlsession-reverse-completion"
+            )
+        )
+
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .startTraceOnlyURLSessionRequest
+            }.map { "\($0.scene ?? "nil"):\($0.value ?? "nil")" },
+            [
+                "scene-A:\(ProbeTraceOnlyURLSessionContract.reverseSceneARequestName)",
+                "scene-B:\(ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName)"
+            ]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .completeTraceOnlyURLSessionRequest
+            }.map { "\($0.scene ?? "nil"):\($0.value ?? "nil")" },
+            [
+                "scene-A:\(ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName)",
+                "scene-B:\(ProbeTraceOnlyURLSessionContract.reverseSceneARequestName)"
+            ]
+        )
+        XCTAssertEqual(
+            scenario.completionConditions.compactMap(\.name),
+            [
+                ProbeTraceOnlyURLSessionContract.reverseSceneBRequestName,
+                ProbeTraceOnlyURLSessionContract.reverseSceneARequestName
+            ]
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.scene == "scene-A"
+                    && $0.name == "trace-reverse-b-completion-representative"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.scene == "scene-B"
+                    && $0.name == "trace-reverse-a-completion-representative"
             }
         )
     }
