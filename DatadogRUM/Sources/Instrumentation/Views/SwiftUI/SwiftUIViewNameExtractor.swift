@@ -32,12 +32,20 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
         self.createReflector = reflectorFactory
     }
 
+    private static var appFrameworkPrefix: String {
+        #if os(macOS)
+        "NS"
+        #else
+        "UI"
+        #endif
+    }
+
     /// Attempts to extract a meaningful SwiftUI view name from a `DDViewController`
     /// - Parameter viewController: The `DDViewController` potentially hosting a SwiftUI view
     /// - Returns: The extracted view name or `nil`
     func extractName(from viewController: DDViewController) -> String? {
-        // We ignore UIKit container view controllers
-        if Bundle(for: type(of: viewController)).dd.isUIKit {
+        // We ignore UIKit/AppKit container view controllers
+        if Bundle(for: type(of: viewController)).dd.isPlatformKit {
             return nil
         }
 
@@ -112,7 +120,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     }()
 
     private static let hostingControllerPattern: NSRegularExpression? = {
-        try? NSRegularExpression(pattern: "UIHostingController<([A-Za-z0-9_]+)>")
+        try? NSRegularExpression(pattern: "\(appFrameworkPrefix)HostingController<([A-Za-z0-9_]+)>")
     }()
 
     private static let navigationStackPattern: NSRegularExpression? = {
@@ -154,7 +162,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     internal func extractFallbackViewName(from viewControllerDescription: String) -> String {
         // For generic `AnyView` containers, return the full description as it's
         // already the most informative name available
-        if viewControllerDescription == "NavigationStackHostingController<AnyView>" || viewControllerDescription == "UIHostingController<AnyView>" {
+        if viewControllerDescription == "NavigationStackHostingController<AnyView>" || viewControllerDescription == "\(Self.appFrameworkPrefix)HostingController<AnyView>" {
             return viewControllerDescription
         }
 
@@ -170,7 +178,7 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
 
         // When no specific view name can be extracted,
         // return a generic fallback name based on the controller type
-        return viewControllerDescription.contains("UIHostingController") ? Self.HostingControllerFallbackViewName : Self.NavigationStackControllerFallbackViewName
+        return viewControllerDescription.contains("\(Self.appFrameworkPrefix)HostingController") ? Self.HostingControllerFallbackViewName : Self.NavigationStackControllerFallbackViewName
     }
 
     private func extractGenericViewName(from description: String, using pattern: NSRegularExpression?) -> String? {
