@@ -90,8 +90,10 @@ boundary, in this order:
 | 73 | `Exercise semantic SwiftUI sheet authority` | Exact-scene semantic Sheet lifecycle, target-scoped automatic suppression, presentation-subtree intervals, and adversarial oracle coverage |
 | 74 | `Document semantic SwiftUI sheet evidence` | `EXP-123` through `EXP-125` local/backend evidence, aggregate-lifetime oracle correction, validation snapshot, and exact resume state |
 | 75 | `Exercise semantic SwiftUI full-screen authority` | Independent `fullScreenCover` lifecycle, complete-destination resolver state, target-scoped automatic suppression, and strict dismiss ownership oracle |
+| 76 | `Document semantic SwiftUI full-screen evidence` | `EXP-126` clean local/backend evidence, presentation-style parity, validation snapshot, and exact resume state |
+| 77 | `Exercise sibling container authority` | Two real sibling `NavigationStack` controller branches, mandatory ancestry assertion, container-local manual authority, latest-destination reveal, and exact measurement-view filtering |
 
-Rows 1-75 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-77 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -110,7 +112,7 @@ Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
 is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
 `dc863758f`. Rows 67-69 are `ddfc38008`, `94075aa47`, and `0394ad6cc`.
 Rows 70-73 are `6e4e5e892`, `d0bcebaf2`, `f277763d7`, and `2b9759446`.
-Rows 74-75 are `e0bd4a87d` and `56e7bf2fe`.
+Rows 74-77 are `e0bd4a87d`, `56e7bf2fe`, `e68660841`, and `765640fab`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -270,6 +272,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-124 | `semantic-sheet-suppression-20260914-0222-a` | `8101b16d-ed17-4ded-8a29-c9bbf8aa219b` | iPadOS 27 simulator | First suppression-only presentation-boundary run. Mapper output contains exactly launch, the startup fallback, H1, semantic Sheet M1, and fresh H2; active work owns M1 and both dismiss pairs own H2, with no automatic `ProbeSheetView`. The old oracle nevertheless failed because a pending Sheet Resource delayed M1's final aggregate snapshot until after H2 started. This is an oracle interval defect, not a RUM ownership failure: aggregate delivery lifetime is not semantic presentation authority. |
 | EXP-125 | `semantic-sheet-authority-20260914-0232-a` | `c01631fb-8b2c-4071-b7c3-78c6f042774f` | iPadOS 27 simulator | Clean complete-destination Sheet acceptance after `f277763d7` and `2b9759446`. The oracle passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `76aada56…`, semantic Sheet M1 `81ecbf07…`, and fresh H2 `b7e26b43…`. No automatic `ProbeSheetView` occurs while its native presentation subtree is mounted. Pre-Sheet work owns H1, active work owns M1, and immediate plus settled dismissal work own the same fresh H2. Backend intake has 29 exact-session events: one session, five views, ten actions, ten Resources, two long tasks, and one vital, with zero errors or crashes. Probe tests pass 68/68 and the complete RUM suite passes 1,169/1,169. |
 | EXP-126 | Uncaptured setup `semantic-full-screen-cover-authority-20260914-0304-a`; accepted `semantic-full-screen-cover-authority-20260914-0312-b` | none claimed; `ba5d005c-ce65-40eb-b639-2845e570f70b` | iPadOS 27 simulator | Independent complete-destination `fullScreenCover` acceptance after `56e7bf2fe`. The first Xcode interaction session expired before capture and receives no semantic or backend claim. The explicitly uninstalled retry passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `700cf5c7…`, semantic Cover M1 `6cc95aa2…`, and fresh H2 `baf8d431…`. No automatic `ProbeFullScreenCoverView` occurs while the native cover subtree is mounted. Pre-cover work owns H1, active work owns M1, and immediate plus settled dismissal work own H2. Backend intake has 28 exact-session events: one session, five views, ten actions, ten Resources, one long task, and one vital, with zero errors or crashes. Probe tests pass 69/69; build-for-testing, repository lint, and `git diff --check` pass. |
+| EXP-127 | Probe-only-noise trial `sibling-container-authority-20260914-0350-a`; clean successor `sibling-container-authority-20260914-0354-b`; accepted hardened `sibling-container-authority-20260914-0403-c` | `6b0407b0-ec2e-49c1-927b-eb0ac3ef589f`; `c484fb2a-bd67-45f6-9c4e-8f284baaf843`; `46b9029f-eee9-4e1f-9fec-67a735efcc19` | iPadOS 27 simulator | Sibling-container authority acceptance after `765640fab`. Two `NavigationStack` branches mount under one outer SwiftUI host; a required ancestry assertion proves distinct left and right controller branches. Left manual M1 remains current while right Home commits to Detail, no automatic view starts during M1, and exact stop reveals only fresh right Detail. All three runs pass 19/19 locally. The first is retained as harness-negative evidence because the probe-only ancestry reader became a late fifth automatic view. The exact measurement-type predicate removes it in the clean successors, and the final driver waits for the immutable topology assertion. Accepted backend intake has 31 events: one session, four views, 11 actions, 11 Resources, three long tasks, and one vital, with zero errors or crashes. Probe tests pass 76/76; build-for-testing, repository lint, and `git diff --check` pass. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3564,8 +3567,8 @@ violations across 713 source and 699 test files, and `git diff --check` passes.
 The production RUM implementation did not change in this slice, so the existing
 clean 1,169/1,169 RUM result remains the relevant regression gate. Internal
 complete-destination presentation parity is now closed for Sheet and full-screen
-cover. Public API review, sibling-container isolation, and live same-key A/B
-targeting remain open.
+cover. At that checkpoint, public API review, sibling-container isolation, and
+live same-key A/B targeting remained open.
 
 Runtime artifacts use the prefix
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-126 Full Screen Cover 0312b-03_08_59_519`.
@@ -3573,6 +3576,79 @@ The successful Xcode build log is
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-030132.txt`;
 the 69-test summary is
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/BE82E273-1149-4FDD-9833-56FACB9398D3.txt`.
+
+### 2026-09-14 — EXP-127: sibling-container authority acceptance
+
+Commit `765640fab` adds
+`swiftui.coexistence.sibling-container-authority`. A `TabView` was deliberately
+rejected as the discriminator because selection, preload, and deactivation would
+make it ambiguous whether both containers were truly mounted and independently
+eligible. The accepted fixture instead places two `NavigationStack` branches in
+an `HStack` under one outer SwiftUI host. The left branch mounts a
+suppression-only boundary and exact-scene manual M1. The right branch begins on
+automatic Home H1 and commits Detail while M1 remains current. The required
+timeline is H1 -> M1 -> fresh Detail D1: no intermediate right-side automatic
+view may become current during M1, and immediate plus settled post-stop work must
+use the same new Detail ID.
+
+The experiment does not infer sibling topology from SwiftUI source structure. A
+probe-only `UIViewRepresentable` records each branch's real controller ancestry.
+The driver waits for an immutable `assertion:sibling-controller-topology` result;
+missing, nested, or collapsed ancestry times out as `INCONCLUSIVE`. In the final
+run, the left branch used navigation controller `0x105de0700`; right Home and
+right Detail used `0x105de0e00`; all joined outer host `0x105de4500`. Right Home
+and Detail had distinct hosting controllers while remaining in the same right
+navigation branch. This is the concrete containment evidence behind the authority
+claim.
+
+The first run, `sibling-container-authority-20260914-0350-a`, passed 19/19 and
+proved the semantic owners, but it is not the clean acceptance artifact. Its
+probe-only `ProbeControllerAncestryReader` materialized as a late fifth automatic
+RUM view after the assertions. That is measurement noise, not an SDK semantic
+failure, and remains documented because a hierarchy witness can perturb the very
+automatic tracker it measures. The predicate now excludes only that exact probe
+type rather than broadening suppression to customer controllers.
+
+The clean successor, `sibling-container-authority-20260914-0354-b`, also passed
+19/19. Session `c484fb2a-bd67-45f6-9c4e-8f284baaf843` contains 30 events and
+exactly four views: launch, automatic H1, manual M1, and fresh automatic Detail.
+The final hardened run, `sibling-container-authority-20260914-0403-c`, repeats
+the result after making the topology wait mandatory. Its assertion step starts at
+recorder sequence 60, observes a passing topology assertion at 61, and
+acknowledges it at 62 before continuing. The terminal result passes 19/19 with no
+issue.
+
+Backend session `46b9029f-eee9-4e1f-9fec-67a735efcc19` contains 31 exact-run
+events:
+
+1. ApplicationLaunch `2f44b937-8d97-490d-ab29-e72a191475a4`.
+2. Automatic Home H1 `a3d00b0e-2117-4816-a721-d232ceac7b19`.
+3. Semantic manual M1 `727bcf82-3e4c-4ea8-96a5-a803d6559ea3`.
+4. Fresh automatic Detail D1 `1851d017-2d9f-4b8c-bf87-f9e3f5e5ad01`.
+
+Launch, H1, and D1 each own two actions and two Resources; M1 owns five of each,
+including work sourced from the right Detail while it is only staged underneath.
+There is no helper view, error, or crash. The remaining five events are three
+long tasks, one session, and one vital. One console warning reports a delayed
+Resource stop after the final view ended, even though its frozen D1 owner was
+preserved and backend intake accepted the Resource correctly. Treat warning
+quality as a later diagnostic item, not as an attribution failure.
+
+Build-for-testing passed at
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260914-035946.txt`.
+The full generated probe plan passes 76/76 at
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/C9332EE0-5CDF-4453-B04C-691956FA8132.txt`.
+Repository lint again reports zero violations across 713 source and 699 test
+files, and `git diff --check` passes. No production RUM file changed in this
+slice, so the clean 1,169/1,169 RUM result remains the production regression
+gate. Final runtime artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-127 Sibling Container Authority 0403c Observer-04_08_22_968`.
+
+This closes the internal sibling-containment and reveal mechanics, not the public
+semantic API. The next simulator-capable discriminator is the approved
+different-key nested manual sequence plus duplicate-active-key crash safety. The
+independent scene-A semantic/scene-B automatic and same-key A/B rows remain in
+the physical-device queue.
 
 ### Attempts not to repeat
 
@@ -3594,6 +3670,15 @@ the 69-test summary is
   the commit tree and the xcconfig's original `AM` state.
 - Do not consider callback counts, compilation, or crash safety proof of correct
   semantic attribution.
+- Do not use `TabView` as the sibling-container authority discriminator. Its
+  selection/preload behavior cannot prove two simultaneously mounted independent
+  navigation branches under the project's one-current-destination model.
+- Do not accept a sibling-container run from source layout alone. Require the
+  controller-ancestry assertion; missing or collapsed topology is
+  `INCONCLUSIVE`.
+- Do not let a probe-only hierarchy or measurement reader participate in automatic
+  RUM view discovery. Exclude only its exact known type, then retain an adversarial
+  check that unrelated customer controllers remain eligible.
 - Do not treat `probe.source_scene` or `probe.screen` as RUM ownership. Those
   fields describe the call site. Only mapper/backend view UUIDs and trusted scene
   association establish where RUM attributed the event.

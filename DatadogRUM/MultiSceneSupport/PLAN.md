@@ -104,8 +104,8 @@ and RUM UUID evidence distinguish it from an ignored touch.
 Current execution order:
 
 No product decision blocks the remaining internal work. The complete-destination
-Sheet and full-screen-cover slice now passes; public names and exact
-Swift/Objective-C signatures remain gated on normal API review.
+Sheet/full-screen-cover slice and sibling-container isolation now pass; public
+names and exact Swift/Objective-C signatures remain gated on normal API review.
 
 1. Completed in `34ba7eabf` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -157,8 +157,7 @@ Swift/Objective-C signatures remain gated on normal API review.
    fresh H2, no automatic presentation duplicate, and immediate plus settled
    dismiss work on H2. `EXP-124` proves an outgoing aggregate's delayed final
    snapshot is not an authority interval. The Sheet backend set has 29 events;
-   full-screen cover has 28; both report zero errors or crashes. Next prove
-   sibling-container isolation before API review.
+   full-screen cover has 28; both report zero errors or crashes.
 8. Completed as a negative discriminator in `dc863758f` and `EXP-120`: direct
    keyed manual start/stop over automatic H1 does not provide manual authority.
    Automatic discovery displaced M1 within 31–48 ms, and the intended M1
@@ -178,17 +177,38 @@ Swift/Objective-C signatures remain gated on normal API review.
     stopping nested Preview starts a fresh Compose occurrence; duplicate active
     `(scene, key)` start is ignored crash-safely without restart; and existing
     source-less behavior remains separate. The focused presentation/manual set
-    passes 6/6. Next take scene-aware Swift/Objective-C overloads through API
-    review. The same key must coexist independently in A and B and a stop must
-    affect only its exact scene/key.
-11. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
-   hardware or with human input.
-12. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
-   adaptive collapse/expand without customer `.id` or state reset.
-13. Validate simultaneous visible A/B transitions, then genuine disconnect,
-   restoration, and adaptive topology on capable hardware.
-14. Complete Operation public targeting and its live backend matrix.
-15. Close the bounded causal/downstream rows and live normal-app compatibility.
+    passes 6/6. The same key must coexist independently in A and B and a stop must
+    affect only its exact scene/key. Public overloads still require API review.
+11. Completed in `765640fab` and `EXP-127`: prove container-local authority with
+    two independently materialized `NavigationStack` controller branches under
+    one outer SwiftUI host. A mandatory ancestry witness distinguishes the real
+    siblings before the oracle can pass. Left manual M1 remains current while
+    right Home commits to Detail underneath; exact stop reveals only fresh Detail,
+    and immediate plus settled work uses it. Two clean runs pass 19/19; the final
+    backend session has exactly four views and 11 action/Resource pairs with zero
+    errors or crashes. The probe plan passes 76/76.
+12. Next, add a one-scene runtime discriminator for the approved manual stack
+    rules: Compose -> Preview -> fresh Compose, followed separately by a duplicate
+    active `(scene, key)` start that remains crash-safe and creates no restart.
+13. Finish `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
+    hardware, requiring the decisive scene-B marker and backend owner.
+14. Take the scene-aware Swift/Objective-C manual-view overloads through API
+    review while preserving the existing inferred/last-interacted APIs.
+15. Add a live two-scene same-key manual-view discriminator on capable hardware;
+    stop A and B in reverse order and prove each closes only its exact scene/key.
+16. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
+    iPad, requiring exact foreground-active target and background peer state.
+17. After API approval, land the optional complete-destination SwiftUI semantic
+    integration with centralized path/router metadata, presentation coverage, and
+    target-local automatic deduplication.
+18. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
+    split result through adaptive collapse/expand, and validate stable simultaneous
+    A/B topology through the real-device/human queue.
+19. Run genuine disconnect/reconnect, per-scene background/foreground, and
+    concurrent restoration.
+20. Complete Operation public targeting and its live A-to-B/duplicate-start matrix.
+21. Close the bounded Resource/Trace and downstream rows, live single-scene and
+    custom-handler compatibility, handoff overhead, and iOS 27.1/iPhone Duo matrix.
 
 This order implements the approved product priority: view occurrences and
 navigation first, then scene-aware manual views, downstream ownership,
@@ -196,7 +216,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-126`. It still
+decision record after `EXP-127`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -320,8 +340,17 @@ experiment; it does not itself change the SDK support verdict.
    the outgoing aggregate's delivery lifetime. Independent clean Sheet and
    full-screen-cover runs each pass 14/14 locally and in backend intake with
    H1/M1/fresh-H2 ownership, no automatic presentation duplicate, and zero errors
-   or crashes. The probe plan passes 69/69.
-16. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+   or crashes. At that checkpoint the probe plan passed 69/69.
+16. Sibling-container coverage completed in `765640fab` and `EXP-127`: mount two
+   independent `NavigationStack` branches below one outer SwiftUI host, prove
+   their exact controller ancestries, keep left M1 authoritative while right
+   Detail stages, and reveal only a fresh right Detail after exact stop. The first
+   run retained a late probe-only ancestry-reader view as negative harness
+   evidence. Exact type filtering plus a mandatory assertion wait produced two
+   clean 19/19 runs. The final backend session has four views, 11 actions, 11
+   Resources, three long tasks, one session, one vital, and no error or crash.
+   The probe plan passes 76/76.
+17. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -331,7 +360,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, exact scene lifecycle, and
-coexistence harness is implemented through `EXP-126`: three clean
+coexistence harness is implemented through `EXP-127`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -356,8 +385,11 @@ M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
 fresh H2 before immediate and settled work. `EXP-126` independently repeats the
 same complete-destination contract for `fullScreenCover`, including target-scoped
 dedup through native dismissal and a fresh H2 before both dismiss pairs. The test
-plan is 69/69. Presentation-style parity is now closed internally; sibling
-container scope and reviewed public APIs remain.
+plan is 76/76. Presentation-style parity and sibling-container scope are now
+closed internally; reviewed public APIs remain. `EXP-127` adds the exact
+H1/manual-M1/fresh-Detail sibling path, with no right-side intermediate view while
+M1 is current. The next simulator-capable discriminator is nested different-key
+manual authority plus duplicate-active-key crash safety.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -669,10 +701,14 @@ entries and unrelated sibling controllers remain eligible, and UIKit predicate
 acceptance keeps precedence. `EXP-115` proves exact H1/D1/H2 output with both
 tracking modes enabled. `EXP-116` completes the once-per-container path/resolver
 prototype, and `EXP-118` proves from two simulator prefixes that semantic A does
-not globally suppress automatic B. Still required is the terminal B marker on
-physical hardware, a precise rule for sibling navigation containers sharing one
-hosting controller, and the immediate exceptional-view return fix exposed by
-`EXP-119`.
+not globally suppress automatic B. `EXP-127` then proves the registry remains
+container-local across two sibling controller branches below one outer SwiftUI
+host: left manual authority does not make the right branch ineligible, and only
+the latest committed right destination is revealed. The ancestry assertion is a
+required capability witness; without it the run is `INCONCLUSIVE`. Still required
+are the terminal B marker on physical hardware and reviewed public ownership of
+the proven boundary. The immediate exceptional-view return defect exposed by
+`EXP-119` is superseded internally by `EXP-125`/`EXP-126`.
 
 Focused validation covers mounted replacement, unchanged key, returning to an
 earlier key with a fresh third UUID, detached change, simultaneous scene migration,
@@ -758,8 +794,11 @@ H1/M1/fresh-H2 ownership before immediate work and no automatic Sheet. The
 presentation replaces the scene's current RUM destination. Commit `56e7bf2fe`
 adds an independent full-screen-cover discriminator, and `EXP-126` passes the
 same 14/14 contract with no automatic cover and exact H1/M1/fresh-H2 ownership.
-The public router integration still requires API review; sibling-container scope
-is the next simulator-capable authority discriminator.
+`EXP-127` closes the internal sibling-container discriminator with two distinct
+controller ancestries and exact H1/M1/fresh-Detail ownership. The public router
+integration still requires API review. The next simulator-capable authority
+discriminator is the live nested-manual/duplicate-active-key sequence already
+covered in focused source tests.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting

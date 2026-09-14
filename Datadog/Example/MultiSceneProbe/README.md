@@ -57,6 +57,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
 | `swiftui.coexistence.automatic-scene-targeted-full-screen-cover` | `EXP-126` | Independent signal-driven PASS 14/14 with semantic full-screen cover, no automatic duplicate, and fresh Home before immediate dismiss work |
+| `swiftui.coexistence.sibling-container-authority` | `EXP-127` | Signal-driven PASS 19/19; real left/right controller ancestries prove container-local authority and latest right-Detail reveal |
 | `swiftui.coexistence.automatic-keyed-manual-view` | `EXP-120`–`EXP-122` | Legacy direct-command baseline FAIL; internal exact-scene successor PASS 16/16 with authoritative Compose and fresh Home H2 |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
@@ -90,7 +91,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 69/69. The stack
+future Execution Context seam. The generated test plan passes 76/76. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -121,6 +122,16 @@ independent `EXP-126` scenario repeats that strict contract for
 `fullScreenCover`: it passes 14/14 locally and in backend intake, creates no
 automatic `ProbeFullScreenCoverView`, and assigns immediate plus settled dismiss
 work to one fresh Home H2.
+`EXP-127` mounts two sibling `NavigationStack` branches below one outer SwiftUI
+host. A probe-only controller-ancestry reader must prove that left authority and
+right Home/Detail use distinct navigation branches before the scenario can pass;
+missing topology is `INCONCLUSIVE`. Left manual M1 remains current while right
+Detail commits underneath it, and exact stop reveals only one fresh Detail before
+immediate and settled work. The first run exposed the ancestry reader itself as a
+late automatic RUM view, so automatic discovery now excludes only that exact
+measurement type. Two clean successors contain no helper view and pass 19/19;
+the final backend session has four views and 11 correctly owned action/Resource
+pairs with zero errors or crashes.
 `EXP-120` starts and stops a direct keyed Compose view over automatic Home. Its
 step-bounded authority interval and exact owner relations catch automatic
 preemption even when Compose starts and stops before the driver can wait for it.
@@ -163,7 +174,8 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.split.automatic-baseline`, `swiftui.split.same-type-selection`, and
 `swiftui.split.retained-return`, plus `uikit.split.pop-cancel` and
 `uikit.split.pop-finish`, plus `windows.close-with-resource` and
-`windows.activation-sequence`, use the
+`windows.activation-sequence`, plus
+`swiftui.coexistence.sibling-container-authority`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM

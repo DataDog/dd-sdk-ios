@@ -238,6 +238,16 @@ discriminator for `fullScreenCover`; `EXP-126` independently passes the same
 14/14 contract with no automatic `ProbeFullScreenCoverView`. The two presentation
 styles now have separate local and backend evidence.
 
+`EXP-127` covers the remaining internal sibling boundary. Two independent
+`NavigationStack` branches mount below one outer SwiftUI host, and a mandatory
+`UIViewController` ancestry witness proves they are distinct real controller
+branches before the oracle can pass. Left-side manual authority does not make a
+right-side automatic candidate ineligible: right Home commits to Detail beneath
+M1, no intermediate view becomes current, and exact stop reveals one fresh
+right-side Detail occurrence. The first run also established a harness rule: a
+probe-only hierarchy reader must be excluded by its exact predicate type or it
+can become a late automatic RUM view itself.
+
 ## SwiftUI semantic navigation
 
 ### Required customer shape
@@ -311,10 +321,13 @@ The current internal authority registry suppresses automatic discovery when an
 active explicit or suppression-only reader is contained by an automatic
 candidate controller. The suppression-only form publishes no RUM lifecycle; a
 centralized router remains its sole semantic owner.
-`EXP-115` proves this for one container and `EXP-118` partially proves that scene
-A does not suppress scene B. Before shipping, cover two independent navigation
-containers hosted by one SwiftUI controller. One explicit container must not
-silence automatic tracking in an unrelated sibling container.
+`EXP-115` proves this for one container, `EXP-118` partially proves that scene A
+does not suppress scene B, and `EXP-127` proves containment remains local across
+two sibling controller branches hosted below one outer SwiftUI root. The latter
+passes only after observing both exact controller ancestries; a missing or
+collapsed topology is `INCONCLUSIVE`, not authority evidence. This closes the
+internal isolation question without approving how the public integration creates
+and owns the boundary.
 
 Exceptional `.trackRUMView` instrumentation remains supported alongside a
 semantic container. It owns only its explicit occurrence. Returning from that
@@ -395,8 +408,9 @@ public shape, compatibility, and implementation-boundary review:
    descriptor with an explicit tracked/untracked decision?
 4. Extension-only manual overload with private capability, or defaulted public
    protocol requirements after library-evolution review?
-5. Can the authority registry isolate sibling containers inside one hosting
-   controller without unsupported SwiftUI hierarchy assumptions?
+5. How should the public integration create, retain, and remove the proven
+   container-local authority boundary without exposing controller hierarchy or
+   requiring customers to understand its internal containment model?
 6. How should Objective-C callers that invoke a `UIWindowScene` overload away
    from the main thread be handled without retaining or asynchronously dereferencing
    the scene?
