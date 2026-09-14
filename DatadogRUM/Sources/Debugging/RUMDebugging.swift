@@ -260,7 +260,9 @@ internal class RUMDebuggingViewManager {
 
     deinit {
         if Thread.isMainThread {
-            debugWindow.close()
+            MainActor.assumeIsolated {
+                debugWindow.close()
+            }
         } else {
             let window = debugWindow
 
