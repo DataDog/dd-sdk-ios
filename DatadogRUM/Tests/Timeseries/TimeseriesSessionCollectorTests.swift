@@ -774,6 +774,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
 
+        // `flush()` blocks until the collector's internal queue is drained, so any sample from a timer
+        // tick already in flight is counted here rather than racing with the `pause()` call below.
+        collector.flush()
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertGreaterThan(countBeforePause, 0)
 
