@@ -1282,6 +1282,113 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     @MainActor
+    func testGivenSeveralUnderlyingDestinationsDuringManualAuthority_whenItStops_itRevealsOnlyLatest() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let home = createMockViewInWindow()
+        let detail = createMockViewInWindow()
+        let alternate = createMockViewInWindow()
+        let nameExtractor = SwiftUIViewNameExtractorMock()
+        nameExtractor.resultByViewController = [
+            home: "Home",
+            detail: "Detail",
+            alternate: "Alternate",
+        ]
+        let predicate = SwiftUIRUMViewsPredicateMock()
+        predicate.resultByViewName = [
+            "Home": .init(name: "Home"),
+            "Detail": .init(name: "Detail"),
+            "Alternate": .init(name: "Alternate"),
+        ]
+        let handler = createHandler(
+            swiftUIPredicate: predicate,
+            swiftUIViewNameExtractor: nameExtractor,
+            sceneIdentifierProvider: { _ in scene }
+        )
+
+        handler.notify_viewDidAppear(viewController: home, animated: false)
+        handler.startView(key: "compose", name: "Compose", attributes: [:], sceneIdentifier: scene)
+        handler.notify_viewDidAppear(viewController: detail, animated: false)
+        handler.notify_viewDidAppear(viewController: alternate, animated: false)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        handler.stopView(key: "compose", attributes: [:], sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let revealed = try XCTUnwrap(
+            commandSubscriber.receivedCommands.last as? RUMStartViewCommand
+        )
+        XCTAssertEqual(revealed.identity, ViewIdentifier(alternate))
+        XCTAssertFalse(commandSubscriber.receivedCommands.contains { command in
+            (command as? RUMStartViewCommand)?.identity == ViewIdentifier(detail)
+        })
+    }
+
+    @MainActor
+    func testGivenNestedTargetedManualViews_whenPreviewStops_itStartsFreshComposeOccurrence() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+
+        handler.startView(key: "compose", name: "Compose", attributes: [:], sceneIdentifier: scene)
+        handler.startView(key: "preview", name: "Attachment Preview", attributes: [:], sceneIdentifier: scene)
+        handler.stopView(key: "preview", attributes: [:], sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)?.identity,
+            ViewIdentifier("compose")
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)?.identity,
+            ViewIdentifier("compose")
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)?.identity,
+            ViewIdentifier("preview")
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)?.identity,
+            ViewIdentifier("preview")
+        )
+        XCTAssertEqual(
+            (commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)?.identity,
+            ViewIdentifier("compose")
+        )
+    }
+
+    @MainActor
+    func testGivenActiveTargetedManualView_whenSameSceneAndKeyStartsAgain_itRemainsCrashSafeAndDoesNotRestart() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let home = createMockViewInWindow()
+        let handler = createHandler(
+            swiftUIPredicate: SwiftUIRUMViewsPredicateMock(result: .init(name: "Home")),
+            swiftUIViewNameExtractor: SwiftUIViewNameExtractorMock(defaultResult: "Home"),
+            sceneIdentifierProvider: { _ in scene }
+        )
+        handler.notify_viewDidAppear(viewController: home, animated: false)
+        handler.startView(key: "compose", name: "Compose", attributes: [:], sceneIdentifier: scene)
+
+        handler.startView(
+            key: "compose",
+            name: "Duplicate Compose",
+            attributes: ["duplicate": true],
+            sceneIdentifier: scene
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        handler.stopView(key: "compose", attributes: [:], sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        XCTAssertEqual(
+            commandSubscriber.receivedCommands.compactMap {
+                ($0 as? RUMStartViewCommand)?.identity
+            },
+            [ViewIdentifier(home), ViewIdentifier("compose"), ViewIdentifier(home)]
+        )
+    }
+
+    @MainActor
     func testGivenSameTargetedManualKeyInTwoScenes_whenOneStops_itDoesNotAffectPeer() throws {
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-B")

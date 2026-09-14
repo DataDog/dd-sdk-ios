@@ -997,6 +997,32 @@ internal final class RUMViewTrackingState {
 }
 
 #if os(iOS)
+private protocol RUMSwiftUIAutomaticViewAuthorityState: AnyObject {
+    var isAutomaticViewAuthorityActive: Bool { get }
+}
+
+extension RUMViewTrackingState: RUMSwiftUIAutomaticViewAuthorityState {
+    fileprivate var isAutomaticViewAuthorityActive: Bool { isAppeared }
+}
+
+/// Keeps automatic SwiftUI discovery suppressed for a mounted semantic
+/// presentation subtree without publishing a second RUM view lifecycle. The
+/// navigation owner remains responsible for starting and stopping the semantic
+/// occurrence; this state follows the platform subtree through its dismissal.
+internal final class RUMSwiftUIAutomaticViewSuppressionState: RUMSwiftUIAutomaticViewAuthorityState {
+    private(set) var isActive = false
+
+    fileprivate var isAutomaticViewAuthorityActive: Bool { isActive }
+
+    func appear() {
+        isActive = true
+    }
+
+    func disappear() {
+        isActive = false
+    }
+}
+
 /// Tracks active explicit SwiftUI view boundaries so automatic controller
 /// discovery can stay enabled without creating a duplicate RUM view for the
 /// same subtree. Entries are weak and scoped by actual view containment rather
@@ -1005,14 +1031,14 @@ internal final class RUMViewTrackingState {
 internal final class RUMSwiftUIViewAuthorityRegistry {
     private final class WeakEntry {
         weak var observer: RUMSceneIdentifierReader.ObserverView?
-        weak var trackingState: RUMViewTrackingState?
+        weak var authorityState: (any RUMSwiftUIAutomaticViewAuthorityState)?
 
         init(
             observer: RUMSceneIdentifierReader.ObserverView,
-            trackingState: RUMViewTrackingState
+            authorityState: any RUMSwiftUIAutomaticViewAuthorityState
         ) {
             self.observer = observer
-            self.trackingState = trackingState
+            self.authorityState = authorityState
         }
     }
 
@@ -1022,21 +1048,35 @@ internal final class RUMSwiftUIViewAuthorityRegistry {
         observer: RUMSceneIdentifierReader.ObserverView,
         trackingState: RUMViewTrackingState
     ) {
+        register(observer: observer, authorityState: trackingState)
+    }
+
+    func register(
+        observer: RUMSceneIdentifierReader.ObserverView,
+        suppressionState: RUMSwiftUIAutomaticViewSuppressionState
+    ) {
+        register(observer: observer, authorityState: suppressionState)
+    }
+
+    private func register(
+        observer: RUMSceneIdentifierReader.ObserverView,
+        authorityState: any RUMSwiftUIAutomaticViewAuthorityState
+    ) {
         entries.removeAll { entry in
-            entry.observer == nil || entry.trackingState == nil || entry.observer === observer
+            entry.observer == nil || entry.authorityState == nil || entry.observer === observer
         }
-        entries.append(WeakEntry(observer: observer, trackingState: trackingState))
+        entries.append(WeakEntry(observer: observer, authorityState: authorityState))
     }
 
     func isAutomaticViewSuppressed(for viewController: UIViewController) -> Bool {
-        entries.removeAll { $0.observer == nil || $0.trackingState == nil }
+        entries.removeAll { $0.observer == nil || $0.authorityState == nil }
         guard let candidateView = viewController.viewIfLoaded else {
             return false
         }
 
         return entries.contains { entry in
             guard
-                entry.trackingState?.isAppeared == true,
+                entry.authorityState?.isAutomaticViewAuthorityActive == true,
                 let observer = entry.observer,
                 observer.window != nil
             else {
@@ -2705,6 +2745,39 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 }
 #endif
 
+#if DEBUG && os(iOS)
+/// Probe-only half of semantic presentation ownership. The router publishes
+/// the RUM occurrence, while this modifier keeps automatic discovery out of
+/// the presented platform subtree until UIKit finishes removing it.
+private struct RUMAutomaticViewSuppressionModifier: SwiftUI.ViewModifier {
+    let instrumentation: RUMInstrumentation?
+
+    @State private var suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RUMSceneIdentifierReader(
+                    applicationSupportsMultipleScenes: true,
+                    onCreate: { observer in
+                        instrumentation?.swiftUIViewAuthorityRegistry?.register(
+                            observer: observer,
+                            suppressionState: suppressionState
+                        )
+                    },
+                    onChange: { _ in }
+                )
+            )
+            .onAppear {
+                suppressionState.appear()
+            }
+            .onDisappear {
+                suppressionState.disappear()
+            }
+    }
+}
+#endif
+
 public extension SwiftUI.View {
     /// Monitor this view with Datadog RUM. A start and stop events will be logged when this view appears
     /// and disappears.
@@ -2773,6 +2846,18 @@ internal extension SwiftUI.View {
                 configuration: configuration,
                 navigationOccurrenceSource: navigationOccurrenceSource
             )
+        )
+    }
+
+    /// Debug-only seam for validating a centralized semantic presentation
+    /// owner alongside automatic tracking. It intentionally publishes no RUM
+    /// view commands of its own.
+    func suppressAutomaticRUMViewTracking(
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> some View {
+        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        return modifier(
+            RUMAutomaticViewSuppressionModifier(instrumentation: instrumentation)
         )
     }
 }

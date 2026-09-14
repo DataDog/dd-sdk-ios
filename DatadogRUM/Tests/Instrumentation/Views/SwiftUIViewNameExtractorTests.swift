@@ -933,6 +933,39 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
 
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: viewController))
     }
+
+    func testSemanticPresentationAuthoritySuppressesOnlyItsMountedSubtreeUntilDisappear() {
+        let registry = RUMSwiftUIViewAuthorityRegistry()
+        let state = RUMSwiftUIAutomaticViewSuppressionState()
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        let root = UIViewController()
+        let presentation = UIViewController()
+        let unrelated = UIViewController()
+        root.addChild(presentation)
+        root.view.addSubview(presentation.view)
+        presentation.didMove(toParent: root)
+        root.addChild(unrelated)
+        root.view.addSubview(unrelated.view)
+        unrelated.didMove(toParent: root)
+        presentation.view.addSubview(observer)
+        let window = UIWindow()
+        window.rootViewController = root
+        window.isHidden = false
+        registry.register(observer: observer, suppressionState: state)
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: presentation))
+
+        state.appear()
+
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: presentation))
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: root))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
+
+        state.disappear()
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: presentation))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: root))
+    }
 }
 
 @MainActor
