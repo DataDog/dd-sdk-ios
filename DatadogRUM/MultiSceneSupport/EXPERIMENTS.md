@@ -84,8 +84,12 @@ boundary, in this order:
 | 67 | `Route scene-targeted manual views through navigation stacks` | Internal exact-scene manual-view capability, per-scene stack authority, automatic-destination staging, nested manual suffixes, stop attributes, and compatibility regressions |
 | 68 | `Retain semantic destination across manual view authority` | Retained underlying destination plus generic automatic-fallback rejection while an exact-scene manual view is authoritative |
 | 69 | `Exercise scene-targeted manual view routing` | Probe-only switch from legacy direct keyed commands to the internal exact-scene handler path used by `EXP-121` and `EXP-122` |
+| 70 | `Document scene-targeted manual view evidence` | `EXP-121`/`EXP-122` mapper/backend evidence, corrected support verdict, validation snapshot, and exact resume state |
+| 71 | `Record manual authority and presentation decisions` | Approved underlying-navigation, nesting, targeted-pairing, and complete SwiftUI presentation-destination contracts |
+| 72 | `Preserve semantic presentation authority through dismissal` | Suppression-only SwiftUI presentation boundary plus underlying-navigation, nested-manual, and duplicate-start regressions |
+| 73 | `Exercise semantic SwiftUI sheet authority` | Exact-scene semantic Sheet lifecycle, target-scoped automatic suppression, presentation-subtree intervals, and adversarial oracle coverage |
 
-Rows 1-69 are committed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-73 are committed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `4ddfa9a3a`, `1eea12c27`, and `61031e16f`; rows 22-23 are commits
 `77dd05c4a` and `bce1cdbd4`; row 24 is commit `7d7bc0814`, row 25 is
@@ -103,6 +107,7 @@ is `96a6208ff`, row 51 is `b1d74b8cc`, row 52 is `f4c8669c0`, and row 53 is
 Row 60 is `e8c2b159b`, row 61 is `265657c33`, row 62 is `319d214a1`, row 63
 is `a86c41e96`, row 64 is `336bdd504`, row 65 is `685054dbe`, and row 66 is
 `dc863758f`. Rows 67-69 are `ddfc38008`, `94075aa47`, and `0394ad6cc`.
+Rows 70-73 are `6e4e5e892`, `d0bcebaf2`, `f277763d7`, and `2b9759446`.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -258,6 +263,9 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-120 | Invalid harness `automatic-keyed-manual-20260914-0005-a`; partial `automatic-keyed-manual-20260914-0010-b`; conclusive `automatic-keyed-manual-20260914-0015-c`; hardened baseline `automatic-keyed-manual-20260914-0030-d` | `54005e3d-daf7-460e-8c38-2cf4e7505e4f`; `26990bc0-7785-4eda-b0f7-f3971516f5a3`; `9382bf4d-5985-4047-898c-deb8103af68b`; `3609bce2-ea31-41b1-9d8b-ad2ab39ec7c0` | iPadOS 27 simulator | Existing direct keyed manual API over automatic Home fails authoritative coexistence. Attempt A never started because the scenario was omitted from a second driver allowlist; the catalog now owns that selection. Attempt B proved Compose was already stopped before a now-removed wait. Attempts C/D conclusively show H1 → M1 → automatic fallback → fresh H2: M1 lasts only 31–48 ms, active and immediate-stop action/Resource pairs use the fallback, and only settled work uses H2. Final D has six views, ten actions, ten Resources, zero errors/crashes. Its initial H1-stop failure was an oracle matcher defect caused by a deferred exact stop arriving after an unrelated M1 stop; the corrected matcher scans onward and keeps the real manual-authority failure. Commit `dc863758f`; probe 65/65, build-for-testing and repository lint pass. |
 | EXP-121 | `scene-targeted-manual-20260914-0120-a` | `f32f25c8-7403-4513-89fa-75d9e3a3952d` | iPadOS 27 simulator | First internal scene-targeted manual-stack run after `ddfc38008`. Compose M1 remained authoritative and owned its active action/Resource, closing the `EXP-120` preemption. The run still failed because automatic discovery staged a generic hosting fallback beneath M1; exact stop revealed that fallback for the immediate pair before fresh H2 owned the settled pair. Mapper and backend agree on six views and 30 events with zero errors/crashes. This isolated fallback selection from manual authority rather than reopening the direct-command diagnosis. |
 | EXP-122 | `scene-targeted-manual-20260914-0135-b` | `7194cd61-23d0-4727-877a-79fbc985fc32` | iPadOS 27 simulator | Clean exact-scene manual-view acceptance after `94075aa47`. The oracle passes 16/16. Mapper and backend contain only launch, the expected startup-only fallback, Home H1, authoritative Compose M1, and fresh Home H2; no generic fallback appears during or after manual authority. Pre-manual work uses H1, active Compose work uses M1, and both immediate and settled post-stop pairs use the same H2, distinct from H1. Exact-run intake has 28 events: five views, ten actions, ten Resources, one long task, one vital, zero errors, and zero crashes. Host uninstall and ENOENT container lookup prove clean isolation; all five view documents carry the requested run ID. |
+| EXP-123 | `scene-targeted-sheet-20260914-0208-a` | `33b814f6-c709-4f14-bc08-ffebd43f4203` | iPadOS 27 simulator | Exact-scene Sheet lifecycle without a UI-attached suppression boundary. The semantic Sheet M1 was authoritative, but automatic discovery still emitted structural `NavigationStackHostingController` churn and a redundant automatic `ProbeSheetView` presentation-host occurrence. The transient automatic presentation preempted the early revealed Home and produced two returned-Home occurrences. Pre-Sheet, active-Sheet, immediate-dismiss, and settled owners otherwise remained observable; zero errors or crashes occurred. This rejects handler-stack authority alone as a complete semantic-presentation integration. |
+| EXP-124 | `semantic-sheet-suppression-20260914-0222-a` | `8101b16d-ed17-4ded-8a29-c9bbf8aa219b` | iPadOS 27 simulator | First suppression-only presentation-boundary run. Mapper output contains exactly launch, the startup fallback, H1, semantic Sheet M1, and fresh H2; active work owns M1 and both dismiss pairs own H2, with no automatic `ProbeSheetView`. The old oracle nevertheless failed because a pending Sheet Resource delayed M1's final aggregate snapshot until after H2 started. This is an oracle interval defect, not a RUM ownership failure: aggregate delivery lifetime is not semantic presentation authority. |
+| EXP-125 | `semantic-sheet-authority-20260914-0232-a` | `c01631fb-8b2c-4071-b7c3-78c6f042774f` | iPadOS 27 simulator | Clean complete-destination Sheet acceptance after `f277763d7` and `2b9759446`. The oracle passes 14/14. Mapper and backend contain only launch, the expected startup fallback, H1 `76aada56…`, semantic Sheet M1 `81ecbf07…`, and fresh H2 `b7e26b43…`. No automatic `ProbeSheetView` occurs while its native presentation subtree is mounted. Pre-Sheet work owns H1, active work owns M1, and immediate plus settled dismissal work own the same fresh H2. Backend intake has 29 exact-session events: one session, five views, ten actions, ten Resources, two long tasks, and one vital, with zero errors or crashes. Probe tests pass 68/68 and the complete RUM suite passes 1,169/1,169. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -3398,6 +3406,103 @@ reports zero violations across 713 source and 699 test files, and
 Runtime artifacts use the prefix
 `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-122 Scene Targeted Manual Acceptance 0135-01_36_26_535`.
 
+### 2026-09-14 — EXP-123: scene-targeted Sheet without subtree suppression
+
+The clean `scene-targeted-sheet-20260914-0208-a` run, RUM session
+`33b814f6-c709-4f14-bc08-ffebd43f4203`, used the exact-scene
+`RUMSceneTargetedManualViewHandling` path for the application's semantic Sheet
+destination but did not install any presentation-subtree suppression. This was
+the direct test of whether the handler-owned manual suffix was sufficient on its
+own.
+
+It was not. The semantic Sheet remained observable, but automatic SwiftUI
+controller discovery also created structural navigation-host churn and a
+redundant automatic view named `ProbeSheetView` for the presentation hosting
+controller. That transient automatic presentation preempted the early returned
+Home occurrence and produced another Home occurrence afterward. A correct
+manual stack cannot by itself identify which UIKit controller is merely the
+platform representation of the same semantic presentation.
+
+This run is a conclusive integration failure, not a reason to weaken automatic
+tracking globally. It establishes that semantic presentation support needs two
+cooperating pieces: the router publishes the exact scene's semantic lifecycle,
+and a UI-attached boundary suppresses automatic discovery only for the matching
+native presentation subtree. The process remained crash-safe and emitted no RUM
+error.
+
+Artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-123 Scene Targeted Sheet-02_10_33_343`.
+
+### 2026-09-14 — EXP-124: correct ownership with an invalid aggregate interval
+
+Commit `f277763d7` generalized the weak SwiftUI authority registry so an attached
+state may suppress automatic discovery without publishing a second RUM view.
+The probe applied that suppression-only boundary to the Sheet subtree while its
+centralized router continued to start and stop the semantic Sheet through the
+exact-scene handler.
+
+The explicitly uninstalled `semantic-sheet-suppression-20260914-0222-a` run,
+RUM session `8101b16d-ed17-4ded-8a29-c9bbf8aa219b`, produced the intended
+five-view set: ApplicationLaunch, the expected startup fallback, Home H1,
+semantic Sheet M1, and fresh Home H2. There was no automatic `ProbeSheetView`.
+Pre-Sheet work used H1, active work used M1, and both immediate and settled
+dismissal work used H2.
+
+The then-current oracle still failed 10 matched expectations. Its forbidden-view
+interval ended only when the mapper observed M1's final aggregate snapshot. A
+pending Sheet Resource kept that aggregate alive after the semantic stop, so H2
+correctly started before the outgoing M1 snapshot arrived. RUM view aggregate
+delivery lifetime is affected by child work and is not a navigation-authority
+clock. Using it as the suppression interval would either reject correct overlap
+or delay the revealed destination and misattribute post-dismiss work.
+
+Artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-124 Semantic Sheet Suppression-02_24_25_413`.
+
+### 2026-09-14 — EXP-125: semantic Sheet authority acceptance
+
+Commit `2b9759446` separates the two relevant intervals. The exact
+`manual-sheet-active` interval represents semantic router authority. A separate
+`swiftui-presentation-subtree` interval follows the mounted platform subtree
+through native dismissal and rejects only an automatic RUM view named
+`ProbeSheetView`. The oracle also has a regression proving that a delayed
+automatic Sheet after semantic stop is still rejected, while a fresh underlying
+view may start before the outgoing aggregate's final snapshot.
+
+The clean `semantic-sheet-authority-20260914-0232-a` run, RUM session
+`c01631fb-8b2c-4071-b7c3-78c6f042774f`, passes 14/14 with no issue. The exact
+mapper sequence is:
+
+1. ApplicationLaunch `be3f8da2-3c0d-42d8-aa64-faa83626f34c`.
+2. Expected startup-only fallback `af14e2e9-e5b1-400e-bcd4-a7d10fcf2bc4`.
+3. Home H1 `76aada56-2822-4f7b-9177-bd8f6a35b0fe`.
+4. Semantic Sheet M1 `81ecbf07-18bd-414d-a14f-a596a84431f1`.
+5. Fresh Home H2 `b7e26b43-3ad6-4455-8ca5-b27b1357b019`.
+
+The manual authority interval spans recorder sequences 32–62 and contains no
+automatic view. The mounted presentation-subtree interval spans sequences 33–71
+and contains no automatic `ProbeSheetView`. H2 starts at sequence 64, after
+exact authority ends and before M1's delayed final snapshot at sequence 70. The
+pre-Sheet pair owns H1, the active pair owns M1, and immediate plus settled
+dismissal pairs own the same H2. H1 and H2 are distinct occurrences.
+
+Backend intake independently returns 29 exact-session documents: one session,
+five views, ten actions, ten Resources, two long tasks, and one vital. It matches
+all three semantic view IDs and owners and reports zero errors and zero crashes.
+The app remained running, and explicit uninstall plus the pre-launch ENOENT
+container check establishes clean isolation.
+
+Focused production tests pass 6/6, including the approved several-underlying-
+commits, nested-different-key, and duplicate-active-key manual contracts. The
+complete RUM suite passes 1,169/1,169, the probe builds for testing and passes
+68/68, repository lint reports zero violations across 713 source and 699 test
+files, and `git diff --check` passes. This closes the internal Sheet slice only;
+full-screen-cover parity, public API review, sibling-container proof, and live
+same-key A/B targeting remain open.
+
+Runtime artifacts use the prefix
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/EXP-125 Semantic Sheet Authority-02_33_30_317`.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -3492,6 +3597,18 @@ Runtime artifacts use the prefix
   fallbacks are structural churn. Retain the last semantic destination, reject
   known generic fallbacks during manual authority, and still allow a newly
   trustworthy semantic destination to replace the retained candidate.
+- Do not treat exact-scene handler authority alone as presentation deduplication.
+  `EXP-123` proves that the automatic presentation hosting controller still needs
+  a UI-attached, target-scoped suppression boundary; disabling automatic tracking
+  for the entire scene or application is not the required coexistence model.
+- Do not use an outgoing RUM view aggregate's final mapper snapshot as the end of
+  semantic presentation authority. `EXP-124` proves pending Resources can keep
+  that aggregate alive after dismissal while fresh H2 must already own customer
+  work. Track router authority and native subtree lifetime as separate intervals.
+- Do not end presentation-subtree suppression at the router's semantic stop.
+  UIKit can retain the hosting controller through dismissal. Keep the UI-attached
+  boundary active until the subtree actually disappears and reject a delayed
+  automatic view for that presentation by semantic name (`EXP-125`).
 - Do not use `pgrep` as a process-health discriminator on this simulator image;
   the command is absent. Use a supported process listing or the captured system
   diagnostic before classifying the app as terminated.

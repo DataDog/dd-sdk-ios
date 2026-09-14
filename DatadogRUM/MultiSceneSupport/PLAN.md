@@ -149,12 +149,14 @@ signatures remain gated on normal API review.
    final marker and oracle. Finish that exact row when physical hardware is
    available; meanwhile, write the RFC/API proposal and continue independent
    simulator-capable experiments. No public API lands without normal review.
-7. `EXP-119` exercises one exceptional explicit Sheet over automatic Home.
-   Dedup and eventual H1 -> S1 -> H2 restoration work, but immediate Home work in
-   `onDismiss` still owns S1. The approved successor consumes the application's
-   complete current destination—not only its stack path—and must cover Sheet and
-   full-screen-cover presentation/reveal. Do not weaken the failing expectation,
-   emit intermediate destinations, or start an uncommitted presentation.
+7. Sheet half completed in `f277763d7`, `2b9759446`, and `EXP-123` through
+   `EXP-125`. The exact-scene router publishes Sheet M1 while a UI-attached
+   suppression-only state excludes only its automatic presentation controller
+   until native dismissal. The clean run passes 14/14 with H1 -> M1 -> fresh H2,
+   no automatic Sheet, and immediate plus settled dismiss work on H2. `EXP-124`
+   proves an outgoing aggregate's delayed final snapshot is not an authority
+   interval. Add the equivalent full-screen-cover path before closing the
+   approved complete-destination presentation slice.
 8. Completed as a negative discriminator in `dc863758f` and `EXP-120`: direct
    keyed manual start/stop over automatic H1 does not provide manual authority.
    Automatic discovery displaced M1 within 31–48 ms, and the intended M1
@@ -169,13 +171,14 @@ signatures remain gated on normal API review.
    fallback reveal. The hardened run passes 16/16 with H1 -> M1 -> fresh H2,
    exact active/immediate/settled ownership, and matching backend intake. Existing
    source-less APIs remain on their inferred direct-command path.
-10. Extend the internal manual-authority matrix with the now-approved rules:
-    several navigation commits beneath M1 reveal only the latest destination;
-    stopping nested Preview reveals a fresh Compose occurrence; duplicate active
-    `(scene, key)` start remains crash-safe without new lifecycle semantics; and a
-    targeted start is paired only with a targeted stop. Then take scene-aware
-    Swift/Objective-C overloads through API review. The same key must coexist
-    independently in A and B and a stop must affect only its exact scene/key.
+10. Internal contract completed in `f277763d7`: several navigation commits
+    beneath M1 emit no intermediate view and reveal only the latest destination;
+    stopping nested Preview starts a fresh Compose occurrence; duplicate active
+    `(scene, key)` start is ignored crash-safely without restart; and existing
+    source-less behavior remains separate. The focused presentation/manual set
+    passes 6/6. Next take scene-aware Swift/Objective-C overloads through API
+    review. The same key must coexist independently in A and B and a stop must
+    affect only its exact scene/key.
 11. Obtain a recognized native SwiftUI interactive cancel/finish run on physical
    hardware or with human input.
 12. Preserve the passing retained split return from `EXP-105` and `EXP-111`, then validate
@@ -191,7 +194,7 @@ compatibility, and Session Replay crash safety. Work that requires physical
 topology can run later without allowing lower-priority SDK design to replace it.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-122`. It still
+decision record after `EXP-125`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
@@ -308,7 +311,15 @@ experiment; it does not itself change the SDK support verdict.
    The first run kept M1 authoritative but revealed a staged generic fallback.
    The second rejects that structural candidate, retains Home, and passes 16/16
    with exact backend H1/M1/H2 ownership. The probe plan remains 65/65.
-15. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
+15. Sheet completed in `f277763d7`, `2b9759446`, and `EXP-123` through
+   `EXP-125`: drive the complete semantic destination through exact-scene start
+   and stop while a mounted suppression-only boundary excludes its automatic
+   presentation host. Separate semantic authority from the outgoing aggregate's
+   delivery lifetime. The final clean run passes 14/14 locally and in backend
+   intake with H1/M1/fresh-H2 ownership, no automatic Sheet, and zero errors or
+   crashes. The probe plan passes 68/68. Clone the discriminator for
+   full-screen-cover before declaring presentation coverage complete.
+16. Open, with the failure mode reproduced in `EXP-117`: add one reproducible run
    command that preflights capabilities, records source revision and binary
    identity, performs explicit host-side uninstall for clean mode or preserves
    state for restoration mode, waits for readiness, and bundles scrubbed manifest,
@@ -318,7 +329,7 @@ experiment; it does not itself change the SDK support verdict.
    resize/topology is `SKIPPED`; credentials never enter artifacts.
 
 The deterministic stack, split, UIKit-transition, exact scene lifecycle, and
-coexistence harness is implemented through `EXP-122`: three clean
+coexistence harness is implemented through `EXP-125`: three clean
 one-window Home → Detail → Home runs produced the same 7/7 semantic `PASS`, and
 clean abort and replacement reruns passed 5/5, 6/6, and 6/6. Split replacement
 and retained return pass 10/10 and 13/13, while the identically driven automatic
@@ -336,12 +347,12 @@ hardware-inconclusive. Two non-uninstalled
 back-to-back launches remain local-only and document the host-runner isolation
 requirement rather than SDK semantics.
 The Sheet and direct-keyed-manual baselines preserve two separate conclusive
-failures: immediate Sheet dismissal work remains on S1, while automatic discovery
-preempts a legacy direct manual M1. The scene-targeted successor now passes:
-manual M1 remains authoritative and exact stop reveals one fresh H2 before both
-immediate and settled work. The owner relations keep the test plan at 65/65; the
-remaining Sheet oracle must not be weakened while its presentation boundary is
-investigated.
+failures: immediate legacy Sheet dismissal work remains on S1, while automatic
+discovery preempts a legacy direct manual M1. The exact-scene manual successor
+passes, and the complete-destination Sheet successor now passes 14/14: semantic
+M1 remains authoritative, no automatic Sheet appears, and exact stop reveals one
+fresh H2 before immediate and settled work. The test plan is 68/68. Full-screen
+cover remains a separate required discriminator rather than inferred parity.
 Hardware-only rows remain prepared but unclosed in the experiment rerun queue.
 
 ### 1. Stabilize views, navigation, and actions
@@ -724,20 +735,24 @@ semantic destination is retained. Existing source-less methods remain direct and
 inferred. Focused tests cover H1/M1/H2 order, automatic replacement, nested
 manuals, same key in A/B, wrong-scene stop, stop attributes, disconnect, and a
 fresh restarted UUID. `EXP-121` isolates generic-fallback reveal after authority
-was fixed; `EXP-122` then passes 16/16 locally and in backend intake. Resolve
-the approved edge cases before turning this seam into public API: multiple
-underlying commits retain and reveal only the latest without emitting
-intermediates; a nested Preview stop creates a fresh Compose occurrence; duplicate
-active `(scene, key)` starts stay crash-safe without restart/reference-counting;
-and legacy source-less stop is not paired with targeted start. Then obtain live
-same-key A/B proof on capable hardware.
+was fixed; `EXP-122` then passes 16/16 locally and in backend intake. Commit
+`f277763d7` closes the approved internal edge cases: several underlying commits
+emit no intermediate view and reveal only the latest; a nested Preview stop
+starts a fresh Compose occurrence; and duplicate active `(scene, key)` starts are
+ignored crash-safely without restart/reference-counting. Legacy source-less stop
+remains a separate inferred API, not a supported pair for targeted start. Take
+the surface through API review, then obtain live same-key A/B proof on capable
+hardware.
 
-`EXP-119` is the related modifier-based presentation boundary: it eventually
+`EXP-119` is the legacy modifier-based presentation baseline: it eventually
 restores H2 without a duplicate, but immediate `onDismiss` work still owns S1.
-Preserve that separate failure until the approved complete-destination router
-integration covers both Sheet and full-screen-cover state and starts H2 first.
-The presentation replaces the scene's current RUM destination and dismissal must
-reveal a fresh underlying occurrence before post-dismiss customer work.
+`EXP-123` proves exact handler authority alone still permits a redundant automatic
+presentation host. The suppression-only subtree boundary in `f277763d7` and the
+corrected interval oracle in `2b9759446` close the Sheet path: `EXP-125` has exact
+H1/M1/fresh-H2 ownership before immediate work and no automatic Sheet. The
+presentation replaces the scene's current RUM destination. Full-screen-cover
+parity is the next internal requirement; the public router integration still
+requires API review.
 
 The explicit Operation view-target escape hatch is also part of the support goal.
 Use the [Operations contract and API proposal](OPERATIONS.md) as the review starting

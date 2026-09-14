@@ -218,12 +218,23 @@ below M1. The clean `EXP-122` run passes 16/16 with exactly H1 → M1 → fresh 
 M1 owns active work and the same H2 owns immediate plus settled post-stop work.
 Backend intake confirms all owners and reports no error or crash.
 
-`EXP-119` also shows a
-narrower existing modifier boundary: an exceptional explicit Sheet S1 correctly
-suppresses its automatic duplicate and automatic Home H2 eventually returns, but
-work in SwiftUI's immediate `onDismiss` callback still belongs to S1 because H2
-has not started yet. Settled work belongs to H2. This is a real attribution gap,
-not a reason to weaken the oracle.
+Commit `f277763d7` covers the remaining approved internal manual rules. Several
+committed automatic destinations beneath M1 emit no intermediate current view
+and reveal only the latest as a fresh occurrence. Stopping nested Preview starts
+a fresh Compose occurrence. Repeating an active `(scene, key)` start is ignored
+crash-safely without restart or reference counting. These tests validate
+internal behavior; they do not add or approve the public overloads.
+
+`EXP-119` is the legacy modifier baseline: Sheet S1 suppresses its duplicate and
+automatic Home H2 eventually returns, but immediate `onDismiss` work still owns
+S1. `EXP-123` proves that exact-scene handler routing alone is also insufficient
+because automatic discovery can separately emit the presentation hosting
+controller. The complete internal shape has two responsibilities: the router
+publishes the semantic destination, and a UI-attached boundary suppresses
+automatic discovery only for the matching native subtree through dismissal.
+`EXP-125` validates exact H1 → Sheet M1 → fresh H2, no automatic Sheet, and
+immediate plus settled dismiss work on H2. Full-screen-cover parity remains
+required.
 
 ## SwiftUI semantic navigation
 
@@ -295,7 +306,9 @@ returned destination's fresh occurrence.
 ### Authority boundary
 
 The current internal authority registry suppresses automatic discovery when an
-active explicit reader is contained by an automatic candidate controller.
+active explicit or suppression-only reader is contained by an automatic
+candidate controller. The suppression-only form publishes no RUM lifecycle; a
+centralized router remains its sole semantic owner.
 `EXP-115` proves this for one container and `EXP-118` partially proves that scene
 A does not suppress scene B. Before shipping, cover two independent navigation
 containers hosted by one SwiftUI controller. One explicit container must not
@@ -316,6 +329,11 @@ scene's one current destination; it is never a second concurrent RUM view.
 Dismissal must start a fresh underlying occurrence before post-dismiss customer
 work is attributed and must suppress the presented destination's automatic
 duplicate. A same-turn presentation mutation that never commits starts no view.
+The internal Sheet path passes this contract in `EXP-125`. Its semantic router
+authority ends before the outgoing aggregate's last mapper snapshot, while its
+UI-attached suppression remains through native subtree removal. Those are
+intentionally distinct lifetimes. Full-screen cover is not yet validated and
+cannot be inferred from the Sheet result.
 
 ## Required review and test matrix
 
