@@ -484,6 +484,108 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesOperationCommandsFromInvocationSignals() async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-operations",
+            scenarioID: "driver-operations",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+
+        var requestedSteps: [(ProbeStepKind, String)] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            guard let instance = step.value else {
+                return .rejected(reason: "operation instance is missing")
+            }
+            requestedSteps.append((step.kind, instance))
+            let operationStep: String
+            let failureReason: String?
+            switch step.kind {
+            case .startOperation:
+                operationStep = "start"
+                failureReason = nil
+            case .succeedOperation:
+                operationStep = "succeed"
+                failureReason = nil
+            case .failOperation:
+                operationStep = "fail"
+                failureReason = "error"
+            default:
+                return .rejected(reason: "unexpected operation step")
+            }
+            recorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: self.semanticContext(
+                        screen: "home",
+                        scene: "scene-A",
+                        nativeSceneID: "native-A"
+                    ),
+                    stepKind: step.kind,
+                    operation: ProbeOperationSignal(
+                        vitalID: nil,
+                        name: ProbeOperationContract.name,
+                        key: "driver-\(instance)",
+                        step: operationStep,
+                        failureReason: failureReason
+                    ),
+                    result: .pass
+                )
+            )
+            return .accepted
+        }
+
+        let scenario = ProbeScenario(
+            identifier: "driver-operations",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: [
+                ProbeStep(.startOperation, scene: "scene-A", value: "success"),
+                ProbeStep(.succeedOperation, scene: "scene-A", value: "success"),
+                ProbeStep(.failOperation, scene: "scene-A", value: "failure"),
+            ],
+            completionConditions: [],
+            expectedSemanticTimeline: []
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            requestedSteps.map(\.0),
+            [.startOperation, .succeedOperation, .failOperation]
+        )
+        XCTAssertEqual(
+            requestedSteps.map(\.1),
+            ["success", "success", "failure"]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            3
+        )
+    }
+
     func testDrivesSameManualKeyAcrossExactScenesAndStopsInReverseOrder() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-same-key-manual-two-scenes",

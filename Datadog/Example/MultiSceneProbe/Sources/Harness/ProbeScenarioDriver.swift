@@ -66,6 +66,11 @@ internal final class ProbeScenarioDriver {
         case transitionBegan(scene: String)
         case transitionProgress(scene: String, value: Double)
         case transitionResolutionRequested(scene: String, outcome: ProbeTransitionOutcome)
+        case operationInvocation(
+            scene: String,
+            step: ProbeStepKind,
+            instance: String
+        )
         case encoded(scene: String?, value: String)
 
         func matches(
@@ -124,6 +129,13 @@ internal final class ProbeScenarioDriver {
                 return signal.kind == .transitionResolutionRequested
                     && signal.semanticContext?.logicalSceneID == scene
                     && signal.outcome == outcome
+            case .operationInvocation(let scene, let step, let instance):
+                return signal.kind == .assertion
+                    && signal.semanticContext?.logicalSceneID == scene
+                    && signal.stepKind == step
+                    && signal.operation?.name == ProbeOperationContract.name
+                    && signal.operation?.key?.hasSuffix("-\(instance)") == true
+                    && signal.result == .pass
             case .encoded(let scene, let value):
                 return Self.matches(
                     encoded: value,
@@ -778,6 +790,36 @@ internal final class ProbeScenarioDriver {
                 timeoutNanoseconds: stepTimeoutNanoseconds
             ) else {
                 return .failed("timed out waiting for marker \(marker) in \(scene)")
+            }
+            return .acknowledged(signal)
+
+        case .startOperation, .succeedOperation, .failOperation:
+            guard
+                let scene = step.scene,
+                let instance = step.value,
+                !instance.isEmpty
+            else {
+                return .failed("scene or operation instance is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .operationInvocation(
+                    scene: scene,
+                    step: step.kind,
+                    instance: instance
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for \(step.kind.rawValue) "
+                        + "\(instance) in \(scene)"
+                )
             }
             return .acknowledged(signal)
 

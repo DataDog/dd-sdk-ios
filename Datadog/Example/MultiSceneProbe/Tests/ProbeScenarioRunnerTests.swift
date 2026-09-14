@@ -14,6 +14,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(
             Set([
                 "swiftui.stack.return",
+                "operations.navigation.lifecycle",
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
@@ -53,6 +54,49 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.expectedSemanticTimeline.contains {
                 $0.scene == "scene-A"
                     && $0.rumViewOrigin == .semantic
+            }
+        )
+    }
+
+    func testOperationNavigationLifecycleCoversSuccessFailureAndDuplicateStart() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "operations.navigation.lifecycle"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .startOperation }.map(\.value),
+            ["success", "failure", "duplicate", "duplicate"]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .succeedOperation }.map(\.value),
+            ["success", "duplicate"]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .failOperation }.map(\.value),
+            ["failure"]
+        )
+        XCTAssertTrue(
+            scenario.steps.contains {
+                $0.kind == .waitForSignal
+                    && $0.signal == "rum-view:detail-1#3"
+            }
+        )
+        XCTAssertFalse(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .operationStep
+            },
+            "Operation vitals have no customer mapper; backend evidence is required"
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .action
+                    && $0.name == "operation-duplicate-end-detail"
+                    && $0.screen == "detail-1"
+                    && $0.occurrence == 3
             }
         )
     }

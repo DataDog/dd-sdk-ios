@@ -1684,6 +1684,97 @@ struct ProbeWindowRoot: View {
                     phase: marker
                 )
                 #endif
+            case .startOperation, .succeedOperation, .failOperation:
+                guard
+                    let instance = step.value,
+                    !instance.isEmpty
+                else {
+                    return .rejected(reason: "operation instance is missing")
+                }
+                let operationKey = ProbeOperationContract.key(
+                    runID: ProbeRuntime.runID,
+                    instance: instance
+                )
+                let operationStep: String
+                let failureReason: String?
+                let invoke = {
+                    let attributes: [String: Encodable] = [
+                        ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
+                        ProbeRuntime.Attribute.host: "native-swiftui",
+                        ProbeRuntime.Attribute.sourceScene: logicalSceneID,
+                        ProbeRuntime.Attribute.sceneSessionID: handle.nativeSceneID,
+                        ProbeRuntime.Attribute.screen: currentSceneScreen,
+                        ProbeRuntime.Attribute.operationInstance: instance,
+                        ProbeRuntime.Attribute.operationStep: step.kind.rawValue,
+                    ]
+                    switch step.kind {
+                    case .startOperation:
+                        RUMMonitor.shared().startOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            attributes: attributes
+                        )
+                    case .succeedOperation:
+                        RUMMonitor.shared().succeedOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            attributes: attributes
+                        )
+                    case .failOperation:
+                        RUMMonitor.shared().failOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            reason: .error,
+                            attributes: attributes
+                        )
+                    default:
+                        break
+                    }
+                }
+                switch step.kind {
+                case .startOperation:
+                    operationStep = "start"
+                    failureReason = nil
+                case .succeedOperation:
+                    operationStep = "succeed"
+                    failureReason = nil
+                case .failOperation:
+                    operationStep = "fail"
+                    failureReason = "error"
+                default:
+                    return .rejected(reason: "unsupported operation step")
+                }
+                #if DEBUG
+                RUMUIEventNetworkContext.withValue(
+                    sceneIdentifier: RUMSceneIdentifier(
+                        rawValue: handle.nativeSceneID
+                    ),
+                    rumContext: nil
+                ) {
+                    invoke()
+                }
+                #else
+                invoke()
+                #endif
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: logicalSceneID,
+                            nativeSceneID: handle.nativeSceneID,
+                            screen: currentSceneScreen
+                        ),
+                        stepKind: step.kind,
+                        operation: ProbeOperationSignal(
+                            vitalID: nil,
+                            name: ProbeOperationContract.name,
+                            key: operationKey,
+                            step: operationStep,
+                            failureReason: failureReason
+                        ),
+                        result: .pass
+                    )
+                )
             default:
                 return .rejected(
                     reason: "unsupported scene step \(step.kind.rawValue)"

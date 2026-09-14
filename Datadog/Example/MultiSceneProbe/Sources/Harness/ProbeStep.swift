@@ -25,8 +25,19 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case armNativeUIKitGesture = "arm-native-uikit-gesture"
     case emitMarker = "emit-marker"
     case emitSceneContextMarker = "emit-scene-context-marker"
+    case startOperation = "start-operation"
+    case succeedOperation = "succeed-operation"
+    case failOperation = "fail-operation"
     case disconnectRetainedReader = "disconnect-retained-reader"
     case waitForSignal = "wait-for-signal"
+}
+
+enum ProbeOperationContract {
+    static let name = "multi_scene_probe_navigation"
+
+    static func key(runID: String, instance: String) -> String {
+        "\(runID)-\(instance)"
+    }
 }
 
 enum ProbeTransitionOutcome: String, Codable, CaseIterable {

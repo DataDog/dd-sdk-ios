@@ -53,6 +53,8 @@ enum ProbeRuntime {
         static let viewScene = "probe.view.scene"
         static let viewSceneSessionID = "probe.view.scene_session_id"
         static let viewScreen = "probe.view.screen"
+        static let operationInstance = "probe.operation_instance"
+        static let operationStep = "probe.operation_step"
     }
 
     static let serviceName = "ios-sdk-native-multi-scene-probe"

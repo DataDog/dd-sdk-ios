@@ -523,6 +523,23 @@ enum ProbeScenarioRunner {
                         "scenario \(scenario.identifier) \(step.kind.rawValue) uses undeclared scene \(scene)"
                     )
                 }
+            case .startOperation, .succeedOperation, .failOperation:
+                guard
+                    let scene = normalized(step.scene),
+                    normalized(step.value) != nil
+                else {
+                    errors.append(
+                        "scenario \(scenario.identifier) \(step.kind.rawValue) "
+                            + "requires a scene and operation instance"
+                    )
+                    continue
+                }
+                if !scenario.initialWindows.contains(scene) {
+                    errors.append(
+                        "scenario \(scenario.identifier) \(step.kind.rawValue) "
+                            + "uses undeclared scene \(scene)"
+                    )
+                }
             case .waitForSignal where step.signal?.hasPrefix("scene-state:") == true:
                 guard let scene = normalized(step.scene) else {
                     errors.append(

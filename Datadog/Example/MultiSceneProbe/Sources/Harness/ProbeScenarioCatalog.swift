@@ -11,6 +11,7 @@ enum ProbeScenarioCatalog {
 
     private static let observableDriverIdentifiers: Set<String> = [
         "swiftui.stack.return",
+        "operations.navigation.lifecycle",
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -37,6 +38,7 @@ enum ProbeScenarioCatalog {
         automaticTwoWindow,
         swiftUIStackOccurrencePush,
         swiftUIStackReturn,
+        operationsNavigationLifecycle,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -218,6 +220,151 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 2),
             ProbeExpectation(.action, scene: "scene-A", screen: "home", occurrence: 2, name: "navigation-appearance-2")
         ]
+    )
+
+    /// Exercises application-wide Operation identities while the current RUM
+    /// destination changes repeatedly in one scene. The local oracle proves
+    /// each call-site destination and navigation occurrence; the exact vital
+    /// start/end ownership remains a backend assertion because Operation
+    /// vitals do not pass through a customer event mapper.
+    private static let operationsNavigationLifecycle = ProbeScenario(
+        identifier: "operations.navigation.lifecycle",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "success"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-success-start-home"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:detail-1#1"
+            ),
+            ProbeStep(.succeedOperation, scene: "scene-A", value: "success"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-success-end-detail"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#2"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "failure"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-failure-start-home"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:detail-1#2"
+            ),
+            ProbeStep(.failOperation, scene: "scene-A", value: "failure"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-failure-end-detail"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#3"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "duplicate"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-duplicate-start-home"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:detail-1#3"
+            ),
+            ProbeStep(.startOperation, scene: "scene-A", value: "duplicate"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-duplicate-restart-detail"
+            ),
+            ProbeStep(.succeedOperation, scene: "scene-A", value: "duplicate"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "operation-duplicate-end-detail"
+            ),
+        ],
+        completionConditions: operationWorkExpectations(
+            name: "operation-duplicate-end-detail",
+            screen: "detail-1",
+            occurrence: 3
+        ),
+        expectedSemanticTimeline:
+            operationOccurrenceExpectations(
+                screen: "home",
+                occurrence: 1,
+                marker: "operation-success-start-home",
+                ends: true
+            )
+            + operationOccurrenceExpectations(
+                screen: "detail-1",
+                occurrence: 1,
+                marker: "operation-success-end-detail",
+                ends: true
+            )
+            + operationOccurrenceExpectations(
+                screen: "home",
+                occurrence: 2,
+                marker: "operation-failure-start-home",
+                ends: true
+            )
+            + operationOccurrenceExpectations(
+                screen: "detail-1",
+                occurrence: 2,
+                marker: "operation-failure-end-detail",
+                ends: true
+            )
+            + operationOccurrenceExpectations(
+                screen: "home",
+                occurrence: 3,
+                marker: "operation-duplicate-start-home",
+                ends: true
+            )
+            + [
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 3
+                )
+            ]
+            + operationWorkExpectations(
+                name: "operation-duplicate-restart-detail",
+                screen: "detail-1",
+                occurrence: 3
+            )
+            + operationWorkExpectations(
+                name: "operation-duplicate-end-detail",
+                screen: "detail-1",
+                occurrence: 3
+            )
     )
 
     private static let swiftUIStackAbort = ProbeScenario(
@@ -2422,6 +2569,66 @@ enum ProbeScenarioCatalog {
         var options = ProbeRuntimeOptions()
         configure(&options)
         return options
+    }
+
+    private static func operationOccurrenceExpectations(
+        screen: String,
+        occurrence: Int,
+        marker: String,
+        ends: Bool
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence
+            )
+        ]
+        + operationWorkExpectations(
+            name: marker,
+            screen: screen,
+            occurrence: occurrence
+        )
+        + (ends
+            ? [
+                ProbeExpectation(
+                    .viewStopped,
+                    scene: "scene-A",
+                    screen: screen,
+                    occurrence: occurrence
+                )
+            ]
+            : [])
+    }
+
+    private static func operationWorkExpectations(
+        name: String,
+        screen: String,
+        occurrence: Int
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: "scene-A",
+                sourceScreen: screen,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: "scene-A",
+                sourceScreen: screen,
+                rumViewOrigin: .semantic
+            )
+        ]
     }
 
     private static func stackPushSteps() -> [ProbeStep] {
