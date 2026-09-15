@@ -27,6 +27,7 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-api.external-replacements",
         "swiftui.semantic-api.rejected-link-write",
         "swiftui.semantic-api.canonicalized-link-write",
+        "swiftui.semantic-api.sibling-container-isolation",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -67,6 +68,7 @@ enum ProbeScenarioCatalog {
         swiftUISemanticAPIExternalReplacements,
         swiftUISemanticAPIRejectedLinkWrite,
         swiftUISemanticAPICanonicalizedLinkWrite,
+        swiftUISemanticAPISiblingContainerIsolation,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -160,6 +162,7 @@ enum ProbeScenarioCatalog {
             || scenario.identifier == swiftUISemanticAPIExternalReplacements.identifier
             || scenario.identifier == swiftUISemanticAPIRejectedLinkWrite.identifier
             || scenario.identifier == swiftUISemanticAPICanonicalizedLinkWrite.identifier
+            || scenario.identifier == swiftUISemanticAPISiblingContainerIsolation.identifier
     }
 
     static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
@@ -2948,6 +2951,119 @@ enum ProbeScenarioCatalog {
             $0.swiftUIStress = .siblingContainerAuthority
         }
     )
+
+    /// Reuses the `EXP-127` controller topology and manual-authority driver,
+    /// but replaces the right-hand probe wrapper with the customer-shaped
+    /// semantic navigation SPI. The left manual boundary must remain local,
+    /// while the right semantic container stages Detail and reveals it only
+    /// after manual authority stops.
+    private static let swiftUISemanticAPISiblingContainerIsolation = ProbeScenario(
+        identifier: "swiftui.semantic-api.sibling-container-isolation",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: semanticSiblingContainerSteps(),
+        completionConditions: semanticSiblingContainerCompletionConditions(),
+        expectedSemanticTimeline: semanticSiblingContainerTimeline(),
+        runtimeOptions: swiftUICoexistenceSiblingContainerAuthority.runtimeOptions
+    )
+
+    private static func semanticSiblingContainerSteps() -> [ProbeStep] {
+        var steps = swiftUICoexistenceSiblingContainerAuthority.steps
+        guard let redundantWait = steps.lastIndex(where: {
+            $0.kind == .waitForSignal && $0.signal == "marker:task-delayed"
+        }) else {
+            return steps
+        }
+        // Detail's delayed work may precede the controller-topology assertion.
+        // The ordered oracle already requires its action and Resource, so a
+        // later edge-triggered wait would turn valid evidence into a timeout.
+        steps.remove(at: redundantWait)
+        return steps
+    }
+
+    private static func semanticSiblingContainerCompletionConditions()
+        -> [ProbeExpectation]
+    {
+        let ownerConditions = swiftUICoexistenceSiblingContainerAuthority
+            .completionConditions
+            .filter { $0.kind != .noViewStarted }
+            .map(replacingAutomaticOrigin(in:))
+        return [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic,
+                interval: "manual-sibling-authority"
+            )
+        ] + ownerConditions
+    }
+
+    private static func semanticSiblingContainerTimeline() -> [ProbeExpectation] {
+        var timeline = swiftUICoexistenceSiblingContainerAuthority
+            .expectedSemanticTimeline
+            .map(replacingAutomaticOrigin(in:))
+            .filter {
+                // This delayed callback may fire on either side of manual stop.
+                // The explicit underlying-active and post-stop markers provide
+                // deterministic ownership checks for both authority states.
+                $0.name != "task-delayed"
+            }
+        timeline.insert(
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            at: 0
+        )
+        if let revealIndex = timeline.firstIndex(where: {
+            $0.kind == .action
+                && $0.name == "sibling-authority-stopped-immediate"
+        }) {
+            timeline.insert(
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: "detail-1",
+                    occurrence: 1,
+                    rumViewOrigin: .semantic
+                ),
+                at: revealIndex
+            )
+        }
+        return timeline
+    }
+
+    private static func replacingAutomaticOrigin(
+        in expectation: ProbeExpectation
+    ) -> ProbeExpectation {
+        ProbeExpectation(
+            expectation.kind,
+            scene: expectation.scene,
+            screen: expectation.screen,
+            occurrence: expectation.occurrence,
+            name: expectation.name,
+            sourceScene: expectation.sourceScene,
+            sourceScreen: expectation.sourceScreen,
+            rumViewOrigin: expectation.rumViewOrigin == .automatic
+                ? .semantic
+                : expectation.rumViewOrigin,
+            rumViewName: expectation.rumViewName,
+            ownerViewStartedAfterSceneOpen: expectation.ownerViewStartedAfterSceneOpen,
+            ownerViewStartedAfterStep: expectation.ownerViewStartedAfterStep,
+            ownerViewStartedAfterStepValue: expectation.ownerViewStartedAfterStepValue,
+            ownerViewReferenceAction: expectation.ownerViewReferenceAction,
+            ownerViewRelation: expectation.ownerViewRelation,
+            interval: expectation.interval,
+            outcome: expectation.outcome,
+            actionType: expectation.actionType,
+            expectedCount: expectation.expectedCount
+        )
+    }
 
     private static let swiftUIStackNativePopCancel = ProbeScenario(
         identifier: "swiftui.stack.native-pop-cancel",

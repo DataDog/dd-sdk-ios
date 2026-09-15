@@ -51,6 +51,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-scene-targeted-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.semantic-api.presentation-replacement",
+                "swiftui.semantic-api.sibling-container-isolation",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -320,6 +321,11 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.expectedSemanticTimeline.contains {
                 $0.scene == "scene-A"
                     && $0.rumViewOrigin == .semantic
+            }
+        )
+        XCTAssertFalse(
+            scenario.expectedSemanticTimeline.contains {
+                $0.name == "task-delayed"
             }
         )
     }
@@ -1137,6 +1143,67 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.ownerViewStartedAfterStepValue == "sibling-authority"
                     && $0.ownerViewReferenceAction == "sibling-home-before-authority"
                     && $0.ownerViewRelation == .different
+            }
+        )
+    }
+
+    func testSemanticSiblingContainerIsolationReusesTopologyWithActualSPI() throws {
+        let control = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.coexistence.sibling-container-authority"
+            )
+        )
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.sibling-container-isolation"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertEqual(scenario.steps.count, control.steps.count - 1)
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .waitForSignal && $0.signal == "marker:task-delayed"
+            }.count,
+            1
+        )
+        XCTAssertEqual(scenario.runtimeOptions, control.runtimeOptions)
+        XCTAssertEqual(
+            scenario.runtimeOptions.swiftUIStress,
+            .siblingContainerAuthority
+        )
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationSPI(control))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.rumViewOrigin == .automatic
+                    && $0.interval == nil
+            }
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted
+                    && $0.screen == "detail-1"
+                    && $0.rumViewOrigin == .semantic
+                    && $0.interval == "manual-sibling-authority"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "home"
+                    && $0.occurrence == 1
+                    && $0.rumViewOrigin == .semantic
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "detail-1"
+                    && $0.occurrence == 1
+                    && $0.rumViewOrigin == .semantic
             }
         )
     }

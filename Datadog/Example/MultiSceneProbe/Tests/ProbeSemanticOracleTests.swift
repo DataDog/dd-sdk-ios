@@ -1216,6 +1216,40 @@ final class ProbeSemanticOracleTests: XCTestCase {
         )
     }
 
+    func testSemanticSiblingContainerIsolationContractPasses() throws {
+        let scenario = try scenario(
+            named: "swiftui.semantic-api.sibling-container-isolation"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(semanticUnderlying: true)
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testSemanticSiblingContainerIsolationRejectsAutomaticDuplicate() throws {
+        let scenario = try scenario(
+            named: "swiftui.semantic-api.sibling-container-isolation"
+        )
+
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: scenario,
+            signals: siblingContainerAuthoritySignals(
+                semanticUnderlying: true,
+                includesAutomaticDuplicate: true
+            )
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("forbidden no-view-started"))
+    }
+
     func testSiblingContainerAuthorityRejectsReusedUnderlyingHome() throws {
         let scenario = try scenario(
             named: "swiftui.coexistence.sibling-container-authority"
@@ -2272,11 +2306,15 @@ final class ProbeSemanticOracleTests: XCTestCase {
     }
 
     private func siblingContainerAuthoritySignals(
-        mutation: SiblingContainerAuthorityMutation? = nil
+        mutation: SiblingContainerAuthorityMutation? = nil,
+        semanticUnderlying: Bool = false,
+        includesAutomaticDuplicate: Bool = false
     ) -> [ProbeSignal] {
         let recorder = ProbeEventRecorder(
             runID: "sibling-container-authority-contract",
-            scenarioID: "swiftui.coexistence.sibling-container-authority",
+            scenarioID: semanticUnderlying
+                ? "swiftui.semantic-api.sibling-container-isolation"
+                : "swiftui.coexistence.sibling-container-authority",
             sink: { _ in },
             clock: { 42 }
         )
@@ -2287,7 +2325,15 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 interval: "sibling-container-observation"
             )
         )
-        recordAutomaticView(id: "home-1", recorder: recorder)
+        recordSiblingUnderlyingView(
+            id: "home-1",
+            screen: "home",
+            semantic: semanticUnderlying,
+            recorder: recorder
+        )
+        if includesAutomaticDuplicate {
+            recordAutomaticView(id: "automatic-duplicate", recorder: recorder)
+        }
         for kind in [ProbeSignalKind.rumAction, .rumResource] {
             recorder.record(
                 keyedManualWorkSignal(
@@ -2318,7 +2364,13 @@ final class ProbeSemanticOracleTests: XCTestCase {
                 active: true
             )
         )
-        recordAutomaticView(id: "home-1", active: false, recorder: recorder)
+        recordSiblingUnderlyingView(
+            id: "home-1",
+            screen: "home",
+            active: false,
+            semantic: semanticUnderlying,
+            recorder: recorder
+        )
 
         let manualOwner = mutation == .manualWorkUsesHome
             ? "home-1"
@@ -2373,11 +2425,14 @@ final class ProbeSemanticOracleTests: XCTestCase {
             revealedOwner = "home-1"
         } else {
             revealedOwner = "detail-1"
-            recordAutomaticView(
+            recordSiblingUnderlyingView(
                 id: revealedOwner,
+                screen: "detail-1",
                 viewName: mutation == .revealGenericFallback
                     ? "AutoTracked_HostingController_Fallback"
                     : "NavigationStackHostingController",
+                semantic: semanticUnderlying
+                    && mutation != .revealGenericFallback,
                 recorder: recorder
             )
         }
@@ -2395,7 +2450,12 @@ final class ProbeSemanticOracleTests: XCTestCase {
         let settledOwner: String
         if mutation == .changeSettledOwner {
             settledOwner = "detail-2"
-            recordAutomaticView(id: settledOwner, recorder: recorder)
+            recordSiblingUnderlyingView(
+                id: settledOwner,
+                screen: "detail-2",
+                semantic: semanticUnderlying,
+                recorder: recorder
+            )
         } else {
             settledOwner = revealedOwner
         }
@@ -2416,6 +2476,32 @@ final class ProbeSemanticOracleTests: XCTestCase {
             )
         )
         return recorder.snapshot()
+    }
+
+    private func recordSiblingUnderlyingView(
+        id: String,
+        screen: String,
+        active: Bool = true,
+        viewName: String = "NavigationStackHostingController",
+        semantic: Bool,
+        recorder: ProbeEventRecorder
+    ) {
+        if semantic {
+            recorder.record(
+                viewSignal(
+                    id: id,
+                    screen: screen,
+                    active: active
+                )
+            )
+        } else {
+            recordAutomaticView(
+                id: id,
+                active: active,
+                viewName: viewName,
+                recorder: recorder
+            )
+        }
     }
 
     private func keyedManualSignals(
