@@ -10,10 +10,12 @@ Last updated: 2026-09-14
 
 ## Status
 
-Do not implement or publish the APIs in this document before normal API and RFC
-review. They change public Swift and Objective-C surfaces and affect view
-lifecycle behavior. The examples below are review starting points, not settled
-signatures.
+Implement and exercise the APIs in this document first as iOS 27
+experimental/SPI surfaces. This is how the branch will validate customer call
+sites, Objective-C selectors, compatibility fallback, and runtime usefulness
+before normal API and RFC review. Do not promote them to the supported public API
+surface until that review approves the names and contracts. The examples below
+remain review starting points, not settled signatures.
 
 The approved behavior is:
 
@@ -60,7 +62,8 @@ start/stop intent. It does not need a second scene registry or a wire change.
 that path bypasses the platform-view stack and has no authority over later
 automatic appearances. Commits `29c8cec2c` and `b1a0fb6b8` implement and harden
 the internal stack route; `EXP-122` validates it locally and in backend intake.
-Only the reviewed public Swift/Objective-C bridge remains absent.
+Only the customer-shaped Swift/Objective-C bridge remains absent. It is the next
+implementation slice and will stay experimental until review.
 
 `UIWindowScene` is main-actor isolated in the Xcode 27 SDK. The proposed factories
 and overloads must capture only the stable identifier on the main actor. The RUM
@@ -154,7 +157,7 @@ The review alternatives are:
 | New concrete monitor surface | Could provide exact dispatch | Avoids protocol extension dispatch | `RUMMonitor.shared()` currently returns `RUMMonitorProtocol`; changing that shape is substantially broader | Reject for this project |
 
 For the preferred shape, the implementation sequence is fixed even though the
-public declaration is not yet approved:
+stable public declaration is not yet approved:
 
 1. On the main actor, read only `scene.session.persistentIdentifier`.
 2. If the receiver implements the private scene-targeted capability, forward the
@@ -166,8 +169,9 @@ public declaration is not yet approved:
 5. Release every UIKit object before work crosses to the RUM queue.
 
 The SDK deployment target remains iOS 15, but the validated automatic/manual
-coexistence machinery is the declared-multi-scene iOS 27 path. API review should
-choose explicitly between an iOS 27 availability annotation and a wider API
+coexistence machinery is the declared-multi-scene iOS 27 path. The experimental
+prototype uses an iOS 27 availability annotation. API review should choose
+explicitly between retaining that annotation and a wider API
 availability whose pre-iOS-27 behavior is documented as legacy-compatible rather
 than multi-scene acceptance. The branch contains no evidence supporting a broad
 pre-iOS-27 correctness claim.
@@ -190,6 +194,10 @@ The Objective-C wrapper should expose selectors equivalent to:
 Exact selector spelling remains an API-review decision. Both wrappers must
 forward to the same Swift scene-targeted path and must not look up a global key
 without the scene.
+
+The prototype must include an Objective-C compile/smoke test for those selectors
+and a Swift call-site test using a real `UIWindowScene`. Test-only direct calls to
+the internal scene-targeted protocol are not sufficient customer API evidence.
 
 ### Automatic-tracking coexistence requirement
 

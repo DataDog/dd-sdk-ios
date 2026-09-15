@@ -105,8 +105,10 @@ boundary, in this order:
 | 88 | `Exercise trace-only reverse completion across scenes` | `EXP-134` independent A/B Trace-only requests, opposite-scene representatives at B-before-A completion, exact start-owner/session oracle, and adversarial coverage |
 | 89 | `Document trace-only reverse completion evidence` | `EXP-134` local/backend evidence, signer recovery, bounded remaining causal rows, and refreshed resume state |
 | 90 | `Exercise SwiftUI structured task attribution across scenes` | `EXP-135` real SwiftUI Button tap, suspended child-task handoff/trait diagnostics, strict expected-origin oracle, and source-less fallback classification |
+| 91 | `Document SwiftUI structured task attribution boundary` | `EXP-135` accepted runtime/backend evidence, all incomplete attempts, corrected causal conclusion, and refreshed resume state |
+| 92 | `Exercise shared URLSession ownership across scenes` | `EXP-136` one A-created Trace-only task, B consumer join without another task, exact-one creator-owner oracle, and adversarial coverage |
 
-Rows 1-90 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-92 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -127,9 +129,9 @@ is `2a15478df`, row 64 is `dd1b1cf34`, row 65 is `b5494adb0`, and row 66 is
 Rows 70-73 are `76d1a9e71`, `b61e783a6`, `f452e9e3f`, and `fad83f58f`.
 Rows 74-79 are `f1c0547b6`, `c70920c94`, `100fa116a`, `45ec5656a`,
 `0c6b35770`, and `b6b1b57bc`.
-Rows 80-90 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
+Rows 80-92 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
 `a653e29f2`, `3c9730805`, `99e6c4a29`, `130ba7646`, `353679bb5`,
-`0dca626df`, and `2972d3de1`. Their signatures were verified against the
+`0dca626df`, `2972d3de1`, `75becb324`, and `e804d3bd6`. Their signatures were verified against the
 configured Datadog developer key before this checkpoint.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
@@ -333,6 +335,7 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-133 | Tool-incomplete `trace-only-20260914-1301-a`; accepted `trace-only-20260914-1310-b` | local-only `aa1e1aea-f5a4-4efa-96dd-37186f2aed42`; accepted `46330376-b5d0-4ee2-875c-d050aeab4c72` | iPadOS 27 simulator | Trace-only automatic URLSession owner-freezing acceptance. Attempt A reached the trace mapper with A ownership after B became representative, but the Xcode interaction session ended before a terminal result; no crash report, fatal/assertion output, or UI crash state existed, so it is tooling-incomplete rather than an SDK-crash claim. Clean retry B passes 8/8. The held request starts on A/Home H1 `4e84ed1e…`, B/Home B1 `a108479b…` becomes representative, and B releases the response. Exactly one `urlsession.request` span retains A/H1 and session `46330376…`; the B-view predicate returns zero and no matching RUM Resource exists. Raw span search and aggregate queries agree. Trace-detail lookup returned no trace for the same ID, which is retained as a backend-tool retrieval discrepancy rather than an SDK result. The full probe plan passes 115/115; repository lint and `git diff --check` pass. Signed commit `130ba7646` contains the 12 probe/project paths. |
 | EXP-134 | `trace-reverse-20260914-2330-a` | `a9d038c5-d8e4-4d82-aa09-449a6f0b82cd` | iPadOS 27 simulator | Independent Trace-only reverse-completion acceptance. A/Home H1 `b0bff76c…` starts request A, B/Home H1 `6c67dece…` starts request B, then B completes first while A is representative and A completes second while B is representative. The local oracle passes 14/14 with exactly two Trace mapper events. Backend intake contains exactly one B span on B/H1 and one A span on A/H1, zero opposite-view matches, and both spans on session `a9d038c5…`; neither Trace-only URL appears as a RUM Resource. Trace upload returned HTTP 202. The initial exact backend query returned zero before indexing caught up; later raw URL/run searches and six aggregate predicates are the accepted result. Xcode marked the launch session expired only after PASS and upload, with no crash/fatal/assertion evidence. The full probe plan passes 120/120; build-for-testing, repository lint, and `git diff --check` pass. |
 | EXP-135 | Timeout/tooling attempts `swiftui-button-task-20260915-0005-a`, `swiftui-button-task-20260915-0007-b`, `swiftui-button-task-trait-20260915-0030-a`, `swiftui-button-task-trait-20260915-0040-a`; pre-diagnostic failure `swiftui-button-task-20260915-0010-c`; accepted boundary `swiftui-button-task-trait-20260915-0050-a` | accepted `a423021e-49d1-455e-ac11-bf018c517c82`; pre-diagnostic `6c024fcd-7ffb-49d2-99d8-d7e6b349e426`; other incomplete IDs retained below | iPadOS 27 simulator | Ordinary SwiftUI Button → structured-task causal-boundary result. A hierarchy-derived physical tap emits exactly one automatic `tap on SwiftUI_Button` action on A/Home H1 `308f0a66…`. SDK handoff is nil in the button callback, child-task start, and resumed task; UIKit's ambient scene trait starts as A and changes to B after suspension and B takeover. The resumed manual Action `888ffe58…` and Resource `3e8b5cf4…` carry source A diagnostics but are attributed to B/Home H1 `cb3d2a7b…`, the approved source-less representative fallback. The strict expected-A scenario terminates `FAIL` after four matched expectations, intentionally preserving the unsupported exact-origin contract. Backend intake has 28 events, one automatic tap, both resumed events on B, and zero errors/crashes. The full probe plan passes 126/126; build-for-testing, repository lint, and `git diff --check` pass. Exact async origin requires explicit targeting/scoping; `UITraitCollection.current` is not durable provenance. |
+| EXP-136 | `trace-shared-20260915-0115-a`; clean retry `trace-shared-20260915-0120-b` | no accepted session; partial retry session `370da769-c1f0-4707-9057-ab85b01a2017` | iPadOS 27 simulator; physical rerun required | Shared/coalesced Trace-only request discriminator. One underlying task is created on A/Home; B joins it without creating or resuming another task and then should release it. The 132/132 hostless plan requires exactly one A/Home span and rejects B retargeting, absence, or duplication. Both explicitly uninstalled runs crashed simulator `backboardd` in identical Metal texture validation while rendering B, before response release. The retry first reached start PASS at sequence 37 and B join PASS at sequence 66, with A/Home `c26fee76…` and B/Home `109659d9…`. There is no completion, trace mapper signal, or terminal result, no probe app `.ips`, and no app RUM error/crash signal. Backend indexed 16 partial retry events on session `370da769…`, zero error/crash bucket, and zero matching APM span; this is expected because release never occurred. Signed commit `e804d3bd6` contains the eight harness/test paths. Stop simulator retries and run the unchanged scenario on iPhone Duo or a physical multi-window iPad. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -361,6 +364,7 @@ real simultaneous-window layout is useful for earlier discrimination.
 | P0 | `EXP-118` | Two clean runs created B's automatic views but the simulator compositor aborted before the exact B marker and terminal oracle completed | Run `swiftui.coexistence.semantic-a-automatic-b` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require A's semantic marker on A/Home H1; a B-sourced marker on a non-launch automatic view first observed after opening B; no automatic duplicate in A; no cross-scene stop; terminal local PASS followed by exact run-ID backend confirmation |
 | P0 | `EXP-129` | The clean run reached both native scenes, then Xcode/device capture expired amid simulator graphics/window-service interruptions before either manual view started | Run `swiftui.coexistence.same-key-manual-two-scenes` on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require distinct A/B automatic Home owners, distinct Compose UUIDs for the same customer key, B-first stop revealing fresh B Home without changing A Compose, A stop revealing fresh A Home, exact action/Resource ownership, terminal PASS, and exact run-ID backend confirmation |
 | P0 | `EXP-131` | `EXP-129` already showed that the required two-scene simulator compositor/session expires before decisive cross-window work; repeating it would not add evidence | Run `operations.cross-scene.lifecycle` unchanged on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require distinct A/B Home view IDs, eight raw Operation steps, and four reduced Operations: cross-success A→B, cross-failure A→B with its error, parallel-alpha A→A, and parallel-beta B→B. Raw beta completion must precede alpha completion. Require no extra/orphan Operation, RUM error, or app/SDK crash |
+| P0 | `EXP-136` | Two clean runs crashed simulator `backboardd` in the same Metal texture-validation path while rendering B. The retry proved B joined the one active request but the system process failed before B could release it | Run `traces.urlsession-shared-request` unchanged on iPhone Duo or a physical multi-window iPad after an explicit uninstall | Require start on A/Home, B join without a second URLSession task, response release from B, terminal PASS, exactly one `urlsession.request` span on A/Home and the original session, zero B-owned or duplicate spans, zero matching RUM Resource, and no app/SDK crash |
 | P1 | `EXP-076`, `EXP-087` | The simulator lacks `com.apple.coredevice.feature.resizableappmanagement`; no requested width transition occurred | Device/window environment that acknowledges regular → compact → regular resizing, ideally iPhone Duo | Capture acknowledged geometry/size-class changes plus semantic split selections. No view may be created for an empty detail; collapse/expand must preserve one occurrence per committed destination without any Primary/sidebar RUM view |
 | P1 | `EXP-042` | Relaunch restored only B; A never reconnected | Human-driven physical-device restore with two persisted windows, repeated enough to obtain an OS restoration of both | Preserve native scene-session IDs across termination/relaunch, then prove fresh RUM occurrences and exact lifecycle attribution for both restored scenes with no cross-stop |
 | P1 | `EXP-001` | The integration-runner half-and-half arrangement repeatedly respawned simulator `backboardd` | Physical device only if UIKit-hosted SwiftUI parity remains a release requirement; otherwise use the stable native `WindowGroup` probe | Two windows must remain alive through an alternating A-B-A-B flow with no system-process restart; capture the same semantic IDs and markers as the native probe |
@@ -4241,8 +4245,80 @@ Repository lint passes 713 source and 699 test files with zero violations, and
 `git diff --check` passes. Signed commit `2972d3de1`, tree
 `05f9db5089a769acbb1fe5df79645641cc83464e`, contains the ten isolated
 scenario/driver/UI/test paths. This closes the SwiftUI Button/task discriminator
-as a documented causal boundary. Shared/coalesced work is the next bounded
-simulator-capable row.
+as a documented causal boundary.
+
+### 2026-09-15 — EXP-136: shared Trace-only URLSession request
+
+The `traces.urlsession-shared-request` scenario creates one real automatically
+traced URLSession task while A/Home H1 is the trustworthy creator. After B/Home
+H1 becomes representative, B explicitly joins the already-active request without
+creating or resuming another task, then releases its controlled response. This
+models two scene consumers while keeping the transport identity unambiguous. The
+strict oracle requires exactly one `urlsession.request` span on A/Home H1 and
+rejects a B-owned span, no span, a duplicate span, or any matching RUM Resource.
+
+Six new focused tests raise the generated probe plan to 132/132. The scenario
+catalog and driver tests prove one start on A, one join on B, and one release on
+B. The controller accepts the join only while that exact request is active and
+does not create a second URLSession task. Passing and adversarial oracle fixtures
+cover the exact A owner, B retargeting, absence, and duplication.
+
+Both runtime attempts established the clean precondition: host-side uninstall
+returned zero and `simctl get_app_container` returned exit 2 with no application
+container before Xcode rebuilt and launched the probe.
+
+- `trace-shared-20260915-0115-a` created native A
+  `0D43144C-FCDE-4B2B-BC95-FD91BE87E7C3`, A/Home
+  `cd5e9a31-b630-4564-90bd-153888e26f94`, native B
+  `66FB38D3-EE25-43D2-A5EE-40FBA1F6600C`, and B/Home
+  `89242e19-43f7-43fb-8f30-0e399d1f4db4`. The request started, then simulator
+  `backboardd` aborted at `2026-09-15 01:16:18 +0100` while rendering B, before
+  the join step.
+- Clean retry `trace-shared-20260915-0120-b` uses RUM session
+  `370da769-c1f0-4707-9057-ab85b01a2017`. Native A is
+  `C2F06CC3-07C5-43A0-AABB-0859FD72C8F0`, A/Home H1 is
+  `c26fee76-b8bb-41e0-9930-6937a1bf4087`, native B is
+  `A1FE3DCD-1AA6-44BA-84D0-8ED2B2FCFDB5`, and B/Home H1 is
+  `109659d9-9eaf-4fd8-ba6d-ba207b9dcf61`. Request start passes at signal 37.
+  B's join passes at signal 66 with the assertion that it joined the existing
+  request without starting another task. Immediately afterward `backboardd`
+  aborted in the same Metal texture-validation path at
+  `2026-09-15 01:20:42 +0100`, before B released the response.
+
+The expected request URL for the retry is
+`https://multi-scene-probe.invalid/trace-only/trace-shared-20260915-0120-b/scene-A/home/trace-only-shared-request`.
+Neither run emitted a request-completion assertion, Trace mapper signal, or
+terminal oracle result. Neither produced a probe-app `.ips`, fatal/assertion
+output, or local RUM error/crash signal. The system crash reports are:
+
+- `/Users/valentin.pertuisot/Library/Logs/DiagnosticReports/backboardd-2026-09-15-011621.ips`
+- `/Users/valentin.pertuisot/Library/Logs/DiagnosticReports/backboardd-2026-09-15-012045.ips`
+
+Both show `EXC_CRASH`/`SIGABRT` through Metal texture validation and Core
+Animation window rendering. Backend intake for the retry contains 16 partial
+events: two views, five actions, five Resources, two long tasks, one vital, and
+one session. The session has `error.count=0` and `crash.count=0`. No APM span
+matches either run ID or shared-request URL, which is expected because response
+release never occurred. The first run has no searchable exact-run event set.
+
+The complete probe test result is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.15_01-07-35-+0100.xcresult`
+
+Its summary is:
+
+`/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/E01DAE5F-A559-4BCC-B88E-07C3137BF9A3.txt`
+
+Repository lint passes 713 source and 699 test files with zero violations, and
+`git diff --check` passes. Signed commit `e804d3bd6`, tree
+`232715c3d7ff67f719508d9d37b2ba5161b27f15`, contains the eight isolated
+harness/test paths.
+
+This is simulator-inconclusive, not a RUM attribution failure or SDK crash. The
+single-task B-join topology is proven, but exact creator ownership cannot be
+accepted before a span exists. Stop simulator retries and run the unchanged
+scenario on iPhone Duo or a physical multi-window iPad. Local work now moves to
+the customer-shaped scene-aware API prototype.
 
 ### Attempts not to repeat
 
@@ -4369,6 +4445,11 @@ simulator-capable row.
   then lost the Xcode/device session amid window-service interruptions before
   manual authority began. The 91/91 hostless contract is useful but cannot
   replace a terminal physical-hardware run and exact backend owners.
+- Do not retry `traces.urlsession-shared-request` on the current simulator after
+  `EXP-136`. Two explicitly uninstalled runs crashed `backboardd` in the same
+  Metal texture-validation path before response release. The second run first
+  proved B joined the existing request. Preserve that prefix and run the exact
+  132/132 hostless contract on capable physical hardware.
 - Do not add a driver wait for the short Compose occurrence in `EXP-120`. The
   existing direct API can start and stop M1 before the driver observes its next
   condition; the step-bounded authority interval, recorder facts, and semantic

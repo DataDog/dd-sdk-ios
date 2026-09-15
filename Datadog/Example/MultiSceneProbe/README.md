@@ -66,6 +66,7 @@ The catalog currently preserves these experiment families:
 | `actions.uikit-scroll-navigation-deceleration` | `EXP-132` | Real-gesture PASS 7/7; a threshold-qualified `UITableView` fling remains exactly once on stopped Secondary 2 when fresh Secondary 3 is presented during deceleration, and backend ownership agrees |
 | `traces.urlsession-cross-scene` | `EXP-133` | Signal-driven PASS 8/8; one Trace-only URLSession request starts while A/Home H1 is representative, completes after B/Home B1 becomes representative, and emits exactly one backend span on A/H1 with no matching RUM Resource |
 | `traces.urlsession-reverse-completion` | `EXP-134` | Signal-driven PASS 14/14; independent A and B Trace-only requests complete B-before-A while the opposite scene is representative, yet exactly one backend span for each request remains on its own start-scene Home view and neither URL becomes a RUM Resource |
+| `traces.urlsession-shared-request` | `EXP-136` | Hostless contract PASS 132/132; one A-created request accepts a B join without creating another task and must emit exactly one A/Home span. Two clean simulator runs crashed `backboardd` before response release, so live attribution requires capable physical hardware |
 | `swiftui.stack.manual-sheet-return` | `EXP-040` | Observable driver pending |
 | `swiftui.stack.native-pop-cancel`, `swiftui.stack.native-pop-finish` | `EXP-100` | Prepared; hardware or human gesture required |
 | `swiftui.split.automatic-baseline` | `EXP-069`, `EXP-111` | Signal-driven FAIL: no semantic destination views |
@@ -98,7 +99,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 120/120. The stack
+future Execution Context seam. The generated test plan passes 132/132. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -208,6 +209,20 @@ both retain A/Home for A and B/Home for B, with one span per request and no
 Trace-only RUM Resources. This closes the two-request reverse-completion row;
 shared/coalesced work and exact simultaneous-window source discovery remain
 separate.
+`EXP-135` physically taps a real SwiftUI Button in A and suspends a child task
+until B becomes representative. The automatic tap stays exactly once on A, but
+the button callback begins outside the SDK handoff and UIKit's ambient scene
+trait changes to B across suspension. The resumed source-less Action and Resource
+therefore use B by compatibility; exact asynchronous origin needs an explicit
+target or scoped customer integration.
+`EXP-136` adds one deterministic shared-request consumer without creating or
+resuming a second URLSession task. The hostless oracle requires exactly one span
+on the trustworthy A/Home creator and rejects a B retarget, missing span, or
+duplicate span. Two explicitly uninstalled simulator runs reached the second
+window; the retry also acknowledged B's join. Both then crashed simulator
+`backboardd` in the same Metal texture validation before B could release the
+response. There is no app/SDK crash or attribution verdict. Run the unchanged
+scenario on iPhone Duo or a physical multi-window iPad.
 `EXP-118` installs that semantic boundary only in scene A while leaving scene B
 automatic. Its oracle separates source labels from mapper ownership and rejects
 an automatic owner first observed before B opened. Two clean simulator prefixes
@@ -241,7 +256,9 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `swiftui.coexistence.sibling-container-authority` and
 `swiftui.coexistence.nested-keyed-manual-view`, plus
 `actions.uikit-scroll-navigation-deceleration` and
-`traces.urlsession-cross-scene`, use the
+`actions.swiftui-button-structured-task`, plus
+`traces.urlsession-cross-scene`, `traces.urlsession-reverse-completion`, and
+`traces.urlsession-shared-request`, use the
 signal-driven execution loop.
 They do not use arbitrary navigation delays: the driver waits for scene readiness,
 route mutation, destination materialization, and expected mapper-observed RUM

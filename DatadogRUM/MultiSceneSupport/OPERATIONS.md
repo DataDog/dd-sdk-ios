@@ -5,7 +5,7 @@ duplicate-start behavior, the proposed public targeting API, customer guidance,
 or Operations tests. This is the authoritative home for the Operations contract;
 the [canonical overview](../MULTI_SCENE_SUPPORT.md) carries only its summary.
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## RUM Operations contract and API review proposal
 
@@ -25,10 +25,13 @@ The implemented internal contract is:
    or failure ends that latest instance. The earlier backend operation remains
    open until its four-hour timeout.
 
-The internal routing and warning changes are implemented. The public escape hatch
-is deliberately not implemented until API review because it changes the SDK
-surface and needs Swift, Objective-C, and protocol-conformance compatibility
-decisions. A value-type proposal that does not expose internal RUM UUIDs is:
+The internal routing and warning changes are implemented. The customer-shaped
+escape hatch should now be implemented and exercised as an iOS 27
+experimental/SPI surface. This validates its Swift and Objective-C call sites,
+protocol-conformance fallback, and runtime usefulness before normal API review.
+It must not be promoted to the supported public API surface until that review
+approves the exact names and contracts. A value-type proposal that does not
+expose internal RUM UUIDs is:
 
 ```swift
 public struct RUMOperationViewTarget {
@@ -82,9 +85,10 @@ the exact-view forms requires an internal logical target keyed by `ViewIdentifie
 plus a scene where the identity is not globally unique, never a public RUM UUID.
 
 To avoid making a new requirement on every external `RUMMonitorProtocol`
-conformer, review should use extension-only overloads backed by a private targeting
-capability, with the existing inferred method called exactly once for custom
-conformers and the NOP monitor. The Objective-C surface needs a
+conformer, the experimental prototype should use extension-only overloads backed
+by a private targeting capability, with the existing inferred method called
+exactly once for custom conformers and the NOP monitor. The Objective-C surface
+needs a
 `DDRUMOperationViewTarget` companion with `inferred`, `currentInScene:`,
 `trackedViewWithKey:inScene:`, and `trackedViewController:` factories. Use the
 same availability decision as the scene-targeted manual-view prerequisite in
@@ -94,9 +98,11 @@ multi-scene applications on iOS 27. API review must choose whether to expose the
 overloads broadly with legacy-compatible behavior or annotate them for iOS 27;
 the Operations proposal must not decide that independently.
 
-One required prerequisite remains: the public `startView(key:)` API cannot
-explicitly bind that manual key to a scene. API review must include scene-targeted
-manual keyed-view start/stop overloads and Objective-C counterparts. The same key
+One required prerequisite remains: the existing `startView(key:)` API cannot
+explicitly bind that manual key to a scene. The next implementation slice adds
+iOS 27 experimental/SPI scene-targeted manual keyed-view start/stop overloads and
+Objective-C counterparts, then replaces the probe's internal-only calls with
+those customer-shaped calls. The same key
 may be active independently in A and B, and an explicit stop in A must close only
 A. Existing APIs retain inferred/last-interacted behavior, while an explicit scene
 wins over the process representative. This establishes deterministic ownership
@@ -159,10 +165,10 @@ Required test coverage is tracked explicitly:
 | Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
 | Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` `parallel-alpha`/`parallel-beta` driver | Focused/hostless pass; live backend pending |
 | Reverse-order completion | Manager sequence plus `EXP-131` B-before-A driver order | Focused/hostless pass; live backend pending |
-| Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; public overload test pending API review |
+| Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; experimental overload pending after manual-view prerequisite |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
-| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public overload test pending API review |
+| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; experimental overload pending after manual-view prerequisite |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
 | Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,169-test RUM suite passes |
 
