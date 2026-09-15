@@ -2745,8 +2745,8 @@ private struct RUMAttachmentBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 }
 #endif
 
-#if DEBUG && os(iOS)
-/// Probe-only half of semantic presentation ownership. The router publishes
+#if os(iOS)
+/// Presentation half of semantic navigation ownership. The router publishes
 /// the RUM occurrence, while this modifier keeps automatic discovery out of
 /// the presented platform subtree until UIKit finishes removing it.
 private struct RUMAutomaticViewSuppressionModifier: SwiftUI.ViewModifier {
@@ -2774,6 +2774,509 @@ private struct RUMAutomaticViewSuppressionModifier: SwiftUI.ViewModifier {
             .onDisappear {
                 suppressionState.disappear()
             }
+    }
+}
+#endif
+
+#if os(iOS)
+/// The native presentation style associated with a semantic RUM destination.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+public enum RUMNavigationPresentationStyle: Hashable {
+    case sheet
+    case fullScreenCover
+}
+
+/// Describes one presented destination in an experimental semantic navigation
+/// container.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+public struct RUMNavigationPresentation {
+    public let view: RUMView
+    public let style: RUMNavigationPresentationStyle
+
+    public init(view: RUMView, style: RUMNavigationPresentationStyle) {
+        self.view = view
+        self.style = style
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+internal final class RUMSwiftUISemanticNavigationState<
+    Route: Hashable,
+    Presentation: Identifiable
+> {
+    struct Occurrence {
+        let key: RUMViewOccurrenceKey
+        let generation: UInt64
+    }
+
+    private struct RootKey: Hashable {
+        let containerID: UUID
+    }
+
+    private struct RoutePositionKey: Hashable {
+        let containerID: UUID
+        let route: Route
+        let depth: Int
+    }
+
+    private struct ActivePresentation {
+        var item: Presentation
+        var descriptor: RUMNavigationPresentation
+        let identity: String
+        var sceneIdentifier: RUMSceneIdentifier?
+        var isStarted: Bool
+        var hasMounted: Bool
+    }
+
+    private let containerID = UUID()
+    private(set) var bindingGeneration: UInt64 = 0
+    private var currentPath: [Route]?
+    private var activePresentation: ActivePresentation?
+    private var dismissedSheet: Presentation?
+    private var dismissedFullScreenCover: Presentation?
+
+    let occurrenceSource = RUMSwiftUINavigationOccurrenceSource()
+
+    var rootOccurrence: Occurrence {
+        Occurrence(
+            key: RUMViewOccurrenceKey(RootKey(containerID: containerID)),
+            generation: bindingGeneration
+        )
+    }
+
+    func occurrence(for route: Route) -> Occurrence {
+        let path = currentPath ?? []
+        let depth = path.lastIndex(of: route).map { $0 + 1 } ?? max(path.count, 1)
+        return Occurrence(
+            key: RUMViewOccurrenceKey(
+                RoutePositionKey(
+                    containerID: containerID,
+                    route: route,
+                    depth: depth
+                )
+            ),
+            generation: bindingGeneration
+        )
+    }
+
+    func reconcile(path: [Route]) {
+        guard let previousPath = currentPath else {
+            currentPath = path
+            if !path.isEmpty {
+                bindingGeneration &+= 1
+            }
+            return
+        }
+        guard previousPath != path else {
+            return
+        }
+
+        bindingGeneration &+= 1
+        currentPath = path
+
+        guard
+            path.count < previousPath.count,
+            Array(previousPath.prefix(path.count)) == path
+        else {
+            return
+        }
+
+        let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
+        occurrenceSource.revealRetainedRoute(
+            occurrenceKey: occurrence.key,
+            bindingGeneration: occurrence.generation
+        )
+    }
+
+    func reconcilePresentation(
+        _ item: Presentation?,
+        descriptor: ((Presentation) -> RUMNavigationPresentation),
+        viewsHandler: RUMViewsHandler?
+    ) {
+        guard let item else {
+            finishActivePresentation(viewsHandler: viewsHandler, recordsDismissal: true)
+            return
+        }
+
+        let nextDescriptor = descriptor(item)
+        if
+            var activePresentation,
+            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
+            activePresentation.descriptor.style == nextDescriptor.style {
+            activePresentation.item = item
+            activePresentation.descriptor = nextDescriptor
+            self.activePresentation = activePresentation
+            return
+        }
+
+        finishActivePresentation(viewsHandler: viewsHandler, recordsDismissal: false)
+        activePresentation = ActivePresentation(
+            item: item,
+            descriptor: nextDescriptor,
+            identity: UUID().uuidString,
+            sceneIdentifier: nil,
+            isStarted: false,
+            hasMounted: false
+        )
+    }
+
+    func presentationStyle(for item: Presentation) -> RUMNavigationPresentationStyle? {
+        guard
+            let activePresentation,
+            AnyHashable(activePresentation.item.id) == AnyHashable(item.id)
+        else {
+            return nil
+        }
+        return activePresentation.descriptor.style
+    }
+
+    func mountPresentation(
+        _ item: Presentation,
+        in sceneIdentifier: RUMSceneIdentifier,
+        viewsHandler: RUMViewsHandler?
+    ) {
+        guard
+            var activePresentation,
+            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
+            let viewsHandler
+        else {
+            return
+        }
+
+        if activePresentation.isStarted {
+            guard activePresentation.sceneIdentifier != sceneIdentifier else {
+                return
+            }
+            if let previousSceneIdentifier = activePresentation.sceneIdentifier {
+                viewsHandler.notify_semanticPresentationDisappear(
+                    identity: activePresentation.identity,
+                    sceneIdentifier: previousSceneIdentifier
+                )
+            }
+        }
+
+        let view = activePresentation.descriptor.view
+        viewsHandler.notify_semanticPresentationAppear(
+            identity: activePresentation.identity,
+            name: view.name,
+            path: view.path ?? view.name,
+            attributes: view.attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+        activePresentation.sceneIdentifier = sceneIdentifier
+        activePresentation.isStarted = true
+        activePresentation.hasMounted = true
+        self.activePresentation = activePresentation
+    }
+
+    func presentationDidDisappear(
+        _ item: Presentation,
+        viewsHandler: RUMViewsHandler?
+    ) {
+        guard
+            var activePresentation,
+            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
+            activePresentation.isStarted,
+            let sceneIdentifier = activePresentation.sceneIdentifier
+        else {
+            return
+        }
+
+        viewsHandler?.notify_semanticPresentationDisappear(
+            identity: activePresentation.identity,
+            sceneIdentifier: sceneIdentifier
+        )
+        activePresentation.isStarted = false
+        activePresentation.sceneIdentifier = nil
+        self.activePresentation = activePresentation
+    }
+
+    func consumeDismissed(
+        style: RUMNavigationPresentationStyle
+    ) -> Presentation? {
+        switch style {
+        case .sheet:
+            defer { dismissedSheet = nil }
+            return dismissedSheet
+        case .fullScreenCover:
+            defer { dismissedFullScreenCover = nil }
+            return dismissedFullScreenCover
+        }
+    }
+
+    private func finishActivePresentation(
+        viewsHandler: RUMViewsHandler?,
+        recordsDismissal: Bool
+    ) {
+        guard let activePresentation else {
+            return
+        }
+
+        if
+            activePresentation.isStarted,
+            let sceneIdentifier = activePresentation.sceneIdentifier {
+            viewsHandler?.notify_semanticPresentationDisappear(
+                identity: activePresentation.identity,
+                sceneIdentifier: sceneIdentifier
+            )
+        }
+
+        if recordsDismissal && activePresentation.hasMounted {
+            switch activePresentation.descriptor.style {
+            case .sheet:
+                dismissedSheet = activePresentation.item
+            case .fullScreenCover:
+                dismissedFullScreenCover = activePresentation.item
+            }
+        }
+        self.activePresentation = nil
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+private struct RUMSemanticPresentationBoundary<
+    Presentation: Identifiable,
+    Content: SwiftUI.View
+>: SwiftUI.View {
+    let item: Presentation
+    let mount: (Presentation, RUMSceneIdentifier) -> Void
+    let disappear: (Presentation) -> Void
+    let instrumentation: RUMInstrumentation?
+    @ViewBuilder let content: Content
+
+    @Environment(\.rumSceneIdentifier)
+    private var sceneIdentifier
+    @State private var suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
+
+    init<Route: Hashable>(
+        item: Presentation,
+        navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>,
+        instrumentation: RUMInstrumentation?,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.item = item
+        self.instrumentation = instrumentation
+        self.mount = { item, sceneIdentifier in
+            navigationState.mountPresentation(
+                item,
+                in: sceneIdentifier,
+                viewsHandler: instrumentation?.viewsHandler
+            )
+        }
+        self.disappear = { item in
+            navigationState.presentationDidDisappear(
+                item,
+                viewsHandler: instrumentation?.viewsHandler
+            )
+        }
+        self.content = content()
+    }
+
+    var body: some SwiftUI.View {
+        content
+            .background(
+                RUMSceneIdentifierReader(
+                    applicationSupportsMultipleScenes: true,
+                    initialSceneIdentifier: initialSceneIdentifier,
+                    onCreate: { observer in
+                        instrumentation?.swiftUIViewAuthorityRegistry?.register(
+                            observer: observer,
+                            suppressionState: suppressionState
+                        )
+                    },
+                    onInitialMount: activate(in:),
+                    onMount: activate(in:),
+                    onChange: { attachment in
+                        if case .attached(let sceneIdentifier?) = attachment {
+                            activate(in: sceneIdentifier)
+                        }
+                    }
+                )
+            )
+            .onAppear {
+                suppressionState.appear()
+                if let initialSceneIdentifier {
+                    mount(item, initialSceneIdentifier)
+                }
+            }
+            .onDisappear {
+                disappear(item)
+                suppressionState.disappear()
+            }
+    }
+
+    private var initialSceneIdentifier: RUMSceneIdentifier? {
+        sceneIdentifier.map { RUMSceneIdentifier(rawValue: $0) }
+    }
+
+    private func activate(in sceneIdentifier: RUMSceneIdentifier) {
+        suppressionState.appear()
+        mount(item, sceneIdentifier)
+    }
+}
+
+/// An experimental semantic SwiftUI navigation container. It owns destination
+/// materialization so RUM can create one view occurrence for each committed path
+/// destination while automatic tracking remains enabled outside this container.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+@MainActor
+public struct RUMNavigationStack<
+    Route: Hashable,
+    Presentation: Identifiable,
+    Root: SwiftUI.View,
+    Destination: SwiftUI.View,
+    Presented: SwiftUI.View
+>: SwiftUI.View {
+    private let path: Binding<[Route]>
+    private let presented: Binding<Presentation?>
+    private let root: RUMView
+    private let destination: (Route) -> RUMView
+    private let presentation: (Presentation) -> RUMNavigationPresentation
+    private let core: DatadogCoreProtocol
+    private let rootContent: Root
+    private let destinationContent: (Route) -> Destination
+    private let presentedContent: (Presentation) -> Presented
+    private let onPresentationDismiss: (Presentation) -> Void
+
+    @State private var navigationState =
+        RUMSwiftUISemanticNavigationState<Route, Presentation>()
+
+    public init(
+        path: Binding<[Route]>,
+        presented: Binding<Presentation?>,
+        root: RUMView,
+        destination: @escaping (Route) -> RUMView,
+        presentation: @escaping (Presentation) -> RUMNavigationPresentation,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder rootContent: () -> Root,
+        @ViewBuilder destinationContent: @escaping (Route) -> Destination,
+        @ViewBuilder presentedContent: @escaping (Presentation) -> Presented,
+        onPresentationDismiss: @escaping (Presentation) -> Void = { _ in }
+    ) {
+        self.path = path
+        self.presented = presented
+        self.root = root
+        self.destination = destination
+        self.presentation = presentation
+        self.core = core
+        self.rootContent = rootContent()
+        self.destinationContent = destinationContent
+        self.presentedContent = presentedContent
+        self.onPresentationDismiss = onPresentationDismiss
+    }
+
+    public var body: some SwiftUI.View {
+        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        navigationState.reconcile(path: path.wrappedValue)
+        navigationState.reconcilePresentation(
+            presented.wrappedValue,
+            descriptor: presentation,
+            viewsHandler: instrumentation?.viewsHandler
+        )
+
+        return NavigationStack(path: trackedPath) {
+            tracked(rootContent, as: root, occurrence: navigationState.rootOccurrence)
+                .navigationDestination(for: Route.self) { route in
+                    tracked(
+                        destinationContent(route),
+                        as: destination(route),
+                        occurrence: navigationState.occurrence(for: route)
+                    )
+                }
+        }
+        .sheet(
+            item: presentationBinding(for: .sheet),
+            onDismiss: { deliverDismissal(for: .sheet) }
+        ) { item in
+            semanticPresentation(item, instrumentation: instrumentation)
+        }
+        .fullScreenCover(
+            item: presentationBinding(for: .fullScreenCover),
+            onDismiss: { deliverDismissal(for: .fullScreenCover) }
+        ) { item in
+            semanticPresentation(item, instrumentation: instrumentation)
+        }
+    }
+
+    private var trackedPath: Binding<[Route]> {
+        Binding(
+            get: { path.wrappedValue },
+            set: { newPath, transaction in
+                navigationState.reconcile(path: newPath)
+                path.transaction(transaction).wrappedValue = newPath
+            }
+        )
+    }
+
+    private func presentationBinding(
+        for style: RUMNavigationPresentationStyle
+    ) -> Binding<Presentation?> {
+        Binding(
+            get: {
+                guard
+                    let item = presented.wrappedValue,
+                    navigationState.presentationStyle(for: item) == style
+                else {
+                    return nil
+                }
+                return item
+            },
+            set: { newItem, transaction in
+                if
+                    newItem == nil,
+                    let currentItem = presented.wrappedValue,
+                    navigationState.presentationStyle(for: currentItem) != style {
+                    return
+                }
+                let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+                navigationState.reconcilePresentation(
+                    newItem,
+                    descriptor: presentation,
+                    viewsHandler: instrumentation?.viewsHandler
+                )
+                presented.transaction(transaction).wrappedValue = newItem
+            }
+        )
+    }
+
+    private func semanticPresentation(
+        _ item: Presentation,
+        instrumentation: RUMInstrumentation?
+    ) -> some SwiftUI.View {
+        RUMSemanticPresentationBoundary(
+            item: item,
+            navigationState: navigationState,
+            instrumentation: instrumentation
+        ) {
+            presentedContent(item)
+        }
+        .id(item.id)
+    }
+
+    private func tracked<Content: SwiftUI.View>(
+        _ content: Content,
+        as rumView: RUMView,
+        occurrence: RUMSwiftUISemanticNavigationState<Route, Presentation>.Occurrence
+    ) -> some SwiftUI.View {
+        content.trackRUMView(
+            rumView: rumView,
+            occurrenceKey: occurrence.key,
+            bindingGeneration: occurrence.generation,
+            navigationOccurrenceSource: navigationState.occurrenceSource,
+            in: core
+        )
+    }
+
+    private func deliverDismissal(for style: RUMNavigationPresentationStyle) {
+        guard let item = navigationState.consumeDismissed(style: style) else {
+            return
+        }
+        onPresentationDismiss(item)
     }
 }
 #endif
@@ -2818,9 +3321,9 @@ public extension SwiftUI.View {
     }
 }
 
-#if DEBUG && os(iOS)
+#if os(iOS)
 internal extension SwiftUI.View {
-    /// Debug-only seam for validating navigation occurrence identity without
+    /// Internal seam for semantic navigation occurrence identity without
     /// changing the public API or SwiftUI identity of customer content.
     func trackRUMView(
         name: String,
@@ -2849,7 +3352,37 @@ internal extension SwiftUI.View {
         )
     }
 
-    /// Debug-only seam for validating a centralized semantic presentation
+    func trackRUMView(
+        rumView: RUMView,
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource? = nil,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> some View {
+        let path = rumView.path ?? "\(rumView.name)/\(typeDescription.hashValue)"
+        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        let configuration = RUMViewTrackingState.Configuration(
+            occurrenceKey: occurrenceKey,
+            bindingGeneration: bindingGeneration,
+            descriptor: .init(
+                name: rumView.name,
+                path: path,
+                attributes: rumView.attributes
+            )
+        )
+        return modifier(
+            RUMViewModifier(
+                instrumentation: instrumentation,
+                name: rumView.name,
+                path: path,
+                attributes: rumView.attributes,
+                configuration: configuration,
+                navigationOccurrenceSource: navigationOccurrenceSource
+            )
+        )
+    }
+
+    /// Internal seam for validating a centralized semantic presentation
     /// owner alongside automatic tracking. It intentionally publishes no RUM
     /// view commands of its own.
     func suppressAutomaticRUMViewTracking(

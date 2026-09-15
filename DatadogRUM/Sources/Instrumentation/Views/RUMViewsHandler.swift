@@ -1209,4 +1209,45 @@ extension RUMViewsHandler: RUMSceneTargetedManualViewHandling {
         )
     }
 }
+
+extension RUMViewsHandler {
+    /// Starts a router-owned SwiftUI presentation as manual authority so
+    /// automatic navigation can continue underneath it without becoming the
+    /// scene's current RUM destination.
+    @MainActor
+    func notify_semanticPresentationAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        add(
+            view: .init(
+                identity: ViewIdentifier(identity),
+                name: name,
+                path: path,
+                isUntrackedModal: false,
+                attributes: attributes,
+                instrumentationType: .manual,
+                sceneIdentifier: sceneIdentifier
+            )
+        )
+    }
+
+    /// Stops only the matching router-owned presentation. The manual stack
+    /// reveals its latest committed underlying destination as a fresh
+    /// occurrence before the application receives the dismissal binding write.
+    @MainActor
+    func notify_semanticPresentationDisappear(
+        identity: String,
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        remove(
+            identity: ViewIdentifier(identity),
+            sceneIdentifier: sceneIdentifier,
+            stopAttributes: [:]
+        )
+    }
+}
 #endif

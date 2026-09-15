@@ -3221,6 +3221,106 @@ class RUMSwiftUIInteractiveTransitionArbiterTests: XCTestCase {
         )
     }
 }
+
+@available(iOS 27.0, *)
+@MainActor
+final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
+    private struct Presentation: Identifiable {
+        let id: String
+    }
+
+    private let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+    func testCommittedPop_revealsHomeAsFreshOccurrenceBeforeRetainedContentRemounts() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: [])
+        let initialHome = navigationState.rootOccurrence
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
+        let viewState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initialConfiguration = configuration(for: initialHome, name: "Home")
+        _ = viewState.mount(in: scene, configuration: initialConfiguration)
+        _ = viewState.disappear(configuration: initialConfiguration)
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: navigationState.occurrenceSource,
+            state: viewState,
+            configuration: initialConfiguration,
+            attachment: .attached(scene)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: viewState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        navigationState.reconcile(path: ["details"])
+        navigationState.reconcile(path: [])
+
+        let returnedHome = navigationState.rootOccurrence
+        XCTAssertEqual(returnedHome.key, initialHome.key)
+        XCTAssertGreaterThan(returnedHome.generation, initialHome.generation)
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "home-2", sceneIdentifier: scene)]
+        )
+        XCTAssertEqual(viewState.configuration?.bindingGeneration, returnedHome.generation)
+        XCTAssertEqual(identities.invocationCount, 2)
+    }
+
+    func testPathThatPushesAndRevertsBeforeRootDisappears_createsNoIntermediateOccurrence() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: [])
+        let initialHome = navigationState.rootOccurrence
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "unused"])
+        let viewState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initialConfiguration = configuration(for: initialHome, name: "Home")
+        _ = viewState.mount(in: scene, configuration: initialConfiguration)
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: navigationState.occurrenceSource,
+            state: viewState,
+            configuration: initialConfiguration,
+            attachment: .attached(scene)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: viewState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        navigationState.reconcile(path: ["details"])
+        navigationState.reconcile(path: [])
+
+        XCTAssertTrue(transitions.isEmpty)
+        XCTAssertTrue(viewState.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    private func configuration(
+        for occurrence: RUMSwiftUISemanticNavigationState<String, Presentation>.Occurrence,
+        name: String
+    ) -> RUMViewTrackingState.Configuration {
+        RUMViewTrackingState.Configuration(
+            occurrenceKey: occurrence.key,
+            bindingGeneration: occurrence.generation,
+            descriptor: .init(name: name, path: "/\(name)", attributes: [:])
+        )
+    }
+}
 #endif
 #endif
 

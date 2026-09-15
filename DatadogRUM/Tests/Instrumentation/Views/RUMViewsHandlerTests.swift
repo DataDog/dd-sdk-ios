@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class RUMViewsHandlerTests: XCTestCase {
@@ -15,6 +16,13 @@ class RUMViewsHandlerTests: XCTestCase {
     private let notificationCenter = NotificationCenter()
 
     #if os(iOS)
+    @available(iOS 27.0, *)
+    private struct SemanticPresentation: Identifiable, Equatable {
+        let id: String
+        let name: String
+        let style: RUMNavigationPresentationStyle
+    }
+
     private struct UIKitSplitViewFixture {
         let splitViewController: UISplitViewController
         let primary: UIViewController
@@ -60,6 +68,15 @@ class RUMViewsHandlerTests: XCTestCase {
             }
             return nil
         }
+    }
+
+    @available(iOS 27.0, *)
+    private func semanticDescriptor(
+        for presentation: SemanticPresentation
+    ) -> RUMNavigationPresentation {
+        var view = RUMView(name: presentation.name)
+        view.path = "/semantic/\(presentation.id)"
+        return RUMNavigationPresentation(view: view, style: presentation.style)
     }
     #endif
 
@@ -2444,4 +2461,178 @@ class RUMViewsHandlerTests: XCTestCase {
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
+
+    #if os(iOS)
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticPresentationThatNeverMounts_doesNotPublishOrReportDismissal() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let presentation = SemanticPresentation(
+            id: "sheet",
+            name: "Sheet",
+            style: .sheet
+        )
+
+        state.reconcilePresentation(
+            presentation,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+        state.reconcilePresentation(
+            nil,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testMountedSemanticPresentation_stopsBeforeRevealingUnderlyingDestination() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let presentation = SemanticPresentation(
+            id: "sheet",
+            name: "Sheet",
+            style: .sheet
+        )
+
+        handler.notify_onAppear(
+            identity: "home",
+            name: "Home",
+            path: "/home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        state.reconcilePresentation(
+            presentation,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
+        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
+        state.reconcilePresentation(
+            nil,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let homeStart = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let homeStop = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let presentationStart = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        let presentationStop = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
+        let revealedHome = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
+        XCTAssertEqual(homeStart.identity, ViewIdentifier("home"))
+        XCTAssertEqual(homeStop.identity, ViewIdentifier("home"))
+        XCTAssertEqual(presentationStart.identity, presentationStop.identity)
+        XCTAssertEqual(presentationStart.name, "Sheet")
+        XCTAssertEqual(presentationStart.path, "/semantic/sheet")
+        XCTAssertEqual(presentationStart.instrumentationType, .manual)
+        XCTAssertEqual(revealedHome.identity, ViewIdentifier("home"))
+        XCTAssertEqual(revealedHome.instrumentationType, .swiftui)
+        XCTAssertTrue(commandSubscriber.receivedCommands.allSatisfy { $0.target == .scene(scene) })
+        XCTAssertEqual(state.consumeDismissed(style: .sheet), presentation)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testMountedSemanticPresentation_revealsOnlyLatestUnderlyingDestination() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let presentation = SemanticPresentation(
+            id: "sheet",
+            name: "Sheet",
+            style: .sheet
+        )
+
+        handler.notify_onAppear(
+            identity: "home",
+            name: "Home",
+            path: "/home",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        state.reconcilePresentation(
+            presentation,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
+        handler.notify_onAppear(
+            identity: "detail",
+            name: "Detail",
+            path: "/detail",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        handler.notify_onDisappear(identity: "home", sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+
+        state.reconcilePresentation(
+            nil,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let presentationStart = try XCTUnwrap(
+            commandSubscriber.receivedCommands[2] as? RUMStartViewCommand
+        )
+        let presentationStop = try XCTUnwrap(
+            commandSubscriber.receivedCommands[3] as? RUMStopViewCommand
+        )
+        let revealedDetail = try XCTUnwrap(
+            commandSubscriber.receivedCommands[4] as? RUMStartViewCommand
+        )
+        XCTAssertEqual(presentationStart.identity, presentationStop.identity)
+        XCTAssertEqual(presentationStart.instrumentationType, .manual)
+        XCTAssertEqual(revealedDetail.identity, ViewIdentifier("detail"))
+        XCTAssertEqual(revealedDetail.name, "Detail")
+        XCTAssertEqual(revealedDetail.instrumentationType, .swiftui)
+        XCTAssertFalse(commandSubscriber.receivedCommands.prefix(4).contains { command in
+            (command as? RUMStartViewCommand)?.identity == ViewIdentifier("detail")
+        })
+        XCTAssertTrue(commandSubscriber.receivedCommands.allSatisfy { $0.target == .scene(scene) })
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testMountedSemanticPresentationThatMovesScenes_followsItsActualScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let presentation = SemanticPresentation(
+            id: "cover",
+            name: "Cover",
+            style: .fullScreenCover
+        )
+
+        state.reconcilePresentation(
+            presentation,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+        state.mountPresentation(presentation, in: sceneA, viewsHandler: handler)
+        state.mountPresentation(presentation, in: sceneB, viewsHandler: handler)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        let startA = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let stopA = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
+        let startB = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        XCTAssertEqual(startA.identity, stopA.identity)
+        XCTAssertEqual(startA.identity, startB.identity)
+        XCTAssertEqual(startA.target, .scene(sceneA))
+        XCTAssertEqual(stopA.target, .scene(sceneA))
+        XCTAssertEqual(startB.target, .scene(sceneB))
+    }
+    #endif
 }
