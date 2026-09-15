@@ -1619,7 +1619,6 @@ enum ProbeScenarioCatalog {
                 signal: "assertion:\(ProbeSemanticRouterContract.settledAssertion)"
             ),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:alternate#1"),
-            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
             ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-canonical-alternate")
         ],
         completionConditions: [

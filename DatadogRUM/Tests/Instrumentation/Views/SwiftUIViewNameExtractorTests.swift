@@ -1578,6 +1578,87 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         )
     }
 
+    func testWhenAcceptedRouteReusesDormantProposal_environmentTraitAuthorizesSameScenePromotion() {
+        let state = RUMViewTrackingState(identity: "destination-fallback")
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "alternate", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveDormantCandidateFromEnvironmentTrait(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneA,
+                state: state
+            ),
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+    }
+
+    func testWhenAcceptedRouteReusesDormantProposal_environmentTraitCannotMoveOrRecoverScene() {
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "alternate", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+
+        let movedState = RUMViewTrackingState(identity: "moved-fallback")
+        XCTAssertTrue(
+            movedState.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertEqual(
+            source.resolveDormantCandidateFromEnvironmentTrait(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: movedState
+            ),
+            .allowOrdinaryMount
+        )
+
+        let disconnectedState = RUMViewTrackingState(identity: "disconnected-fallback")
+        XCTAssertTrue(
+            disconnectedState.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(disconnectedState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertEqual(
+            source.resolveDormantCandidateFromEnvironmentTrait(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneA,
+                state: disconnectedState
+            ),
+            .allowOrdinaryMount
+        )
+    }
+
     func testWhenAcceptedRouteAdvancesDuringPendingProposal_readerMountAuthorizesPromotion() {
         let state = RUMViewTrackingState(identity: "destination-fallback")
         let proposed = configuration(

@@ -2270,6 +2270,50 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
         matchesAcceptedDestination(configuration)
     }
 
+    /// Resolves a boundary reused by SwiftUI after the customer's path binding
+    /// canonicalizes a native proposal. This runs while SwiftUI evaluates the
+    /// accepted destination's modifier, before outer lifecycle callbacks.
+    ///
+    /// The environment trait is only a timing signal here. Scene authority still
+    /// comes from the same boundary's prior concrete reader attachment. A stale
+    /// trait therefore cannot recover a disconnected boundary or move it to a
+    /// different scene; those cases continue to require an ObserverView mount.
+    func resolveDormantCandidateFromEnvironmentTrait(
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState
+    ) -> CandidateDisposition {
+        guard candidateConfiguration.isCurrentDestination else {
+            return .recordDormant
+        }
+        guard
+            let acceptedDestinationConfiguration,
+            matchesAcceptedDestination(candidateConfiguration),
+            candidateConfiguration == acceptedDestinationConfiguration
+        else {
+            return .rejectStale
+        }
+        guard
+            !requiresInitialBootstrap,
+            managedInitialOccurrence == nil,
+            pendingRevealedRoute == nil,
+            state.attachment == .attached(sceneIdentifier),
+            !state.needsReaderRemount,
+            let dormantConfiguration = state.configuration,
+            state.canPromoteDormantNavigationBoundary(
+                from: dormantConfiguration,
+                to: acceptedDestinationConfiguration,
+                in: sceneIdentifier
+            )
+        else {
+            return .allowOrdinaryMount
+        }
+        return .promoteDormantBoundary(
+            expected: dormantConfiguration,
+            accepted: acceptedDestinationConfiguration
+        )
+    }
+
     fileprivate func register(
         _ registration: RUMSwiftUINavigationOccurrenceRegistration,
         callbackEpoch: UInt64
@@ -3976,7 +4020,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
         RUMSwiftUINavigationOccurrenceRegistration()
 
     func body(content: Content) -> some View {
-        content
+        reconcileDormantNavigationBoundaryFromEnvironmentTrait()
+        return content
             .background(
                 RUMSceneIdentifierReader(
                     applicationSupportsMultipleScenes: true,
@@ -4022,6 +4067,37 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             .onDisappear {
                 disappear()
             }
+    }
+
+    /// iOS 27 may reuse the speculative route's modifier state for the route
+    /// accepted by a canonicalizing Binding. Reconcile during body evaluation so
+    /// the accepted RUM view is queued before customer `onAppear` and immediate
+    /// task work. The source and state retain the scene/generation fences; this
+    /// trait-backed path cannot migrate or recover a disconnected boundary.
+    private func reconcileDormantNavigationBoundaryFromEnvironmentTrait() {
+        guard
+            startsOnInitialMount,
+            let configuration,
+            let navigationOccurrenceSource,
+            let sceneIdentifier = initialSceneIdentifier
+        else {
+            return
+        }
+        guard
+            case .promoteDormantBoundary(let expected, let accepted) =
+                navigationOccurrenceSource.resolveDormantCandidateFromEnvironmentTrait(
+                    candidateConfiguration: configuration,
+                    sceneIdentifier: sceneIdentifier,
+                    state: trackingState
+                )
+        else {
+            return
+        }
+        promoteDormantNavigationBoundary(
+            from: expected,
+            to: accepted,
+            in: sceneIdentifier
+        )
     }
 
     private var initialSceneIdentifier: RUMSceneIdentifier? {

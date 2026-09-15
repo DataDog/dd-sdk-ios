@@ -777,7 +777,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.sourceScreen == nil
             }
         )
-        XCTAssertTrue(
+        XCTAssertFalse(
             canonicalized.steps.contains {
                 $0.signal == "marker:task-delayed"
             }
