@@ -147,7 +147,7 @@ class RUMActionsHandlerTests: XCTestCase {
 
     // MARK: - Heatmap attributes
 
-    func testWhenTapViewIsInRegistry_itLooksUpHeatmapByTapView() {
+    func testWhenTapViewLayerIsInRegistry_itLooksUpHeatmapByTapViewLayer() {
         // Given
         let cell = UITableViewCell(frame: .init(x: 0, y: 0, width: 320, height: 88))
         mockAppWindow.addSubview(cell)
@@ -156,8 +156,8 @@ class RUMActionsHandlerTests: XCTestCase {
         cell.contentView.addSubview(leaf)
 
         let registry = HeatmapIdentifierRegistryMock(identifiers: [
-            ObjectIdentifier(cell): HeatmapIdentifier(rawValue: "cell-id"),
-            ObjectIdentifier(leaf): HeatmapIdentifier(rawValue: "leaf-id"),
+            ObjectIdentifier(cell.layer): HeatmapIdentifier(rawValue: "cell-id"),
+            ObjectIdentifier(leaf.layer): HeatmapIdentifier(rawValue: "leaf-id"),
         ])
         let handler = touchHandler(heatmapRegistry: registry)
 
@@ -174,7 +174,7 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(command?.heatmapAttributes?.targetHeight, 30)
     }
 
-    func testWhenTapViewIsNotInRegistry_itDoesNotAttachHeatmapAttributes() {
+    func testWhenTapViewLayerIsNotInRegistry_itDoesNotAttachHeatmapAttributes() {
         // Given
         let cell = UITableViewCell()
         mockAppWindow.addSubview(cell)
@@ -183,7 +183,7 @@ class RUMActionsHandlerTests: XCTestCase {
         cell.contentView.addSubview(leaf)
 
         let registry = HeatmapIdentifierRegistryMock(identifiers: [
-            ObjectIdentifier(cell): HeatmapIdentifier(rawValue: "cell-id"),
+            ObjectIdentifier(cell.layer): HeatmapIdentifier(rawValue: "cell-id"),
         ])
         let handler = touchHandler(heatmapRegistry: registry)
 
