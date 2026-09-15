@@ -1,5 +1,31 @@
 # Unreleased
 
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
+- [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
+- [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
+- [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
+- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
+
+# 3.18.0 / 21-09-2026
+
+- [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
+- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+- [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
+- [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
+- [FIX] Fix truncated profiler stacks on arm64e-capable devices by handling pointer authentication when unwinding stack frames. See [#3200][]
+- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+- [IMPROVEMENT] Populate RUM Resource `delivery_type` and `transfer_size` from network cache signals, replacing the mobile-only `local_cache_hit` field. See [#3187][]
+- [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
+
+# 3.17.0 / 09-09-2026
+
+- [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]
+- [FEATURE] Add `remoteConfiguration` to `Datadog.Configuration`, set with `RemoteConfiguration(id:)`, to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
+- [IMPROVEMENT] Bump minimum deployment targets to iOS 15.0, tvOS 15.0, and watchOS 9.0. See [#3155][]
+- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
+- [IMPROVEMENT] Report cross-platform-specific instrumentation types (Flutter, React Native, Unity, Kotlin Multiplatform) for RUM views in SDK telemetry. See [#3165][]
+- [IMPROVEMENT] Return `nil` carrier info on iOS 16+ since `CTCarrier` is deprecated with no replacement. See [#3164][]
+
 # 3.16.0 / 19-08-2026
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
