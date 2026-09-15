@@ -32,6 +32,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "actions.uikit-scroll-navigation-deceleration",
                 "actions.swiftui-button-structured-task",
                 "traces.urlsession-cross-scene",
+                "traces.urlsession-shared-request",
                 "traces.urlsession-reverse-completion",
                 "windows.parallel-navigation",
                 "windows.close-with-resource",
@@ -181,6 +182,47 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 $0.kind == .action
                     && $0.scene == "scene-B"
                     && $0.name == "trace-reverse-a-completion-representative"
+            }
+        )
+    }
+
+    func testTraceOnlySharedRequestHasOneCreatorAndOneJoiningConsumer() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "traces.urlsession-shared-request"
+            )
+        )
+
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertEqual(
+            scenario.steps.filter {
+                $0.kind == .startTraceOnlyURLSessionRequest
+                    || $0.kind == .joinTraceOnlyURLSessionRequest
+                    || $0.kind == .completeTraceOnlyURLSessionRequest
+            }.map { "\($0.kind.rawValue):\($0.scene ?? "nil")" },
+            [
+                "start-trace-only-url-session-request:scene-A",
+                "join-trace-only-url-session-request:scene-B",
+                "complete-trace-only-url-session-request:scene-B"
+            ]
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .trace
+                    && $0.name == ProbeTraceOnlyURLSessionContract.sharedRequestName
+                    && $0.scene == "scene-A"
+                    && $0.screen == "home"
+                    && $0.occurrence == 1
+                    && $0.expectedCount == 1
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.scene == "scene-B"
+                    && $0.name == "trace-shared-consumer-representative"
             }
         )
     }

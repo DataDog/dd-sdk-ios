@@ -26,6 +26,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case emitMarker = "emit-marker"
     case emitSceneContextMarker = "emit-scene-context-marker"
     case startTraceOnlyURLSessionRequest = "start-trace-only-url-session-request"
+    case joinTraceOnlyURLSessionRequest = "join-trace-only-url-session-request"
     case completeTraceOnlyURLSessionRequest = "complete-trace-only-url-session-request"
     case releaseSwiftUIButtonStructuredTask = "release-swiftui-button-structured-task"
     case startOperation = "start-operation"
@@ -47,11 +48,13 @@ enum ProbeSwiftUIButtonStructuredTaskContract {
 enum ProbeTraceOnlyURLSessionContract {
     static let host = "multi-scene-probe.invalid"
     static let requestName = "trace-only-home-request"
+    static let sharedRequestName = "trace-only-shared-request"
     static let reverseSceneARequestName = "trace-only-reverse-scene-a"
     static let reverseSceneBRequestName = "trace-only-reverse-scene-b"
 
     static func supports(requestName: String) -> Bool {
         requestName == self.requestName
+            || requestName == sharedRequestName
             || requestName == reverseSceneARequestName
             || requestName == reverseSceneBRequestName
     }

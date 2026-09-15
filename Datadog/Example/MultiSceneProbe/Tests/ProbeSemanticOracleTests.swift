@@ -1456,6 +1456,49 @@ final class ProbeSemanticOracleTests: XCTestCase {
         XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
     }
 
+    func testTraceOnlySharedRequestContractPasses() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-shared-request"),
+            signals: traceOnlySharedRequestSignals()
+        )
+
+        XCTAssertEqual(
+            result.state,
+            .pass,
+            result.issues.map(\.reason).joined(separator: "\n")
+        )
+    }
+
+    func testTraceOnlySharedRequestRejectsJoiningSceneAsOwner() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-shared-request"),
+            signals: traceOnlySharedRequestSignals(mutation: .moveTraceToSceneB)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed scene-B"))
+    }
+
+    func testTraceOnlySharedRequestRejectsMissingSpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-shared-request"),
+            signals: traceOnlySharedRequestSignals(mutation: .omitTrace)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("missing expected trace"))
+    }
+
+    func testTraceOnlySharedRequestRejectsDuplicateSpan() throws {
+        let result = ProbeSemanticOracle.evaluate(
+            scenario: try scenario(named: "traces.urlsession-shared-request"),
+            signals: traceOnlySharedRequestSignals(mutation: .duplicateTrace)
+        )
+
+        XCTAssertEqual(result.state, .fail)
+        XCTAssertTrue(result.issues[0].reason.contains("observed 2"))
+    }
+
     func testSwiftUIButtonStructuredTaskContractPasses() throws {
         let result = ProbeSemanticOracle.evaluate(
             scenario: try scenario(named: "actions.swiftui-button-structured-task"),
@@ -1862,6 +1905,75 @@ final class ProbeSemanticOracleTests: XCTestCase {
         if mutation == .duplicateSceneATrace {
             recordTraceOnlyURLSessionSignal(
                 requestName: ProbeTraceOnlyURLSessionContract.reverseSceneARequestName,
+                sourceScene: "scene-A",
+                sourceNativeSceneID: "native-A",
+                viewID: sceneAViewID,
+                recorder: recorder
+            )
+        }
+        return recorder.snapshot()
+    }
+
+    private func traceOnlySharedRequestSignals(
+        mutation: TraceOnlyURLSessionMutation? = nil
+    ) -> [ProbeSignal] {
+        let recorder = ProbeEventRecorder(
+            runID: "trace-only-shared-request-contract",
+            scenarioID: "traces.urlsession-shared-request",
+            sink: { _ in },
+            clock: { 42 }
+        )
+        let sceneAViewID = "scene-A-home-1"
+        let sceneBViewID = "scene-B-home-1"
+
+        recorder.record(
+            viewSignal(
+                id: sceneAViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-A",
+                nativeSceneID: "native-A"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-shared-creator-representative",
+            scene: "scene-A",
+            nativeSceneID: "native-A",
+            viewID: sceneAViewID,
+            recorder: recorder
+        )
+        recorder.record(
+            viewSignal(
+                id: sceneBViewID,
+                screen: "home",
+                active: true,
+                scene: "scene-B",
+                nativeSceneID: "native-B"
+            )
+        )
+        recordTraceRepresentativeMarker(
+            name: "trace-shared-consumer-representative",
+            scene: "scene-B",
+            nativeSceneID: "native-B",
+            viewID: sceneBViewID,
+            recorder: recorder
+        )
+
+        guard mutation != .omitTrace else {
+            return recorder.snapshot()
+        }
+        recordTraceOnlyURLSessionSignal(
+            requestName: ProbeTraceOnlyURLSessionContract.sharedRequestName,
+            sourceScene: "scene-A",
+            sourceNativeSceneID: "native-A",
+            viewID: mutation == .moveTraceToSceneB
+                ? sceneBViewID
+                : sceneAViewID,
+            recorder: recorder
+        )
+        if mutation == .duplicateTrace {
+            recordTraceOnlyURLSessionSignal(
+                requestName: ProbeTraceOnlyURLSessionContract.sharedRequestName,
                 sourceScene: "scene-A",
                 sourceNativeSceneID: "native-A",
                 viewID: sceneAViewID,

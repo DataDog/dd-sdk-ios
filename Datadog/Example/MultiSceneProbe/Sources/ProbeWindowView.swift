@@ -1694,6 +1694,16 @@ struct ProbeWindowRoot: View {
                     screen: currentSceneScreen,
                     requestName: requestName
                 )
+            case .joinTraceOnlyURLSessionRequest:
+                guard let requestName = step.value else {
+                    return .rejected(reason: "Trace-only request name is missing")
+                }
+                return ProbeRuntime.joinTraceOnlyURLSessionRequest(
+                    window: window,
+                    sceneSessionID: handle.nativeSceneID,
+                    screen: currentSceneScreen,
+                    requestName: requestName
+                )
             case .completeTraceOnlyURLSessionRequest:
                 guard let requestName = step.value else {
                     return .rejected(reason: "Trace-only request name is missing")

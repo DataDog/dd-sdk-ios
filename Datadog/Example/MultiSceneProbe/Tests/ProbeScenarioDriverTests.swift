@@ -2000,6 +2000,146 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesSharedTraceOnlyRequestThroughCreatorAndJoiningScene() async throws {
+        let requestName = ProbeTraceOnlyURLSessionContract.sharedRequestName
+        let recorder = ProbeEventRecorder(
+            runID: "driver-trace-only-shared",
+            scenarioID: "driver-trace-only-shared",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let windowA = UIWindow()
+        let windowB = UIWindow()
+        let handleA = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: windowA,
+                currentRoute: ["home"]
+            )
+        )
+        let handleB = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-B",
+                nativeSceneID: "native-B",
+                window: windowB,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handleA))
+        XCTAssertNotNil(registry.markReady(handleB))
+
+        var invocations: [(ProbeStepKind, String)] = []
+        let executorA = ProbeSceneStepExecutor()
+        executorA.configure(handle: handleA) { step in
+            invocations.append((step.kind, "scene-A"))
+            guard step.kind == .startTraceOnlyURLSessionRequest else {
+                return .rejected(reason: "unsupported scene-A step")
+            }
+            recorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    sourceContext: ProbeSourceContext(
+                        logicalSceneID: "scene-A",
+                        screen: "home",
+                        phase: requestName
+                    ),
+                    name: "trace-only-request-started-" + requestName,
+                    result: .pass
+                )
+            )
+            return .accepted
+        }
+        let executorB = ProbeSceneStepExecutor()
+        executorB.configure(handle: handleB) { step in
+            invocations.append((step.kind, "scene-B"))
+            switch step.kind {
+            case .joinTraceOnlyURLSessionRequest:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        sourceContext: ProbeSourceContext(
+                            logicalSceneID: "scene-B",
+                            screen: "home",
+                            phase: requestName
+                        ),
+                        name: "trace-only-request-joined-" + requestName,
+                        result: .pass
+                    )
+                )
+            case .completeTraceOnlyURLSessionRequest:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .rumTrace,
+                        evidenceSource: .traceMapper,
+                        sourceContext: ProbeSourceContext(
+                            logicalSceneID: "scene-A",
+                            screen: "home",
+                            phase: requestName
+                        ),
+                        name: requestName
+                    )
+                )
+            default:
+                return .rejected(reason: "unsupported scene-B step")
+            }
+            return .accepted
+        }
+
+        let scenario = ProbeScenario(
+            identifier: "driver-trace-only-shared",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            initialWindows: ["scene-A", "scene-B"],
+            steps: [
+                ProbeStep(
+                    .startTraceOnlyURLSessionRequest,
+                    scene: "scene-A",
+                    value: requestName
+                ),
+                ProbeStep(
+                    .joinTraceOnlyURLSessionRequest,
+                    scene: "scene-B",
+                    value: requestName
+                ),
+                ProbeStep(
+                    .completeTraceOnlyURLSessionRequest,
+                    scene: "scene-B",
+                    value: requestName
+                )
+            ],
+            completionConditions: [],
+            expectedSemanticTimeline: []
+        )
+        let driver = ProbeScenarioDriver(
+            scenario: scenario,
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handleA, executor: executorA)
+        driver.register(handle: handleB, executor: executorB)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            invocations.map { "\($0.0.rawValue):\($0.1)" },
+            [
+                "start-trace-only-url-session-request:scene-A",
+                "join-trace-only-url-session-request:scene-B",
+                "complete-trace-only-url-session-request:scene-B"
+            ]
+        )
+        XCTAssertEqual(
+            recorder.snapshot().filter { $0.kind == .stepAcknowledged }.count,
+            3
+        )
+    }
+
     func testReleasesSwiftUIButtonStructuredTaskThroughExactScene() async throws {
         let recorder = ProbeEventRecorder(
             runID: "driver-swiftui-button-task",

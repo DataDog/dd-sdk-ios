@@ -827,6 +827,35 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .joinTraceOnlyURLSessionRequest:
+            guard
+                let scene = step.scene,
+                let requestName = step.value,
+                requestName == ProbeTraceOnlyURLSessionContract.sharedRequestName
+            else {
+                return .failed("scene or Trace-only request name is invalid")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "assertion:trace-only-request-joined-\(requestName)"
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for scene \(scene) to join Trace-only request "
+                        + requestName
+                )
+            }
+            return .acknowledged(signal)
+
         case .completeTraceOnlyURLSessionRequest:
             guard
                 let scene = step.scene,

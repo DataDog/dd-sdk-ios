@@ -32,6 +32,7 @@ enum ProbeScenarioCatalog {
         "actions.uikit-scroll-navigation-deceleration",
         "actions.swiftui-button-structured-task",
         "traces.urlsession-cross-scene",
+        "traces.urlsession-shared-request",
         "traces.urlsession-reverse-completion",
         "windows.activation-sequence",
         "windows.close-with-resource"
@@ -76,6 +77,7 @@ enum ProbeScenarioCatalog {
         actionsUIKitScrollNavigationDeceleration,
         actionsSwiftUIButtonStructuredTask,
         tracesURLSessionCrossScene,
+        tracesURLSessionSharedRequest,
         tracesURLSessionReverseCompletion,
         windowsParallelNavigation,
         windowsActivationSequence,
@@ -2453,6 +2455,119 @@ enum ProbeScenarioCatalog {
                 screen: "home",
                 occurrence: 1,
                 name: ProbeTraceOnlyURLSessionContract.requestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home"
+            )
+        ],
+        runtimeOptions: runtime {
+            $0.exercisesTraceOnlyURLSessionOwnership = true
+        }
+    )
+
+    /// Starts one Trace-only URLSession request in A, then lets B join that
+    /// already-active request without creating or resuming another task. B is
+    /// representative when it releases the response, but the single span must
+    /// retain the trustworthy creator's A/Home view.
+    private static let tracesURLSessionSharedRequest = ProbeScenario(
+        identifier: "traces.urlsession-shared-request",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "trace-shared-creator-representative"
+            ),
+            ProbeStep(
+                .startTraceOnlyURLSessionRequest,
+                scene: "scene-A",
+                value: ProbeTraceOnlyURLSessionContract.sharedRequestName
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "trace-shared-consumer-representative"
+            ),
+            ProbeStep(
+                .joinTraceOnlyURLSessionRequest,
+                scene: "scene-B",
+                value: ProbeTraceOnlyURLSessionContract.sharedRequestName
+            ),
+            ProbeStep(
+                .completeTraceOnlyURLSessionRequest,
+                scene: "scene-B",
+                value: ProbeTraceOnlyURLSessionContract.sharedRequestName
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.sharedRequestName,
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                expectedCount: 1
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-shared-creator-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-shared-creator-representative"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-shared-consumer-representative"
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "trace-shared-consumer-representative"
+            ),
+            ProbeExpectation(
+                .trace,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: ProbeTraceOnlyURLSessionContract.sharedRequestName,
                 sourceScene: "scene-A",
                 sourceScreen: "home"
             )

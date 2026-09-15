@@ -455,6 +455,45 @@ enum ProbeRuntime {
         return result
     }
 
+    static func joinTraceOnlyURLSessionRequest(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        screen: String,
+        requestName: String
+    ) -> ProbeStepExecutionResult {
+        guard exercisesTraceOnlyURLSessionOwnership else {
+            return .rejected(reason: "Trace-only URLSession tracking is disabled")
+        }
+        guard requestName == ProbeTraceOnlyURLSessionContract.sharedRequestName else {
+            return .rejected(reason: "Trace-only request \(requestName) is not shared")
+        }
+        let result = traceOnlyURLSessionController.join(requestName: requestName)
+        if case .accepted = result {
+            let sourceContext = ProbeSourceContext(
+                logicalSceneID: window.label,
+                nativeSceneID: sceneSessionID,
+                screen: screen,
+                phase: requestName,
+                uptime: ProcessInfo.processInfo.systemUptime
+            )
+            eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    sourceContext: sourceContext,
+                    name: "trace-only-request-joined-\(requestName)",
+                    result: .pass,
+                    reason: "Joined the existing Trace-only request without starting another task"
+                )
+            )
+            record(
+                "trace-only request joined source=\(window.label) "
+                    + "native=\(sceneSessionID) screen=\(screen) "
+                    + "request=\(requestName)"
+            )
+        }
+        return result
+    }
+
     static func record(_ message: String) {
         let line = "run=\(runID) \(message)"
         print("🔬 [RUM Native Multi-Scene] \(line)")
@@ -719,6 +758,16 @@ private final class ProbeTraceOnlyURLSessionController: @unchecked Sendable {
         }
         guard ProbeTraceOnlyURLProtocol.complete(url: request.url) else {
             return .rejected(reason: "Trace-only request \(requestName) has not started loading")
+        }
+        return .accepted
+    }
+
+    func join(requestName: String) -> ProbeStepExecutionResult {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard requests[requestName] != nil else {
+            return .rejected(reason: "Trace-only request \(requestName) is not active")
         }
         return .accepted
     }
