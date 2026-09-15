@@ -56,7 +56,6 @@ extension AppRunStep {
             app.initializeSDK(sdkSetup ?? { _ in })
             app.enableRUM { rumConfig in
                 rumSetup?(&rumConfig)
-                rumConfig.sessionEndedSampleRate = 0 // TODO: RUM-9335 Enable "Session Ended" telemetry after fixing `application.id` value for session stop
                 rumConfig.telemetrySampleRate = 0
             }
         })
