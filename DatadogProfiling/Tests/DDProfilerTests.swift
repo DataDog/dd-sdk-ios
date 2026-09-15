@@ -162,10 +162,8 @@ final class DDProfilerTests: XCTestCase {
         )
     }
 
-    func testDDProfiler_withCPUTimingEnabled_serializesDualSampleValues() throws {
+    func testDDProfiler_serializesWallAndCPUTimingByDefault() throws {
         dd_profiler_destroy()
-        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME))
-        userDefaults.setValue(true, forKey: DD_PROFILING_RECORD_CPU_TIME_KEY)
 
         XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
