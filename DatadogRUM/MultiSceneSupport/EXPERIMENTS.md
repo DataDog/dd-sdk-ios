@@ -11,23 +11,24 @@ Full records through `EXP-142` are frozen in
 New full records belong in the active
 [EXP-143-199 shard](Experiments/EXP-143-199.md). Do not renumber experiments.
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Last completed experiment is `EXP-143`. Restoration, external replacement,
-  rejected writes, and canonicalized writes all pass local and backend acceptance
-  with exact pre-view lifecycle attribution.
+- Last completed experiment is `EXP-144`. Direct Sheet → full-screen Cover →
+  Sheet replacement now produces only committed presentation occurrences and
+  reveals one fresh underlying Home after final dismissal.
 - Latest accepted implementation commits: `4d64d8a53` (`Harden restored semantic
   navigation ownership`), `bdbfc1d5c` (`Handle canonicalized semantic
-  navigation`), and `a458ff6c2` (`Start canonical destinations before
-  lifecycle work`). Router probe commit: `312423e9c`.
+  navigation`), `a458ff6c2` (`Start canonical destinations before lifecycle
+  work`), and `698b1584d` (`Handle semantic presentation replacement`). Latest
+  bidirectional probe commit: `01a8466c5`.
 - Documentation-refactor baseline: `5fc2099e9`
   (`Document repeated semantic route validation`).
 - Frozen archive commit: `e51a83b15`.
-- Latest validation: canonicalized-write run 19/19, semantic cluster 153/153,
-  native probe 137/137, DatadogRUM 1,249/1,249, source and test lint clean, exact
-  backend view/action/Resource ownership, zero accepted-run errors/crashes, and
+- Latest validation: `EXP-144` bidirectional run 43/43 with 48 exact backend
+  events, focused replacement tests 3/3, native probe 139/139, DatadogRUM
+  1,252/1,252, source and test lint clean, zero accepted-run errors/crashes, and
   an Xcode 27 Release probe build.
 
 Status describes the contract proved, not whether a diagnostic successfully found
@@ -36,10 +37,10 @@ driver/oracle exists but runtime acceptance is pending.
 
 ## In-flight and next experiment
 
-`EXP-143` is closed. The next simulator-capable slice is `EXP-144`: replace one
-active semantic presentation with another without exposing the underlying
-destination between them, then dismiss to one fresh underlying occurrence before
-customer work. The ordered acceptance contract is in [PLAN.md](PLAN.md).
+`EXP-144` is closed. The next simulator-capable slice is `EXP-145`: exercise
+sibling-container isolation through the actual semantic SPI, retaining the
+probe-only `EXP-127` path as its control. The ordered acceptance contract is in
+[PLAN.md](PLAN.md).
 
 ## Complete experiment ledger
 
@@ -188,6 +189,7 @@ customer work. The ordered acceptance contract is in [PLAN.md](PLAN.md).
 | EXP-141 | 2026-09-15 | PASS · backend | SwiftUI navigation | Customer-shaped complete-destination semantic API acceptance. The 38/38 oracle and backend contain seven distinct semantic occurrences H1/D1/H2/Sheet/H3/Cover/H4 plus ApplicationLaunch, with no automatic duplicate. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-141` |
 | EXP-142 | 2026-09-15 | PASS after FAIL · backend; weak-oracle PASS excluded | SwiftUI navigation | Repeated equal-route acceptance through real `NavigationLink(value:)` controls. A stronger reveal-before-callback oracle exposed returned Detail work on D2 before fresh D3. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-142` |
 | EXP-143 | 2026-09-15 | PASS after FAIL, rejected candidates, and tooling-invalid retries · backend | SwiftUI navigation | Initial repeated restoration, external same/different-type replacement, rejected proposals, and canonicalized writes preserve only accepted path occurrences. The final canonical run starts Alternate before `onAppear`/immediate work, emits no speculative Detail or automatic duplicate, and passes 19/19 plus exact backend ownership. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
+| EXP-144 | 2026-09-16 | PASS after SDK FAIL and harness-invalid retry · backend | SwiftUI navigation | Direct Sheet → Cover → Sheet replacement emits H1/S1/F1/S2/fresh H2 with no intermediate Home or automatic duplicate. The final run passes 43/43; backend intake has the same five semantic UUIDs, 19 exact-view actions, 19 exact-view Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-144--semantic-presentation-replacement) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

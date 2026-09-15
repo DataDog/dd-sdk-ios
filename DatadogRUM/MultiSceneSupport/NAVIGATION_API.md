@@ -6,7 +6,7 @@ the concrete public API is not. The [canonical overview](../MULTI_SCENE_SUPPORT.
 owns the support verdict, [PLAN.md](PLAN.md) owns delivery order, and
 [EXPERIMENTS.md](EXPERIMENTS.md) owns runtime evidence.
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## Status
 
@@ -21,7 +21,9 @@ behavior, and Objective-C exposure. The semantic SwiftUI container is now also
 implemented as an iOS 27 experimental Swift SPI. `EXP-141` validates its complete
 Home → Detail → Home → Sheet → Home → full-screen-cover → Home stream locally and
 in backend intake while automatic tracking remains enabled. Examples below are
-the exercised review starting point, not settled signatures.
+the exercised review starting point, not settled signatures. `EXP-142`-`144`
+then close repeated equal routes, external router/restoration behavior, and
+direct Sheet ↔ Cover replacement without an intermediate underlying view.
 
 The approved behavior is:
 
@@ -389,8 +391,10 @@ restoration preserves fresh occurrence semantics. On iOS 27 a canonicalizing
 binding can reuse the speculative proposal's boundary for a different accepted
 value; the implementation uses the inherited scene trait only to promote an
 already reader-proven same-scene dormant boundary before `onAppear` and immediate
-task work. The trait cannot migrate or recover disconnected state. Direct
-presentation replacement remains the next hardening experiment before promotion.
+task work. The trait cannot migrate or recover disconnected state. `EXP-144`
+closes direct presentation replacement: the accepted path is H1 → Sheet S1 →
+Cover F1 → Sheet S2 → fresh H2, with no intermediate Home or automatic
+duplicate.
 
 ### Resolver and path model
 
@@ -467,11 +471,14 @@ backend sessions agree with mapper ownership and contain zero errors/crashes.
 passes 38/38 with distinct H1/D1/H2/Sheet/H3/Cover/H4 IDs, no automatic duplicate,
 and immediate, settled, and delayed post-dismiss work on fresh H3/H4. Its exact
 backend session contains those seven semantic views plus ApplicationLaunch, 25
-actions, 25 Resources, and zero errors/crashes. The complete RUM suite now passes
-1,249/1,249 and the native probe passes 137/137 after the subsequent `EXP-143`
-router hardening. Both Debug and authoritative Xcode 27 Release probe builds
-pass. The source-based API verifier remains a prototype gate; no baseline is
-changed before normal review.
+actions, 25 Resources, and zero errors/crashes. `EXP-144` then replaces Sheet
+with Cover and Cover with a fresh Sheet while keeping the underlying Home hidden,
+before final dismissal creates fresh H2. Its final run passes 43/43; backend
+intake contains the same five semantic occurrences, 19 actions, 19 Resources,
+and zero errors/crashes. The complete RUM suite now passes 1,252/1,252 and the
+native probe passes 139/139. Both Debug and authoritative Xcode 27 Release probe
+builds pass. The source-based API verifier remains a prototype gate; no baseline
+is changed before normal review.
 
 ## Required review and test matrix
 
@@ -510,6 +517,8 @@ Semantic SwiftUI navigation requires:
   occurrence;
 - Sheet and full-screen-cover present/dismiss sequences driven by the complete
   router destination, with a fresh reveal before immediate post-dismiss work;
+- direct Sheet → Cover → Sheet replacement with no intermediate underlying view,
+  distinct presentation IDs, and one fresh reveal only after final dismissal;
 - coexistence with automatic tracking, a manual exception, a sibling container,
   and another scene without duplicate or global suppression;
 - one current destination for split/tab structures;

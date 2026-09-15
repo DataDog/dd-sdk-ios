@@ -3,15 +3,16 @@
 Read the relevant section before designing a new multi-scene implementation or
 experiment. These warnings preserve failed, inconclusive, unsafe, or
 insufficiently discriminating approaches through `EXP-142` plus active
-`EXP-143` lessons. They are constraints on future work, not a substitute for the
-current verdict in
+`EXP-143`/`144` lessons. They are constraints on future work, not a substitute
+for the current verdict in
 [ASSESSMENT.md](ASSESSMENT.md).
 
 The 107 historical warning blocks below are reproduced from the
 [frozen experiment record](Archive/EXPERIMENTS_THROUGH_EXP-142.md) and reorganized
 exactly once by subject. Two additional `EXP-142` lessons are included because
 they lived in that experiment's detailed record rather than the old warning
-section. New `EXP-143` warnings are appended in their owning subject sections.
+section. New `EXP-143`/`144` warnings are appended in their owning subject
+sections.
 
 ## Thematic index
 
@@ -254,6 +255,18 @@ Target-local authority, nesting, reveal behavior, and automatic coexistence.
   UIKit can retain the hosting controller through dismissal. Keep the UI-attached
   boundary active until the subtree actually disappears and reject a delayed
   automatic view for that presentation by semantic name (`EXP-125`).
+- Do not stop a mounted semantic presentation merely because its binding changes
+  directly to another non-`nil` presentation. `EXP-144` baseline exposed Home
+  between Sheet and Cover. Retain the last mounted presentation while the new
+  value is pending, then atomically replace it only when the accepted replacement
+  boundary mounts. If the replacement never mounts, clearing the binding reveals
+  from the retained presentation; final container detach must balance it.
+- Do not assume SwiftUI calls every outgoing presentation modifier's `onDismiss`
+  during direct replacement. The first bidirectional `EXP-144` retry produced the
+  correct RUM path but invalidated the harness by beginning one Sheet-subtree
+  interval twice. Recorder/suppression diagnostics must tolerate a continuous
+  same-style interval and must not let a delayed callback close the currently
+  active replacement.
 - Do not disable automatic SwiftUI tracking for the entire scene or application
   merely because one semantic/manual boundary is active. `EXP-115` proves the
   viable boundary is an active, attached explicit subtree; unrelated controllers

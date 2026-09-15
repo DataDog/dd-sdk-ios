@@ -6,7 +6,7 @@ workflows used by the project. Product behavior and support conclusions belong i
 `ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
 session identifiers belong in the active numbered shard under `Experiments/`.
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## Purpose
 
@@ -348,6 +348,13 @@ pair the wait with the ordered semantic oracle's after-index rule, or wait for a
 occurrence number that cannot exist before the boundary. `EXP-143` caught a
 hidden initial Home this way: the step wait reused H1, while the ordered oracle
 correctly rejected the missing post-pop Home occurrence.
+
+Do not model direct SwiftUI presentation replacement by assuming every outgoing
+`.sheet` or `.fullScreenCover` modifier invokes `onDismiss`. `EXP-144` observed
+that Sheet → Cover → Sheet can omit both replacement-time dismissal callbacks.
+Keep a style's recorder interval continuous when its callback is omitted, and
+ignore a delayed callback while that same style is current. This is a harness
+lifecycle rule; the RUM oracle must still require distinct presentation view IDs.
 
 Do not add a later `waitForSignal` for a short marker when the terminal completion
 conditions already require the marker's action/Resource evidence. The marker may
