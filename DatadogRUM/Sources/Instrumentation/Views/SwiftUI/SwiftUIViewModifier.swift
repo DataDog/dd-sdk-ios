@@ -483,6 +483,118 @@ internal final class RUMViewTrackingState {
         )
     }
 
+    /// Restores bookkeeping for a materialized navigation boundary that is not
+    /// the container's current destination. This is used after the boundary's
+    /// state temporarily lent scene proof and occurrence ownership to an
+    /// initially restored top route. It never ends or creates an occurrence;
+    /// active navigation remains under the interactive transition arbiter.
+    @discardableResult
+    func recordDormantNavigationBoundary(
+        configuration: Configuration,
+        attachment: Attachment
+    ) -> Bool {
+        guard activeOccurrence == nil, !requiresRemount else {
+            return false
+        }
+        guard
+            self.configuration == nil
+                || configuration.bindingGeneration
+                    >= (self.configuration?.bindingGeneration ?? 0)
+        else {
+            return false
+        }
+
+        var didMutate = false
+        if self.configuration != configuration {
+            self.configuration = configuration
+            didMutate = true
+        }
+        if self.attachment != attachment {
+            self.attachment = attachment
+            didMutate = true
+        }
+        if isAppeared {
+            isAppeared = false
+            didMutate = true
+        }
+        if
+            case .attached(let sceneIdentifier?) = attachment,
+            lastProvenSceneIdentifier != sceneIdentifier {
+            lastProvenSceneIdentifier = sceneIdentifier
+            didMutate = true
+        }
+        finishMutation(didMutate)
+        return true
+    }
+
+    /// Re-establishes scene proof for a hidden navigation boundary after its
+    /// former scene disconnected. The navigation source has already established
+    /// that this reader is not the accepted destination, so rearming must update
+    /// bookkeeping without creating a view occurrence.
+    @discardableResult
+    func rearmDormantNavigationBoundaryAfterSceneDisconnect(
+        configuration: Configuration,
+        attachment: Attachment
+    ) -> Bool {
+        guard
+            activeOccurrence == nil,
+            requiresRemount,
+            case .attached(let sceneIdentifier?) = attachment,
+            self.configuration == nil
+                || configuration.bindingGeneration
+                    >= (self.configuration?.bindingGeneration ?? 0)
+        else {
+            return false
+        }
+
+        self.configuration = configuration
+        self.attachment = attachment
+        isAppeared = false
+        lastProvenSceneIdentifier = sceneIdentifier
+        retainedRouteHandoffGeneration = nil
+        requiresRemount = false
+        restoresAppearanceOnReaderRemount = false
+        finishMutation(true)
+        return true
+    }
+
+    /// Prepares an inactive replacement reader to own the source's last proven
+    /// destination. Its dormant boundary can be from a newer binding snapshot
+    /// whose destination descriptor has not arrived yet. A previously used
+    /// reader is eligible only when its last-started generation belongs to that
+    /// proven destination and its local state is either the destination or the
+    /// source-validated boundary. This preflight never publishes a transition.
+    @discardableResult
+    func prepareSourceManagedNavigationDestination(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration,
+        boundaryConfiguration: Configuration
+    ) -> Bool {
+        let isNeverStarted = lifecycleGeneration == 0
+            && lastStartedBindingGeneration == nil
+        let isPreviouslyUsedForDestination = lifecycleGeneration > 0
+            && lastStartedBindingGeneration == configuration.bindingGeneration
+            && (self.configuration == configuration
+                || self.configuration == boundaryConfiguration)
+        guard
+            activeOccurrence == nil,
+            !isAppeared,
+            isNeverStarted || isPreviouslyUsedForDestination
+        else {
+            return false
+        }
+
+        self.configuration = configuration
+        attachment = .attached(sceneIdentifier)
+        isAppeared = false
+        lastProvenSceneIdentifier = sceneIdentifier
+        retainedRouteHandoffGeneration = nil
+        requiresRemount = false
+        restoresAppearanceOnReaderRemount = false
+        finishMutation(true)
+        return true
+    }
+
     func mount(
         in sceneIdentifier: RUMSceneIdentifier,
         configuration: Configuration
@@ -494,6 +606,110 @@ internal final class RUMViewTrackingState {
             expectedRevision: nil,
             allowsRemount: true
         )
+    }
+
+    /// Starts an initial navigation destination using the scene proved by the
+    /// container's root reader. The root can reconcile its own dormant
+    /// configuration before that reader mounts, so this narrowly permits the
+    /// never-started state to adopt the top destination from the same binding
+    /// generation. Once any occurrence has started, ordinary generation fences
+    /// remain authoritative.
+    func mountInitialNavigationDestination(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration
+    ) -> [Transition] {
+        if
+            activeOccurrence == nil,
+            lifecycleGeneration == 0,
+            lastStartedBindingGeneration == nil,
+            !requiresRemount,
+            (self.configuration?.bindingGeneration ?? 0) <= configuration.bindingGeneration {
+            self.configuration = nil
+        }
+        return mount(in: sceneIdentifier, configuration: configuration)
+    }
+
+    /// Recreates the same accepted navigation occurrence after the owning scene
+    /// was torn down. `invalidateAfterSceneDisconnect` is the only operation
+    /// that arms this same-generation exception; ordinary lifecycle callbacks
+    /// remain unable to resurrect an ended occurrence.
+    func mountCurrentNavigationDestinationAfterSceneDisconnect(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration
+    ) -> [Transition] {
+        guard canRecoverNavigationDestinationAfterSceneDisconnect(configuration) else {
+            return []
+        }
+
+        requiresRemount = false
+        restoresAppearanceOnReaderRemount = false
+        attachment = .attached(sceneIdentifier)
+        isAppeared = true
+        lastProvenSceneIdentifier = sceneIdentifier
+        lifecycleGeneration &+= 1
+        let occurrence = ActiveOccurrence(
+            identity: occurrenceIdentityGenerator(),
+            configuration: configuration,
+            lifecycleGeneration: lifecycleGeneration,
+            sceneIdentifier: sceneIdentifier
+        )
+        activeOccurrence = occurrence
+        finishMutation(true)
+        return [.start(identity: occurrence.identity, sceneIdentifier: sceneIdentifier)]
+    }
+
+    /// Checks the exact configuration fence used for reliable reader recovery
+    /// after scene teardown. The navigation source also uses this as a
+    /// preflight before ending an occurrence owned by another reader.
+    func canRecoverNavigationDestinationAfterSceneDisconnect(
+        _ configuration: Configuration
+    ) -> Bool {
+        requiresRemount
+            && activeOccurrence == nil
+            && self.configuration == configuration
+            && lastStartedBindingGeneration == configuration.bindingGeneration
+    }
+
+    /// Recreates an occurrence after the navigation source deliberately ended
+    /// its same-generation owner while moving that boundary to another scene.
+    /// This is intentionally narrower than an ordinary reader mount: only the
+    /// source calls it immediately after balancing the prior occurrence.
+    func remountSourceManagedNavigationDestination(
+        in sceneIdentifier: RUMSceneIdentifier,
+        configuration: Configuration
+    ) -> [Transition] {
+        guard canRemountSourceManagedNavigationDestination(configuration) else {
+            return []
+        }
+
+        attachment = .attached(sceneIdentifier)
+        isAppeared = true
+        lastProvenSceneIdentifier = sceneIdentifier
+        lifecycleGeneration &+= 1
+        let occurrence = ActiveOccurrence(
+            identity: occurrenceIdentityGenerator(),
+            configuration: configuration,
+            lifecycleGeneration: lifecycleGeneration,
+            sceneIdentifier: sceneIdentifier
+        )
+        activeOccurrence = occurrence
+        finishMutation(true)
+        return [.start(identity: occurrence.identity, sceneIdentifier: sceneIdentifier)]
+    }
+
+    /// Checks the narrow same-generation restart used by a navigation source
+    /// after it has balanced the occurrence currently owned by another reader.
+    /// Keeping this preflight separate prevents the source from stopping the
+    /// live owner before discovering that the replacement cannot take over.
+    func canRemountSourceManagedNavigationDestination(
+        _ configuration: Configuration
+    ) -> Bool {
+        !requiresRemount
+            && activeOccurrence == nil
+            && !isAppeared
+            && lifecycleGeneration > 0
+            && self.configuration == configuration
+            && lastStartedBindingGeneration == configuration.bindingGeneration
     }
 
     func mountFromReader(
@@ -826,7 +1042,6 @@ internal final class RUMViewTrackingState {
             target.activeOccurrence == nil,
             target.lifecycleGeneration == 0,
             target.lastStartedBindingGeneration == nil,
-            !target.isAppeared,
             !target.requiresRemount,
             target.configuration == nil || target.configuration == configuration,
             target.attachment == .detached
@@ -847,6 +1062,57 @@ internal final class RUMViewTrackingState {
         )
         target.lastStartedBindingGeneration = configuration.bindingGeneration
         target.lastProvenSceneIdentifier = sceneIdentifier
+        target.finishMutation(true)
+
+        self.activeOccurrence = nil
+        self.attachment = .detached
+        self.isAppeared = false
+        retainedRouteHandoffGeneration = nil
+        finishMutation(true)
+        return true
+    }
+
+    /// Moves a provisional source-owned occurrence to a replacement platform
+    /// reader without publishing another start. Unlike retained-route adoption,
+    /// the replacement state may already contain the donor boundary's dormant
+    /// configuration; the source has validated that boundary before calling.
+    func transferSourceManagedNavigationDestination(
+        to target: RUMViewTrackingState,
+        configuration: Configuration,
+        sceneIdentifier: RUMSceneIdentifier
+    ) -> Bool {
+        let isUnstartedTarget = target.lifecycleGeneration == 0
+            && target.lastStartedBindingGeneration == nil
+        let isReusableExactTarget = target
+            .canRemountSourceManagedNavigationDestination(configuration)
+            || target.canRecoverNavigationDestinationAfterSceneDisconnect(configuration)
+        guard
+            self !== target,
+            let activeOccurrence,
+            activeOccurrence.configuration == configuration,
+            activeOccurrence.sceneIdentifier == sceneIdentifier,
+            target.activeOccurrence == nil,
+            isUnstartedTarget || isReusableExactTarget,
+            target.attachment == .detached
+                || target.attachment == .attached(sceneIdentifier)
+        else {
+            return false
+        }
+
+        target.lifecycleGeneration &+= 1
+        target.configuration = configuration
+        target.attachment = .attached(sceneIdentifier)
+        target.isAppeared = true
+        target.activeOccurrence = ActiveOccurrence(
+            identity: activeOccurrence.identity,
+            configuration: configuration,
+            lifecycleGeneration: target.lifecycleGeneration,
+            sceneIdentifier: sceneIdentifier
+        )
+        target.lastStartedBindingGeneration = configuration.bindingGeneration
+        target.lastProvenSceneIdentifier = sceneIdentifier
+        target.requiresRemount = false
+        target.restoresAppearanceOnReaderRemount = false
         target.finishMutation(true)
 
         self.activeOccurrence = nil
@@ -1093,16 +1359,51 @@ internal final class RUMSwiftUIViewAuthorityRegistry {
 #endif
 
 #if os(iOS) || os(visionOS)
-/// Experimental navigation-owned signal used to reveal an already materialized
-/// route before SwiftUI replays the retained content's outer lifecycle callbacks.
-/// It deliberately does not retain or replay a latest route selection: a path
-/// write cannot make a never-mounted destination into a RUM view.
+/// Experimental navigation-owned signal used to establish the initially
+/// restored destination and to reveal an already materialized route before
+/// SwiftUI replays outer lifecycle callbacks. The source is also the
+/// container-level generation fence: a delayed boundary from an older router
+/// snapshot must not regain view authority merely because SwiftUI created a new
+/// local tracking state for it.
 @MainActor
 internal final class RUMSwiftUINavigationOccurrenceSource {
+    enum DestinationChange {
+        case initial(requiresBootstrap: Bool)
+        case unchanged
+        case replacement
+        case retainedReveal
+    }
+
+    enum CandidateDisposition: Equatable {
+        case handled
+        case allowOrdinaryMount
+        case recordDormant
+        case rejectStale
+    }
+
+    private struct DestinationIdentity: Equatable {
+        let occurrenceKey: RUMViewOccurrenceKey
+        let bindingGeneration: UInt64
+    }
+
     private struct PendingRevealedRoute {
         let configuration: RUMViewTrackingState.Configuration
         let sceneIdentifier: RUMSceneIdentifier
         let state: RUMViewTrackingState
+    }
+
+    /// The initial restored destination can be started using scene proof from a
+    /// different boundary (normally the root) before its own platform reader is
+    /// materialized. Keep the published occurrence under container ownership
+    /// until the accepted boundary adopts it, changes, disconnects, or the
+    /// container is removed.
+    private struct ManagedInitialOccurrence {
+        let configuration: RUMViewTrackingState.Configuration
+        let boundaryConfiguration: RUMViewTrackingState.Configuration
+        let boundaryAttachment: RUMViewTrackingState.Attachment
+        let sceneIdentifier: RUMSceneIdentifier
+        let state: RUMViewTrackingState
+        let isAdopted: Bool
     }
 
     private final class WeakRegistration {
@@ -1120,6 +1421,585 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
 
     private var registrations: [WeakRegistration] = []
     private var pendingRevealedRoute: PendingRevealedRoute?
+    private var acceptedDestinationIdentity: DestinationIdentity?
+    private var acceptedDestinationConfiguration: RUMViewTrackingState.Configuration?
+    private var managedInitialOccurrence: ManagedInitialOccurrence?
+    private var requiresInitialBootstrap = false
+    private var awaitsCommittedRevealConfiguration = false
+
+    var isInitialDestinationPending: Bool {
+        requiresInitialBootstrap
+    }
+
+    var needsInitialDestinationReconciliation: Bool {
+        acceptedDestinationConfiguration == nil
+    }
+
+    /// Records the customer's accepted router destination before platform
+    /// lifecycle callbacks can arrive. Descriptor reconciliation follows from
+    /// `RUMNavigationStack.body`, but the occurrence key and generation are
+    /// enough to reject delayed boundaries immediately.
+    func acceptDestination(
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64,
+        change: DestinationChange
+    ) {
+        let nextIdentity = DestinationIdentity(
+            occurrenceKey: occurrenceKey,
+            bindingGeneration: bindingGeneration
+        )
+        if acceptedDestinationIdentity != nextIdentity {
+            acceptedDestinationConfiguration = nil
+        }
+        acceptedDestinationIdentity = nextIdentity
+
+        switch change {
+        case .initial(let requiresBootstrap):
+            requiresInitialBootstrap = requiresBootstrap
+        case .unchanged:
+            break
+        case .replacement:
+            // A replacement route must prove materialization before it can
+            // displace a provisional initial occurrence. The updated identity
+            // fence still rejects every boundary from the previous snapshot.
+            awaitsCommittedRevealConfiguration = false
+            if managedInitialOccurrence?.isAdopted == true {
+                // Once the initial destination is owned by its real boundary,
+                // subsequent pushes/replacements return to the ordinary
+                // transition arbiter (including interactive cancellation).
+                managedInitialOccurrence = nil
+                requiresInitialBootstrap = false
+            }
+        case .retainedReveal:
+            if let managedInitialOccurrence, !managedInitialOccurrence.isAdopted {
+                // The revealed destination is already materialized underneath
+                // the provisional owner. Reconcile it synchronously once its
+                // current descriptor is supplied by the container body.
+                awaitsCommittedRevealConfiguration = true
+            } else {
+                managedInitialOccurrence = nil
+                requiresInitialBootstrap = false
+                _ = revealRetainedRoute(
+                    occurrenceKey: occurrenceKey,
+                    bindingGeneration: bindingGeneration
+                )
+            }
+        }
+    }
+
+    /// Supplies the descriptor for the latest accepted destination. When a pop
+    /// happens before the initial top adopts its provisional occurrence, this
+    /// changes that occurrence into the already-materialized revealed boundary
+    /// in the same synchronous router turn.
+    @discardableResult
+    func reconcileCurrentDestination(
+        configuration: RUMViewTrackingState.Configuration,
+        viewsHandler: RUMViewsHandler?
+    ) -> [RUMViewTrackingState.Transition] {
+        guard matchesAcceptedDestination(configuration) else {
+            return []
+        }
+        acceptedDestinationConfiguration = configuration
+
+        guard awaitsCommittedRevealConfiguration else {
+            return []
+        }
+        awaitsCommittedRevealConfiguration = false
+
+        guard let owner = managedInitialOccurrence else {
+            _ = revealRetainedRoute(
+                occurrenceKey: configuration.occurrenceKey,
+                bindingGeneration: configuration.bindingGeneration
+            )
+            return []
+        }
+
+        _ = owner.state.settleRetainedRouteHandoff(
+            configuration: owner.configuration,
+            sceneIdentifier: owner.sceneIdentifier
+        )
+        let transitions = owner.state.reconcile(
+            configuration: configuration,
+            attachment: .attached(owner.sceneIdentifier),
+            isAppeared: true
+        )
+        RUMSwiftUIViewTransitionPublisher.publish(
+            transitions,
+            state: owner.state,
+            fallback: configuration.descriptor,
+            to: viewsHandler
+        )
+
+        guard owner.state.activeLifecycleGeneration != nil else {
+            managedInitialOccurrence = nil
+            return transitions
+        }
+        let isAdopted = owner.boundaryConfiguration.occurrenceKey
+            == configuration.occurrenceKey
+        managedInitialOccurrence = ManagedInitialOccurrence(
+            configuration: configuration,
+            boundaryConfiguration: owner.boundaryConfiguration,
+            boundaryAttachment: .attached(owner.sceneIdentifier),
+            sceneIdentifier: owner.sceneIdentifier,
+            state: owner.state,
+            isAdopted: isAdopted
+        )
+        requiresInitialBootstrap = !isAdopted
+        return transitions
+    }
+
+    /// Resolves one materialized boundary against the container's accepted
+    /// destination. A non-current boundary may lend scene proof only while the
+    /// initial restored destination has no owner. All other key/generation
+    /// mismatches are stale and must not fall through to an ordinary mount.
+    func resolveCandidate(
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        viewsHandler: RUMViewsHandler?,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) -> CandidateDisposition {
+        resolveCandidate(
+            candidateConfiguration: candidateConfiguration,
+            sceneIdentifier: sceneIdentifier,
+            state: state,
+            isReaderMount: true,
+            viewsHandler: viewsHandler,
+            process: process
+        )
+    }
+
+    func resolveCandidate(
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        isReaderMount: Bool,
+        viewsHandler: RUMViewsHandler?,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) -> CandidateDisposition {
+        if !candidateConfiguration.isCurrentDestination {
+            if
+                let owner = managedInitialOccurrence,
+                owner.boundaryConfiguration.occurrenceKey
+                    == candidateConfiguration.occurrenceKey {
+                return resolveManagedInitialBoundary(
+                    owner: owner,
+                    candidateConfiguration: candidateConfiguration,
+                    sceneIdentifier: sceneIdentifier,
+                    state: state,
+                    isReaderMount: isReaderMount,
+                    viewsHandler: viewsHandler,
+                    process: process
+                )
+            }
+
+            guard let acceptedDestinationConfiguration else {
+                return .recordDormant
+            }
+            let mayLendInitialScene = requiresInitialBootstrap
+                && managedInitialOccurrence == nil
+                && candidateConfiguration.bindingGeneration
+                    == acceptedDestinationConfiguration.bindingGeneration
+            guard mayLendInitialScene else {
+                return .recordDormant
+            }
+            startManagedInitialOccurrence(
+                configuration: acceptedDestinationConfiguration,
+                boundaryConfiguration: candidateConfiguration,
+                sceneIdentifier: sceneIdentifier,
+                state: state,
+                viewsHandler: viewsHandler,
+                process: process
+            )
+            return .handled
+        }
+
+        guard
+            let acceptedDestinationConfiguration,
+            matchesAcceptedDestination(candidateConfiguration)
+        else {
+            return .rejectStale
+        }
+
+        let candidateMatches = candidateConfiguration == acceptedDestinationConfiguration
+        guard candidateMatches else {
+            return .rejectStale
+        }
+
+        if candidateMatches,
+           let pendingDisposition = consumePendingRevealedRoute(
+               configuration: candidateConfiguration,
+               sceneIdentifier: sceneIdentifier,
+               into: state,
+               viewsHandler: viewsHandler
+           ) {
+            return pendingDisposition
+        }
+
+        if let owner = managedInitialOccurrence {
+            if owner.configuration != acceptedDestinationConfiguration
+                || owner.sceneIdentifier != sceneIdentifier {
+                let movedSameDestinationToAnotherScene = owner.configuration
+                    == acceptedDestinationConfiguration
+                    && owner.sceneIdentifier != sceneIdentifier
+                stopManagedInitialOccurrence(owner, viewsHandler: viewsHandler)
+                if
+                    owner.configuration != acceptedDestinationConfiguration,
+                    !owner.isAdopted,
+                    owner.state !== state {
+                    _ = owner.state.recordDormantNavigationBoundary(
+                        configuration: owner.boundaryConfiguration,
+                        attachment: owner.boundaryAttachment
+                    )
+                }
+                managedInitialOccurrence = nil
+                startManagedInitialOccurrence(
+                    configuration: acceptedDestinationConfiguration,
+                    boundaryConfiguration: candidateConfiguration,
+                    sceneIdentifier: sceneIdentifier,
+                    state: state,
+                    viewsHandler: viewsHandler,
+                    allowsSameGenerationRemount: movedSameDestinationToAnotherScene,
+                    process: process
+                )
+                return .handled
+            }
+
+            if owner.state === state {
+                if state.needsReaderRemount {
+                    managedInitialOccurrence = nil
+                    startManagedInitialOccurrence(
+                        configuration: acceptedDestinationConfiguration,
+                        boundaryConfiguration: candidateConfiguration,
+                        sceneIdentifier: sceneIdentifier,
+                        state: state,
+                        viewsHandler: viewsHandler,
+                        process: process
+                    )
+                    return .handled
+                }
+                _ = state.settleRetainedRouteHandoff(
+                    configuration: owner.configuration,
+                    sceneIdentifier: owner.sceneIdentifier
+                )
+                managedInitialOccurrence = ManagedInitialOccurrence(
+                    configuration: owner.configuration,
+                    boundaryConfiguration: candidateConfiguration,
+                    boundaryAttachment: .attached(sceneIdentifier),
+                    sceneIdentifier: owner.sceneIdentifier,
+                    state: state,
+                    isAdopted: candidateMatches
+                )
+                if candidateMatches {
+                    requiresInitialBootstrap = false
+                }
+                return .handled
+            }
+
+            if owner.state.prepareForRetainedRouteHandoff(
+                configuration: owner.configuration,
+                sceneIdentifier: owner.sceneIdentifier
+            ), owner.state.transferRetainedRouteOccurrence(
+                to: state,
+                configuration: owner.configuration,
+                sceneIdentifier: owner.sceneIdentifier
+            ) {
+                managedInitialOccurrence = ManagedInitialOccurrence(
+                    configuration: owner.configuration,
+                    boundaryConfiguration: candidateConfiguration,
+                    boundaryAttachment: .attached(sceneIdentifier),
+                    sceneIdentifier: owner.sceneIdentifier,
+                    state: state,
+                    isAdopted: candidateMatches
+                )
+                if candidateMatches {
+                    requiresInitialBootstrap = false
+                }
+                return .handled
+            }
+
+            // A replacement state that cannot accept the exact occurrence must
+            // never create a second view beside it. Keep the proven owner.
+            return .rejectStale
+        }
+
+        guard requiresInitialBootstrap else {
+            return .allowOrdinaryMount
+        }
+        startManagedInitialOccurrence(
+            configuration: acceptedDestinationConfiguration,
+            boundaryConfiguration: candidateConfiguration,
+            sceneIdentifier: sceneIdentifier,
+            state: state,
+            viewsHandler: viewsHandler,
+            process: process
+        )
+        return .handled
+    }
+
+    private func resolveManagedInitialBoundary(
+        owner: ManagedInitialOccurrence,
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        isReaderMount: Bool,
+        viewsHandler: RUMViewsHandler?,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) -> CandidateDisposition {
+        guard !owner.isAdopted else {
+            return .rejectStale
+        }
+        let candidateGeneration = candidateConfiguration.bindingGeneration
+        let boundaryGeneration = owner.boundaryConfiguration.bindingGeneration
+        guard candidateGeneration >= boundaryGeneration else {
+            return .rejectStale
+        }
+        if candidateGeneration > boundaryGeneration {
+            guard candidateGeneration == acceptedDestinationIdentity?.bindingGeneration else {
+                return .rejectStale
+            }
+        }
+
+        let nextBoundaryConfiguration = candidateGeneration > boundaryGeneration
+            ? candidateConfiguration
+            : owner.boundaryConfiguration
+        let staysInOwningScene = owner.sceneIdentifier == sceneIdentifier
+        if !isReaderMount {
+            managedInitialOccurrence = ManagedInitialOccurrence(
+                configuration: owner.configuration,
+                boundaryConfiguration: nextBoundaryConfiguration,
+                boundaryAttachment: owner.boundaryAttachment,
+                sceneIdentifier: owner.sceneIdentifier,
+                state: owner.state,
+                isAdopted: false
+            )
+            return .handled
+        }
+
+        // A replacement reader may store a newer donor boundary while the
+        // source still owns the last proven destination descriptor. Prepare
+        // that never-started reader with the proven destination before any
+        // transfer or stop; the source retains `nextBoundaryConfiguration`.
+        // Ordinary lifecycle callbacks cannot take this path.
+        if
+            state !== owner.state,
+            !state.prepareSourceManagedNavigationDestination(
+                in: sceneIdentifier,
+                configuration: owner.configuration,
+                boundaryConfiguration: nextBoundaryConfiguration
+            ) {
+            return .rejectStale
+        }
+
+        if staysInOwningScene, owner.state === state {
+            if state.needsReaderRemount {
+                managedInitialOccurrence = nil
+                startManagedInitialOccurrence(
+                    configuration: owner.configuration,
+                    boundaryConfiguration: nextBoundaryConfiguration,
+                    sceneIdentifier: sceneIdentifier,
+                    state: state,
+                    viewsHandler: viewsHandler,
+                    process: process
+                )
+            } else {
+                managedInitialOccurrence = ManagedInitialOccurrence(
+                    configuration: owner.configuration,
+                    boundaryConfiguration: nextBoundaryConfiguration,
+                    boundaryAttachment: .attached(sceneIdentifier),
+                    sceneIdentifier: owner.sceneIdentifier,
+                    state: owner.state,
+                    isAdopted: false
+                )
+            }
+            return .handled
+        }
+
+        if staysInOwningScene, owner.state.activeLifecycleGeneration != nil {
+            guard owner.state.transferSourceManagedNavigationDestination(
+                to: state,
+                configuration: owner.configuration,
+                sceneIdentifier: sceneIdentifier
+            ) else {
+                return .rejectStale
+            }
+            managedInitialOccurrence = ManagedInitialOccurrence(
+                configuration: owner.configuration,
+                boundaryConfiguration: nextBoundaryConfiguration,
+                boundaryAttachment: .attached(sceneIdentifier),
+                sceneIdentifier: sceneIdentifier,
+                state: state,
+                isAdopted: false
+            )
+            return .handled
+        }
+
+        let allowsSameGenerationRemount = owner.state === state
+            || state.canRemountSourceManagedNavigationDestination(owner.configuration)
+        let canRecoverAfterSceneDisconnect = state
+            .canRecoverNavigationDestinationAfterSceneDisconnect(owner.configuration)
+        if
+            state.activeLifecycleGeneration != nil,
+            owner.state !== state {
+            return .rejectStale
+        }
+        if
+            state.lifecycleGeneration > 0,
+            owner.state !== state,
+            !allowsSameGenerationRemount,
+            !canRecoverAfterSceneDisconnect {
+            return .rejectStale
+        }
+
+        if owner.state.activeLifecycleGeneration != nil {
+            stopManagedInitialOccurrence(owner, viewsHandler: viewsHandler)
+        }
+        managedInitialOccurrence = nil
+        startManagedInitialOccurrence(
+            configuration: owner.configuration,
+            boundaryConfiguration: nextBoundaryConfiguration,
+            sceneIdentifier: sceneIdentifier,
+            state: state,
+            viewsHandler: viewsHandler,
+            allowsSameGenerationRemount: allowsSameGenerationRemount,
+            process: process
+        )
+        return managedInitialOccurrence == nil ? .rejectStale : .handled
+    }
+
+    /// Protects a provisional destination from lifecycle callbacks emitted by
+    /// the non-current boundary that lent it scene proof. A refreshed donor may
+    /// update its own dormant bookkeeping, but it cannot replace or stop the
+    /// visible destination before the accepted boundary materializes.
+    func retainsManagedInitialOccurrence(
+        for boundaryConfiguration: RUMViewTrackingState.Configuration,
+        state: RUMViewTrackingState,
+        attachment: RUMViewTrackingState.Attachment? = nil
+    ) -> Bool {
+        guard
+            !boundaryConfiguration.isCurrentDestination,
+            let owner = managedInitialOccurrence,
+            !owner.isAdopted,
+            owner.state === state
+        else {
+            return false
+        }
+
+        guard owner.boundaryConfiguration.occurrenceKey
+            == boundaryConfiguration.occurrenceKey else {
+            return false
+        }
+
+        let candidateGeneration = boundaryConfiguration.bindingGeneration
+        let currentGeneration = owner.boundaryConfiguration.bindingGeneration
+        let isAcceptedGenerationRefresh = candidateGeneration > currentGeneration
+            && candidateGeneration == acceptedDestinationIdentity?.bindingGeneration
+        let canUpdateBoundary = candidateGeneration == currentGeneration
+            || isAcceptedGenerationRefresh
+        guard canUpdateBoundary else {
+            // Older or not-yet-accepted callbacks for the leased donor are stale,
+            // but still belong to source-owned lifecycle and must not fall back
+            // to the state's older generation fence.
+            return true
+        }
+        if
+            case .attached(let sceneIdentifier?) = attachment,
+            sceneIdentifier != owner.sceneIdentifier {
+            // A concrete reader mount will resolve the scene migration. Trait or
+            // reconciliation updates cannot move a source-owned occurrence.
+            return true
+        }
+
+        managedInitialOccurrence = ManagedInitialOccurrence(
+            configuration: owner.configuration,
+            boundaryConfiguration: isAcceptedGenerationRefresh
+                ? boundaryConfiguration
+                : owner.boundaryConfiguration,
+            boundaryAttachment: attachment ?? owner.boundaryAttachment,
+            sceneIdentifier: owner.sceneIdentifier,
+            state: owner.state,
+            isAdopted: false
+        )
+        return true
+    }
+
+    /// Balances source-managed initial or retained occurrences if the navigation
+    /// container itself is removed. This is intentionally called from an outer
+    /// attachment reader rather than the root content's `onDisappear`, which is
+    /// also expected during an ordinary push.
+    @discardableResult
+    func cancelNavigationOwnedOccurrences(
+        viewsHandler: RUMViewsHandler?
+    ) -> [RUMViewTrackingState.Transition] {
+        var stoppedIdentities: Set<String> = []
+        var transitions: [RUMViewTrackingState.Transition] = []
+        if let owner = managedInitialOccurrence {
+            transitions += stopManagedInitialOccurrence(
+                owner,
+                viewsHandler: viewsHandler,
+                stoppedIdentities: &stoppedIdentities
+            )
+        }
+        if let pendingRevealedRoute {
+            transitions += stopNavigationOwnedOccurrence(
+                state: pendingRevealedRoute.state,
+                configuration: pendingRevealedRoute.configuration,
+                sceneIdentifier: pendingRevealedRoute.sceneIdentifier,
+                viewsHandler: viewsHandler,
+                stoppedIdentities: &stoppedIdentities
+            )
+        }
+        managedInitialOccurrence = nil
+        pendingRevealedRoute = nil
+        requiresInitialBootstrap = false
+        awaitsCommittedRevealConfiguration = false
+        return transitions
+    }
+
+    /// Mirrors scene-stack teardown without publishing a duplicate stop. The
+    /// views handler owns the disconnect command; this only releases the
+    /// container's stale lease so another scene can become authoritative.
+    func sceneDidDisconnect(_ sceneIdentifier: RUMSceneIdentifier) {
+        if
+            let owner = managedInitialOccurrence,
+            owner.sceneIdentifier == sceneIdentifier,
+            owner.state.activeLifecycleGeneration == nil {
+            managedInitialOccurrence = nil
+            requiresInitialBootstrap = acceptedDestinationConfiguration != nil
+        }
+        if
+            let pendingRevealedRoute,
+            pendingRevealedRoute.sceneIdentifier == sceneIdentifier,
+            pendingRevealedRoute.state.activeLifecycleGeneration == nil {
+            self.pendingRevealedRoute = nil
+        }
+    }
+
+    func reconcileOwnerState(_ state: RUMViewTrackingState) {
+        guard
+            let owner = managedInitialOccurrence,
+            owner.state === state,
+            state.activeLifecycleGeneration == nil
+        else {
+            return
+        }
+        managedInitialOccurrence = nil
+    }
+
+    func isAcceptedBoundary(
+        _ configuration: RUMViewTrackingState.Configuration
+    ) -> Bool {
+        matchesAcceptedDestination(configuration)
+    }
 
     fileprivate func register(
         _ registration: RUMSwiftUINavigationOccurrenceRegistration,
@@ -1188,19 +2068,192 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
         sceneIdentifier: RUMSceneIdentifier,
         into state: RUMViewTrackingState
     ) -> Bool {
-        guard let pendingRevealedRoute else {
-            return false
+        consumePendingRevealedRoute(
+            configuration: configuration,
+            sceneIdentifier: sceneIdentifier,
+            into: state,
+            viewsHandler: nil
+        ) == .handled
+    }
+
+    private func matchesAcceptedDestination(
+        _ configuration: RUMViewTrackingState.Configuration
+    ) -> Bool {
+        acceptedDestinationIdentity == DestinationIdentity(
+            occurrenceKey: configuration.occurrenceKey,
+            bindingGeneration: configuration.bindingGeneration
+        )
+    }
+
+    private func startManagedInitialOccurrence(
+        configuration: RUMViewTrackingState.Configuration,
+        boundaryConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        viewsHandler: RUMViewsHandler?,
+        allowsSameGenerationRemount: Bool = false,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) {
+        if state.activeLifecycleGeneration == nil, state.needsReaderRemount {
+            let transitions = state.mountCurrentNavigationDestinationAfterSceneDisconnect(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+            RUMSwiftUIViewTransitionPublisher.publish(
+                transitions,
+                state: state,
+                fallback: configuration.descriptor,
+                to: viewsHandler
+            )
+            if state.activeLifecycleGeneration == nil {
+                process(configuration, sceneIdentifier)
+            }
+        } else if
+            state.activeLifecycleGeneration == nil,
+            allowsSameGenerationRemount,
+            state.lifecycleGeneration > 0 {
+            let transitions = state.remountSourceManagedNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+            RUMSwiftUIViewTransitionPublisher.publish(
+                transitions,
+                state: state,
+                fallback: configuration.descriptor,
+                to: viewsHandler
+            )
+        } else {
+            process(configuration, sceneIdentifier)
         }
         guard
-            pendingRevealedRoute.configuration == configuration,
-            pendingRevealedRoute.sceneIdentifier == sceneIdentifier
+            state.configuration == configuration,
+            state.activeLifecycleGeneration != nil,
+            state.sceneIdentifier == sceneIdentifier
         else {
-            if
-                configuration.bindingGeneration
-                    > pendingRevealedRoute.configuration.bindingGeneration {
+            return
+        }
+        let isAdopted = boundaryConfiguration.isCurrentDestination
+            && boundaryConfiguration == configuration
+        managedInitialOccurrence = ManagedInitialOccurrence(
+            configuration: configuration,
+            boundaryConfiguration: boundaryConfiguration,
+            boundaryAttachment: .attached(sceneIdentifier),
+            sceneIdentifier: sceneIdentifier,
+            state: state,
+            isAdopted: isAdopted
+        )
+        requiresInitialBootstrap = !isAdopted
+    }
+
+    @discardableResult
+    private func stopManagedInitialOccurrence(
+        _ owner: ManagedInitialOccurrence,
+        viewsHandler: RUMViewsHandler?
+    ) -> [RUMViewTrackingState.Transition] {
+        var stoppedIdentities: Set<String> = []
+        return stopManagedInitialOccurrence(
+            owner,
+            viewsHandler: viewsHandler,
+            stoppedIdentities: &stoppedIdentities
+        )
+    }
+
+    private func stopManagedInitialOccurrence(
+        _ owner: ManagedInitialOccurrence,
+        viewsHandler: RUMViewsHandler?,
+        stoppedIdentities: inout Set<String>
+    ) -> [RUMViewTrackingState.Transition] {
+        stopNavigationOwnedOccurrence(
+            state: owner.state,
+            configuration: owner.state.configuration ?? owner.configuration,
+            sceneIdentifier: owner.sceneIdentifier,
+            viewsHandler: viewsHandler,
+            stoppedIdentities: &stoppedIdentities
+        )
+    }
+
+    private func stopNavigationOwnedOccurrence(
+        state: RUMViewTrackingState,
+        configuration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        viewsHandler: RUMViewsHandler?,
+        stoppedIdentities: inout Set<String>
+    ) -> [RUMViewTrackingState.Transition] {
+        _ = state.settleRetainedRouteHandoff(
+            configuration: configuration,
+            sceneIdentifier: sceneIdentifier
+        )
+        let transitions = state.disappear(configuration: configuration).filter { transition in
+            guard case .stop(let identity, _) = transition else {
+                return true
+            }
+            return stoppedIdentities.insert(identity).inserted
+        }
+        RUMSwiftUIViewTransitionPublisher.publish(
+            transitions,
+            state: state,
+            fallback: configuration.descriptor,
+            to: viewsHandler
+        )
+        return transitions
+    }
+
+    private func consumePendingRevealedRoute(
+        configuration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        into state: RUMViewTrackingState,
+        viewsHandler: RUMViewsHandler?
+    ) -> CandidateDisposition? {
+        guard let pendingRevealedRoute else {
+            return nil
+        }
+        if pendingRevealedRoute.state.needsReaderRemount {
+            self.pendingRevealedRoute = nil
+            return .allowOrdinaryMount
+        }
+        guard pendingRevealedRoute.configuration == configuration else {
+            if configuration.bindingGeneration
+                > pendingRevealedRoute.configuration.bindingGeneration {
                 clearPendingRevealedRoute()
             }
-            return false
+            return nil
+        }
+
+        guard pendingRevealedRoute.sceneIdentifier == sceneIdentifier else {
+            let reusesPendingState = pendingRevealedRoute.state === state
+            _ = pendingRevealedRoute.state.settleRetainedRouteHandoff(
+                configuration: pendingRevealedRoute.configuration,
+                sceneIdentifier: pendingRevealedRoute.sceneIdentifier
+            )
+            let transitions = pendingRevealedRoute.state.disappear(
+                configuration: pendingRevealedRoute.configuration
+            )
+            RUMSwiftUIViewTransitionPublisher.publish(
+                transitions,
+                state: pendingRevealedRoute.state,
+                fallback: pendingRevealedRoute.configuration.descriptor,
+                to: viewsHandler
+            )
+            self.pendingRevealedRoute = nil
+            if reusesPendingState {
+                let transitions = state.remountSourceManagedNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+                RUMSwiftUIViewTransitionPublisher.publish(
+                    transitions,
+                    state: state,
+                    fallback: configuration.descriptor,
+                    to: viewsHandler
+                )
+                return state.activeLifecycleGeneration == nil
+                    ? .rejectStale
+                    : .handled
+            }
+            return .allowOrdinaryMount
         }
 
         if pendingRevealedRoute.state === state {
@@ -1209,20 +2262,18 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
                 sceneIdentifier: sceneIdentifier
             )
             self.pendingRevealedRoute = nil
-            return false
+            return .handled
         }
 
-        guard
-            pendingRevealedRoute.state.transferRetainedRouteOccurrence(
-                to: state,
-                configuration: configuration,
-                sceneIdentifier: sceneIdentifier
-            )
-        else {
-            return false
+        guard pendingRevealedRoute.state.transferRetainedRouteOccurrence(
+            to: state,
+            configuration: configuration,
+            sceneIdentifier: sceneIdentifier
+        ) else {
+            return .rejectStale
         }
         self.pendingRevealedRoute = nil
-        return true
+        return .handled
     }
 
     private func clearPendingRevealedRoute() {
@@ -1633,10 +2684,16 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
     private final class ObserverRegistration {
         weak var observer: RUMSceneIdentifierReader.ObserverView?
         weak var state: RUMViewTrackingState?
+        weak var navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
 
-        init(observer: RUMSceneIdentifierReader.ObserverView, state: RUMViewTrackingState) {
+        init(
+            observer: RUMSceneIdentifierReader.ObserverView,
+            state: RUMViewTrackingState,
+            navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource?
+        ) {
             self.observer = observer
             self.state = state
+            self.navigationOccurrenceSource = navigationOccurrenceSource
         }
     }
 
@@ -1899,14 +2956,16 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
 
     func register(
         observer: RUMSceneIdentifierReader.ObserverView,
-        for state: RUMViewTrackingState
+        for state: RUMViewTrackingState,
+        navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource? = nil
     ) {
         guard Thread.isMainThread else {
             return
         }
         observerRegistrations[ObjectIdentifier(observer)] = ObserverRegistration(
             observer: observer,
-            state: state
+            state: state,
+            navigationOccurrenceSource: navigationOccurrenceSource
         )
     }
 
@@ -2066,6 +3125,25 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             )
             if didInvalidate {
                 invalidatedStateIdentities.insert(identity)
+            }
+        }
+
+        var disconnectedSources: [ObjectIdentifier: RUMSwiftUINavigationOccurrenceSource] = [:]
+        observerRegistrations.values.forEach { registration in
+            guard
+                let source = registration.navigationOccurrenceSource,
+                let state = registration.state,
+                let observer = registration.observer,
+                observer.lastSceneIdentifier == sceneIdentifier
+                    || invalidatedStateIdentities.contains(ObjectIdentifier(state))
+            else {
+                return
+            }
+            disconnectedSources[ObjectIdentifier(source)] = source
+        }
+        disconnectedSources.values.forEach { source in
+            Task { @MainActor [weak source] in
+                source?.sceneDidDisconnect(sceneIdentifier)
             }
         }
 
@@ -2386,7 +3464,11 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func register(observer: RUMSceneIdentifierReader.ObserverView) {
         #if os(iOS)
-        transitionArbiter?.register(observer: observer, for: trackingState)
+        transitionArbiter?.register(
+            observer: observer,
+            for: trackingState,
+            navigationOccurrenceSource: navigationOccurrenceSource
+        )
         instrumentation?.swiftUIViewAuthorityRegistry?.register(
             observer: observer,
             trackingState: trackingState
@@ -2396,14 +3478,48 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func mount(in sceneIdentifier: RUMSceneIdentifier) {
         if let configuration {
+            switch resolveNavigationCandidate(
+                configuration,
+                in: sceneIdentifier,
+                isReaderMount: true
+            ) {
+            case .handled:
+                rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
+                return
+            case .rejectStale:
+                return
+            case .recordDormant:
+                let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
+                if recordDormantNavigationBoundaryFromReaderMount(
+                    attachment: attachment
+                ) {
+                    rebindNavigationOccurrenceSource(attachment: attachment)
+                    return
+                }
+                update(attachment: attachment)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+                return
+            case .allowOrdinaryMount:
+                break
+            }
+            if trackingState.needsReaderRemount {
+                apply(
+                    trackingState.mountCurrentNavigationDestinationAfterSceneDisconnect(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+                if trackingState.activeLifecycleGeneration != nil {
+                    rebindNavigationOccurrenceSource(
+                        attachment: .attached(sceneIdentifier)
+                    )
+                    return
+                }
+            }
             guard configuration.isCurrentDestination else {
                 let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
                 update(attachment: attachment)
                 rebindNavigationOccurrenceSource(attachment: attachment)
-                return
-            }
-            if consumeRevealedRoute(configuration, in: sceneIdentifier) {
-                rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
                 return
             }
             #if os(iOS)
@@ -2438,14 +3554,31 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func initialMount(in sceneIdentifier: RUMSceneIdentifier) {
         if let configuration {
+            switch resolveNavigationCandidate(configuration, in: sceneIdentifier) {
+            case .handled:
+                rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
+                return
+            case .rejectStale:
+                return
+            case .recordDormant:
+                let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
+                if trackingState.recordDormantNavigationBoundary(
+                    configuration: configuration,
+                    attachment: attachment
+                ) {
+                    rebindNavigationOccurrenceSource(attachment: attachment)
+                    return
+                }
+                update(attachment: attachment)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+                return
+            case .allowOrdinaryMount:
+                break
+            }
             guard configuration.isCurrentDestination else {
                 let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
                 update(attachment: attachment)
                 rebindNavigationOccurrenceSource(attachment: attachment)
-                return
-            }
-            if consumeRevealedRoute(configuration, in: sceneIdentifier) {
-                rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
                 return
             }
             #if os(iOS)
@@ -2484,10 +3617,30 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func update(attachment: RUMViewTrackingState.Attachment) {
         if let configuration {
-            if
-                case .attached(let sceneIdentifier?) = attachment,
-                consumeRevealedRoute(configuration, in: sceneIdentifier) {
+            if navigationOccurrenceSource?.retainsManagedInitialOccurrence(
+                for: configuration,
+                state: trackingState,
+                attachment: attachment
+            ) == true {
+                rebindNavigationOccurrenceSource(attachment: attachment)
                 return
+            }
+            if case .attached(let sceneIdentifier?) = attachment {
+                switch resolveNavigationCandidate(configuration, in: sceneIdentifier) {
+                case .handled:
+                    return
+                case .rejectStale:
+                    return
+                case .recordDormant:
+                    if trackingState.recordDormantNavigationBoundary(
+                        configuration: configuration,
+                        attachment: attachment
+                    ) {
+                        return
+                    }
+                case .allowOrdinaryMount:
+                    break
+                }
             }
             #if os(iOS)
             if let transitionArbiter {
@@ -2517,13 +3670,22 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func appear() {
         if let configuration {
-            guard configuration.isCurrentDestination else {
+            if let sceneIdentifier = trackingState.sceneIdentifier {
+                switch resolveNavigationCandidate(configuration, in: sceneIdentifier) {
+                case .handled:
+                    rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
+                    return
+                case .rejectStale:
+                    return
+                case .recordDormant:
+                    return
+                case .allowOrdinaryMount:
+                    break
+                }
+            } else if navigationOccurrenceSource?.isAcceptedBoundary(configuration) == false {
                 return
             }
-            if
-                let sceneIdentifier = trackingState.sceneIdentifier,
-                consumeRevealedRoute(configuration, in: sceneIdentifier) {
-                rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
+            guard configuration.isCurrentDestination else {
                 return
             }
             #if os(iOS)
@@ -2554,6 +3716,12 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func disappear() {
         if let configuration {
+            if navigationOccurrenceSource?.retainsManagedInitialOccurrence(
+                for: configuration,
+                state: trackingState
+            ) == true {
+                return
+            }
             #if os(iOS)
             if let transitionArbiter {
                 transitionArbiter.process(
@@ -2617,15 +3785,28 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
         }
     }
 
-    private func consumeRevealedRoute(
+    private func resolveNavigationCandidate(
         _ configuration: RUMViewTrackingState.Configuration,
-        in sceneIdentifier: RUMSceneIdentifier
-    ) -> Bool {
-        navigationOccurrenceSource?.consumeRevealedRoute(
-            configuration: configuration,
+        in sceneIdentifier: RUMSceneIdentifier,
+        isReaderMount: Bool = false
+    ) -> RUMSwiftUINavigationOccurrenceSource.CandidateDisposition {
+        guard let navigationOccurrenceSource else {
+            return .allowOrdinaryMount
+        }
+        return navigationOccurrenceSource.resolveCandidate(
+            candidateConfiguration: configuration,
             sceneIdentifier: sceneIdentifier,
-            into: trackingState
-        ) == true
+            state: trackingState,
+            isReaderMount: isReaderMount,
+            viewsHandler: instrumentation?.viewsHandler
+        ) { initialConfiguration, sceneIdentifier in
+            apply(
+                trackingState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: initialConfiguration
+                )
+            )
+        }
     }
 
     #if os(iOS)
@@ -2643,6 +3824,22 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             state: trackingState,
             fallback: .init(name: name, path: path, attributes: attributes),
             to: instrumentation?.viewsHandler
+        )
+        navigationOccurrenceSource?.reconcileOwnerState(trackingState)
+    }
+
+    private func recordDormantNavigationBoundaryFromReaderMount(
+        attachment: RUMViewTrackingState.Attachment
+    ) -> Bool {
+        guard let configuration else {
+            return false
+        }
+        return trackingState.recordDormantNavigationBoundary(
+            configuration: configuration,
+            attachment: attachment
+        ) || trackingState.rearmDormantNavigationBoundaryAfterSceneDisconnect(
+            configuration: configuration,
+            attachment: attachment
         )
     }
 
@@ -2955,26 +4152,69 @@ internal final class RUMSwiftUISemanticNavigationState<
             if !path.isEmpty {
                 bindingGeneration &+= 1
             }
+            let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
+            occurrenceSource.acceptDestination(
+                occurrenceKey: occurrence.key,
+                bindingGeneration: occurrence.generation,
+                change: .initial(requiresBootstrap: !path.isEmpty)
+            )
             return
         }
         guard previousPath != path else {
+            let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
+            occurrenceSource.acceptDestination(
+                occurrenceKey: occurrence.key,
+                bindingGeneration: occurrence.generation,
+                change: .unchanged
+            )
             return
         }
 
         bindingGeneration &+= 1
         currentPath = path
-
-        guard
-            path.count < previousPath.count,
-            Array(previousPath.prefix(path.count)) == path
-        else {
-            return
-        }
-
         let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
-        occurrenceSource.revealRetainedRoute(
+        let revealsRetainedDestination = path.count < previousPath.count
+            && Array(previousPath.prefix(path.count)) == path
+        occurrenceSource.acceptDestination(
             occurrenceKey: occurrence.key,
-            bindingGeneration: occurrence.generation
+            bindingGeneration: occurrence.generation,
+            change: revealsRetainedDestination ? .retainedReveal : .replacement
+        )
+    }
+
+    func reconcileCurrentDestination<Root: SwiftUI.View, Destination: SwiftUI.View>(
+        root: RUMView,
+        rootType: Root.Type,
+        destination: (Route) -> RUMView,
+        destinationType: Destination.Type,
+        viewsHandler: RUMViewsHandler?
+    ) {
+        let currentOccurrence: Occurrence
+        let rumView: RUMView
+        let fallbackType: Any.Type
+        if let route = currentPath?.last {
+            currentOccurrence = occurrence(for: route)
+            rumView = destination(route)
+            fallbackType = destinationType
+        } else {
+            currentOccurrence = rootOccurrence
+            rumView = root
+            fallbackType = rootType
+        }
+        let path = rumView.path
+            ?? "\(rumView.name)/\(String(describing: fallbackType).hashValue)"
+        occurrenceSource.reconcileCurrentDestination(
+            configuration: RUMViewTrackingState.Configuration(
+                occurrenceKey: currentOccurrence.key,
+                bindingGeneration: currentOccurrence.generation,
+                descriptor: .init(
+                    name: rumView.name,
+                    path: path,
+                    attributes: rumView.attributes
+                ),
+                isCurrentDestination: true
+            ),
+            viewsHandler: viewsHandler
         )
     }
 
@@ -3264,6 +4504,57 @@ private struct RUMSemanticPresentationBoundary<
     }
 }
 
+@available(iOS 27.0, *)
+@MainActor
+internal final class RUMSemanticNavigationContainerLifetimeState {
+    private var attachmentGeneration: UInt64 = 0
+
+    func reconcile(
+        attachment: RUMViewTrackingState.Attachment,
+        onFinalDetach: @escaping () -> Void
+    ) {
+        attachmentGeneration &+= 1
+        guard attachment == .detached else {
+            return
+        }
+
+        let expectedGeneration = attachmentGeneration
+        DispatchQueue.main.async { [self] in
+            guard attachmentGeneration == expectedGeneration else {
+                return
+            }
+            onFinalDetach()
+        }
+    }
+}
+
+/// Detects removal of the semantic container without conflating it with root
+/// navigation callbacks or presentations. A one-turn grace period absorbs
+/// SwiftUI's transient representable detach/reattach cycles.
+@available(iOS 27.0, *)
+@MainActor
+private struct RUMSemanticNavigationContainerLifetimeModifier: SwiftUI.ViewModifier {
+    let occurrenceSource: RUMSwiftUINavigationOccurrenceSource
+    let viewsHandler: RUMViewsHandler?
+
+    @State private var lifetimeState = RUMSemanticNavigationContainerLifetimeState()
+
+    func body(content: Content) -> some SwiftUI.View {
+        content.background(
+            RUMSceneIdentifierReader(
+                applicationSupportsMultipleScenes: true,
+                onChange: { attachment in
+                    lifetimeState.reconcile(attachment: attachment) {
+                        occurrenceSource.cancelNavigationOwnedOccurrences(
+                            viewsHandler: viewsHandler
+                        )
+                    }
+                }
+            )
+        )
+    }
+}
+
 /// An experimental semantic SwiftUI navigation container. It owns destination
 /// materialization so RUM can create one view occurrence for each committed path
 /// destination while automatic tracking remains enabled outside this container.
@@ -3318,6 +4609,13 @@ public struct RUMNavigationStack<
     public var body: some SwiftUI.View {
         let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
         navigationState.reconcile(path: path.wrappedValue)
+        navigationState.reconcileCurrentDestination(
+            root: root,
+            rootType: Root.self,
+            destination: destination,
+            destinationType: Destination.self,
+            viewsHandler: instrumentation?.viewsHandler
+        )
         navigationState.reconcilePresentation(
             presented.wrappedValue,
             descriptor: presentation,
@@ -3349,6 +4647,12 @@ public struct RUMNavigationStack<
         ) { item in
             semanticPresentation(item, instrumentation: instrumentation)
         }
+        .modifier(
+            RUMSemanticNavigationContainerLifetimeModifier(
+                occurrenceSource: navigationState.occurrenceSource,
+                viewsHandler: instrumentation?.viewsHandler
+            )
+        )
     }
 
     private var trackedPath: Binding<[Route]> {

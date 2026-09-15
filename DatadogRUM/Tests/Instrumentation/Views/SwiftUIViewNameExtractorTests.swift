@@ -971,6 +971,1846 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
 @MainActor
 class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
     private let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+    private let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+    func testWhenInitialTopHasNotMounted_containerSceneStartsAndTransfersOccurrence() {
+        let containerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let destinationIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let containerState = RUMViewTrackingState(
+            identity: "container-fallback",
+            occurrenceIdentityGenerator: containerIdentities.next
+        )
+        let destinationState = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: destinationIdentities.next
+        )
+        let root = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = containerState.update(configuration: root, attachment: .attached(sceneA))
+        var transitions: [RUMViewTrackingState.Transition] = []
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: containerState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                transitions.append(
+                    contentsOf: containerState.mountInitialNavigationDestination(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertTrue(source.isInitialDestinationPending)
+        XCTAssertEqual(destinationState.appear(configuration: detail), [])
+        XCTAssertTrue(destinationState.isAppeared)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: destinationState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                transitions.append(
+                    contentsOf: destinationState.mountInitialNavigationDestination(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+            },
+            .handled
+        )
+        XCTAssertFalse(source.needsInitialDestinationReconciliation)
+        XCTAssertNil(containerState.activeLifecycleGeneration)
+        XCTAssertEqual(destinationIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: containerState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The hidden root must only restore dormant bookkeeping")
+            },
+            .recordDormant
+        )
+        XCTAssertTrue(
+            containerState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertEqual(containerState.configuration, root)
+        XCTAssertFalse(containerState.isAppeared)
+        XCTAssertEqual(
+            destinationState.disappear(configuration: detail),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenInitialTopMountsFirst_itOwnsBootstrapWithoutDuplicateStart() {
+        let firstIdentities = RUMOccurrenceIdentityGenerator(["detail-1", "duplicate"])
+        let secondIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let firstState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: firstIdentities.next
+        )
+        let secondState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: secondIdentities.next
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        var transitions: [RUMViewTrackingState.Transition] = []
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: firstState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                transitions.append(
+                    contentsOf: firstState.mountInitialNavigationDestination(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: secondState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                transitions.append(
+                    contentsOf: secondState.mountInitialNavigationDestination(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(firstState.activeLifecycleGeneration)
+        XCTAssertEqual(
+            secondState.disappear(configuration: detail),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(firstIdentities.invocationCount, 1)
+        XCTAssertEqual(secondIdentities.invocationCount, 0)
+        XCTAssertFalse(source.needsInitialDestinationReconciliation)
+    }
+
+    func testWhenMaterializedInitialTopIsReplaced_laterNavigationUsesOrdinaryArbiter() {
+        let initialState = RUMViewTrackingState(
+            identity: "initial-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["detail-1"]).next
+        )
+        let replacementState = RUMViewTrackingState(identity: "replacement-fallback")
+        let detail = configuration(key: "detail", generation: 1)
+        let replacement = configuration(key: "replacement", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneA,
+            state: initialState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = initialState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: replacement.occurrenceKey,
+            bindingGeneration: replacement.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: replacement, viewsHandler: nil)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: replacement,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("Post-bootstrap navigation must use the ordinary arbiter")
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertNotNil(initialState.activeLifecycleGeneration)
+    }
+
+    func testWhenPendingInitialTopChanges_sourceWaitsForAcceptedBoundaryAndRejectsStaleTop() {
+        let containerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let destinationIdentities = RUMOccurrenceIdentityGenerator(["home-1"])
+        let containerState = RUMViewTrackingState(
+            identity: "container-fallback",
+            occurrenceIdentityGenerator: containerIdentities.next
+        )
+        let destinationState = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: destinationIdentities.next
+        )
+        let root = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let home = configuration(key: "home", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: containerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = containerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: home.occurrenceKey,
+            bindingGeneration: home.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: home, viewsHandler: nil)
+
+        XCTAssertEqual(containerIdentities.invocationCount, 1)
+        XCTAssertEqual(containerState.configuration, detail)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: destinationState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A stale destination must not be mounted")
+            },
+            .rejectStale
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: home,
+                sceneIdentifier: sceneA,
+                state: destinationState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = destinationState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(
+            destinationState.disappear(configuration: home),
+            [.stop(identity: "home-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(destinationIdentities.invocationCount, 1)
+    }
+
+    func testWhenPendingInitialTopChanges_donorRefreshDoesNotCreateHiddenRoot() {
+        let donorIdentities = RUMOccurrenceIdentityGenerator(
+            ["detail-1", "unexpected-root"]
+        )
+        let destinationIdentities = RUMOccurrenceIdentityGenerator(["detail-2"])
+        let donorState = RUMViewTrackingState(
+            identity: "donor-fallback",
+            occurrenceIdentityGenerator: donorIdentities.next
+        )
+        let destinationState = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: destinationIdentities.next
+        )
+        let root1 = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let root2 = configuration(
+            key: "root",
+            generation: 2,
+            isCurrentDestination: false
+        )
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root1,
+                sceneIdentifier: sceneA,
+                state: donorState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = donorState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: donorState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A donor refresh must not require the destination descriptor")
+            },
+            .handled
+        )
+        XCTAssertEqual(donorState.configuration, detail1)
+        XCTAssertNotNil(donorState.activeLifecycleGeneration)
+        source.reconcileCurrentDestination(configuration: detail2, viewsHandler: nil)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: donorState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A donor refresh must not mount the hidden root")
+            },
+            .handled
+        )
+        XCTAssertEqual(donorState.configuration, detail1)
+        XCTAssertNotNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorIdentities.invocationCount, 1)
+        XCTAssertTrue(
+            source.retainsManagedInitialOccurrence(
+                for: root2,
+                state: donorState,
+                attachment: .detached
+            )
+        )
+        XCTAssertTrue(
+            source.retainsManagedInitialOccurrence(
+                for: root2,
+                state: donorState
+            )
+        )
+        XCTAssertEqual(donorState.configuration, detail1)
+        XCTAssertNotNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorIdentities.invocationCount, 1)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail2,
+                sceneIdentifier: sceneA,
+                state: destinationState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = destinationState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorState.configuration, root2)
+        XCTAssertEqual(donorState.attachment, .detached)
+        XCTAssertFalse(donorState.isAppeared)
+        XCTAssertNotNil(destinationState.activeLifecycleGeneration)
+        XCTAssertEqual(destinationIdentities.invocationCount, 1)
+        XCTAssertEqual(
+            destinationState.disappear(configuration: detail2),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenDonorRefreshCallbacksArriveOutOfOrder_theyNeverReachLocalGenerationFence() {
+        let donorIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let destinationIdentities = RUMOccurrenceIdentityGenerator(["detail-3"])
+        let donorState = RUMViewTrackingState(
+            identity: "donor-fallback",
+            occurrenceIdentityGenerator: donorIdentities.next
+        )
+        let destinationState = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: destinationIdentities.next
+        )
+        let root1 = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let root2 = configuration(key: "root", generation: 2, isCurrentDestination: false)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let root3 = configuration(key: "root", generation: 3, isCurrentDestination: false)
+        let detail3 = configuration(key: "detail-3", generation: 3)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root1,
+                sceneIdentifier: sceneA,
+                state: donorState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = donorState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+
+        for (root, detail) in [(root2, detail2), (root3, detail3)] {
+            source.acceptDestination(
+                occurrenceKey: detail.occurrenceKey,
+                bindingGeneration: detail.bindingGeneration,
+                change: .replacement
+            )
+            XCTAssertEqual(
+                source.resolveCandidate(
+                    candidateConfiguration: root,
+                    sceneIdentifier: sceneA,
+                    state: donorState,
+                    viewsHandler: nil
+                ) { _, _ in
+                    XCTFail("A donor refresh must not mount without its destination")
+                },
+                .handled
+            )
+            source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        }
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: donorState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A delayed donor generation must stay source-owned")
+            },
+            .rejectStale
+        )
+        XCTAssertTrue(
+            source.retainsManagedInitialOccurrence(
+                for: root2,
+                state: donorState,
+                attachment: .detached
+            )
+        )
+        XCTAssertTrue(
+            source.retainsManagedInitialOccurrence(
+                for: root3,
+                state: donorState,
+                attachment: .detached
+            )
+        )
+        XCTAssertEqual(donorState.configuration, detail1)
+        XCTAssertNotNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorIdentities.invocationCount, 1)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail3,
+                sceneIdentifier: sceneA,
+                state: destinationState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = destinationState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorState.configuration, root3)
+        XCTAssertEqual(donorState.attachment, .detached)
+        XCTAssertEqual(
+            destinationState.disappear(configuration: detail3),
+            [.stop(identity: "detail-3", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenDonorMovesScenesBeforeDescriptorReconciliation_visibleDestinationMigrates() {
+        let donorIdentities = RUMOccurrenceIdentityGenerator(["detail-a", "detail-b"])
+        let destinationIdentities = RUMOccurrenceIdentityGenerator(["detail-2"])
+        let donorState = RUMViewTrackingState(
+            identity: "donor-fallback",
+            occurrenceIdentityGenerator: donorIdentities.next
+        )
+        let destinationState = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: destinationIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: donorState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = donorState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneB,
+                state: donorState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = donorState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(donorState.sceneIdentifier, sceneB)
+        XCTAssertEqual(donorIdentities.invocationCount, 2)
+
+        source.reconcileCurrentDestination(configuration: detail2, viewsHandler: nil)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail2,
+                sceneIdentifier: sceneB,
+                state: destinationState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = destinationState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(donorState.configuration, root)
+        XCTAssertEqual(donorState.attachment, .attached(sceneB))
+        XCTAssertEqual(
+            destinationState.disappear(configuration: detail2),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenDonorReaderStateIsReplaced_sameSceneAdoptsExistingOccurrence() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("Replacing the donor state must transfer, not restart")
+            },
+            .handled
+        )
+        XCTAssertNil(ownerState.activeLifecycleGeneration)
+        XCTAssertNotNil(replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(replacementIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenPreviouslyUsedDonorReturns_sameSceneReclaimsExistingOccurrence() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The replacement must adopt the existing occurrence")
+            },
+            .handled
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: ownerState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The returning donor must reclaim the existing occurrence")
+            },
+            .handled
+        )
+        XCTAssertNotNil(ownerState.activeLifecycleGeneration)
+        XCTAssertNil(replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(replacementIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenPreviouslyUsedDonorReturnsInAnotherScene_itStartsFreshOccurrence() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1", "detail-2"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: replacementState,
+            viewsHandler: nil
+        ) { _, _ in
+            XCTFail("The replacement must adopt the existing occurrence")
+        }
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneB,
+                state: ownerState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The returning donor requires a guarded same-generation remount")
+            },
+            .handled
+        )
+        XCTAssertNotNil(ownerState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerState.sceneIdentifier, sceneB)
+        XCTAssertNil(replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerIdentities.invocationCount, 2)
+        XCTAssertEqual(replacementIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenAdvancedDonorReturns_sameSceneReclaimsExistingOccurrence() {
+        let fixture = makeAdvancedProvisionalDonorTransfer(
+            ownerIdentityValues: ["detail-1"],
+            replacementIdentityValues: ["duplicate"]
+        )
+
+        XCTAssertEqual(
+            fixture.source.resolveCandidate(
+                candidateConfiguration: fixture.root2,
+                sceneIdentifier: sceneA,
+                state: fixture.ownerState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The returning donor must reclaim the existing occurrence")
+            },
+            .handled
+        )
+        XCTAssertEqual(fixture.ownerState.configuration, fixture.detail1)
+        XCTAssertNotNil(fixture.ownerState.activeLifecycleGeneration)
+        XCTAssertNil(fixture.replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(fixture.ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(fixture.replacementIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            fixture.source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenAdvancedDonorReturnsInAnotherScene_itStartsFreshOccurrence() {
+        let fixture = makeAdvancedProvisionalDonorTransfer(
+            ownerIdentityValues: ["detail-1", "detail-2"],
+            replacementIdentityValues: ["duplicate"]
+        )
+
+        XCTAssertEqual(
+            fixture.source.resolveCandidate(
+                candidateConfiguration: fixture.root2,
+                sceneIdentifier: sceneB,
+                state: fixture.ownerState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The returning donor requires a guarded same-generation remount")
+            },
+            .handled
+        )
+        XCTAssertEqual(fixture.ownerState.configuration, fixture.detail1)
+        XCTAssertEqual(fixture.ownerState.sceneIdentifier, sceneB)
+        XCTAssertNotNil(fixture.ownerState.activeLifecycleGeneration)
+        XCTAssertNil(fixture.replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(fixture.ownerIdentities.invocationCount, 2)
+        XCTAssertEqual(fixture.replacementIdentities.invocationCount, 0)
+        XCTAssertEqual(
+            fixture.source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenAdvancedDonorReconnectsFirst_replacementAdoptsFreshOccurrence() {
+        let fixture = makeAdvancedProvisionalDonorTransfer(
+            ownerIdentityValues: ["detail-1", "detail-2"],
+            replacementIdentityValues: ["duplicate"]
+        )
+        XCTAssertTrue(fixture.ownerState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(fixture.replacementState.invalidateAfterSceneDisconnect(sceneA))
+
+        _ = fixture.source.resolveCandidate(
+            candidateConfiguration: fixture.root2,
+            sceneIdentifier: sceneA,
+            state: fixture.ownerState,
+            isReaderMount: true,
+            viewsHandler: nil
+        ) { _, _ in
+            XCTFail("The returning donor requires guarded disconnect recovery")
+        }
+        XCTAssertEqual(
+            fixture.source.resolveCandidate(
+                candidateConfiguration: fixture.root2,
+                sceneIdentifier: sceneA,
+                state: fixture.replacementState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The replacement must adopt the recovered occurrence")
+            },
+            .handled
+        )
+        XCTAssertNil(fixture.ownerState.activeLifecycleGeneration)
+        XCTAssertNotNil(fixture.replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(fixture.replacementState.configuration, fixture.detail1)
+        XCTAssertEqual(fixture.ownerIdentities.invocationCount, 2)
+        XCTAssertEqual(fixture.replacementIdentities.invocationCount, 0)
+
+        fixture.source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            fixture.source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenAdvancedReplacementReconnectsFirst_donorAdoptsFreshOccurrence() {
+        let fixture = makeAdvancedProvisionalDonorTransfer(
+            ownerIdentityValues: ["detail-1"],
+            replacementIdentityValues: ["detail-2"]
+        )
+        XCTAssertTrue(fixture.ownerState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(fixture.replacementState.invalidateAfterSceneDisconnect(sceneA))
+
+        _ = fixture.source.resolveCandidate(
+            candidateConfiguration: fixture.root2,
+            sceneIdentifier: sceneA,
+            state: fixture.replacementState,
+            isReaderMount: true,
+            viewsHandler: nil
+        ) { _, _ in
+            XCTFail("The current owner must use guarded disconnect recovery")
+        }
+        XCTAssertEqual(
+            fixture.source.resolveCandidate(
+                candidateConfiguration: fixture.root2,
+                sceneIdentifier: sceneA,
+                state: fixture.ownerState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The returning donor must adopt the recovered occurrence")
+            },
+            .handled
+        )
+        XCTAssertNotNil(fixture.ownerState.activeLifecycleGeneration)
+        XCTAssertNil(fixture.replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(fixture.ownerState.configuration, fixture.detail1)
+        XCTAssertEqual(fixture.ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(fixture.replacementIdentities.invocationCount, 1)
+
+        fixture.source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            fixture.source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenProvisionalDonorReconnectsBeforeQueuedCleanup_freshOwnerSurvives() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-1", "detail-2"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: state,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = state.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(state.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(state.needsReaderRemount)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: state,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = state.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertFalse(state.needsReaderRemount)
+        XCTAssertNotNil(state.activeLifecycleGeneration)
+        XCTAssertEqual(identities.invocationCount, 2)
+
+        source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenDormantReplacementReconnectsBeforeInactiveOwner_itStartsFreshOccurrence() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["detail-2"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(ownerState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(replacementState.invalidateAfterSceneDisconnect(sceneA))
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = replacementState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(ownerState.activeLifecycleGeneration)
+        XCTAssertNotNil(replacementState.activeLifecycleGeneration)
+        XCTAssertFalse(replacementState.needsReaderRemount)
+        XCTAssertEqual(ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(replacementIdentities.invocationCount, 1)
+
+        source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenOwnerReconnectsBeforeDormantReplacement_replacementAdoptsFreshOccurrence() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1", "detail-2"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["duplicate"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(ownerState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(replacementState.invalidateAfterSceneDisconnect(sceneA))
+        _ = source.resolveCandidate(
+            candidateConfiguration: root,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            isReaderMount: true,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The replacement must adopt the freshly remounted occurrence")
+            },
+            .handled
+        )
+        XCTAssertNil(ownerState.activeLifecycleGeneration)
+        XCTAssertNotNil(replacementState.activeLifecycleGeneration)
+        XCTAssertFalse(replacementState.needsReaderRemount)
+        XCTAssertEqual(ownerIdentities.invocationCount, 2)
+        XCTAssertEqual(replacementIdentities.invocationCount, 0)
+
+        source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenNewerDonorReconnectsBeforeDescriptor_itRestartsLastProvenDestination() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["detail-1-reconnected"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root1 = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let root2 = configuration(key: "root", generation: 2, isCurrentDestination: false)
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root1,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: ownerState,
+                isReaderMount: false,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A donor refresh must not create a destination")
+            },
+            .handled
+        )
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root2,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(ownerState.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(replacementState.invalidateAfterSceneDisconnect(sceneA))
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = replacementState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(replacementState.configuration, detail1)
+        XCTAssertNotNil(replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(replacementIdentities.invocationCount, 1)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1-reconnected", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenNewerDonorMovesScenesBeforeDescriptor_itStartsLastProvenDestination() {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(["detail-1-scene-b"])
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root1 = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let root2 = configuration(key: "root", generation: 2, isCurrentDestination: false)
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root1,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+        _ = source.resolveCandidate(
+            candidateConfiguration: root2,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            isReaderMount: false,
+            viewsHandler: nil
+        ) { _, _ in
+            XCTFail("A donor refresh must not create a destination")
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root2,
+                attachment: .attached(sceneB)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneB,
+                state: replacementState,
+                isReaderMount: true,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = replacementState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(ownerState.activeLifecycleGeneration)
+        XCTAssertEqual(replacementState.configuration, detail1)
+        XCTAssertEqual(replacementState.sceneIdentifier, sceneB)
+        XCTAssertNotNil(replacementState.activeLifecycleGeneration)
+        XCTAssertEqual(ownerIdentities.invocationCount, 1)
+        XCTAssertEqual(replacementIdentities.invocationCount, 1)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1-scene-b", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenAcceptedIdentityChanges_staleDescriptorCannotAdoptBeforeReconciliation() {
+        let donorState = RUMViewTrackingState(
+            identity: "donor-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["detail-1"]).next
+        )
+        let candidateState = RUMViewTrackingState(
+            identity: "candidate-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["detail-2"]).next
+        )
+        let hiddenRoot = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: hiddenRoot,
+            sceneIdentifier: sceneA,
+            state: donorState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = donorState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+
+        for candidate in [detail1, detail2] {
+            XCTAssertEqual(
+                source.resolveCandidate(
+                    candidateConfiguration: candidate,
+                    sceneIdentifier: sceneA,
+                    state: candidateState,
+                    viewsHandler: nil
+                ) { _, _ in
+                    XCTFail("No destination may mount before the accepted descriptor is reconciled")
+                },
+                .rejectStale
+            )
+        }
+        XCTAssertEqual(donorState.configuration, detail1)
+        XCTAssertNotNil(donorState.activeLifecycleGeneration)
+
+        source.reconcileCurrentDestination(configuration: detail2, viewsHandler: nil)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail2,
+                sceneIdentifier: sceneA,
+                state: candidateState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = candidateState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(
+            candidateState.disappear(configuration: detail2),
+            [.stop(identity: "detail-2", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenInitialPathIsEmpty_laterDestinationCannotBootstrap() {
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let root = configuration(key: "root", generation: 0)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: root.occurrenceKey,
+            bindingGeneration: root.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: root, viewsHandler: nil)
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        var transitions: [RUMViewTrackingState.Transition] = []
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: state,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                transitions.append(
+                    contentsOf: state.mountInitialNavigationDestination(
+                        in: sceneIdentifier,
+                        configuration: configuration
+                    )
+                )
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertEqual(transitions, [])
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testWhenPendingInitialPathBecomesEmpty_revealsFreshRootAndRejectsStaleTop() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-1", "home-1"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let hiddenRoot = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let revealedRoot = configuration(key: "root", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: hiddenRoot,
+            sceneIdentifier: sceneA,
+            state: state,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = state.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        source.acceptDestination(
+            occurrenceKey: revealedRoot.occurrenceKey,
+            bindingGeneration: revealedRoot.bindingGeneration,
+            change: .retainedReveal
+        )
+        let transitions = source.reconcileCurrentDestination(
+            configuration: revealedRoot,
+            viewsHandler: nil
+        )
+
+        XCTAssertEqual(
+            transitions,
+            [
+                .replace(
+                    oldIdentity: "detail-1",
+                    newIdentity: "home-1",
+                    sceneIdentifier: sceneA
+                )
+            ]
+        )
+        XCTAssertEqual(state.configuration, revealedRoot)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: RUMViewTrackingState(),
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The removed destination must not restart")
+            },
+            .rejectStale
+        )
+        XCTAssertFalse(source.needsInitialDestinationReconciliation)
+    }
+
+    func testWhenContainerDetachesBeforeInitialAdoption_provisionalOccurrenceStops() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-1"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let hiddenRoot = configuration(
+            key: "root",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: hiddenRoot,
+            sceneIdentifier: sceneA,
+            state: state,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = state.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertNil(state.activeLifecycleGeneration)
+        XCTAssertFalse(source.isInitialDestinationPending)
+    }
+
+    func testWhenInitialOwnerMovesToAnotherScene_newSceneBecomesSoleOwner() {
+        let firstIdentities = RUMOccurrenceIdentityGenerator(["detail-a"])
+        let secondIdentities = RUMOccurrenceIdentityGenerator(["detail-b"])
+        let stateA = RUMViewTrackingState(
+            identity: "fallback-a",
+            occurrenceIdentityGenerator: firstIdentities.next
+        )
+        let stateB = RUMViewTrackingState(
+            identity: "fallback-b",
+            occurrenceIdentityGenerator: secondIdentities.next
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneA,
+            state: stateA,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = stateA.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneB,
+                state: stateB,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = stateB.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+
+        XCTAssertNil(stateA.activeLifecycleGeneration)
+        XCTAssertEqual(firstIdentities.invocationCount, 1)
+        XCTAssertEqual(secondIdentities.invocationCount, 1)
+        XCTAssertEqual(
+            stateB.disappear(configuration: detail),
+            [.stop(identity: "detail-b", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenInitialOwnerSceneDisconnects_sameGenerationReaderRemountStartsFreshOccurrence() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-a", "detail-b"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneA,
+            state: state,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = state.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        XCTAssertTrue(state.invalidateAfterSceneDisconnect(sceneA))
+        source.sceneDidDisconnect(sceneA)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneB,
+                state: state,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = state.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(identities.invocationCount, 2)
+        XCTAssertEqual(
+            state.disappear(configuration: detail),
+            [.stop(identity: "detail-b", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenSameSceneReconnectsBeforeQueuedSourceCleanup_freshOwnerSurvivesCleanup() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-a", "detail-b"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let detail = configuration(key: "detail", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneA,
+            state: state,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = state.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        observer.notify(attachment: .attached(sceneA))
+        let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+            notificationCenter: NotificationCenter(),
+            coordinatorProvider: { _, _ in nil }
+        )
+        arbiter.register(
+            observer: observer,
+            for: state,
+            navigationOccurrenceSource: source
+        )
+        arbiter.discard(sceneIdentifier: sceneA)
+        XCTAssertTrue(state.needsReaderRemount)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: detail,
+                sceneIdentifier: sceneA,
+                state: state,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = state.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertEqual(identities.invocationCount, 2)
+
+        source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "detail-b", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenRetainedRouteReconnectsBeforeQueuedSourceCleanup_itRequiresFreshMount() {
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2", "home-3"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initialHome = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initialHome)
+        _ = state.disappear(configuration: initialHome)
+
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let detail = configuration(key: "detail", generation: 1)
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: initialHome,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            _ = state.reconcile(
+                configuration: configuration,
+                attachment: .attached(sceneIdentifier),
+                isAppeared: true
+            )
+        }
+
+        let returnedHome = configuration(key: "home", generation: 2)
+        source.acceptDestination(
+            occurrenceKey: returnedHome.occurrenceKey,
+            bindingGeneration: returnedHome.bindingGeneration,
+            change: .retainedReveal
+        )
+        source.reconcileCurrentDestination(configuration: returnedHome, viewsHandler: nil)
+        XCTAssertEqual(identities.invocationCount, 2)
+
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        observer.notify(attachment: .attached(sceneA))
+        let arbiter = RUMSwiftUIInteractiveTransitionArbiter(
+            notificationCenter: NotificationCenter(),
+            coordinatorProvider: { _, _ in nil }
+        )
+        arbiter.register(
+            observer: observer,
+            for: state,
+            navigationOccurrenceSource: source
+        )
+        arbiter.discard(sceneIdentifier: sceneA)
+        XCTAssertTrue(state.needsReaderRemount)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: returnedHome,
+                sceneIdentifier: sceneA,
+                state: state,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The invalidated pending lease must not be consumed")
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertEqual(
+            state.mountCurrentNavigationDestinationAfterSceneDisconnect(
+                in: sceneA,
+                configuration: returnedHome
+            ),
+            [.start(identity: "home-3", sceneIdentifier: sceneA)]
+        )
+
+        source.sceneDidDisconnect(sceneA)
+        XCTAssertEqual(
+            state.disappear(configuration: returnedHome),
+            [.stop(identity: "home-3", sceneIdentifier: sceneA)]
+        )
+    }
+
+    func testWhenTwoSourcesRestoreSameRoute_initialOwnershipRemainsWindowLocal() {
+        let detail = configuration(key: "detail", generation: 1)
+        let stateA = RUMViewTrackingState(
+            identity: "fallback-a",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["detail-a"]).next
+        )
+        let stateB = RUMViewTrackingState(
+            identity: "fallback-b",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["detail-b"]).next
+        )
+        let sourceA = RUMSwiftUINavigationOccurrenceSource()
+        let sourceB = RUMSwiftUINavigationOccurrenceSource()
+
+        for source in [sourceA, sourceB] {
+            source.acceptDestination(
+                occurrenceKey: detail.occurrenceKey,
+                bindingGeneration: detail.bindingGeneration,
+                change: .initial(requiresBootstrap: true)
+            )
+            source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        }
+        _ = sourceA.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneA,
+            state: stateA,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = stateA.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        _ = sourceB.resolveCandidate(
+            candidateConfiguration: detail,
+            sceneIdentifier: sceneB,
+            state: stateB,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = stateB.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        XCTAssertEqual(
+            stateA.disappear(configuration: detail),
+            [.stop(identity: "detail-a", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(
+            stateB.disappear(configuration: detail),
+            [.stop(identity: "detail-b", sceneIdentifier: sceneB)]
+        )
+    }
 
     func testWhenRetainedRouteWasPreviouslyVisible_revealStartsFreshOccurrenceSynchronously() {
         let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
@@ -1113,7 +2953,7 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         )
         let returned = configuration(key: "home", generation: 2)
 
-        XCTAssertFalse(
+        XCTAssertTrue(
             source.consumeRevealedRoute(
                 configuration: returned,
                 sceneIdentifier: sceneA,
@@ -1125,6 +2965,75 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
             [.stop(identity: "home-2", sceneIdentifier: sceneA)]
         )
         XCTAssertEqual(identities.invocationCount, 2)
+    }
+
+    func testWhenPendingRevealedRouteMovesScenesWithSameState_itRemountsFreshInDestinationScene() {
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2", "home-3"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initial = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initial)
+        _ = state.disappear(configuration: initial)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: initial,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: state.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        let detail = configuration(key: "detail", generation: 2)
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        let returned = configuration(key: "home", generation: 3)
+        source.acceptDestination(
+            occurrenceKey: returned.occurrenceKey,
+            bindingGeneration: returned.bindingGeneration,
+            change: .retainedReveal
+        )
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+        source.reconcileCurrentDestination(configuration: returned, viewsHandler: nil)
+
+        var attemptedOrdinaryMount = false
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: returned,
+                sceneIdentifier: sceneB,
+                state: state,
+                viewsHandler: nil
+            ) { _, _ in
+                attemptedOrdinaryMount = true
+            },
+            .handled
+        )
+        XCTAssertFalse(attemptedOrdinaryMount)
+        XCTAssertEqual(identities.invocationCount, 3)
+        XCTAssertEqual(state.sceneIdentifier, sceneB)
+        XCTAssertNotNil(state.activeLifecycleGeneration)
+        XCTAssertEqual(
+            state.disappear(configuration: returned),
+            [.stop(identity: "home-3", sceneIdentifier: sceneB)]
+        )
     }
 
     func testWhenMultipleRegistrationsCanRevealSameRoute_onlyNewestRegistrationStarts() {
@@ -1412,6 +3321,106 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         )
     }
 
+    func testWhenOutgoingCurrentSnapshotDetaches_retainedPopUsesItsLastProvenScene() {
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initialRoot = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initialRoot)
+        _ = state.disappear(configuration: initialRoot)
+
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let detail = configuration(key: "detail", generation: 2)
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+
+        XCTAssertEqual(
+            state.update(configuration: initialRoot, attachment: .detached),
+            []
+        )
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertEqual(state.retainedRouteSceneIdentifier, sceneA)
+
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: initialRoot,
+            attachment: .detached
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: state.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        let returnedRoot = configuration(key: "home", generation: 3)
+        source.acceptDestination(
+            occurrenceKey: returnedRoot.occurrenceKey,
+            bindingGeneration: returnedRoot.bindingGeneration,
+            change: .retainedReveal
+        )
+
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, returnedRoot)
+        XCTAssertEqual(identities.invocationCount, 2)
+    }
+
+    func testWhenContainerDetachesDuringRetainedAdoption_pendingOccurrenceStops() {
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initial = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initial)
+        _ = state.disappear(configuration: initial)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: initial,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            _ = state.reconcile(
+                configuration: configuration,
+                attachment: .attached(sceneIdentifier),
+                isAppeared: true
+            )
+        }
+        XCTAssertTrue(
+            source.revealRetainedRoute(
+                occurrenceKey: RUMViewOccurrenceKey("home"),
+                bindingGeneration: 2
+            )
+        )
+
+        XCTAssertEqual(
+            source.cancelNavigationOwnedOccurrences(viewsHandler: nil),
+            [.stop(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertNil(state.activeLifecycleGeneration)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(
+            state.disappear(configuration: configuration(key: "home", generation: 2)),
+            []
+        )
+    }
+
     func testWhenRetainedRouteReaderIsAttachedWithoutScene_revealStaysUnresolved() {
         let identities = RUMOccurrenceIdentityGenerator(["home-1", "unused"])
         let state = RUMViewTrackingState(
@@ -1537,6 +3546,110 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         XCTAssertEqual(
             transitions,
             [.start(identity: "home-2", sceneIdentifier: sceneB)]
+        )
+    }
+
+    func testWhenDormantRouteReconnects_readerRearmsSynchronousReveal() {
+        let identities = RUMOccurrenceIdentityGenerator(["home-1", "home-2"])
+        let state = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initial = configuration(key: "home", generation: 1)
+        _ = state.mount(in: sceneA, configuration: initial)
+        _ = state.disappear(configuration: initial)
+        let hiddenHome = configuration(
+            key: "home",
+            generation: 2,
+            isCurrentDestination: false
+        )
+        _ = state.update(configuration: hiddenHome, attachment: .attached(sceneA))
+
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let detail = configuration(key: "detail", generation: 2)
+        source.acceptDestination(
+            occurrenceKey: detail.occurrenceKey,
+            bindingGeneration: detail.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: detail, viewsHandler: nil)
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: hiddenHome,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: state.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+        XCTAssertTrue(state.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(state.needsReaderRemount)
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: hiddenHome,
+                sceneIdentifier: sceneA,
+                state: state,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A hidden boundary must not mount while another route is current")
+            },
+            .recordDormant
+        )
+        XCTAssertTrue(
+            state.rearmDormantNavigationBoundaryAfterSceneDisconnect(
+                configuration: hiddenHome,
+                attachment: .attached(sceneA)
+            )
+        )
+        registration.rebind(
+            to: source,
+            state: state,
+            configuration: hiddenHome,
+            attachment: .attached(sceneA)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: state.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertNil(state.activeLifecycleGeneration)
+        XCTAssertFalse(state.needsReaderRemount)
+        XCTAssertEqual(identities.invocationCount, 1)
+
+        let returned = configuration(key: "home", generation: 3)
+        source.acceptDestination(
+            occurrenceKey: returned.occurrenceKey,
+            bindingGeneration: returned.bindingGeneration,
+            change: .retainedReveal
+        )
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "home-2", sceneIdentifier: sceneA)]
+        )
+        source.reconcileCurrentDestination(configuration: returned, viewsHandler: nil)
+        XCTAssertTrue(
+            source.consumeRevealedRoute(
+                configuration: returned,
+                sceneIdentifier: sceneA,
+                into: state
+            )
+        )
+        XCTAssertEqual(
+            state.disappear(configuration: returned),
+            [.stop(identity: "home-2", sceneIdentifier: sceneA)]
         )
     }
 
@@ -1826,15 +3939,155 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
         XCTAssertEqual(identities.invocationCount, 2)
     }
 
+    private struct AdvancedProvisionalDonorFixture {
+        let source: RUMSwiftUINavigationOccurrenceSource
+        let ownerState: RUMViewTrackingState
+        let replacementState: RUMViewTrackingState
+        let root2: RUMViewTrackingState.Configuration
+        let detail1: RUMViewTrackingState.Configuration
+        let ownerIdentities: RUMOccurrenceIdentityGenerator
+        let replacementIdentities: RUMOccurrenceIdentityGenerator
+    }
+
+    private func makeAdvancedProvisionalDonorTransfer(
+        ownerIdentityValues: [String],
+        replacementIdentityValues: [String]
+    ) -> AdvancedProvisionalDonorFixture {
+        let ownerIdentities = RUMOccurrenceIdentityGenerator(ownerIdentityValues)
+        let replacementIdentities = RUMOccurrenceIdentityGenerator(
+            replacementIdentityValues
+        )
+        let ownerState = RUMViewTrackingState(
+            identity: "owner-fallback",
+            occurrenceIdentityGenerator: ownerIdentities.next
+        )
+        let replacementState = RUMViewTrackingState(
+            identity: "replacement-fallback",
+            occurrenceIdentityGenerator: replacementIdentities.next
+        )
+        let root1 = configuration(key: "root", generation: 1, isCurrentDestination: false)
+        let root2 = configuration(key: "root", generation: 2, isCurrentDestination: false)
+        let detail1 = configuration(key: "detail-1", generation: 1)
+        let detail2 = configuration(key: "detail-2", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: detail1.occurrenceKey,
+            bindingGeneration: detail1.bindingGeneration,
+            change: .initial(requiresBootstrap: true)
+        )
+        source.reconcileCurrentDestination(configuration: detail1, viewsHandler: nil)
+        _ = source.resolveCandidate(
+            candidateConfiguration: root1,
+            sceneIdentifier: sceneA,
+            state: ownerState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = ownerState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+        XCTAssertTrue(
+            replacementState.recordDormantNavigationBoundary(
+                configuration: root1,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root1,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The replacement must adopt the provisional occurrence")
+            },
+            .handled
+        )
+
+        source.acceptDestination(
+            occurrenceKey: detail2.occurrenceKey,
+            bindingGeneration: detail2.bindingGeneration,
+            change: .replacement
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: root2,
+                sceneIdentifier: sceneA,
+                state: replacementState,
+                isReaderMount: false,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A donor refresh must not create a destination")
+            },
+            .handled
+        )
+        XCTAssertEqual(ownerState.disappear(configuration: root2), [])
+        XCTAssertEqual(ownerState.configuration, root2)
+
+        return AdvancedProvisionalDonorFixture(
+            source: source,
+            ownerState: ownerState,
+            replacementState: replacementState,
+            root2: root2,
+            detail1: detail1,
+            ownerIdentities: ownerIdentities,
+            replacementIdentities: replacementIdentities
+        )
+    }
+
     private func configuration(
         key: String,
-        generation: UInt64
+        generation: UInt64,
+        isCurrentDestination: Bool = true
     ) -> RUMViewTrackingState.Configuration {
         RUMViewTrackingState.Configuration(
             occurrenceKey: RUMViewOccurrenceKey(key),
             bindingGeneration: generation,
-            descriptor: .init(name: key, path: "/\(key)", attributes: [:])
+            descriptor: .init(name: key, path: "/\(key)", attributes: [:]),
+            isCurrentDestination: isCurrentDestination
         )
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+final class RUMSemanticNavigationContainerLifetimeStateTests: XCTestCase {
+    func testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns() async {
+        var state: RUMSemanticNavigationContainerLifetimeState? =
+            RUMSemanticNavigationContainerLifetimeState()
+        var didDetach = false
+        let drained = expectation(description: "main queue drained")
+        state?.reconcile(attachment: .detached) {
+            didDetach = true
+        }
+
+        state = nil
+        DispatchQueue.main.async {
+            drained.fulfill()
+        }
+        await fulfillment(of: [drained], timeout: 1)
+
+        XCTAssertTrue(didDetach)
+    }
+
+    func testWhenDetachedStateReattaches_queuedFinalDetachIsCancelled() async {
+        let state = RUMSemanticNavigationContainerLifetimeState()
+        var didDetach = false
+        let drained = expectation(description: "main queue drained")
+        state.reconcile(attachment: .detached) {
+            didDetach = true
+        }
+        state.reconcile(attachment: .attached(RUMSceneIdentifier(rawValue: "scene-A"))) {
+            XCTFail("An attachment must not schedule teardown")
+        }
+
+        DispatchQueue.main.async {
+            drained.fulfill()
+        }
+        await fulfillment(of: [drained], timeout: 1)
+
+        XCTAssertFalse(didDetach)
     }
 }
 
@@ -3569,6 +5822,94 @@ final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
         XCTAssertEqual(acceptedPath, ["details"])
         XCTAssertEqual(acceptedOccurrence.key, navigationState.occurrence(for: "details").key)
         XCTAssertEqual(navigationState.bindingGeneration, acceptedGeneration)
+    }
+
+    func testForward_whenPendingBootstrapIsCanonicalized_onlyAcceptedDestinationCanAdopt() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: ["details"])
+        let detailsConfiguration = configuration(
+            for: navigationState.occurrence(for: "details"),
+            name: "Details"
+        )
+        navigationState.occurrenceSource.reconcileCurrentDestination(
+            configuration: detailsConfiguration,
+            viewsHandler: nil
+        )
+        let donorState = RUMViewTrackingState(
+            identity: "root-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["details-1"]).next
+        )
+        let hiddenRootConfiguration = configuration(
+            for: navigationState.rootOccurrence,
+            name: "Home"
+        )
+        _ = navigationState.occurrenceSource.resolveCandidate(
+            candidateConfiguration: hiddenRootConfiguration,
+            sceneIdentifier: scene,
+            state: donorState,
+            viewsHandler: nil
+        ) { configuration, sceneIdentifier in
+            _ = donorState.mountInitialNavigationDestination(
+                in: sceneIdentifier,
+                configuration: configuration
+            )
+        }
+
+        var acceptedPath = ["details"]
+        let canonicalizingBinding = Binding<[String]>(
+            get: { acceptedPath },
+            set: { acceptedPath = Array($0.prefix(1)) }
+        )
+        navigationState.forward(
+            proposedPath: ["alternate", "ignored"],
+            to: canonicalizingBinding,
+            transaction: Transaction()
+        )
+        let alternateConfiguration = configuration(
+            for: navigationState.occurrence(for: "alternate"),
+            name: "Alternate"
+        )
+        navigationState.occurrenceSource.reconcileCurrentDestination(
+            configuration: alternateConfiguration,
+            viewsHandler: nil
+        )
+        let staleState = RUMViewTrackingState(identity: "stale-fallback")
+        let alternateState = RUMViewTrackingState(
+            identity: "alternate-fallback",
+            occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["alternate-1"]).next
+        )
+
+        XCTAssertEqual(acceptedPath, ["alternate"])
+        XCTAssertEqual(
+            navigationState.occurrenceSource.resolveCandidate(
+                candidateConfiguration: detailsConfiguration,
+                sceneIdentifier: scene,
+                state: staleState,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The pre-canonicalization destination must stay suppressed")
+            },
+            .rejectStale
+        )
+        XCTAssertEqual(
+            navigationState.occurrenceSource.resolveCandidate(
+                candidateConfiguration: alternateConfiguration,
+                sceneIdentifier: scene,
+                state: alternateState,
+                viewsHandler: nil
+            ) { configuration, sceneIdentifier in
+                _ = alternateState.mountInitialNavigationDestination(
+                    in: sceneIdentifier,
+                    configuration: configuration
+                )
+            },
+            .handled
+        )
+        XCTAssertNil(donorState.activeLifecycleGeneration)
+        XCTAssertEqual(
+            alternateState.disappear(configuration: alternateConfiguration),
+            [.stop(identity: "alternate-1", sceneIdentifier: scene)]
+        )
     }
 
     private func configuration(
