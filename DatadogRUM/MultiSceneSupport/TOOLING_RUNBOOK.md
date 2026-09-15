@@ -138,6 +138,9 @@ result bundle, rerun the unchanged selection with code coverage disabled:
   test
 ```
 
+Use `-enableCodeCoverage NO` only with a test action. Xcode rejects that option
+for a plain `build`; the accepted Release probe command omits it.
+
 This is a tooling workaround, not permission to omit the complete module run.
 Use Xcode 27's `xcresulttool get test-results summary` on the resulting
 `.xcresult` when raw output is truncated. Its device-level `passedTests` count

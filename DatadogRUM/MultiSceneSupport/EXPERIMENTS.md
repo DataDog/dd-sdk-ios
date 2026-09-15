@@ -112,9 +112,10 @@ boundary, in this order:
 | 95 | `Document scene-targeted manual API validation` | `EXP-137` through `EXP-140`, Xcode/tooling corrections, current support assessment, and the semantic SwiftUI plus Operation SPI resume plan |
 | 96 | `Prototype SwiftUI semantic navigation integration` | iOS 27 builder-owning Swift SPI, typed path occurrence state, Sheet/full-screen-cover authority, target-scoped automatic suppression, and focused tests |
 | 97 | `Exercise semantic navigation API in native probe` | `EXP-141` customer-shaped H1/D1/H2/Sheet/H3/Cover/H4 scenario and strict action/Resource/dedup oracle |
+| 98 | `Preserve repeated semantic route occurrences` | `EXP-142` materialized destination claims, accepted-binding reconciliation, native repeated-value links, and strict reveal-before-callback coverage |
 
-Rows 1-97 are committed and signed. Rows 93-97 are `d2a5b9491`, `01e5d1ffb`,
-`3b26da106`, `eb89a4f24`, and `3af24003c` respectively. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-98 are committed and signed. Rows 93-98 are `d2a5b9491`, `01e5d1ffb`,
+`3b26da106`, `eb89a4f24`, `3af24003c`, and `a19177582` respectively. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -356,6 +357,8 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-138 | rejected mixed-run `api-nested-manual-20260915-0210-a`; accepted `api-nested-manual-normalized-20260915-0215-a` | rejected `a2980fff-af5d-40f0-b2ad-dd3941d75be5`; accepted `6b9ef22e-0cec-4e78-be76-3fbc42ceecf9` | iPadOS 27 simulator | Customer-shaped nested-manual acceptance and harness-isolation fix. The first run passed 29/29 locally and had the correct seven-view session, but C1/P1/C2 view documents retained the preceding launch's run ID because SwiftUI restored a `WindowGroup` value outside the deleted app container. It is invalid acceptance evidence. The probe now normalizes restored telemetry to the current launch while preserving the original routed value for window identity/dismissal. The clean accepted run passes 29/29 with H1 `2bdc8076…` → Compose C1 `a9e27247…` → Preview P1 `1a4546b0…` → fresh Compose C2 `105e61cb…` → fresh H2 `526e3651…`; the duplicate Compose start creates no C3. All seven view documents carry the current run ID. Backend intake has 40 events and zero errors/crashes. |
 | EXP-139 | `api-scene-sheet-20260915-0225-a` | `f497175c-a44d-4d0c-9436-28cf2f28751a` | iPadOS 27 simulator | Customer-shaped scene-targeted Sheet acceptance. The 14/14 oracle and backend contain H1 `8a5f8cc8…` → one semantic Sheet `83705cb0…` → fresh H2 `4fb5c337…`, with no automatic Sheet duplicate. Active action/Resource use the Sheet; immediate and settled dismiss pairs use H2. Every semantic payload carries the current run ID. Exact intake has 29 events and zero errors/crashes. |
 | EXP-140 | `api-scene-fullscreen-20260915-0235-a` | `4edb6a3d-50fa-4d0b-ae5c-064b0720815d` | iPadOS 27 simulator | Customer-shaped scene-targeted full-screen-cover acceptance. The 14/14 oracle and backend contain H1 `43326c6e…` → one semantic Cover `1d7f7dd0…` → fresh H2 `238b6fa3…`, with no automatic cover duplicate. Active action/Resource use the Cover; immediate and settled dismiss pairs use H2. Every semantic payload carries the current run ID. Exact intake has 28 events and zero errors/crashes. |
+| EXP-141 | `semantic-api-20260915-1021-a` | `ff21d9ab-f59f-49cf-91c1-f1326a0a39ea` | iPadOS 27 simulator | Customer-shaped complete-destination semantic API acceptance. The 38/38 oracle and backend contain seven distinct semantic occurrences H1/D1/H2/Sheet/H3/Cover/H4 plus ApplicationLaunch, with no automatic duplicate. All 25 actions and 25 Resources use the expected current occurrence, including fresh post-dismiss H3/H4; zero errors/crashes. |
+| EXP-142 | Weak-oracle `semantic-links-20260915-1120-a`; decisive failure `semantic-links-20260915-1125-b`; accepted `semantic-links-20260915-1140-c` | weak `fb1d6a93-57b4-49c5-9dbf-5b2a87088ca6`; failure `d6e72bf8-6ffa-4179-b051-8e3a9b9dddc4`; accepted `8f300e56-a83f-4b9e-8d37-d0341af383ff` | iPadOS 27 simulator | Repeated equal-route acceptance through real `NavigationLink(value:)` controls. A stronger reveal-before-callback oracle exposed returned Detail work on D2 before fresh D3. Per-materialized-boundary occurrence claims fix the collision without wrapping the customer's route type. The accepted run passes 48/48 with H1/D1/D2/fresh D3/fresh H2, exact action/Resource ownership, six backend semantic views including launch, 55 events, and zero errors/crashes. Initial restoration directly to repeated equal values remains open. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -4528,6 +4531,118 @@ or stable API review. Reusing `RUMView` is intentionally provisional because its
 slice should test programmatic router mutations and presentation replacement,
 then run the same API in scene A while automatic tracking remains active in an
 independent scene B on capable hardware.
+
+### 2026-09-15 — EXP-142: repeated semantic route values
+
+This experiment exercises actual customer-shaped `NavigationLink(value:)`
+navigation with two consecutive equal route values. It requires five distinct
+semantic occurrences: Home H1 → Detail D1 → Detail D2 → fresh Detail D3
+after one pop → fresh Home H2 after the second pop. The decisive oracle also
+requires each destination's first `onAppear` action and Resource to use the fresh
+occurrence before later driver markers can hide an ordering defect.
+
+The first run was not accepted despite a terminal pass:
+
+- scenario `swiftui.semantic-api.repeated-value-links`;
+- run `semantic-links-20260915-1120-a`;
+- RUM session `fb1d6a93-57b4-49c5-9dbf-5b2a87088ca6`; and
+- local oracle `PASS`, 22/22 expectations.
+
+It produced distinct H1 `f91426a6…`, D1 `ec0a3d45…`, D2 `d1983adb…`, D3
+`f2c78e1a…`, and H2 `953c34d6…` occurrences, with 55 backend events and no
+error or crash. However, its returned-Detail marker ran only after D3 had started.
+The result could not prove that lifecycle work immediately triggered by the pop
+used D3, so it is retained as a weak-oracle run rather than acceptance evidence.
+
+The strengthened rerun failed decisively:
+
+- run `semantic-links-20260915-1125-b`;
+- RUM session `d6e72bf8-6ffa-4179-b051-8e3a9b9dddc4`;
+- native scene `33F68994-4513-4100-B294-A1F5A5A2EE23`; and
+- terminal `FAIL` after 44 matched expectations.
+
+H1 `181c15c4…`, D1 `15c59c60…`, and D2
+`9f3ab362-2d9f-439b-8988-d663cb7601a2` were distinct. On the first pop, the
+returned Detail's `navigation-appearance-2` action and Resource still used D2.
+Only afterward did fresh D3 `393da1f0-5458-4c78-8885-8abd74f3e61c` start; a
+later marker correctly used D3. The second pop created fresh H2 `6db239a8…`.
+This isolated an occurrence-publication ordering defect rather than a duplicate
+view or backend reduction problem.
+
+The previous occurrence lookup combined a route value with
+`lastIndex(of: route)`. When `[Detail]` became `[Detail, Detail]`, the already
+materialized first destination was rebound to the second position. Popping back
+to depth one therefore left no retained boundary claiming the first occurrence.
+
+A rejected repair wrapped each customer route in a private identifier before
+binding it to `NavigationStack`. Focused state tests passed, but the wrapper
+changed the stack's element type and broke ordinary
+`NavigationLink(value: Route)` / `navigationDestination(for: Route.self)`
+matching. The entire wrapper attempt was reverted; do not revive it.
+
+The accepted implementation instead keeps the customer's `[Route]` binding and
+attaches a reference-backed occurrence claim to each materialized destination
+boundary. An unchanged hidden destination retains its original claim while a
+real route change adopts the current occurrence key. Programmatic writes now
+forward the proposed path to the application binding first, then reconcile the
+state against the application's accepted getter. This also avoids advancing RUM
+state when a router rejects or canonicalizes a proposal.
+
+The clean accepted run is:
+
+- run `semantic-links-20260915-1140-c`;
+- RUM session `8f300e56-a83f-4b9e-8d37-d0341af383ff`;
+- native scene `33F68994-4513-4100-B294-A1F5A5A2EE23`;
+- local semantic oracle `PASS`, 48/48 expectations; and
+- no failed UI interaction, SDK error/warning, crash signature, or rejected
+  upload; all six RUM batches returned HTTP 202.
+
+The exact occurrence chain is:
+
+1. Home H1 `f857468e-58f3-4cb0-a60e-dcc2c9b2a246`;
+2. Detail D1 `f1f4e6f2-fc80-491a-8c1b-691ee2c008f8`;
+3. Detail D2 `9b943826-f171-4bfc-a5bb-b626d6af1513`;
+4. revealed Detail D3 `11d6938b-0270-4b81-8b38-bee5abc8a29c`; and
+5. revealed Home H2 `32cc8ba6-055e-44c7-88b1-8203cdc1d0b9`.
+
+Both `navigation-appearance-2` lifecycle events and the later marker use D3;
+the returned-Home lifecycle events and marker use H2. Backend intake contains 55
+events: 24 actions, 22 Resources, six views including ApplicationLaunch, one
+long task, one session, and one vital. The six exact view IDs match the mapper,
+there are no duplicate semantic views, and exact-session error/crash queries
+return zero.
+
+The clean-state precondition proved no running app, successful uninstall, and an
+absent container before install. Runtime artifacts are:
+
+- logs:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Route Claim Fix-11_37_33_158-logs.txt`;
+- hierarchy:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Route Claim Fix-11_37_33_158-hierarchy.txt`; and
+- screenshot:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Route Claim Fix-11_37_33_158-screenshot.png`.
+
+Validation at this checkpoint is:
+
+- six focused semantic occurrence/binding tests pass;
+- native probe tests pass 135/135;
+- the complete DatadogRUM test run passes 1,181/1,181 with zero failures or
+  skips; and
+- the Xcode 27 Release simulator build succeeds.
+
+The first complete RUM attempt had one unrelated timeseries sampling assertion
+fail (three samples versus two) and then hung while Xcode finalized its result.
+That exact test passed 1/1 in isolation, and the unchanged complete rerun passed
+1,181/1,181. The first Release command also incorrectly supplied
+`-enableCodeCoverage NO` to the `build` action, where Xcode accepts it only for
+testing; the unchanged build without that flag passed.
+
+Commit `a19177582` contains the implementation, focused regressions, native
+controls, strengthened lifecycle oracle, and accepted scenario. It closes
+sequential repeated equal values and native value-link compatibility. It does
+not yet prove restoration directly into an initial `[Detail, Detail]` path;
+external-router replacement, restoration, and presentation replacement remain
+the next simulator-capable semantic-navigation slice.
 
 ### Attempts not to repeat
 

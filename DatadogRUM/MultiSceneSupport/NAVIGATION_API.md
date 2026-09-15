@@ -376,8 +376,16 @@ settle the public shape. It currently requires a presentation type and binding
 even when an application has stack-only navigation, and it reuses `RUMView`,
 whose `isUntrackedModal` field is unrelated to semantic route metadata. API
 review should consider presentation-free overloads and a smaller descriptor.
-Programmatic router replacement, repeated equal routes, restoration, and
-presentation replacement remain hardening experiments before promotion.
+`EXP-142` now validates sequential repeated equal routes through actual
+`NavigationLink(value:)` controls. The implementation preserves the customer's
+`[Route]` element type and attaches an occurrence claim to each materialized
+destination boundary; wrapping the route in a private identity was rejected
+because it breaks native value-link/destination matching. Binding writes are
+reconciled against the application's accepted getter so rejecting or
+canonicalizing routers do not advance RUM state from an uncommitted proposal.
+External router replacement, initial restoration—especially directly into
+repeated equal values—and presentation replacement remain hardening experiments
+before promotion.
 
 ### Resolver and path model
 

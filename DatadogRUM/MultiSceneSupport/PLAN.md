@@ -137,13 +137,19 @@ builder-owning complete-destination SwiftUI SPI loop. The customer-shaped
 container consumes one typed path plus centralized root, destination, and
 presentation resolvers; its clean H1 → D1 → H2 → Sheet → H3 → Cover → H4 run
 passes 38/38 locally and in backend intake with no automatic duplicate. The full
-plan passes 134/134, six focused semantic tests pass, the complete RUM suite
-passes 1,177/1,177, and Xcode 27 Release compilation passes. Stable promotion
-still needs review, and the two-scene same-key row remains hardware-gated. The
-next local slice hardens router replacement/restoration and repeated equal routes
-before the Operation `.current(in:)` target SPI. Neither is technically blocked
-by public review because both remain experimental; review blocks only stable
-exposure.
+`EXP-142` then drives real repeated `NavigationLink(value:)` destinations and
+strengthens the oracle to inspect the first returned-destination lifecycle work.
+It exposes a retained-occurrence collision, rejects a route-wrapper repair that
+would break native value-link matching, and validates per-materialized-boundary
+claims through H1 → D1 → D2 → fresh D3 → fresh H2. The accepted run passes
+48/48 locally and in backend intake. The full plan passes 135/135, six focused
+semantic occurrence/binding tests pass, the complete RUM suite passes
+1,181/1,181, and Xcode 27 Release compilation passes. Stable promotion still
+needs review, and the two-scene same-key row remains hardware-gated. The next
+local slice covers external router replacement, restoration—including an initial
+repeated path—and presentation replacement before the Operation `.current(in:)`
+target SPI. Neither is technically blocked by public review because both remain
+experimental; review blocks only stable exposure.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -311,27 +317,36 @@ exposure.
     → H4 with 38/38 local assertions, seven exact backend view owners, 25 actions,
     25 Resources, and zero errors/crashes. The complete probe plan passes 134/134;
     the complete RUM suite passes 1,177/1,177. Promote only an API-reviewed shape.
-26. Harden that SPI with focused repeated-equal-route, external router mutation,
-    presentation replacement, and restoration cases. Rerun sibling-container
-    isolation through the actual SPI and add a presentation-free convenience only
-    if it preserves the same complete-destination contract.
-27. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
+26. Completed in signed commit `a19177582` and `EXP-142`: harden repeated equal
+    route values through native `NavigationLink(value:)` controls. A stronger
+    reveal-before-callback oracle first failed because a retained destination
+    rebound to the last equal path position. Per-materialized-boundary claims now
+    preserve D1/D2 identity and synchronously reveal fresh D3/H2 without changing
+    the customer's route type. The accepted run passes 48/48; backend intake has
+    the exact six-view set including launch, 24 actions, 22 Resources, and zero
+    errors/crashes. The probe passes 135/135 and full RUM passes 1,181/1,181.
+27. Harden the SPI with external router replacement, presentation replacement,
+    and restoration, including initial restoration directly into repeated equal
+    route values. Rerun sibling-container isolation through the actual SPI and add
+    a presentation-free convenience only if it preserves the same
+    complete-destination contract.
+28. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
     split result through adaptive collapse/expand, and validate stable simultaneous
     A/B topology through the real-device/human queue.
-28. Run genuine disconnect/reconnect, per-scene background/foreground, and
+29. Run genuine disconnect/reconnect, per-scene background/foreground, and
     concurrent restoration.
-29. Prototype Operation view targeting next, initially with an opaque iOS 27 SPI
+30. Prototype Operation view targeting next, initially with an opaque iOS 27 SPI
     value exposing only `.current(in:)`. Preserve explicit and inferred candidates
     separately so an unresolved explicit scene can fall through to trustworthy
     inference before snapshot/representative fallback. Exercise start/succeed/fail
     customer calls and Debug-only Objective-C selectors. Duplicate-start backend
     behavior is already closed by `EXP-130` and must not be rerun as an A-to-B
     prerequisite.
-30. Close explicitly targeted downstream signals and run live single-scene and
+31. Close explicitly targeted downstream signals and run live single-scene and
     custom-handler compatibility, handoff overhead, and the iOS 27.1/iPhone Duo
     matrix. Include `EXP-136` physical completion but do not reopen header-rewrite
     misuse or already-passing independent request ownership.
-31. After the multi-scene freeze gate—not before—execute the
+32. After the multi-scene freeze gate—not before—execute the
     [deferred single-scene extraction](DEFERRED_SINGLE_SCENE_EXTRACTION.md),
     rebuild this work on that generic stack, and stop before pushing.
 
