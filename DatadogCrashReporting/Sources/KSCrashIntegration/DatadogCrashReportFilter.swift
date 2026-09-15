@@ -219,7 +219,10 @@ extension BinaryImage {
         loadAddress: UInt64,
         maxAddress: UInt64
     ) {
-        #if targetEnvironment(simulator)
+        #if os(macOS)
+        // macOS system images are loaded from framework and dynamic-library roots.
+        let isSystemLibrary = path.hasPrefix("/System/Library/") || path.hasPrefix("/usr/lib/")
+        #elseif targetEnvironment(simulator)
         // Simulator: system images are in Xcode.app/Contents/Developer/Platforms/ or .simruntime bundles (Xcode 16+)
         let isSystemLibrary = path.contains("/Contents/Developer/Platforms/") || path.contains("simruntime")
         #else
