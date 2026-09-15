@@ -1,6 +1,7 @@
 all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean templates \
 		lint lint-cpp license-check \
+		platform-compatibility \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
@@ -55,6 +56,10 @@ lint-cpp:
 license-check:
 	@$(ECHO_TITLE) "make license-check"
 	./tools/license/check-license.sh
+
+platform-compatibility:
+	@$(ECHO_TITLE) "make platform-compatibility"
+	python3 ./tools/validate_platform_compatibility.py
 
 # Test env for running iOS tests in local:
 DEFAULT_IOS_OS := latest

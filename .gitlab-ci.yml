@@ -67,6 +67,7 @@ workflow:
           - "SmokeTests/**/*"
           - "TestUtilities/**/*"
           - "tools/**/*"
+          - "xcconfigs/**/*"
           - "*" # match any file in the root directory
         compare_to: 'develop' # cannot use $DEVELOP_BRANCH var due to: https://gitlab.com/gitlab-org/gitlab/-/issues/369916
 
@@ -166,6 +167,15 @@ Feature Docs Verify:
   script:
     - make feature-docs-verify
 
+Platform Compatibility:
+  stage: lint
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  script:
+    - ./tools/runner-setup.sh --python
+    - make platform-compatibility
+
 Unit Tests (iOS):
   stage: test
   rules: 
@@ -207,7 +217,7 @@ Unit Tests (tvOS):
     DEVICE: "Apple TV"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --tvOS
     - make clean repo-setup ENV=ci
     - make test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
@@ -231,7 +241,7 @@ Unit Tests (watchOS):
     DEVICE: "Apple Watch Series 11 (46mm)"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --watchOS
     - make clean repo-setup ENV=ci
     - make test-watchos-all OS="$DEFAULT_WATCHOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
@@ -255,7 +265,7 @@ Unit Tests (visionOS):
     DEVICE: "Apple Vision Pro"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --visionOS
     - make clean repo-setup ENV=ci
     - make test-visionos-all OS="$DEFAULT_VISIONOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
   artifacts:
@@ -398,7 +408,7 @@ Smoke Tests (tvOS):
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --tvOS --ssh
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
