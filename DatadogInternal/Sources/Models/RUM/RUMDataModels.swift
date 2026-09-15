@@ -2077,6 +2077,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// A boolean value saying if any of the stack traces was truncated due to minification.
         public let wasTruncated: Bool?
 
+        /// WebAssembly modules available for stack trace symbolication.
+        public let wasmModules: [WasmModules]?
+
         public enum CodingKeys: String, CodingKey {
             case binaryImages = "binary_images"
             case category = "category"
@@ -2097,6 +2100,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case timeSinceAppStart = "time_since_app_start"
             case type = "type"
             case wasTruncated = "was_truncated"
+            case wasmModules = "wasm_modules"
         }
 
         /// Error properties
@@ -2121,6 +2125,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         ///   - timeSinceAppStart: Time since application start when error happened (in milliseconds)
         ///   - type: The type of the error
         ///   - wasTruncated: A boolean value saying if any of the stack traces was truncated due to minification.
+        ///   - wasmModules: WebAssembly modules available for stack trace symbolication.
         public init(
             binaryImages: [BinaryImages]? = nil,
             category: Category? = nil,
@@ -2140,7 +2145,8 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             threads: [Threads]? = nil,
             timeSinceAppStart: Int64? = nil,
             type: String? = nil,
-            wasTruncated: Bool? = nil
+            wasTruncated: Bool? = nil,
+            wasmModules: [WasmModules]? = nil
         ) {
             self.binaryImages = binaryImages
             self.category = category
@@ -2161,6 +2167,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             self.timeSinceAppStart = timeSinceAppStart
             self.type = type
             self.wasTruncated = wasTruncated
+            self.wasmModules = wasmModules
         }
 
         /// Description of the binary image (native library; for Android: .so file) loaded or referenced by the process/application.
@@ -2491,6 +2498,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public enum SourceType: String, Codable {
             case android = "android"
             case browser = "browser"
+            case browserWasm = "browser+wasm"
             case ios = "ios"
             case reactNative = "react-native"
             case flutter = "flutter"
@@ -2543,6 +2551,33 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
                 self.name = name
                 self.stack = stack
                 self.state = state
+            }
+        }
+
+        /// A WebAssembly module loaded by the application.
+        public struct WasmModules: Codable, Equatable {
+            /// Build ID used to identify the WebAssembly debug symbols.
+            public let buildId: String
+
+            /// URL identifying the WebAssembly module.
+            public let url: String
+
+            public enum CodingKeys: String, CodingKey {
+                case buildId = "build_id"
+                case url = "url"
+            }
+
+            /// A WebAssembly module loaded by the application.
+            ///
+            /// - Parameters:
+            ///   - buildId: Build ID used to identify the WebAssembly debug symbols.
+            ///   - url: URL identifying the WebAssembly module.
+            public init(
+                buildId: String,
+                url: String
+            ) {
+                self.buildId = buildId
+                self.url = url
             }
         }
     }
@@ -4360,9 +4395,6 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// UUID of the resource
         public let id: String?
 
-        /// Whether the resource was served from the device's local cache
-        public let localCacheHit: Bool?
-
         /// HTTP method of the resource
         public let method: RUMMethod?
 
@@ -4416,7 +4448,6 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             case firstByte = "first_byte"
             case graphql = "graphql"
             case id = "id"
-            case localCacheHit = "local_cache_hit"
             case method = "method"
             case `protocol` = "protocol"
             case provider = "provider"
@@ -4446,7 +4477,6 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
-        ///   - localCacheHit: Whether the resource was served from the device's local cache
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4472,7 +4502,6 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             firstByte: FirstByte? = nil,
             graphql: RUMGraphql? = nil,
             id: String? = nil,
-            localCacheHit: Bool? = nil,
             method: RUMMethod? = nil,
             `protocol`: String? = nil,
             provider: Provider? = nil,
@@ -4498,7 +4527,6 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
             self.firstByte = firstByte
             self.graphql = graphql
             self.id = id
-            self.localCacheHit = localCacheHit
             self.method = method
             self.`protocol` = `protocol`
             self.provider = provider
@@ -15895,4 +15923,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/c6b13a3e00dd323c48240bacb6d8e7699b4e8b7f
+// Generated from https://github.com/DataDog/rum-events-format/tree/29a9b0d28ecb721263cd02d16cd82303d0c106d0
