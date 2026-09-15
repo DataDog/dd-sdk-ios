@@ -7,6 +7,20 @@
 import XCTest
 
 final class ProbeScenarioRunnerTests: XCTestCase {
+    func testRestoredWindowUsesCurrentLaunchRunID() {
+        let restoredWindow = ProbeWindow(
+            runID: "previous-run",
+            label: "scene-A",
+            opensPeer: true
+        )
+
+        let normalizedWindow = restoredWindow.normalized(forRunID: "current-run")
+
+        XCTAssertEqual(normalizedWindow.runID, "current-run")
+        XCTAssertEqual(normalizedWindow.label, "scene-A")
+        XCTAssertTrue(normalizedWindow.opensPeer)
+    }
+
     func testCatalogHasUniqueIdentifiersAndRequiredScenarios() {
         let identifiers = ProbeScenarioCatalog.all.map(\.identifier)
 

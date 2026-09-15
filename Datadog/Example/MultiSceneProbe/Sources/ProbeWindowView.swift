@@ -7,8 +7,10 @@
 import SwiftUI
 import UIKit
 #if DEBUG
+@_spi(Experimental)
 @testable import DatadogRUM
 #else
+@_spi(Experimental)
 import DatadogRUM
 #endif
 
@@ -17,14 +19,6 @@ private typealias ProbeNavigationOccurrenceSource = RUMSwiftUINavigationOccurren
 #else
 private final class ProbeNavigationOccurrenceSource {}
 #endif
-
-struct ProbeWindow: Codable, Hashable {
-    static let windowGroupID = "rum-probe"
-
-    let runID: String
-    let label: String
-    let opensPeer: Bool
-}
 
 private enum ProbeRoute: Hashable {
     case detail(Int)
@@ -418,6 +412,12 @@ private struct ProbeRUMNavigationStack<Root: View, Destination: View>: View {
 
 struct ProbeWindowRoot: View {
     let window: ProbeWindow
+    private let routedWindow: ProbeWindow
+
+    init(window: ProbeWindow) {
+        routedWindow = window
+        self.window = window.normalized(forRunID: ProbeRuntime.runID)
+    }
 
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
@@ -1146,24 +1146,17 @@ struct ProbeWindowRoot: View {
         isPresented: Bool
     ) {
         if isPresented {
-            #if DEBUG
-            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-                recordSceneTargetedManualViewFailure(operation: "\(presentation.rawValue)-start")
+            guard let windowScene = sceneTargetedWindowScene(
+                operation: "\(presentation.rawValue)-start"
+            ) else {
                 return
             }
-            monitor.startView(
-                key: presentation.manualViewKey,
-                name: presentation.rumViewName,
-                attributes: sceneTargetedPresentationAttributes(for: presentation),
-                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
-            )
-            #else
             RUMMonitor.shared().startView(
                 key: presentation.manualViewKey,
                 name: presentation.rumViewName,
+                in: windowScene,
                 attributes: sceneTargetedPresentationAttributes(for: presentation)
             )
-            #endif
             ProbeRuntime.record(
                 "scene-targeted \(presentation.rawValue) started source=\(window.label) "
                     + "native=\(sceneSessionID)"
@@ -1171,24 +1164,21 @@ struct ProbeWindowRoot: View {
             return
         }
 
-        #if DEBUG
-        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "\(presentation.rawValue)-stop")
+        guard let windowScene = sceneTargetedWindowScene(
+            operation: "\(presentation.rawValue)-stop"
+        ) else {
             return
         }
-        monitor.stopView(
+        RUMMonitor.shared().stopView(
             key: presentation.manualViewKey,
+            in: windowScene,
             attributes: [
                 ProbeRuntime.Attribute.runID: window.runID,
                 ProbeRuntime.Attribute.sourceScene: window.label,
                 ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
                 ProbeRuntime.Attribute.screen: presentation.rawValue
-            ],
-            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            ]
         )
-        #else
-        RUMMonitor.shared().stopView(key: presentation.manualViewKey)
-        #endif
         ProbeRuntime.record(
             "scene-targeted \(presentation.rawValue) stopped source=\(window.label) "
                 + "native=\(sceneSessionID)"
@@ -1274,7 +1264,7 @@ struct ProbeWindowRoot: View {
 
     private func closeCurrentWindow() {
         ProbeRuntime.record("dismissWindow invoked source=\(window.label)")
-        dismissWindow(id: ProbeWindow.windowGroupID, value: window)
+        dismissWindow(id: ProbeWindow.windowGroupID, value: routedWindow)
     }
 
     private func advanceRUMViewBindingGeneration(for path: [ProbeRoute]) {
@@ -2013,12 +2003,11 @@ struct ProbeWindowRoot: View {
         }
 
         if isActive {
-            #if DEBUG
-            guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-                recordSceneTargetedManualViewFailure(operation: "sibling-authority-start")
+            guard let windowScene = sceneTargetedWindowScene(
+                operation: "sibling-authority-start"
+            ) else {
                 return
             }
-            #endif
             ProbeRuntime.eventRecorder.record(
                 ProbeSignal(
                     kind: .intervalBegan,
@@ -2042,20 +2031,12 @@ struct ProbeWindowRoot: View {
                 ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
                 ProbeRuntime.Attribute.viewScreen: "sibling-authority"
             ]
-            #if DEBUG
-            monitor.startView(
-                key: "probe-sibling-authority",
-                name: "ProbeSiblingAuthorityView",
-                attributes: attributes,
-                sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
-            )
-            #else
             RUMMonitor.shared().startView(
                 key: "probe-sibling-authority",
                 name: "ProbeSiblingAuthorityView",
+                in: windowScene,
                 attributes: attributes
             )
-            #endif
             ProbeRuntime.recordDestination(
                 window: window,
                 sceneSessionID: sceneSessionID,
@@ -2080,24 +2061,21 @@ struct ProbeWindowRoot: View {
                 interval: "manual-sibling-authority"
             )
         )
-        #if DEBUG
-        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "sibling-authority-stop")
+        guard let windowScene = sceneTargetedWindowScene(
+            operation: "sibling-authority-stop"
+        ) else {
             return
         }
-        monitor.stopView(
+        RUMMonitor.shared().stopView(
             key: "probe-sibling-authority",
+            in: windowScene,
             attributes: [
                 ProbeRuntime.Attribute.runID: window.runID,
                 ProbeRuntime.Attribute.sourceScene: window.label,
                 ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
                 ProbeRuntime.Attribute.screen: "sibling-authority"
-            ],
-            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            ]
         )
-        #else
-        RUMMonitor.shared().stopView(key: "probe-sibling-authority")
-        #endif
         isSiblingAuthorityActive = false
         updateSceneRoute()
         ProbeRuntime.recordDestination(
@@ -2138,12 +2116,11 @@ struct ProbeWindowRoot: View {
     private func startKeyedManualView(
         _ destination: ProbeKeyedManualDestination
     ) {
-        #if DEBUG
-        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "\(destination.rawValue)-start")
+        guard let windowScene = sceneTargetedWindowScene(
+            operation: "\(destination.rawValue)-start"
+        ) else {
             return
         }
-        #endif
 
         let isDuplicate = keyedManualViewStack.contains(destination)
         let duplicateInterval = keyedManualInterval(
@@ -2179,20 +2156,12 @@ struct ProbeWindowRoot: View {
             updateSceneRoute()
         }
 
-        #if DEBUG
-        monitor.startView(
-            key: destination.manualViewKey,
-            name: destination.rumViewName,
-            attributes: keyedManualViewAttributes(for: destination),
-            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
-        )
-        #else
         RUMMonitor.shared().startView(
             key: destination.manualViewKey,
             name: destination.rumViewName,
+            in: windowScene,
             attributes: keyedManualViewAttributes(for: destination)
         )
-        #endif
         ProbeRuntime.record(
             "keyed manual view started source=\(window.label) "
                 + "native=\(sceneSessionID) screen=\(destination.rawValue) "
@@ -2263,12 +2232,11 @@ struct ProbeWindowRoot: View {
             return
         }
 
-        #if DEBUG
-        guard let monitor = RUMMonitor.shared() as? any RUMSceneTargetedManualViewHandling else {
-            recordSceneTargetedManualViewFailure(operation: "\(destination.rawValue)-stop")
+        guard let windowScene = sceneTargetedWindowScene(
+            operation: "\(destination.rawValue)-stop"
+        ) else {
             return
         }
-        #endif
 
         if keyedManualViewStack.count == 1 {
             ProbeRuntime.eventRecorder.record(
@@ -2296,20 +2264,16 @@ struct ProbeWindowRoot: View {
                 )
             )
         )
-        #if DEBUG
-        monitor.stopView(
+        RUMMonitor.shared().stopView(
             key: destination.manualViewKey,
+            in: windowScene,
             attributes: [
                 ProbeRuntime.Attribute.runID: window.runID,
                 ProbeRuntime.Attribute.sourceScene: window.label,
                 ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
                 ProbeRuntime.Attribute.screen: destination.rawValue
-            ],
-            sceneIdentifier: RUMSceneIdentifier(rawValue: sceneSessionID)
+            ]
         )
-        #else
-        RUMMonitor.shared().stopView(key: destination.manualViewKey)
-        #endif
         keyedManualViewStack.removeLast()
         updateSceneRoute()
         let revealedDestination = keyedManualViewStack.last
@@ -2379,7 +2343,7 @@ struct ProbeWindowRoot: View {
     }
 
     private func recordSceneTargetedManualViewFailure(operation: String) {
-        let reason = "scene-targeted manual view \(operation) is unavailable"
+        let reason = "scene-targeted manual view \(operation) has no exact live UIWindowScene"
         ProbeRuntime.eventRecorder.record(
             ProbeSignal(
                 kind: .assertion,
@@ -2396,6 +2360,21 @@ struct ProbeWindowRoot: View {
             "scene-targeted manual view failed source=\(window.label) "
                 + "native=\(sceneSessionID) reason=\(reason)"
         )
+    }
+
+    private func sceneTargetedWindowScene(operation: String) -> UIWindowScene? {
+        guard
+            let handle = sceneHandle,
+            handle.nativeSceneID == sceneSessionID,
+            let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+            let windowScene = resolvedWindow.windowScene,
+            windowScene.session.persistentIdentifier == sceneSessionID
+        else {
+            recordSceneTargetedManualViewFailure(operation: operation)
+            return nil
+        }
+
+        return windowScene
     }
 
     private func updateSceneRoute() {

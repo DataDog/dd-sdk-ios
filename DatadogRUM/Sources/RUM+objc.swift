@@ -855,6 +855,50 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopView(key: key, attributes: attributes.dd.swiftAttributes)
     }
 
+    // Objective-C has no Swift SPI import boundary. Keep these customer-shaped
+    // selectors in Debug builds until normal API review approves their release.
+    #if os(iOS) && DEBUG
+    /// Starts a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// Pair this call with `stopView(key:in:attributes:)` using the same key and scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startViewWithKey:name:inScene:attributes:)
+    public func startView(
+        key: String,
+        name: String?,
+        in scene: UIWindowScene,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startView(
+            key: key,
+            name: name,
+            in: scene,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    /// Stops a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// It only pairs with a targeted start made for the same key and scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(stopViewWithKey:inScene:attributes:)
+    public func stopView(
+        key: String,
+        in scene: UIWindowScene,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopView(
+            key: key,
+            in: scene,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+    #endif
+
     @available(*, message: "This API is experimental and may change in future releases")
     public func addViewLoadingTime(overwrite: Bool) {
         swiftRUMMonitor.addViewLoadingTime(overwrite: overwrite)
