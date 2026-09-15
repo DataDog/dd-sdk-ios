@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+
 # 3.17.0 / 09-09-2026
 
 - [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]
@@ -1244,6 +1246,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3165]: https://github.com/DataDog/dd-sdk-ios/pull/3165
 [#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
 [#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
+[#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
