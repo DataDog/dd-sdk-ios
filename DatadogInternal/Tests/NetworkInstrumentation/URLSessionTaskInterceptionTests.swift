@@ -441,6 +441,32 @@ class ResourceMetricsTests: XCTestCase {
         }
     }
 
+    func testWhenTaskGets304RevalidationResponseWithUnmeasuredHeaderBytes_thenTransferSizeIsOmitted() {
+        let taskInterval = DateInterval(
+            start: .mockDecember15th2019At10AMUTC(),
+            end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 5)
+        )
+        let response: URLResponse = .mockWith(statusCode: 304)
+        let taskTransaction: URLSessionTaskTransactionMetrics = .mockBySpreadingDetailsBetween(
+            start: taskInterval.start,
+            end: taskInterval.end,
+            resourceFetchType: .networkLoad,
+            response: response,
+            countOfResponseHeaderBytesReceived: -1
+        )
+
+        // When
+        let taskMetrics: URLSessionTaskMetrics = .mockWith(
+            taskInterval: taskInterval,
+            transactionMetrics: [taskTransaction]
+        )
+
+        // Then
+        let resourceMetrics = ResourceMetrics(taskMetrics: taskMetrics)
+        XCTAssertEqual(resourceMetrics.deliveryType, .cache)
+        XCTAssertNil(resourceMetrics.transferSize)
+    }
+
     func testWhenTaskFetchTypeVaries_thenDeliveryTypeReflectsOnlyKnownSignals() {
         // `.unknown` is documented by Apple as "the fetch manner was not determined" -
         // it must not be reported as a measured cache miss.
