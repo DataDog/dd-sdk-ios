@@ -3,8 +3,8 @@
 Read this document before building, running, or validating the multi-scene probe.
 It records the repeatable Xcode, simulator, device-interaction, and Datadog
 workflows used by the project. Product behavior and support conclusions belong in
-`ASSESSMENT.md`; exact experiment and session identifiers belong in
-`EXPERIMENTS.md`.
+`ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
+session identifiers belong in the active numbered shard under `Experiments/`.
 
 Last updated: 2026-09-15
 
@@ -19,6 +19,26 @@ This runbook has two kinds of guidance:
 
 - Apple Xcode MCP constraints, which the SDK project cannot change.
 - Harness adaptations and operating procedures, which this project owns.
+
+## Documentation reading and update workflow
+
+Use progressive disclosure; do not load the frozen history wholesale.
+
+1. To resume work, read the [canonical overview](../MULTI_SCENE_SUPPORT.md) and
+   the current execution slice in [PLAN.md](PLAN.md).
+2. To check current support, read [ASSESSMENT.md](ASSESSMENT.md).
+3. To locate evidence, search [EXPERIMENTS.md](EXPERIMENTS.md), then open only
+   the linked detailed record or targeted archive range.
+4. Before designing an experiment, search the relevant section of
+   [REJECTED_APPROACHES.md](REJECTED_APPROACHES.md).
+5. To record an experiment, append its full record to the active numbered shard,
+   add one compact index row, and update only the affected assessment rows and
+   plan items. Keep attempts with different validity or outcomes distinguishable.
+6. When a shard's numeric range is full, freeze it and create the next bounded
+   range without renumbering any experiment.
+
+The frozen `Archive/` snapshots are integrity records. Do not edit them to repair
+relative links; use [their manifest](Archive/README.md) and targeted search.
 
 ## Evidence levels
 
@@ -437,6 +457,8 @@ Use these categories consistently:
 | `FAIL` | The intended platform path occurred, but the SDK or backend violated the contract |
 | `INCONCLUSIVE` | The environment could not exercise or distinguish the required behavior |
 | `INVALID` | Setup, launch configuration, stale state, tooling, or oracle construction broke the experiment |
+| `SKIPPED` | A declared capability or prerequisite made the row intentionally inapplicable |
+| `PREPARED` | Driver/oracle coverage exists, but the required runtime or backend acceptance has not run |
 
 Examples that are not SDK failures:
 
@@ -522,5 +544,6 @@ runbook around them.
 - [ ] Crash, RUM error, and duplicate-event checks completed.
 - [ ] Invalid or inconclusive tooling behavior documented.
 - [ ] Physical-device or human rerun added when needed.
-- [ ] Exact run details recorded only in `EXPERIMENTS.md`.
+- [ ] Exact run details appended to the active numbered shard and one compact
+      locator row added to `EXPERIMENTS.md`.
 - [ ] Interaction session closed or confirmed automatically expired.

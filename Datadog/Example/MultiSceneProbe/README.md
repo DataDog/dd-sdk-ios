@@ -532,6 +532,6 @@ The first native runs on iPadOS 27 established two distinct problems:
   navigation-host view only afterward.
 
 Exact run and session IDs belong in the
-[experiment history](../../../DatadogRUM/MultiSceneSupport/EXPERIMENTS.md). Start
+[experiment index](../../../DatadogRUM/MultiSceneSupport/EXPERIMENTS.md). Start
 at the [canonical overview](../../../DatadogRUM/MULTI_SCENE_SUPPORT.md) for the
 current support verdict and resume point.

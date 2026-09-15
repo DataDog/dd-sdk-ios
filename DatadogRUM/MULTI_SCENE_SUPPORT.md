@@ -3,7 +3,7 @@
 This is the canonical entry point for concurrent `UIWindowScene` support in
 Datadog RUM. It records the current contract, support status, decisions, and exact
 resume point. Detailed evidence and chronology are split by ownership so future
-work can start here without reading the complete experiment history.
+work can start here without loading the frozen experiment history.
 It remains separate from `RUM_FEATURE.md` until the behavior is implemented,
 validated, and ready to become a supported contract.
 
@@ -40,14 +40,15 @@ multi-scene support is not claimed.
 | [Assessment and evidence](MultiSceneSupport/ASSESSMENT.md) | You need the detailed verdict, source baseline, causal-attribution boundaries, or surface-by-surface evidence |
 | [Implementation and validation plan](MultiSceneSupport/PLAN.md) | You are choosing the next implementation slice, extending a probe, or checking release gates |
 | [Deferred single-scene extraction](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md) | The multi-scene runtime is frozen and you are ready to separate generic reliability fixes before review |
-| [Experiment history](MultiSceneSupport/EXPERIMENTS.md) | You need exact run/session IDs, chronological observations, rejected attempts, or checkpoint history |
+| [Experiment index](MultiSceneSupport/EXPERIMENTS.md) | You need a named experiment's status and targeted detailed-record locator |
+| [Rejected approaches](MultiSceneSupport/REJECTED_APPROACHES.md) | You are designing an experiment or revisiting a prior implementation or tooling path |
 | [Tooling runbook](MultiSceneSupport/TOOLING_RUNBOOK.md) | You are preparing Xcode, selecting a simulator/device, running the probe, validating backend intake, or classifying tooling failures |
 | [Navigation API proposal](MultiSceneSupport/NAVIGATION_API.md) | You are reviewing the optional SwiftUI container integration, scene-aware manual views, coexistence rules, or Swift/Objective-C compatibility |
 | [Operations contract](MultiSceneSupport/OPERATIONS.md) | You are changing Operation identity, per-step attribution, duplicate-start behavior, public targeting, documentation, or tests |
 
 Read this overview first, then open only the document that owns the question.
-`EXPERIMENTS.md` uses stable `EXP-*` identifiers; append new experiments and never
-renumber them.
+`EXPERIMENTS.md` uses stable `EXP-*` identifiers; append full new records to the
+active numbered shard, add one index row, and never renumber them.
 
 Evidence is labeled by source inspection, focused test, local runtime, emitted
 payload, backend intake, or reducer result wherever that distinction changes the
@@ -92,6 +93,9 @@ presentation state, and covers both Sheet and full-screen cover. `EXP-141`
 passes the actual customer-shaped integration through H1 → D1 → H2 → Sheet →
 H3 → Cover → H4 with seven distinct view IDs and no automatic duplicate. This
 is implementation and runtime evidence, not approval of a stable public API.
+`EXP-142` additionally passes native repeated-value links through H1 → D1 → D2
+→ fresh D3 → fresh H2. Per-materialized-boundary claims publish each revealed
+occurrence before its lifecycle work without changing the customer's route type.
 
 The original exceptional SwiftUI Sheet discriminator (`EXP-119`) produced
 automatic Home H1, explicit Sheet S1, and eventual H2 without an automatic Sheet
@@ -175,7 +179,9 @@ Home occurrences plus Detail, Sheet, and full-screen Cover. Backend intake finds
 settled, and delayed post-dismiss work uses the fresh revealed Home H3/H4 views.
 No automatic Sheet/cover or hosting-controller duplicate, RUM error, or crash is
 present. The full probe plan now passes 134/134, the clean complete RUM suite
-passes 1,177/1,177, and the SPI builds in Release with Xcode 27.
+passes 1,177/1,177, and the SPI builds in Release with Xcode 27. `EXP-142` then
+passes 48/48 locally and in backend intake for sequential equal route values.
+The full probe is now 135/135 and the complete RUM suite is 1,181/1,181.
 
 `EXP-129` now supplies the deterministic two-scene same-key contract. Its 91-test
 plan rejects a shared A/B Compose UUID, cross-scene work, a B stop that preempts
@@ -575,20 +581,23 @@ that harness defect. `EXP-141` then replaces the probe-only navigation wrapper
 with the actual iOS 27 semantic-navigation SPI. Its combined stack, Sheet, and
 full-screen-cover run passes 38/38 locally and matches backend intake across seven
 fresh semantic occurrences, including four distinct Home IDs. The full probe plan
-now passes 134/134.
+now passes 134/134. `EXP-142` closes sequential repeated equal routes through
+native value links and raises the probe plan to 135/135; initial restoration
+directly into repeated equal values remains open.
 The complete chronology and every failed attempt live in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md).
 
 ### Exact next work
 
-The deterministic harness is complete through `EXP-141`; [PLAN.md](MultiSceneSupport/PLAN.md)
+The deterministic harness is complete through `EXP-142`; [PLAN.md](MultiSceneSupport/PLAN.md)
 owns the finished phases and full release matrix. The scene-aware manual-view and
 builder-owning semantic-navigation proposals are both implemented behind iOS 27
 experimental boundaries and validated through customer-shaped calls. Continue in
 this order:
 
-1. Harden the semantic-navigation SPI against repeated equal routes, external
-   router mutation, presentation replacement, and restoration. Keep automatic
+1. Harden the semantic-navigation SPI against external router mutation,
+   presentation replacement, and restoration, including initial restoration into
+   repeated equal values. Keep automatic
    tracking enabled and require committed navigation-path occurrences only. Add a
    presentation-free convenience shape if it remains implementable without
    weakening the centralized complete-destination model. Do not promote symbols
@@ -898,7 +907,7 @@ still require a live interaction key or human/device evidence; programmatic runs
 do not become native-gesture proof.
 Ignored native edge drags, fullscreen-only peer-window layouts, partial scene
 restoration, and unsupported resize are tracked in the dedicated
-[real-device and human-driven rerun queue](MultiSceneSupport/EXPERIMENTS.md#real-device-and-human-driven-rerun-queue).
+[physical-device and human-driven queue](MultiSceneSupport/PLAN.md#physical-device-and-human-driven-queue).
 Those rows require observable path/coordinator/lifecycle evidence, not more
 unverified simulator touches.
 
@@ -920,7 +929,7 @@ pre-staged; use `git commit --only -- <exact paths>` or an isolated index, then
 verify the commit tree and restore/preserve its exact `AM` state.
 
 Rejected experiments and do-not-repeat guidance are authoritative in
-[EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md#attempts-not-to-repeat).
+[REJECTED_APPROACHES.md](MultiSceneSupport/REJECTED_APPROACHES.md).
 
 ## Open API-review questions
 
