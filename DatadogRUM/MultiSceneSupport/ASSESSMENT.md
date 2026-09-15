@@ -35,7 +35,7 @@ internal experiment.
 | SDK surface | Current branch support | Strongest evidence | Confirmed gap or remaining gate |
 | --- | --- | --- | --- |
 | View creation and lifecycle | Independent UIKit and explicitly tracked SwiftUI scene branches coexist in one RUM session. Navigation creates occurrences rather than reusing platform identity. One scene teardown does not resurrect or stop another branch. | Two-window backend runs beginning with `EXP-002`; occurrence/reconnect state tests `EXP-060`-`066`; signal-driven chains `EXP-109`-`113` | Released baseline remains process-representative. Simultaneous visibility, activation, peer close, reconnect, and two-scene restoration still need capable hardware. |
-| SwiftUI navigation | The iOS 27 semantic SPI owns destination materialization, centralized route metadata, Sheet/full-screen-cover state, and target-local automatic suppression. H1/D1/H2/Sheet/H3/Cover/H4 and repeated H1/D1/D2/fresh D3/fresh H2 pass. | `EXP-141` 38/38 plus exact backend owners; `EXP-142` 48/48 plus native value links and exact backend owners | Automatic discovery is still semantically late and automatic split lacks destination views. External mutation, rejected/canonicalized writes, initial repeated restoration, presentation replacement, stable API review, and hardware coexistence remain. |
+| SwiftUI navigation | The iOS 27 semantic SPI owns destination materialization, centralized route metadata, Sheet/full-screen-cover state, and target-local automatic suppression. Sequential and initially restored repeated equal values create fresh path occurrences without hidden/automatic views. | `EXP-141` 38/38; `EXP-142` 48/48; `EXP-143` restored path 14/14; exact backend owners | Automatic discovery is still semantically late and automatic split lacks destination views. An initially restored top starts after hidden-root lifecycle work; external replacement, rejected/canonicalized writes, presentation replacement, stable API review, and hardware coexistence remain. |
 | UIKit navigation | Push/pop/modal and stock regular-width split transitions create fresh committed occurrences. Interactive cancel retains the current UUID; finish creates a fresh returned UUID. Structural Primary/sidebar columns are not current RUM destinations. | `EXP-079`/`080`, deterministic `EXP-112`, mapper/backend action and Resource ownership | Human edge gestures, subclass containers, adaptive collapse/expand, simultaneous-window completion, and ordinary-app compatibility remain. |
 | Manual views | Internal scene stacks and the iOS 27 Swift SPI support exact scene/key start-stop pairing, nested distinct keys, navigation beneath authority, latest-destination reveal, fresh returned occurrences, and crash-safe duplicate-key misuse. Automatic tracking continues outside the target. | `EXP-122`, `EXP-125`-`128`, customer-shaped `EXP-137`-`140` | Same key in A/B with reverse stop is tested hostlessly but live `EXP-129` is simulator-inconclusive. Stable Swift and Objective-C surfaces require review. Legacy source-less start/stop intentionally does not pair with targeted calls. |
 | Actions | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions advance the compatibility representative. Manual work inside trustworthy event handoff uses the exact view. A threshold-qualified UIKit scroll remains on its origin across navigation. | `EXP-089`, `EXP-132`, focused routing tests | The decisive visible-A/B representative discriminator needs hardware. Ordinary SwiftUI Button child tasks begin outside the handoff in `EXP-135` and correctly use the approved last-interacted fallback unless explicitly targeted. |
@@ -59,6 +59,9 @@ internal experiment.
   duplicate views in the target container.
 - Sequential repeated equal route values retain distinct materialized occurrence
   claims while preserving ordinary `NavigationLink(value: Route)` matching.
+- A directly restored repeated-equal path materializes only its top on iOS 27;
+  removing that position rebases the boundary to a fresh surviving occurrence,
+  without publishing hidden root or lower-route views.
 - A manual authority suffix can hide underlying navigation, reveal only its latest
   committed destination fresh, and nest Compose → Preview → fresh Compose.
 - UIKit interactive cancellation and completion are committed-transition
@@ -76,9 +79,10 @@ internal experiment.
    `.task` work, identify framework containers instead of semantic routes, and
    leak the prior scene into a newly opened window (`EXP-021`, `022`, `028`,
    `069`, automatic control in `EXP-111`).
-2. The semantic SPI has not yet proven external router replacement, direct
-   restoration into repeated equal values, or presentation-to-presentation
-   replacement. `EXP-142` closes sequential equal routes only.
+2. `EXP-143` closes the view-occurrence part of direct repeated restoration, but
+   the accepted top still starts after hidden-root lifecycle work, which falls
+   to ApplicationLaunch. External router replacement, rejected/canonicalized
+   writes, and presentation-to-presentation replacement remain unproven.
 3. Stable simultaneously visible/interactive windows cannot be proven by this
    simulator. Repeated Metal/`backboardd` failures are environment boundaries, not
    SDK crash evidence.
@@ -123,14 +127,18 @@ Evidence strength is intentionally separated:
 
 Latest authoritative checkpoint:
 
+- `EXP-143` restored-path run: 14/14, exact D1/fresh D2/first H1,
+  no hidden or automatic view, 44 backend events, zero errors/crashes. Initial
+  hidden-root work remains on ApplicationLaunch and is the next ordering gap.
 - `EXP-142` accepted run: 48/48, exact H1/D1/D2/fresh D3/fresh H2
   ownership, 55 backend events (24 actions, 22 Resources, six views including
   ApplicationLaunch, one long task, one session, one vital), zero error/crash,
   and six HTTP 202 uploads.
-- Native multi-scene probe: 135/135.
-- Complete DatadogRUM suite: 1,181/1,181. The preceding attempt's unrelated
-  timeseries timing failure passed in isolation and the unchanged complete rerun.
-- Focused semantic occurrence/binding tests: 6/6; exact manual-authority tests:
+- Native multi-scene probe: 136/136.
+- Complete DatadogRUM suite: 1,184/1,184. The preceding attempt's related
+  never-started reveal regression was narrowed to explicit hidden semantic
+  destinations; its unrelated timeseries timing failure also passed in isolation.
+- Focused semantic navigation state tests: 9/9; exact manual-authority tests:
   8/8.
 - DatadogTrace: 151/151 at the latest Trace-affecting checkpoint.
 - Xcode 27 iOS-simulator Release probe build succeeds. Repository lint and

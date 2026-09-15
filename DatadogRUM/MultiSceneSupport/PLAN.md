@@ -43,7 +43,8 @@ Objective-C Release exposure still require normal API review.
 | Expected outcome | The experimental iOS 27 semantic container follows the application router's accepted path for programmatic replacement, rejection, canonicalization, and restoration, including an initial repeated-equal path |
 | Prerequisite evidence | `EXP-141` proves the complete stack/presentation SPI; `EXP-142` proves sequential equal values and accepted-binding reconciliation through native value links |
 | Implementation boundary | Semantic navigation state and materialized destination boundary in `SwiftUIViewModifier.swift`; native probe router, recorder, and oracle only as needed |
-| Acceptance | Rejected proposals emit nothing; canonicalized proposals emit only the accepted path; every repeated position has a distinct UUID; revealed lifecycle work uses the fresh occurrence; mapper and backend inventories agree without automatic duplicates, errors, or crashes |
+| Current result | Initial repeated restoration occurrence lifecycle passes at mapper/backend on `f885f9da4`: D1 -> fresh D2 -> first H1, no hidden/automatic view. Initial hidden-root work still uses ApplicationLaunch. |
+| Acceptance | Start the initial accepted top before hidden-root customer work; rejected proposals emit nothing; canonicalized proposals emit only the accepted path; every repeated position has a distinct UUID; revealed lifecycle work uses the fresh occurrence; mapper and backend inventories agree without automatic duplicates, errors, or crashes |
 | Environment | iPadOS 27 simulator first; use hardware only if restoration or presentation topology cannot be exercised deterministically |
 
 The planned detailed record and template live in
@@ -53,7 +54,7 @@ The planned detailed record and template live in
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Complete `EXP-143` external mutation and restoration | `EXP-141`, `EXP-142` | Semantic SwiftUI state plus focused router/probe coverage | Accepted path is the only RUM path; initial repeated values remain distinct and lifecycle-correct | Simulator, then hardware if OS restoration is required |
+| 1 | Complete `EXP-143` initial attribution and external mutation | Restored occurrence subcase accepted on `f885f9da4` | Semantic SwiftUI state plus focused router/probe coverage | Initial top precedes hidden-root work; accepted path is the only RUM path; rejection/canonicalization are exact | Simulator |
 | 2 | Replace one active semantic presentation with another without exposing an intermediate underlying destination | `EXP-125`, `EXP-126`, `EXP-141` | Complete-destination presentation state and target-local suppression | Sheet/cover replacement produces one stop/start pair; dismissal reveals one fresh latest underlying occurrence before customer work | Simulator |
 | 3 | Exercise sibling-container isolation through the actual semantic SPI | `EXP-127`, `EXP-141` | Public-experiment call site, not the probe-only wrapper | One container's authority never suppresses its sibling; reveal starts only the sibling's latest committed destination | Simulator |
 | 4 | Prototype Operation view targeting behind iOS 27 experimental boundaries | `EXP-130` identity semantics; `EXP-131` cross-scene driver; [Operations contract](OPERATIONS.md) | Opaque customer target with `.current(in:)` first; separate explicit and inferred candidates; Debug-only Objective-C companions | Start/succeed/fail calls compile and route explicit > inferred > last-proven snapshot > representative; no internal UUID leaks | Simulator for API/fallback tests; hardware for cross-scene acceptance |
@@ -143,9 +144,10 @@ The branch is not release-ready until all applicable gates pass:
 - Hardware: the P0 queue and final iPhone Duo/iOS 27.1 matrix pass unchanged named
   scenarios with exact backend evidence.
 
-Latest checkpoint: `EXP-142` passes 48/48; native probe 135/135; complete
-DatadogRUM 1,181/1,181; DatadogTrace 151/151 at its latest affected checkpoint;
-Xcode 27 Release probe build succeeds. The full repository lint and unaffected
+Latest checkpoint: `EXP-143` restoration passes 14/14 locally and in backend
+intake on `f885f9da4`; native probe 136/136; complete DatadogRUM 1,184/1,184;
+DatadogTrace 151/151 at its latest affected checkpoint. The last Xcode 27 Release
+probe build predates the open EXP-143 slice and must rerun when it closes. The full repository lint and unaffected
 module suites remain valid at their recorded checkpoints, but must rerun at the
 release freeze.
 

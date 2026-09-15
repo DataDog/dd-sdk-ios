@@ -297,6 +297,15 @@ Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source
 editing and semantic interpretation remain with the main task.
 
+`waitForSignal` proves that a matching signal exists after the driver's current
+observation cursor; it does not by itself prove that a new semantic occurrence
+started after an earlier navigation boundary. A previously emitted occurrence
+can satisfy a later wait when the cursor predates it. For returned destinations,
+pair the wait with the ordered semantic oracle's after-index rule, or wait for an
+occurrence number that cannot exist before the boundary. `EXP-143` caught a
+hidden initial Home this way: the step wait reused H1, while the ordered oracle
+correctly rejected the missing post-pop Home occurrence.
+
 ### Coordinate and gesture rules
 
 Always capture the current hierarchy before interacting. Use an element's reported

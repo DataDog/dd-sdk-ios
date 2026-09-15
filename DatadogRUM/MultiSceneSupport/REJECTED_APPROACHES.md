@@ -176,6 +176,17 @@ Occurrence identity, path commitment, retained destinations, and transition orde
   bucket. Key by coordinator identity and state membership, or a cancelled pop can
   discard an unrelated sheet, tab, or split-subtree occurrence.
 - Do not wrap each customer route in a private identity to distinguish repeated values. `EXP-142` showed that this changes the `NavigationStack` element type and breaks ordinary `NavigationLink(value: Route)` / `navigationDestination(for: Route.self)` matching. Preserve the customer's path type and keep occurrence identity inside the materialized RUM boundary.
+- Do not model an initially restored `[A, A]` path by constructing two
+  simultaneous destination claims in a state-only test. iOS 27 materialized only
+  the current top in `EXP-143`; that synthetic construction therefore diagnosed a
+  state the platform did not produce. Retain one claim while its position
+  survives, and rebase it only when a committed contraction removes its recorded
+  position and the same route is the new top.
+- Do not remove the never-started reveal fence globally to support a restored
+  hidden root. The first `EXP-143` candidate made any registered never-started
+  route materializable and failed the full RUM suite. Exempt only a configuration
+  explicitly classified as a non-current semantic destination with concrete
+  scene proof; ordinary never-started registrations must still fail closed.
 
 ## Presentations and manual authority
 
