@@ -25,8 +25,10 @@ The implemented internal contract is:
    or failure ends that latest instance. The earlier backend operation remains
    open until its four-hour timeout.
 
-The internal routing and warning changes are implemented. The customer-shaped
-escape hatch should now be implemented and exercised as an iOS 27
+The internal routing and warning changes are implemented, and the scene-targeted
+manual-view prerequisite now passes through customer-shaped Swift calls in
+`EXP-137` through `EXP-140`. Nothing technical blocks the Operation escape-hatch
+prototype. It should now be implemented and exercised as an iOS 27
 experimental/SPI surface. This validates its Swift and Objective-C call sites,
 protocol-conformance fallback, and runtime usefulness before normal API review.
 It must not be promoted to the supported public API surface until that review
@@ -75,6 +77,14 @@ persistent identifier, a manual `ViewIdentifier.key`, or a controller's
 `tracked(key:in:)` matches a manually tracked key inside that scene, and
 `tracked(_:)` matches the tracked controller instance.
 
+The first bounded SPI should expose only `current(in:)`. It is sufficient to
+exercise the approved cross-window customer workflow and does not pre-decide how
+manual keys or controller identity should be represented publicly. Existing
+source-less methods already provide inferred/default behavior, so the first SPI
+does not need a redundant `.inferred` value. API review can add
+`tracked(key:in:)`, `tracked(_:)`, and an explicit inferred spelling after the
+value type and Objective-C companion have real call-site evidence.
+
 The command must preserve the explicit target separately from its independently
 captured call-site inference. Collapsing both into the existing `command.target`
 would skip precedence level 2 whenever an explicit target cannot resolve. Session
@@ -98,16 +108,13 @@ multi-scene applications on iOS 27. API review must choose whether to expose the
 overloads broadly with legacy-compatible behavior or annotate them for iOS 27;
 the Operations proposal must not decide that independently.
 
-One required prerequisite remains: the existing `startView(key:)` API cannot
-explicitly bind that manual key to a scene. The next implementation slice adds
-iOS 27 experimental/SPI scene-targeted manual keyed-view start/stop overloads and
-Objective-C counterparts, then replaces the probe's internal-only calls with
-those customer-shaped calls. The same key
-may be active independently in A and B, and an explicit stop in A must close only
-A. Existing APIs retain inferred/last-interacted behavior, while an explicit scene
-wins over the process representative. This establishes deterministic ownership
-for the Operation target without exposing internal RUM UUIDs. The concrete
-starting point and automatic-view coexistence constraint are consolidated in
+The scene-targeted manual prerequisite is now implemented as an iOS 27 Swift SPI
+with Debug-only Objective-C companions. `EXP-137` through `EXP-140` replace the
+probe's internal-only calls with the customer-shaped overloads and validate
+manual, nested, duplicate-start, Sheet, and full-screen-cover paths. The same-key
+A/B live discriminator remains hardware-gated, but no longer blocks implementing
+the Operation target: `.current(in:)` needs only the existing scene/current-view
+lookup and exposes no internal RUM UUID. The concrete manual-view evidence is in
 [NAVIGATION_API.md](NAVIGATION_API.md).
 
 Customer documentation shipped with that API must state that scenes do not
@@ -165,15 +172,16 @@ Required test coverage is tracked explicitly:
 | Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
 | Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` `parallel-alpha`/`parallel-beta` driver | Focused/hostless pass; live backend pending |
 | Reverse-order completion | Manager sequence plus `EXP-131` B-before-A driver order | Focused/hostless pass; live backend pending |
-| Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; experimental overload pending after manual-view prerequisite |
+| Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; customer-shaped Operation SPI is the next local slice |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
-| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; experimental overload pending after manual-view prerequisite |
+| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; customer-shaped Operation SPI is the next local slice |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,169-test RUM suite passes |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,171-test RUM suite passes |
 
-API review must settle the public type/name and exact Swift/Objective-C signatures
-for the approved scene-targeted keyed-view prerequisite. The requested
+API review must settle the public Operation target type/name and exact
+Swift/Objective-C signatures. That review blocks stable exposure, not the SPI
+experiment. The requested
 application-wide identity means that scenes do not
 namespace an Operation; it does not add a new cross-session persistence contract.
 The manager and its retained view snapshot remain session-local, while duplicate

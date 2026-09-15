@@ -6,16 +6,20 @@ the concrete public API is not. The [canonical overview](../MULTI_SCENE_SUPPORT.
 owns the support verdict, [PLAN.md](PLAN.md) owns delivery order, and
 [EXPERIMENTS.md](EXPERIMENTS.md) owns runtime evidence.
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 ## Status
 
-Implement and exercise the APIs in this document first as iOS 27
-experimental/SPI surfaces. This is how the branch will validate customer call
-sites, Objective-C selectors, compatibility fallback, and runtime usefulness
-before normal API and RFC review. Do not promote them to the supported public API
-surface until that review approves the names and contracts. The examples below
-remain review starting points, not settled signatures.
+The scene-targeted manual view proposal is now implemented and exercised as an
+iOS 27 experimental Swift SPI, with Debug-only Objective-C counterparts. The
+prototype validates customer call sites, exact selectors, custom/NOP fallback,
+and runtime usefulness before normal API and RFC review. `EXP-137` through
+`EXP-140` cover automatic Home → manual/presentation → fresh Home using the
+customer-shaped overloads. Do not promote these declarations to the supported
+public API surface until review approves their names, availability, protocol
+behavior, and Objective-C exposure. The semantic SwiftUI container remains the
+next API prototype. Examples below are review starting points, not settled
+signatures.
 
 The approved behavior is:
 
@@ -53,7 +57,7 @@ An attached `UIViewController` already supplies its `windowScene`; an unattached
 controller and keyed calls use the current execution handoff when available,
 then the process representative. That fallback remains unchanged.
 
-The internal command model already accepts a scene target, and focused tests
+The internal command model accepts a scene target, and focused tests
 prove that the same `ViewIdentifier` can coexist in scene A and scene B and that
 stopping A leaves B active. A public bridge therefore needs to capture
 `scene.session.persistentIdentifier` synchronously and route the existing
@@ -62,8 +66,13 @@ start/stop intent. It does not need a second scene registry or a wire change.
 that path bypasses the platform-view stack and has no authority over later
 automatic appearances. Commits `29c8cec2c` and `b1a0fb6b8` implement and harden
 the internal stack route; `EXP-122` validates it locally and in backend intake.
-Only the customer-shaped Swift/Objective-C bridge remains absent. It is the next
-implementation slice and will stay experimental until review.
+Commit `e51376b6f` adds the customer-shaped bridge. The Swift form is
+`@_spi(Experimental)` and iOS 27-only. The Objective-C form is Debug-only because
+Objective-C cannot import a Swift SPI. Focused forwarding, NOP/custom conformer,
+instrumentation-stack, and selector smoke tests pass. The probe uses the real
+overloads in Debug and Release, and `EXP-137` through `EXP-140` validate manual,
+nested, duplicate-start, Sheet, and full-screen-cover semantics in mapper output
+and backend intake. Stable promotion remains absent pending review.
 
 `UIWindowScene` is main-actor isolated in the Xcode 27 SDK. The proposed factories
 and overloads must capture only the stable identifier on the main actor. The RUM
@@ -195,9 +204,11 @@ Exact selector spelling remains an API-review decision. Both wrappers must
 forward to the same Swift scene-targeted path and must not look up a global key
 without the scene.
 
-The prototype must include an Objective-C compile/smoke test for those selectors
-and a Swift call-site test using a real `UIWindowScene`. Test-only direct calls to
-the internal scene-targeted protocol are not sufficient customer API evidence.
+The Debug prototype includes an Objective-C compile/smoke test for those exact
+selectors. Swift customer call sites resolve a real `UIWindowScene` in the probe;
+the Release build proves they do not rely on `@testable` access. Objective-C
+Release exposure still requires API review because that language has no SPI
+boundary.
 
 ### Automatic-tracking coexistence requirement
 
@@ -344,6 +355,17 @@ destination builders and installs the route-owned tracking boundary where each
 destination materializes. A final modifier is acceptable only if it provides an
 equivalent materialization boundary; a path observer by itself is not.
 
+There is no technical blocker to an iOS 27 SPI prototype. The smallest credible
+next slice is a builder-owning `RUMNavigationStack` that accepts a typed
+`Binding<[Route]>`, a centralized root/destination resolver, one optional
+application presentation binding, and builders for root, destination, and
+presented content. The presentation resolver must return both RUM metadata and
+Sheet versus full-screen-cover style. Keeping this as SPI allows the branch to
+measure whether that shape preserves transactions, programmatic router changes,
+presentation dismissal ordering, and automatic coexistence before public review.
+The existing probe wrapper is the implementation control; customer-call-site
+acceptance must use the SPI rather than relabeling the probe-only type.
+
 ### Resolver and path model
 
 The first review should prefer a typed application route, normally an enum, and
@@ -407,6 +429,18 @@ intentionally distinct lifetimes. `EXP-126` repeats this independently for
 `fullScreenCover`: the exact-scene semantic occurrence replaces Home, dismissal
 starts a fresh Home before immediate customer work, and target-scoped suppression
 lasts until the native cover subtree disappears.
+
+The customer-shaped reruns close the remaining prototype-usefulness question.
+`EXP-137` passes 16/16 for Home H1 → Compose M1 → fresh H2 through the Swift SPI.
+`EXP-138` passes 29/29 for H1 → Compose C1 → Preview P1 → fresh Compose C2 →
+fresh H2, including duplicate active-key crash safety. `EXP-139` and `EXP-140`
+independently pass 14/14 for Sheet and full-screen cover, with exactly one
+semantic presentation and fresh H2 before immediate dismissal work. All four
+backend sessions agree with mapper ownership and contain zero errors/crashes.
+The complete RUM suite passes 1,171/1,171, the native probe passes 133/133, lint
+passes, and both Debug and Xcode 27 Release probe builds pass. The source-based
+API verifier reports only the expected two Swift and two Debug-only Objective-C
+prototype additions; no baseline was changed.
 
 ## Required review and test matrix
 

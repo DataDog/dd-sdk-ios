@@ -40,7 +40,24 @@ semantic attribution evidence.
 ### Select the intended Xcode
 
 When more than one Xcode is installed, pin `DEVELOPER_DIR` or use the intended
-Xcode's absolute tool path. Do not assume that `xcode-select` points to Xcode 27.
+Xcode's absolute tool path. Do not infer the selected toolchain from an application
+name, and do not assume that `/Applications/Xcode.app` or a remembered
+`xcode-select` value points to Xcode 27.
+
+Before an acceptance build, record both:
+
+```sh
+xcode-select -p
+xcodebuild -version
+```
+
+On the 2026-09-15 test host, `/Applications/Xcode.app` was Xcode 26.6
+(`17F113`), while `/Applications/Xcode_27.app` was Xcode 27.0 (`27A266a`) and
+`xcode-select` selected the latter. A Release build invoked explicitly through the
+26.6 installation completed but warned that the iOS 27 deployment target was
+unsupported. Treat that result as invalid evidence. The accepted build used
+`/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild` and the iOS
+27.0 simulator SDK.
 
 ### Resolve and cache the workspace
 
@@ -107,6 +124,26 @@ Filter build and console logs at the tool when possible. Avoid transferring or
 parsing an entire Xcode log when a severity, pattern, glob, or tail limit can
 isolate the evidence.
 
+### Experimental public-API loop
+
+Customer-shaped API experiments may use Swift SPI before normal public API
+review. Import those declarations with `@_spi(Experimental)` in the probe and
+compile both Debug and Release probe configurations. The Release build is the
+proof that the experiment does not depend on `@testable` visibility.
+
+Objective-C has no equivalent SPI import boundary. Keep an Objective-C prototype
+Debug-only until API review, exercise its exact generated selectors in the
+Objective-C API smoke target, and do not mistake that prototype for an approved
+Release API.
+
+Run `make api-surface-verify`, but interpret its result precisely. The current
+source-based verifier includes Swift SPI and declarations excluded by `#if DEBUG`;
+it therefore reports the experimental Swift and Objective-C declarations
+as additions. Do not update checked-in API baselines for a prototype. Confirm
+that the diff contains only the expected experimental declarations and treat any
+additional difference as a failure. A stable proposal must pass the normal API
+review and API-surface gate before release.
+
 ### Launch configuration
 
 Supply scenario configuration through `DeviceInteractionInstallAndRun`:
@@ -143,6 +180,14 @@ a device session does not contaminate application state.
 
 Failure to establish the clean precondition invalidates the attempt. It is not an
 SDK failure.
+
+An uninstall and missing application-container proof do not guarantee that the
+simulator window server discarded every value previously persisted for a SwiftUI
+`WindowGroup`. The probe must normalize each restored window value to the current
+launch's run ID before using it as telemetry. Preserve the original routed value
+only for SwiftUI window identity and dismissal. Backend validation must still
+inspect every view in the resulting session and reject a run if any semantic view
+retains another run ID.
 
 Restoration scenarios must use their documented predecessor run and restoration
 state instead of this clean sequence.
@@ -325,13 +370,17 @@ For each run:
 
 1. Find the RUM session and record concise identifying metadata.
 2. Retrieve the relevant view, action, Resource, error, long-task, vital, and
-   Operation documents.
-3. Compare event view UUIDs with the local mapper evidence.
-4. For Operations, compare raw `operation_step` documents with the reduced
+   Operation documents with the run-ID query.
+3. Independently query `@session.id:<session-id> @type:view`. Verify that every
+   expected occurrence is present and that each semantic view document carries
+   the current run ID. A run-ID aggregate alone can hide a view whose start
+   attributes were contaminated by restored state.
+4. Compare event view UUIDs with the local mapper evidence.
+5. For Operations, compare raw `operation_step` documents with the reduced
    Operation result.
-5. Verify exact counts, occurrence IDs, start/end ownership, and the absence of
+6. Verify exact counts, occurrence IDs, start/end ownership, and the absence of
    unexpected duplicate events.
-6. Check for RUM errors, crashes, or SDK telemetry that could invalidate the run.
+7. Check for RUM errors, crashes, or SDK telemetry that could invalidate the run.
 
 If an exact application-name query returns nothing, retry authentication and
 broaden the query before concluding that the session is absent. Account for intake
@@ -412,6 +461,7 @@ runbook around them.
 ## Pre-run checklist
 
 - [ ] Intended Xcode selected.
+- [ ] `xcode-select -p` and `xcodebuild -version` recorded for acceptance builds.
 - [ ] Working Xcode MCP call completed.
 - [ ] Current workspace identifier resolved.
 - [ ] Scheme and exact run destination confirmed.
@@ -429,6 +479,7 @@ runbook around them.
 - [ ] Expected interaction demonstrably occurred.
 - [ ] Mapper or outgoing-payload ownership checked.
 - [ ] Backend session and event ownership checked when required.
+- [ ] Exact-session view inventory matches the mapper and every view has the current run ID.
 - [ ] Raw and reduced Operation evidence compared when applicable.
 - [ ] Crash, RUM error, and duplicate-event checks completed.
 - [ ] Invalid or inconclusive tooling behavior documented.

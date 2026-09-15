@@ -107,8 +107,13 @@ boundary, in this order:
 | 90 | `Exercise SwiftUI structured task attribution across scenes` | `EXP-135` real SwiftUI Button tap, suspended child-task handoff/trait diagnostics, strict expected-origin oracle, and source-less fallback classification |
 | 91 | `Document SwiftUI structured task attribution boundary` | `EXP-135` accepted runtime/backend evidence, all incomplete attempts, corrected causal conclusion, and refreshed resume state |
 | 92 | `Exercise shared URLSession ownership across scenes` | `EXP-136` one A-created Trace-only task, B consumer join without another task, exact-one creator-owner oracle, and adversarial coverage |
+| 93 | `Document shared request validation boundary` | `EXP-136` simulator-system failure evidence, physical rerun routing, tooling runbook, and customer-shaped API resume point |
+| 94 | `Prototype scene-targeted manual view APIs` | iOS 27 Swift SPI and Debug-only Objective-C customer-shaped start/stop calls, custom/NOP fallback, probe migration, restored-window run isolation, and compile/runtime coverage |
+| 95 | `Document scene-targeted manual API validation` | `EXP-137` through `EXP-140`, Xcode/tooling corrections, current support assessment, and the semantic SwiftUI plus Operation SPI resume plan |
 
-Rows 1-92 are committed and signed. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-93 are committed and signed; row 93 is `d2a5b9491`. Row 94 is local development commit
+`e51376b6f`; two signing attempts failed before that commit was created unsigned,
+so it must be re-signed before the next signed handoff. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -133,6 +138,12 @@ Rows 80-92 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
 `a653e29f2`, `3c9730805`, `99e6c4a29`, `130ba7646`, `353679bb5`,
 `0dca626df`, `2972d3de1`, `75becb324`, and `e804d3bd6`. Their signatures were verified against the
 configured Datadog developer key before this checkpoint.
+
+The row-94 signing attempts failed with the same external-agent communication
+error recorded below. The branch remains local-only, and the user explicitly
+allowed an unsigned development checkpoint rather than losing this boundary.
+Do not push it; replace it with an equivalent signed commit when the signer is
+available.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -336,6 +347,10 @@ are stable references: append new rows and never renumber existing experiments.
 | EXP-134 | `trace-reverse-20260914-2330-a` | `a9d038c5-d8e4-4d82-aa09-449a6f0b82cd` | iPadOS 27 simulator | Independent Trace-only reverse-completion acceptance. A/Home H1 `b0bff76c…` starts request A, B/Home H1 `6c67dece…` starts request B, then B completes first while A is representative and A completes second while B is representative. The local oracle passes 14/14 with exactly two Trace mapper events. Backend intake contains exactly one B span on B/H1 and one A span on A/H1, zero opposite-view matches, and both spans on session `a9d038c5…`; neither Trace-only URL appears as a RUM Resource. Trace upload returned HTTP 202. The initial exact backend query returned zero before indexing caught up; later raw URL/run searches and six aggregate predicates are the accepted result. Xcode marked the launch session expired only after PASS and upload, with no crash/fatal/assertion evidence. The full probe plan passes 120/120; build-for-testing, repository lint, and `git diff --check` pass. |
 | EXP-135 | Timeout/tooling attempts `swiftui-button-task-20260915-0005-a`, `swiftui-button-task-20260915-0007-b`, `swiftui-button-task-trait-20260915-0030-a`, `swiftui-button-task-trait-20260915-0040-a`; pre-diagnostic failure `swiftui-button-task-20260915-0010-c`; accepted boundary `swiftui-button-task-trait-20260915-0050-a` | accepted `a423021e-49d1-455e-ac11-bf018c517c82`; pre-diagnostic `6c024fcd-7ffb-49d2-99d8-d7e6b349e426`; other incomplete IDs retained below | iPadOS 27 simulator | Ordinary SwiftUI Button → structured-task causal-boundary result. A hierarchy-derived physical tap emits exactly one automatic `tap on SwiftUI_Button` action on A/Home H1 `308f0a66…`. SDK handoff is nil in the button callback, child-task start, and resumed task; UIKit's ambient scene trait starts as A and changes to B after suspension and B takeover. The resumed manual Action `888ffe58…` and Resource `3e8b5cf4…` carry source A diagnostics but are attributed to B/Home H1 `cb3d2a7b…`, the approved source-less representative fallback. The strict expected-A scenario terminates `FAIL` after four matched expectations, intentionally preserving the unsupported exact-origin contract. Backend intake has 28 events, one automatic tap, both resumed events on B, and zero errors/crashes. The full probe plan passes 126/126; build-for-testing, repository lint, and `git diff --check` pass. Exact async origin requires explicit targeting/scoping; `UITraitCollection.current` is not durable provenance. |
 | EXP-136 | `trace-shared-20260915-0115-a`; clean retry `trace-shared-20260915-0120-b` | no accepted session; partial retry session `370da769-c1f0-4707-9057-ab85b01a2017` | iPadOS 27 simulator; physical rerun required | Shared/coalesced Trace-only request discriminator. One underlying task is created on A/Home; B joins it without creating or resuming another task and then should release it. The 132/132 hostless plan requires exactly one A/Home span and rejects B retargeting, absence, or duplication. Both explicitly uninstalled runs crashed simulator `backboardd` in identical Metal texture validation while rendering B, before response release. The retry first reached start PASS at sequence 37 and B join PASS at sequence 66, with A/Home `c26fee76…` and B/Home `109659d9…`. There is no completion, trace mapper signal, or terminal result, no probe app `.ips`, and no app RUM error/crash signal. Backend indexed 16 partial retry events on session `370da769…`, zero error/crash bucket, and zero matching APM span; this is expected because release never occurred. Signed commit `e804d3bd6` contains the eight harness/test paths. Stop simulator retries and run the unchanged scenario on iPhone Duo or a physical multi-window iPad. |
+| EXP-137 | `api-keyed-manual-20260915-0200-a` | `3d946de5-caee-4a4e-8949-2298f97dce85` | iPadOS 27 simulator | First customer-shaped scene-targeted Swift SPI acceptance. The probe resolves its real `UIWindowScene` and calls `startView(key:name:in:attributes:)` / `stopView(key:in:attributes:)` rather than the internal handler protocol. The 16/16 oracle and backend agree on Home H1 `c54e2e47…` → Compose M1 `c36eb9b3…` → fresh Home H2 `2dda52df…`; active work belongs to M1 and immediate plus settled stop work belongs to H2. Exact intake has five views, ten actions, ten Resources, one long task, one session, and one vital, with zero errors/crashes. |
+| EXP-138 | rejected mixed-run `api-nested-manual-20260915-0210-a`; accepted `api-nested-manual-normalized-20260915-0215-a` | rejected `a2980fff-af5d-40f0-b2ad-dd3941d75be5`; accepted `6b9ef22e-0cec-4e78-be76-3fbc42ceecf9` | iPadOS 27 simulator | Customer-shaped nested-manual acceptance and harness-isolation fix. The first run passed 29/29 locally and had the correct seven-view session, but C1/P1/C2 view documents retained the preceding launch's run ID because SwiftUI restored a `WindowGroup` value outside the deleted app container. It is invalid acceptance evidence. The probe now normalizes restored telemetry to the current launch while preserving the original routed value for window identity/dismissal. The clean accepted run passes 29/29 with H1 `2bdc8076…` → Compose C1 `a9e27247…` → Preview P1 `1a4546b0…` → fresh Compose C2 `105e61cb…` → fresh H2 `526e3651…`; the duplicate Compose start creates no C3. All seven view documents carry the current run ID. Backend intake has 40 events and zero errors/crashes. |
+| EXP-139 | `api-scene-sheet-20260915-0225-a` | `f497175c-a44d-4d0c-9436-28cf2f28751a` | iPadOS 27 simulator | Customer-shaped scene-targeted Sheet acceptance. The 14/14 oracle and backend contain H1 `8a5f8cc8…` → one semantic Sheet `83705cb0…` → fresh H2 `4fb5c337…`, with no automatic Sheet duplicate. Active action/Resource use the Sheet; immediate and settled dismiss pairs use H2. Every semantic payload carries the current run ID. Exact intake has 29 events and zero errors/crashes. |
+| EXP-140 | `api-scene-fullscreen-20260915-0235-a` | `4edb6a3d-50fa-4d0b-ae5c-064b0720815d` | iPadOS 27 simulator | Customer-shaped scene-targeted full-screen-cover acceptance. The 14/14 oracle and backend contain H1 `43326c6e…` → one semantic Cover `1d7f7dd0…` → fresh H2 `238b6fa3…`, with no automatic cover duplicate. Active action/Resource use the Cover; immediate and settled dismiss pairs use H2. Every semantic payload carries the current run ID. Exact intake has 28 events and zero errors/crashes. |
 
 The ledger preserves what each run emitted, even when a later product decision
 changes its acceptance meaning. In particular, UIKit split rows that contain an
@@ -4320,6 +4335,87 @@ accepted before a span exists. Stop simulator retries and run the unchanged
 scenario on iPhone Duo or a physical multi-window iPad. Local work now moves to
 the customer-shaped scene-aware API prototype.
 
+### 2026-09-15 — EXP-137 through EXP-140: customer-shaped manual view APIs
+
+Commit `e51376b6f` adds the first iOS 27 customer-shaped scene-targeted manual
+view prototype. Swift callers import it through `@_spi(Experimental)` and pass a
+real `UIWindowScene` to paired start/stop overloads. The bridge copies only the
+scene session identifier on the main actor, routes the SDK monitor through the
+existing per-scene manual-authority stack, and invokes a third-party conformer's
+or `NOPMonitor`'s legacy implementation exactly once. The Objective-C selectors
+exist only in Debug because Objective-C has no SPI import boundary. This is an
+experimental review candidate, not approved public API.
+
+The probe was migrated from test-only protocol casts to these customer call
+sites. Four clean simulator/backend runs use the same exact native scene
+`33F68994-4513-4100-B294-A1F5A5A2EE23`:
+
+- `EXP-137`, run `api-keyed-manual-20260915-0200-a`, session
+  `3d946de5-caee-4a4e-8949-2298f97dce85`, passes 16/16. It produces H1
+  `c54e2e47-4aef-46bc-b926-68ff8f5d7002`, Compose
+  `c36eb9b3-b8c8-4dd3-82c7-3fb9c69a0796`, and fresh H2
+  `2dda52df-7800-4341-98f4-dd2a7415f811`. The pre-, active-, immediate-stop,
+  and settled-stop action/Resource pairs use exactly H1, Compose, H2, and H2.
+- `EXP-138`, accepted run
+  `api-nested-manual-normalized-20260915-0215-a`, session
+  `6b9ef22e-0cec-4e78-be76-3fbc42ceecf9`, passes 29/29. It produces H1
+  `2bdc8076-adde-4d4c-a515-9192faa86a99`, Compose C1
+  `a9e27247-bc8e-40e5-99a5-a5b8d76aac2e`, Preview
+  `1a4546b0-ea6e-4055-b044-072a2070e443`, fresh Compose C2
+  `105e61cb-1445-4d37-9955-a4f50cda1737`, and fresh H2
+  `526e3651-4305-4c0a-8469-4f92a0cb3b61`. A duplicate active Compose start
+  creates no C3 and does not retarget C2 work.
+- `EXP-139`, run `api-scene-sheet-20260915-0225-a`, session
+  `f497175c-a44d-4d0c-9436-28cf2f28751a`, passes 14/14. H1
+  `8a5f8cc8-b852-4db9-a2d0-2b74588ebb51` is replaced by exactly one semantic
+  Sheet `83705cb0-63ae-4ad1-ba4a-58a291991aba`, then fresh H2
+  `4fb5c337-c95c-456e-9e5c-b77a6385d478` owns both immediate and settled
+  dismissal work.
+- `EXP-140`, run `api-scene-fullscreen-20260915-0235-a`, session
+  `4edb6a3d-50fa-4d0b-ae5c-064b0720815d`, independently passes 14/14. H1
+  `43326c6e-ca95-4e35-9f25-0d852c274aa3` is replaced by exactly one semantic
+  Cover `1d7f7dd0-6367-459d-bea6-c807798bbf9e`, then fresh H2
+  `238b6fa3-abc7-4dcd-ac25-95be3a9483cc` owns both dismissal phases.
+
+All four sessions have zero RUM errors and zero crashes. Their exact event totals
+are 28, 40, 29, and 28 respectively. Each backend view inventory matches the
+mapper inventory and every semantic payload carries its current run ID.
+
+The rejected first nested attempt,
+`api-nested-manual-20260915-0210-a` / session
+`a2980fff-af5d-40f0-b2ad-dd3941d75be5`, is a harness-isolation finding. It
+passed 29/29 locally and the exact session had the right seven view occurrences,
+but C1/P1/C2 carried run ID `api-keyed-manual-20260915-0200-a`. Host uninstall
+and an absent application container did not remove the SwiftUI `WindowGroup`
+value restored by the simulator window system. `ProbeWindowRoot` now normalizes
+telemetry to `ProbeRuntime.runID` while retaining the original routed value only
+for SwiftUI window identity and `dismissWindow`. A focused restoration test and
+the accepted nested rerun prove the correction. Do not accept a run from its
+terminal oracle alone; query every view in the exact session and reject any stale
+run ID.
+
+Validation for this slice is:
+
+- focused scene-targeted bridge tests: 4/4;
+- Objective-C selector smoke: 1/1;
+- complete DatadogRUM suite: 1,171/1,171;
+- complete native probe suite after the restoration regression: 133/133;
+- repository lint: 713 source and 699 test files, zero violations;
+- `git diff --check`: pass;
+- Debug probe build and an authoritative Release probe build with Xcode 27.0
+  (`27A266a`) and the iOS 27.0 simulator SDK: pass.
+
+An earlier Release invocation through `/Applications/Xcode.app` used Xcode 26.6
+(`17F113`). It completed while warning that iOS 27 was outside the supported
+deployment-target range, so it is not acceptance evidence. The accepted build
+used `/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild`.
+
+The API-surface verifier reports exactly the two Swift scene-targeted overloads
+and their two Objective-C declarations as additions because it scans source and
+does not hide SPI or Debug-only declarations. This is the expected prototype
+mismatch; no checked-in API baseline was changed. Stable promotion still requires
+normal API/RFC review and a clean approved API-surface result.
+
 ### Attempts not to repeat
 
 - Do not infer support from the integration runner merely having a scene delegate;
@@ -4633,9 +4729,11 @@ the customer-shaped scene-aware API prototype.
   discard an unrelated sheet, tab, or split-subtree occurrence.
 - Do not trust a changed process environment to replace a restored
   `WindowGroup(for:)` value. The first `EXP-044` launch restored the prior
-  `ProbeWindow.runID`; stop and uninstall the probe before an exact-run test, or
-  explicitly classify the run as restoration evidence rather than mixing its
-  attributes with the new experiment.
+  `ProbeWindow.runID`, and the rejected first `EXP-138` run proves that even a
+  successful uninstall plus absent application container may leave that value in
+  the simulator window system. Establish the clean host precondition, normalize
+  restored telemetry to the current launch without changing the routed window
+  identity, and verify every exact-session view carries the current run ID.
 - Do not generalize the clean unselected-tab result into a platform guarantee.
   `EXP-036` emitted no false view because that container did not construct the
   offscreen reader. Other aborted, restored, modal, split, or preloaded

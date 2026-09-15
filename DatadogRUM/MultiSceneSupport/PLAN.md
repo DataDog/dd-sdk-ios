@@ -110,7 +110,7 @@ No product decision blocks the remaining internal work. Complete-destination
 Sheet/full-screen-cover behavior, sibling-container isolation, and one-scene
 nested-manual/duplicate-start behavior now pass. Stable public names and exact
 Swift/Objective-C signatures remain gated on normal API review, but an iOS 27
-experimental/SPI surface will now validate the proposed customer calls first.
+experimental/SPI surface has now validated the proposed customer calls first.
 The exact
 two-scene same-key contract is implemented and passes hostless tests, but its
 live acceptance is now in the physical-device queue. The exact cross-scene
@@ -128,8 +128,17 @@ B. Its six focused tests raise the full probe plan to 126/126. `EXP-136` adds a
 single A-created request with a B consumer and raises the plan to 132/132. Two
 clean simulator attempts reached the second window; the retry also reached B
 join, then both crashed simulator `backboardd` before release. The unchanged
-runtime row is now hardware-gated. The next local item is the experimental
-scene-aware manual-view Swift/Objective-C surface and its real call-site proof.
+runtime row is now hardware-gated. The experimental scene-aware manual-view
+Swift/Objective-C call-site item is complete in `e51376b6f` and `EXP-137`
+through `EXP-140`.
+The probe uses the customer-shaped Swift SPI for manual, nested, Sheet, and
+full-screen-cover flows; the full plan passes 133/133 and all four backend
+sessions have exact owners with zero errors/crashes. Stable promotion still
+needs review, and the two-scene same-key row remains hardware-gated. The next
+local slice is the builder-owning complete-destination SwiftUI SPI, followed by
+the Operation `.current(in:)` target SPI. Neither is technically blocked by
+public review because both remain experimental; review blocks only stable
+exposure.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
    destination, and RUM-occurrence acknowledgements to the recorder and oracle.
@@ -232,16 +241,18 @@ scene-aware manual-view Swift/Objective-C surface and its real call-site proof.
     success and H2→D2 failure, while the duplicate emits `[start H3, start D3,
     end D3]`, reduces from D3, and leaves H3 open without a synthetic end. The
     corrected warning and zero error/crash result are captured.
-15. Implement the proposed scene-aware Swift manual-view overloads and Objective-C
-    companions behind an iOS 27 experimental/SPI boundary. Route the SDK monitor
-    through the proven handler authority, capture only the scene identifier on the
-    main actor, fall back exactly once for custom/NOP conformers, and preserve the
-    existing inferred/last-interacted APIs unchanged. Exercise the customer-shaped
-    calls in compile tests and the existing one-scene runtime scenarios before
-    taking names, availability, selectors, and fallback behavior to API review.
-16. Replace the probe's internal test-only scene-targeted calls with the
-    experimental surface. Rerun manual authority, nesting, duplicate start,
-    presentations, and sibling-container reveal. Then finish
+15. Completed in development checkpoint `e51376b6f`: add scene-aware Swift
+    manual-view overloads behind an iOS 27 SPI and Debug-only Objective-C
+    companions. The SDK monitor routes through the handler authority, captures
+    only the scene identifier on the main actor, falls back exactly once for
+    custom/NOP conformers, and leaves inferred/last-interacted APIs unchanged.
+    Focused Swift, Objective-C, full RUM, Release-build, lint, and API-diff gates
+    have run; stable names and Objective-C Release exposure remain review work.
+16. Customer-call-site portion completed in `EXP-137` through `EXP-140`: the
+    probe no longer casts to the internal manual-view protocol. Manual authority,
+    nesting, duplicate start, Sheet, and full-screen cover pass locally and in
+    backend intake. The sibling call site compiles through the same surface but
+    still needs its dedicated runtime rerun. Then finish
     `swiftui.coexistence.same-key-manual-two-scenes` and
     `swiftui.coexistence.semantic-a-automatic-b` on physical multi-window
     hardware; partial simulator prefixes are not acceptance evidence.
@@ -286,16 +297,23 @@ scene-aware manual-view Swift/Objective-C surface and its real call-site proof.
     physical hardware and do not claim an SDK verdict from either partial run.
 24. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
     iPad, requiring exact foreground-active target and background peer state.
-25. Prototype the optional complete-destination SwiftUI semantic integration
-    behind an experimental/SPI boundary, using the existing centralized
-    path/router, Sheet, full-screen-cover, and sibling-container probes. Promote
-    only the API-reviewed shape.
+25. Next local slice: prototype a builder-owning complete-destination SwiftUI
+    integration behind an iOS 27 SPI. It must own `NavigationStack` destination
+    materialization, consume a typed path plus centralized root/destination and
+    presentation resolvers, cover Sheet and full-screen cover, preserve Binding
+    transactions, and coexist with automatic tracking. First rerun one combined
+    H1 → D1 → H2 → Sheet → H3 → Cover → H4 customer-call-site scenario, then a
+    sibling/container isolation discriminator. Promote only an API-reviewed shape.
 26. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
     split result through adaptive collapse/expand, and validate stable simultaneous
     A/B topology through the real-device/human queue.
 27. Run genuine disconnect/reconnect, per-scene background/foreground, and
     concurrent restoration.
-28. Prototype and review Operation public targeting; duplicate-start backend
+28. Prototype Operation view targeting next, initially with an opaque iOS 27 SPI
+    value exposing only `.current(in:)`. Preserve explicit and inferred candidates
+    separately so an unresolved explicit scene can fall through to trustworthy
+    inference before snapshot/representative fallback. Exercise start/succeed/fail
+    customer calls and Debug-only Objective-C selectors. Duplicate-start backend
     behavior is already closed by `EXP-130` and must not be rerun as an A-to-B
     prerequisite.
 29. Close explicitly targeted downstream signals and run live single-scene and
@@ -314,7 +332,7 @@ The deferred extraction is a delivery phase after this order is complete, not a
 reason to interrupt or reshape the remaining runtime experiments.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-136`. It still
+decision record after `EXP-140`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
