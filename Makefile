@@ -207,6 +207,7 @@ test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogRUM"
 	@$(MAKE) test-macos SCHEME="DatadogLogs"
 	@$(MAKE) test-macos SCHEME="DatadogTrace"
+	@$(MAKE) test-macos SCHEME="DatadogCrashReporting"
 	@$(MAKE) test-macos SCHEME="DatadogFlags"
 
 # Run UI tests for specified TEST_PLAN
