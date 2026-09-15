@@ -215,6 +215,14 @@ Occurrence identity, path commitment, retained destinations, and transition orde
 - Do not run generic reconciliation before an exact reader-qualified reconnect
   recovery. It can mark appearance without creating an occurrence, consume the
   only remount authorization, and leave later callbacks unable to recover.
+- Do not treat the iOS 27 environment scene trait as new ownership proof for a
+  dormant semantic boundary. `EXP-143` needs it only as an earlier timing signal
+  when a canonicalizing binding reuses a boundary that already has concrete
+  reader attachment in that exact scene. Require the exact accepted current
+  configuration, reject initial/bootstrap/manual-reveal state, refuse scene
+  movement or disconnect recovery, and keep the interactive transition arbiter.
+  A broader trait promotion can resurrect stale state or attribute a reused
+  boundary to the wrong scene.
 
 ## Presentations and manual authority
 
@@ -536,3 +544,9 @@ Oracle, recorder, fixture, control, and evidence-design failures.
   harness before scheduling those rows. Stack, SwiftUI split, and UIKit split
   navigation controls do exist and now have signal-driven coverage.
 - Do not accept distinct view IDs alone as proof that returned lifecycle work uses the fresh occurrence. The weak `EXP-142` run passed 22/22 only because its marker ran after D3 started; the strengthened reveal-before-callback oracle exposed appearance work still on D2. Preserve weak-oracle runs as non-acceptance evidence.
+- Do not append a `waitForSignal` step for a marker that may already have fired
+  while an earlier condition was being observed. The first post-fix canonical
+  `EXP-143` run reached its correct UI and emitted the delayed marker, then timed
+  out because the new wait subscribed afterward. Let the terminal semantic
+  completion condition require the action/Resource evidence directly, or wait
+  on a discriminator that cannot predate the step cursor.

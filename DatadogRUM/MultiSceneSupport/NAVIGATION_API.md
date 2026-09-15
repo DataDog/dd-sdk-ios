@@ -383,9 +383,14 @@ destination boundary; wrapping the route in a private identity was rejected
 because it breaks native value-link/destination matching. Binding writes are
 reconciled against the application's accepted getter so rejecting or
 canonicalizing routers do not advance RUM state from an uncommitted proposal.
-External router replacement, initial restoration—especially directly into
-repeated equal values—and presentation replacement remain hardening experiments
-before promotion.
+`EXP-143` closes those router cases. External same-type/different-type replacement
+emits only the accepted path, rejected writes emit no view, and direct repeated
+restoration preserves fresh occurrence semantics. On iOS 27 a canonicalizing
+binding can reuse the speculative proposal's boundary for a different accepted
+value; the implementation uses the inherited scene trait only to promote an
+already reader-proven same-scene dormant boundary before `onAppear` and immediate
+task work. The trait cannot migrate or recover disconnected state. Direct
+presentation replacement remains the next hardening experiment before promotion.
 
 ### Resolver and path model
 
@@ -463,9 +468,10 @@ passes 38/38 with distinct H1/D1/H2/Sheet/H3/Cover/H4 IDs, no automatic duplicat
 and immediate, settled, and delayed post-dismiss work on fresh H3/H4. Its exact
 backend session contains those seven semantic views plus ApplicationLaunch, 25
 actions, 25 Resources, and zero errors/crashes. The complete RUM suite now passes
-1,177/1,177 and the native probe passes 134/134. Both Debug and authoritative
-Xcode 27 Release probe builds pass. The source-based API verifier remains a
-prototype gate; no baseline is changed before normal review.
+1,249/1,249 and the native probe passes 137/137 after the subsequent `EXP-143`
+router hardening. Both Debug and authoritative Xcode 27 Release probe builds
+pass. The source-based API verifier remains a prototype gate; no baseline is
+changed before normal review.
 
 ## Required review and test matrix
 

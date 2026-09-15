@@ -168,6 +168,20 @@ result bundle, rerun the unchanged selection with code coverage disabled:
 Use `-enableCodeCoverage NO` only with a test action. Xcode rejects that option
 for a plain `build`; the accepted Release probe command omits it.
 
+Authoritative Xcode 27 Release probe build:
+
+```sh
+/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild \
+  -project Datadog/Example/MultiSceneProbe/RUMNativeMultiSceneProbe.xcodeproj \
+  -scheme RUMNativeMultiSceneProbe \
+  -configuration Release \
+  -destination 'generic/platform=iOS Simulator' \
+  build
+```
+
+Keep the explicit Xcode path. `/Applications/Xcode.app` may point at a different
+major version on the same host.
+
 This is a tooling workaround, not permission to omit the complete module run.
 Use Xcode 27's `xcresulttool get test-results summary` on the resulting
 `.xcresult` when raw output is truncated. Its device-level `passedTests` count
@@ -334,6 +348,14 @@ pair the wait with the ordered semantic oracle's after-index rule, or wait for a
 occurrence number that cannot exist before the boundary. `EXP-143` caught a
 hidden initial Home this way: the step wait reused H1, while the ordered oracle
 correctly rejected the missing post-pop Home occurrence.
+
+Do not add a later `waitForSignal` for a short marker when the terminal completion
+conditions already require the marker's action/Resource evidence. The marker may
+arrive while the driver is evaluating an earlier step; subscribing afterward
+creates a false timeout even though the SDK result is complete. The first
+post-fix canonicalization attempt in `EXP-143` exposed this race. If an explicit
+wait is necessary, choose a discriminator that cannot exist before the current
+observation cursor.
 
 ### Coordinate and gesture rules
 

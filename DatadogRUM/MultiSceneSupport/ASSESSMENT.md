@@ -23,9 +23,9 @@ Resources, and Traces have substantial mapper/backend evidence. The experimental
 customer-shaped SwiftUI container and manual-view APIs are useful and pass their
 one-scene scenarios.
 
-The remaining risk is concentrated in automatic SwiftUI limitations, external
-router mutation and presentation-replacement hardening, simultaneously usable
-window hardware, explicit target APIs for work without reliable source context,
+The remaining risk is concentrated in automatic SwiftUI limitations,
+presentation-replacement hardening, simultaneously usable window hardware,
+explicit target APIs for work without reliable source context,
 downstream-surface runtime coverage, lifecycle/restoration, API review, and
 ordinary-app compatibility/performance. No product decision blocks the next
 internal experiment.
@@ -35,7 +35,7 @@ internal experiment.
 | SDK surface | Current branch support | Strongest evidence | Confirmed gap or remaining gate |
 | --- | --- | --- | --- |
 | View creation and lifecycle | Independent UIKit and explicitly tracked SwiftUI scene branches coexist in one RUM session. Navigation creates occurrences rather than reusing platform identity. One scene teardown does not resurrect or stop another branch. | Two-window backend runs beginning with `EXP-002`; occurrence/reconnect state tests `EXP-060`-`066`; signal-driven chains `EXP-109`-`113` | Released baseline remains process-representative. Simultaneous visibility, activation, peer close, reconnect, and two-scene restoration still need capable hardware. |
-| SwiftUI navigation | The iOS 27 semantic SPI owns destination materialization, centralized route metadata, Sheet/full-screen-cover state, and target-local automatic suppression. Sequential and initially restored repeated equal values create fresh path occurrences without hidden/automatic views; the restored top owns hidden-root lifecycle work before its boundary materializes. | `EXP-141` 38/38; `EXP-142` 48/48; `EXP-143` restored path 20/20; exact backend owners; 49 adversarial source-order tests | Automatic discovery is still semantically late and automatic split lacks destination views. External replacement, rejected/canonicalized writes, presentation replacement, stable API review, and hardware coexistence remain. |
+| SwiftUI navigation | The iOS 27 semantic SPI owns destination materialization, centralized route metadata, Sheet/full-screen-cover state, and target-local automatic suppression. Sequential/restored repeated values and external replacement, rejection, and canonicalization create only accepted fresh path occurrences. The accepted destination owns `onAppear` and immediate work. | `EXP-141` 38/38; `EXP-142` 48/48; `EXP-143` restoration 20/20 and canonicalization 19/19; exact backend owners; final semantic cluster 153/153 | Automatic discovery is still semantically late and automatic split lacks destination views. Direct presentation replacement, stable API review, and hardware coexistence remain. |
 | UIKit navigation | Push/pop/modal and stock regular-width split transitions create fresh committed occurrences. Interactive cancel retains the current UUID; finish creates a fresh returned UUID. Structural Primary/sidebar columns are not current RUM destinations. | `EXP-079`/`080`, deterministic `EXP-112`, mapper/backend action and Resource ownership | Human edge gestures, subclass containers, adaptive collapse/expand, simultaneous-window completion, and ordinary-app compatibility remain. |
 | Manual views | Internal scene stacks and the iOS 27 Swift SPI support exact scene/key start-stop pairing, nested distinct keys, navigation beneath authority, latest-destination reveal, fresh returned occurrences, and crash-safe duplicate-key misuse. Automatic tracking continues outside the target. | `EXP-122`, `EXP-125`-`128`, customer-shaped `EXP-137`-`140` | Same key in A/B with reverse stop is tested hostlessly but live `EXP-129` is simulator-inconclusive. Stable Swift and Objective-C surfaces require review. Legacy source-less start/stop intentionally does not pair with targeted calls. |
 | Actions | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions advance the compatibility representative. Manual work inside trustworthy event handoff uses the exact view. A threshold-qualified UIKit scroll remains on its origin across navigation. | `EXP-089`, `EXP-132`, focused routing tests | The decisive visible-A/B representative discriminator needs hardware. Ordinary SwiftUI Button child tasks begin outside the handoff in `EXP-135` and correctly use the approved last-interacted fallback unless explicitly targeted. |
@@ -46,7 +46,7 @@ internal experiment.
 | Scene lifecycle and restoration | Exact registry, disconnect fencing, retained-reader rearming, migration, explicit session stop, and origin-scene teardown preserve proven ownership. One semantic container bootstraps directly into a repeated path with deterministic replacement-reader, descriptor-lag, reconnect-order, and scene-migration coverage. | `EXP-008`, `EXP-041`/`042`, `EXP-063`-`066`, `EXP-113`, `EXP-143` | Real focus handoff, peer lifecycle, genuine reconnect, isolated background/foreground, and concurrent A/B restoration remain hardware gates. |
 | WebView, vitals, fatal/exported context, profiling | WebView native container snapshots and several process/context surfaces have source or focused-test seams. Vitals remain view-based. Profiling operation identity is exact. | Focused module checkpoints and source inspection in the archive | Named runtime/backend scenarios are missing for WebView, vitals, mirrored logs, fatal/exported context, and profiling support statements. Profiling is process-level, not a per-scene view model. |
 | Session Replay | Exercised UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK-caused crash. | Repeated runtime sessions including `EXP-004` and `EXP-019` | Scene-correct replay representation is explicitly out of scope. Only crash safety is a release requirement here. |
-| Single-scene compatibility | Existing inferred/source-less behavior is preserved. Customer-shaped manual and semantic SPIs build in Release, and affected suites pass at the latest checkpoint. | DatadogRUM 1,219/1,219; native probe 136/136; semantic cluster 100/100; repository lint clean | Live ordinary automatic/manual app, custom/NOP handler, Objective-C Release, full API surface, supported-OS, overhead, and reentrancy gates remain. |
+| Single-scene compatibility | Existing inferred/source-less behavior is preserved. Customer-shaped manual and semantic SPIs build in Release, and affected suites pass at the latest checkpoint. | DatadogRUM 1,249/1,249; native probe 137/137; semantic cluster 153/153; repository lint clean | Live ordinary automatic/manual app, custom/NOP handler, Objective-C Release, full API surface, supported-OS, overhead, and reentrancy gates remain. |
 
 ## Confirmed capabilities
 
@@ -64,6 +64,10 @@ internal experiment.
   without publishing hidden root or lower-route views. The accepted top starts
   before hidden-root lifecycle work, and reliable replacement readers can adopt
   or recover ownership across descriptor lag, disconnect, reuse, and scene move.
+- External router replacement emits only accepted same-type and different-type
+  destinations. A rejected proposal emits no view. If a binding canonicalizes a
+  proposed value, only its getter result becomes current and starts before the
+  accepted destination's `onAppear` and immediate task work.
 - A manual authority suffix can hide underlying navigation, reveal only its latest
   committed destination fresh, and nest Compose → Preview → fresh Compose.
 - UIKit interactive cancellation and completion are committed-transition
@@ -81,10 +85,10 @@ internal experiment.
    `.task` work, identify framework containers instead of semantic routes, and
    leak the prior scene into a newly opened window (`EXP-021`, `022`, `028`,
    `069`, automatic control in `EXP-111`).
-2. `EXP-143` closes direct repeated restoration, including hidden-root lifecycle
-   attribution and deterministic replacement-reader/reconnect races. External
-   router replacement, rejected/canonicalized writes, and
-   presentation-to-presentation replacement remain unproven.
+2. `EXP-143` closes direct repeated restoration and external router replacement,
+   rejection, and canonicalization, including pre-view lifecycle attribution and
+   deterministic replacement-reader/reconnect races. Direct
+   presentation-to-presentation replacement remains unproven.
 3. Stable simultaneously visible/interactive windows cannot be proven by this
    simulator. Repeated Metal/`backboardd` failures are environment boundaries, not
    SDK crash evidence.
@@ -129,22 +133,23 @@ Evidence strength is intentionally separated:
 
 Latest authoritative checkpoint:
 
-- `EXP-143` restored-path run `semantic-initial-repeat-20260915-fix-e-final`:
-  20/20, exact D1/fresh D2/first H1, hidden-root work owned by D1, no hidden or
-  automatic view, 46 backend events, and zero errors/crashes. Implementation
-  `4d64d8a53`; probe oracle `484de074c`. Exact session and event IDs are in the
-  active `EXP-143` record.
+- Closed `EXP-143` canonicalized-write run
+  `semantic-router-canonicalized-20260915-trait-b`: 19/19, exact
+  ApplicationLaunch/Home/Alternate sequence, accepted `onAppear`, immediate,
+  delayed, and marker work owned by Alternate, no Detail or automatic view, 33
+  backend events, and zero errors/crashes. Implementation
+  `a458ff6c2`; exact session and event IDs are in the active `EXP-143`
+  record. The earlier restored-path acceptance remains 20/20 with 46 backend
+  events on `4d64d8a53`.
 - `EXP-142` accepted run: 48/48, exact H1/D1/D2/fresh D3/fresh H2
   ownership, 55 backend events (24 actions, 22 Resources, six views including
   ApplicationLaunch, one long task, one session, one vital), zero error/crash,
   and six HTTP 202 uploads.
-- Native multi-scene probe: 136/136.
-- Complete DatadogRUM suite: 1,219/1,219. The preceding run's one unrelated
-  timeseries scheduling failure passed immediately in isolation before the clean
-  full rerun.
-- Source-managed restoration order tests: 49/49; complete semantic navigation
-  cluster: 100/100. Adversarial source review found no remaining deterministic
-  strand or duplicate path.
+- Native multi-scene probe: 137/137.
+- Complete DatadogRUM suite: 1,249/1,249.
+- Final semantic navigation state/source/arbiter cluster: 153/153. The final
+  trait path additionally proves it cannot move or recover a scene without its
+  prior concrete reader attachment.
 - DatadogTrace: 151/151 at the latest Trace-affecting checkpoint.
 - Xcode 27 iOS-simulator Release probe build succeeds. Repository SwiftLint is
   clean across 713 source and 699 test files. Unaffected module suites remain at
@@ -163,9 +168,9 @@ was never constructed.
 
 P0 blockers:
 
-1. Complete the remaining `EXP-143` external replacement, rejection, and
-   canonicalization cases, then presentation replacement and actual-SPI sibling
-   isolation. Repeated-path restoration and initial attribution are accepted.
+1. Complete `EXP-144` presentation replacement, then actual-SPI sibling
+   isolation. `EXP-143` replacement, rejection, canonicalization, restoration,
+   and initial attribution are accepted.
 2. Prototype and validate scene-aware Operation targeting, then the required
    downstream target surfaces without changing legacy fallback.
 3. Pass the P0 [physical-device and human-driven
