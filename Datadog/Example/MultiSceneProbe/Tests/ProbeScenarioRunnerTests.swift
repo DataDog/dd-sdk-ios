@@ -525,6 +525,46 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
     }
 
+    func testSemanticNavigationAPICoversCompleteDestinationStream() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.complete-destination"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertFalse(
+            ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority(scenario)
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+            }
+        )
+        for (screen, occurrence) in [
+            ("home", 1),
+            ("detail-1", 1),
+            ("home", 2),
+            ("sheet", 1),
+            ("home", 3),
+            ("full-screen-cover", 1),
+            ("home", 4)
+        ] {
+            XCTAssertTrue(
+                scenario.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted
+                        && $0.scene == "scene-A"
+                        && $0.screen == screen
+                        && $0.occurrence == occurrence
+                        && $0.rumViewOrigin == .semantic
+                },
+                "Missing semantic view occurrence \(screen)#\(occurrence)"
+            )
+        }
+    }
+
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(

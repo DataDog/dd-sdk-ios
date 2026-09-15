@@ -79,6 +79,9 @@ enum ProbeRuntime {
     static let usesSceneTargetedPresentationAuthority = scenario.map(
         ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority
     ) ?? false
+    static let usesSemanticNavigationSPI = scenario.map(
+        ProbeScenarioCatalog.usesSemanticNavigationSPI
+    ) ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil
@@ -263,6 +266,7 @@ enum ProbeRuntime {
                 + "scenario=\(scenario?.identifier ?? "invalid") "
                 + "run_mode=\(resolution.manifest.runMode.rawValue) "
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
+                + "swiftui_semantic_navigation_api=\(usesSemanticNavigationSPI) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "automatic_detail=\(automaticallyNavigates) "
                 + "automatic_second_window=\(automaticallyOpensSecondWindow) "

@@ -171,9 +171,11 @@ private struct ProbeRUMTrackedScreen<Content: View>: View {
     }
 }
 
-private enum ProbeSwiftUIPresentation: String {
+private enum ProbeSwiftUIPresentation: String, Identifiable {
     case sheet
     case fullScreenCover = "full-screen-cover"
+
+    var id: String { rawValue }
 
     var rumViewName: String {
         switch self {
@@ -828,60 +830,104 @@ struct ProbeWindowRoot: View {
         }
     }
 
+    @ViewBuilder
     private var navigationStack: some View {
-        ProbeRUMNavigationStack(
-            window: window,
-            sceneSessionID: sceneSessionID,
-            readerControlGeneration: readerControlGeneration,
-            path: navigationPath,
-            root: rumView(for: nil),
-            destination: rumView(for:),
-            bindingGeneration: bindingGeneration(for:),
-            navigationOccurrenceSource: navigationOccurrenceSource
-        ) {
-            ProbeHomeView(
+        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
+            RUMNavigationStack(
+                path: navigationPath,
+                presented: semanticNavigationPresentation,
+                root: semanticRUMView(for: nil),
+                destination: { semanticRUMView(for: $0) },
+                presentation: semanticPresentationDescriptor(for:)
+            ) {
+                navigationRootContent
+            } destinationContent: { route in
+                navigationDestinationContent(for: route)
+            } presentedContent: { presentation in
+                semanticPresentationContent(for: presentation)
+            } onPresentationDismiss: { presentation in
+                presentationDidDismiss(presentation)
+            }
+        } else {
+            ProbeRUMNavigationStack(
                 window: window,
                 sceneSessionID: sceneSessionID,
-                openDetail: openDetail,
-                openSheet: { setSwiftUIPresentation(.sheet) },
-                closeCurrentWindow: closeCurrentWindow,
-                openPeer: openPeer
+                readerControlGeneration: readerControlGeneration,
+                path: navigationPath,
+                root: rumView(for: nil),
+                destination: rumView(for:),
+                bindingGeneration: bindingGeneration(for:),
+                navigationOccurrenceSource: navigationOccurrenceSource
+            ) {
+                navigationRootContent
+            } destinationContent: { route in
+                navigationDestinationContent(for: route)
+            }
+        }
+    }
+
+    private var navigationRootContent: some View {
+        ProbeHomeView(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            openDetail: openDetail,
+            openSheet: { setSwiftUIPresentation(.sheet) },
+            closeCurrentWindow: closeCurrentWindow,
+            openPeer: openPeer
+        )
+        .background {
+            if ProbeRuntime.usesSiblingContainerAuthorityStress {
+                ProbeControllerAncestryReader(
+                    role: "right-home",
+                    didResolve: recordSiblingControllerAncestry
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func navigationDestinationContent(for route: ProbeRoute) -> some View {
+        switch route {
+        case .detail(let instance):
+            ProbeDetailView(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                instance: instance,
+                readerControlGeneration: readerControlGeneration,
+                replaceWithAlternate: replaceDetailWithAlternate,
+                didAppear: detailDidAppear
             )
             .background {
                 if ProbeRuntime.usesSiblingContainerAuthorityStress {
                     ProbeControllerAncestryReader(
-                        role: "right-home",
+                        role: "right-detail",
                         didResolve: recordSiblingControllerAncestry
                     )
                 }
             }
-        } destinationContent: { route in
-            Group {
-                switch route {
-                case .detail(let instance):
-                    ProbeDetailView(
-                        window: window,
-                        sceneSessionID: sceneSessionID,
-                        instance: instance,
-                        readerControlGeneration: readerControlGeneration,
-                        replaceWithAlternate: replaceDetailWithAlternate,
-                        didAppear: detailDidAppear
-                    )
-                    .background {
-                        if ProbeRuntime.usesSiblingContainerAuthorityStress {
-                            ProbeControllerAncestryReader(
-                                role: "right-detail",
-                                didResolve: recordSiblingControllerAncestry
-                            )
-                        }
-                    }
-                case .alternate:
-                    ProbeAlternateView(
-                        window: window,
-                        sceneSessionID: sceneSessionID
-                    )
-                }
-            }
+        case .alternate:
+            ProbeAlternateView(
+                window: window,
+                sceneSessionID: sceneSessionID
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func semanticPresentationContent(
+        for presentation: ProbeSwiftUIPresentation
+    ) -> some View {
+        switch presentation {
+        case .sheet:
+            ProbeSheetView(
+                window: window,
+                sceneSessionID: sceneSessionID
+            )
+        case .fullScreenCover:
+            ProbeFullScreenCoverView(
+                window: window,
+                sceneSessionID: sceneSessionID
+            )
         }
     }
 
@@ -962,6 +1008,7 @@ struct ProbeWindowRoot: View {
                 #if DEBUG
                 if
                     ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking,
+                    !ProbeRuntime.usesSemanticNavigationSPI,
                     newPath.count < previousPath.count
                 {
                     let didReveal = navigationOccurrenceSource.revealRetainedRoute(
@@ -1032,11 +1079,24 @@ struct ProbeWindowRoot: View {
     }
 
     private var sheetPresentation: Binding<Bool> {
-        presentationBinding(for: .sheet)
+        guard !ProbeRuntime.usesSemanticNavigationSPI else {
+            return .constant(false)
+        }
+        return presentationBinding(for: .sheet)
     }
 
     private var fullScreenCoverPresentation: Binding<Bool> {
-        presentationBinding(for: .fullScreenCover)
+        guard !ProbeRuntime.usesSemanticNavigationSPI else {
+            return .constant(false)
+        }
+        return presentationBinding(for: .fullScreenCover)
+    }
+
+    private var semanticNavigationPresentation: Binding<ProbeSwiftUIPresentation?> {
+        Binding(
+            get: { swiftUIPresentation },
+            set: { setSwiftUIPresentation($0) }
+        )
     }
 
     private func presentationBinding(
@@ -1322,6 +1382,62 @@ struct ProbeWindowRoot: View {
                 occurrence: .home
             )
         }
+    }
+
+    private func semanticRUMView(for route: ProbeRoute?) -> RUMView {
+        let descriptor = rumView(for: route)
+        return semanticRUMView(
+            screen: descriptor.screen,
+            name: descriptor.name
+        )
+    }
+
+    private func semanticRUMView(
+        screen: String,
+        name: String
+    ) -> RUMView {
+        var view = RUMView(
+            name: name,
+            attributes: semanticNavigationAttributes(screen: screen)
+        )
+        view.path = "/probe/\(screen)"
+        return view
+    }
+
+    @available(iOS 27.0, *)
+    private func semanticPresentationDescriptor(
+        for presentation: ProbeSwiftUIPresentation
+    ) -> RUMNavigationPresentation {
+        let style: RUMNavigationPresentationStyle
+        switch presentation {
+        case .sheet:
+            style = .sheet
+        case .fullScreenCover:
+            style = .fullScreenCover
+        }
+        return RUMNavigationPresentation(
+            view: semanticRUMView(
+                screen: presentation.rawValue,
+                name: presentation.rumViewName
+            ),
+            style: style
+        )
+    }
+
+    private func semanticNavigationAttributes(
+        screen: String
+    ) -> [String: Encodable] {
+        [
+            ProbeRuntime.Attribute.runID: window.runID,
+            ProbeRuntime.Attribute.host: "native-swiftui-semantic-navigation-api",
+            ProbeRuntime.Attribute.sourceScene: window.label,
+            ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.screen: screen,
+            ProbeRuntime.Attribute.viewScene: window.label,
+            ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.viewScreen: screen,
+            ProbeRuntime.Attribute.readerControlGeneration: readerControlGeneration
+        ]
     }
 
     private func navigationOccurrence(for path: [ProbeRoute]) -> ProbeNavigationOccurrence {

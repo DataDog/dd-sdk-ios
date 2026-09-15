@@ -20,6 +20,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-manual-sheet",
         "swiftui.coexistence.automatic-scene-targeted-sheet",
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
+        "swiftui.semantic-api.complete-destination",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -53,6 +54,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticManualSheet,
         swiftUICoexistenceAutomaticSceneTargetedSheet,
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
+        swiftUISemanticAPICompleteDestination,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -136,6 +138,10 @@ enum ProbeScenarioCatalog {
         scenario.identifier == swiftUICoexistenceAutomaticSceneTargetedSheet.identifier
             || scenario.identifier
                 == swiftUICoexistenceAutomaticSceneTargetedFullScreenCover.identifier
+    }
+
+    static func usesSemanticNavigationSPI(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticAPICompleteDestination.identifier
     }
 
     static func scenario(
@@ -831,6 +837,284 @@ enum ProbeScenarioCatalog {
                 dismissedSettledMarker: "full-screen-cover-dismissed-settled"
             )
         )
+
+    /// Exercises the actual experimental, once-per-container SwiftUI API while
+    /// automatic tracking remains enabled. It covers push, pop, sheet
+    /// presentation, sheet dismissal, full-screen presentation, and full-screen
+    /// dismissal as one complete destination stream.
+    private static let swiftUISemanticAPICompleteDestination = ProbeScenario(
+        identifier: "swiftui.semantic-api.complete-destination",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-home-1"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-detail-1"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#2"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-home-2"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:sheet#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-sheet-1"),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:sheet-dismissed-settled"
+            ),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#3"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-home-3"),
+            ProbeStep(
+                .setSwiftUIPresentation,
+                scene: "scene-A",
+                value: "full-screen-cover"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "destination:full-screen-cover"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:full-screen-cover#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-full-screen-cover-1"
+            ),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "marker:full-screen-cover-dismissed-settled"
+            ),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#4"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-home-4")
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 4,
+                name: "semantic-home-4",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 4,
+                name: "semantic-home-4",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            )
+        ],
+        expectedSemanticTimeline: semanticNavigationAPITimeline()
+    )
+
+    private static func semanticNavigationAPITimeline() -> [ProbeExpectation] {
+        var timeline: [ProbeExpectation] = [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-home-1"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "detail-1",
+            occurrence: 1,
+            name: "semantic-detail-1"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 2,
+            name: "semantic-home-2"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "sheet",
+            occurrence: 1,
+            name: "semantic-sheet-1"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 3,
+            name: "sheet-dismissed-immediate"
+        )
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 3,
+            name: "sheet-dismissed-settled"
+        )
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 3,
+            name: "semantic-home-3"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 3,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "full-screen-cover",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "full-screen-cover",
+            occurrence: 1,
+            name: "semantic-full-screen-cover-1"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "full-screen-cover",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 4,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 4,
+            name: "full-screen-cover-dismissed-immediate"
+        )
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 4,
+            name: "full-screen-cover-dismissed-settled"
+        )
+        timeline += semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 4,
+            name: "semantic-home-4"
+        )
+        return timeline
+    }
+
+    private static func semanticMarkerExpectations(
+        screen: String,
+        occurrence: Int,
+        name: String
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: "scene-A",
+                sourceScreen: screen,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: screen,
+                occurrence: occurrence,
+                name: name,
+                sourceScene: "scene-A",
+                sourceScreen: screen,
+                rumViewOrigin: .semantic
+            )
+        ]
+    }
 
     private static func sceneTargetedPresentationSteps(
         presentation: String,
